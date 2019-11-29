@@ -115,8 +115,10 @@ const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
-let timerId: NodeJS.Timeout;
+let timerId: any;
 let diffInHours: number;
+let callAbandonmentTimer: any;
+let callAbandonmentStoppedTimer: number;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -131,21 +133,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  // useEffect(() => {
-  //   RNFetchBlob.config({
-  //     // add this option that makes response data to be stored as a file,
-  //     // this is much more performant.
-  //     fileCache: true,
-  //   })
-  //     .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
-  //       //some headers ..
-  //     })
-  //     .then((res) => {
-  //       // the temp file path
-  //       console.log('The file saved to res ', res);
-  //       console.log('The file saved to ', res.path());
-  //     });
-  // }, []);
   const appointmentData = props.navigation.state.params!.data;
   // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
@@ -275,7 +262,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const channel = appointmentData.id;
   const doctorId = appointmentData.doctorInfo.id;
 
-  let intervalId: NodeJS.Timeout;
+  let intervalId: any;
   let stoppedTimer: number;
   let thirtySecondTimer: any;
   let minuteTimer: any;
@@ -559,7 +546,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session streamPropertyChanged destroyed!', event);
     },
     otrnError: (error: string) => {
-      console.log(`There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`);
+      console.log(
+        `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
+      );
     },
   };
 
@@ -594,10 +583,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
+    // pubnub && pubnub.unsubscribe({ channels: [channel] });
+
     pubnub.subscribe({
       channels: [channel],
       withPresence: true,
     });
+    console.log('pubnubsubscribe');
 
     getHistory(0);
 
@@ -621,6 +613,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('presenceEvent', presenceEvent);
 
         if (presenceEvent.occupancy >= 2) {
+          console.log('calljoined');
+          stopCallAbondmentTimer();
+        } else {
+          console.log('callAbondmentMethod');
+          callAbondmentMethod();
         }
       },
     });
@@ -637,8 +634,54 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
       minuteTimer && clearTimeout(minuteTimer);
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
+      callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+      timerId && clearInterval(timerId);
+      intervalId && clearInterval(intervalId);
     };
   }, []);
+
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+
+  const callAbondmentMethod = () => {
+    const startConsultResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === startConsultMsg;
+    });
+
+    const stopConsultResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === stopConsultMsg;
+    });
+
+    if (startConsultResult.length > 0 && stopConsultResult.length == 0) {
+      startCallAbondmentTimer(180);
+    }
+  };
+
+  const startCallAbondmentTimer = (timer: number) => {
+    setTransferData(appointmentData);
+    callAbandonmentTimer = setInterval(() => {
+      timer = timer - 1;
+      callAbandonmentStoppedTimer = timer;
+      setCallAbundantCallTime(timer);
+
+      console.log('callAbandonmentStoppedTimer', timer);
+
+      if (timer < 1) {
+        console.log('call Abundant', appointmentData);
+
+        NextAvailableSlot(appointmentData, 'Transfer', true);
+
+        setCallAbundantCallTime(0);
+        callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+      }
+    }, 1000);
+  };
+
+  const stopCallAbondmentTimer = () => {
+    console.log('stopCallAbondmentTimer', callAbandonmentTimer);
+    callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+  };
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
@@ -694,7 +737,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, res) => {
         try {
-          const end: number = res.endTimeToken ? res.endTimeToken : 1;
+          const end: any = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
           // console.log('msgs', msgs);
@@ -750,9 +793,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     if (result.length > 0) {
       console.log('checkForRescheduleMessage ', result);
-      checkIfReschduleApi(result[0], 'Followup');
-      NextAvailableSlot(result[0], 'Followup');
-      setCheckReschudule(true);
+      NextAvailableSlot(result[0], 'Followup', false);
     }
   };
 
@@ -1269,9 +1310,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule clicked');
 
                     try {
-                      checkIfReschduleApi(rowData, 'Transfer');
-                      NextAvailableSlot(rowData, 'Transfer');
-                      setCheckReschudule(true);
+                      NextAvailableSlot(rowData, 'Transfer', false);
                       setTransferData(rowData.transferInfo);
                       setTimeout(() => {
                         flatListRef.current! &&
@@ -1579,9 +1618,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
 
                   console.log('Button Clicked');
-                  checkIfReschduleApi(rowData, 'Followup');
-                  NextAvailableSlot(rowData, 'Followup');
-                  setCheckReschudule(true);
+                  NextAvailableSlot(rowData, 'Followup', false);
                   setTransferData(rowData.transferInfo);
                   setTimeout(() => {
                     flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
@@ -2257,7 +2294,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
       rowData.message === acceptedCallMsg ||
-      rowData.message === stopConsultMsg
+      rowData.message === stopConsultMsg ||
+      rowData.message === cancelConsultInitiated
     ) {
       return null;
     }
@@ -2502,15 +2540,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
   };
 
-  const checkIfReschduleApi = (rowData: any, Value: string) => {
+  const checkIfReschduleApi = (
+    rowData: any,
+    Value: string,
+    isAutomatic: boolean,
+    nextSlotAvailable: string
+  ) => {
+    let checkAppointmentId;
+    let checkAppointmentDate;
+
+    if (isAutomatic) {
+      checkAppointmentId = channel;
+
+      checkAppointmentDate = nextSlotAvailable;
+      console.log(
+        'checkIfReschedulesuccess',
+        checkAppointmentId,
+        checkAppointmentDate,
+        isAutomatic
+      );
+    } else {
+      checkAppointmentId = rowData.transferInfo.appointmentId;
+
+      checkAppointmentDate =
+        Value === 'Followup'
+          ? rowData.transferInfo.folloupDateTime
+          : rowData.transferInfo.transferDateTime;
+      console.log(
+        'checkIfReschedulesuccess',
+        checkAppointmentId,
+        checkAppointmentDate,
+        isAutomatic
+      );
+    }
+
     setLoading(true);
-    checkIfRescheduleAppointment(
-      client,
-      rowData.transferInfo.appointmentId,
-      Value === 'Followup'
-        ? rowData.transferInfo.folloupDateTime
-        : rowData.transferInfo.transferDateTime
-    )
+    checkIfRescheduleAppointment(client, checkAppointmentId, checkAppointmentDate)
       .then((_data: any) => {
         setLoading(false);
         try {
@@ -2524,32 +2589,50 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             isPaid: result.isPaid,
           };
           setNewRescheduleCount(data);
+          setCheckReschudule(true);
         } catch (error) {}
       })
       .catch((e: any) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('checkIfRescheduleerror', error);
+      })
+      .finally(() => {
+        console.log('checkIfReschedulesuccessfinally transferData', transferData);
+        if (isAutomatic) {
+          setdisplayoverlay(true);
+        }
       });
   };
 
-  const NextAvailableSlot = (rowData: any, Value: string) => {
+  const NextAvailableSlot = (rowData: any, Value: string, isAutomatic: boolean) => {
     console.log('NextAvailableSlot', rowData);
     setLoading(true);
+    let todayDate;
+    let slotDoctorId;
 
-    const todayDate = moment
-      .utc(
-        Value === 'Followup'
-          ? rowData.transferInfo.folloupDateTime
-          : rowData.transferInfo.transferDateTime
-      )
-      .local()
-      .format('YYYY-MM-DD');
+    if (isAutomatic) {
+      todayDate = moment
+        .utc(appointmentData.appointmentDateTime)
+        .local()
+        .format('YYYY-MM-DD');
+      slotDoctorId = appointmentData.doctorId;
+    } else {
+      todayDate = moment
+        .utc(
+          Value === 'Followup'
+            ? rowData.transferInfo.folloupDateTime
+            : rowData.transferInfo.transferDateTime
+        )
+        .local()
+        .format('YYYY-MM-DD');
+      slotDoctorId =
+        Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+    }
+
     console.log('todayDate', todayDate);
-
-    const slotDoctorId =
-      Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
     console.log('slotDoctorId', slotDoctorId);
+
     setDoctorScheduleId(slotDoctorId);
 
     getNextAvailableSlots(client, slotDoctorId, todayDate)
@@ -2558,6 +2641,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         try {
           console.log(data, 'nextavailable res');
           setNextSlotAvailable(data[0].availableSlot);
+          checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
         } catch (error) {
           setNextSlotAvailable('');
         }
@@ -2565,7 +2649,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .catch((e: string) => {
         setLoading(false);
         console.log('Error occured ', e);
-      });
+      })
+      .finally(() => {});
   };
 
   const rescheduleAPI = (rowData: any, bookRescheduleInput: any) => {
@@ -4261,22 +4346,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <OverlayRescheduleView
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
-          doctor={transferData ? transferData.doctorInfo : null}
+          doctor={transferData ? transferData.doctorInfo : appointmentData.doctorInfo}
           patientId={currentPatient ? currentPatient.id : ''}
-          clinics={transferData ? transferData.doctorInfo.doctorHospital : []}
+          clinics={
+            transferData
+              ? transferData.doctorInfo.doctorHospital
+              : appointmentData.doctorInfo.doctorHospital
+          }
           doctorId={doctorScheduleId}
           renderTab={
             appointmentData.appointmentType === 'ONLINE' ? 'Consult Online' : 'Visit Clinic'
           }
           rescheduleCount={newRescheduleCount && newRescheduleCount}
-          appointmentId={transferData.appointmentId}
-          data={transferData}
+          appointmentId={transferData ? transferData.appointmentId : appointmentData.id}
+          data={transferData ? transferData : appointmentData}
           bookFollowUp={false}
           KeyFollow={'RESCHEDULE'}
           isfollowupcount={0}
         />
       )}
-      <View></View>
 
       {uploadPrescriptionPopup()}
       {renderPrescriptionModal()}
