@@ -37,7 +37,6 @@ export const ADD_BLOCKED_CALENDAR_ITEM = gql`
         doctorId
         start
         end
-        reason
       }
     }
   }

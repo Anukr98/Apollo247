@@ -174,6 +174,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     dialogProps.onClose();
     customTimeArray.length = 0;
     setSelectedBlockOption(BlockOption.entireday);
+    setDateRange((dateRange.length = 0));
   };
   const useStyles = makeStyles((theme: Theme) => {
     return {
