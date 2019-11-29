@@ -9,6 +9,7 @@ import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
+import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -282,6 +283,12 @@ export const MedicineLanding: React.FC = (props) => {
                 Deals of the day
               </div>
               <DayDeals />
+            </div>
+            <div className={classes.sliderSection}>
+              <div className={classes.sectionTitle}>
+                Hot Sellers
+              </div>
+              <HotSellers />
             </div>
             <div className={classes.sliderSection}>
               <div className={classes.sectionTitle}>
