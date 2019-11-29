@@ -423,9 +423,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           setprice(priceRange);
           setSortBy(sortBy);
           setcategoryIds(categoryIds);
-          medicineList.length &&
-            medicineListRef.current &&
-            medicineListRef.current.scrollToIndex({ index: 0 });
+          medicineListRef.current && medicineListRef.current.scrollToOffset({ offset: 0 });
           setIsLoading(false);
         }}
       />

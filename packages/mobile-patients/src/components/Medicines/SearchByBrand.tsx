@@ -539,9 +539,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           setdiscount(discountRange);
           setprice(priceRange);
           setSortBy(sortBy);
-          medicineList.length &&
-            medicineListRef.current &&
-            medicineListRef.current.scrollToIndex({ index: 0 });
+          medicineListRef.current && medicineListRef.current.scrollToOffset({ offset: 0 });
           setIsLoading(false);
         }}
       />
