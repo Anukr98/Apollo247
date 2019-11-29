@@ -25,13 +25,19 @@ export const GET_BLOCKED_CALENDAR = gql`
 `;
 
 export const ADD_BLOCKED_CALENDAR_ITEM = gql`
-  mutation AddBlockedCalendarItem($doctorId: String!, $start: DateTime!, $end: DateTime!) {
-    addBlockedCalendarItem(doctorId: $doctorId, start: $start, end: $end) {
+  mutation AddBlockedCalendarItem(
+    $doctorId: String!
+    $start: DateTime!
+    $end: DateTime!
+    $reason: String
+  ) {
+    addBlockedCalendarItem(doctorId: $doctorId, start: $start, end: $end, reason: $reason) {
       blockedCalendar {
         id
         doctorId
         start
         end
+        reason
       }
     }
   }

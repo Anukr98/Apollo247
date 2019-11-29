@@ -614,70 +614,40 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   ]);
 
   return (
-    <Dialog
-      {...dialogProps}
-      data-cypress="BlockedCalendarModal"
-      className={classes.BlockedCalendarModal}
-    >
-      <DialogTitle className={classes.blockcalHeading}>BLOCK CALENDAR</DialogTitle>
-      <DialogContent style={{ color: 'black' }}>
-        <RadioGroup
-          className={classes.radioGroup}
-          value={selectedValue}
-          onChange={(e) => {
-            setSelectedValue((e.target as HTMLInputElement).value as RadioValues);
+    <span>
+      <Dialog
+        {...dialogProps}
+        data-cypress="BlockedCalendarModal"
+        className={classes.BlockedCalendarModal}
+      >
+        <DialogTitle className={classes.blockcalHeading}>BLOCK CALENDAR</DialogTitle>
+        <DialogContent style={{ color: 'black' }}>
+          <RadioGroup
+            className={classes.radioGroup}
+            value={selectedValue}
+            onChange={(e) => {
+              setSelectedValue((e.target as HTMLInputElement).value as RadioValues);
 
-            setSelectedBlockOption(BlockOption.entireday);
-          }}
-          row
-        >
-          {' '}
-          <FormControlLabel
-            value={RadioValues.DAY}
-            label="For a day"
-            control={<AphRadio title="For a day" />}
-          />
-          <FormControlLabel
-            value={RadioValues.DURATION}
-            label="For a duration"
-            control={<AphRadio title="For a duration" />}
-          />
-        </RadioGroup>
-        <div>
+              setSelectedBlockOption(BlockOption.entireday);
+            }}
+            row
+          >
+            {' '}
+            <FormControlLabel
+              value={RadioValues.DAY}
+              label="For a day"
+              control={<AphRadio title="For a day" />}
+            />
+            <FormControlLabel
+              value={RadioValues.DURATION}
+              label="For a duration"
+              control={<AphRadio title="For a duration" />}
+            />
+          </RadioGroup>
           <div>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <ThemeProvider theme={defaultMaterialTheme}>
-                <div>
-                  <KeyboardDatePicker
-                    className={classes.KeyboardDatePicker}
-                    disableToolbar
-                    variant="inline"
-                    format="MM/dd/yyyy"
-                    margin="normal"
-                    id="date-picker-inline"
-                    label={
-                      daySelected ? 'Which day would you like to block your calendar for?' : 'From'
-                    }
-                    value={start}
-                    minDate={nextDate()}
-                    onChange={(date) => {
-                      setStart(date ? getFormattedDate(date) : '');
-                      findBlockSlot(date ? getFormattedDate(date) : '');
-                      getDateRange(date ? date : '', end ? end : '');
-                      setBlockConsultHourDay(
-                        date
-                          ? date!.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
-                          : ''
-                      );
-                    }}
-                    KeyboardButtonProps={{
-                      'aria-label': 'change date',
-                    }}
-                    autoOk
-                    TextFieldComponent={TextFieldComponent}
-                  />
-                </div>
-                {!daySelected && (
+            <div>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <ThemeProvider theme={defaultMaterialTheme}>
                   <div>
                     <KeyboardDatePicker
                       className={classes.KeyboardDatePicker}
@@ -686,13 +656,22 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       format="MM/dd/yyyy"
                       margin="normal"
                       id="date-picker-inline"
-                      label="To"
-                      disabled={!start}
-                      minDate={nextTODate(start)}
-                      value={end}
+                      label={
+                        daySelected
+                          ? 'Which day would you like to block your calendar for?'
+                          : 'From'
+                      }
+                      value={start}
+                      minDate={nextDate()}
                       onChange={(date) => {
-                        setEnd(date ? getFormattedDate(date) : '');
-                        getDateRange(start ? start : '', date ? date : '');
+                        setStart(date ? getFormattedDate(date) : '');
+                        findBlockSlot(date ? getFormattedDate(date) : '');
+                        getDateRange(date ? date : '', end ? end : '');
+                        setBlockConsultHourDay(
+                          date
+                            ? date!.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
+                            : ''
+                        );
                       }}
                       KeyboardButtonProps={{
                         'aria-label': 'change date',
@@ -701,131 +680,155 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       TextFieldComponent={TextFieldComponent}
                     />
                   </div>
-                )}
-              </ThemeProvider>
-            </MuiPickersUtilsProvider>
-            <div className={classes.blockedContent}>
-              <h5>Which of these would you like to block?</h5>
-              <div>
-                <RadioGroup
-                  className={classes.radioGroup}
-                  value={selectedBlockOption}
-                  onChange={(e) =>
-                    setSelectedBlockOption((e.target as HTMLInputElement).value as BlockOption)
-                  }
-                  row
-                >
-                  <FormControlLabel
-                    disabled={!start}
-                    className={classes.entireRow}
-                    value={BlockOption.entireday}
-                    label={`Block the entire ${label}`}
-                    control={<AphRadio title="Block the entire day" />}
-                  />
-                  {selectedBlockOption === 'entireday' && (
-                    <div className={classes.entireDayContent}>
-                      <h5>Reason (optional)</h5>
-                      <AphSelect
-                        value={blockReason}
-                        MenuProps={{
-                          classes: { paper: classes.menuPopover },
-                          anchorOrigin: {
-                            vertical: 'top',
-                            horizontal: 'left',
-                          },
-                          transformOrigin: {
-                            vertical: 'top',
-                            horizontal: 'left',
-                          },
+                  {!daySelected && (
+                    <div>
+                      <KeyboardDatePicker
+                        className={classes.KeyboardDatePicker}
+                        disableToolbar
+                        variant="inline"
+                        format="MM/dd/yyyy"
+                        margin="normal"
+                        id="date-picker-inline"
+                        label="To"
+                        disabled={!start}
+                        minDate={nextTODate(start)}
+                        value={end}
+                        onChange={(date) => {
+                          setEnd(date ? getFormattedDate(date) : '');
+                          getDateRange(start ? start : '', date ? date : '');
                         }}
-                        onChange={(e: any) => {
-                          setBlockReason(e.target.value as string);
+                        KeyboardButtonProps={{
+                          'aria-label': 'change date',
                         }}
-                      >
-                        <MenuItem
-                          value="personal leave"
-                          classes={{ selected: classes.menuSelected }}
-                        >
-                          Personal Leave
-                        </MenuItem>
-                        <MenuItem value="Busy" classes={{ selected: classes.menuSelected }}>
-                          Busy
-                        </MenuItem>
-                        <MenuItem
-                          value="Out of office"
-                          classes={{ selected: classes.menuSelected }}
-                        >
-                          Out of office
-                        </MenuItem>
-                      </AphSelect>
+                        autoOk
+                        TextFieldComponent={TextFieldComponent}
+                      />
                     </div>
                   )}
-                  <FormControlLabel
-                    disabled={!start}
-                    className={classes.entireRow}
-                    value={BlockOption.consulthours}
-                    label="Block consult hours"
-                    control={<AphRadio title="Block consult hours" />}
-                  />
-                  {selectedBlockOption === 'consulthours' && (
-                    <div className={classes.entireDayContent}>
-                      <p>
-                        These are your active consult hours for the selected day. Select which ones
-                        you’d like to block:
-                      </p>
-                      {start === end && (
-                        <div>
-                          <div className={classes.formDate}>
-                            {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
+                </ThemeProvider>
+              </MuiPickersUtilsProvider>
+              <div className={classes.blockedContent}>
+                <h5>Which of these would you like to block?</h5>
+                <div>
+                  <RadioGroup
+                    className={classes.radioGroup}
+                    value={selectedBlockOption}
+                    onChange={(e) =>
+                      setSelectedBlockOption((e.target as HTMLInputElement).value as BlockOption)
+                    }
+                    row
+                  >
+                    <FormControlLabel
+                      disabled={!start}
+                      className={classes.entireRow}
+                      value={BlockOption.entireday}
+                      label={`Block the entire ${label}`}
+                      control={<AphRadio title="Block the entire day" />}
+                    />
+                    {selectedBlockOption === 'entireday' && (
+                      <div className={classes.entireDayContent}>
+                        <h5>Reason (optional)</h5>
+                        <AphSelect
+                          value={blockReason}
+                          MenuProps={{
+                            classes: { paper: classes.menuPopover },
+                            anchorOrigin: {
+                              vertical: 'top',
+                              horizontal: 'left',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'left',
+                            },
+                          }}
+                          onChange={(e: any) => {
+                            setBlockReason(e.target.value as string);
+                          }}
+                        >
+                          <MenuItem
+                            value="personal leave"
+                            classes={{ selected: classes.menuSelected }}
+                          >
+                            Personal Leave
+                          </MenuItem>
+                          <MenuItem value="Busy" classes={{ selected: classes.menuSelected }}>
+                            Busy
+                          </MenuItem>
+                          <MenuItem
+                            value="Out of office"
+                            classes={{ selected: classes.menuSelected }}
+                          >
+                            Out of office
+                          </MenuItem>
+                        </AphSelect>
+                      </div>
+                    )}
+                    <FormControlLabel
+                      disabled={!start}
+                      className={classes.entireRow}
+                      value={BlockOption.consulthours}
+                      label="Block consult hours"
+                      control={<AphRadio title="Block consult hours" />}
+                    />
+                    {selectedBlockOption === 'consulthours' && (
+                      <div className={classes.entireDayContent}>
+                        <p>
+                          These are your active consult hours for the selected day. Select which
+                          ones you’d like to block:
+                        </p>
+                        {start === end && (
+                          <div>
+                            <div className={classes.formDate}>
+                              {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
+                            </div>
+                            {consultHours && (
+                              <FormGroup>
+                                <FormControlLabel
+                                  control={<Checkbox value="consultHours" />}
+                                  label={`${convertFrom24To12Format(
+                                    consultHours.startTime
+                                  )} - ${convertFrom24To12Format(consultHours.endTime)} | ${
+                                    consultHours.consultMode
+                                  }`}
+                                  onChange={() => {
+                                    setChackedSingleValue(consultHours);
+                                    setChecked(!checked);
+                                    // setInvalid(!invalid);
+                                  }}
+                                />
+                              </FormGroup>
+                            )}
                           </div>
-                          {consultHours && (
-                            <FormGroup>
-                              <FormControlLabel
-                                control={<Checkbox value="consultHours" />}
-                                label={`${convertFrom24To12Format(
-                                  consultHours.startTime
-                                )} - ${convertFrom24To12Format(consultHours.endTime)} | ${
-                                  consultHours.consultMode
-                                }`}
-                                onChange={() => {
-                                  setChackedSingleValue(consultHours);
-                                  setChecked(!checked);
-                                  // setInvalid(!invalid);
-                                }}
-                              />
-                            </FormGroup>
-                          )}
-                        </div>
-                      )}
-                      {start !== end && (
-                        <div>
-                          {dateRange &&
-                            dateRange.length > 0 &&
-                            dateRange.map((item: any) => (
-                              <div>
-                                <div className={classes.formDate}>
-                                  {item ? item : getFormattedDate(new Date())}{' '}
-                                  {convertIntoDay(item)}
+                        )}
+                        {start !== end && (
+                          <div>
+                            {dateRange &&
+                              dateRange.length > 0 &&
+                              dateRange.map((item: any) => (
+                                <div>
+                                  <div className={classes.formDate}>
+                                    {item ? item : getFormattedDate(new Date())}{' '}
+                                    {convertIntoDay(item)}
+                                  </div>
+
+                                  <FormGroup>
+                                    <FormControlLabel
+                                      control={<Checkbox value="checkedA" />}
+                                      label={convertTocunsultBlockStartEndTime(item)}
+                                      onChange={() => {
+                                        listOfStartEnd(item);
+                                        setChecked(!checked);
+                                      }}
+                                    />
+                                  </FormGroup>
                                 </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                                <FormGroup>
-                                  <FormControlLabel
-                                    control={<Checkbox value="checkedA" />}
-                                    label={convertTocunsultBlockStartEndTime(item)}
-                                    onChange={() => {
-                                      listOfStartEnd(item);
-                                      setChecked(!checked);
-                                    }}
-                                  />
-                                </FormGroup>
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {daySelected && (
+                    {/* {daySelected && ( */}
                     <div className={classes.fullRow}>
                       <FormControlLabel
                         disabled={!start}
@@ -955,11 +958,11 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         </div>
                       )}
                     </div>
-                  )}
-                </RadioGroup>
+                    {/* )} */}
+                  </RadioGroup>
+                </div>
               </div>
-            </div>
-            {/* <TextField
+              {/* <TextField
               onChange={(e) => { console.log(e.currentTarget.value); setStart(e.currentTarget.value) }}
               value={start}
               label="From"
@@ -968,8 +971,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
               InputProps={{ style: { color: 'black' } }}
               className={classes.datepicker}
             /> */}
-          </div>
-          {/* {!daySelected && (<div>
+            </div>
+            {/* {!daySelected && (<div>
             <div style={{ display: 'flex' }}>
               <AphTextField
                 disabled={daySelected}
@@ -983,7 +986,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
               />
             </div>
           </div>)} */}
-          {/* {daySelected && (
+            {/* {daySelected && (
             <TextField
               onChange={(e) => setStartTime(e.currentTarget.value)}
               value={startTime}
@@ -1005,202 +1008,104 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
               className={classes.timepicker}
             />
           )} */}
-        </div>
-        {isOverlapError && (
-          <div style={{ color: 'red' }}>Error! Blocked calendar items cannot overlap</div>
-        )}
-      </DialogContent>
-      <DialogActions className={classes.modalFooter}>
-        <Button
-          variant="contained"
-          onClick={(e) => handleSubmitComplete()}
-          className={classes.cancelBtn}
-        >
-          CANCEL
-        </Button>
+          </div>
+          {isOverlapError && (
+            <div style={{ color: 'red' }}>Error! Blocked calendar items cannot overlap</div>
+          )}
+        </DialogContent>
+        <DialogActions className={classes.modalFooter}>
+          <Button
+            variant="contained"
+            onClick={(e) => handleSubmitComplete()}
+            className={classes.cancelBtn}
+          >
+            CANCEL
+          </Button>
 
-        <Mutation<BlockMultipleCalendarItems, BlockMultipleCalendarItemsVariables>
-          mutation={BLOCK_MULTIPLE_CALENDAR_ITEMS}
-          onCompleted={() => handleSubmitComplete()}
-        >
-          {(BlockMultipleCalendarItems, { loading: multipleLoading }) => (
-            <Mutation<UpdateBlockedCalendarItem, UpdateBlockedCalendarItemVariables>
-              mutation={UPDATE_BLOCKED_CALENDAR_ITEM}
-              onCompleted={() => handleSubmitComplete()}
-            >
-              {(updateBlockedCalendarItem, { loading: updateLoading }) => (
-                <Mutation<AddBlockedCalendarItem, AddBlockedCalendarItemVariables>
-                  mutation={ADD_BLOCKED_CALENDAR_ITEM}
-                  onCompleted={() => handleSubmitComplete()}
-                >
-                  {(addBlockedCalendarItem, { loading: addLoading }) => {
-                    const loading = addLoading || updateLoading || multipleLoading;
-                    return (
-                      <Button
-                        type="submit"
-                        disabled={loading || invalid}
-                        variant="contained"
-                        onClick={() => {
-                          //2019-10-18 2019-10-18
-                          //console.log(start, end);
-                          const startDate = parse(start, 'yyyy-MM-dd', new Date());
-                          const endDate = parse(end, 'yyyy-MM-dd', new Date());
-                          //console.log(startDate, endDate);
+          <Mutation<BlockMultipleCalendarItems, BlockMultipleCalendarItemsVariables>
+            mutation={BLOCK_MULTIPLE_CALENDAR_ITEMS}
+            onCompleted={() => handleSubmitComplete()}
+          >
+            {(BlockMultipleCalendarItems, { loading: multipleLoading }) => (
+              <Mutation<UpdateBlockedCalendarItem, UpdateBlockedCalendarItemVariables>
+                mutation={UPDATE_BLOCKED_CALENDAR_ITEM}
+                onCompleted={() => handleSubmitComplete()}
+              >
+                {(updateBlockedCalendarItem, { loading: updateLoading }) => (
+                  <Mutation<AddBlockedCalendarItem, AddBlockedCalendarItemVariables>
+                    mutation={ADD_BLOCKED_CALENDAR_ITEM}
+                    onCompleted={() => handleSubmitComplete()}
+                  >
+                    {(addBlockedCalendarItem, { loading: addLoading }) => {
+                      const loading = addLoading || updateLoading || multipleLoading;
+                      return (
+                        <Button
+                          type="submit"
+                          disabled={loading || invalid}
+                          variant="contained"
+                          onClick={() => {
+                            //2019-10-18 2019-10-18
+                            //console.log(start, end);
+                            const startDate = parse(start, 'yyyy-MM-dd', new Date());
+                            const endDate = parse(end, 'yyyy-MM-dd', new Date());
+                            //console.log(startDate, endDate);
 
-                          if (durationSelected) {
-                            startDate.setHours(0);
-                            startDate.setMinutes(0);
-                            endDate.setHours(23);
-                            endDate.setMinutes(59);
-                          } else if (selectedBlockOption === 'entireday') {
-                            if (startTime && endTime) {
-                              const [startHours, startMins] = startTime.split(':');
-                              startDate.setHours(parseInt(startHours, 10));
-                              startDate.setMinutes(parseInt(startMins, 10));
-                              const [endHours, endMins] = endTime.split(':');
-                              endDate.setHours(parseInt(endHours, 10));
-                              endDate.setMinutes(parseInt(endMins, 10));
-                            } else {
+                            if (durationSelected) {
                               startDate.setHours(0);
                               startDate.setMinutes(0);
                               endDate.setHours(23);
                               endDate.setMinutes(59);
-                            }
-                          }
-                          const addArgs = {
-                            refetchQueries: [
-                              {
-                                query: GET_BLOCKED_CALENDAR,
-                                variables: { doctorId },
-                              },
-                            ],
-                            awaitRefetchQueries: true,
-                            variables: {
-                              doctorId,
-                              start: startDate.toISOString(),
-                              end: endDate.toISOString(),
-                              reason: blockReason,
-                            },
-                          };
-                          const handleError = (error: ApolloError) => {
-                            const networkErrorMessage = error.networkError
-                              ? error.networkError.message
-                              : null;
-                            const allMessages = error.graphQLErrors
-                              .map((e) => e.message)
-                              .concat(networkErrorMessage ? networkErrorMessage : []);
-                            const isOverlapError = allMessages.includes(
-                              AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS
-                            );
-                            setIsOverlapError(isOverlapError);
-                          };
-                          const isUpdate = item && item.id != null;
-                          //console.log(addArgs);
-                          if (isUpdate) {
-                            const updateArgs = {
-                              ...addArgs,
-                              variables: { ...addArgs.variables, id: item!.id },
-                            };
-                            updateBlockedCalendarItem(updateArgs).catch(handleError);
-                          } else if (durationSelected && selectedBlockOption === 'consulthours') {
-                            const addMultiArgs = {
-                              refetchQueries: [
-                                {
-                                  query: GET_BLOCKED_CALENDAR,
-                                  variables: { doctorId },
-                                },
-                              ],
-                              awaitRefetchQueries: true,
-                              variables: {
-                                blockCalendarInputs: {
-                                  doctorId,
-                                  reason: '',
-                                  itemDetails: startEndList,
-                                },
-                              },
-                            };
-
-                            BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
-                          } else if (selectedBlockOption === 'consulthours') {
-                            if (selectedBlockOption === 'consulthours' && chackedSingleValue) {
-                              const [startHours, startMins] = chackedSingleValue.startTime.split(
-                                ':'
-                              );
-                              let localhours = Number(startHours) + 5;
-                              let localMinuts = Number(startMins) + 30;
-
-                              if (localMinuts > 59) {
-                                localMinuts = Number(localMinuts) - 60;
-                                localhours = Number(localhours) + 1;
-                                if (localhours > 23) {
-                                  localhours = 0;
-                                }
-                              }
-
-                              startDate.setHours(parseInt(localhours.toString(), 10));
-                              startDate.setMinutes(parseInt(localMinuts.toString(), 10));
-                              const [endHours, endMins] = chackedSingleValue.endTime.split(':');
-                              let localEndhours = Number(endHours) + 5;
-                              let localEndMinuts = Number(endMins) + 30;
-
-                              if (localEndMinuts > 59) {
-                                localEndMinuts = Number(localEndMinuts) - 60;
-                                localEndhours = Number(localEndhours) + 1;
-                                if (localEndhours > 23) {
-                                  localEndhours = 0;
-                                }
-                              }
-                              endDate.setHours(parseInt(localEndhours.toString(), 10));
-                              endDate.setMinutes(parseInt(localEndMinuts.toString(), 10));
-                            }
-                            const addMultiArgs = {
-                              refetchQueries: [
-                                {
-                                  query: GET_BLOCKED_CALENDAR,
-                                  variables: { doctorId },
-                                },
-                              ],
-                              awaitRefetchQueries: true,
-                              variables: {
-                                blockCalendarInputs: {
-                                  doctorId,
-                                  reason: '',
-                                  itemDetails: [
-                                    {
-                                      start: startDate.toISOString(),
-                                      end: endDate.toISOString(),
-                                      consultMode: chackedSingleValue.consultMode,
-                                    },
-                                  ],
-                                },
-                              },
-                            };
-
-                            BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
-                          } else if (selectedBlockOption === 'customtime') {
-                            if (startTime && endTime) {
-                              let obj = {
-                                startTime: startTime,
-                                endTime: endTime,
-                              };
-                              customTimeArray.push(obj);
-                            }
-                            if (customTimeArray) {
-                              const dateRangeArray: any = [];
-                              customTimeArray.map((item: any, index: number) => {
-                                const [startHours, startMins] = item.startTime.split(':');
+                            } else if (selectedBlockOption === 'entireday') {
+                              if (startTime && endTime) {
+                                const [startHours, startMins] = startTime.split(':');
                                 startDate.setHours(parseInt(startHours, 10));
                                 startDate.setMinutes(parseInt(startMins, 10));
-                                const [endHours, endMins] = item.endTime.split(':');
+                                const [endHours, endMins] = endTime.split(':');
                                 endDate.setHours(parseInt(endHours, 10));
                                 endDate.setMinutes(parseInt(endMins, 10));
-                                let obj = {
-                                  start: startDate.toISOString(),
-                                  end: endDate.toISOString(),
-                                };
-                                dateRangeArray.push(obj);
-                              });
-
+                              } else {
+                                startDate.setHours(0);
+                                startDate.setMinutes(0);
+                                endDate.setHours(23);
+                                endDate.setMinutes(59);
+                              }
+                            }
+                            const addArgs = {
+                              refetchQueries: [
+                                {
+                                  query: GET_BLOCKED_CALENDAR,
+                                  variables: { doctorId },
+                                },
+                              ],
+                              awaitRefetchQueries: true,
+                              variables: {
+                                doctorId,
+                                start: startDate.toISOString(),
+                                end: endDate.toISOString(),
+                                reason: blockReason,
+                              },
+                            };
+                            const handleError = (error: ApolloError) => {
+                              const networkErrorMessage = error.networkError
+                                ? error.networkError.message
+                                : null;
+                              const allMessages = error.graphQLErrors
+                                .map((e) => e.message)
+                                .concat(networkErrorMessage ? networkErrorMessage : []);
+                              const isOverlapError = allMessages.includes(
+                                AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS
+                              );
+                              setIsOverlapError(isOverlapError);
+                            };
+                            const isUpdate = item && item.id != null;
+                            //console.log(addArgs);
+                            if (isUpdate) {
+                              const updateArgs = {
+                                ...addArgs,
+                                variables: { ...addArgs.variables, id: item!.id },
+                              };
+                              updateBlockedCalendarItem(updateArgs).catch(handleError);
+                            } else if (durationSelected && selectedBlockOption === 'consulthours') {
                               const addMultiArgs = {
                                 refetchQueries: [
                                   {
@@ -1213,28 +1118,175 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                   blockCalendarInputs: {
                                     doctorId,
                                     reason: '',
-                                    itemDetails: dateRangeArray,
+                                    itemDetails: startEndList,
                                   },
                                 },
                               };
 
                               BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                            } else if (selectedBlockOption === 'consulthours') {
+                              if (selectedBlockOption === 'consulthours' && chackedSingleValue) {
+                                const [startHours, startMins] = chackedSingleValue.startTime.split(
+                                  ':'
+                                );
+                                let localhours = Number(startHours) + 5;
+                                let localMinuts = Number(startMins) + 30;
+
+                                if (localMinuts > 59) {
+                                  localMinuts = Number(localMinuts) - 60;
+                                  localhours = Number(localhours) + 1;
+                                  if (localhours > 23) {
+                                    localhours = 0;
+                                  }
+                                }
+
+                                startDate.setHours(parseInt(localhours.toString(), 10));
+                                startDate.setMinutes(parseInt(localMinuts.toString(), 10));
+                                const [endHours, endMins] = chackedSingleValue.endTime.split(':');
+                                let localEndhours = Number(endHours) + 5;
+                                let localEndMinuts = Number(endMins) + 30;
+
+                                if (localEndMinuts > 59) {
+                                  localEndMinuts = Number(localEndMinuts) - 60;
+                                  localEndhours = Number(localEndhours) + 1;
+                                  if (localEndhours > 23) {
+                                    localEndhours = 0;
+                                  }
+                                }
+                                endDate.setHours(parseInt(localEndhours.toString(), 10));
+                                endDate.setMinutes(parseInt(localEndMinuts.toString(), 10));
+                              }
+                              const addMultiArgs = {
+                                refetchQueries: [
+                                  {
+                                    query: GET_BLOCKED_CALENDAR,
+                                    variables: { doctorId },
+                                  },
+                                ],
+                                awaitRefetchQueries: true,
+                                variables: {
+                                  blockCalendarInputs: {
+                                    doctorId,
+                                    reason: '',
+                                    itemDetails: [
+                                      {
+                                        start: startDate.toISOString(),
+                                        end: endDate.toISOString(),
+                                        consultMode: chackedSingleValue.consultMode,
+                                      },
+                                    ],
+                                  },
+                                },
+                              };
+
+                              BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                            } else if (durationSelected && selectedBlockOption === 'customtime') {
+                              if (startTime && endTime) {
+                                let obj = {
+                                  startTime: startTime,
+                                  endTime: endTime,
+                                };
+                                customTimeArray.push(obj);
+                              }
+
+                              if (customTimeArray && dateRange) {
+                                const dateRangeArray: any = [];
+                                dateRange.map((dateItem: any, dateIndex: number) => {
+                                  customTimeArray.map((item: any, index: number) => {
+                                    const [startHours, startMins] = item.startTime.split(':');
+                                    const rangeStartDate = new Date(dateItem);
+                                    const rangeEndDate = new Date(dateItem);
+                                    rangeStartDate.setHours(parseInt(startHours, 10));
+                                    rangeStartDate.setMinutes(parseInt(startMins, 10));
+                                    const [endHours, endMins] = item.endTime.split(':');
+                                    rangeEndDate.setHours(parseInt(endHours, 10));
+                                    rangeEndDate.setMinutes(parseInt(endMins, 10));
+                                    let obj = {
+                                      start: rangeStartDate.toISOString(),
+                                      end: rangeEndDate.toISOString(),
+                                    };
+                                    dateRangeArray.push(obj);
+                                  });
+                                });
+
+                                const addMultiArgs = {
+                                  refetchQueries: [
+                                    {
+                                      query: GET_BLOCKED_CALENDAR,
+                                      variables: { doctorId },
+                                    },
+                                  ],
+                                  awaitRefetchQueries: true,
+                                  variables: {
+                                    blockCalendarInputs: {
+                                      doctorId,
+                                      reason: '',
+                                      itemDetails: dateRangeArray,
+                                    },
+                                  },
+                                };
+
+                                BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                              }
+                            } else if (selectedBlockOption === 'customtime') {
+                              if (startTime && endTime) {
+                                let obj = {
+                                  startTime: startTime,
+                                  endTime: endTime,
+                                };
+                                customTimeArray.push(obj);
+                              }
+                              if (customTimeArray) {
+                                const dateRangeArray: any = [];
+                                customTimeArray.map((item: any, index: number) => {
+                                  const [startHours, startMins] = item.startTime.split(':');
+                                  startDate.setHours(parseInt(startHours, 10));
+                                  startDate.setMinutes(parseInt(startMins, 10));
+                                  const [endHours, endMins] = item.endTime.split(':');
+                                  endDate.setHours(parseInt(endHours, 10));
+                                  endDate.setMinutes(parseInt(endMins, 10));
+                                  let obj = {
+                                    start: startDate.toISOString(),
+                                    end: endDate.toISOString(),
+                                  };
+                                  dateRangeArray.push(obj);
+                                });
+
+                                const addMultiArgs = {
+                                  refetchQueries: [
+                                    {
+                                      query: GET_BLOCKED_CALENDAR,
+                                      variables: { doctorId },
+                                    },
+                                  ],
+                                  awaitRefetchQueries: true,
+                                  variables: {
+                                    blockCalendarInputs: {
+                                      doctorId,
+                                      reason: '',
+                                      itemDetails: dateRangeArray,
+                                    },
+                                  },
+                                };
+
+                                BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                              }
+                            } else {
+                              addBlockedCalendarItem(addArgs).catch(handleError);
                             }
-                          } else {
-                            addBlockedCalendarItem(addArgs).catch(handleError);
-                          }
-                        }}
-                      >
-                        {loading && <CircularProgress size={20} />} BLOCK CALENDAR
-                      </Button>
-                    );
-                  }}
-                </Mutation>
-              )}
-            </Mutation>
-          )}
-        </Mutation>
-      </DialogActions>
-    </Dialog>
+                          }}
+                        >
+                          {loading && <CircularProgress size={20} />} BLOCK CALENDAR
+                        </Button>
+                      );
+                    }}
+                  </Mutation>
+                )}
+              </Mutation>
+            )}
+          </Mutation>
+        </DialogActions>
+      </Dialog>
+    </span>
   );
 };
