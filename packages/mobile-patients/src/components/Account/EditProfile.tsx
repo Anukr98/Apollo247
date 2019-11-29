@@ -252,9 +252,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const isEdit = props.navigation.getParam('isEdit');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
-  const { allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert } = useUIElements();
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
@@ -330,31 +330,47 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const deleteUserProfile = () => {
     setLoading && setLoading(true);
-    client
-      .mutate<deleteProfile, deleteProfileVariables>({
-        mutation: DELETE_PROFILE,
-        variables: {
-          patientId: profileData.id,
-        },
-      })
-      .then((data) => {
-        setLoading && setLoading(false);
-        getPatientApiCall();
-        props.navigation.goBack();
-        setLoading && setLoading(true);
-        // props.navigation.pop(2);
-        // props.navigation.push(AppRoutes.ManageProfile, {
-        //   mobileNumber: props.navigation.getParam('mobileNumber'),
+    if (currentPatient!.id !== profileData.id) {
+      if (profileData.relation !== Relation.ME) {
+        client
+          .mutate<deleteProfile, deleteProfileVariables>({
+            mutation: DELETE_PROFILE,
+            variables: {
+              patientId: profileData.id,
+            },
+          })
+          .then((data) => {
+            setLoading && setLoading(false);
+            getPatientApiCall();
+            props.navigation.goBack();
+            setLoading && setLoading(true);
+            // props.navigation.pop(2);
+            // props.navigation.push(AppRoutes.ManageProfile, {
+            //   mobileNumber: props.navigation.getParam('mobileNumber'),
+            // });
+          })
+          .catch((e) => {
+            setLoading && setLoading(false);
+            setAlertMessage(true);
+            setBottomPopUp(true);
+          });
+        // .finally(() => {
+        //   setLoading && setLoading(false);
         // });
-      })
-      .catch((e) => {
+      } else {
         setLoading && setLoading(false);
-        setAlertMessage(true);
-        setBottomPopUp(true);
+        showAphAlert!({
+          title: `Alert`,
+          description: `Self profile can't be deleted`,
+        });
+      }
+    } else {
+      setLoading && setLoading(false);
+      showAphAlert!({
+        title: `Alert`,
+        description: `This profile can't be deleted as it is selected as default`,
       });
-    // .finally(() => {
-    //   setLoading && setLoading(false);
-    // });
+    }
   };
 
   const updateUserProfile = () => {

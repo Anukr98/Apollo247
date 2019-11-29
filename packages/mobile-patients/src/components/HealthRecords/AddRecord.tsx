@@ -145,7 +145,7 @@ const replaceStringWithChar = (str: string) => {
   return ss.toLowerCase();
 };
 
-const MedicalTest: RecordTypeType[] = [
+export const MedicalTest: RecordTypeType[] = [
   { value: 'gm', key: MedicalTestUnit.GM },
   {
     value: 'gm/dl',
@@ -377,6 +377,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               })
               .catch((e: string) => {
+                setImageError(true);
                 console.log('Error occured', e);
               })
               .finally(() => {
@@ -388,6 +389,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
         })
         .catch((e) => {
+          setImageError(true);
           setshowSpinner(false);
           console.log({ e });
         });
