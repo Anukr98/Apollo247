@@ -570,6 +570,74 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow;
   };
+  const [isTimeValid, setIsTimeValid] = useState(true);
+  const [isallreadyInArray, setIsallreadyInArray] = useState(true);
+  useEffect(() => {
+    if (startTime && endTime) {
+      const [shours, smins] = startTime.split(':');
+      var startHour = shours;
+      var startMinute = smins;
+      //  var startSecond = extractedStartSecond;
+      const [ehours, emins] = endTime.split(':');
+      var endHour = ehours;
+      var endMinute = emins;
+      //  var endSecond = extractedEndSecond;
+
+      //Create date object and set the time to that
+      var startTimeObject = new Date();
+      startTimeObject.setHours(Number(startHour), Number(startMinute));
+
+      //Create date object and set the time to that
+      var endTimeObject = new Date(startTimeObject);
+      endTimeObject.setHours(Number(endHour), Number(endMinute));
+
+      //Now we are ready to compare both the dates
+      if (startTimeObject > endTimeObject) {
+        setIsTimeValid(false);
+      } else {
+        setIsTimeValid(true);
+      }
+    }
+  }, [startTime, endTime]);
+  useEffect(() => {
+    if (startTime && customTimeArray) {
+      const [shours, smins] = startTime.split(':');
+      var startHour = shours;
+      var startMinute = smins;
+      var startTimeObject = new Date();
+      startTimeObject.setHours(Number(startHour), Number(startMinute));
+      customTimeArray.map((value: any) => {
+        const [arrayshours, arraysmins] = value.startTime.split(':');
+        var arraystartHour = arrayshours;
+        var arraystartMinute = arraysmins;
+        //  var startSecond = extractedStartSecond;
+        const [arrayehours, arrayemins] = value.endTime.split(':');
+        var arrayendHour = arrayehours;
+        var arrayendMinute = arrayemins;
+        //  var endSecond = extractedEndSecond;
+
+        //Create date object and set the time to that
+        var startArrayTimeObject = new Date();
+        startArrayTimeObject.setHours(Number(arraystartHour), Number(arraystartMinute));
+
+        //Create date object and set the time to that
+        var endArrayTimeObject = new Date(startTimeObject);
+        endArrayTimeObject.setHours(Number(arrayendHour), Number(arrayendMinute));
+        if (startArrayTimeObject <= startTimeObject) {
+          if (startTimeObject < endArrayTimeObject) {
+            setIsallreadyInArray(false);
+          } else {
+            setIsallreadyInArray(true);
+          }
+        } else {
+          setIsallreadyInArray(true);
+        }
+      });
+
+      //Now we are ready to compare both the dates
+    }
+  }, [startTime, endTime, customTimeArray]);
+
   useEffect(() => {
     if (selectedBlockOption === 'entireday') {
       setInvalid(dateInvalid || timeInvalid || invalidStTime || invalidTime);
@@ -921,7 +989,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               <Grid container alignItems="flex-start" spacing={0}>
                                 <Grid item lg={5} sm={5} xs={5}>
                                   <TextField
-                                    onChange={(e) => setStartTime(e.currentTarget.value)}
+                                    onChange={(e) => {
+                                      setStartTime(e.currentTarget.value);
+                                    }}
                                     value={startTime}
                                     label="From"
                                     type="time"
@@ -935,7 +1005,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                 </Grid>
                                 <Grid item lg={5} sm={5} xs={5}>
                                   <TextField
-                                    onChange={(e) => setEndTime(e.currentTarget.value)}
+                                    onChange={(e) => {
+                                      setEndTime(e.currentTarget.value);
+                                    }}
                                     value={endTime}
                                     label="To"
                                     type="time"
@@ -949,6 +1021,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               </Grid>
                             </ThemeProvider>
                           </MuiPickersUtilsProvider>
+                          {!isTimeValid && <p>End time Shoud be greater</p>}
+                          {!isallreadyInArray && <p>Time is Collapsing</p>}
                           <div>
                             <AphButton
                               variant="contained"
