@@ -1,6 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -50,74 +52,94 @@ export const ShopByBrand: React.FC = (props) => {
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_diabetes.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_diabetes.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_arthritis.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_arthritis.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_immunity.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_immunity.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_heart.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_heart.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_lungs.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_lungs.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_condom.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_condom.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_eyeear.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_eyeear.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_18.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_18.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.cardIcon}>
-              <img src={require('images/shopby/ic_beauty.svg')} alt="" />
+          <Link to={clientRoutes.yourOrders()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.cardIcon}>
+                <img src={require('images/shopby/ic_beauty.svg')} alt="" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
       </Slider>
     </div>
