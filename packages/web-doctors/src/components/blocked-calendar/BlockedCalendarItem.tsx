@@ -22,7 +22,11 @@ export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) =
   const dateText = sameDay
     ? // ? format(item.start, 'iii, P')
       item.start.toLocaleDateString('en-AU', options)
-    : `${format(item.start, 'P')} - ${format(item.end, 'P')}`;
+    : // : `${format(item.start, 'P')} - ${format(item.end, 'P')}`;
+      `${item.start.toLocaleDateString('en-AU', options)} - ${item.end.toLocaleDateString(
+        'en-AU',
+        options
+      )}`;
   const timeText = sameDay ? `${format(item.start, 'p')} - ${format(item.end, 'p')}` : 'All slots';
   return (
     <div style={{ color: 'black' }}>

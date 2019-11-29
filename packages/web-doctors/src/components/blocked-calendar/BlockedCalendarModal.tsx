@@ -174,7 +174,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     dialogProps.onClose();
     customTimeArray.length = 0;
     setSelectedBlockOption(BlockOption.entireday);
-    setDateRange((dateRange.length = 0));
+    if (dateRange && dateRange > 0) {
+      setDateRange((dateRange.length = 0));
+    }
   };
   const useStyles = makeStyles((theme: Theme) => {
     return {
@@ -654,7 +656,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       className={classes.KeyboardDatePicker}
                       disableToolbar
                       variant="inline"
-                      format="MM/dd/yyyy"
+                      // format="MM/dd/yyyy"
+                      format="dd/MM/yyyy"
                       margin="normal"
                       id="date-picker-inline"
                       label={
@@ -687,7 +690,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         className={classes.KeyboardDatePicker}
                         disableToolbar
                         variant="inline"
-                        format="MM/dd/yyyy"
+                        // format="MM/dd/yyyy"
+                        format="dd/MM/yyyy"
                         margin="normal"
                         id="date-picker-inline"
                         label="To"
