@@ -80,6 +80,14 @@ const deleteDoctorFavouriteAdvice: Resolver<
 
   const favouriteAdviceRepo = doctorsDb.getCustomRepository(DoctorFavouriteAdviceRepository);
 
+  // check if instructionid exists
+
+  const getAdviceById = await favouriteAdviceRepo.getDoctorAdviceById(
+    doctordata.id,
+    args.instructionId
+  );
+  if (getAdviceById.length == 0) throw new AphError(AphErrorMessages.INVALID_ADVICE_ID);
+
   //delete advice
   await favouriteAdviceRepo.deleteAdvice(args.instructionId);
 
