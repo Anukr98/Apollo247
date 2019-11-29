@@ -18,21 +18,24 @@ export interface BlockedCalendarItemProps {
 export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) => {
   const { item, doctorId, onEdit } = props;
   const sameDay = item.start.getDate() === item.end.getDate();
+  var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
   const dateText = sameDay
-    ? format(item.start, 'iii, P')
+    ? // ? format(item.start, 'iii, P')
+      item.start.toLocaleDateString('en-AU', options)
     : `${format(item.start, 'P')} - ${format(item.end, 'P')}`;
   const timeText = sameDay ? `${format(item.start, 'p')} - ${format(item.end, 'p')}` : 'All slots';
   return (
     <div style={{ color: 'black' }}>
       <span style={{ width: '30%', display: 'inline-block' }}>{dateText}</span>
       <span style={{ width: '30%', display: 'inline-block' }}>{timeText}</span>
-      <Button
+      {/* <Button
         variant="text"
         style={{ color: 'black', width: '20%', display: 'inline-block' }}
         onClick={() => onEdit(item)}
       >
         EDIT
-      </Button>
+      </Button> */}
+      <span style={{ color: 'black', width: '20%', display: 'inline-block' }}></span>
       <Mutation<RemoveBlockedCalendarItem, RemoveBlockedCalendarItemVariables>
         mutation={REMOVE_BLOCKED_CALENDAR_ITEM}
       >
