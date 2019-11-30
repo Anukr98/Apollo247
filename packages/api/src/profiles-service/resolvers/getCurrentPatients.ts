@@ -37,17 +37,41 @@ export const getCurrentPatientsTypeDefs = gql`
 
   type Patient @key(fields: "id") {
     addressList: [PatientAddress!]
-    id: ID!
-    firstName: String
-    lastName: String
-    mobileNumber: String!
-    gender: Gender
-    uhid: String
-    emailAddress: String
-    dateOfBirth: Date
-    relation: Relation
-    photoUrl: String
     allergies: String
+    dateOfBirth: Date
+    emailAddress: String
+    familyHistory: [PatientFamilyHistory]
+    firstName: String
+    gender: Gender
+    id: ID!
+    lastName: String
+    lifeStyle: [PatientLifeStyle]
+    mobileNumber: String!
+    patientMedicalHistory: PatientMedicalHistory
+    photoUrl: String
+    relation: Relation
+    uhid: String
+  }
+
+  type PatientLifeStyle {
+    description: String
+  }
+
+  type PatientFamilyHistory {
+    description: String
+    relation: String
+  }
+
+  type PatientMedicalHistory {
+    bp: String
+    dietAllergies: String
+    drugAllergies: String
+    height: String
+    menstrualHistory: String
+    pastMedicalHistory: String
+    pastSurgicalHistory: String
+    temperature: String
+    weight: String
   }
 
   type GetCurrentPatientsResult {
