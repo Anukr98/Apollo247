@@ -194,11 +194,15 @@ const bookAppointment: Resolver<
 
   //check if doctor slot is blocked
   const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const recCount = await blockRepo.checkIfSlotBlocked(
+  const slotDetails = await blockRepo.checkIfSlotBlocked(
     appointmentInput.appointmentDateTime,
     appointmentInput.doctorId
   );
-  if (recCount > 0) {
+  if (
+    slotDetails[0] &&
+    (slotDetails[0].consultMode === 'BOTH' ||
+      slotDetails[0].consultMode === appointmentInput.appointmentType.toString())
+  ) {
     throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 

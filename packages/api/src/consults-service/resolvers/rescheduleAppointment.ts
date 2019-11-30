@@ -288,11 +288,11 @@ const bookRescheduleAppointment: Resolver<
 
   //check if doctor slot is blocked
   const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const recCount = await blockRepo.checkIfSlotBlocked(
+  const slotDetails = await blockRepo.checkIfSlotBlocked(
     bookRescheduleAppointmentInput.newDateTimeslot,
     bookRescheduleAppointmentInput.doctorId
   );
-  if (recCount > 0) {
+  if (slotDetails[0]) {
     throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
