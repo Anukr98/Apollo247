@@ -1995,7 +1995,7 @@
             "deprecationReason": null
           },
           {
-            "name": "patientMedicalHistory",
+            "name": "MedicalHistory",
             "description": null,
             "args": [],
             "type": {
