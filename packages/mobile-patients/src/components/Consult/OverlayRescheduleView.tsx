@@ -113,7 +113,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   const availableDate = date.toISOString().split('T')[0];
 
   console.log(props.bookFollowUp, 'bookFollowUp');
-  console.log(props.rescheduleCount, 'rescheduleCount');
+  console.log(props.rescheduleCount, 'propsrescheduleCount');
   console.log(props.data, 'back');
 
   console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
