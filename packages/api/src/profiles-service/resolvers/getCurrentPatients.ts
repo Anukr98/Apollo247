@@ -40,29 +40,29 @@ export const getCurrentPatientsTypeDefs = gql`
     allergies: String
     dateOfBirth: Date
     emailAddress: String
-    familyHistory: [PatientFamilyHistory]
+    familyHistory: [FamilyHistory]
     firstName: String
     gender: Gender
     id: ID!
     lastName: String
-    lifeStyle: [PatientLifeStyle]
+    lifeStyle: [LifeStyle]
     mobileNumber: String!
-    patientMedicalHistory: PatientMedicalHistory
+    patientMedicalHistory: MedicalHistory
     photoUrl: String
     relation: Relation
     uhid: String
   }
 
-  type PatientLifeStyle {
+  type LifeStyle {
     description: String
   }
 
-  type PatientFamilyHistory {
+  type FamilyHistory {
     description: String
     relation: String
   }
 
-  type PatientMedicalHistory {
+  type MedicalHistory {
     bp: String
     dietAllergies: String
     drugAllergies: String
