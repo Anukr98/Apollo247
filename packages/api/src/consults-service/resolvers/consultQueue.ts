@@ -263,7 +263,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
 > = async (parent, { consultQueueInput }, context) => {
   const appointmentId = consultQueueInput.appointmentId;
 
-  const { cqRepo, docRepo, apptRepo, caseSheetRepo, patRepo } = getRepos(context);
+  const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   const appointmentData = await apptRepo.findOneOrFail(appointmentId);
   const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
