@@ -180,7 +180,7 @@ app.get('/consultpayment', (req, res) => {
                 patientId: req.query.patientId,
                 patientName: response.data.data.getPatientById.patient.firstName,
                 mobileNumber: response.data.data.getPatientById.patient.mobileNumber,
-                baseUrl: 'http://localhost:7000',
+                baseUrl: 'https://aph.dev.pmt.popcornapps.com',
               });
             })
             .catch((err) => {
