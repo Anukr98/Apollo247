@@ -29,6 +29,7 @@ export enum patientLogType {
 export enum APPOINTMENT_TYPE {
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
+  BOTH = 'BOTH',
 }
 
 export enum STATUS {
