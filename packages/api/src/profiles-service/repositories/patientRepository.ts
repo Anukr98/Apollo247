@@ -42,6 +42,15 @@ export class PatientRepository extends Repository<Patient> {
   findByMobileNumber(mobileNumber: string) {
     return this.find({
       where: { mobileNumber, isActive: true },
+      relations: [
+        'lifeStyle',
+        'healthVault',
+        'familyHistory',
+        'patientAddress',
+        'patientDeviceTokens',
+        'patientNotificationSettings',
+        'patientMedicalHistory',
+      ],
     });
   }
 
@@ -71,7 +80,7 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    //mobileNumber = '8019677178';
+    mobileNumber = '8019677178';
 
     const authTokenResult = await fetch(
       `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`,
@@ -87,7 +96,7 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
-    //mobileNumber = '8019677178';
+    mobileNumber = '8019677178';
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
