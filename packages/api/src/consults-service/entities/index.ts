@@ -247,6 +247,9 @@ export class AppointmentPayments extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  orderId: string;
+
   @Column({ nullable: true, type: 'timestamp' })
   paymentDateTime: Date;
 

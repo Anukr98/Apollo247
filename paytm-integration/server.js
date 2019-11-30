@@ -11,7 +11,7 @@ require('dotenv').config();
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: 'Xy43213335678Sdeq',
     cookie: { maxAge: 6000000 },
     resave: false,
     saveUninitialized: true,
@@ -36,11 +36,50 @@ app.get('/consulttransaction', (req, res) => {
   console.log(req.query.STATUS);
   console.log(req.query.TXNAMOUNT);
   console.log(req.query.TXNDATE);
-  if (req.query.STATUS == 'TXN_SUCCESS') {
-    res.redirect(`/consultpg-success?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
-  } else {
-    res.redirect(`/consultpg-error?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
-  }
+  /*save response in apollo24x7*/
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  const date = new Date(new Date().toUTCString()).toISOString();
+  const txnId = req.query.CompleteResponse.replace('TXNID=', '');
+  // this needs to be altered later.
+  const requestJSON = {
+    query:
+      'mutation { makeAppointmentPayment(paymentInput: { appointmentId: "' +
+      req.session.appointmentId +
+      '", amountPaid: ' +
+      req.query.TXNAMOUNT +
+      ', paymentRefId: "' +
+      txnId +
+      '", paymentStatus: "' +
+      req.query.STATUS +
+      '", paymentDateTime: "' +
+      date +
+      '", responseCode: "' +
+      req.query.RESPCODE +
+      '", responseMessage: "' +
+      req.query.RESPMSG +
+      '", orderId: "' +
+      req.query.ORDERID +
+      '", bankTxnId: "' +
+      req.query.BANKTXNID +
+      '" }){appointment { id } }}',
+  };
+
+  axios
+    .post('http://localhost:4000/', requestJSON)
+    .then((response) => {
+      console.log(response.data.data.makeAppointmentPayment.appointment.id, 'response is....');
+      if (req.query.STATUS == 'TXN_SUCCESS') {
+        res.redirect(
+          `/consultpg-success?tk=${response.data.data.makeAppointmentPayment.appointment.id}&status=${req.query.STATUS}`
+        );
+      } else {
+        res.redirect(`/consultpg-error?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
+      }
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+
   //res.send('payment response');
 });
 
@@ -70,19 +109,96 @@ app.get('/consultpg-error', (req, res) => {
 
 app.get('/consultpayment', (req, res) => {
   //res.send('consult payment');
-  axios
-    .post('http://rest.askapollo.com:9047/restservice.svc/GetMarchantIdAnonymousforSourceApp ', {
-      AdminId: 'AskApollo',
-      AdminPassword: 'AskApollo',
-      sourceApp: '7729FD68-C552-4C90-B31E-98AA6C84FEBF~web',
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+
+  // validate the order and token.
+  axios({
+    url: 'http://localhost:4000/',
+    method: 'post',
+    data: {
+      query: `
+          query {
+            getPatientById(patientId:"${req.query.patientId}") {
+              patient {
+                id
+                emailAddress
+                athsToken
+                lastName
+                firstName
+                dateOfBirth
+                gender
+              }
+            }
+          }
+        `,
+    },
+  })
+    .then((response) => {
+      console.log(
+        response,
+        response.data,
+        response.data.data.getPatientById,
+        'get patient details'
+      );
+      if (
+        response &&
+        response.data &&
+        response.data.data &&
+        response.data.data.getPatientById &&
+        response.data.data.getPatientById.patient
+      ) {
+        const responsePatientId = response.data.data.getPatientById.patient.id;
+        console.log(
+          responsePatientId,
+          'responsePatientId',
+          response.data.data.getPatientById.patient.athsToken
+        );
+        if (responsePatientId == '') {
+          res.statusCode = 401;
+          res.send({
+            status: 'failed',
+            reason: 'Invalid parameters',
+            code: '10000',
+          });
+        } else {
+          axios
+            .post(
+              'http://rest.askapollo.com:9047/restservice.svc/GetMarchantIdAnonymousforSourceApp',
+              {
+                AdminId: 'AskApollo',
+                AdminPassword: 'AskApollo',
+                sourceApp: '7729FD68-C552-4C90-B31E-98AA6C84FEBF~web',
+              }
+            )
+            .then((resp) => {
+              console.log(resp.data, resp.data.Result);
+              req.session.appointmentId = req.query.appointmentId;
+              res.render('consults.ejs', {
+                athsToken: response.data.data.getPatientById.patient.athsToken,
+                merchantId: resp.data.Result,
+                price: req.query.price,
+                patientId: req.query.patientId,
+                patientName: response.data.data.getPatientById.patient.firstName,
+                mobileNumber: response.data.data.getPatientById.patient.mobileNumber,
+                baseUrl: 'http://localhost:7000',
+              });
+            })
+            .catch((err) => {
+              console.log(err);
+              res.send(err, 'merchant id error');
+            });
+        }
+      }
     })
-    .then((resp) => {
-      console.log(resp.data, resp.data.Result);
-      res.render('consults.ejs', { merchantId: resp.data.Result });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.send(err, 'merchant id error');
+    .catch((error) => {
+      // no need to explicitly saying details about error for clients.
+      // console.log(error);
+      res.statusCode = 401;
+      return res.send({
+        status: 'failed',
+        reason: 'Invalid parameters',
+        code: '10001',
+      });
     });
 });
 
