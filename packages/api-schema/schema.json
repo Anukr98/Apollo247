@@ -2019,6 +2019,18 @@
             "deprecationReason": null
           },
           {
+            "name": "athsToken",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "relation",
             "description": null,
             "args": [],
@@ -2032,18 +2044,6 @@
           },
           {
             "name": "uhid",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "athsToken",
             "description": null,
             "args": [],
             "type": {

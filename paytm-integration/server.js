@@ -11,7 +11,7 @@ require('dotenv').config();
 
 app.use(
   session({
-    secret: 'Xy43213335678Sdeq',
+    secret: process.env.SESSION_SECRET,
     cookie: { maxAge: 6000000 },
     resave: false,
     saveUninitialized: true,
@@ -65,7 +65,7 @@ app.get('/consulttransaction', (req, res) => {
   };
 
   axios
-    .post('http://localhost:4000/', requestJSON)
+    .post(process.env.API_URL, requestJSON)
     .then((response) => {
       console.log(response.data.data.makeAppointmentPayment.appointment.id, 'response is....');
       if (req.query.STATUS == 'TXN_SUCCESS') {
@@ -113,7 +113,7 @@ app.get('/consultpayment', (req, res) => {
 
   // validate the order and token.
   axios({
-    url: 'http://localhost:4000/',
+    url: process.env.API_URL,
     method: 'post',
     data: {
       query: `
