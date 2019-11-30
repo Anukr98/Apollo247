@@ -39,6 +39,7 @@ export const bookAppointmentTypeDefs = gql`
   enum APPOINTMENT_TYPE {
     ONLINE
     PHYSICAL
+    BOTH
   }
 
   enum BOOKINGSOURCE {
@@ -200,7 +201,7 @@ const bookAppointment: Resolver<
   );
   if (
     slotDetails[0] &&
-    (slotDetails[0].consultMode === 'BOTH' ||
+    (slotDetails[0].consultMode === APPOINTMENT_TYPE.BOTH.toString() ||
       slotDetails[0].consultMode === appointmentInput.appointmentType.toString())
   ) {
     throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
