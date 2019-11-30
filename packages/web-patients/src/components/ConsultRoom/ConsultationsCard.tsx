@@ -354,26 +354,32 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     <div className={classes.cardBottomActons}>
                       <AphButton
                         onClick={() => {
-                          !(appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) &&
-                          isConsultStarted
-                            ? (window.location.href = clientRoutes.chatRoom(
-                                appointmentId,
-                                doctorId
-                              ))
-                            : addConsultToQueue({
-                                variables: {
+                          if (
+                            appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                            isConsultStarted
+                          ) {
+                            window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
+                          } else {
+                            isConsultStarted
+                              ? (window.location.href = clientRoutes.chatRoom(
                                   appointmentId,
-                                },
-                              })
-                                .then((res) => {
-                                  window.location.href = clientRoutes.chatRoom(
+                                  doctorId
+                                ))
+                              : addConsultToQueue({
+                                  variables: {
                                     appointmentId,
-                                    doctorId
-                                  );
+                                  },
                                 })
-                                .catch((e: ApolloError) => {
-                                  alert(e);
-                                });
+                                  .then((res) => {
+                                    window.location.href = clientRoutes.chatRoom(
+                                      appointmentId,
+                                      doctorId
+                                    );
+                                  })
+                                  .catch((e: ApolloError) => {
+                                    alert(e);
+                                  });
+                          }
                         }}
                       >
                         {appointmentDetails.isFollowUp === 'false'
