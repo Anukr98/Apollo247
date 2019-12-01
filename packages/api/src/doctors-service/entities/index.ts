@@ -136,6 +136,7 @@ export class ConsultHours extends BaseEntity {
   createdDate: Date;
 
   @ManyToOne((type) => Doctor, (doctor) => doctor.consultHours)
+  @JoinColumn()
   doctor: Doctor;
 
   @ManyToOne((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.consultHours)
