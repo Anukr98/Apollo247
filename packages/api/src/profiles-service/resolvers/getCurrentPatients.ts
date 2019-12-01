@@ -49,6 +49,7 @@ export const getCurrentPatientsTypeDefs = gql`
     mobileNumber: String!
     patientMedicalHistory: MedicalHistory
     photoUrl: String
+    athsToken: String
     relation: Relation
     uhid: String
   }
