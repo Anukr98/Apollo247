@@ -109,6 +109,12 @@ export class Appointment extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
 
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  cancelledDate: Date;
+
   @Column({ nullable: true })
   cancelledBy: REQUEST_ROLES;
 
