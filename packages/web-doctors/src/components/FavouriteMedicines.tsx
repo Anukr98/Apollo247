@@ -974,7 +974,6 @@ export const FavouriteMedicines: React.FC = () => {
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
         medicineDosage: String(tabletsCount),
-        medicineInstructions: medicineInstruction,
         medicineTimings: daySlotsArr,
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
@@ -1024,7 +1023,16 @@ export const FavouriteMedicines: React.FC = () => {
           SaveDoctorsFavouriteMedicineVariables
         >({
           mutation: SAVE_DOCTORS_FAVOURITE_MEDICINE,
-          variables: inputParamsArr
+          variables: {
+            saveDoctorsFavouriteMedicineInput: {
+              medicineConsumptionDurationInDays: Number(consumptionDuration),
+              medicineDosage: String(tabletsCount),
+              medicineTimings: daySlotsArr,
+              medicineToBeTaken: toBeTakenSlotsArr,
+              medicineName: selectedValue,
+              medicineUnit: medicineUnit
+            }
+          }
         })
         .then(data => {
           console.log("data after mutation" + data);
@@ -1101,7 +1109,7 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false
       });
       const inputParamsArr: any = {
-        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineConsumptionDurationInDays: Number(consumptionDuration),
         medicineDosage: String(tabletsCount),
         medicineInstructions: medicineInstruction,
         medicineTimings: daySlotsArr,
@@ -1159,7 +1167,18 @@ export const FavouriteMedicines: React.FC = () => {
           UpdateDoctorFavouriteMedicineVariables
         >({
           mutation: UPDATE_DOCTOR_FAVOURITE_MEDICINE,
-          variables: inputParamsArr
+          variables: {
+            updateDoctorsFavouriteMedicineInput: {
+              medicineConsumptionDurationInDays: Number(consumptionDuration),
+              medicineDosage: String(tabletsCount),
+              medicineInstructions: medicineInstruction,
+              medicineTimings: daySlotsArr,
+              medicineToBeTaken: toBeTakenSlotsArr,
+              medicineName: selectedValue,
+              id: selectedId,
+              medicineUnit: medicineUnit
+            }
+          }
         })
         .then(data => {
           console.log("data after mutation" + data);
@@ -1558,7 +1577,6 @@ export const FavouriteMedicines: React.FC = () => {
                         color="primary"
                         onClick={() => {
                           addUpdateMedicines();
-                          saveMedicines();
                         }}
                       >
                         Update Medicine

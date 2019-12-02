@@ -827,13 +827,6 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
     ) {
       medicineList {
         id
-        medicineName
-        medicineUnit
-        medicineToBeTaken
-        medicineInstructions
-        medicineConsumptionDurationInDays
-        medicineTimings
-        medicineDosage
       }
     }
   }
