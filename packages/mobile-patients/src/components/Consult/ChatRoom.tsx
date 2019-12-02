@@ -83,6 +83,7 @@ import {
   View,
   BackHandler,
   WebView,
+  StyleSheet,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
@@ -110,6 +111,8 @@ import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Med
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { useUIElements } from '../UIElementsProvider';
+const { showAphAlert, hideAphAlert } = useUIElements();
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -127,6 +130,30 @@ type rescheduleType = {
   isFollowUp: number;
   isPaid: number;
 };
+
+const styles = StyleSheet.create({
+  rescheduleTextStyles: {
+    ...theme.viewStyles.yellowTextStyle,
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  claimStyles: {
+    flex: 0.5,
+    marginLeft: 5,
+    marginRight: 8,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+  rescheduletyles: {
+    flex: 0.5,
+    marginRight: 5,
+    marginLeft: 8,
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+});
 
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
@@ -541,6 +568,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
+      startCallAbondmentTimer(180, false);
     },
     streamPropertyChanged: (event: string) => {
       console.log('session streamPropertyChanged destroyed!', event);
@@ -641,6 +669,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+  const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = () => {
     const startConsultResult = insertText.filter((obj: any) => {
@@ -653,12 +682,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return obj.message === stopConsultMsg;
     });
 
+    const startConsultJRResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === startConsultjr;
+    });
+
+    const stopConsultJRResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === stopConsultJr;
+    });
+
     if (startConsultResult.length > 0 && stopConsultResult.length == 0) {
-      startCallAbondmentTimer(180);
+      startCallAbondmentTimer(180, false);
+    } else {
+      if (
+        startConsultJRResult.length > 0 &&
+        stopConsultJRResult.length > 0 &&
+        startConsultResult.length == 0
+      ) {
+        startCallAbondmentTimer(180, true);
+        setIsDoctorNoShow(true);
+      }
     }
   };
 
-  const startCallAbondmentTimer = (timer: number) => {
+  const startCallAbondmentTimer = (timer: number, isDoctorNoShow: boolean) => {
     setTransferData(appointmentData);
     callAbandonmentTimer = setInterval(() => {
       timer = timer - 1;
@@ -670,8 +718,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer < 1) {
         console.log('call Abundant', appointmentData);
 
-        NextAvailableSlot(appointmentData, 'Transfer', true);
-
+        if (isDoctorNoShow) {
+        } else {
+          NextAvailableSlot(appointmentData, 'Transfer', true);
+        }
         setCallAbundantCallTime(0);
         callAbandonmentTimer && clearInterval(callAbandonmentTimer);
       }
@@ -1056,7 +1106,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('addMessages', addMessages);
+    console.log('addMessages', message);
+    stopCallAbondmentTimer();
+    setIsDoctorNoShow(false);
+    hideAphAlert && hideAphAlert();
+
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
     if (!isCall || !isAudioCall) {
@@ -3496,6 +3550,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setConvertVideo(false);
             changeVideoStyles();
             setDropdownVisible(false);
+            stopCallAbondmentTimer();
+            setIsDoctorNoShow(false);
+            hideAphAlert && hideAphAlert();
 
             // InCallManager.setSpeakerphoneOn(true)
             // InCallManager.chooseAudioRoute('EARPIECE')
@@ -4303,6 +4360,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      {isDoctorNoShow &&
+        showAphAlert!({
+          title: `Hi ${userName},`,
+          description:
+            "Opps! seems like doctor hasn't joined. Please cancel the appointment or reschedule it.",
+          unDismissable: true,
+          children: (
+            <View
+              style={{
+                flexDirection: 'row',
+                marginHorizontal: 20,
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                marginVertical: 18,
+              }}
+            >
+              <TouchableOpacity
+                style={styles.claimStyles}
+                onPress={() => {
+                  hideAphAlert && hideAphAlert();
+                }}
+              >
+                <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.rescheduletyles}
+                onPress={() => {
+                  NextAvailableSlot(appointmentData, 'Transfer', true);
+                }}
+              >
+                <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
+                  {'RESCHEDULE'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ),
+        })}
       {showPopup && (
         <BottomPopUp
           title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
