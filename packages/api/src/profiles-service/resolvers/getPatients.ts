@@ -5,6 +5,8 @@ import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AthsTokenResponse } from 'types/uhidCreateTypes';
+import { format } from 'date-fns';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -129,9 +131,40 @@ const addNewProfile: Resolver<
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
-  await patientRepo.createNewUhid(savePatient.id);
+  patientRepo.createNewUhid(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  const athsTokenInput = {
+    AdminId: process.env.ATHS_TOKEN_ADMIN ? process.env.ATHS_TOKEN_ADMIN.toString() : '',
+    AdminPassword: process.env.ATHS_TOKEN_PWD ? process.env.ATHS_TOKEN_PWD.toString() : '',
+    FirstName: patientProfileInput.firstName,
+    LastName: patientProfileInput.lastName,
+    countryCode: '91',
+    PhoneNumber: patientProfileInput.mobileNumber,
+    DOB: format(patientProfileInput.dateOfBirth, 'dd/MM/yyyy'),
+    Gender: '1',
+    PartnerUserId: '1012',
+    SourceApp: process.env.ATHS_SOURCE_APP ? process.env.ATHS_SOURCE_APP.toString() : '',
+  };
+  const athsTokenUrl = process.env.ATHS_TOKEN_CREATE ? process.env.ATHS_TOKEN_CREATE : '';
+  const tokenResp = await fetch(athsTokenUrl, {
+    method: 'POST',
+    body: JSON.stringify(athsTokenInput),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  //console.log(tokenResp, 'token resp');
+  const textRes = await tokenResp.text();
+  const tokenResult: AthsTokenResponse = JSON.parse(textRes);
+  if (tokenResult.Result && tokenResult.Result != '') {
+    patientRepo.updateToken(savePatient.id, JSON.parse(tokenResult.Result).Token);
+  }
+  console.log(
+    tokenResult,
+    'respp',
+    tokenResult.Result,
+    JSON.parse(tokenResult.Result),
+    JSON.parse(tokenResult.Result).Token
+  );
   return { patient };
 };
 
