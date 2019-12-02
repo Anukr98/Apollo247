@@ -20,7 +20,8 @@ export const clientRoutes = {
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
   trackOrders: () => '/track-orders',
-  medicineAllBrands: () => '/medicine-all-brands',
+  medicineAllBrands: () => '/view-all-brands',
+  medicineSearchByBrand: () => '/search-by-brand',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

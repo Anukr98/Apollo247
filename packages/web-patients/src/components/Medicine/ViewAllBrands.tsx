@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
@@ -194,26 +194,26 @@ export const ViewAllBrands: React.FC = (props) => {
                   <div id="a" className={classes.brandType}>A</div>
                   <div className={classes.brandList}>
                     <ul>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
+                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
                     </ul>
                   </div>
                 </div>

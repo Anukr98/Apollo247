@@ -19,6 +19,7 @@ import { CartPoc } from 'components/CartPoc';
 import { CartLanding } from 'components/Cart/CartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
+import { SearchByBrand } from 'components/Medicine/SearchByBrand';
 import { Appointments } from 'components/ConsultRoom/Appointments';
 import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
@@ -63,6 +64,7 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
         <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
         <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
+        <AuthRouted exact path={clientRoutes.medicineSearchByBrand()} component={SearchByBrand} />
         <AuthRouted
           exact
           path={clientRoutes.prescriptionsLanding()}
