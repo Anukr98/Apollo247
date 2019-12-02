@@ -57,7 +57,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       patientId,
       doctorId,
       cancelledById: patientId,
-      bookingDate: Between(newStartDate, newEndDate),
+      cancelledDate: Between(newStartDate, newEndDate),
     };
     return this.count({ where: whereClause });
   }
