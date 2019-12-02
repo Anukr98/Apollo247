@@ -721,6 +721,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         doctorCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -730,6 +731,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         patientCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
