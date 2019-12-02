@@ -4,9 +4,13 @@ import { STATUS, REQUEST_ROLES } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
+import { ApiConstants } from 'ApiConstants';
+import { EmailMessage } from 'types/notificationMessageTypes';
+import { sendMail } from 'notifications-service/resolvers/email';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { addMilliseconds, format } from 'date-fns';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -53,6 +57,12 @@ const cancelAppointment: Resolver<
   }
 
   if (
+    appointment.status == STATUS.IN_PROGRESS &&
+    cancelAppointmentInput.cancelledBy !== REQUEST_ROLES.DOCTOR
+  )
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+
+  if (
     appointment.appointmentDateTime <= new Date() &&
     cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT
   ) {
@@ -66,7 +76,11 @@ const cancelAppointment: Resolver<
     throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CONSULTATION_INPROGRESS, undefined, {});
   }
 
-  if (appointment.status !== STATUS.PENDING && appointment.status !== STATUS.CONFIRMED) {
+  if (
+    appointment.status !== STATUS.PENDING &&
+    appointment.status !== STATUS.CONFIRMED &&
+    appointment.status !== STATUS.IN_PROGRESS
+  ) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
@@ -88,15 +102,35 @@ const cancelAppointment: Resolver<
       appointmentId: appointment.id,
       notificationType: NotificationType.DOCTOR_CANCEL_APPOINTMENT,
     };
-    const notificationResult = sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult);
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
+  const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
+
+  const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+
+  const apptDate = format(istDateTime, 'dd/MM/yyyy');
+  const apptTime = format(istDateTime, 'hh:mm');
+  const patientName = appointment.patientName;
+  const mailContent = `Appointment booked on Apollo 247 by ${patientName} on ${apptDate} at ${apptTime} has been cancelled`;
+  const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
+  const ccEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_APPT_CC_EMAILID
+      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  const emailContent: EmailMessage = {
+    ccEmail: ccEmailIds.toString(),
+    toEmail: toEmailId.toString(),
+    subject: mailSubject.toString(),
+    fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
+    fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
+    messageContent: mailContent,
+  };
+  if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
+    sendMail(emailContent);
+  }
   return { status: STATUS.CANCELLED };
 };
 
