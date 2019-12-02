@@ -8,8 +8,6 @@ import {
   Not,
   Connection,
   In,
-  Equal,
-  IsNull,
 } from 'typeorm';
 import {
   Appointment,
