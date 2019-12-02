@@ -42,6 +42,15 @@ export class PatientRepository extends Repository<Patient> {
   findByMobileNumber(mobileNumber: string) {
     return this.find({
       where: { mobileNumber, isActive: true },
+      relations: [
+        'lifeStyle',
+        'healthVault',
+        'familyHistory',
+        'patientAddress',
+        'patientDeviceTokens',
+        'patientNotificationSettings',
+        'patientMedicalHistory',
+      ],
     });
   }
 
@@ -265,6 +274,10 @@ export class PatientRepository extends Repository<Patient> {
 
   updateUhid(id: string, uhid: string) {
     return this.update(id, { uhid });
+  }
+
+  updateToken(id: string, athsToken: string) {
+    return this.update(id, { athsToken });
   }
 
   deleteProfile(id: string) {
