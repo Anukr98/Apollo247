@@ -520,8 +520,7 @@ export const MedicinePrescription: React.FC = () => {
         { params: value },
         {
           headers: {
-            Authorization: apiDetails.authToken,
-            Accept: '*/*',
+            Authorization: apiDetails.authToken
           },
           cancelToken: new CancelToken(function executor(c) {
             // An executor function receives a cancel function as a parameter

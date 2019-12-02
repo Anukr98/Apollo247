@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
@@ -11,6 +11,15 @@ import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import {  GetMedicineOrdersList, GetMedicineOrdersListVariables, GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList} from 'graphql/types/GetMedicineOrdersList';
+import { useMutation } from 'react-apollo-hooks';
+import {GET_MEDICINE_ORDERS_LIST} from 'graphql/profiles';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { ApolloError } from 'apollo-client';
+import {
+  MedicinePageAPiResponse,
+} from './../../helpers/MedicineApiCalls';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -194,7 +203,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicineLanding: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const queryParams = new URLSearchParams(location.search);
   const mascotRef = useRef(null);
 
@@ -205,6 +214,66 @@ export const MedicineLanding: React.FC = (props) => {
     localStorage.removeItem('cartItems');
     localStorage.removeItem('dp');
   }
+
+  const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
+  const { currentPatient } = useAllCurrentPatients();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<ApolloError | null>(null);
+
+  const apiDetails = {
+    url: process.env.PHARMACY_MED_SEARCH_BY_BRAND,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+
+  const getMedicinePageProducts = async () => {
+    await axios.post(
+      apiDetails.url! ,
+      { },
+      {
+        headers: {
+          Authorization: apiDetails.authToken,
+          Accept: '*/*',
+        },
+      }).then((res:any) => {
+        console.log(res);
+        // setData(res);
+        setLoading(false);
+      })
+      .catch((e: ApolloError) => {
+        console.log(e);
+        setError(e);
+        setLoading(false);
+      });
+  }
+
+  useEffect(() => {
+    // setProfile(currentPatient!);
+    if(apiDetails.url != null){
+      getMedicinePageProducts()
+    }
+      
+  }, []);
+
+//   const medicineData = useMutation<
+//   GetMedicineOrdersList,
+//   GetMedicineOrdersListVariables
+// >(GET_MEDICINE_ORDERS_LIST, {
+//   variables: { patientId: currentPatient && currentPatient.id },
+//   fetchPolicy: 'no-cache',
+// });
+
+  // useEffect(() => {
+  //   medicineData().then((res) => {
+  //     console.log(res);
+  //     if(res && res.data && res.data.getMedicineOrdersList){
+  //       setData(res.data.getMedicineOrdersList.MedicineOrdersList);
+  //     }
+
+  //   }).catch((e: ApolloError) => {
+  //     alert(e);
+  //   })
+  // });
+
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -218,7 +287,7 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.userName}>hi surj :)</div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
-                <MedicineAutoSearch />
+                {/* <MedicineAutoSearch /> */}
                 <div className={classes.productsBanner}>
                   <img src="https://via.placeholder.com/702x150" alt="" />
                 </div>
@@ -264,6 +333,7 @@ export const MedicineLanding: React.FC = (props) => {
               </div>
             </div>
           </div>
+          {!loading && data &&
           <div className={classes.allProductsList}>
             <div className={classes.sliderSection}>
               <div className={classes.sectionTitle}>
@@ -298,9 +368,10 @@ export const MedicineLanding: React.FC = (props) => {
                   </Link>
                 </div>
               </div>
-              <ShopByBrand />
+              <ShopByBrand  data= {data}/>
             </div>
           </div>
+}
         </div>
       </div>
     </div>

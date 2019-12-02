@@ -4,6 +4,7 @@ import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
+import {MedicinePageAPiResponse} from 'helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,8 +38,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ShopByBrand: React.FC = (props) => {
-  const classes = useStyles();
+interface ShopByBrandsProps {
+  data: MedicinePageAPiResponse
+}
+
+export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
+  const classes = useStyles({});
   const sliderSettings = {
     infinite: true,
     speed: 500,

@@ -78,3 +78,20 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
     }
   }
 `;
+
+export const GET_MEDICINE_ORDERS_LIST = gql`
+  query GetMedicineOrdersList($patientId: String) {
+    getMedicineOrdersList(patientId: $patientId) {
+      MedicineOrdersList {
+        id
+        orderAutoId
+        deliveryType
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+        }
+      }
+    }
+  }
+`;
