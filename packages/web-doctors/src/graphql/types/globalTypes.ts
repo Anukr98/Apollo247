@@ -7,6 +7,7 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
 }
@@ -263,7 +264,6 @@ export interface SaveDoctorsFavouriteMedicineInput {
   medicineTimings: (MEDICINE_TIMINGS | null)[];
   medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineName: string;
-  doctorId: string;
 }
 
 export interface SymptomInput {
