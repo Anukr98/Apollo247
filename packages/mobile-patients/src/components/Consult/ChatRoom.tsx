@@ -299,12 +299,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
 
+  let currentDateTime = new Date();
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
+
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
@@ -804,7 +807,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           res.messages.forEach((element, index) => {
             newmessage[newmessage.length] = element.entry;
-            // newmessage[newmessage.length] = timetoken;
           });
           console.log('newmessage', newmessage);
           setLoading(false);
@@ -889,6 +891,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           automatedText: successSteps,
           id: doctorId,
           isTyping: true,
+          messageDate: currentDateTime,
         },
         storeInHistory: true,
         sendByPost: true,
@@ -940,6 +943,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }’s team is with another patient right now. Your consultation prep will start soon.`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: currentDateTime,
               },
               storeInHistory: true,
               sendByPost: true,
@@ -995,6 +999,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: currentDateTime,
               },
               storeInHistory: true,
               sendByPost: true,
@@ -1179,6 +1184,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const text = {
         id: patientId,
         message: textMessage,
+        messageDate: currentDateTime,
       };
 
       setMessageText('');
@@ -2553,12 +2559,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       color: '#01475b',
                       paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      textAlign: 'left',
+                      paddingTop: 12,
+                      paddingBottom: 4,
+                          textAlign: 'right',
                       ...theme.fonts.IBMPlexSansMedium(16),
                     }}
                   >
                     {rowData.message}
+                  </Text>
+                  <Text
+                    style={{
+                      color: 'rgba(2,71,91,0.6)',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
                   </Text>
                 </View>
               )}
@@ -2567,6 +2585,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </View>
       );
     }
+  };
+
+  const convertChatTime = (timeStamp: any) => {
+
+    let utcString;
+    if (timeStamp.messageDate) {
+      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
+        moment(timeStamp.messageDate).format('YYYY-MM-DD')
+      );
+      if (dateValidate == 0) {
+        utcString = moment
+          .utc(timeStamp.messageDate)
+          .local()
+          .format('h:mm A');
+      } else {
+        utcString = moment
+          .utc(timeStamp.messageDate)
+          .local()
+          .format('DD MMM h:mm A');
+      }
+    } 
+    return utcString ? utcString : '--';
   };
 
   const transferAppointmentAPI = (
@@ -3197,6 +3237,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Audio call ended',
                     duration: callTimerStarted,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3210,6 +3251,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3262,6 +3304,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   message: 'Video call ended',
                   duration: callTimerStarted,
                   id: patientId,
+                  messageDate: currentDateTime,
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -3275,6 +3318,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   isTyping: true,
                   message: endCallMsg,
                   id: patientId,
+                  messageDate: currentDateTime,
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -3464,6 +3508,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Video call ended',
                     duration: callTimerStarted,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3477,6 +3522,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3630,6 +3676,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message: {
           isTyping: true,
           message: acceptedCallMsg,
+          messageDate: currentDateTime,
         },
         channel: channel,
         storeInHistory: false,
@@ -3651,6 +3698,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           message: isAudio ? 'Audio call ended' : 'Video call ended',
           duration: callTimerStarted,
           id: patientId,
+          messageDate: currentDateTime,
         },
         channel: channel,
         storeInHistory: true,
@@ -3664,6 +3712,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isTyping: true,
           message: endCallMsg,
           id: patientId,
+          messageDate: currentDateTime,
         },
         channel: channel,
         storeInHistory: true,
@@ -3737,6 +3786,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: imageconsult,
                     fileType: 'image',
                     url: uploadUrlscheck![0],
+                    messageDate: currentDateTime,
                   };
 
                   pubnub.publish(
@@ -3963,6 +4013,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         message: imageconsult,
                         fileType: 'image',
                         url: item,
+                        messageDate: currentDateTime,
                       };
 
                       pubnub.publish(
