@@ -589,7 +589,7 @@ export const FavouriteMedicines: React.FC = () => {
     ""
   );
   const [medicineListFromAPI, setMedicineListFromAPI] = React.useState<
-    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | []
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >([]);
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
@@ -674,8 +674,10 @@ export const FavouriteMedicines: React.FC = () => {
           _data.data.getDoctorFavouriteMedicineList.medicineList;
 
         const xArr: any = selectedMedicinesArr;
-        temp.map((data1: never) => {
-          selectedMedicinesArr.push(data1);
+        temp.map((data1: any) => {
+          if (data1) {
+            selectedMedicinesArr!.push(data1);
+          }
         });
 
         setSelectedMedicinesArr(xArr);
@@ -742,7 +744,7 @@ export const FavouriteMedicines: React.FC = () => {
       .mutate<RemoveFavouriteMedicine, RemoveFavouriteMedicineVariables>({
         mutation: REMOVE_FAVOURITE_MEDICINE,
         variables: {
-          id: selectedMedicinesArr[idx].id
+          id: selectedMedicinesArr![idx].id!
         }
       })
       .then(data => {
@@ -1265,7 +1267,7 @@ export const FavouriteMedicines: React.FC = () => {
                   selectedMedicinesArr.map((medicine: any, index: number) => (
                     <li key={index}>
                       {console.log("medicine ", medicine)}
-                      {medicine.medicineName}
+                      {medicine!.medicineName}
                       <span className={classes.iconRight}>
                         <img
                           onClick={() => updateMedicine(index)}

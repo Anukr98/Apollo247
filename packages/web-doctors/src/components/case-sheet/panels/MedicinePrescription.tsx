@@ -1089,13 +1089,11 @@ export const MedicinePrescription: React.FC = () => {
                               drops
                             </MenuItem>
                             <MenuItem classes={{ selected: classes.menuSelected }} value="OINTMENT">
-                             ointment
+                              ointment
                             </MenuItem>
                             <MenuItem classes={{ selected: classes.menuSelected }} value="OTHER">
                               other
                             </MenuItem>
-                           
-                            
                           </AphSelect>
                         </div>
                       </Grid>
