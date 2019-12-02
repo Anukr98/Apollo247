@@ -37,6 +37,18 @@ const useStyles = makeStyles((theme: Theme) => {
     searchInput: {
       paddingLeft: 20,
       paddingRight: 20,
+      position: 'relative',
+      '& input': {
+        paddingRight: 30,
+      },
+    },
+    refreshBtn: {
+      position: 'absolute',
+      right: 20,
+      top: 6,
+      boxShadow: 'none',
+      padding: 0,
+      minWidth: 'auto',
     },
     filterBox: {
       borderRadius: 5,
@@ -113,10 +125,16 @@ export const MedicineFilter: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <AphTextField
-        classes={{ root: classes.searchInput }}
-        placeholder="Search med, brands and more"
-      />
+      <div className={classes.searchInput}>
+        <AphTextField
+          placeholder="Search med, brands and more"
+        />
+        <AphButton
+          className={classes.refreshBtn}
+        >
+          <img src={require('images/ic_refresh.svg')} alt="" />
+        </AphButton>
+      </div>
       <div
         className={`${classes.filterSection}`}
       >
@@ -196,14 +214,6 @@ export const MedicineFilter: React.FC = (props) => {
               <div className={classes.boxContent}>
                 <div className={classes.filterBy}>
                   <AphTextField placeholder="RS.500" /> <span>TO</span> <AphTextField placeholder="RS.3000" />
-                </div>
-              </div>
-            </div>
-            <div className={classes.filterBox}>
-              <div className={classes.filterType}>Sort by</div>
-              <div className={classes.boxContent}>
-                <div className={classes.filterBy}>
-                  <AphTextField placeholder="Products Name A-Z" />
                 </div>
               </div>
             </div>
