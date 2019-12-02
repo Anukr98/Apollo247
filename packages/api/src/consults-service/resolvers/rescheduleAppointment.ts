@@ -397,8 +397,7 @@ const bookRescheduleAppointment: Resolver<
     process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_EMAILID
       : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;*/
-      //  const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
-      const toEmailId = 'sriram.kanchan@popcornapps.com';
+      const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
       const ccEmailIds =
         process.env.NODE_ENV == 'dev' ||
         process.env.NODE_ENV == 'development' ||
