@@ -29,6 +29,7 @@ export enum patientLogType {
 export enum APPOINTMENT_TYPE {
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
+  BOTH = 'BOTH',
 }
 
 export enum STATUS {
@@ -172,7 +173,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   symptoms: string;
 
   @Column({ default: BOOKINGSOURCE.MOBILE })
@@ -246,6 +247,9 @@ export class AppointmentPayments extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  orderId: string;
 
   @Column({ nullable: true, type: 'timestamp' })
   paymentDateTime: Date;

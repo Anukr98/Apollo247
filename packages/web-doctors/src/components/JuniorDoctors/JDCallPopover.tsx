@@ -1673,15 +1673,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           {cancelError && <div className={classes.cancelConsultError}>{cancelError}</div>}
           <div className={classes.tabFooter}>
             <Button
-              className={classes.cancelConsult}
-              onClick={() => {
-                setIsCancelPopoverOpen(false);
-                setCancelError(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
               className={classes.ResheduleCosultButton}
               disabled={textOtherCancel && otherTextCancelValue === ''}
               onClick={() => {

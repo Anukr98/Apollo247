@@ -474,6 +474,9 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   allergies: string;
 
+  @Column({ nullable: true, type: 'text' })
+  athsToken: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1322,4 +1325,10 @@ export class PatientFeedback extends BaseEntity {
 
   @Column()
   feedbackType: FEEDBACKTYPE;
+
+  @Column({ nullable: true })
+  transactionId: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
 }

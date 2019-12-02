@@ -123,6 +123,9 @@ export class ConsultHours extends BaseEntity {
   @Column({ nullable: true, default: 15 })
   consultDuration: number;
 
+  @Column({ default: 10 })
+  consultBuffer: number;
+
   @Column()
   consultMode: ConsultMode;
 

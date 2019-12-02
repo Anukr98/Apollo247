@@ -15,6 +15,13 @@ import {
 import { useMutation } from 'react-apollo-hooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import { DoctorChatCard } from 'components/ChatRoom/DoctorChatCard';
+import moment from 'moment';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from 'graphql/types/GetDoctorNextAvailableSlot';
+import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -317,7 +324,6 @@ interface AutoMessageStrings {
   acceptedcallMsg: string;
   startConsult: string;
   stopConsult: string;
-  transferConsult: string;
   rescheduleconsult: string;
   consultPatientStartedMsg: string;
   firstMessage: string;
@@ -325,8 +331,6 @@ interface AutoMessageStrings {
   typingMsg: string;
   covertVideoMsg: string;
   covertAudioMsg: string;
-  transferConsultMsg: string;
-  rescheduleConsultMsg: string;
   followupconsult: string;
   imageconsult: string;
   startConsultjr: string;
@@ -375,6 +379,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const toggle = () => setPlaying(!playing);
   const [jrDoctorJoined, setJrDoctorJoined] = React.useState<boolean>(false);
   const [doctorJoined, setDoctorJoined] = React.useState<boolean>(false);
+  const [reschedule, setReschedule] = React.useState<boolean>(false);
+  const client = useApolloClient();
 
   const autoMessageStrings: AutoMessageStrings = {
     videoCallMsg: '^^callme`video^^',
@@ -383,7 +389,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     acceptedcallMsg: '^^callme`accept^^',
     startConsult: '^^#startconsult',
     stopConsult: '^^#stopconsult',
-    transferConsult: '^^#transferconsult',
     rescheduleconsult: '^^#rescheduleconsult',
     consultPatientStartedMsg: '^^#PatientConsultStarted',
     firstMessage: '^^#firstMessage',
@@ -391,8 +396,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     typingMsg: '^^#typing',
     covertVideoMsg: '^^convert`video^^',
     covertAudioMsg: '^^convert`audio^^',
-    transferConsultMsg: '^^#transferconsult',
-    rescheduleConsultMsg: '^^#rescheduleconsult',
     followupconsult: '^^#followupconsult',
     imageconsult: '^^#DocumentUpload',
     startConsultjr: '^^#startconsultJr',
@@ -544,7 +547,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           message.message.message !== autoMessageStrings.acceptedcallMsg &&
           message.message.message !== autoMessageStrings.startConsult &&
           message.message.message !== autoMessageStrings.stopConsult &&
-          message.message.message !== autoMessageStrings.transferConsult &&
           message.message.message !== autoMessageStrings.rescheduleconsult
         ) {
           setIsNewMsg(true);
@@ -753,7 +755,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         }
       );
     } catch (e) {
-      console.log(e);
+      alert(e);
     }
   };
 
@@ -775,6 +777,120 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   //     }
   //   );
   // };
+  const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
+
+  const availableSlot = (slotDoctorId: string, todayDate: any) =>
+    client.query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+      query: GET_DOCTOR_NEXT_AVAILABILITY,
+      variables: {
+        DoctorNextAvailableSlotInput: {
+          doctorIds: [slotDoctorId],
+          availableDate: moment(todayDate).format('YYYY-MM-DD'),
+        },
+      },
+    });
+
+  const nextAvailableSlot = (rowData: any, Value: string) => {
+    const todayDate = moment
+      .utc(
+        Value === 'Followup'
+          ? rowData.transferInfo.folloupDateTime
+          : rowData.transferInfo.transferDateTime
+      )
+      .local()
+      .format('YYYY-MM-DD');
+
+    const slotDoctorId =
+      Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+
+    availableSlot(slotDoctorId, todayDate)
+      .then(({ data }: any) => {
+        try {
+          if (
+            data &&
+            data.getDoctorNextAvailableSlot &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+          ) {
+            setNextSlotAvailable(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+          }
+        } catch (error) {
+          setNextSlotAvailable('');
+        }
+      })
+      .catch((e: string) => {
+        alert(e);
+      });
+  };
+
+  const showPrescriptionCard = () => (
+    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+      {`Hello ${currentPatient &&
+        currentPatient.firstName},\nHope your consultation went well… Here is your prescription.`}
+      <div className={classes.bubbleActions}>
+        <AphButton>Download</AphButton>
+        <AphButton className={classes.viewButton}>View</AphButton>
+      </div>
+    </div>
+  );
+
+  const getFollowupOrRescheduleCard = (rowData: MessagesObjectProps) => (
+    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+      {(rowData.message === autoMessageStrings.followupconsult &&
+        rowData.transferInfo.folloupDateTime.length) > 0 ? (
+        <div>
+          <div>I've a free followup for you --</div>
+          <div>{rowData.transferInfo.folloupDateTime}</div>
+        </div>
+      ) : (
+        <div>
+          <div>`I've rescheduled your appointment --</div>
+          <div>{rowData.transferInfo.transferDateTime}</div>
+        </div>
+      )}
+      <div className={classes.bubbleActions}>
+        <AphButton
+          className={classes.viewButton}
+          onClick={() => {
+            nextAvailableSlot(rowData, 'Reschedule');
+            setReschedule(true);
+          }}
+        >
+          Reschedule
+        </AphButton>
+      </div>
+    </div>
+  );
+
+  const getNextAvailableRescheduleSlot = (rowData: MessagesObjectProps) => (
+    <div>
+      <div>
+        {rowData.message === autoMessageStrings.rescheduleconsult &&
+        rowData.transferInfo.rescheduleCount < 4
+          ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
+          : `Since you hace already rescheduled 3 times with ${rowData.transferInfo.doctorInfo.displayName}, we will consider this a new paid appointment.`}
+      </div>
+      <div>{`Next slot for ${rowData.transferInfo.doctorInfo.displayName} is available on —`}</div>
+      <div>slot</div>
+      <div className={classes.bubbleActions}>
+        <AphButton className={classes.viewButton} onClick={() => setReschedule(false)}>
+          Accept
+        </AphButton>
+        <AphButton className={classes.viewButton}>Change Slot</AphButton>
+      </div>
+    </div>
+  );
+
+  // const getChatMsgInCall = (rowData: MessagesObjectProps) => (
+  //   <div className={classes.callEnded}>
+  //     <span>
+  //       <img src={require('images/ic_round_call.svg')} />
+  //     </span>
+  //     <div>
+  //       {rowData.message}
+  //       <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+  //     </div>
+  //   </div>
+  // );
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
@@ -782,7 +898,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       rowData.message === autoMessageStrings.stopcallMsg ||
       rowData.message === autoMessageStrings.audioCallMsg ||
       rowData.message === autoMessageStrings.videoCallMsg ||
-      rowData.message === autoMessageStrings.acceptedcallMsg
+      rowData.message === autoMessageStrings.acceptedcallMsg ||
+      rowData.message === autoMessageStrings.stopConsult
     ) {
       return null;
     }
@@ -840,28 +957,33 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 />
               </span>
             )}
-            {/* {rowData.message === autoMessageStrings.transferConsult && (
-              <div className={classes.doctorChatWindow}>
-                <div
-                  className={`${classes.doctorChatBubble} ${classes.blueBubble}`}
-                >
-                  Your appointment has been transferred to —
-                  <DoctorChatCard transferData={rowData.transferInfo} />
-                  <div className={classes.bubbleActions}>
-                    <AphButton>Reschedule</AphButton>
-                    <AphButton className={classes.viewButton}>Accept</AphButton>
-                  </div>
-                </div>
-                <div className={classes.doctorImg}>
-                  <Avatar
-                    alt=""
-                    src={require("images/ic_chat_bot.svg")}
-                    className={classes.avatar}
-                  />
-                </div>
+
+            {/* show Prescription card */}
+            {(rowData.message === autoMessageStrings.rescheduleconsult ||
+              rowData.message === autoMessageStrings.followupconsult) &&
+              showPrescriptionCard()}
+            {/* show reschedule or followup card */}
+            {(rowData.message === autoMessageStrings.rescheduleconsult ||
+              rowData.message === autoMessageStrings.followupconsult) &&
+              getFollowupOrRescheduleCard(rowData)}
+
+            {/* show available slots for reschedule */}
+            {(rowData.message === autoMessageStrings.rescheduleconsult ||
+              rowData.message === autoMessageStrings.followupconsult) &&
+            reschedule
+              ? getNextAvailableRescheduleSlot(rowData)
+              : null}
+
+            {/* show other messages when it is not reschedule and followUp   */}
+            {rowData.message !== autoMessageStrings.rescheduleconsult &&
+            rowData.message !== autoMessageStrings.followupconsult ? (
+              <div>
+                <span>{rowData.automatedText || rowData.message}</span>
               </div>
-            )} */}
-            {rowData.duration === '00 : 00' ? (
+            ) : null}
+
+            {/* below code related to msgs during  call  */}
+            {/* {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
                 {rowData.message.toLocaleLowerCase() === 'video call ended'
@@ -869,22 +991,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   : 'You missed a voice call'}
               </span>
             ) : rowData.duration ? (
-              <div className={classes.callEnded}>
-                <span>
-                  <img src={require('images/ic_round_call.svg')} />
-                </span>
-                <div>
-                  {rowData.message}
-                  <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
-                </div>
+              getChatMsgInCall(rowData)
+            ) : rowData.message !== autoMessageStrings.rescheduleconsult &&
+              rowData.message !== autoMessageStrings.followupconsult ? (
+              <div>
+                <span>{rowData.automatedText || rowData.message}</span>
               </div>
-            ) : (
-              rowData.message !== autoMessageStrings.rescheduleconsult && (
-                <div>
-                  <span>{rowData.automatedText || rowData.message}</span>
-                </div>
-              )
-            )}
+            ) : null} */}
           </div>
         </div>
       );

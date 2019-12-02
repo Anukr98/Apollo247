@@ -694,7 +694,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
           props.appointmentStatus === STATUS.IN_PROGRESS
         ) {
           console.log(props.appointmentStatus, patientMsgs.length);
-          noShowAction();
+          //noShowAction();
         }
       }
     }, 1000);
@@ -714,6 +714,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       })
       .then(_data => {
         unSubscribeBrowserButtonsListener();
+        pubnub.unsubscribe({ channels: [channel] });
         alert("Patient not responding.");
         window.location.href = clientRoutes.calendar();
       })
@@ -1191,10 +1192,10 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       ).toISOString();
     }
 
-    if (followUp[0] && folloupDateTime !== "") {
+    if (folloupDateTime !== "") {
       const followupObj = {
         appointmentId: props.appointmentId,
-        folloupDateTime: folloupDateTime,
+        folloupDateTime: followUp[0] ? folloupDateTime : "",
         doctorId: props.doctorId,
         caseSheetId: props.caseSheetId,
         doctorInfo: currentPatient,
@@ -2013,6 +2014,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                         },
                         (status, response) => {}
                       );
+                      pubnub.unsubscribe({ channels: [channel] });
                       window.location.href = clientRoutes.calendar();
                     })
                     .catch((e: ApolloError) => {
@@ -2112,6 +2114,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       },
                       (status, response) => {}
                     );
+                    pubnub.unsubscribe({ channels: [channel] });
                     window.location.href = clientRoutes.calendar();
                   })
                   .catch((e: ApolloError) => {
