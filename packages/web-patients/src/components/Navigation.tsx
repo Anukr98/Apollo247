@@ -84,21 +84,21 @@ export const Navigation: React.FC = (props) => {
         Health Records
       </Link>
       <Link
-        to={clientRoutes.testsAndMedicine()}
+        to={clientRoutes.medicines()}
         className={
-          currentPath === clientRoutes.testsAndMedicine() ||
-          currentPath === clientRoutes.prescriptionsLanding()
+          currentPath === clientRoutes.medicines() ||
+            currentPath === clientRoutes.prescriptionsLanding()
             ? classes.menuItemActive
             : ''
         }
       >
-        Tests &amp; Medicines
+        Medicines
       </Link>
       <Link
         to={clientRoutes.cartLanding()}
         className={`${classes.iconLink} ${
           currentPath === clientRoutes.cartLanding() ? classes.menuItemActive : ''
-        }`}
+          }`}
       >
         <span>
           <img src={require('images/ic_cart.svg')} alt="Shopping Cart" />

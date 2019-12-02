@@ -10,6 +10,7 @@ export const clientRoutes = {
   doctorsLanding: () => '/doctors',
   appointments: () => '/appointments',
   testsAndMedicine: () => '/tests-medicines',
+  medicines: () => '/medicines',
   healthRecords: () => '/health-records',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
