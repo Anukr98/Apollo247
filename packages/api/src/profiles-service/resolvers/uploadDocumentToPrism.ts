@@ -103,37 +103,31 @@ const uploadFileToBlobStorage = async (args: UploadDocumentInput) => {
   );
 
   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-    console.log('deleting container...');
     await client
       .deleteContainer()
       .then((res) => console.log(res))
       .catch((error) => console.log('error deleting', error));
 
-    console.log('setting service properties...');
     await client
       .setServiceProperties()
       .then((res) => console.log(res))
       .catch((error) => console.log('error setting service properties', error));
 
-    console.log('creating container...');
     await client
       .createContainer()
       .then((res) => console.log(res))
       .catch((error) => console.log('error creating', error));
   }
 
-  console.log('testing storage connection...');
   await client
     .testStorageConnection()
     .then((res) => console.log(res))
     .catch((error) => console.log('error testing', error));
 
   const localFilePath = assetsDir + '/' + fileName;
-  console.log(`uploading ${localFilePath}`);
   const readmeBlob = await client
     .uploadFile({ name: fileName, filePath: localFilePath })
     .catch((error) => {
-      console.log('error final', error);
       throw error;
     });
   fs.unlinkSync(localFilePath);
