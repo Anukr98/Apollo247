@@ -84,7 +84,6 @@ export class DoctorRepository extends Repository<Doctor> {
         'doctorHospital',
         'doctorHospital.facility',
         'consultHours',
-        'consultHours.facility',
         'starTeam',
         'bankAccount',
         'packages',

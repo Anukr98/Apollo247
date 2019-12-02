@@ -40,6 +40,8 @@ export enum STATUS {
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
   NO_SHOW = 'NO_SHOW',
+  JUNIOR_DOCTOR_STARTED = 'JUNIOR_DOCTOR_STARTED',
+  JUNIOR_DOCTOR_ENDED = 'JUNIOR_DOCTOR_ENDED',
 }
 
 export enum APPOINTMENT_STATE {
@@ -106,6 +108,12 @@ export class Appointment extends BaseEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  cancelledDate: Date;
 
   @Column({ nullable: true })
   cancelledBy: REQUEST_ROLES;
@@ -335,6 +343,12 @@ export class AppointmentCallDetails extends BaseEntity {
 
   @Column()
   callType: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true })
+  doctorName: string;
 
   @Column()
   doctorType: string;
