@@ -47,6 +47,9 @@ export enum ApiConstants {
   CART_READY_TITLE = 'Medicine order cart ready',
   CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
 
+  ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
+  ORDER_DELIVERY_BODY = 'Hi {0}, your medicine order is delivered',
+
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
   //All services log files
