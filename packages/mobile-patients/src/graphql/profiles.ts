@@ -1307,6 +1307,49 @@ export const GET_MEDICAL_RECORD = gql`
   }
 `;
 
+export const GET_MEDICAL_PRISM_RECORD = gql`
+  query getPatientPrismMedicalRecords($patientId: ID!) {
+    getPatientPrismMedicalRecords(patientId: $patientId) {
+      labTests {
+        id
+        labTestName
+        labTestSource
+        labTestDate
+        labTestReferredBy
+        additionalNotes
+        testResultPrismFileIds
+        labTestResultParameters {
+          parameterName
+          unit
+          result
+          range
+        }
+        departmentName
+        signingDocName
+      }
+      healthChecks {
+        id
+        healthCheckName
+        healthCheckDate
+        healthCheckPrismFileIds
+        healthCheckSummary
+        source
+        appointmentDate
+        followupDate
+      }
+      hospitalizations {
+        id
+        diagnosisNotes
+        dateOfDischarge
+        dateOfHospitalization
+        dateOfNextVisit
+        hospitalizationPrismFileIds
+        source
+      }
+    }
+  }
+`;
+
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
@@ -1683,6 +1726,22 @@ export const ADD_PATIENT_FEEDBACK = gql`
   mutation addPatientFeedback($patientFeedbackInput: PatientFeedbackInput) {
     addPatientFeedback(patientFeedbackInput: $patientFeedbackInput) {
       status
+    }
+  }
+`;
+
+export const AUTOMATED_QUESTIONS = gql`
+  mutation addToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
+    addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
+      id
+      doctorId
+      totalJuniorDoctorsOnline
+      juniorDoctorsList {
+        juniorDoctorId
+        doctorName
+        queueCount
+      }
+      totalJuniorDoctors
     }
   }
 `;

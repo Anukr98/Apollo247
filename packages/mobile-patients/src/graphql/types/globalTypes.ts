@@ -16,8 +16,14 @@ export enum APPOINTMENT_STATE {
 }
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
+}
+
+export enum BOOKINGSOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
 }
 
 export enum CONSULTS_RX_SEARCH_FILTER {
@@ -30,6 +36,11 @@ export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
+}
+
+export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  IOS = "IOS",
 }
 
 export enum DEVICE_TYPE {
@@ -58,6 +69,12 @@ export enum DoctorType {
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   STAR_APOLLO = "STAR_APOLLO",
+}
+
+export enum FEEDBACKTYPE {
+  CONSULT = "CONSULT",
+  DIAGNOSTICS = "DIAGNOSTICS",
+  PHARMACY = "PHARMACY",
 }
 
 export enum Gender {
@@ -250,6 +267,9 @@ export interface BookAppointmentInput {
   appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string;
+  symptoms?: string | null;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -289,6 +309,18 @@ export interface CancelAppointmentInput {
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
+}
+
+export interface ConsultQueueInput {
+  appointmentId: string;
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
+  lifeStyle?: string | null;
+  familyHistory?: string | null;
+  dietAllergies?: string | null;
+  drugAllergies?: string | null;
 }
 
 export interface DiagnosticLineItem {
@@ -445,6 +477,15 @@ export interface PatientConsultsAndOrdersInput {
   filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
   offset?: number | null;
   limit?: number | null;
+}
+
+export interface PatientFeedbackInput {
+  patientId: string;
+  rating?: string | null;
+  thankyouNote?: string | null;
+  reason?: string | null;
+  feedbackType?: FEEDBACKTYPE | null;
+  transactionId: string;
 }
 
 export interface PatientProfileInput {
