@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import gql from "graphql-tag";
 
 export const GET_PATIENTS = gql`
   query GetPatients {
@@ -17,8 +17,14 @@ export const GET_PATIENTS = gql`
   }
 `;
 export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
-  mutation MakeTeamDoctorActive($associatedDoctor: String, $starDoctor: String) {
-    makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
+  mutation MakeTeamDoctorActive(
+    $associatedDoctor: String
+    $starDoctor: String
+  ) {
+    makeTeamDoctorActive(
+      associatedDoctor: $associatedDoctor
+      starDoctor: $starDoctor
+    )
   }
 `;
 
@@ -39,8 +45,14 @@ export const REMOVE_DELEGATE_NUMBER = gql`
 `;
 
 export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
-  mutation RemoveTeamDoctorFromStarTeam($associatedDoctor: String, $starDoctor: String) {
-    removeTeamDoctorFromStarTeam(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor) {
+  mutation RemoveTeamDoctorFromStarTeam(
+    $associatedDoctor: String
+    $starDoctor: String
+  ) {
+    removeTeamDoctorFromStarTeam(
+      associatedDoctor: $associatedDoctor
+      starDoctor: $starDoctor
+    ) {
       firstName
     }
   }
@@ -592,8 +604,12 @@ export const GET_CASESHEET_JRD = gql`
 `;
 
 export const CREATE_APPOINTMENT_SESSION = gql`
-  mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
-    createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
+  mutation CreateAppointmentSession(
+    $createAppointmentSessionInput: CreateAppointmentSessionInput
+  ) {
+    createAppointmentSession(
+      createAppointmentSessionInput: $createAppointmentSessionInput
+    ) {
       sessionId
       appointmentToken
       patientId
@@ -802,6 +818,26 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
   }
 `;
 
+export const GET_DOCTOR_FAVOURITE_ADVICE_LIST = gql`
+  query GetDoctorFavouriteAdviceList {
+    getDoctorFavouriteAdviceList {
+      adviceList {
+        instruction
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_FAVOURITE_TEST_LIST = gql`
+  query GetDoctorFavouriteTestList {
+    getDoctorFavouriteTestList {
+      testList {
+        itemname
+      }
+    }
+  }
+`;
+
 export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
   mutation SaveDoctorsFavouriteMedicine(
     $saveDoctorsFavouriteMedicineInput: SaveDoctorsFavouriteMedicineInput
@@ -811,6 +847,15 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
     ) {
       medicineList {
         id
+      }
+    }
+  }
+`;
+export const ADD_DOCTOR_FAVOURITE_TEST = gql`
+  mutation AddDoctorFavouriteTest($itemname: String!) {
+    addDoctorFavouriteTest(itemname: $itemname) {
+      testList {
+        itemname
       }
     }
   }
@@ -830,11 +875,31 @@ export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
   }
 `;
 
+export const UPDATE_DOCTOR_FAVOURITE_TEST = gql`
+  mutation UpdateDoctorFavouriteTest($id: ID!, $itemname: String!) {
+    updateDoctorFavouriteTest(id: $id, itemname: $itemname) {
+      testList {
+        id
+      }
+    }
+  }
+`;
+
 export const REMOVE_FAVOURITE_MEDICINE = gql`
   mutation RemoveFavouriteMedicine($id: String) {
     removeFavouriteMedicine(id: $id) {
       medicineList {
         id
+      }
+    }
+  }
+`;
+
+export const DELETE_DOCTOR_FAVOURITE_TEST = gql`
+  mutation DeleteDoctorFavouriteTest($testId: ID!) {
+    deleteDoctorFavouriteTest(testId: $testId) {
+      testList {
+        itemname
       }
     }
   }
@@ -927,14 +992,28 @@ export const MODIFY_CASESHEET = gql`
 `;
 
 export const END_APPOINTMENT_SESSION = gql`
-  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
-    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
+  mutation EndAppointmentSession(
+    $endAppointmentSessionInput: EndAppointmentSessionInput
+  ) {
+    endAppointmentSession(
+      endAppointmentSessionInput: $endAppointmentSessionInput
+    )
   }
 `;
 
 export const GET_PATIENT_LOG = gql`
-  query GetPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
-    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+  query GetPatientLog(
+    $limit: Int
+    $offset: Int
+    $sortBy: patientLogSort
+    $type: patientLogType
+  ) {
+    getPatientLog(
+      limit: $limit
+      offset: $offset
+      sortBy: $sortBy
+      type: $type
+    ) {
       patientid
       consultscount
       appointmentids
@@ -985,8 +1064,12 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
   }
 `;
 export const INITIATE_TRANSFER_APPONITMENT = gql`
-  mutation InitiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
-    initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
+  mutation InitiateTransferAppointment(
+    $TransferAppointmentInput: TransferAppointmentInput!
+  ) {
+    initiateTransferAppointment(
+      TransferAppointmentInput: $TransferAppointmentInput
+    ) {
       transferAppointment {
         id
         transferStatus
@@ -999,8 +1082,12 @@ export const INITIATE_TRANSFER_APPONITMENT = gql`
   }
 `;
 export const INITIATE_RESCHDULE_APPONITMENT = gql`
-  mutation InitiateRescheduleAppointment($RescheduleAppointmentInput: RescheduleAppointmentInput!) {
-    initiateRescheduleAppointment(RescheduleAppointmentInput: $RescheduleAppointmentInput) {
+  mutation InitiateRescheduleAppointment(
+    $RescheduleAppointmentInput: RescheduleAppointmentInput!
+  ) {
+    initiateRescheduleAppointment(
+      RescheduleAppointmentInput: $RescheduleAppointmentInput
+    ) {
       rescheduleAppointment {
         id
         rescheduleStatus
@@ -1020,8 +1107,16 @@ export const SEARCH_DIAGNOSIS = gql`
   }
 `;
 export const SEARCH_DIAGNOSTICS = gql`
-  query SearchDiagnostics($city: String, $patientId: String, $searchText: String!) {
-    searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
+  query SearchDiagnostics(
+    $city: String
+    $patientId: String
+    $searchText: String!
+  ) {
+    searchDiagnostics(
+      city: $city
+      patientId: $patientId
+      searchText: $searchText
+    ) {
       diagnostics {
         itemName
       }
@@ -1029,8 +1124,14 @@ export const SEARCH_DIAGNOSTICS = gql`
   }
 `;
 export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
-  mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
-    updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
+  mutation UpdatePatientPrescriptionSentStatus(
+    $caseSheetId: ID!
+    $sentToPatient: Boolean!
+  ) {
+    updatePatientPrescriptionSentStatus(
+      caseSheetId: $caseSheetId
+      sentToPatient: $sentToPatient
+    ) {
       success
     }
   }
@@ -1200,7 +1301,10 @@ export const REMOVE_SECRETARY = gql`
 `;
 export const ADD_CHAT_DOCUMENT = gql`
   mutation AddChatDocument($appointmentId: ID!, $documentPath: String!) {
-    addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
+    addChatDocument(
+      appointmentId: $appointmentId
+      documentPath: $documentPath
+    ) {
       id
       documentPath
     }
