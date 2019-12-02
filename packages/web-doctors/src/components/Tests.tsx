@@ -6,7 +6,7 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
 import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
@@ -250,9 +250,10 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Tests: React.FC = () => {
   const classes = useStyles();
   const [searchInput, setSearchInput] = useState('');
-  const { favouriteTests: selectedValues, setFavouriteTests: setSelectedValues } = useContext(
-    CaseSheetContext
-  );
+  // const { favouriteTests: selectedValues, setFavouriteTests: setSelectedValues } = useContext(
+  //   CaseSheetContext
+  // );
+  const [selectedValues, setSelectedValues] = useState();
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
   const { caseSheetEdit, patientDetails } = useContext(CaseSheetContext);
@@ -277,6 +278,7 @@ export const Tests: React.FC = () => {
 
         filterVal.forEach((val: any, index: any) => {
           selectedValues &&
+            selectedValues.length > 0 &&
             selectedValues.forEach((selectedval: any) => {
               if (val.itemName === selectedval.itemname) {
                 filterVal.splice(index, 1);
@@ -284,8 +286,11 @@ export const Tests: React.FC = () => {
             });
         });
         suggestions = filterVal;
+        const length = 0;
+        if (suggestions && suggestions.length) {
+          setLengthOfSuggestions(suggestions.length);
+        }
 
-        setLengthOfSuggestions(suggestions.length);
         setSearchInput(value);
       })
       .catch((e) => {
@@ -300,7 +305,7 @@ export const Tests: React.FC = () => {
     return suggestion!.itemName;
   }
   useEffect(() => {
-    if (searchInput.length > 2) {
+    if (searchInput && searchInput.length > 2) {
       setSuggestions(getSuggestions(searchInput));
     }
   }, [searchInput]);
@@ -308,14 +313,20 @@ export const Tests: React.FC = () => {
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
-      suggestions!.map((item, idx) => {
-        selectedValues!.map((val) => {
-          if (item!.itemname === val.itemname) {
-            const indexDelete = suggestions.indexOf(item);
-            suggestions!.splice(indexDelete, 1);
-          }
+      suggestions &&
+        suggestions.length > 0 &&
+        suggestions!.map((item, idx) => {
+          selectedValues &&
+            selectedValues.length > 0 &&
+            selectedValues!.map((val: any) => {
+              if (val) {
+                if (item!.itemname === val!.itemname) {
+                  const indexDelete = suggestions.indexOf(item);
+                  suggestions!.splice(indexDelete, 1);
+                }
+              }
+            });
         });
-      });
     }
   }, [selectedValues, idx]);
 
@@ -345,7 +356,7 @@ export const Tests: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    if (newValue.length > 2) {
+    if (newValue && newValue.length > 2) {
       fetchDignostic(newValue);
     }
     setOtherDiagnostic(newValue);
@@ -378,21 +389,17 @@ export const Tests: React.FC = () => {
         </Typography>
         <Typography component="div" className={classes.listContainer}>
           {selectedValues !== null &&
+            selectedValues &&
             selectedValues.length > 0 &&
-            selectedValues!.map((item, idx) =>
-              item.itemName
+            selectedValues!.map((item: any, idx: any) =>
+              item && item.itemName
                 ? item.itemName!.trim() !== '' && (
                     <Chip
                       className={classes.othersBtn}
                       key={idx}
                       label={item!.itemName}
                       onDelete={() => handleDelete(item, idx)}
-                      deleteIcon={
-                        <img
-                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                          alt=""
-                        />
-                      }
+                      deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
                     />
                   )
                 : item.itemname &&
@@ -402,12 +409,7 @@ export const Tests: React.FC = () => {
                       key={idx}
                       label={item!.itemname}
                       onDelete={() => handleDelete(item, idx)}
-                      deleteIcon={
-                        <img
-                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                          alt=""
-                        />
-                      }
+                      deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
                     />
                   )
             )}
@@ -433,11 +435,18 @@ export const Tests: React.FC = () => {
         {showAddCondition && !showAddOtherTests && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
-              selectedValues!.push(suggestion);
-
-              setSelectedValues(selectedValues);
+              if (selectedValues && selectedValues.length > 0) {
+                selectedValues!.push(suggestion);
+                setSelectedValues(selectedValues);
+              } else {
+                const emptySelectedValue = [];
+                emptySelectedValue.push(suggestion);
+                setSelectedValues(emptySelectedValue);
+              }
               setShowAddCondition(false);
-              suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));
+              suggestions = suggestions.filter(
+                (val) => selectedValues && !selectedValues!.includes(val!)
+              );
               setState({
                 single: '',
                 popper: '',
