@@ -34,6 +34,8 @@ export const bookAppointmentTypeDefs = gql`
     PENDING
     PAYMENT_PENDING
     NO_SHOW
+    JUNIOR_DOCTOR_STARTED
+    JUNIOR_DOCTOR_ENDED
   }
 
   enum APPOINTMENT_TYPE {

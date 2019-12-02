@@ -59,6 +59,13 @@ const cancelAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  if (
+    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT &&
+    appointment.status == STATUS.JUNIOR_DOCTOR_STARTED
+  ) {
+    throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CONSULTATION_INPROGRESS, undefined, {});
+  }
+
   if (appointment.status !== STATUS.PENDING && appointment.status !== STATUS.CONFIRMED) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
