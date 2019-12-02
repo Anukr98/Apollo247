@@ -61,6 +61,8 @@ export const doctorCallNotificationTypeDefs = gql`
       callType: APPT_CALL_TYPE
       doctorType: DOCTOR_CALL_TYPE
       sendNotification: Boolean
+      doctorId: String
+      doctorName: String
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
@@ -115,6 +117,8 @@ const sendCallNotification: Resolver<
     callType: APPT_CALL_TYPE;
     doctorType: DOCTOR_CALL_TYPE;
     sendNotification: Boolean;
+    doctorId: string;
+    doctorName: string;
   },
   ConsultServiceContext,
   NotificationResult
@@ -128,6 +132,8 @@ const sendCallNotification: Resolver<
     callType: args.callType,
     doctorType: args.doctorType,
     startTime: new Date(),
+    doctorId: args.doctorId,
+    doctorName: args.doctorName,
   };
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
