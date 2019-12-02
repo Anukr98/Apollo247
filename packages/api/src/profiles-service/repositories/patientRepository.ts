@@ -276,6 +276,10 @@ export class PatientRepository extends Repository<Patient> {
     return this.update(id, { uhid });
   }
 
+  updateToken(id: string, athsToken: string) {
+    return this.update(id, { athsToken });
+  }
+
   deleteProfile(id: string) {
     return this.update(id, { isActive: false });
   }
