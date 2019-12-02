@@ -1,14 +1,26 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossPopup,
+  DropdownGreen,
+  MedicineIcon,
+  More,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_MEDICINE_ORDER_DETAILS,
   SAVE_ORDER_CANCEL_STATUS,
@@ -18,15 +30,17 @@ import {
   GetMedicineOrderDetailsVariables,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveOrderCancelStatus,
   saveOrderCancelStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveOrderCancelStatus';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  aphConsole,
   g,
   getOrderStatusText,
   handleGraphQlError,
-  aphConsole,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -50,14 +64,11 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  useShoppingCart,
-  ShoppingCartItem,
-  EPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineFeedBackData } from '../strings/AppConfig';
+import { RadioSelectionItem } from './Medicines/RadioSelectionItem';
+import { Spearator } from './ui/BasicComponents';
+import { FeedbackInfoCard } from './ui/FeedbackInfoCard';
+import { RatingSmilyView, RatingStatus } from './ui/RatingSmilyView';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -105,6 +116,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
+  const setOrders = props.navigation.getParam('setOrders');
+  const refetchOrders = props.navigation.getParam('refetch');
 
   const client = useApolloClient();
 
@@ -117,13 +130,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
-
-  useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
-
   const { data, loading, refetch } = useQuery<
     GetMedicineOrderDetails,
     GetMedicineOrderDetailsVariables
@@ -155,6 +161,102 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return false;
   };
 
+  const [ratingStatus, setRatingStatus] = useState<RatingStatus>();
+  const [ratingOption, setRatingOption] = useState<string>();
+  const [ratingSuggestion, setRatingSuggestion] = useState<string>();
+
+  const onSubmitFeedBack = () => {
+    // Alert.alert('Success');
+    setLoading!(true);
+  };
+
+  const renderRatingContent = () => {
+    const _statusDate = g(
+      orderStatusList.find((item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED),
+      'statusDate'
+    );
+    const _time = moment(_statusDate).format('D MMM YYYY');
+    const title = `Medicines — #${orderAutoId}`;
+    // const desc = `Delivered On: 24 Oct 2019`;
+    const desc = `Delivered On: ${_time}`;
+    const question = ratingStatus ? MedicineFeedBackData[ratingStatus].question : '';
+    const options = ratingStatus ? MedicineFeedBackData[ratingStatus].options : [];
+
+    return (
+      <View style={{}}>
+        <FeedbackInfoCard
+          style={{ marginTop: 16, marginHorizontal: 20 }}
+          title={title}
+          description={desc}
+          imageComponent={<MedicineIcon />}
+        />
+        <RatingSmilyView
+          style={{ marginTop: 36.5, marginBottom: ratingStatus ? 0 : 40, marginHorizontal: 20 }}
+          status={ratingStatus}
+          onStatusChange={(_ratingStatus) => {
+            setRatingStatus(_ratingStatus);
+          }}
+        />
+        {!!ratingStatus && (
+          <>
+            <View style={{ marginHorizontal: 20 }}>
+              <Spearator style={{ marginTop: 19.8 }} />
+              <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 23.8 }}>
+                {question}
+              </Text>
+              {options.map((item) => (
+                <RadioSelectionItem
+                  title={item}
+                  isSelected={item == ratingOption}
+                  hideSeparator={true}
+                  onPress={() => setRatingOption(item)}
+                />
+              ))}
+              <Spearator style={{ marginTop: 19.8 }} />
+              <View style={{ marginTop: 23.8 }}>
+                <Text style={theme.viewStyles.text('M', 17, '#0087ba')}>
+                  {'What can be improved?'}
+                </Text>
+                <TextInputComponent
+                  placeholder={'Write your suggestion here...'}
+                  value={ratingSuggestion}
+                  onChangeText={(text) => setRatingSuggestion(text)}
+                  inputStyle={{
+                    paddingBottom: 8,
+                    marginTop: 8,
+                  }}
+                />
+              </View>
+            </View>
+            <View style={{ flex: 1, marginTop: 40, marginBottom: 20 }}>
+              <Button
+                disabled={!ratingOption}
+                onPress={onSubmitFeedBack}
+                title={'SUBMIT FEEDBACK'}
+                style={{ width: '66.66%' }}
+              />
+            </View>
+          </>
+        )}
+      </View>
+    );
+  };
+
+  // For feedback popup
+  // useEffect(() => {
+  //   if (
+  //     goToHomeOnBack &&
+  //     orderStatusList.find((item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED)
+  //   ) {
+  //     showAphAlert!({
+  //       unDismissable: true,
+  //       title: 'We value your feedback! :)',
+  //       description: 'How was your overall experience with the following medicine delivery —',
+  //       children: renderRatingContent(),
+  //     });
+  //   }
+  // }, []);
+
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -169,6 +271,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
+
+  const showErrorPopup = (desc: string) => {
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: desc,
+    });
+  };
 
   const getFormattedDate = (time: string) => {
     return moment(time).format('D MMM YYYY');
@@ -239,19 +348,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
         setLoading!(false);
         if (items.length > itemsToAdd.length) {
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: 'Few items are out of stock.',
-          });
+          showErrorPopup('Few items are out of stock.');
         }
         props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
         setLoading!(false);
-        showAphAlert!({
-          title: 'Uh oh.. :(',
-          description: 'Something went wrong.',
-        });
+        showErrorPopup('Something went wrong.');
       });
   };
 
@@ -481,7 +584,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setCancelVisible(false);
           setComment('');
           setSelectedReason('');
-          setMenuOpen(false);
         };
         const requestStatus = g(data, 'saveOrderCancelStatus', 'requestStatus');
         if (requestStatus == 'true') {
@@ -492,6 +594,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             .catch(() => {
               setInitialSate();
             });
+          refetchOrders().then((data: any) => {
+            const _orders = g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || [];
+            console.log(_orders, 'hdub');
+            setOrders(_orders);
+          });
         } else {
           Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
         }
@@ -502,41 +609,63 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       });
   };
 
-  const onPressCancelOrder = () => {
-    setMenuOpen(false);
-    const isDelivered = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-    );
-    const isCancelled = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
-    );
+  // const onPressCancelOrder = () => {
+  // const isDelivered = orderStatusList.find(
+  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+  // );
+  // const isCancelled = orderStatusList.find(
+  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+  // );
+  // const isPrescriptionOrder = orderStatusList.find(
+  //   (item) =>
+  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
+  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+  // );
+  // if (isDelivered) {
+  //   showErrorPopup('You cannot cancel the order wich is delivered.');
+  //   // Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
+  // } else if (isCancelled) {
+  //   showErrorPopup('Order is already cancelled.');
+  //   // Alert.alert('Alert', 'Order is already cancelled.');
+  // } else {
+  //   setCancelVisible(true);
+  // }
+  // setCancelVisible(true);
+  // };
 
-    if (isDelivered) {
-      Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
-    } else if (isCancelled) {
-      Alert.alert('Alert', 'Order is already cancelled.');
-    } else {
-      setCancelVisible(true);
-    }
-  };
-
-  const [isMenuOpen, setMenuOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
-  const renderMenuOptions = () => {
-    if (isMenuOpen) {
-      return (
-        <View style={{ position: 'absolute', top: 0, right: 0 }}>
-          <DropDown
-            options={[
-              {
-                optionText: 'Cancel Order',
-                onPress: () => onPressCancelOrder(),
-              },
-            ]}
-          />
-        </View>
-      );
-    }
+
+  const renderMoreMenu = () => {
+    const cannotCancelOrder = orderStatusList.find(
+      (item) =>
+        item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+    );
+    if (cannotCancelOrder || !orderStatusList.length) return null;
+    return (
+      <MaterialMenu
+        options={['Cancel Order'].map((item) => ({
+          key: item,
+          value: item,
+        }))}
+        menuContainerStyle={{
+          alignItems: 'center',
+          marginTop: 24,
+        }}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 0 }}
+        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
+        onPress={(item) => {
+          if (item.value == 'Cancel Order') {
+            setCancelVisible(true);
+          }
+        }}
+      >
+        <More />
+      </MaterialMenu>
+    );
   };
 
   return (
@@ -548,21 +677,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={`ORDER #${orderAutoId}`}
             container={{ borderBottomWidth: 0 }}
-            // rightComponent={
-            //   <TouchableOpacity
-            //     activeOpacity={1}
-            //     onPress={() => {
-            //       setMenuOpen(true);
-            //     }}
-            //   >
-            //     <More />
-            //   </TouchableOpacity>
-            // }
+            rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
           />
-          {renderMenuOptions()}
         </View>
 
         <TabsComponent

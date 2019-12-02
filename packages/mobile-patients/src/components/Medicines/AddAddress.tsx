@@ -176,28 +176,41 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
-  const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
+  const addOnly: boolean = props.navigation.state.params
+    ? props.navigation.state.params.addOnly
+    : false;
 
+  const addressData = props.navigation.getParam('DataAddress');
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const { addAddress: addA, setDeliveryAddressId: setD } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
 
+  const isChanged =
+    addressData &&
+    city === addressData.city &&
+    state === addressData.state &&
+    pincode === addressData.zipcode &&
+    addressLine1 === addressData.addressLine1 &&
+    addressType === addressData.addressType &&
+    optionalAddress === addressData.otherAddressType;
+
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update') {
-      console.log('DataAddress', props.navigation.getParam('DataAddress'));
-      setcity(props.navigation.getParam('DataAddress').city);
-      setstate(props.navigation.getParam('DataAddress').state);
-      setpincode(props.navigation.getParam('DataAddress').zipcode);
-      setaddressLine1(props.navigation.getParam('DataAddress').addressLine1);
-      setAddressType(props.navigation.getParam('DataAddress').addressType);
-      setOptionalAddress(props.navigation.getParam('DataAddress').otherAddressType);
+      console.log('DataAddress', addressData);
+      setcity(addressData.city);
+      setstate(addressData.state);
+      setpincode(addressData.zipcode);
+      setaddressLine1(addressData.addressLine1);
+      setAddressType(addressData.addressType);
+      setOptionalAddress(addressData.otherAddressType);
     } else {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -291,38 +304,43 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     setshowSpinner(true);
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update') {
-      const updateaddressInput = {
-        id: props.navigation.getParam('DataAddress').id,
-        addressLine1: addressLine1,
-        addressLine2: '',
-        city: city,
-        state: state,
-        zipcode: pincode,
-        landmark: landMark,
-        mobileNumber: phoneNumber,
-        addressType: addressType,
-        otherAddressType: optionalAddress,
-      };
-      console.log(updateaddressInput, 'updateaddressInput');
-      setshowSpinner(true);
-      client
-        .mutate<updatePatientAddress, updatePatientAddressVariables>({
-          mutation: UPDATE_PATIENT_ADDRESS,
-          variables: { UpdatePatientAddressInput: updateaddressInput },
-        })
-        .then((_data: any) => {
-          try {
+      if (!isChanged) {
+        const updateaddressInput = {
+          id: addressData.id,
+          addressLine1: addressLine1,
+          addressLine2: '',
+          city: city,
+          state: state,
+          zipcode: pincode,
+          landmark: landMark,
+          mobileNumber: phoneNumber,
+          addressType: addressType,
+          otherAddressType: optionalAddress,
+        };
+        console.log(updateaddressInput, 'updateaddressInput');
+        setshowSpinner(true);
+        client
+          .mutate<updatePatientAddress, updatePatientAddressVariables>({
+            mutation: UPDATE_PATIENT_ADDRESS,
+            variables: { UpdatePatientAddressInput: updateaddressInput },
+          })
+          .then((_data: any) => {
+            try {
+              setshowSpinner(false);
+              console.log('updateapicalled', _data);
+              props.navigation.pop(2, { immediate: true });
+              props.navigation.push(AppRoutes.AddressBook);
+            } catch (error) {}
+          })
+          .catch((e: any) => {
             setshowSpinner(false);
-            console.log('updateapicalled', _data);
-            props.navigation.push(AppRoutes.AddressBook);
-          } catch (error) {}
-        })
-        .catch((e: any) => {
-          setshowSpinner(false);
-          const error = JSON.parse(JSON.stringify(e));
-          console.log('Error occured while updateapicalled', error);
-        });
-      //props.navigation.goBack();
+            const error = JSON.parse(JSON.stringify(e));
+            console.log('Error occured while updateapicalled', error);
+          });
+        //props.navigation.goBack();
+      } else {
+        props.navigation.goBack();
+      }
     } else {
       const addressInput = {
         patientId: userId,
@@ -340,7 +358,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       try {
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
           saveAddress(addressInput),
-          pinCodeServiceabilityApi(pincode),
+          addOnly ? null : pinCodeServiceabilityApi(pincode),
         ]);
 
         setshowSpinner(false);
@@ -349,7 +367,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         addAddress && addAddress(address);
         addA!(address);
 
-        if (pinAvailabilityResult.data.Availability || addOnly) {
+        if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
           setDeliveryAddressId && setDeliveryAddressId(address.id || '');
           setD!(address.id || '');
           props.navigation.goBack();
@@ -398,7 +416,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
               onPress={() => {
-                console.log(props.navigation.getParam('DataAddress').id, !displayoverlay);
+                console.log(addressData.id, !displayoverlay);
                 // setdisplayoverlay(true);
                 setDeleteProfile(true);
               }}
@@ -750,7 +768,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                 client
                   .mutate<deletePatientAddress, deletePatientAddressVariables>({
                     mutation: DELETE_PATIENT_ADDRESS,
-                    variables: { id: props.navigation.getParam('DataAddress').id },
+                    variables: { id: addressData.id },
                     fetchPolicy: 'no-cache',
                   })
                   .then((_data: any) => {
@@ -842,7 +860,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             }}
           >
             <Button
-              title={props.navigation.getParam('KeyName') == 'Update' ? 'SAVE' : 'SAVE & USE'}
+              title={
+                props.navigation.getParam('KeyName') == 'Update' || addOnly ? 'SAVE' : 'SAVE & USE'
+              }
               style={{ marginHorizontal: 40, width: '70%' }}
               onPress={onSavePress}
               disabled={!isAddressValid}

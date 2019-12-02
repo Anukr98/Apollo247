@@ -10,7 +10,10 @@ import {
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  PhysicalPrescription,
+  EPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
@@ -42,6 +45,7 @@ import {
   Clinic,
   getPlaceInfoByPincode,
   searchClinicApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -201,6 +205,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     diagnosticSlot,
     setDiagnosticClinic,
     setDiagnosticSlot,
+    setEPrescriptions,
   } = useDiagnosticsCart();
 
   const clinicHours: clinicHoursData[] = [
@@ -224,7 +229,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
-  const { locationForDiagnostics } = useAppCommonData();
+  const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
   const { setLoading, showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
@@ -237,6 +242,49 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
+  const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+
+  useEffect(() => {
+    if (!(locationDetails && locationDetails.pincode)) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          getPlaceInfoByLatLng(latitude, longitude)
+            .then((obj) => {
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const _pincode = (
+                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                  ).long_name;
+                  setPinCode && setPinCode(_pincode || '');
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+        },
+        (error) => {
+          console.log(error.code, error.message, 'getCurrentPosition error');
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+      console.log('pincode');
+    } else {
+      setPinCode && setPinCode(locationDetails.pincode);
+    }
+  }, []);
+
+  useEffect(() => {
+    onFinishUpload();
+  }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   useEffect(() => {
     setPatientId!(currentPatientId!);
@@ -274,16 +322,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setLoading!(false);
+          setAddresses && setAddresses(addressList!);
+        })
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -526,57 +568,60 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const checkServicability = (
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress
   ) => {
-    setCheckingServicability(true);
-    client
-      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-        query: GET_DIAGNOSTIC_SLOTS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          patientId: currentPatient!.id,
-          hubCode: 'HYD_HUB1', // not considering this field at backend
-          selectedDate: moment(date).format('YYYY-MM-DD'),
-          zipCode: parseInt(selectedAddress.zipcode!),
-        },
-      })
-      .then(({ data }) => {
-        setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
-        setPinCode && setPinCode(selectedAddress.zipcode!);
-        aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
-        var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-        var t = finalaray!.slotInfo!.map((item) => {
-          return {
-            label: (item!.slot || '').toString(),
-            time: `${item!.startTime} - ${item!.endTime}`,
-          };
-        });
-        aphConsole.log(t, 'finalaray');
-        setDiagnosticSlot &&
-          setDiagnosticSlot({
-            employeeSlotId: finalaray!.slotInfo![0]!.slot!,
-            diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
-            diagnosticEmployeeCode: finalaray!.employeeCode || '',
-            slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
-            slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
-            city: selectedAddress!.city || '',
-            date: date.getTime(),
+    if (!checkingServicability) {
+      setCheckingServicability(true);
+      client
+        .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+          query: GET_DIAGNOSTIC_SLOTS,
+          fetchPolicy: 'no-cache',
+          variables: {
+            patientId: currentPatient!.id,
+            hubCode: 'HYD_HUB1', // not considering this field at backend
+            selectedDate: moment(date).format('YYYY-MM-DD'),
+            zipCode: parseInt(selectedAddress.zipcode!),
+          },
+        })
+        .then(({ data }) => {
+          setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
+          setPinCode && setPinCode(selectedAddress.zipcode!);
+          aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
+          var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+          var t = finalaray!.slotInfo!.map((item) => {
+            return {
+              label: (item!.slot || '').toString(),
+              time: `${item!.startTime} - ${item!.endTime}`,
+            };
           });
-        settimeArray(t);
-        setselectedTimeSlot(t[0].time);
-      })
-      .catch((e) => {
-        aphConsole.log('Error occured', { e });
-        setDeliveryAddressId && setDeliveryAddressId('');
-        setPinCode && setPinCode('');
-        setselectedTimeSlot('');
-        showAphAlert!({
-          title: 'Uh oh.. :(',
-          description:
-            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          aphConsole.log(t, 'finalaray');
+          setDiagnosticSlot &&
+            setDiagnosticSlot({
+              employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+              diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
+              diagnosticEmployeeCode: finalaray!.employeeCode || '',
+              slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
+              slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+              city: selectedAddress!.city || '',
+              date: date.getTime(),
+            });
+          settimeArray(t);
+          setselectedTimeSlot(t[0].time);
+        })
+        .catch((e) => {
+          aphConsole.log('Error occured', { e });
+          setDeliveryAddressId && setDeliveryAddressId('');
+          setDiagnosticSlot && setDiagnosticSlot(null);
+          setPinCode && setPinCode('');
+          setselectedTimeSlot('');
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          });
+        })
+        .finally(() => {
+          setCheckingServicability(false);
         });
-      })
-      .finally(() => {
-        setCheckingServicability(false);
-      });
+    }
   };
 
   const renderHomeDelivery = () => {
@@ -642,7 +687,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View style={styles.rowSpaceBetweenStyle}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
+            onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
           >
             ADD NEW ADDRESS
           </Text>
@@ -651,8 +696,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text
                 style={styles.yellowTextStyle}
                 onPress={() => {
-                  setDiagnosticSlot && setDiagnosticSlot(null);
-                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, { isTest: true });
+                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, {
+                    isTest: true,
+                    selectedAddressId: deliveryAddressId,
+                    isChanged: (val: boolean, id?: string) => {
+                      if (val && id) {
+                        setDeliveryAddressId && setDeliveryAddressId(id);
+                        setDiagnosticSlot && setDiagnosticSlot(null);
+                      }
+                    },
+                  });
                 }}
               >
                 VIEW ALL
@@ -1079,98 +1132,371 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       )
     );
   };
-  const onPressProceedToPay = () => {
+
+  const physicalPrescriptionUpload = () => {
     const prescriptions = physicalPrescriptions;
-    if (prescriptions.length == 0) {
-      console.log('withoutdocumnets');
-
-      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-    } else {
-      setLoading!(true);
-      const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-      console.log('unUploadedPres', unUploadedPres);
-      multiplePhysicalPrescriptionUpload(unUploadedPres)
-        .then((data) => {
-          setLoading!(false);
-
-          const uploadUrlscheck = data.map((item) =>
-            item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
-          );
-          console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-          var filtered = uploadUrlscheck.filter(function(el) {
-            return el != null;
-          });
-          console.log('filtered', filtered);
-
-          if (filtered.length > 0) {
-            client
-              .query<downloadDocuments>({
-                query: DOWNLOAD_DOCUMENT,
-                fetchPolicy: 'no-cache',
-                variables: {
-                  downloadDocumentsInput: {
-                    patientId: currentPatient && currentPatient.id,
-                    fileIds: uploadUrlscheck,
-                  },
-                },
-              })
-              .then(({ data }) => {
-                console.log(data, 'DOWNLOAD_DOCUMENT');
-                const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-                const uploadUrls = uploadUrlscheck!.map((item) => item);
-                console.log(uploadUrls, 'uploadUrls');
-                const newuploadedPrescriptions = unUploadedPres.map(
-                  (item, index) =>
-                    ({
-                      ...item,
-                      uploadedUrl: uploadUrls[index],
-                    } as PhysicalPrescription)
-                );
-                console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
-                setPhysicalPrescriptions &&
-                  setPhysicalPrescriptions([
-                    ...newuploadedPrescriptions,
-                    ...prescriptions.filter((item) => item.uploadedUrl),
-                  ]);
-                setLoading!(false);
-                props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-              })
-              .catch((e: string) => {
-                console.log('Error occured', e);
-              })
-              .finally(() => {
-                setshowSpinner(false);
-              });
-          } else {
-            Alert.alert('your uploaded images are failed');
-          }
-          // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-          // const newuploadedPrescriptions = unUploadedPres.map(
-          //   (item, index) =>
-          //     ({
-          //       ...item,
-          //       uploadedUrl: uploadUrls[index],
-          //     } as PhysicalPrescription)
-          // );
-          // setPhysicalPrescriptions &&
-          //   setPhysicalPrescriptions([
-          //     ...newuploadedPrescriptions,
-          //     ...prescriptions.filter((item) => item.uploadedUrl),
-          //   ]);
-          // setLoading!(false);
-          // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-        })
-        .catch((e) => {
-          aphConsole.log({ e });
-          setLoading!(false);
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: 'Error occurred while uploading prescriptions.',
-          });
+    setLoading!(true);
+    const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+    console.log('unUploadedPres', unUploadedPres);
+    multiplePhysicalPrescriptionUpload(unUploadedPres)
+      .then((data) => {
+        const uploadUrlscheck = data.map((item) =>
+          item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
+        );
+        console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+        var filtered = uploadUrlscheck.filter(function(el) {
+          return el != null;
         });
+        console.log('filtered', filtered);
+
+        if (filtered.length > 0) {
+          client
+            .query<downloadDocuments>({
+              query: DOWNLOAD_DOCUMENT,
+              fetchPolicy: 'no-cache',
+              variables: {
+                downloadDocumentsInput: {
+                  patientId: currentPatient && currentPatient.id,
+                  fileIds: uploadUrlscheck,
+                },
+              },
+            })
+            .then(({ data }) => {
+              console.log(data, 'DOWNLOAD_DOCUMENT');
+              const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+              console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+              const uploadUrls = uploadUrlscheck!.map((item) => item);
+              console.log(uploadUrls, 'uploadUrls');
+              const newuploadedPrescriptions = unUploadedPres.map(
+                (item, index) =>
+                  ({
+                    ...item,
+                    uploadedUrl: uploadUrls[index],
+                    prismPrescriptionFileId: filtered[index],
+                  } as PhysicalPrescription)
+              );
+              console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+              setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+              setisPhysicalUploadComplete(true);
+            })
+            .catch((e: string) => {
+              console.log('Error occured', e);
+            })
+            .finally(() => {});
+        } else {
+          setLoading!(false);
+          Alert.alert('your uploaded images are failed');
+        }
+        // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+        // const newuploadedPrescriptions = unUploadedPres.map(
+        //   (item, index) =>
+        //     ({
+        //       ...item,
+        //       uploadedUrl: uploadUrls[index],
+        //     } as PhysicalPrescription)
+        // );
+        // setPhysicalPrescriptions &&
+        //   setPhysicalPrescriptions([
+        //     ...newuploadedPrescriptions,
+        //     ...prescriptions.filter((item) => item.uploadedUrl),
+        //   ]);
+        // setLoading!(false);
+        // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+      })
+      .catch((e) => {
+        aphConsole.log({ e });
+        setLoading!(false);
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description: 'Error occurred while uploading prescriptions.',
+        });
+      });
+  };
+
+  const ePrescriptionUpload = () => {
+    setLoading!(true);
+    const ePresUrls = ePrescriptions.map((item) => {
+      console.log('item', item.prismPrescriptionFileId);
+      return item!.prismPrescriptionFileId;
+    });
+
+    console.log('ePresUrls', ePresUrls);
+    let ePresAndPhysicalPresUrls = [...ePresUrls];
+    console.log(
+      'ePresAndPhysicalPresUrls',
+      ePresAndPhysicalPresUrls
+        .join(',')
+        .split(',')
+        .map((item) => item.trim())
+        .filter((i) => i)
+    );
+    if (ePresAndPhysicalPresUrls.length > 0) {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: currentPatient && currentPatient.id,
+              fileIds: ePresAndPhysicalPresUrls
+                .join(',')
+                .split(',')
+                .map((item) => item.trim())
+                .filter((i) => i),
+            },
+          },
+        })
+        .then(({ data }) => {
+          console.log(data, 'DOWNLOAD_DOCUMENT');
+          const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+          if (uploadUrlscheck!.length > 0) {
+            const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+            console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+            const uploadUrls = uploadUrlscheck!.map((item) => item);
+            console.log(uploadUrls, 'uploadUrls');
+            const filescount = ePrescriptions.map(
+              (item) => item.prismPrescriptionFileId.split(',').length
+            );
+            let startIndex = 0;
+            const newuploadedPrescriptions = ePrescriptions.map((item, index) => {
+              const count = filescount[index];
+              const data = {
+                ...item,
+                uploadedUrl: uploadUrls.slice(startIndex, startIndex + count).join(','),
+              } as EPrescription;
+              startIndex = startIndex + count;
+              return data;
+            });
+            console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+            setEPrescriptions && setEPrescriptions(newuploadedPrescriptions);
+            console.log(ePrescriptions, 'setEPrescriptions');
+            setisEPrescriptionUploadComplete(true);
+          } else {
+            Alert.alert('Images are not uploaded');
+          }
+        })
+        .catch((e: string) => {
+          console.log('Error occured', e);
+        })
+        .finally(() => {});
     }
   };
+
+  const onFinishUpload = () => {
+    console.log(
+      physicalPrescriptions,
+      ePrescriptions,
+      isEPrescriptionUploadComplete,
+      isPhysicalUploadComplete,
+      'hhruso'
+    );
+
+    if (
+      physicalPrescriptions.length > 0 &&
+      ePrescriptions.length == 0 &&
+      isPhysicalUploadComplete
+    ) {
+      setLoading!(false);
+      setisPhysicalUploadComplete(false);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+    } else if (
+      physicalPrescriptions.length == 0 &&
+      ePrescriptions.length > 0 &&
+      isEPrescriptionUploadComplete
+    ) {
+      setLoading!(false);
+      setisEPrescriptionUploadComplete(false);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+    } else if (
+      physicalPrescriptions.length > 0 &&
+      ePrescriptions.length > 0 &&
+      isEPrescriptionUploadComplete &&
+      isPhysicalUploadComplete
+    ) {
+      setLoading!(false);
+      setisPhysicalUploadComplete(false);
+      setisEPrescriptionUploadComplete(false);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+    }
+  };
+
+  const onPressProceedToPay = () => {
+    const prescriptions = physicalPrescriptions;
+    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+      props.navigation.navigate(AppRoutes.CheckoutScene);
+    } else {
+      if (prescriptions.length > 0) {
+        physicalPrescriptionUpload();
+      }
+      if (ePrescriptions.length > 0) {
+        ePrescriptionUpload();
+      }
+    }
+  };
+  // const onPressProceedToPay = () => {
+  //   const prescriptions = physicalPrescriptions;
+  //   console.log(ePrescriptions, 'ePrescriptions');
+
+  //   if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+  //     console.log('withoutdocumnets');
+
+  //     props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //   } else {
+  //     if (prescriptions.length > 0) {
+  //       setLoading!(true);
+  //       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+  //       console.log('unUploadedPres', unUploadedPres);
+  //       multiplePhysicalPrescriptionUpload(unUploadedPres)
+  //         .then((data) => {
+  //           setLoading!(false);
+
+  //           const uploadUrlscheck = data.map((item) =>
+  //             item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
+  //           );
+  //           console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+  //           var filtered = uploadUrlscheck.filter(function(el) {
+  //             return el != null;
+  //           });
+  //           console.log('filtered', filtered);
+
+  //           if (filtered.length > 0) {
+  //             client
+  //               .query<downloadDocuments>({
+  //                 query: DOWNLOAD_DOCUMENT,
+  //                 fetchPolicy: 'no-cache',
+  //                 variables: {
+  //                   downloadDocumentsInput: {
+  //                     patientId: currentPatient && currentPatient.id,
+  //                     fileIds: uploadUrlscheck,
+  //                   },
+  //                 },
+  //               })
+  //               .then(({ data }) => {
+  //                 console.log(data, 'DOWNLOAD_DOCUMENT');
+  //                 const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //                 console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //                 const uploadUrls = uploadUrlscheck!.map((item) => item);
+  //                 console.log(uploadUrls, 'uploadUrls');
+  //                 const newuploadedPrescriptions = unUploadedPres.map(
+  //                   (item, index) =>
+  //                     ({
+  //                       ...item,
+  //                       uploadedUrl: uploadUrls[index],
+  //                     } as PhysicalPrescription)
+  //                 );
+  //                 console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+  //                 setPhysicalPrescriptions &&
+  //                   setPhysicalPrescriptions([
+  //                     ...newuploadedPrescriptions,
+  //                     ...prescriptions.filter((item) => item.uploadedUrl),
+  //                   ]);
+  //                 setLoading!(false);
+  //                 ePrescriptions.length == 0 &&
+  //                   props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //               })
+  //               .catch((e: string) => {
+  //                 console.log('Error occured', e);
+  //               })
+  //               .finally(() => {
+  //                 setshowSpinner(false);
+  //               });
+  //           } else {
+  //             Alert.alert('your uploaded images are failed');
+  //           }
+  //           // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+  //           // const newuploadedPrescriptions = unUploadedPres.map(
+  //           //   (item, index) =>
+  //           //     ({
+  //           //       ...item,
+  //           //       uploadedUrl: uploadUrls[index],
+  //           //     } as PhysicalPrescription)
+  //           // );
+  //           // setPhysicalPrescriptions &&
+  //           //   setPhysicalPrescriptions([
+  //           //     ...newuploadedPrescriptions,
+  //           //     ...prescriptions.filter((item) => item.uploadedUrl),
+  //           //   ]);
+  //           // setLoading!(false);
+  //           // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //         })
+  //         .catch((e) => {
+  //           aphConsole.log({ e });
+  //           setLoading!(false);
+  //           showAphAlert!({
+  //             title: 'Uh oh.. :(',
+  //             description: 'Error occurred while uploading prescriptions.',
+  //           });
+  //         });
+  //     }
+  //     if (ePrescriptions.length > 0) {
+  //       const ePresUrls = ePrescriptions.map((item) => {
+  //         console.log('item', item.prismPrescriptionFileId);
+
+  //         return item!.prismPrescriptionFileId;
+  //       });
+
+  //       console.log('ePresUrls', ePresUrls);
+  //       let ePresAndPhysicalPresUrls = [...ePresUrls];
+  //       console.log(
+  //         'ePresAndPhysicalPresUrls',
+  //         ePresAndPhysicalPresUrls
+  //           .join(',')
+  //           .split(',')
+  //           .map((item) => item.trim())
+  //           .filter((i) => i)
+  //       );
+  //       if (ePresAndPhysicalPresUrls.length > 0) {
+  //         client
+  //           .query<downloadDocuments>({
+  //             query: DOWNLOAD_DOCUMENT,
+  //             fetchPolicy: 'no-cache',
+  //             variables: {
+  //               downloadDocumentsInput: {
+  //                 patientId: currentPatient && currentPatient.id,
+  //                 fileIds: ePresAndPhysicalPresUrls
+  //                   .join(',')
+  //                   .split(',')
+  //                   .map((item) => item.trim())
+  //                   .filter((i) => i),
+  //               },
+  //             },
+  //           })
+  //           .then(({ data }) => {
+  //             console.log(data, 'DOWNLOAD_DOCUMENT');
+  //             const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //             console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //             if (uploadUrlscheck!.length > 0) {
+  //               const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //               console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //               const uploadUrls = uploadUrlscheck!.map((item) => item);
+  //               console.log(uploadUrls, 'uploadUrls');
+  //               const newuploadedPrescriptions = uploadUrls.map(
+  //                 (item, index) =>
+  //                   ({
+  //                     uploadedUrl: uploadUrls[index],
+  //                   } as EPrescription)
+  //               );
+  //               console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+  //               setEPrescriptions && setEPrescriptions([...ePrescriptions.filter((item) => item)]);
+  //               setLoading!(false);
+  //               console.log(ePrescriptions, 'setEPrescriptions');
+
+  //               props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //             } else {
+  //               Alert.alert('Images are not uploaded');
+  //             }
+  //           })
+  //           .catch((e: string) => {
+  //             console.log('Error occured', e);
+  //           })
+  //           .finally(() => {
+  //             setLoading!(false);
+  //           });
+  //       }
+  //     }
+  //   }
+  // };
 
   const renderProfiles = () => {
     return (
@@ -1216,11 +1542,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <ScheduleCalander
           date={date}
           setDate={(date) => setDate(date)}
-          setdisplayoverlay={setDisplaySchedule}
+          setdisplayoverlay={(val) => setDisplaySchedule(val)}
           selectedTimeSlot={selectedTimeSlot}
           setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
           isDropDown={true}
           dropdownArray={timeArray}
+          setDropArray={(array) => settimeArray(array)}
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
         />
       )}

@@ -29,7 +29,7 @@ import {
   getPatientByMobileNumber_getPatientByMobileNumber_patients,
 } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { PatientDefaultImage } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -73,14 +73,15 @@ export interface ManageProfileProps extends NavigationScreenProps {}
 
 export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const client = useApolloClient();
-  const { setLoading } = useUIElements();
+  const { loading, setLoading } = useUIElements();
 
   const [profiles, setProfiles] = useState<
     (getPatientByMobileNumber_getPatientByMobileNumber_patients | null)[]
   >();
   const [bottomPopUP, setBottomPopUP] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     props.navigation.goBack();
@@ -88,28 +89,41 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   };
 
   useEffect(() => {
-    setLoading!(true);
-    setIsLoading(true);
-    client
-      .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
-        query: GET_PATIENTS_MOBILE,
-        variables: {
-          mobileNumber: currentPatient && currentPatient!.mobileNumber,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data) => {
-        const profileData = data.data.getPatientByMobileNumber;
-        profileData && setProfiles(profileData!.patients!);
-      })
-      .catch((e: any) => {
-        setBottomPopUP(true);
-      })
-      .finally(() => {
-        setLoading!(false);
-        setIsLoading(false);
-      });
-  }, [currentPatient]);
+    setLoading && setLoading(true);
+    if (allCurrentPatients) {
+      setProfiles(allCurrentPatients.filter((item) => item.id !== item.emailAddress));
+      setLoading && setLoading(false);
+    } else {
+      getPatientApiCall();
+      setLoading && setLoading(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    // setLoading!(true);
+    // client
+    //   .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
+    //     query: GET_PATIENTS_MOBILE,
+    //     variables: {
+    //       mobileNumber: currentPatient && currentPatient!.mobileNumber,
+    //     },
+    //     fetchPolicy: 'no-cache',
+    //   })
+    //   .then((data) => {
+    //     const profileData = data.data.getPatientByMobileNumber;
+    //     profileData && setProfiles(profileData!.patients!);
+    //   })
+    //   .catch((e: any) => {
+    //     setBottomPopUP(true);
+    //   })
+    //   .finally(() => {
+    //     setLoading!(false);
+    //   });
+    if (allCurrentPatients) {
+      setLoading && setLoading(false);
+      setProfiles(allCurrentPatients.filter((item) => item.id !== item.emailAddress));
+    }
+  }, [allCurrentPatients]);
 
   const renderHeader = () => {
     return (
@@ -234,7 +248,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 ...fonts.IBMPlexSansMedium(12),
               }}
             >
-              {isLoading ? '' : 'No Profiles avaliable'}
+              {loading ? '' : 'No Profiles avaliable'}
             </Text>
           </View>
         )}
@@ -248,12 +262,12 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         <Button
           title="ADD NEW PROFILE"
           style={{ flex: 1, marginHorizontal: 60 }}
-          onPress={() =>
+          onPress={() => {
             props.navigation.navigate(AppRoutes.EditProfile, {
               isEdit: false,
               mobileNumber: currentPatient && currentPatient!.mobileNumber,
-            })
-          }
+            });
+          }}
         />
       </StickyBottomComponent>
     );
@@ -270,7 +284,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         {renderProfilesDetails()}
         <View style={{ padding: 40 }} />
       </ScrollView>
-      {!isLoading && renderBottomStickyComponent()}
+      {!loading && renderBottomStickyComponent()}
       {bottomPopUP && (
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>
           <View style={{ height: 60, alignItems: 'flex-end' }}>

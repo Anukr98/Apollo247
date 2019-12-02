@@ -30,6 +30,8 @@ import {
   TouchableOpacity,
   View,
   WebView,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
@@ -368,6 +370,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     });
   };
 
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    console.log('nextAppState :' + nextAppState);
+    if (nextAppState === 'active') {
+      getTimerData();
+    }
+  };
   useEffect(() => {
     // const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
     //   const newOtp = message.body.match(/-*[0-9]+/);
@@ -382,6 +390,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     //   console.log('hardwareBackPress');
     //   return false;
     // });
+    AppState.addEventListener('change', _handleAppStateChange);
   }, []);
 
   useEffect(() => {
@@ -587,7 +596,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={
-                  otp.length === 0 && invalidOtpCount > 0
+                  otp.length != 6 && invalidOtpCount >= 1
                     ? theme.colors.INPUT_BORDER_FAILURE
                     : theme.colors.INPUT_BORDER_SUCCESS
                 }
