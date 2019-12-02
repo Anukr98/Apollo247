@@ -818,16 +818,6 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
   }
 `;
 
-export const GET_DOCTOR_FAVOURITE_ADVICE_LIST = gql`
-  query GetDoctorFavouriteAdviceList {
-    getDoctorFavouriteAdviceList {
-      adviceList {
-        instruction
-      }
-    }
-  }
-`;
-
 export const GET_DOCTOR_FAVOURITE_TEST_LIST = gql`
   query GetDoctorFavouriteTestList {
     getDoctorFavouriteTestList {
@@ -861,6 +851,48 @@ export const ADD_DOCTOR_FAVOURITE_TEST = gql`
   }
 `;
 
+export const GET_DOCTOR_FAVOURITE_ADVICE_LIST = gql`
+  query GetDoctorFavouriteAdviceList {
+    getDoctorFavouriteAdviceList {
+      adviceList {
+        id
+        instruction
+      }
+    }
+  }
+`;
+export const ADD_DOCTOR_FAVOURITE_ADVICE = gql`
+  mutation AddDoctorFavouriteAdvice($instruction: String!) {
+    addDoctorFavouriteAdvice(instruction: $instruction) {
+      adviceList {
+        id
+        instruction
+      }
+    }
+  }
+`;
+
+export const UPDATE_DOCTOR_FAVOURITE_ADVICE = gql`
+  mutation UpdateDoctorFavouriteAdvice($id: ID!, $instruction: String!) {
+    updateDoctorFavouriteAdvice(id: $id, instruction: $instruction) {
+      adviceList {
+        id
+        instruction
+      }
+    }
+  }
+`;
+
+export const DELETE_DOCTOR_FAVOURITE_ADVICE = gql`
+  mutation DeleteDoctorFavouriteAdvice($instructionId: ID!) {
+    deleteDoctorFavouriteAdvice(instructionId: $instructionId) {
+      adviceList {
+        id
+        instruction
+      }
+    }
+  }
+`;
 export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
   mutation UpdateDoctorFavouriteMedicine(
     $updateDoctorsFavouriteMedicineInput: UpdateDoctorsFavouriteMedicineInput

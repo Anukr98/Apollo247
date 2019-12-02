@@ -8,6 +8,7 @@
 
 export interface GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList {
   __typename: "DoctorsFavouriteAdvice";
+  id: string;
   instruction: string;
 }
 
