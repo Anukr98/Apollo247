@@ -9,6 +9,7 @@ import {
   Connection,
   In,
   Equal,
+  IsNull,
 } from 'typeorm';
 import {
   Appointment,
@@ -805,7 +806,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         {
           bookingDate: Between(newStartDate, newEndDate),
           appointmentState: 'NEW',
-          cancelledBy: Not(Equal(REQUEST_ROLES.PATIENT)),
+          status: Not(STATUS.CANCELLED),
         },
       ],
       order: { bookingDate: 'DESC' },
