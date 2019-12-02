@@ -89,6 +89,7 @@ export enum NotificationType {
 export enum APPT_CALL_TYPE {
   AUDIO = 'AUDIO',
   VIDEO = 'VIDEO',
+  CHAT = 'CHAT',
 }
 
 export enum DOCTOR_CALL_TYPE {
