@@ -42,6 +42,7 @@ export const getNotificationsTypeDefs = gql`
   enum APPT_CALL_TYPE {
     AUDIO
     VIDEO
+    CHAT
   }
 
   enum DOCTOR_CALL_TYPE {
