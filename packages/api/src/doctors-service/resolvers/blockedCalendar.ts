@@ -209,6 +209,14 @@ const blockMultipleCalendarItems: Resolver<
   const doctorId = blockCalendarInputs.doctorId;
   const reason = blockCalendarInputs.reason;
   const CalendarItem: BlockedCalendarItem[] = [];
+  const exceptions = await checkOverlapsAndException(0, 0);
+
+  if (exceptions.dateException > 0) {
+    throw new AphError(AphErrorMessages.INVALID_DATES);
+  }
+  if (exceptions.overlapCount > 0) {
+    throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
+  }
 
   const uniqueCalendarItems = _.uniqWith(
     blockCalendarInputs.itemDetails,
@@ -220,14 +228,6 @@ const blockMultipleCalendarItems: Resolver<
 
   if (uniqueCalendarItems.length != blockCalendarInputs.itemDetails.length)
     throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
-
-  const exceptions = await checkOverlapsAndException(0, 0);
-  if (exceptions.dateException > 0) {
-    throw new AphError(AphErrorMessages.INVALID_DATES);
-  }
-  if (exceptions.overlapCount > 0) {
-    throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
-  }
 
   await bciRepo.save(CalendarItem);
 
@@ -265,9 +265,18 @@ const blockMultipleCalendarItems: Resolver<
         );
         if (calendarItemsOverlap) overlapCount++;
 
-        if (isEqual(new Date(start), new Date(end))) dateException++;
-        if (isAfter(new Date(start), new Date(end))) dateException++;
-        if (isAfter(new Date(), new Date(start))) dateException++;
+        if (isEqual(new Date(start), new Date(end))) {
+          dateException++;
+          resolve({ overlapCount, dateException });
+        }
+        if (isAfter(new Date(start), new Date(end))) {
+          dateException++;
+          resolve({ overlapCount, dateException });
+        }
+        if (isAfter(new Date(), new Date(start))) {
+          dateException++;
+          resolve({ overlapCount, dateException });
+        }
 
         const consultMode = item.consultMode;
         const itemToAdd = bciRepo.create({ doctorId, start, end, reason, consultMode });
@@ -275,7 +284,10 @@ const blockMultipleCalendarItems: Resolver<
         const existingItems = await bciRepo.find({ doctorId });
 
         const overlap = doesItemOverlap(itemToAdd, existingItems);
-        if (overlap) overlapCount++;
+        if (overlap) {
+          overlapCount++;
+          resolve({ overlapCount, dateException });
+        }
         currentIndex++;
         if (currentIndex == blockCalendarInputs.itemDetails.length)
           resolve({ overlapCount, dateException });
