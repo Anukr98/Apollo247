@@ -293,7 +293,7 @@ export const MedicineLanding: React.FC = (props) => {
               <div className={classes.sectionTitle}>
                 <span>Shop by Brand</span>
                 <div className={classes.viewAllLink}>
-                  <Link to={clientRoutes.yourOrders()}>
+                  <Link to={clientRoutes.medicineAllBrands()}>
                     View All
                   </Link>
                 </div>
