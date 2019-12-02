@@ -105,7 +105,7 @@ const cancelAppointment: Resolver<
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
-  const mailSubject = `Appointment has been cancelled`;
+  const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
 
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
 
@@ -113,9 +113,7 @@ const cancelAppointment: Resolver<
   const apptTime = format(istDateTime, 'hh:mm');
   const patientName = appointment.patientName;
   const mailContent = `Appointment booked on Apollo 247 by ${patientName} on ${apptDate} at ${apptTime} has been cancelled`;
-
-  // const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
-  const toEmailId = 'sriram.kanchan@popcornapps.com';
+  const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
     process.env.NODE_ENV == 'development' ||
@@ -125,7 +123,7 @@ const cancelAppointment: Resolver<
   const emailContent: EmailMessage = {
     ccEmail: ccEmailIds.toString(),
     toEmail: toEmailId.toString(),
-    subject: mailSubject,
+    subject: mailSubject.toString(),
     fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
     fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
     messageContent: mailContent,
