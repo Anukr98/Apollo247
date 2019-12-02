@@ -279,12 +279,7 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   let doctordata: Doctor;
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    // doctordata = (await doctorRepository.findById(args.id)) as Doctor;
-    doctordata = (await doctorRepository
-      .createQueryBuilder('doctor')
-      .leftJoinAndSelect('doctor.consultHours', 'consultHours')
-      .where('doctor.id = :id', { id: args.id })
-      .getOne()) as Doctor;
+    doctordata = (await doctorRepository.findById(args.id)) as Doctor;
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
