@@ -223,7 +223,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'followup',
-      value: 'Follow up (free)',
+      value: 'Follow up (Free)',
       state: followUpPanel,
       component: <FollowUp startAppointment={props.startAppointment} />,
     },

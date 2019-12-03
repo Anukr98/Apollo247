@@ -390,8 +390,8 @@ export const ConsultTabs: React.FC = () => {
 
   useEffect(() => {
     if (startAppointment) {
-      followUp[0] = startAppointment;
-      setFollowUp(followUp);
+      //followUp[0] = startAppointment;
+      // setFollowUp(followUp);
     }
   }, [startAppointment]);
 

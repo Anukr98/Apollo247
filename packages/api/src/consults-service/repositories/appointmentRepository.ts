@@ -8,7 +8,6 @@ import {
   Not,
   Connection,
   In,
-  Equal,
 } from 'typeorm';
 import {
   Appointment,
@@ -58,7 +57,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       patientId,
       doctorId,
       cancelledById: patientId,
-      bookingDate: Between(newStartDate, newEndDate),
+      cancelledDate: Between(newStartDate, newEndDate),
     };
     return this.count({ where: whereClause });
   }
@@ -492,6 +491,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const inputStartDate = format(addDays(selectedDate, -1), 'yyyy-MM-dd');
     const currentStartDate = new Date(inputStartDate + 'T18:30');
     const currentEndDate = new Date(format(selectedDate, 'yyyy-MM-dd').toString() + 'T18:29');
+    let consultBuffer = 0;
     const doctorAppointments = await this.find({
       where: {
         doctorId,
@@ -516,6 +516,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
         const duration = Math.floor(60 / docConsultHr.consultDuration);
         console.log(duration, 'doctor duration');
+        consultBuffer = docConsultHr.consultBuffer;
+
         let slotsCount =
           (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
         if (slotsCount - Math.floor(slotsCount) == 0.5) {
@@ -581,7 +583,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       let foundFlag = 0;
       availableSlots.map((slot) => {
         const slotDate = new Date(slot);
-        if (slotDate >= new Date() && foundFlag == 0) {
+
+        const timeWithBuffer = addMinutes(new Date(), consultBuffer);
+
+        if (slotDate >= timeWithBuffer && foundFlag == 0) {
           finalSlot = slot;
           foundFlag = 1;
         }
@@ -697,6 +702,12 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
+    return this.update(id, {
+      isJdQuestionsComplete,
+    });
+  }
+
   rescheduleAppointmentByDoctor(
     id: string,
     appointmentDateTime: Date,
@@ -722,6 +733,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         doctorCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -731,6 +743,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         patientCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -805,7 +818,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         {
           bookingDate: Between(newStartDate, newEndDate),
           appointmentState: 'NEW',
-          cancelledBy: Not(Equal(REQUEST_ROLES.PATIENT)),
+          status: Not(STATUS.CANCELLED),
         },
       ],
       order: { bookingDate: 'DESC' },
