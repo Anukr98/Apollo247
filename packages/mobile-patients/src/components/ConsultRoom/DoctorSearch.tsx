@@ -307,7 +307,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       })
       .then(({ data }) => {
         try {
-          if (data && data.getAllSpecialties && Specialities !== data.getAllSpecialties) {
+          if (
+            data &&
+            data.getAllSpecialties &&
+            Specialities !== data.getAllSpecialties &&
+            data.getAllSpecialties.length
+          ) {
             setSpecialities(data.getAllSpecialties);
             setshowSpinner(false);
             AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
@@ -355,8 +360,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       AsyncStorage.setItem('APICalledDate', todayDate);
     }
     isToday = checkDate ? checkDate === todayDate : false;
-    if (isToday) {
-      const specialistData = await AsyncStorage.getItem('SpecialistData');
+    const specialistData = await AsyncStorage.getItem('SpecialistData');
+    if (isToday && specialistData && specialistData.length) {
       specialistData && setSpecialities(JSON.parse(specialistData));
       setshowSpinner(false);
     } else {

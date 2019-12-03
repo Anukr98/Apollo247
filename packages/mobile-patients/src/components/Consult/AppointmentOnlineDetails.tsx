@@ -30,6 +30,7 @@ import {
   APPOINTMENT_STATE,
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
+  STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -298,7 +299,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           setshowSpinner(false);
           console.log('Error occured while adding Doctor', e);
           const message = e.message ? e.message.split(':')[1].trim() : '';
-          if (message == 'INVALID_APPOINTMENT_ID') {
+          if (
+            message == 'INVALID_APPOINTMENT_ID' ||
+            message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
+          ) {
             showAphAlert!({
               title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
               description: 'Ongoing / Completed appointments cannot be cancelled.',
@@ -439,6 +443,15 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+    let showCancel =
+      (dateIsAfter &&
+        (data.status === STATUS.IN_PROGRESS &&
+          data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE)) ||
+      data.status == STATUS.NO_SHOW ||
+      false;
+    if (showCancel == false) {
+      showCancel = dateIsAfter;
+    }
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -446,7 +459,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             title="UPCOMING ONLINE VISIT"
             leftIcon="backArrow"
             rightComponent={
-              dateIsAfter ? (
+              showCancel ? (
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {

@@ -168,7 +168,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${props.data.rescheduleCount}  times for free.`}
                 </Text>
               )} */}
-              {props.isbelowthree ? (
+              {props.isbelowthree || props.data.appointmentState === 'AWAITING_RESCHEDULE' ? (
                 <Text
                   style={{
                     color: '#01475b',
@@ -179,9 +179,11 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     paddingHorizontal: 16,
                   }}
                 >
-                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${rescheduleCounting} ${
-                    rescheduleCounting == 1 ? 'time' : 'times'
-                  } for free.`}
+                  {`We’re sorry that you have to reschedule.`}
+                  {props.data.appointmentState !== 'AWAITING_RESCHEDULE' &&
+                    `\nYou can reschedule up to ${rescheduleCounting} ${
+                      rescheduleCounting == 1 ? 'time' : 'times'
+                    } for free.`}
                 </Text>
               ) : (
                 <Text
@@ -200,7 +202,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     props.doctor.firstName}, we will consider this a new paid appointment.`} */}
                 </Text>
               )}
-              {props.isbelowthree ? (
+              {props.isbelowthree || props.data.appointmentState === 'AWAITING_RESCHEDULE' ? (
                 <>
                   <Text
                     style={{
@@ -247,7 +249,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                 </>
               ) : null}
 
-              {props.isbelowthree ? (
+              {props.isbelowthree || props.data.appointmentState === 'AWAITING_RESCHEDULE' ? (
                 <View
                   style={{
                     paddingHorizontal: 0,
