@@ -209,7 +209,6 @@ const useStyles = makeStyles((theme: Theme) =>
       lineHeight: 'normal',
       color: 'rgba(2, 71, 91, 0.6) !important',
       marginBottom: 12,
-      paddingLeft: 335,
     },
     backArrow: {
       cursor: 'pointer',
@@ -342,7 +341,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       top: 5,
-      right: 40,
+      right: 4,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
@@ -418,6 +417,29 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     unitsSelect: {
       marginTop: -7,
+    },
+    medicineCard: {
+    color: 'rgba(0, 0, 0, 0.54)',
+    border: '1px solid rgba(2,71,91,0.1)',
+    padding: '12px 40px 12px 12px',
+    position: 'relative',
+    maxWidth: '100%',
+    boxShadow: 'none',
+    textAlign: 'left',
+    borderRadius: 5,
+    marginBottom: 12,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    '& h5': {
+      color: '#02475b',
+      margin: 0,
+      fontSize: 14,
+      fontWeight: 600,
+      },
+      '& h6': {
+        color: '#02475b',
+        margin: 0,
+        fontSize: 12,
+      },
     },
   })
 );
@@ -903,19 +925,10 @@ export const MedicinePrescription: React.FC = () => {
     renderSuggestion,
   };
   return (
-    <div className={classes.root}>
-      <div className={classes.medicineHeading}>Medicines</div>
-      {caseSheetEdit && (
-        <AphButton
-          variant="contained"
-          color="primary"
-          classes={{ root: classes.btnAddDoctor }}
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
-        </AphButton>
-      )}
+    <div className={classes.root}>      
       <Grid container spacing={1}>
+      <Grid item lg={6} xs={12}>
+      <div className={classes.medicineHeading}>Medicines</div>
         {selectedMedicinesArr!.map((_medicine: any, index: number) => {
           const medicine = _medicine!;
 
@@ -939,19 +952,16 @@ export const MedicinePrescription: React.FC = () => {
               ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
               : medicine.medicineDosage;
           return (
-            <Grid key={index} container spacing={1}>
-              <Grid sm={6} xs={12} item>
+           
                  
                 <div style={{ position: 'relative' }}>
-                            {' '}
-                  <Paper className={`${classes.paper} ${classes.activeCard}`}>
+                  <Paper className={classes.medicineCard}>
                                 <h5>{medicine.medicineName}</h5>
                                 
                     <h6>
                                     {/*medicine.medicineTimings.length*/}
                                     {dosageCount} {unitHtml} a day{' '}
                                     {timesString.length > 0 && timesString} for {duration}
-                      {' '}
                                     {whenString.length > 0 && whenString}
                                   
                     </h6>
@@ -970,10 +980,21 @@ export const MedicinePrescription: React.FC = () => {
                   </AphButton>
                           
                 </div>
-              </Grid>
-            </Grid>
+             
           );
         })}
+{caseSheetEdit && (
+        <AphButton
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.btnAddDoctor }}
+          onClick={() => setIsDialogOpen(true)}
+        >
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
+        </AphButton>
+      )}
+        </Grid>
+      <Grid item lg={6} xs={12}>
         <div className={classes.favmedicineHeading}>Favourite Medicines</div>
         {favouriteMedicine &&
           favouriteMedicine.map((favMedicine, id,index) => {
@@ -1009,8 +1030,8 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const favMedicineName = favMedicine && favMedicine.medicineName;
             return (
-              <Grid key={id} container spacing={1}>
-                <Grid sm={6} xs={12} item>
+              
+                
                   <div style={{ position: 'relative' }}>
                     <Paper className={`${classes.paper} ${classes.activeCard}`}>
                       <h5>{favMedicineName}</h5>
@@ -1035,10 +1056,10 @@ export const MedicinePrescription: React.FC = () => {
                       />
                     </AphButton>
                   </div>
-                </Grid>
-              </Grid>
+              
             );
           })}
+</Grid>
       </Grid>
       {isEditFavMedicine && (
         <Modal
