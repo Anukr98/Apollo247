@@ -50,6 +50,7 @@ import {
   BookTransferAppointmentInput,
   TRANSFER_INITIATED_TYPE,
   UPLOAD_FILE_TYPES,
+  STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -165,6 +166,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     : '';
 
   // console.log('appointmentData', appointmentData);
+
+  const dateIsAfter = moment(appointmentData.appointmentDateTime).isAfter(moment(new Date()));
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -712,7 +715,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       console.log('doctor no show scenario');
 
-      if (startConsultJRResult.length > 0 && stopConsultJRResult.length > 0) {
+      if (
+        startConsultJRResult.length > 0 &&
+        stopConsultJRResult.length > 0 &&
+        dateIsAfter &&
+        appointmentData.status === STATUS.PENDING
+      ) {
         startCallAbondmentTimer(180, true);
       }
     }
@@ -803,12 +811,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           const end: any = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
-          // console.log('msgs', msgs);
+          console.log('msgs', msgs);
 
           res.messages.forEach((element, index) => {
             newmessage[newmessage.length] = element.entry;
           });
-          console.log('newmessage', newmessage);
+          // console.log('newmessage', newmessage);
           setLoading(false);
 
           if (messages.length !== newmessage.length) {
@@ -824,16 +832,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               checkingAppointmentDates();
             }
 
-            insertText = newmessage;
-            setMessages(newmessage as []);
             // console.log('newmessage', newmessage);
             if (msgs.length == 100) {
               console.log('hihihihihi');
               getHistory(end);
+              return;
             }
 
-            checkAutomatedPatientText();
-            checkForRescheduleMessage(newmessage);
+            setTimeout(() => {
+              console.log('inserting');
+
+              insertText = newmessage;
+              setMessages(newmessage as []);
+              checkAutomatedPatientText();
+              checkForRescheduleMessage(newmessage);
+            }, 100);
 
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
@@ -1126,16 +1139,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    console.log('addMessages', message, message.timetoken);
-    stopCallAbondmentTimer();
-    setIsDoctorNoShow(false);
+    // console.log('addMessages', message, message.timetoken);
+    if (message.message.id !== patientId) {
+      stopCallAbondmentTimer();
+      setIsDoctorNoShow(false);
+    }
 
-    const timeStamp = parseInt(message.timetoken) / parseInt('10000000');
-    console.log('timeStamp', timeStamp);
+    // const timeStamp = parseInt(message.timetoken) / parseInt('10000000');
+    // console.log('timeStamp', timeStamp);
 
-    let dateObj = new Date(timeStamp * 1000);
-    let utcString = dateObj.toLocaleString();
-    console.log('utcString', utcString);
+    // let dateObj = new Date(timeStamp * 1000);
+    // let utcString = dateObj.toLocaleString();
+    // console.log('utcString', utcString);
 
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
@@ -2032,17 +2047,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : rowData.message === '^^#startconsult' ? (
@@ -2054,17 +2084,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : rowData.message === stopConsultJr ? (
@@ -2076,39 +2121,69 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : (
-            <View
-              style={{
-                backgroundColor: 'white',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              <Text
+            <>
+              <View
                 style={{
-                  color: '#0087ba',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  textAlign: 'left',
+                  backgroundColor: 'white',
+                  marginLeft: 38,
+                  borderRadius: 10,
                 }}
               >
-                {rowData.message}
-              </Text>
-            </View>
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    paddingHorizontal: 16,
+                    paddingTop: 8,
+                    paddingBottom: 3,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
+              </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+            </>
           )}
         </View>
       </View>
@@ -2225,6 +2300,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   </Text>
                 )}
               </View>
+              <Text
+                style={{
+                  color: '#890000',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+              <View style={{ backgroundColor: 'transparent', height: 5, width: 20 }} />
             </View>
           </View>
         ) : (
@@ -2298,14 +2385,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
-                    marginLeft: 0,
+                    marginLeft: 14,
                     textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
                   Duration - {rowData.duration}
                 </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingLeft: 16,
+                    paddingVertical: 4,
+                    paddingRight: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
               </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
             </View>
           </View>
         )}
@@ -2324,17 +2424,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {rowData.automatedText ? (
-          <Text
-            style={{
-              color: '#ffffff',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-            }}
-          >
-            {rowData.automatedText}
-          </Text>
+          <>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingTop: 8,
+                paddingBottom: 4,
+                paddingHorizontal: 16,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+              }}
+            >
+              {rowData.automatedText}
+            </Text>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingHorizontal: 16,
+                paddingVertical: 4,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+          </>
         ) : null}
       </View>
     );
@@ -2352,17 +2467,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {rowData.automatedText ? (
-          <Text
-            style={{
-              color: '#ffffff',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-            }}
-          >
-            {rowData.automatedText}
-          </Text>
+          <>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingTop: 8,
+                paddingBottom: 4,
+                paddingHorizontal: 16,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+              }}
+            >
+              {rowData.automatedText}
+            </Text>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingHorizontal: 16,
+                paddingVertical: 4,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+          </>
         ) : null}
       </View>
     );
@@ -2463,13 +2593,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
+                    marginLeft: 14,
                     textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
                   Duration - {rowData.duration}
                 </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingLeft: 16,
+                    paddingVertical: 4,
+                    paddingRight: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
               </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
             </View>
           ) : (
             <View>
@@ -2546,39 +2690,41 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   )}
                 </View>
               ) : (
-                <View
-                  style={{
-                    backgroundColor: 'white',
-                    // width: 244,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-end',
-                  }}
-                >
-                  <Text
+                <>
+                  <View
                     style={{
-                      color: '#01475b',
-                      paddingHorizontal: 16,
-                      paddingTop: 12,
-                      paddingBottom: 4,
-                          textAlign: 'right',
-                      ...theme.fonts.IBMPlexSansMedium(16),
+                      backgroundColor: 'white',
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      alignSelf: 'flex-end',
                     }}
                   >
-                    {rowData.message}
-                  </Text>
-                  <Text
-                    style={{
-                      color: 'rgba(2,71,91,0.6)',
-                      paddingHorizontal: 16,
-                      paddingVertical: 4,
-                      textAlign: 'right',
-                      ...theme.fonts.IBMPlexSansMedium(10),
-                    }}
-                  >
-                    {convertChatTime(rowData)}
-                  </Text>
-                </View>
+                    <Text
+                      style={{
+                        color: '#01475b',
+                        paddingTop: 8,
+                        paddingBottom: 3,
+                        paddingHorizontal: 16,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(16),
+                      }}
+                    >
+                      {rowData.message}
+                    </Text>
+                    <Text
+                      style={{
+                        color: 'rgba(2,71,91,0.6)',
+                        paddingHorizontal: 16,
+                        paddingVertical: 4,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(10),
+                      }}
+                    >
+                      {convertChatTime(rowData)}
+                    </Text>
+                  </View>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               )}
             </View>
           )}
@@ -2588,7 +2734,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const convertChatTime = (timeStamp: any) => {
-
     let utcString;
     if (timeStamp.messageDate) {
       const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
@@ -2603,9 +2748,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         utcString = moment
           .utc(timeStamp.messageDate)
           .local()
-          .format('DD MMM h:mm A');
+          .format('DD MMM, YYYY h:mm A');
       }
-    } 
+    }
     return utcString ? utcString : '--';
   };
 
@@ -2816,8 +2961,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     // console.log('renderChatView');
 
     return (
-      <View style={{ width: width, height: heightList, marginTop: 0 }}>
+      <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
+          style={{
+            // flexGrow: 1,
+            flex: 1,
+          }}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
@@ -2828,10 +2977,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           bounces={false}
           data={messages}
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.2}
           renderItem={({ item, index }) => renderChatRow(item, index)}
           keyExtractor={(_, index) => index.toString()}
           numColumns={1}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
         />
       </View>
     );
@@ -2867,11 +3018,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
                 resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
+                onPublishStart={(event: any) => {
+                  console.log('onPublishStart', event);
+                }}
+                onPublishStop={(event: any) => {
+                  console.log('onPublishStop', event);
+                }}
+                onPublishError={(event: any) => {
+                  console.log('onPublishError', event);
+                }}
               />
               <OTSubscriber
                 style={subscriberStyles}
                 subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
+                onSubscribeStart={(event: any) => {
+                  console.log('Watching started', event);
+                }}
+                onSubscribeStop={(event: any) => {
+                  console.log('onSubscribeStop', event);
+                }}
+                onSubscribeError={(event: any) => {
+                  console.log('onSubscribeError', event);
+                }}
                 properties={{
                   subscribeToAudio: true,
                   subscribeToVideo: true,
@@ -2999,6 +3168,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
             resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
+            onPublishStart={(event: any) => {
+              console.log('onPublishStart', event);
+            }}
+            onPublishStop={(event: any) => {
+              console.log('onPublishStop', event);
+            }}
+            onPublishError={(event: any) => {
+              console.log('onPublishError', event);
+            }}
           />
           <OTSubscriber
             style={
@@ -3011,6 +3189,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
             eventHandlers={subscriberEventHandlers}
             subscribeToSelf={true}
+            onSubscribeStart={(event: any) => {
+              console.log('Watching started', event);
+            }}
+            onSubscribeStop={(event: any) => {
+              console.log('onSubscribeStop', event);
+            }}
+            onSubscribeError={(event: any) => {
+              console.log('onSubscribeError', event);
+            }}
             properties={{
               subscribeToAudio: true,
               subscribeToVideo: convertVideo ? true : false,
