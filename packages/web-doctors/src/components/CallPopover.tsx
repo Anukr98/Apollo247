@@ -11,7 +11,7 @@ import {
   FormHelperText
 } from "@material-ui/core";
 import { Prompt, Link } from "react-router-dom";
-import Pubnub from "pubnub";
+//import Pubnub from "pubnub";
 import moment from "moment";
 import { isEmpty } from "lodash";
 import { AphSelect, AphTextField } from "@aph/web-ui-components";
@@ -573,6 +573,9 @@ interface CallPopoverProps {
   //sendToPatientAction: (isSentToPatient: boolean) => void;
   setIsPdfPageOpen: (flag: boolean) => void;
   callId: string;
+  pubnub: any;
+  lastMsg: any;
+  presenceEventObject: any;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -595,8 +598,9 @@ let intervalcallId: any;
 let stoppedTimerCall: number;
 let patientMsgs: any = [];
 let intervalMissCall: any;
-let stoppedMissedCallTimer: number;
 let missedCallCounter: number = 0;
+let intervalCallAbundant: any;
+let isConsultStarted: boolean = false;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -642,7 +646,9 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<
     boolean
   >(false);
+
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
+  const [showAbandonment, setShowAbandonment] = React.useState(false);
   const [startingTime, setStartingTime] = useState<number>(0);
 
   // timer for audio/video call start
@@ -658,8 +664,29 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       setStartingTime(timer);
     }, 1000);
   };
+
+  //call abundant timer start
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+  const callAbundantIntervalTimer = (timer: number) => {
+    intervalCallAbundant = setInterval(() => {
+      timer = timer - 1;
+      stoppedTimerCall = timer;
+      setCallAbundantCallTime(timer);
+      if (timer < 1) {
+        setCallAbundantCallTime(0);
+        clearInterval(intervalCallAbundant);
+        if (showVideo) {
+          stopAudioVideoCall();
+        }
+        setShowAbandonment(true);
+        //callInitiateReschedule(true);
+      }
+    }, 1000);
+  };
+  //call abundant timer end
+
   // timer for ring called start
-  const [ringingCallTime, setRingingCallTime] = useState<number>(32);
+  const [ringingCallTime, setRingingCallTime] = useState<number>(30);
   const missedCallIntervalTimer = (timer: number) => {
     intervalMissCall = setInterval(() => {
       timer = timer - 1;
@@ -694,7 +721,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
           props.appointmentStatus === STATUS.IN_PROGRESS
         ) {
           console.log(props.appointmentStatus, patientMsgs.length);
-          //noShowAction();
+          noShowAction();
         }
       }
     }, 1000);
@@ -714,9 +741,13 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       })
       .then(_data => {
         unSubscribeBrowserButtonsListener();
-        pubnub.unsubscribe({ channels: [channel] });
-        alert("Patient not responding.");
-        window.location.href = clientRoutes.calendar();
+        alert(
+          "Since the patient has not joined the chat, we are rescheduling the appointment."
+        );
+        if (document.getElementById("homeId")) {
+          document.getElementById("homeId")!.click();
+        }
+        //window.location.href = clientRoutes.calendar();
       })
       .catch(e => {
         const error = JSON.parse(JSON.stringify(e));
@@ -814,7 +845,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         storeInHistory: true,
         sendByPost: true
       },
-      (status, response) => {
+      (status: any, response: any) => {
         //setMessageText('');
       }
     );
@@ -841,7 +872,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         storeInHistory: true,
         sendByPost: true
       },
-      (status, response) => {
+      (status: any, response: any) => {
         //setMessageText('');
       }
     );
@@ -877,7 +908,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         storeInHistory: true,
         sendByPost: true
       },
-      (status, response) => {
+      (status: any, response: any) => {
         //setMessageText('');
       }
     );
@@ -904,7 +935,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         storeInHistory: true,
         sendByPost: true
       },
-      (status, response) => {
+      (status: any, response: any) => {
         //setMessageText('');
       }
     );
@@ -922,7 +953,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
           channel: channel,
           storeInHistory: false
         },
-        (status, response) => {}
+        (status: any, response: any) => {}
       );
     }, 10);
   };
@@ -1044,17 +1075,17 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? "simple-three-dots" : undefined;
   const channel = props.appointmentId;
-  const subscribekey: string = process.env.SUBSCRIBE_KEY
-    ? process.env.SUBSCRIBE_KEY
-    : "";
-  const publishkey: string = process.env.PUBLISH_KEY
-    ? process.env.PUBLISH_KEY
-    : "";
-  const config: Pubnub.PubnubConfig = {
-    subscribeKey: subscribekey,
-    publishKey: publishkey,
-    ssl: true
-  };
+  // const subscribekey: string = process.env.SUBSCRIBE_KEY
+  //   ? process.env.SUBSCRIBE_KEY
+  //   : "";
+  // const publishkey: string = process.env.PUBLISH_KEY
+  //   ? process.env.PUBLISH_KEY
+  //   : "";
+  // const config: Pubnub.PubnubConfig = {
+  //   subscribeKey: subscribekey,
+  //   publishKey: publishkey,
+  //   ssl: true
+  // };
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
   useEffect(() => {
     if (props.urlToPatient) {
@@ -1086,57 +1117,117 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       clearInterval(intervalcallId);
     }
   }, [props.appointmentStatus]);
-  const pubnub = new Pubnub(config);
+  //const pubnub = new Pubnub(config);
+  const pubnub = props.pubnub;
 
   useEffect(() => {
-    pubnub.subscribe({
-      channels: [channel],
-      withPresence: true
-    });
-    pubnub.addListener({
-      status: statusEvent => {},
-      message: message => {
-        console.log(message.message);
-        if (
-          !showVideoChat &&
-          message.message.message !== videoCallMsg &&
-          message.message.message !== audioCallMsg &&
-          message.message.message !== stopcallMsg &&
-          message.message.message !== acceptcallMsg &&
-          message.message.message !== transferconsult &&
-          message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult &&
-          message.message.message !== startConsult &&
-          message.message.message !== patientConsultStarted &&
-          message.message.message !== firstMessage &&
-          message.message.message !== secondMessage &&
-          message.message.message !== covertVideoMsg &&
-          message.message.message !== covertAudioMsg &&
-          message.message.message !== cancelConsultInitiated
-        ) {
-          setIsNewMsg(true);
-        } else {
-          setIsNewMsg(false);
-        }
-        if (
-          !props.startAppointment &&
-          message.message.id === params.patientId
-        ) {
-          patientMsgs.push(message.message.message);
-        }
-        if (message.message && message.message.message === acceptcallMsg) {
-          patientMsgs.push(message.message.message);
-          setIsCallAccepted(true);
-          clearInterval(intervalMissCall);
-          missedCallCounter = 0;
-        }
-      }
-    });
+    // pubnub.subscribe({
+    //   channels: [channel],
+    //   withPresence: true
+    // });
+    // pubnub.addListener({
+    //   status(statusEvent: any) {},
+    //   message(message: any) {
+    //     console.log(message.message);
+    //     if (
+    //       !showVideoChat &&
+    //       message.message.message !== videoCallMsg &&
+    //       message.message.message !== audioCallMsg &&
+    //       message.message.message !== stopcallMsg &&
+    //       message.message.message !== acceptcallMsg &&
+    //       message.message.message !== transferconsult &&
+    //       message.message.message !== rescheduleconsult &&
+    //       message.message.message !== followupconsult &&
+    //       message.message.message !== startConsult &&
+    //       message.message.message !== patientConsultStarted &&
+    //       message.message.message !== firstMessage &&
+    //       message.message.message !== secondMessage &&
+    //       message.message.message !== covertVideoMsg &&
+    //       message.message.message !== covertAudioMsg &&
+    //       message.message.message !== cancelConsultInitiated
+    //     ) {
+    //       setIsNewMsg(true);
+    //     } else {
+    //       setIsNewMsg(false);
+    //     }
+    //     if (
+    //       !props.startAppointment &&
+    //       message.message.id === params.patientId
+    //     ) {
+    //       patientMsgs.push(message.message.message);
+    //     }
+    //     if (message.message && message.message.message === acceptcallMsg) {
+    //       patientMsgs.push(message.message.message);
+    //       setIsCallAccepted(true);
+    //       clearInterval(intervalMissCall);
+    //       missedCallCounter = 0;
+    //     }
+    //   },
+    //   presence(presenceEvent: any) {
+    //     console.log(presenceEvent, isConsultStarted);
+    //     if (presenceEvent.occupancy === 1 && isConsultStarted) {
+    //       callAbundantIntervalTimer(30);
+    //     } else {
+    //       clearInterval(intervalCallAbundant);
+    //     }
+    //   }
+    // });
     return function cleanup() {
-      pubnub.unsubscribe({ channels: [channel] });
+      //pubnub.unsubscribe({ channels: [channel] });
+      clearInterval(intervalcallId);
+      clearInterval(intervalCallAbundant);
+      clearInterval(timerIntervalId);
+      clearInterval(intervalMissCall);
+      clearInterval(intervalId);
     };
-  }, []);
+  }, [props.pubnub]);
 
+  useEffect(() => {
+    const lastMsg = props.lastMsg;
+    if (lastMsg && lastMsg !== null) {
+      if (
+        !showVideoChat &&
+        lastMsg.message.message !== videoCallMsg &&
+        lastMsg.message.message !== audioCallMsg &&
+        lastMsg.message.message !== stopcallMsg &&
+        lastMsg.message.message !== acceptcallMsg &&
+        lastMsg.message.message !== transferconsult &&
+        lastMsg.message.message !== rescheduleconsult &&
+        lastMsg.message.message !== followupconsult &&
+        lastMsg.message.message !== startConsult &&
+        lastMsg.message.message !== patientConsultStarted &&
+        lastMsg.message.message !== firstMessage &&
+        lastMsg.message.message !== secondMessage &&
+        lastMsg.message.message !== covertVideoMsg &&
+        lastMsg.message.message !== covertAudioMsg &&
+        lastMsg.message.message !== cancelConsultInitiated
+      ) {
+        setIsNewMsg(true);
+      } else {
+        setIsNewMsg(false);
+      }
+      if (!props.startAppointment && lastMsg.message.id === params.patientId) {
+        patientMsgs.push(lastMsg.message.message);
+      }
+      if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
+        patientMsgs.push(lastMsg.message.message);
+        setIsCallAccepted(true);
+        clearInterval(intervalMissCall);
+        missedCallCounter = 0;
+      }
+    }
+  }, [props.lastMsg]);
+
+  useEffect(() => {
+    const presenceEventObject = props.presenceEventObject;
+    if (presenceEventObject && presenceEventObject !== null) {
+      if (presenceEventObject.occupancy === 1 && isConsultStarted) {
+        callAbundantIntervalTimer(180);
+      } else {
+        clearInterval(intervalCallAbundant);
+      }
+    }
+  }, [props.presenceEventObject]);
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
@@ -1151,7 +1242,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         channel: channel,
         storeInHistory: true
       },
-      (status, response) => {}
+      (status: any, response: any) => {}
     );
   };
   const onStopConsult = () => {
@@ -1167,7 +1258,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         channel: channel,
         storeInHistory: true
       },
-      (status, response) => {}
+      (status: any, response: any) => {}
     );
 
     let folloupDateTime = new Date(
@@ -1192,10 +1283,10 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       ).toISOString();
     }
 
-    if (folloupDateTime !== "") {
+    if (followUp[0] && folloupDateTime !== "") {
       const followupObj = {
         appointmentId: props.appointmentId,
-        folloupDateTime: followUp[0] ? folloupDateTime : "",
+        folloupDateTime: folloupDateTime,
         doctorId: props.doctorId,
         caseSheetId: props.caseSheetId,
         doctorInfo: currentPatient,
@@ -1212,7 +1303,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
             channel: channel,
             storeInHistory: true
           },
-          (status, response) => {}
+          (status: any, response: any) => {}
         );
       }, 100);
     }
@@ -1355,7 +1446,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
             channel: channel, //chanel
             storeInHistory: true
           },
-          (status, response) => {}
+          (status: any, response: any) => {}
         );
         setIsPopoverOpen(false);
         setDisableOnCancel(true);
@@ -1520,6 +1611,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       }
                       props.endConsultAction();
                       setDisableOnCancel(true);
+                      isConsultStarted = false;
                     }}
                   >
                     <svg
@@ -1546,16 +1638,16 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  disabled={
-                    currentUserType === LoggedInUserType.SECRETARY ||
-                    startAppointmentButton ||
-                    disableOnCancel ||
-                    (appointmentInfo!.appointmentState !== "NEW" &&
-                      appointmentInfo!.appointmentState !== "TRANSFER" &&
-                      appointmentInfo!.appointmentState !== "RESCHEDULE") ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
+                  // disabled={
+                  //   currentUserType === LoggedInUserType.SECRETARY ||
+                  //   startAppointmentButton ||
+                  //   disableOnCancel ||
+                  //   (appointmentInfo!.appointmentState !== "NEW" &&
+                  //     appointmentInfo!.appointmentState !== "TRANSFER" &&
+                  //     appointmentInfo!.appointmentState !== "RESCHEDULE") ||
+                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  //     appointmentInfo!.status !== STATUS.PENDING)
+                  // }
                   onClick={() => {
                     !props.startAppointment
                       ? onStartConsult()
@@ -1566,6 +1658,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                     props.startAppointmentClick(!props.startAppointment);
                     props.createSessionAction();
                     setCaseSheetEdit(true);
+                    isConsultStarted = true;
                     callIntervalTimer(180);
                   }}
                 >
@@ -1628,7 +1721,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       props.setStartConsultAction(false);
                       autoSend(audioCallMsg);
                       setIsVideoCall(false);
-                      missedCallIntervalTimer(32);
+                      missedCallIntervalTimer(30);
                     }}
                   >
                     <img src={require("images/call_popup.svg")} alt="" />
@@ -1643,7 +1736,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       props.setStartConsultAction(true);
                       autoSend(videoCallMsg);
                       setIsVideoCall(true);
-                      missedCallIntervalTimer(32);
+                      missedCallIntervalTimer(30);
                     }}
                   >
                     <img src={require("images/video_popup.svg")} alt="" />
@@ -2012,10 +2105,12 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                           channel: channel,
                           storeInHistory: true
                         },
-                        (status, response) => {}
+                        (status: any, response: any) => {}
                       );
-                      pubnub.unsubscribe({ channels: [channel] });
-                      window.location.href = clientRoutes.calendar();
+                      if (document.getElementById("homeId")) {
+                        document.getElementById("homeId")!.click();
+                      }
+                      //window.location.href = clientRoutes.calendar();
                     })
                     .catch((e: ApolloError) => {
                       setCancelError(e.graphQLErrors[0].message);
@@ -2112,10 +2207,12 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                         channel: channel,
                         storeInHistory: true
                       },
-                      (status, response) => {}
+                      (status: any, response: any) => {}
                     );
-                    pubnub.unsubscribe({ channels: [channel] });
-                    window.location.href = clientRoutes.calendar();
+                    if (document.getElementById("homeId")) {
+                      document.getElementById("homeId")!.click();
+                    }
+                    //window.location.href = clientRoutes.calendar();
                   })
                   .catch((e: ApolloError) => {
                     setCancelError(e.graphQLErrors[0].message);
@@ -2132,6 +2229,47 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         </Paper>
       </Modal>
       {/* cancel Confirmation modal end */}
+      {/* Call abandonment Confirmation modal start */}
+      <Modal
+        open={showAbandonment}
+        onClose={() => setShowAbandonment(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.modalBoxConsult}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require("images/ic_cross.svg")}
+                alt=""
+                onClick={() => setShowAbandonment(false)}
+              />
+            </Button>
+          </div>
+          <div className={classes.tabBody}>
+            <h3>
+              The patient is no more there in the consult room, please take
+              necessary action.
+            </h3>
+
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => setShowAbandonment(false)}
+            >
+              Continue
+            </Button>
+            <Button
+              className={classes.consultButton}
+              onClick={() => {
+                callInitiateReschedule(true);
+              }}
+            >
+              Reschedule
+            </Button>
+          </div>
+        </Paper>
+      </Modal>
+      {/* Call abandonment Confirmation modal end */}
     </div>
   );
 };
