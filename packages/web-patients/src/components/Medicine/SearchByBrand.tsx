@@ -5,6 +5,7 @@ import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
+import { MedicineCard } from 'components/Medicine/MedicineCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -107,6 +108,7 @@ const useStyles = makeStyles((theme: Theme) => {
     customScroll: {
       paddingLeft: 20,
       paddingRight: 17,
+      paddingBottom: 10,
     },
   };
 });
@@ -137,7 +139,7 @@ export const SearchByBrand: React.FC = (props) => {
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
-                  Mallesh
+                  <MedicineCard />
                 </div>
               </Scrollbars>
             </div>
