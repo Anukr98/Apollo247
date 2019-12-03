@@ -232,7 +232,7 @@ const getPatientPrismMedicalRecords: Resolver<
     message: 'LabResults API Response',
     time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
     level: 'info',
-    response: prismUserList,
+    response: labResults,
   };
   winston.log(labResultLog);
 
@@ -277,6 +277,13 @@ const getPatientPrismMedicalRecords: Resolver<
 
   const formattedHealthChecks: HealthCheckResult[] = [];
   const healthChecks = await patientsRepo.getPatientHealthChecks(uhid, prismAuthToken);
+  const healthChecksLog = {
+    message: 'HealthChecks API Response',
+    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+    level: 'info',
+    response: healthChecks,
+  };
+  winston.log(healthChecksLog);
   healthChecks.forEach((element: PrismHealthCheckResult) => {
     //collecting prism file ids
     let prismFileIds: string[] = [];
@@ -301,6 +308,13 @@ const getPatientPrismMedicalRecords: Resolver<
 
   const formattedHospitalizations: HospitalizationResult[] = [];
   const hospitalizations = await patientsRepo.getPatientHospitalizations(uhid, prismAuthToken);
+  const hospitalizationsLog = {
+    message: 'Hospitalizations API Response',
+    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+    level: 'info',
+    response: hospitalizations,
+  };
+  winston.log(hospitalizationsLog);
   hospitalizations.forEach((element: PrismHospitalizationResult) => {
     //collecting prism file ids
     let prismFileIds: string[] = [];
