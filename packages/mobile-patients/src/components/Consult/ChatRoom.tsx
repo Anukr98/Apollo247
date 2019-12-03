@@ -255,7 +255,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
   const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
-  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(true);
+  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
   const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
     false,
@@ -885,9 +885,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             insertText = newmessage;
             setMessages(newmessage as []);
             console.log('newmessage', newmessage);
-            if (newmessage.find((item) => item.message.includes('Height'))) {
-              setDisplayChatQuestions(false);
-            }
             if (msgs.length == 100) {
               console.log('hihihihihi');
               getHistory(end);
@@ -963,10 +960,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (false) {
-      //To-Do: api-key needs to be replaced
+    if (!appointmentData.isJdQuestionsComplete) {
       thirtySecondCall();
       minuteCaller();
+    } else {
+      setDisplayChatQuestions(true);
     }
   }, []);
 
@@ -2052,9 +2050,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('pdf', rowData.url);
-                     // setShowWeb(true);
-                      setPatientImageshow(true);
-                      setUrl(rowData.url);
+                    // setShowWeb(true);
+                    setPatientImageshow(true);
+                    setUrl(rowData.url);
                     // if ((Platform.OS = 'android')) {
                     //   setShowWeb(true);
                     //   setUrl(rowData.url);
@@ -4506,7 +4504,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={() => {
-          setShowFeedback(false)
+          setShowFeedback(false);
           props.navigation.dispatch(
             StackActions.reset({
               index: 0,
