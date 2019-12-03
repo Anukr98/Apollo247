@@ -670,6 +670,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
+      console.log(timer);
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -835,7 +836,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
     const text = {
       id: props.doctorId,
       message: stopcallMsg,
-      isTyping: true
+      isTyping: true,
+      messageDate: new Date()
     };
 
     pubnub.publish(
@@ -863,7 +865,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
           : timerLastSeconds
       }`,
       //duration: `10:00`,
-      isTyping: true
+      isTyping: true,
+      messageDate: new Date()
     };
     pubnub.publish(
       {
@@ -899,7 +902,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       id: props.doctorId,
       message: callType,
       // props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
-      isTyping: true
+      isTyping: true,
+      messageDate: new Date()
     };
     pubnub.publish(
       {
@@ -926,7 +930,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
     const text = {
       id: props.doctorId,
       message: stopcallMsg,
-      isTyping: true
+      isTyping: true,
+      messageDate: new Date()
     };
     pubnub.publish(
       {
@@ -948,7 +953,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         {
           message: {
             isTyping: true,
-            message: convertVideo ? covertVideoMsg : covertAudioMsg
+            message: convertVideo ? covertVideoMsg : covertAudioMsg,
+            messageDate: new Date()
           },
           channel: channel,
           storeInHistory: false
@@ -1219,6 +1225,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   }, [props.lastMsg]);
 
   useEffect(() => {
+    console.log(props.presenceEventObject);
     const presenceEventObject = props.presenceEventObject;
     if (presenceEventObject && presenceEventObject !== null) {
       if (presenceEventObject.occupancy === 1 && isConsultStarted) {
@@ -1233,7 +1240,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText: currentPatient!.displayName + " has joined your chat!"
+      automatedText: currentPatient!.displayName + " has joined your chat!",
+      messageDate: new Date()
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1249,7 +1257,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
     const text = {
       id: props.doctorId,
       message: stopConsult,
-      isTyping: true
+      isTyping: true,
+      messageDate: new Date()
     };
     unSubscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1298,7 +1307,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
             message: {
               id: props.doctorId,
               message: followupconsult,
-              transferInfo: followupObj
+              transferInfo: followupObj,
+              messageDate: new Date()
             },
             channel: channel,
             storeInHistory: true
@@ -1441,7 +1451,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
             message: {
               id: props.doctorId,
               message: rescheduleconsult,
-              transferInfo: reschduleObject
+              transferInfo: reschduleObject,
+              messageDate: new Date()
             },
             channel: channel, //chanel
             storeInHistory: true
@@ -1646,7 +1657,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                   //     appointmentInfo!.appointmentState !== "TRANSFER" &&
                   //     appointmentInfo!.appointmentState !== "RESCHEDULE") ||
                   //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  //     appointmentInfo!.status !== STATUS.PENDING)
+                  //     appointmentInfo!.status !== STATUS.PENDING &&
+                  //     appointmentInfo!.status !== "JUNIOR_DOCTOR_STARTED")
                   // }
                   onClick={() => {
                     !props.startAppointment
@@ -2097,7 +2109,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       const text = {
                         id: props.doctorId,
                         message: cancelConsultInitiated,
-                        isTyping: true
+                        isTyping: true,
+                        messageDate: new Date()
                       };
                       pubnub.publish(
                         {
@@ -2198,7 +2211,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                     const text = {
                       id: props.doctorId,
                       message: cancelConsultInitiated,
-                      isTyping: true
+                      isTyping: true,
+                      messageDate: new Date()
                     };
                     unSubscribeBrowserButtonsListener();
                     pubnub.publish(

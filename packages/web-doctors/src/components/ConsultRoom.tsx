@@ -312,6 +312,7 @@ interface MessagesObjectProps {
   automatedText: string;
   duration: string;
   url: string;
+  messageDate: string;
 }
 
 interface ConsultRoomProps {
@@ -603,7 +604,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
   const send = () => {
     const text = {
       id: doctorId,
-      message: messageText
+      message: messageText,
+      messageDate: new Date()
     };
     setMessageText("");
     pubnub.publish(
@@ -920,6 +922,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
   //     id: doctorId,
   //     message: stopcallMsg,
   //     isTyping: true,
+  //messageDate: new Date(),
   //   };
   //   pubnub.publish(
   //     {
@@ -939,6 +942,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
   //       timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
   //     } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
   //     isTyping: true,
+  //messageDate: new Date(),
   //   };
   //   pubnub.publish(
   //     {
@@ -964,6 +968,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
   //     id: doctorId,
   //     message: stopcallMsg,
   //     isTyping: true,
+  //messageDate: new Date(),
   //   };
   //   pubnub.publish(
   //     {
@@ -990,6 +995,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
   //         message: {
   //           isTyping: true,
   //           message: convertVideo ? covertVideoMsg : covertAudioMsg,
+  //messageDate: new Date(),
   //         },
   //         channel: channel,
   //         storeInHistory: false,
@@ -1121,7 +1127,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                               fileType: `image`,
                               message: `^^#DocumentUpload`,
                               url: url,
-                              isTyping: true
+                              isTyping: true,
+                              messageDate: new Date()
                             };
                             console.log("aphBlob", aphBlob, url);
                             uploadfile(url);

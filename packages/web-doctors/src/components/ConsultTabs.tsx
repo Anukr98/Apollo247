@@ -296,6 +296,7 @@ interface MessagesObjectProps {
   automatedText: string;
   duration: string;
   url: string;
+  messageDate: string;
 }
 //let messages: MessagesObjectProps[] = [];
 let insertText: MessagesObjectProps[] = [];
@@ -449,7 +450,7 @@ export const ConsultTabs: React.FC = () => {
       },
       presence(presenceEvent: any) {
         setPresenceEventObject(presenceEvent);
-        //console.log(presenceEvent);
+        console.log(presenceEvent);
       }
     });
     return () => {
