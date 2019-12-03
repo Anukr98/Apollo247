@@ -510,7 +510,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     setUserAnswers(data);
     if (isSendAnswers.find((item) => item === false) === undefined) {
-      requestToJrDoctor()
+      requestToJrDoctor();
+      thirtySecondCall();
+      minuteCaller();
     }
   };
 
@@ -538,6 +540,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
           console.log(data, 'data res, adding');
+
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
             appointmentId: appointmentData.id,
@@ -956,6 +959,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    if (false) {
+      //To-Do: api-key needs to be replaced
+      thirtySecondCall();
+      minuteCaller();
+    }
+  }, []);
+
+  const thirtySecondCall = () => {
     thirtySecondTimer = setTimeout(function() {
       if (jrDoctorJoined == false) {
         // console.log('Alert Shows After 30000 Seconds of Delay.');
@@ -1011,9 +1022,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
       }
     }, 30000);
-  }, []);
+  };
 
-  useEffect(() => {
+  const minuteCaller = () => {
     minuteTimer = setTimeout(function() {
       if (jrDoctorJoined == false) {
         // console.log('Alert Shows After 60000 Seconds of Delay.');
@@ -1066,7 +1077,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         minuteTimer && clearTimeout(minuteTimer);
       }
     }, 90000);
-  }, []);
+  };
 
   const checkingAppointmentDates = () => {
     try {
@@ -1151,6 +1162,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
+        addMessages(message);
+      } else if (message.message.message === imageconsult) {
+        console.log('imageconsult');
         addMessages(message);
       } else if (message.message.message === firstMessage) {
         console.log('firstMessage');
@@ -4291,8 +4305,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
               </TouchableOpacity>
             </View>
+            {displayChatQuestions && Platform.OS === 'ios' && (
+              <ChatQuestions
+                onItemDone={(value: { k: string; v: string[] }) => {
+                  console.log('and', value);
+                  setAnswerData([value]);
+                }}
+                onDonePress={(values: { k: string; v: string[] }[]) => {
+                  setAnswerData(values);
+                  setDisplayChatQuestions(false);
+                }}
+              />
+            )}
           </View>
         </KeyboardAvoidingView>
+        {displayChatQuestions && Platform.OS === 'android' && (
+          <ChatQuestions
+            onItemDone={(value: { k: string; v: string[] }) => {
+              console.log('and', value);
+              setAnswerData([value]);
+            }}
+            onDonePress={(values: { k: string; v: string[] }[]) => {
+              setAnswerData(values);
+              setDisplayChatQuestions(false);
+            }}
+          />
+        )}
       </SafeAreaView>
       {onSubscribe && IncomingCallView()}
       {isCall && VideoCall()}
@@ -4446,18 +4484,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {renderPrescriptionModal()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
-      {displayChatQuestions && (
-        <ChatQuestions
-          onItemDone={(value: { k: string; v: string[] }) => {
-            console.log('and', value);
-            setAnswerData([value]);
-          }}
-          onDonePress={(values: { k: string; v: string[] }[]) => {
-            setAnswerData(values);
-            setDisplayChatQuestions(false);
-          }}
-        />
-      )}
       {loading && <Spinner />}
     </View>
   );

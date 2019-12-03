@@ -9,7 +9,16 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ImageStyle, StyleProp, StyleSheet, Text, TextStyle, View } from 'react-native';
+import {
+  Dimensions,
+  ImageStyle,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+  TextInputProps,
+} from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
@@ -114,6 +123,8 @@ type Slide = {
   inputData: string[];
   isDependent?: boolean;
   dependentValue?: string;
+  keyboardType?: TextInputProps['keyboardType'];
+  validation?: RegExp;
 };
 
 const style = { height: 56, width: 56 };
@@ -126,9 +137,10 @@ const slides: Slide[] = [
     inputPlacerholder: 'Enter height…',
     dropDown: [
       { key: '1', value: 'cm' },
-      { key: '2', value: 'm' },
+      { key: '2', value: 'ft' },
     ],
     inputData: ['value', 'drop'],
+    keyboardType: 'number-pad',
   },
   {
     key: 'weight',
@@ -136,6 +148,7 @@ const slides: Slide[] = [
     title: 'What is your weight (in kg) ?',
     inputPlacerholder: 'Enter weight in kilogram…',
     inputData: ['value'],
+    keyboardType: 'number-pad',
   },
   {
     key: 'drug',
@@ -152,6 +165,7 @@ const slides: Slide[] = [
     dependentValue: 'Yes',
     inputPlacerholder: 'Enter medicines…',
     inputData: ['value'],
+    keyboardType: 'default',
   },
   {
     key: 'diet',
@@ -168,6 +182,7 @@ const slides: Slide[] = [
     dependentValue: 'Yes',
     inputPlacerholder: 'Enter food items…',
     inputData: ['value'],
+    keyboardType: 'default',
   },
   {
     key: 'smoke',
@@ -215,6 +230,7 @@ const slides: Slide[] = [
     inputPlacerholder: '---/---',
     buttonText: ['No Idea'],
     inputData: ['value', 'value'],
+    keyboardType: 'decimal-pad',
   },
   {
     key: 'familyHistory',
@@ -293,12 +309,16 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
             ) {
               setcurrentIndex(index + 1);
               appIntroSliderRef.current.goToSlide(index + 1);
-            } else if (
-              slides[index].key === 'lifeStyleDrink' ||
-              slides[index].key === 'lifeStyleSmoke'
-            ) {
+            }
+            if (slides[index].key === 'lifeStyleDrink') {
               let v = values!;
-              v[index].v[0] = 'Yes';
+              v[index].v[0] = v[index - 1].v[0];
+              setValues(v);
+              setRefresh(!refresh);
+            }
+            if (slides[index].key === 'lifeStyleSmoke') {
+              let v = values!;
+              v[index].v[0] = v[index - 1].v[0];
               setValues(v);
               setRefresh(!refresh);
             }
@@ -344,6 +364,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                         minWidth: item.buttonText || item.dropDown ? width / 2 - 20 : '100%',
                       }}
                       placeholder={item.inputPlacerholder}
+                      keyboardType={item.keyboardType}
                     />
                   )}
                   {item.dropDown && (
@@ -372,7 +393,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                         }
                       }}
                     >
-                      <View style={{ flexDirection: 'row', marginBottom: 8, marginRight: 40 }}>
+                      <View style={{ flexDirection: 'row', paddingTop: 1, marginRight: 40 }}>
                         <View
                           style={[
                             styles.placeholderViewStyle,
