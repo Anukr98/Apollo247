@@ -8,6 +8,7 @@
 
 export interface GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList {
   __typename: "DoctorsFavouriteTests";
+  id: string;
   itemname: string;
 }
 

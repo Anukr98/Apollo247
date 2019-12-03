@@ -108,6 +108,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     popupHeadingCenter: {
       padding: '20px 10px',
+      borderRadius: 10,
       '& h6': {
         fontSize: 13,
         color: '#01475b',
@@ -119,7 +120,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogContent: {
       padding: 20,
-      minHeight: 400,
+      minHeight: 100,
       position: 'relative',
       '& h6': {
         fontSize: 14,
@@ -128,6 +129,8 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 5,
         marginTop: 5,
         lineHeight: 'normal',
+        textAlign: 'left',
+        paddingLeft: 0,
       },
     },
     numberTablets: {
@@ -150,9 +153,9 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     dialogActions: {
-      padding: 20,
+      padding: 0,
       paddingTop: 10,
-      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      boxShadow: 'none',
       position: 'relative',
       textAlign: 'right',
       fontSize: 14,
@@ -208,7 +211,12 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     iconRight: {
-      float: 'right',
+      position: 'absolute',
+      right: 5,
+      top: 13,
+      '& img': {
+        cursor: 'pointer',
+      },
     },
     suggestionsList: {
       margin: 0,
@@ -238,6 +246,8 @@ const useStyles = makeStyles((theme: Theme) =>
       flexFlow: 'row',
       flexWrap: 'wrap',
       width: '100%',
+      position: 'relative',
+      padding: '5px 5px 10px 5px',
       '& h5': {
         color: 'rgba(2, 71, 91, 0.6)',
         fontSize: 14,
@@ -305,6 +315,35 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    card: {
+      position: 'relative',
+      margin: 0,
+      '& ul': {
+        padding: 0,
+        margin: 0,
+        '& li': {
+          color: '#02475b',
+          listStyleType: 'none',
+          padding: '10px 50px 10px 10px !important',
+          fontSize: 14,
+          fontWeight: 500,
+          position: 'relative',
+          borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
+          '&:last-child': {
+            paddingBottom: 0,
+            borderBottom: 'none',
+            paddingLeft: 0,
+          },
+          '& img': {
+            '&:first-child': {
+              position: 'relative',
+              top: -2,
+              marginRight: 10,
+            },
+          },
+        },
+      },
+    },
     darkGreenaddBtn: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
@@ -312,8 +351,8 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      right: 0,
-      bottom: '30px',
+      right: -10,
+      bottom: 10,
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
@@ -602,69 +641,77 @@ export const Tests: React.FC = () => {
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.fullWidth}>
-        <Typography component="h5" variant="h5">
+        {/* <Typography component="h5" variant="h5">
           Tests
-        </Typography>
+        </Typography> */}
         {testLoader ? (
           <CircularProgress className={classes.loader} />
         ) : (
           <Typography component="div" className={classes.listContainer}>
-            {selectedValues !== null &&
-              selectedValues &&
-              selectedValues.length > 0 &&
-              selectedValues!.map((item: any, idx: any) =>
-                item && item.itemName
-                  ? item.itemName!.trim() !== '' && (
-                      <li key={idx}>
-                        {item!.itemName}
-                        <span className={classes.iconRight}>
-                          <img
-                            onClick={() => updateModalValue(idx)}
-                            src={require('images/round_edit_24_px.svg')}
-                            alt=""
-                          />
-                          <img
-                            onClick={() => handleDelete(item, idx)}
-                            src={require('images/ic_cancel_green.svg')}
-                            alt=""
-                          />
-                        </span>
-                      </li>
-                    )
-                  : //   <Chip
-                    //     className={classes.othersBtn}
-                    //     key={idx}
-                    //     label={item!.itemName}
-                    //     onDelete={() => handleDelete(item, idx)}
-                    //     deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                    //   />
-                    // )
-                    item.itemname &&
-                    item.itemname!.trim() !== '' && (
-                      <li key={idx}>
-                        {item!.itemname}
-                        <span className={classes.iconRight}>
-                          <img
-                            onClick={() => updateModalValue(idx)}
-                            src={require('images/round_edit_24_px.svg')}
-                            alt=""
-                          />
-                          <img
-                            onClick={() => handleDelete(item, idx)}
-                            src={require('images/ic_cancel_green.svg')}
-                            alt=""
-                          />
-                        </span>
-                      </li>
-                      // <Chip
-                      //   className={classes.othersBtn}
-                      //   key={idx}
-                      //   label={item!.itemname}
-                      //   onDelete={() => handleDelete(item, idx)}
-                      //   deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                      // />
-                    )
-              )}
+            <div className={classes.card}>
+              <ul>
+                {selectedValues !== null &&
+                  selectedValues &&
+                  selectedValues.length > 0 &&
+                  selectedValues!.map((item: any, idx: any) =>
+                    item && item.itemName
+                      ? item.itemName!.trim() !== '' && (
+                          <li key={idx}>
+                            {item!.itemName}
+                            <span className={classes.iconRight}>
+                              <img
+                                width="16"
+                                onClick={() => updateModalValue(idx)}
+                                src={require('images/round_edit_24_px.svg')}
+                                alt=""
+                              />
+                              <img
+                                width="16"
+                                onClick={() => handleDelete(item, idx)}
+                                src={require('images/ic_cancel_green.svg')}
+                                alt=""
+                              />
+                            </span>
+                          </li>
+                        )
+                      : //   <Chip
+                        //     className={classes.othersBtn}
+                        //     key={idx}
+                        //     label={item!.itemName}
+                        //     onDelete={() => handleDelete(item, idx)}
+                        //     deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                        //   />
+                        // )
+                        item.itemname &&
+                        item.itemname!.trim() !== '' && (
+                          <li key={idx}>
+                            {item!.itemname}
+                            <span className={classes.iconRight}>
+                              <img
+                                width="16"
+                                onClick={() => updateModalValue(idx)}
+                                src={require('images/round_edit_24_px.svg')}
+                                alt=""
+                              />
+                              <img
+                                width="16"
+                                onClick={() => handleDelete(item, idx)}
+                                src={require('images/ic_cancel_green.svg')}
+                                alt=""
+                              />
+                            </span>
+                          </li>
+                          // <Chip
+                          //   className={classes.othersBtn}
+                          //   key={idx}
+                          //   label={item!.itemname}
+                          //   onDelete={() => handleDelete(item, idx)}
+                          //   deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                          // />
+                        )
+                  )}
+              </ul>
+            </div>
           </Typography>
         )}
       </Typography>
@@ -686,47 +733,49 @@ export const Tests: React.FC = () => {
           </AphButton>
         )}
         {showAddCondition && !showAddOtherTests && (
-          <Autosuggest
-            onSuggestionSelected={(e, { suggestion }) => {
-              if (selectedValues && selectedValues.length > 0) {
-                selectedValues!.push(suggestion);
-                setSelectedValues(selectedValues);
-              } else {
-                const emptySelectedValue = [];
-                emptySelectedValue.push(suggestion);
-                setSelectedValues(emptySelectedValue);
-              }
-              saveMedicines(suggestion);
-              setShowAddCondition(false);
-              suggestions = suggestions.filter(
-                (val) => selectedValues && !selectedValues!.includes(val!)
-              );
-              setState({
-                single: '',
-                popper: '',
-              });
-              setOtherDiagnostic('');
-            }}
-            {...autosuggestProps}
-            inputProps={{
-              classes,
-              id: 'react-autosuggest-simple',
-              placeholder: 'Search Tests',
-              value: state.single,
-              onChange: handleChange('single'),
-            }}
-            theme={{
-              container: classes.container,
-              suggestionsContainerOpen: classes.suggestionsContainerOpen,
-              suggestionsList: classes.suggestionsList,
-              suggestion: classes.suggestion,
-            }}
-            renderSuggestionsContainer={(options) => (
-              <Paper {...options.containerProps} square className={classes.searchpopup}>
-                {options.children}
-              </Paper>
-            )}
-          />
+          <div style={{ margin: '15px 15px 0 15px' }}>
+            <Autosuggest
+              onSuggestionSelected={(e, { suggestion }) => {
+                if (selectedValues && selectedValues.length > 0) {
+                  selectedValues!.push(suggestion);
+                  setSelectedValues(selectedValues);
+                } else {
+                  const emptySelectedValue = [];
+                  emptySelectedValue.push(suggestion);
+                  setSelectedValues(emptySelectedValue);
+                }
+                saveMedicines(suggestion);
+                setShowAddCondition(false);
+                suggestions = suggestions.filter(
+                  (val) => selectedValues && !selectedValues!.includes(val!)
+                );
+                setState({
+                  single: '',
+                  popper: '',
+                });
+                setOtherDiagnostic('');
+              }}
+              {...autosuggestProps}
+              inputProps={{
+                classes,
+                id: 'react-autosuggest-simple',
+                placeholder: 'Search Tests',
+                value: state.single,
+                onChange: handleChange('single'),
+              }}
+              theme={{
+                container: classes.container,
+                suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                suggestionsList: classes.suggestionsList,
+                suggestion: classes.suggestion,
+              }}
+              renderSuggestionsContainer={(options) => (
+                <Paper {...options.containerProps} square className={classes.searchpopup}>
+                  {options.children}
+                </Paper>
+              )}
+            />
+          </div>
         )}
         {lengthOfSuggestions < 2 && otherDiagnostic.length > 2 && (
           <div>
@@ -762,7 +811,6 @@ export const Tests: React.FC = () => {
             </span>
           </div>
         )}
-        }
       </Typography>
 
       <Modal
