@@ -7,6 +7,9 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
+import winston from 'winston';
+import path from 'path';
+import { ApiConstants } from 'ApiConstants';
 
 import {
   PrismLabTestResult,
@@ -165,6 +168,23 @@ const getPatientMedicalRecords: Resolver<
   return { medicalRecords };
 };
 
+//configure winston for profiles service
+const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
+const logsDir = path.resolve(logsDirPath);
+winston.configure({
+  transports: [
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.PROFILES_SERVICE_ACCESS_LOG_FILE,
+      level: 'info',
+    }),
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.PROFILES_SERVICE_ERROR_LOG_FILE,
+      level: 'error',
+    }),
+  ],
+  exitOnError: false, // do not exit on handled exceptions
+});
+
 //Includes  User Lab Results + Hospitalizations + HealthChecks
 const getPatientPrismMedicalRecords: Resolver<
   null,
@@ -176,10 +196,26 @@ const getPatientPrismMedicalRecords: Resolver<
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
 
+  const authLog = {
+    message: 'PrismAuthToken API Response',
+    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+    level: 'info',
+    response: prismAuthToken,
+  };
+  winston.log(authLog);
+
   if (!prismAuthToken) throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
 
   //get users list for the mobile number
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+
+  const usersLog = {
+    message: 'PrismUserList API Response',
+    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+    level: 'info',
+    response: prismUserList,
+  };
+  winston.log(usersLog);
 
   //check if current user uhid matches with response uhids
   const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
@@ -192,6 +228,14 @@ const getPatientPrismMedicalRecords: Resolver<
   await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
   const formattedLabResults: LabTestResult[] = [];
   const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
+  const labResultLog = {
+    message: 'LabResults API Response',
+    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+    level: 'info',
+    response: prismUserList,
+  };
+  winston.log(labResultLog);
+
   labResults.forEach((element: PrismLabTestResult) => {
     let prismFileIds: string[] = [];
     let labResultParams: LabTestResultParameter[] = [];
