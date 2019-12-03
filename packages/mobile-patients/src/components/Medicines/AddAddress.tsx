@@ -64,6 +64,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/deletePatientAddress';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
@@ -186,6 +187,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const { locationDetails } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -212,68 +214,73 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setAddressType(addressData.addressType);
       setOptionalAddress(addressData.otherAddressType);
     } else {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log(position, 'position');
-          const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
-          //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-          Axios.get(url)
-            .then((obj) => {
-              console.log(obj, 'geocode obj');
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const city = (
-                    addrComponents.find(
-                      (item: any) =>
-                        item.types.indexOf('locality') > -1 ||
-                        item.types.indexOf('administrative_area_level_2') > -1
-                    ) || {}
-                  ).long_name;
-                  const state = (
-                    addrComponents.find(
-                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
-                    ) || {}
-                  ).long_name;
-                  setstate(state || '');
-                  const pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
+      if (!(locationDetails && locationDetails.pincode)) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log(position, 'position');
+            const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
+            //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+            Axios.get(url)
+              .then((obj) => {
+                console.log(obj, 'geocode obj');
+                try {
+                  if (
+                    obj.data.results.length > 0 &&
+                    obj.data.results[0].address_components.length > 0
+                  ) {
+                    const address = obj.data.results[0].address_components[0].short_name;
+                    console.log(address, 'address obj');
+                    const addrComponents = obj.data.results[0].address_components || [];
+                    const city = (
+                      addrComponents.find(
+                        (item: any) =>
+                          item.types.indexOf('locality') > -1 ||
+                          item.types.indexOf('administrative_area_level_2') > -1
+                      ) || {}
+                    ).long_name;
+                    const state = (
+                      addrComponents.find(
+                        (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                      ) || {}
+                    ).long_name;
+                    setstate(state || '');
+                    const pincode = (
+                      addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
+                      {}
+                    ).long_name;
 
-                  setpincode(pincode || '');
+                    setpincode(pincode || '');
 
-                  let val = city.concat(', ').concat(state);
+                    let val = city.concat(', ').concat(state);
 
-                  setpincode(pincode || '');
-                  //setcity(obj.data.results[0].formatted_address || '');
-                  setcity(val);
-                  console.log(obj.data.results[0].formatted_address, 'val obj');
-                  //setcurrentLocation(address.toUpperCase());
-                  // AsyncStorage.setItem(
-                  //   'location',
-                  //   JSON.stringify({
-                  //     latlong: obj.data.results[0].geometry.location,
-                  //     name: address.toUpperCase(),
-                  //   })
-                  // );
-                }
-              } catch {}
-            })
-            .catch((error) => {
-              console.log(error, 'geocode error');
-            });
-        },
-        (error) => {
-          console.log(error.code, error.message, 'getCurrentPosition error');
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-      );
+                    setpincode(pincode || '');
+                    //setcity(obj.data.results[0].formatted_address || '');
+                    setcity(val);
+                    console.log(obj.data.results[0].formatted_address, 'val obj');
+                    //setcurrentLocation(address.toUpperCase());
+                    // AsyncStorage.setItem(
+                    //   'location',
+                    //   JSON.stringify({
+                    //     latlong: obj.data.results[0].geometry.location,
+                    //     name: address.toUpperCase(),
+                    //   })
+                    // );
+                  }
+                } catch {}
+              })
+              .catch((error) => {
+                console.log(error, 'geocode error');
+              });
+          },
+          (error) => {
+            console.log(error.code, error.message, 'getCurrentPosition error');
+          },
+          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+        );
+      } else {
+        setpincode(locationDetails.pincode);
+      }
     }
   }, []);
   const client = useApolloClient();
