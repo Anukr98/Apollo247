@@ -108,7 +108,9 @@ export const HotSellers: React.FC = (props) => {
       <Slider {...sliderSettings}>
         <div className={classes.card}>
           <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}><span>-30%</span></div>
+            <div className={classes.offerPrice}>
+              <span>-30%</span>
+            </div>
             <div className={classes.productIcon}>
               <img src={require('images/category/img_product.png')} alt="" />
             </div>
@@ -118,9 +120,7 @@ export const HotSellers: React.FC = (props) => {
                 <span>Rs. 650 </span>
               </div>
               <div className={classes.addToCart}>
-                <AphButton>
-                  Add To Cart
-                </AphButton>
+                <AphButton>Add To Cart</AphButton>
               </div>
             </div>
           </div>
@@ -130,16 +130,16 @@ export const HotSellers: React.FC = (props) => {
             <div className={classes.productIcon}>
               <img src={require('images/category/img_product.png')} alt="" />
             </div>
-            <div className={classes.productTitle}>Apollo Life 100% Natural Apple Cider Vinegar Juice</div>
+            <div className={classes.productTitle}>
+              Apollo Life 100% Natural Apple Cider Vinegar Juice
+            </div>
             <div className={classes.bottomSection}>
               <div className={classes.priceGroup}>
                 <span className={classes.regularPrice}>(Rs. 360)</span>
                 <span>Rs. 306</span>
               </div>
               <div className={classes.addToCart}>
-                <AphButton>
-                  Add To Cart
-                </AphButton>
+                <AphButton>Add To Cart</AphButton>
               </div>
             </div>
           </div>
@@ -155,16 +155,16 @@ export const HotSellers: React.FC = (props) => {
                 <span>Rs. 150</span>
               </div>
               <div className={classes.addToCart}>
-                <AphButton>
-                  Add To Cart
-                </AphButton>
+                <AphButton>Add To Cart</AphButton>
               </div>
             </div>
           </div>
         </div>
         <div className={classes.card}>
           <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}><span>-30%</span></div>
+            <div className={classes.offerPrice}>
+              <span>-30%</span>
+            </div>
             <div className={classes.productIcon}>
               <img src={require('images/category/img_product.png')} alt="" />
             </div>
@@ -174,9 +174,7 @@ export const HotSellers: React.FC = (props) => {
                 <span>Rs. 160</span>
               </div>
               <div className={classes.addToCart}>
-                <AphButton>
-                  Add To Cart
-                </AphButton>
+                <AphButton>Add To Cart</AphButton>
               </div>
             </div>
           </div>
@@ -192,29 +190,29 @@ export const HotSellers: React.FC = (props) => {
                 <span>Rs. 205</span>
               </div>
               <div className={classes.addToCart}>
-                <AphButton>
-                  Add To Cart
-                </AphButton>
+                <AphButton>Add To Cart</AphButton>
               </div>
             </div>
           </div>
         </div>
         <div className={classes.card}>
           <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}><span>-30%</span></div>
+            <div className={classes.offerPrice}>
+              <span>-30%</span>
+            </div>
             <div className={classes.productIcon}>
               <img src={require('images/category/img_product.png')} alt="" />
             </div>
-            <div className={classes.productTitle}>Apollo Life Joint Health New Formula Tablets 30s</div>
+            <div className={classes.productTitle}>
+              Apollo Life Joint Health New Formula Tablets 30s
+            </div>
             <div className={classes.bottomSection}>
               <div className={classes.priceGroup}>
                 <span className={classes.regularPrice}>(Rs. 550)</span>
                 <span>Rs. 520</span>
               </div>
               <div className={classes.addToCart}>
-                <AphButton>
-                  Add To Cart
-                </AphButton>
+                <AphButton>Add To Cart</AphButton>
               </div>
             </div>
           </div>

@@ -1368,6 +1368,10 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
     CancelAppointmentVariables
   >(CANCEL_APPOINTMENT);
 
+  const navigateToCalendar = () => {
+    window.location.href = clientRoutes.calendar();
+  };
+
   const rescheduleConsultAction = () => {
     // do api call
     //setIsLoading(true);
@@ -2131,7 +2135,6 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       if (document.getElementById("homeId")) {
                         document.getElementById("homeId")!.click();
                       }
-                      //window.location.href = clientRoutes.calendar();
                     })
                     .catch((e: ApolloError) => {
                       setCancelError(e.graphQLErrors[0].message);
