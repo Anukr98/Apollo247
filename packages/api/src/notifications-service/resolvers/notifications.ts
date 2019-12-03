@@ -515,6 +515,8 @@ export async function sendCartNotification(
     data: {
       type: 'Cart_Ready',
       orderId: pushNotificationInput.appointmentId,
+      orderAutoId: '',
+      deliveredDate: '',
       firstName: patientDetails.firstName,
     },
   };
@@ -522,7 +524,9 @@ export async function sendCartNotification(
   if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
     payload.data = {
       type: 'Order_Delivered',
-      orderId: pushNotificationInput.appointmentId,
+      orderAutoId: pushNotificationInput.appointmentId,
+      orderId: medicineOrderDetails.id,
+      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
     };
   }
