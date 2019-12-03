@@ -32,6 +32,7 @@ import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { TrackOrderLanding } from 'components/Orders/TrackOrderLanding';
 import { StoragePoc } from 'components/StoragePoc';
 import { TrackJS } from 'trackjs';
+import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -65,6 +66,7 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
         <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
         <AuthRouted exact path={clientRoutes.medicineSearchByBrand()} component={SearchByBrand} />
+        <AuthRouted exact path={clientRoutes.searchByMedicine()} component={SearchByMedicine} />
         <AuthRouted
           exact
           path={clientRoutes.prescriptionsLanding()}
