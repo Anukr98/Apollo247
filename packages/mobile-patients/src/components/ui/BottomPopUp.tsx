@@ -11,13 +11,14 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
+    elevation: 20,
   },
   container: {
     justifyContent: 'flex-end',
     flex: 1,
   },
   subViewPopup: {
-    marginTop: 120,
+    marginTop: 150,
     backgroundColor: 'white',
     width: '100%',
     borderTopLeftRadius: 10,

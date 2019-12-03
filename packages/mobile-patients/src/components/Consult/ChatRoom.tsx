@@ -4275,6 +4275,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={() => {
+          setShowFeedback(false)
           props.navigation.dispatch(
             StackActions.reset({
               index: 0,
