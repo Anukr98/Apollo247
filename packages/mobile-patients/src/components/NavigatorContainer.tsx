@@ -66,11 +66,13 @@ import {
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
+import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
+  ConsultPayment = 'ConsultPayment',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -169,6 +171,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
+  },
+  [AppRoutes.ConsultPayment]: {
+    screen: ConsultPayment,
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
