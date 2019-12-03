@@ -139,11 +139,7 @@ export const MedicineListingCard: React.FC = (props) => {
           <div className={classes.cartRight}>
             <div className={classes.addToCart}>
               <AphButton>
-                <img
-                  src={require('images/ic_plus.svg')}
-                  alt="Add Item"
-                  title="Add item to Cart"
-                />
+                <img src={require('images/ic_plus.svg')} alt="Add Item" title="Add item to Cart" />
               </AphButton>
             </div>
           </div>
@@ -163,11 +159,7 @@ export const MedicineListingCard: React.FC = (props) => {
           <div className={classes.cartRight}>
             <div className={classes.addToCart}>
               <AphButton>
-                <img
-                  src={require('images/ic_plus.svg')}
-                  alt="Add Item"
-                  title="Add item to Cart"
-                />
+                <img src={require('images/ic_plus.svg')} alt="Add Item" title="Add item to Cart" />
               </AphButton>
             </div>
           </div>
@@ -187,11 +179,7 @@ export const MedicineListingCard: React.FC = (props) => {
           <div className={classes.cartRight}>
             <div className={classes.addToCart}>
               <AphButton>
-                <img
-                  src={require('images/ic_plus.svg')}
-                  alt="Add Item"
-                  title="Add item to Cart"
-                />
+                <img src={require('images/ic_plus.svg')} alt="Add Item" title="Add item to Cart" />
               </AphButton>
             </div>
           </div>
