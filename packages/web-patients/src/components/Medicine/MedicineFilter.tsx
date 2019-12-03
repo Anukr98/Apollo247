@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     filterSection: {
-      padding: '20px 5px 20px 10px',
+      padding: '20px 5px 0 10px',
       paddingTop: 15,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       paddingLeft: 10,
       paddingRight: 15,
+      paddingBottom: 10,
     },
     searchInput: {
       paddingLeft: 20,
@@ -117,6 +118,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 10,
       },
     },
+    bottomActions: {
+      padding: 20,
+      paddingTop: 10,
+    },
   });
 });
 
@@ -126,19 +131,13 @@ export const MedicineFilter: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.searchInput}>
-        <AphTextField
-          placeholder="Search med, brands and more"
-        />
-        <AphButton
-          className={classes.refreshBtn}
-        >
+        <AphTextField placeholder="Search med, brands and more" />
+        <AphButton className={classes.refreshBtn}>
           <img src={require('images/ic_refresh.svg')} alt="" />
         </AphButton>
       </div>
-      <div
-        className={`${classes.filterSection}`}
-      >
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 275px'}>
+      <div className={`${classes.filterSection}`}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Categories</div>
@@ -150,53 +149,25 @@ export const MedicineFilter: React.FC = (props) => {
                 >
                   All
                 </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button}`}
-                >
+                <AphButton color="secondary" size="small" className={`${classes.button}`}>
                   Personal Care
                 </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button}`}
-                >
+                <AphButton color="secondary" size="small" className={`${classes.button}`}>
                   Mom &amp; Baby
                 </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button}`}
-                >
+                <AphButton color="secondary" size="small" className={`${classes.button}`}>
                   Nutrition
                 </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button}`}
-                >
+                <AphButton color="secondary" size="small" className={`${classes.button}`}>
                   Healthcare
                 </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button}`}
-                >
+                <AphButton color="secondary" size="small" className={`${classes.button}`}>
                   Special Offers
                 </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button}`}
-                >
+                <AphButton color="secondary" size="small" className={`${classes.button}`}>
                   Holland &amp; Barrett
                 </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button}`}
-                >
+                <AphButton color="secondary" size="small" className={`${classes.button}`}>
                   Apollo Products
                 </AphButton>
               </div>
@@ -205,7 +176,8 @@ export const MedicineFilter: React.FC = (props) => {
               <div className={classes.filterType}>Discount</div>
               <div className={classes.boxContent}>
                 <div className={classes.filterBy}>
-                  <AphTextField placeholder="0%" /> <span>TO</span> <AphTextField placeholder="100%" />
+                  <AphTextField placeholder="0%" /> <span>TO</span>{' '}
+                  <AphTextField placeholder="100%" />
                 </div>
               </div>
             </div>
@@ -213,12 +185,18 @@ export const MedicineFilter: React.FC = (props) => {
               <div className={classes.filterType}>Price</div>
               <div className={classes.boxContent}>
                 <div className={classes.filterBy}>
-                  <AphTextField placeholder="RS.500" /> <span>TO</span> <AphTextField placeholder="RS.3000" />
+                  <AphTextField placeholder="RS.500" /> <span>TO</span>{' '}
+                  <AphTextField placeholder="RS.3000" />
                 </div>
               </div>
             </div>
           </div>
         </Scrollbars>
+      </div>
+      <div className={classes.bottomActions}>
+        <AphButton color="primary" fullWidth>
+          Apply Filters
+        </AphButton>
       </div>
     </div>
   );

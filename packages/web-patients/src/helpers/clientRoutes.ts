@@ -22,6 +22,7 @@ export const clientRoutes = {
   trackOrders: () => '/track-orders',
   medicineAllBrands: () => '/view-all-brands',
   medicineSearchByBrand: () => '/search-by-brand',
+  searchByMedicine: () => '/search-medicine',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
