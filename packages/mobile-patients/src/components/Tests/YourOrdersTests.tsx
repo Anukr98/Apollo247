@@ -8,6 +8,7 @@ import { GET_DIAGNOSTIC_ORDER_LIST } from '@aph/mobile-patients/src/graphql/prof
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -15,7 +16,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -36,39 +37,59 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const isTest = props.navigation.getParam('isTest');
+  const ordersFetched = props.navigation.getParam('orders');
+  const [orders, setOrders] = useState<
+    getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]
+  >(props.navigation.getParam('orders'));
+  const refetch = props.navigation.getParam('refetch');
+  const error = props.navigation.getParam('error');
+  const loading = props.navigation.getParam('loading');
 
   useEffect(() => {
+    console.log('fetched', ordersFetched);
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
-  console.log('', currentPatient);
-  let { data, error, loading, refetch } = useQuery<
-    getDiagnosticOrdersList,
-    getDiagnosticOrdersListVariables
-  >(GET_DIAGNOSTIC_ORDER_LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'no-cache',
-  });
-
-  const orders = (!loading && g(data, 'getDiagnosticOrdersList', 'ordersList')) || [];
-
-  console.log({ orders });
 
   useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      refetch()
-        .then((data) => {
-          console.log('test orders', data);
-        })
-        .catch((error) => {
-          console.log('trestotdr erroe', error);
-        });
+    refetch().then((data: any) => {
+      const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+      setOrders(_orders);
     });
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-    };
   }, []);
+
+  // console.log('', currentPatient);
+  // let { data, error, loading, refetch } = useQuery<
+  //   getDiagnosticOrdersList,
+  //   getDiagnosticOrdersListVariables
+  // >(GET_DIAGNOSTIC_ORDER_LIST, {
+  //   variables: { patientId: currentPatient && currentPatient.id },
+  //   fetchPolicy: 'no-cache',
+  // });
+
+  // const orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[] = props.navigation.getParam(
+  //   'orders'
+  // )||
+  // (!loading && g(data, 'getDiagnosticOrdersList', 'ordersList')) ||
+  // [];
+
+  // console.log({ orders });
+
+  // useEffect(() => {
+  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+  //     refetch()
+  //       .then((data) => {
+  //         console.log('test orders', data);
+  //       })
+  //       .catch((error) => {
+  //         console.log('trestotdr erroe', error);
+  //       });
+  //   });
+  //   return () => {
+  //     _didFocusSubscription && _didFocusSubscription.remove();
+  //   };
+  // }, []);
 
   const getDeliverType = (type: string) => {
     switch (type) {
@@ -133,6 +154,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               onPress={() => {
                 props.navigation.navigate(AppRoutes.TestOrderDetails, {
                   orderId: order!.id,
+                  setOrders: (
+                    orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]
+                  ) => setOrders(orders),
+                  refetch: refetch,
                 });
               }}
               title={title}

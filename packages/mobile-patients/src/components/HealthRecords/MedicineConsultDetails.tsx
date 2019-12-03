@@ -35,6 +35,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useApolloClient } from 'react-apollo-hooks';
+import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
+import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
+import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -105,25 +110,60 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const data = props.navigation.state.params ? props.navigation.state.params.data : {};
-  console.log('a', data);
+  const { loading, setLoading } = useUIElements();
 
+  const data = props.navigation.state.params ? props.navigation.state.params.data : {};
+  //console.log('a', data);
+  const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
-  const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
-  var arr = url.split(',');
+  // const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
+  var arr = url;
+
+  const prismFile = props.navigation.state.params
+    ? props.navigation.state.params.prismPrescriptionFileId
+    : {};
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  // console.log('prismPrescriptionFileId', prismFile.split(','));
+
+  useEffect(() => {
+    if (prismFile == null || prismFile == '') {
+      Alert.alert('There is no prism filed ');
+    } else {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: currentPatient && currentPatient.id,
+              fileIds: prismFile.split(','),
+            },
+          },
+        })
+        .then(({ data }) => {
+          console.log(data, 'DOWNLOAD_DOCUMENT');
+          const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+          uploadUrlscheck && setUrls(uploadUrlscheck);
+        })
+        .catch((e: string) => {
+          console.log('Error occured', e);
+        })
+        .finally(() => {});
+    }
+  }, []);
 
   const addToCart = () => {
     if (!data.medicineSKU) {
       Alert.alert('Alert', 'Item not available.');
       return;
     }
-    setLoading(true);
+    setLoading && setLoading(true);
     getMedicineDetailsApi(data.medicineSKU)
       .then(({ data: { productdp } }) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const medicineDetails = (productdp && productdp[0]) || {};
         const isInStock = medicineDetails.is_in_stock;
         if (!isInStock) {
@@ -134,6 +174,11 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           id: medicineDetails.sku,
           mou: medicineDetails.mou,
           price: medicineDetails.price,
+          specialPrice: medicineDetails.special_price
+            ? typeof medicineDetails.special_price == 'string'
+              ? parseInt(medicineDetails.special_price)
+              : medicineDetails.special_price
+            : undefined,
           quantity: data.quantity,
           name: data.medicineName,
           prescriptionRequired: medicineDetails.is_prescription_required == '1',
@@ -146,13 +191,14 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: `${data.medicineName}`,
             uploadedUrl: arr[0],
+            prismPrescriptionFileId: prismFile,
           });
         }
 
         props.navigation.navigate(AppRoutes.YourCart);
       })
       .catch((err) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log(err, 'MedicineDetailsScene err');
         Alert.alert('Alert', 'No medicines found.');
       });
@@ -194,70 +240,78 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           title="RECORD DETAILS"
           leftIcon="backArrow"
           rightComponent={
-            <View style={{ flexDirection: 'row' }}>
-              {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
+            prismFile && (
+              <View style={{ flexDirection: 'row' }}>
+                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
                 <ShareGreen />
               </TouchableOpacity> */}
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  try {
-                    if (!url || url === '[object Object]') {
-                      Alert.alert('No Image');
-                    } else {
-                      for (var i = 0; i < arr.length; i++) {
-                        if (Platform.OS === 'ios') {
-                          try {
-                            CameraRoll.saveToCameraRoll(arr[i]);
-                            Alert.alert('Download Completed');
-                            CommonLogEvent(
-                              'MEDICINE_CONSULT_DETAILS',
-                              'Download compelete for Prescription'
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    try {
+                      if (!url || url === '[object Object]') {
+                        Alert.alert('No Image');
+                      } else {
+                        console.log('download data', arr);
+
+                        for (var i = 0; i < arr.length; i++) {
+                          if (Platform.OS === 'ios') {
+                            try {
+                              CameraRoll.saveToCameraRoll(arr[i]);
+                              Alert.alert('Download Completed');
+                              CommonLogEvent(
+                                'MEDICINE_CONSULT_DETAILS',
+                                'Download compelete for Prescription'
+                              );
+                            } catch {}
+                          } else {
+                            Linking.openURL(arr[i]).catch((err) =>
+                              console.error('An error occurred', err)
                             );
-                          } catch {}
+                          }
+                          // let dirs = RNFetchBlob.fs.dirs;
+
+                          // setLoading(true);
+                          // RNFetchBlob.config({
+                          //   fileCache: true,
+                          //   addAndroidDownloads: {
+                          //     useDownloadManager: true,
+                          //     notification: false,
+                          //     mime: 'image/jpeg',
+                          //     path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                          //     description: 'File downloaded by download manager.',
+                          //   },
+                          // })
+                          //   .fetch('GET', arr[i], {
+                          //     //some headers ..
+                          //   })
+                          //   .then((res) => {
+                          //     setLoading(false);
+
+                          //     if (Platform.OS === 'android') {
+                          //       try {
+                          //         Alert.alert('Download Complete');
+                          //       } catch {}
+                          //     }
+
+                          //     Platform.OS === 'ios'
+                          //       ? RNFetchBlob.ios.previewDocument(res.path())
+                          //       : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                          //   })
+                          //   .catch((err) => {
+                          //     console.log('error ', err);
+                          //     setLoading(false);
+                          //     // ...
+                          //   });
                         }
-                        let dirs = RNFetchBlob.fs.dirs;
-
-                        setLoading(true);
-                        RNFetchBlob.config({
-                          fileCache: true,
-                          addAndroidDownloads: {
-                            useDownloadManager: true,
-                            notification: false,
-                            mime: 'application/pdf',
-                            path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                            description: 'File downloaded by download manager.',
-                          },
-                        })
-                          .fetch('GET', arr[i], {
-                            //some headers ..
-                          })
-                          .then((res) => {
-                            setLoading(false);
-
-                            if (Platform.OS === 'android') {
-                              try {
-                                Alert.alert('Download Complete');
-                              } catch {}
-                            }
-
-                            Platform.OS === 'ios'
-                              ? RNFetchBlob.ios.previewDocument(res.path())
-                              : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                          })
-                          .catch((err) => {
-                            console.log('error ', err);
-                            setLoading(false);
-                            // ...
-                          });
                       }
-                    }
-                  } catch (error) {}
-                }}
-              >
-                <Download />
-              </TouchableOpacity>
-            </View>
+                    } catch (error) {}
+                  }}
+                >
+                  <Download />
+                </TouchableOpacity>
+              </View>
+            )
           }
           onPressLeftIcon={() => props.navigation.goBack()}
         />
@@ -317,7 +371,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             }}
           />
         </View>
-        {loading && <Spinner />}
       </SafeAreaView>
     </View>
   );

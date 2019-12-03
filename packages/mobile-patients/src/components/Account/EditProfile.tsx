@@ -56,6 +56,7 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -251,8 +252,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const isEdit = props.navigation.getParam('isEdit');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
-  const { allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
@@ -267,7 +269,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [relation, setRelation] = useState<RelationArray>();
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
   const [bottomPopUp, setBottomPopUp] = useState<boolean>(false);
   const [alertMessage, setAlertMessage] = useState<boolean>(false);
 
@@ -327,32 +328,92 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     }
   }, []);
 
+  const deleteConfirmation = () => {
+    showAphAlert!({
+      title: 'Hi!',
+      description: 'Are you sure you want to delete this profile ?',
+      children: (
+        <View
+          style={{
+            flexDirection: 'row',
+            marginHorizontal: 20,
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            marginVertical: 18,
+          }}
+        >
+          <Button
+            style={{
+              flex: 1,
+              marginRight: 16,
+            }}
+            title={'NO'}
+            onPress={() => {
+              hideAphAlert!();
+            }}
+          />
+          <Button
+            style={{ flex: 1 }}
+            title={'YES'}
+            onPress={() => {
+              hideAphAlert!();
+              deleteUserProfile();
+            }}
+          />
+        </View>
+      ),
+    });
+  };
+
   const deleteUserProfile = () => {
-    setLoading(true);
-    client
-      .mutate<deleteProfile, deleteProfileVariables>({
-        mutation: DELETE_PROFILE,
-        variables: {
-          patientId: profileData.id,
-        },
-      })
-      .then((data) => {
-        props.navigation.pop(2);
-        props.navigation.push(AppRoutes.ManageProfile, {
-          mobileNumber: props.navigation.getParam('mobileNumber'),
+    setLoading && setLoading(true);
+    if (currentPatient!.id !== profileData.id) {
+      if (profileData.relation !== Relation.ME) {
+        client
+          .mutate<deleteProfile, deleteProfileVariables>({
+            mutation: DELETE_PROFILE,
+            variables: {
+              patientId: profileData.id,
+            },
+          })
+          .then((data) => {
+            setLoading && setLoading(false);
+            getPatientApiCall();
+            props.navigation.goBack();
+            setLoading && setLoading(true);
+            // props.navigation.pop(2);
+            // props.navigation.push(AppRoutes.ManageProfile, {
+            //   mobileNumber: props.navigation.getParam('mobileNumber'),
+            // });
+          })
+          .catch((e) => {
+            setLoading && setLoading(false);
+            showAphAlert!({
+              title: 'Network Error!',
+              description: 'Please try again later.',
+            });
+          });
+        // .finally(() => {
+        //   setLoading && setLoading(false);
+        // });
+      } else {
+        setLoading && setLoading(false);
+        showAphAlert!({
+          title: `Alert`,
+          description: `Self profile can't be deleted`,
         });
-      })
-      .catch((e) => {
-        setAlertMessage(true);
-        setBottomPopUp(true);
-      })
-      .finally(() => {
-        setLoading(false);
+      }
+    } else {
+      setLoading && setLoading(false);
+      showAphAlert!({
+        title: `Alert`,
+        description: `This profile can't be deleted as it is selected as default`,
       });
+    }
   };
 
   const updateUserProfile = () => {
-    setLoading(true);
+    setLoading && setLoading(true);
     if (!isChanged) {
       client
         .mutate<editProfile, editProfileVariables>({
@@ -371,31 +432,38 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           },
         })
         .then((data) => {
-          getPatientApiCall();
+          setLoading && setLoading(false);
           if (relation!.key === Relation.ME && profileData.relation !== Relation.ME) {
             setCurrentPatientId(profileData!.id);
-            AsyncStorage.setItem('selectUserId', profileData!.id);
+            AsyncStorage.removeItem('selectUserId');
+            // AsyncStorage.setItem('selectUserId', profileData!.id);
           }
+          getPatientApiCall();
           props.navigation.goBack();
+          setLoading && setLoading(true);
           // props.navigation.pop(2);
           // props.navigation.push(AppRoutes.ManageProfile, {
           //   mobileNumber: props.navigation.getParam('mobileNumber'),
           // });
         })
         .catch((e) => {
-          setAlertMessage(true);
-          setBottomPopUp(true);
-        })
-        .finally(() => {
-          setLoading(false);
+          setLoading && setLoading(false);
+          showAphAlert!({
+            title: 'Network Error!',
+            description: 'Please try again later.',
+          });
         });
+      // .finally(() => {
+      //   // setLoading && setLoading(false);
+      // });
     } else {
+      setLoading && setLoading(false);
       props.navigation.goBack();
     }
   };
 
   const newProfile = () => {
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .mutate<addNewProfile, addNewProfileVariables>({
         mutation: ADD_NEW_PROFILE,
@@ -413,10 +481,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         },
       })
       .then((data) => {
+        setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.goBack();
+        setLoading && setLoading(true);
         // if (relation!.key === Relation.ME) {
-        //   setCurrentPatientId(profileData!.id);
+        //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
         //   AsyncStorage.setItem('selectUserId', profileData!.id);
         // }
         // isPoptype
@@ -427,12 +497,15 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         //     }));
       })
       .catch((e) => {
-        setAlertMessage(true);
-        setBottomPopUp(true);
-      })
-      .finally(() => {
-        setLoading(false);
+        setLoading && setLoading(false);
+        showAphAlert!({
+          title: 'Network Error!',
+          description: 'Please try again later.',
+        });
       });
+    // .finally(() => {
+    //   setLoading && setLoading(false);
+    // });
   };
 
   const renderUploadSelection = () => {
@@ -621,8 +694,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     //   setBottomPopUp(false);
     // }
     else {
-      setAlertMessage(false);
-      setBottomPopUp(true);
+      showAphAlert!({
+        title: 'Apollo',
+        description: "'Self' is already choosen for another profile.",
+      });
     }
   };
 
@@ -793,7 +868,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 setDeleteProfile(false);
-                deleteUserProfile();
+                deleteConfirmation();
               }}
             >
               <View
@@ -844,41 +919,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         </ScrollView>
         {renderButtons()}
       </SafeAreaView>
-      {/* {deleteProfile && isEdit && renderDeleteButton()} */}
+      {deleteProfile && isEdit && renderDeleteButton()}
       {loading && <Spinner />}
-      {bottomPopUp && (
-        <BottomPopUp
-          title={alertMessage ? 'Network Error!' : 'Apollo'}
-          description={
-            alertMessage
-              ? 'Please try again later.'
-              : "'Self' is already choosen for another profile."
-          }
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={{
-                height: 60,
-                paddingRight: 25,
-                backgroundColor: 'transparent',
-              }}
-              onPress={() => {
-                setBottomPopUp(false);
-                setAlertMessage(false);
-              }}
-            >
-              <Text
-                style={{
-                  paddingTop: 16,
-                  ...theme.viewStyles.yellowTextStyle,
-                }}
-              >
-                OK, GOT IT
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
-      )}
     </View>
   );
 };
