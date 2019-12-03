@@ -50,6 +50,7 @@ import {
   BookTransferAppointmentInput,
   TRANSFER_INITIATED_TYPE,
   UPLOAD_FILE_TYPES,
+  ConsultQueueInput,
   FEEDBACKTYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -103,6 +104,7 @@ import {
   addToConsultQueue,
   checkIfRescheduleAppointment,
   getNextAvailableSlots,
+  addToConsultQueueWithAutomatedQuestions,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -111,6 +113,7 @@ import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Med
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { ChatQuestions } from './ChatQuestions';
 import { FeedbackPopup } from '../FeedbackPopup';
 import { g } from '../../helpers/helperFunctions';
 
@@ -252,6 +255,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
   const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
+  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(true);
+  const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
+  const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -322,7 +338,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
-    requestToJrDoctor();
+    setUserAnswers({ appointmentId: channel });
+    // requestToJrDoctor();
     analytics.setAnalyticsCollectionEnabled(true);
     CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
 
@@ -353,27 +370,192 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const client = useApolloClient();
 
+  const setSendAnswers = (val: number) => {
+    let s = isSendAnswers;
+    s[val] = true;
+    setisSendAnswers(s);
+  };
+
+  const sendAnswerMessage = (text: { id: string; message: string }) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {}
+    );
+  };
+  const setAnswerData = (value: { k: string; v: string[] }[]) => {
+    let data = userAnswers || ({} as ConsultQueueInput);
+    value.map((item) => {
+      switch (item.k) {
+        case 'height':
+          data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
+          console.log('data.height:', 'data.height:' + data.height);
+          try {
+            const text = {
+              id: patientId,
+              message: 'Height:\n' + data.height,
+            };
+            setMessageText('');
+            !isSendAnswers[0] && sendAnswerMessage(text);
+            setSendAnswers(0);
+          } catch (error) {}
+          break;
+        case 'weight':
+          data.weight = item.v[0] || 'No Idea';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Weight:\n' + data.weight,
+            };
+            setMessageText('');
+            !isSendAnswers[1] && sendAnswerMessage(text);
+            setSendAnswers(1);
+          } catch (error) {}
+          break;
+        case 'drugAllergies':
+          data.drugAllergies = item.v[0] || 'No';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Medicine Allergy:\n' + data.drugAllergies,
+            };
+            setMessageText('');
+            !isSendAnswers[2] && sendAnswerMessage(text);
+            setSendAnswers(2);
+          } catch (error) {}
+          break;
+        case 'dietAllergies':
+          data.dietAllergies = item.v[0] || 'No';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Food Allergy:\n' + data.dietAllergies,
+            };
+            setMessageText('');
+            !isSendAnswers[3] && sendAnswerMessage(text);
+            setSendAnswers(3);
+          } catch (error) {}
+          break;
+        case 'temperature':
+          data.temperature = item.v[0] || 'No Idea';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Temperature:\n' + data.temperature,
+            };
+            setMessageText('');
+            !isSendAnswers[4] && sendAnswerMessage(text);
+            setSendAnswers(4);
+          } catch (error) {}
+          break;
+        case 'bp':
+          data.bp = item.v[0] || item.v[1] || 'No Idea';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Blood Pressure:\n' + data.bp,
+            };
+            setMessageText('');
+            !isSendAnswers[5] && sendAnswerMessage(text);
+            setSendAnswers(5);
+          } catch (error) {}
+          break;
+        case 'familyHistory':
+          data.familyHistory = item.v[0] || 'No';
+          try {
+            const text = {
+              id: patientId,
+              message:
+                'Family members suffering suffer from — COPD, Cancer, Hypertension or Diabetes:\n' +
+                data.familyHistory,
+            };
+            setMessageText('');
+            !isSendAnswers[6] && sendAnswerMessage(text);
+            setSendAnswers(6);
+          } catch (error) {}
+          break;
+        case 'lifeStyleSmoke':
+          data.lifeStyle = data.lifeStyle
+            ? data.lifeStyle.includes('Smoke')
+              ? data.lifeStyle
+              : 'Smoke: ' + (item.v[0] || 'No') + '\n' + data.lifeStyle
+            : 'Smoke: ' + (item.v[0] || 'No');
+          try {
+            const text = {
+              id: patientId,
+              message: 'Smoke:\n' + item.v[0] || 'No',
+            };
+            setMessageText('');
+            !isSendAnswers[7] && sendAnswerMessage(text);
+            setSendAnswers(7);
+          } catch (error) {}
+          break;
+        case 'lifeStyleDrink':
+          data.lifeStyle = data.lifeStyle
+            ? data.lifeStyle.includes('Drink')
+              ? data.lifeStyle
+              : data.lifeStyle + '\nDrink: ' + (item.v[0] || 'No')
+            : 'Drink: ' + (item.v[0] || 'No');
+          try {
+            const text = {
+              id: patientId,
+              message: 'Drink: \n' + (item.v[0] || 'No'),
+            };
+            setMessageText('');
+            !isSendAnswers[8] && sendAnswerMessage(text);
+            setSendAnswers(8);
+          } catch (error) {}
+          break;
+      }
+    });
+    setUserAnswers(data);
+    if (isSendAnswers.find((item) => item === false) === undefined) {
+      requestToJrDoctor();
+      thirtySecondCall();
+      minuteCaller();
+    }
+  };
+
   const requestToJrDoctor = async () => {
     // let ConsultQueueData: any = await AsyncStorage.getItem('ConsultQueueData');
     // ConsultQueueData = JSON.parse(ConsultQueueData || 'null') || [];
     // console.log('ConsultQueueData', ConsultQueueData);
-
     // if (ConsultQueueData.appointmentId != appointmentData.id) {
+    // addToConsultQueue(client, appointmentData.id)
+    //   .then(({ data }: any) => {
+    //     console.log(data, 'data res');
+    //     const queueData = {
+    //       queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+    //       appointmentId: appointmentData.id,
+    //     };
+    //     console.log(queueData, 'queueData res');
+    //     AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+    //   })
+    //   .catch((e: string) => {
+    //     console.log('Error occured ', e);
+    //   });
 
-    addToConsultQueue(client, appointmentData.id)
-      .then(({ data }: any) => {
-        console.log(data, 'data res');
-        const queueData = {
-          queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-          appointmentId: appointmentData.id,
-        };
-        console.log(queueData, 'queueData res');
+    //new code
+    userAnswers &&
+      addToConsultQueueWithAutomatedQuestions(client, userAnswers)
+        .then(({ data }: any) => {
+          console.log(data, 'data res, adding');
 
-        AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
-      })
-      .catch((e: string) => {
-        console.log('Error occured ', e);
-      });
+          const queueData = {
+            queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+            appointmentId: appointmentData.id,
+          };
+          console.log(queueData, 'queueData res, adding');
+          AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+        })
+        .catch((e: string) => {
+          console.log('Error occured, adding ', e);
+        });
+
     // } else {
     //   console.log('requestToJrDoctor not called');
     // }
@@ -695,16 +877,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               updateSessionAPI();
               checkingAppointmentDates();
             }
-
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
               setjrDoctorJoined(true);
               updateSessionAPI();
               checkingAppointmentDates();
             }
-
             insertText = newmessage;
             setMessages(newmessage as []);
             console.log('newmessage', newmessage);
+            if (newmessage.find((item) => item.message.includes('Height'))) {
+              setDisplayChatQuestions(false);
+            }
             if (msgs.length == 100) {
               console.log('hihihihihi');
               getHistory(end);
@@ -780,6 +963,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    if (false) {
+      //To-Do: api-key needs to be replaced
+      thirtySecondCall();
+      minuteCaller();
+    }
+  }, []);
+
+  const thirtySecondCall = () => {
     thirtySecondTimer = setTimeout(function() {
       if (jrDoctorJoined == false) {
         // console.log('Alert Shows After 30000 Seconds of Delay.');
@@ -835,9 +1026,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
       }
     }, 30000);
-  }, []);
+  };
 
-  useEffect(() => {
+  const minuteCaller = () => {
     minuteTimer = setTimeout(function() {
       if (jrDoctorJoined == false) {
         // console.log('Alert Shows After 60000 Seconds of Delay.');
@@ -890,7 +1081,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         minuteTimer && clearTimeout(minuteTimer);
       }
     }, 90000);
-  }, []);
+  };
 
   const checkingAppointmentDates = () => {
     try {
@@ -978,6 +1169,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
+        addMessages(message);
+      } else if (message.message.message === imageconsult) {
+        console.log('imageconsult');
         addMessages(message);
       } else if (message.message.message === firstMessage) {
         console.log('firstMessage');
@@ -1858,15 +2052,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('pdf', rowData.url);
-
-                    if ((Platform.OS = 'android')) {
-                      Linking.openURL(rowData.url).catch((err) =>
-                        console.error('An error occurred', err)
-                      );
-                    } else {
-                      setShowWeb(true);
+                     // setShowWeb(true);
+                      setPatientImageshow(true);
                       setUrl(rowData.url);
-                    }
+                    // if ((Platform.OS = 'android')) {
+                    //   setShowWeb(true);
+                    //   setUrl(rowData.url);
+                    //   // Linking.openURL(rowData.url).catch((err) =>
+                    //   //   console.error('An error occurred', err)
+                    //   // );
+                    // } else {
+                    //   setShowWeb(true);
+                    //   setUrl(rowData.url);
+                    // }
                   }}
                 >
                   <View
@@ -1881,14 +2079,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       marginLeft: 38,
                     }}
                   >
-                    <FileBig
+                    <Image
+                      source={{ uri: rowData.url }}
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 180,
+                        height: 180,
+                        borderRadius: 10,
+                      }}
+                    />
+                    {/* <FileBig
                       style={{
                         resizeMode: 'stretch',
                         width: 200,
                         height: 200,
                         borderRadius: 10,
                       }}
-                    />
+                    /> */}
                   </View>
                 </TouchableOpacity>
               )}
@@ -4118,8 +4325,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
               </TouchableOpacity>
             </View>
+            {displayChatQuestions && Platform.OS === 'ios' && (
+              <ChatQuestions
+                onItemDone={(value: { k: string; v: string[] }) => {
+                  console.log('and', value);
+                  setAnswerData([value]);
+                }}
+                onDonePress={(values: { k: string; v: string[] }[]) => {
+                  setAnswerData(values);
+                  setDisplayChatQuestions(false);
+                }}
+              />
+            )}
           </View>
         </KeyboardAvoidingView>
+        {displayChatQuestions && Platform.OS === 'android' && (
+          <ChatQuestions
+            onItemDone={(value: { k: string; v: string[] }) => {
+              console.log('and', value);
+              setAnswerData([value]);
+            }}
+            onDonePress={(values: { k: string; v: string[] }[]) => {
+              setAnswerData(values);
+              setDisplayChatQuestions(false);
+            }}
+          />
+        )}
       </SafeAreaView>
       {onSubscribe && IncomingCallView()}
       {isCall && VideoCall()}
@@ -4275,6 +4506,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={() => {
+          setShowFeedback(false)
           props.navigation.dispatch(
             StackActions.reset({
               index: 0,

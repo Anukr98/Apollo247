@@ -601,15 +601,16 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         transactionId={medFeedback.transactionId}
         type={FEEDBACKTYPE.CONSULT}
         isVisible={medFeedback.visible}
-        onComplete={() =>
+        onComplete={() => {
+          setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
           props.navigation.dispatch(
             StackActions.reset({
               index: 0,
               key: null,
               actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
             })
-          )
-        }
+          );
+        }}
       />
     </View>
   );

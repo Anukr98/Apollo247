@@ -26,7 +26,7 @@ import {
   BookAppointmentInput,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -85,7 +85,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [nextAvailableSlot, setNextAvailableSlot] = useState<string>('');
   const [isConsultOnline, setisConsultOnline] = useState<boolean>(true);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
-  const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
+  // const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
   const [limitExceededAlert, setLimitExceededAlert] = useState<boolean>(false);
@@ -162,7 +162,14 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       })
       .then((data) => {
         setshowSpinner(false);
-        setshowSuccessPopUp(true);
+        props.navigation.navigate(AppRoutes.ConsultPayment, {
+          doctorName: `${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`,
+          appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
+          price:
+            tabs[0].title === selectedTab
+              ? props.doctor!.onlineConsultationFees
+              : props.doctor!.physicalConsultationFees,
+        });
       })
       .catch((error) => {
         try {
@@ -395,16 +402,16 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           </View>
         </View>
       </View>
-      {showSuccessPopUp && (
+      {/* {showSuccessPopUp && (
         <BottomPopUp
           title={'Appointment Confirmation'}
           description={`Your appointment has been successfully booked with Dr. ${
             props.doctor ? `${props.doctor.firstName} ${props.doctor.lastName}` : ''
           }. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`}
         >
-          {/* <ScrollView bounces={false}>
+          <ScrollView bounces={false}>
             <Text style={styles.congratulationsDescriptionStyle}>{successSteps.join('\n')}</Text>
-          </ScrollView> */}
+          </ScrollView>
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               activeOpacity={1}
@@ -425,7 +432,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             </TouchableOpacity>
           </View>
         </BottomPopUp>
-      )}
+      )} */}
       {AppointmentExistAlert && (
         <BottomPopUp
           title={'Alert!'}

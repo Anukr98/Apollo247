@@ -557,9 +557,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const renderMatchingMedicines = () => {
     let filteredProductsList = productsList;
     // Price
-    if (typeof price.from == 'number' && typeof price.to == 'number') {
+    if (typeof price.from == 'number' || typeof price.to == 'number') {
       filteredProductsList = filteredProductsList.filter(
-        (item) => item.price >= price.from! && item.price <= price.to!
+        (item) =>
+          (price.from ? item.price >= price.from! : true) &&
+          (price.to ? item.price <= price.to! : true)
       );
     }
     // Discount

@@ -4,9 +4,12 @@ import {
   NEXT_AVAILABLE_SLOT,
   ADD_TO_CONSULT_QUEUE,
   CHECK_IF_RESCHDULE,
+  AUTOMATED_QUESTIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
+import { addToConsultQueueWithAutomatedQuestionsVariables } from '../graphql/types/addToConsultQueueWithAutomatedQuestions';
+import { ConsultQueueInput } from '../graphql/types/globalTypes';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -50,6 +53,28 @@ export const addToConsultQueue = (client: ApolloClient<object>, appointmentId: s
         mutation: ADD_TO_CONSULT_QUEUE,
         variables: {
           appointmentId: appointmentId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: string) => {
+        rej({ error: e });
+      });
+  });
+};
+
+export const addToConsultQueueWithAutomatedQuestions = (
+  client: ApolloClient<object>,
+  consultQueueInput: ConsultQueueInput
+) => {
+  return new Promise((res, rej) => {
+    client
+      .mutate<addToConsultQueueWithAutomatedQuestionsVariables>({
+        mutation: AUTOMATED_QUESTIONS,
+        variables: {
+          ConsultQueueInput: consultQueueInput,
         },
         fetchPolicy: 'no-cache',
       })

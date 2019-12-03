@@ -52,6 +52,7 @@ export const getAppointmentHistoryTypeDefs = gql`
     displayId: Int
     patientInfo: Patient @provides(fields: "id")
     doctorInfo: Profile @provides(fields: "id")
+    isJdQuestionsComplete: Boolean
   }
 
   input AppointmentHistoryInput {
@@ -114,6 +115,7 @@ type AppointmentHistory = {
   isFollowUp: Boolean;
   followUpParentId: string;
   displayId: number;
+  isJdQuestionsComplete: Boolean;
 };
 
 type AppointmentInputArgs = { appointmentHistoryInput: AppointmentHistoryInput };
