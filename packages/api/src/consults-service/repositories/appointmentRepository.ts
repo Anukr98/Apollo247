@@ -8,7 +8,6 @@ import {
   Not,
   Connection,
   In,
-  Equal,
 } from 'typeorm';
 import {
   Appointment,
@@ -58,7 +57,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       patientId,
       doctorId,
       cancelledById: patientId,
-      bookingDate: Between(newStartDate, newEndDate),
+      cancelledDate: Between(newStartDate, newEndDate),
     };
     return this.count({ where: whereClause });
   }
@@ -722,6 +721,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         doctorCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -731,6 +731,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         patientCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -805,7 +806,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         {
           bookingDate: Between(newStartDate, newEndDate),
           appointmentState: 'NEW',
-          cancelledBy: Not(Equal(REQUEST_ROLES.PATIENT)),
+          status: Not(STATUS.CANCELLED),
         },
       ],
       order: { bookingDate: 'DESC' },

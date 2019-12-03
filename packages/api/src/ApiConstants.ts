@@ -34,6 +34,7 @@ export enum ApiConstants {
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
   BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
 
+  CANCEL_APPOINTMENT_SUBJECT = 'Appointment has been cancelled',
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 
   PRISM_TIMEOUT = 10000,
@@ -46,6 +47,9 @@ export enum ApiConstants {
 
   CART_READY_TITLE = 'Medicine order cart ready',
   CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
+
+  ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
+  ORDER_DELIVERY_BODY = 'Hi {0}, your medicine order is delivered',
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
