@@ -321,6 +321,20 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
     );
   };
 
+  const validateAndApplyFilter = () => {
+    if (typeof discount.from == 'number' && discount.to == undefined) {
+      Alert.alert('Uh oh.. :(', `Please provide maximum discount value.`);
+      return;
+    } else if (typeof discount.to == 'number' && discount.from == undefined) {
+      Alert.alert('Uh oh.. :(', `Please provide minimum discount value.`);
+      return;
+    } else if (discount.from && discount.to && (discount.from > 100 || discount.to > 100)) {
+      Alert.alert('Uh oh.. :(', `Discount cannot be more than 100.`);
+      return;
+    }
+    onApplyFilter(discount, price, sortBy, categoryIds.filter((i) => i));
+  };
+
   const renderApplyFilterButton = () => {
     return (
       <View style={{ alignItems: 'center' }}>
@@ -333,16 +347,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}
-          onPress={() => {
-            if (discount.from == undefined || discount.to == undefined) {
-              Alert.alert('Uh oh.. :(', `Minimum and maximum discount is madatory.`);
-              return;
-            } else if (discount.from > 100 || discount.to > 100) {
-              Alert.alert('Uh oh.. :(', `Discount should be less than 100.`);
-              return;
-            }
-            onApplyFilter(discount, price, sortBy, categoryIds.filter((i) => i));
-          }}
+          onPress={validateAndApplyFilter}
         />
       </View>
     );
