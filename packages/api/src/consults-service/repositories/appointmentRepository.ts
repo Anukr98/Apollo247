@@ -702,6 +702,12 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
+    return this.update(id, {
+      isJdQuestionsComplete,
+    });
+  }
+
   rescheduleAppointmentByDoctor(
     id: string,
     appointmentDateTime: Date,

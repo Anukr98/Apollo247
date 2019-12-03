@@ -148,7 +148,7 @@ const useStyles = makeStyles((theme: Theme) => {
           width: '25%',
           listStyleType: 'none',
           padding: 4,
-        }
+        },
       },
     },
   };
@@ -156,14 +156,39 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const ViewAllBrands: React.FC = (props) => {
   const classes = useStyles();
-  const alphabets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-    'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
-    't', 'u', 'v', 'w', 'x', 'y', 'z'];
-  const alphabetFilter = alphabets.map((letter, index) =>
+  const alphabets = [
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+    'f',
+    'g',
+    'h',
+    'i',
+    'j',
+    'k',
+    'l',
+    'm',
+    'n',
+    'o',
+    'p',
+    'q',
+    'r',
+    's',
+    't',
+    'u',
+    'v',
+    'w',
+    'x',
+    'y',
+    'z',
+  ];
+  const alphabetFilter = alphabets.map((letter, index) => (
     <li key={index}>
       <a href={'#' + letter}>{letter}</a>
-    </li >
-  );
+    </li>
+  ));
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -183,118 +208,284 @@ export const ViewAllBrands: React.FC = (props) => {
             Shop By Brand
           </div>
           <div className={classes.filterHeader}>
-            <ul>
-              {alphabetFilter}
-            </ul>
+            <ul>{alphabetFilter}</ul>
           </div>
           <div className={classes.filterSection}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 212px)'}>
               <div className={classes.customScroll}>
                 <div className={classes.brandRow}>
-                  <div id="a" className={classes.brandType}>A</div>
+                  <div id="a" className={classes.brandType}>
+                    A
+                  </div>
                   <div className={classes.brandList}>
                     <ul>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
-                      <li><Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link></li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to={clientRoutes.medicineSearchByBrand()}>Adidas</Link>
+                      </li>
                     </ul>
                   </div>
                 </div>
                 <div className={classes.brandRow}>
-                  <div id="b" className={classes.brandType}>B</div>
+                  <div id="b" className={classes.brandType}>
+                    B
+                  </div>
                   <div className={classes.brandList}>
                     <ul>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
                     </ul>
                   </div>
                 </div>
                 <div className={classes.brandRow}>
-                  <div id="c" className={classes.brandType}>C</div>
+                  <div id="c" className={classes.brandType}>
+                    C
+                  </div>
                   <div className={classes.brandList}>
                     <ul>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
                     </ul>
                   </div>
                 </div>
                 <div className={classes.brandRow}>
-                  <div id="d" className={classes.brandType}>D</div>
+                  <div id="d" className={classes.brandType}>
+                    D
+                  </div>
                   <div className={classes.brandList}>
                     <ul>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">A-Derma</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Accucheck</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acnestar</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Acti Life</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
-                      <li><Link to="">Adidas</Link></li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">A-Derma</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Accucheck</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acnestar</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Acti Life</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
+                      <li>
+                        <Link to="">Adidas</Link>
+                      </li>
                     </ul>
                   </div>
                 </div>
