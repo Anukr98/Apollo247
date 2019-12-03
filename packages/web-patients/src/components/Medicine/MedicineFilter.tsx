@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     filterSection: {
-      padding: '20px 5px 20px 10px',
+      padding: '20px 5px 0 10px',
       paddingTop: 15,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       paddingLeft: 10,
       paddingRight: 15,
+      paddingBottom: 10,
     },
     searchInput: {
       paddingLeft: 20,
@@ -117,6 +118,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 10,
       },
     },
+    bottomActions: {
+      padding: 20,
+      paddingTop: 10,
+    },
   });
 });
 
@@ -138,7 +143,7 @@ export const MedicineFilter: React.FC = (props) => {
       <div
         className={`${classes.filterSection}`}
       >
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 275px'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Categories</div>
@@ -219,6 +224,14 @@ export const MedicineFilter: React.FC = (props) => {
             </div>
           </div>
         </Scrollbars>
+      </div>
+      <div className={classes.bottomActions}>
+        <AphButton
+          color="primary"
+          fullWidth
+        >
+          Apply Filters
+        </AphButton>
       </div>
     </div>
   );
