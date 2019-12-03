@@ -1283,14 +1283,13 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       ).toISOString();
     }
 
-    if (followUp[0] && folloupDateTime !== "") {
+    if (folloupDateTime !== "") {
       const followupObj = {
         appointmentId: props.appointmentId,
-        folloupDateTime: folloupDateTime,
+        folloupDateTime: followUp[0] ? folloupDateTime : "",
         doctorId: props.doctorId,
         caseSheetId: props.caseSheetId,
-        doctorInfo: currentPatient,
-        pdfUrl: props.prescriptionPdf
+        doctorInfo: currentPatient
       };
       setTimeout(() => {
         pubnub.publish(
