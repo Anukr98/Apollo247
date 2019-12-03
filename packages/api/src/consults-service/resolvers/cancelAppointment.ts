@@ -11,6 +11,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { addMilliseconds, format } from 'date-fns';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -68,10 +69,15 @@ const cancelAppointment: Resolver<
   ) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(
+    cancelAppointmentInput.appointmentId
+  );
 
   if (
     cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT &&
-    appointment.status == STATUS.JUNIOR_DOCTOR_STARTED
+    caseSheetDetails &&
+    caseSheetDetails.status == STATUS.PENDING.toString()
   ) {
     throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CONSULTATION_INPROGRESS, undefined, {});
   }
