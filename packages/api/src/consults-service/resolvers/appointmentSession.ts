@@ -257,16 +257,16 @@ const createAppointmentSession: Resolver<
       );
     }
     // If appointment started with junior doctor
-    if (
-      createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR &&
-      apptDetails.status != STATUS.IN_PROGRESS &&
-      apptDetails.status != STATUS.JUNIOR_DOCTOR_STARTED
-    ) {
-      await apptRepo.updateAppointmentStatus(
-        createAppointmentSessionInput.appointmentId,
-        STATUS.JUNIOR_DOCTOR_STARTED
-      );
-    }
+    // if (
+    //   createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR &&
+    //   apptDetails.status != STATUS.IN_PROGRESS &&
+    //   apptDetails.status != STATUS.JUNIOR_DOCTOR_STARTED
+    // ) {
+    //   await apptRepo.updateAppointmentStatus(
+    //     createAppointmentSessionInput.appointmentId,
+    //     STATUS.JUNIOR_DOCTOR_STARTED
+    //   );
+    // }
     // send notification
     const pushNotificationInput = {
       appointmentId: createAppointmentSessionInput.appointmentId,
