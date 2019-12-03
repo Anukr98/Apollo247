@@ -175,7 +175,116 @@ export const MedicineFeedBackData = {
       'Variety and options to choose from',
       'Delivery time',
       'Delivery person was friendly and polite',
-      ' Great offers and prices',
+      'Great offers and prices',
+      'Others',
+    ],
+  },
+};
+
+export const ConsultFeedBackData = {
+  POOR: {
+    question: 'What went wrong?',
+    options: [
+      'Doctor did not ask enough questions',
+      'Delay in starting consult',
+      'Doctor replied late and kept me waiting',
+      'Difficulty while using the application',
+      'Doctor took a long time in sharing the prescription',
+      'Doctor was impolite',
+      'Doctor was in a hurry',
+      'I could not find the doctor I was looking for',
+      'Doctor was not available immediately',
+      'I found better service on other portals',
+      'I would prefer to see doctor in person at his clinic',
+      'App-related issues (bandwidth/ payment errors)',
+      'Others',
+    ],
+  },
+  OKAY: {
+    question: 'What could have been improved?',
+    options: [
+      'Doctor consultation experience',
+      'Number of doctors to choose from ',
+      'Booking experience',
+      'Chat/ Audio/ Video experience',
+      'Experience with the Doctor’s Team ',
+      'Others',
+    ],
+  },
+  GOOD: {
+    question: 'Thanks! How can we make this a Great experience for you?',
+    options: [
+      'Improve doctor consultation experience',
+      'Add more doctors to choose from ',
+      'Simplify booking experience',
+      'Improve Chat/ Audio/ Video experience',
+      'Improve experience with the Doctor’s team ',
+      'Others',
+    ],
+  },
+  GREAT: {
+    question: 'What went well?',
+    options: [
+      'Doctor explained everything in detail',
+      'Doctor was exceptionally knowledgeable',
+      'Doctor was answering all my questions promptly',
+      'Smooth Chat/ Audio/ Video experience',
+      'Doctor was immediately available',
+      'Others',
+    ],
+  },
+};
+
+export const TestsFeedBackData = {
+  POOR: {
+    question: 'What went wrong?',
+    options: [
+      'The pick-up person was impolite',
+      'The pick-up person was ill-trained/ ill-equipped',
+      'Pick-up person was late',
+      'Delay in report generation',
+      'Difficulty in using the App',
+      'I could not find the tests I was looking for',
+      'I found better offers on other portals',
+      'Payment-related issues on App',
+      'Unavailability of preferred slots',
+      'Unavailability of some tests',
+      'Others',
+    ],
+  },
+  OKAY: {
+    question: 'What could have been improved?',
+    options: [
+      'Report generation time',
+      'Options of tests to choose from',
+      'Ordering experience',
+      'Offers',
+      'The pick-up person’s training',
+      'Pick-up person’s punctuality',
+      'Number of slots for pick-up time to choose from',
+      'Others',
+    ],
+  },
+  GOOD: {
+    question: 'Thanks! What could make this a Great experience for you?',
+    options: [
+      'More tests to choose from',
+      'Simpler booking',
+      'Better offers',
+      'Quicker report generation time',
+      'Better trained pick-up person ',
+      'More punctual pick-up person',
+      'Others',
+    ],
+  },
+  GREAT: {
+    question: 'What went well?',
+    options: [
+      'Booking experience',
+      'Variety and options to choose from',
+      'Timely pick-up',
+      'Offers and prices',
+      'Friendly and polite delivery person',
       'Others',
     ],
   },

@@ -316,6 +316,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               mou: medicineDetails.mou,
               name: medicineDetails!.name,
               price: medicineDetails!.price,
+              specialPrice: medicineDetails.special_price
+                ? typeof medicineDetails.special_price == 'string'
+                  ? parseInt(medicineDetails.special_price)
+                  : medicineDetails.special_price
+                : undefined,
               quantity: items[index].qty || 1,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
               thumbnail: medicineDetails.thumbnail || medicineDetails.image,

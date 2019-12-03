@@ -274,11 +274,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       id: sku,
       mou,
       name: stripHtml(name),
-      price: special_price
+      price: price,
+      specialPrice: special_price
         ? typeof special_price == 'string'
           ? parseInt(special_price)
           : special_price
-        : price,
+        : undefined,
       prescriptionRequired: is_prescription_required == '1',
       quantity: 1,
       thumbnail,

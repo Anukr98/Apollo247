@@ -7,6 +7,7 @@ import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CartIcon,
+  DropdownGreen,
   FileBig,
   InjectionIcon,
   MedicineIcon,
@@ -14,23 +15,26 @@ import {
   NotificationIcon,
   SearchSendIcon,
   SyrupBottleIcon,
-  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import {
+  Brand,
   Doseform,
   getMedicinePageProducts,
   getMedicineSearchSuggestionsApi,
   MedicinePageAPiResponse,
   MedicineProduct,
-  Brand,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -41,7 +45,9 @@ import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
+  AsyncStorage,
   Dimensions,
+  Keyboard,
   ListRenderItemInfo,
   SafeAreaView,
   ScrollView,
@@ -51,15 +57,10 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Keyboard,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { MEDICINE_ORDER_STATUS } from '../../graphql/types/globalTypes';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -114,13 +115,46 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const { showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
+  const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
+  const max_time_to_use_local_medicine_data = 60; // in minutes
+  type LocalMedicineData = {
+    lastSavedTimestamp: number;
+    data: MedicinePageAPiResponse;
+  } | null;
 
   useEffect(() => {
     setProfile(currentPatient!);
   }, [currentPatient]);
   useEffect(() => {
+    // getting from local storage first for immediate rendering
+    AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
+      .then((response) => {
+        const dataToSave: LocalMedicineData = JSON.parse(response || 'null');
+        if (dataToSave) {
+          // setData(dataToSave.data);
+          // setLoading(false);
+          const savedTime = moment(dataToSave.lastSavedTimestamp);
+          const currTime = moment(dataToSave.lastSavedTimestamp);
+          const diff = currTime.diff(savedTime, 'minutes');
+          console.log({ savedTime, currTime, diff, is: diff < 60 });
+          if (diff <= max_time_to_use_local_medicine_data) {
+            setData(dataToSave.data);
+            setLoading(false);
+          }
+        }
+      })
+      .catch(() => {});
+
     getMedicinePageProducts()
       .then((d) => {
+        const localData: LocalMedicineData = {
+          lastSavedTimestamp: new Date().getTime(),
+          data: d.data,
+        };
+        d.data &&
+          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
+            () => {}
+          );
         setData(d.data);
         setLoading(false);
       })
@@ -136,11 +170,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       ordersRefetch();
     }
   }, []);
-
-  // Api Call
-  // const { data, loading, error } = useFetch(() => getMedicinePageProducts());
-  // aphConsole.log({ data });
-  // const _data = (!loading && !error && g(data, 'data')) || null;
 
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -635,18 +664,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         id: sku,
         mou: mou,
         name: name,
-        price: specialPrice,
+        price: price,
+        specialPrice: special_price
+          ? typeof special_price == 'string'
+            ? parseInt(special_price)
+            : special_price
+          : undefined,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
         thumbnail,
       });
     const removeFromCart = () => removeCartItem!(sku);
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
-    const specialPrice = special_price
-      ? typeof special_price == 'string'
-        ? parseInt(special_price)
-        : special_price
-      : price;
 
     return hotSellerCard({
       name,
