@@ -25,13 +25,8 @@ export const GET_BLOCKED_CALENDAR = gql`
 `;
 
 export const ADD_BLOCKED_CALENDAR_ITEM = gql`
-  mutation AddBlockedCalendarItem(
-    $doctorId: String!
-    $start: DateTime!
-    $end: DateTime!
-    $reason: String
-  ) {
-    addBlockedCalendarItem(doctorId: $doctorId, start: $start, end: $end, reason: $reason) {
+  mutation AddBlockedCalendarItem($doctorId: String!, $start: DateTime!, $end: DateTime!) {
+    addBlockedCalendarItem(doctorId: $doctorId, start: $start, end: $end) {
       blockedCalendar {
         id
         doctorId
@@ -184,6 +179,25 @@ export const GET_JD_DASHBOARD = gql`
       juniorDoctorQueueItems {
         doctorid
         queuedconsultscount
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_FAVOURITE_MEDICINE = gql`
+  query GetDoctorFavouriteMedicineList {
+    getDoctorFavouriteMedicineList {
+      medicineList {
+        externalId
+        medicineConsumptionDurationInDays
+        medicineDosage
+        medicineUnit
+        medicineInstructions
+        medicineTimings
+        medicineToBeTaken
+        medicineName
+        doctorId
+        id
       }
     }
   }
