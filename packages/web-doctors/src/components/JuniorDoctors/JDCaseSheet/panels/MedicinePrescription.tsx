@@ -1050,7 +1050,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Quantity (Per Dosage)
+                            Quantity (Per Dosage)*
                           </div>
                           <AphTextField
                             inputProps={{ maxLength: 6 }}
@@ -1071,7 +1071,7 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Units/Types
+                            Units/Types*
                           </div>
                           <div className={classes.unitsSelect}>
                             <AphSelect
@@ -1149,7 +1149,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Duration (In days)*
+                            Duration (in days)*
                           </div>
                           <AphTextField
                             placeholder=""
