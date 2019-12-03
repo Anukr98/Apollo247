@@ -1,11 +1,11 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Button } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import {
   UpdateDoctorOnlineStatus,
-  UpdateDoctorOnlineStatusVariables,
+  UpdateDoctorOnlineStatusVariables
 } from 'graphql/types/UpdateDoctorOnlineStatus';
 import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
 import { Mutation } from 'react-apollo';
@@ -18,7 +18,7 @@ import { AphLinearProgress } from '@aph/web-ui-components';
 import {
   GetConsultQueueVariables,
   GetConsultQueue,
-  GetConsultQueue_getConsultQueue_consultQueue,
+  GetConsultQueue_getConsultQueue_consultQueue
 } from 'graphql/types/GetConsultQueue';
 
 import { GET_CONSULT_QUEUE } from 'graphql/consults';
@@ -42,8 +42,8 @@ const useStyles = makeStyles((theme: Theme) => {
     height: 30,
     '& span': {
       padding: '0 !important',
-      width: 'auto !important',
-    },
+      width: 'auto !important'
+    }
   };
   return {
     toggleBtnGroup: {
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 208,
       borderRadius: 20,
       marginRight: 10,
-      marginLeft: 5,
+      marginLeft: 5
     },
     toggleBtn,
     toggleBtnSelected: {
@@ -61,18 +61,18 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '20px !important',
       '&:hover': {
         backgroundColor: '#00b38e',
-        color: theme.palette.common.white,
-      },
+        color: theme.palette.common.white
+      }
     },
     popoverTile: {
       color: '#fcb716',
-      fontWeight: 500,
+      fontWeight: 500
     },
     countdownLoader: {
       position: 'absolute',
       right: 12,
-      top: 12,
-    },
+      top: 12
+    }
   };
 });
 
@@ -80,7 +80,7 @@ const { AWAY, ONLINE } = DOCTOR_ONLINE_STATUS;
 
 export interface OnlineAwayButtonProps {}
 
-export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props) => {
+export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = props => {
   const classes = useStyles();
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 3;
@@ -92,26 +92,30 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
   >([]);
   const [jrdNoFillDialog, setJrdNoFillDialog] = useState(false);
   let activeConsults: any;
-  if (currentDoctor && currentDoctor.id) {
-    client
-      .query<GetConsultQueue, GetConsultQueueVariables>({
-        query: GET_CONSULT_QUEUE,
-        fetchPolicy: 'no-cache',
-        variables: { doctorId: currentDoctor.id },
-      })
-      .then((data) => {
-        setConsultQueue(data.data.getConsultQueue.consultQueue);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  useEffect(() => {
+    if (currentDoctor && currentDoctor.id) {
+      client
+        .query<GetConsultQueue, GetConsultQueueVariables>({
+          query: GET_CONSULT_QUEUE,
+          fetchPolicy: 'no-cache',
+          variables: { doctorId: currentDoctor.id }
+        })
+        .then(data => {
+          setConsultQueue(data.data.getConsultQueue.consultQueue);
+        })
+        .catch(error => {
+          console.log(error);
+        });
 
-    if (consultQueue) {
-      activeConsults = consultQueue.filter((consult) => consult.isActive);
+      if (consultQueue) {
+        activeConsults = consultQueue.filter(consult => consult.isActive);
+      }
     }
-  }
+  }, []);
 
-  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
+  const { data, error, loading } = useQuery<GetDoctorDetails>(
+    GET_DOCTOR_DETAILS
+  );
   if (loading || error || !data || !data.getDoctorDetails) return null;
   const { id, onlineStatus } = data.getDoctorDetails;
 
@@ -128,7 +132,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
             <IdleTimer
               ref={idleTimerRef}
               element={document}
-              onIdle={(e) => {
+              onIdle={e => {
                 setJrdNoFillDialog(true);
               }}
               debounce={250}
@@ -144,15 +148,17 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
               disableBackdropClick
               disableEscapeKeyDown
             >
-              <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Alert</DialogTitle>
+              <DialogTitle className={classes.popoverTile}>
+                Apollo 24x7 - Alert
+              </DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with
-                  your patient.
+                  Hi! Seems like you've gone offline. Please click on 'OK' to
+                  continue chatting with your patient.
                   <div className={classes.countdownLoader}>
                     <ReactCountdownClock
                       seconds={60}
-                      color="#fcb716"
+                      color='#fcb716'
                       alpha={0.9}
                       size={50}
                       onComplete={() => {
@@ -160,8 +166,8 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
                         updateDoctorOnlineStatus({
                           variables: {
                             doctorId: id,
-                            onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,
-                          },
+                            onlineStatus: DOCTOR_ONLINE_STATUS.AWAY
+                          }
                         });
                       }}
                     />
@@ -170,7 +176,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
               </DialogContent>
               <DialogActions>
                 <Button
-                  color="primary"
+                  color='primary'
                   onClick={() => {
                     setJrdNoFillDialog(false);
                   }}
@@ -192,8 +198,8 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
                 updateDoctorOnlineStatus({
                   variables: {
                     doctorId: id,
-                    onlineStatus: newStatus,
-                  },
+                    onlineStatus: newStatus
+                  }
                 }).then(() => {
                   window.location.reload();
                 });
@@ -204,7 +210,11 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
               key={ONLINE}
               value={ONLINE}
               disabled={loading}
-              className={isSelected(ONLINE) ? classes.toggleBtnSelected : classes.toggleBtn}
+              className={
+                isSelected(ONLINE)
+                  ? classes.toggleBtnSelected
+                  : classes.toggleBtn
+              }
             >
               Online
             </ToggleButton>
@@ -212,7 +222,9 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
               key={AWAY}
               value={AWAY}
               disabled={loading}
-              className={isSelected(AWAY) ? classes.toggleBtnSelected : classes.toggleBtn}
+              className={
+                isSelected(AWAY) ? classes.toggleBtnSelected : classes.toggleBtn
+              }
             >
               Away
             </ToggleButton>
