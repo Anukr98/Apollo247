@@ -90,6 +90,7 @@ export const getDoctorDetailsTypeDefs = gql`
     startTime: String!
     weekDay: WeekDay!
     consultDuration: Int
+    consultBuffer: Int
   }
   type DoctorDetails @key(fields: "id") {
     awards: String

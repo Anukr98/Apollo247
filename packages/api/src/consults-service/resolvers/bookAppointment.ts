@@ -34,11 +34,14 @@ export const bookAppointmentTypeDefs = gql`
     PENDING
     PAYMENT_PENDING
     NO_SHOW
+    JUNIOR_DOCTOR_STARTED
+    JUNIOR_DOCTOR_ENDED
   }
 
   enum APPOINTMENT_TYPE {
     ONLINE
     PHYSICAL
+    BOTH
   }
 
   enum BOOKINGSOURCE {
@@ -194,11 +197,15 @@ const bookAppointment: Resolver<
 
   //check if doctor slot is blocked
   const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const recCount = await blockRepo.checkIfSlotBlocked(
+  const slotDetails = await blockRepo.checkIfSlotBlocked(
     appointmentInput.appointmentDateTime,
     appointmentInput.doctorId
   );
-  if (recCount > 0) {
+  if (
+    slotDetails[0] &&
+    (slotDetails[0].consultMode === APPOINTMENT_TYPE.BOTH.toString() ||
+      slotDetails[0].consultMode === appointmentInput.appointmentType.toString())
+  ) {
     throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
@@ -239,7 +246,7 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
   }
 
-  // check if patient cancelled appointment for more than 3 weeks in a week
+  // check if patient cancelled appointment for more than 3 times in a week
 
   const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
   const cancelledCount = await apptsrepo.checkPatientCancelledHistory(

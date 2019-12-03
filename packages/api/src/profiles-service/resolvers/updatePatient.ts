@@ -67,9 +67,19 @@ const updatePatient: Resolver<
   UpdatePatientArgs,
   ProfilesServiceContext,
   UpdatePatientResult
-> = async (parent, { patientInput }) => {
+> = async (parent, { patientInput }, { profilesDb }) => {
   const { id, ...updateAttrs } = patientInput;
-  const patient = await updateEntity<Patient>(Patient, id, updateAttrs);
+  const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
+  const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
+  if (updatePatient) {
+    if (updatePatient.uhid == '' || updatePatient.uhid == null) {
+      await patientRepo.createNewUhid(updatePatient.id);
+    }
+  }
+  const patient = await patientRepo.findById(updatePatient.id);
+  if (!patient || patient == null) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
   return { patient };
 };
 

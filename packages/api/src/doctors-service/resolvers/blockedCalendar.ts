@@ -7,6 +7,7 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
 import { areIntervalsOverlapping, isEqual, isAfter } from 'date-fns';
 import { RescheduleAppointmentDetailsRepository } from 'consults-service/repositories/rescheduleAppointmentDetailsRepository';
 import { ConsultMode } from 'doctors-service/entities';
+import _ from 'lodash';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -73,6 +74,14 @@ const getRepos = (context: DoctorsServiceContext) => ({
 });
 
 const doesItemOverlap = (item: BlockedCalendarItem, itemsToCheckAgainst: BlockedCalendarItem[]) =>
+  itemsToCheckAgainst.some(({ start, end }) =>
+    areIntervalsOverlapping({ start: item.start, end: item.end }, { start, end })
+  );
+
+const doesCalendarItemOverlap = (
+  item: Omit<Omit<Omit<BlockedCalendarItem, 'reason'>, 'doctorId'>, 'id'>,
+  itemsToCheckAgainst: Omit<Omit<Omit<BlockedCalendarItem, 'reason'>, 'doctorId'>, 'id'>[]
+) =>
   itemsToCheckAgainst.some(({ start, end }) =>
     areIntervalsOverlapping({ start: item.start, end: item.end }, { start, end })
   );
@@ -200,14 +209,26 @@ const blockMultipleCalendarItems: Resolver<
   const doctorId = blockCalendarInputs.doctorId;
   const reason = blockCalendarInputs.reason;
   const CalendarItem: BlockedCalendarItem[] = [];
-
   const exceptions = await checkOverlapsAndException(0, 0);
+
   if (exceptions.dateException > 0) {
     throw new AphError(AphErrorMessages.INVALID_DATES);
   }
   if (exceptions.overlapCount > 0) {
     throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   }
+
+  const uniqueCalendarItems = _.uniqWith(
+    blockCalendarInputs.itemDetails,
+    (item1, item2) =>
+      isEqual(new Date(item1.start), new Date(item2.start)) &&
+      isEqual(new Date(item1.end), new Date(item2.end)) &&
+      item1.consultMode === item2.consultMode
+  );
+
+  if (uniqueCalendarItems.length != blockCalendarInputs.itemDetails.length)
+    throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
+
   await bciRepo.save(CalendarItem);
 
   //push notification starts
@@ -234,19 +255,39 @@ const blockMultipleCalendarItems: Resolver<
   function checkOverlapsAndException(overlapCount: number, dateException: number) {
     let currentIndex = 0;
     return new Promise<{ overlapCount: number; dateException: number }>(async (resolve, reject) => {
-      blockCalendarInputs.itemDetails.forEach(async (item) => {
+      blockCalendarInputs.itemDetails.forEach(async (item, index) => {
         const start = item.start;
         const end = item.end;
-        if (isEqual(new Date(start), new Date(end))) dateException++;
-        if (isAfter(new Date(start), new Date(end))) dateException++;
-        if (isAfter(new Date(), new Date(start))) dateException++;
+
+        const calendarItemsOverlap = doesCalendarItemOverlap(
+          item,
+          _.remove(blockCalendarInputs.itemDetails, index)
+        );
+        if (calendarItemsOverlap) overlapCount++;
+
+        if (isEqual(new Date(start), new Date(end))) {
+          dateException++;
+          resolve({ overlapCount, dateException });
+        }
+        if (isAfter(new Date(start), new Date(end))) {
+          dateException++;
+          resolve({ overlapCount, dateException });
+        }
+        if (isAfter(new Date(), new Date(start))) {
+          dateException++;
+          resolve({ overlapCount, dateException });
+        }
 
         const consultMode = item.consultMode;
         const itemToAdd = bciRepo.create({ doctorId, start, end, reason, consultMode });
         CalendarItem.push(itemToAdd);
         const existingItems = await bciRepo.find({ doctorId });
+
         const overlap = doesItemOverlap(itemToAdd, existingItems);
-        if (overlap) overlapCount++;
+        if (overlap) {
+          overlapCount++;
+          resolve({ overlapCount, dateException });
+        }
         currentIndex++;
         if (currentIndex == blockCalendarInputs.itemDetails.length)
           resolve({ overlapCount, dateException });
