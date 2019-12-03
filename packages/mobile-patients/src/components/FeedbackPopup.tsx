@@ -196,7 +196,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
 
   if (!props.isVisible) return null;
   return (
-    <BottomPopUp title={props.title} description={props.description}>
+    <BottomPopUp title={props.title} description={props.description} style={{ elevation: 20 }}>
       <KeyboardAwareScrollView bounces={false}>{renderRatingContent()}</KeyboardAwareScrollView>
     </BottomPopUp>
   );

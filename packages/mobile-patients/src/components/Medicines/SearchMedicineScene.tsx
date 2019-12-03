@@ -609,9 +609,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       );
     }
     // Price
-    if (typeof price.from == 'number' && typeof price.to == 'number') {
+    if (typeof price.from == 'number' || typeof price.to == 'number') {
       filteredMedicineList = filteredMedicineList.filter(
-        (item) => item.price >= price.from! && item.price <= price.to!
+        (item) =>
+          (price.from ? item.price >= price.from! : true) &&
+          (price.to ? item.price <= price.to! : true)
       );
     }
     // Discount
