@@ -60,7 +60,13 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import Pubnub from 'pubnub';
+import Pubnub, {
+  SignalEvent,
+  UserEvent,
+  SpaceEvent,
+  MembershipEvent,
+  MessageActionEvent,
+} from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -121,6 +127,7 @@ let timerId: any;
 let diffInHours: number;
 let callAbandonmentTimer: any;
 let callAbandonmentStoppedTimer: number;
+let messageSent: string;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -167,7 +174,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   // console.log('appointmentData', appointmentData);
 
-  const dateIsAfter = moment(appointmentData.appointmentDateTime).isAfter(moment(new Date()));
+  const dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -534,6 +541,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     otrnError: (error: string) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
+    videoDisabled: (error: string) => {
+      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisableWarning: (error: string) => {
+      console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisableWarningLifted: (error: string) => {
+      console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    audioNetworkStats: (error: object) => {
+      console.log(`audioNetworkStats subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const sessionEventHandlers = {
@@ -572,10 +591,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
-      startCallAbondmentTimer(180, false);
+      // startCallAbondmentTimer(180, false);
+      // eventsAfterConnectionDestroyed();
+      // disconnectCallText();
     },
     streamPropertyChanged: (event: string) => {
       console.log('session streamPropertyChanged destroyed!', event);
+      // startCallAbondmentTimer(180, false);
+      // eventsAfterConnectionDestroyed();
+      // disconnectCallText();
     },
     otrnError: (error: string) => {
       console.log(
@@ -589,9 +613,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setIsAudioCall(false);
     stopTimer();
     setCallAccepted(false);
-    setHideStatusBar(true);
+    setHideStatusBar(false);
     setConvertVideo(false);
     KeepAwake.activate();
+    setMute(true);
+    setShowVideo(true);
+    setCameraPosition('front');
+    setChatReceived(false);
+
     setTimerStyles({
       position: 'absolute',
       marginHorizontal: 20,
@@ -608,6 +637,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
+    restore: true,
+    keepAlive: true,
+    autoNetworkDetection: true,
+    listenToBrowserNetworkEvents: true,
+    presenceTimeout: 20,
+    heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
 
@@ -638,12 +673,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        console.log('messageevent', message);
+        // console.log('messageevent', message);
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
         console.log('presenceEvent', presenceEvent);
-
         pubnub.hereNow(
           {
             channels: [channel],
@@ -663,6 +697,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log('callAbondmentMethod');
           callAbondmentMethod();
         }
+      },
+      disconnect: (disconnect: any) => {
+        console.log('disconnected', disconnect);
+      },
+      reconnect: (reconnect: any) => {
+        console.log('reconnected', reconnect);
+      },
+      error: (obj: any) => {
+        console.log('ERROR ' + JSON.stringify(obj));
+      },
+      callback: (obj: any) => {
+        console.log('callback ' + JSON.stringify(obj));
+      },
+      signal: (signalEvent: SignalEvent) => {
+        console.log('signalEvent ' + JSON.stringify(signalEvent));
+      },
+
+      user: (userEvent: UserEvent) => {
+        console.log('userEvent ' + JSON.stringify(userEvent));
+      },
+
+      space: (spaceEvent: SpaceEvent) => {
+        console.log('spaceEvent ' + JSON.stringify(spaceEvent));
+      },
+
+      membership: (membershipEvent: MembershipEvent) => {
+        console.log('membershipEvent ' + JSON.stringify(membershipEvent));
+      },
+
+      messageAction: (messageActionEvent: MessageActionEvent) => {
+        console.log('messageActionEvent ' + JSON.stringify(messageActionEvent));
       },
     });
 
@@ -708,12 +773,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return obj.message === stopConsultJr;
     });
 
-    if (startConsultResult.length > 0 && stopConsultResult.length == 0) {
+    if (
+      startConsultResult.length > 0 &&
+      stopConsultResult.length == 0 &&
+      appointmentData.status === STATUS.COMPLETED
+    ) {
       console.log('callAbondmentMethod scenario');
+      // console.log('callAbondmentMethod scenario', appointmentData.status === STATUS.COMPLETED);
 
       startCallAbondmentTimer(180, false);
     } else {
-      console.log('doctor no show scenario');
+      console.log(
+        'doctor no show scenario',
+        startConsultJRResult.length,
+        stopConsultJRResult.length,
+        dateIsAfter,
+        appointmentData.status
+      );
 
       if (
         startConsultJRResult.length > 0 &&
@@ -727,6 +803,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const startCallAbondmentTimer = (timer: number, isDoctorNoShow: boolean) => {
+    // if (callAbandonmentTimer) return;
+
     setTransferData(appointmentData);
     callAbandonmentTimer = setInterval(() => {
       timer = timer - 1;
@@ -738,11 +816,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer < 1) {
         console.log('call Abundant', appointmentData);
 
-        // if (isDoctorNoShow) {
-        //   setIsDoctorNoShow(true);
-        // } else {
-        NextAvailableSlot(appointmentData, 'Transfer', true);
-        // }
+        if (isDoctorNoShow) {
+          setIsDoctorNoShow(true);
+        } else {
+          NextAvailableSlot(appointmentData, 'Transfer', true);
+        }
         setCallAbundantCallTime(0);
         callAbandonmentTimer && clearInterval(callAbandonmentTimer);
       }
@@ -1059,7 +1137,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    console.log('pubNubMessages', message);
+    // console.log('pubNubMessages', message);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -1131,6 +1209,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
         setShowPopup(true);
+      } else if (message.message.message === rescheduleConsultMsg) {
+        console.log('cancelConsultInitiated');
+        // checkForRescheduleMessage(message.message);
+        addMessages(message);
       }
     } else {
       console.log('succss');
@@ -1158,7 +1240,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(true);
     }
 
-    checkForRescheduleMessage(insertText);
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === rescheduleConsultMsg;
+    });
+
+    checkForRescheduleMessage(result);
 
     setTimeout(() => {
       flatListRef.current! &&
@@ -1226,7 +1313,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferReschedule = (rowData: any, index: number) => {
-    console.log('transferReschedule', rowData);
+    // console.log('transferReschedule', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -2385,7 +2472,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
-                    marginLeft: 14,
                     textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
