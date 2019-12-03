@@ -1289,7 +1289,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         folloupDateTime: followUp[0] ? folloupDateTime : "",
         doctorId: props.doctorId,
         caseSheetId: props.caseSheetId,
-        doctorInfo: currentPatient
+        doctorInfo: currentPatient,
+        pdfUrl: props.prescriptionPdf
       };
       setTimeout(() => {
         pubnub.publish(
