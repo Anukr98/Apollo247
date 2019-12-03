@@ -299,7 +299,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           <AphTextField
             fullWidth
             className={classes.textFieldColor}
-            // placeholder="What you enter here won't be shown to the patient.."
+            placeholder="What you enter here won't be shown to the patient.."
             defaultValue={notes}
             onBlur={(e) => {
               setSRDNotes(e.target.value);
