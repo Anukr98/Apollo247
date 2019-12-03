@@ -125,7 +125,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  console.log('prismPrescriptionFileId', prismFile.split(','));
+  // console.log('prismPrescriptionFileId', prismFile.split(','));
 
   useEffect(() => {
     if (prismFile == null || prismFile == '') {
@@ -174,6 +174,11 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           id: medicineDetails.sku,
           mou: medicineDetails.mou,
           price: medicineDetails.price,
+          specialPrice: medicineDetails.special_price
+            ? typeof medicineDetails.special_price == 'string'
+              ? parseInt(medicineDetails.special_price)
+              : medicineDetails.special_price
+            : undefined,
           quantity: data.quantity,
           name: data.medicineName,
           prescriptionRequired: medicineDetails.is_prescription_required == '1',

@@ -355,6 +355,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               mou: medicineDetails.mou,
               name: medicineDetails!.name,
               price: medicineDetails!.price,
+              specialPrice: medicineDetails.special_price
+                ? typeof medicineDetails.special_price == 'string'
+                  ? parseInt(medicineDetails.special_price)
+                  : medicineDetails.special_price
+                : undefined,
               // quantity: parseInt(medPrescription[index]!.medicineDosage!),
               quantity: qty,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',

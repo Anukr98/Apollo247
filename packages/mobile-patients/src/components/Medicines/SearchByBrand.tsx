@@ -161,11 +161,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       id: sku,
       mou,
       name,
-      price: special_price
+      price: price,
+      specialPrice: special_price
         ? typeof special_price == 'string'
           ? parseInt(special_price)
           : special_price
-        : price,
+        : undefined,
       prescriptionRequired: is_prescription_required == '1',
       quantity: 1,
       thumbnail,
@@ -209,7 +210,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
               <Filter />
             </TouchableOpacity>
           </View>
@@ -539,9 +540,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           setdiscount(discountRange);
           setprice(priceRange);
           setSortBy(sortBy);
-          medicineList.length &&
-            medicineListRef.current &&
-            medicineListRef.current.scrollToIndex({ index: 0 });
+          medicineListRef.current && medicineListRef.current.scrollToOffset({ offset: 0 });
           setIsLoading(false);
         }}
       />

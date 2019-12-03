@@ -1,8 +1,5 @@
-import {
-  uploadFile,
-  uploadFileVariables,
-} from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import { g, aphConsole } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -11,9 +8,10 @@ import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/compone
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
-  PhysicalPrescription,
   EPrescription,
+  PhysicalPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
@@ -22,32 +20,42 @@ import { CalendarShow, TestsIcon } from '@aph/mobile-patients/src/components/ui/
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { ScheduleCalander } from '@aph/mobile-patients/src/components/ui/ScheduleCalander';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  DOWNLOAD_DOCUMENT,
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
-  UPLOAD_FILE,
   SEARCH_DIAGNOSTICS,
   UPLOAD_DOCUMENT,
-  DOWNLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import {
+  getDiagnosticSlots,
+  getDiagnosticSlotsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import {
   Clinic,
+  getPlaceInfoByLatLng,
   getPlaceInfoByPincode,
   searchClinicApi,
-  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -55,29 +63,16 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
+  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  getDiagnosticSlots,
-  getDiagnosticSlotsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
-import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import {
-  searchDiagnostics_searchDiagnostics_diagnostics,
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { uploadDocument } from '../../graphql/types/uploadDocument';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { uploadDocument } from '../../graphql/types/uploadDocument';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -177,18 +172,15 @@ export interface TestsCartProps extends NavigationScreenProps {
 export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const isComingFromConsult = props.navigation.getParam('isComingFromConsult');
   const {
-    updateCartItem,
     removeCartItem,
     cartItems,
     setAddresses,
     addresses,
     setDeliveryAddressId,
     deliveryAddressId,
-    deliveryCharges,
     cartTotal,
     couponDiscount,
     grandTotal,
-    coupon,
     uploadPrescriptionRequired,
     setPhysicalPrescriptions,
     physicalPrescriptions,
@@ -201,7 +193,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ePrescriptions,
     forPatientId,
     setPatientId,
-    diagnosticClinic,
     diagnosticSlot,
     setDiagnosticClinic,
     setDiagnosticSlot,
@@ -232,7 +223,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
   const { setLoading, showAphAlert } = useUIElements();
-  const { getPatientApiCall } = useAuth();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
 
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>({
@@ -244,43 +234,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
-
-  useEffect(() => {
-    if (!(locationDetails && locationDetails.pincode)) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          getPlaceInfoByLatLng(latitude, longitude)
-            .then((obj) => {
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const _pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
-                  setPinCode && setPinCode(_pincode || '');
-                }
-              } catch {}
-            })
-            .catch((error) => {
-              console.log(error, 'geocode error');
-            });
-        },
-        (error) => {
-          console.log(error.code, error.message, 'getCurrentPosition error');
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-      );
-      console.log('pincode');
-    } else {
-      setPinCode && setPinCode(locationDetails.pincode);
-    }
-  }, []);
+  const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
+  const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
+  const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
   useEffect(() => {
     onFinishUpload();
@@ -335,6 +291,46 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })) ||
       setLoading!(false);
   }, [currentPatientId]);
+
+  useEffect(() => {
+    if (testCentresLoaded) {
+      if (!(locationDetails && locationDetails.pincode)) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            getPlaceInfoByLatLng(latitude, longitude)
+              .then((obj) => {
+                try {
+                  if (
+                    obj.data.results.length > 0 &&
+                    obj.data.results[0].address_components.length > 0
+                  ) {
+                    const address = obj.data.results[0].address_components[0].short_name;
+                    console.log(address, 'address obj');
+                    const addrComponents = obj.data.results[0].address_components || [];
+                    const _pincode = (
+                      addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
+                      {}
+                    ).long_name;
+                    filterClinics(_pincode || '');
+                  }
+                } catch {}
+              })
+              .catch((error) => {
+                console.log(error, 'geocode error');
+              });
+          },
+          (error) => {
+            console.log(error.code, error.message, 'getCurrentPosition error');
+          },
+          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+        );
+        console.log('pincode');
+      } else {
+        filterClinics(locationDetails.pincode || '');
+      }
+    }
+  }, [testCentresLoaded]);
 
   /*  useEffect(() => {
       getCartInfo()
@@ -717,9 +713,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
-  const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
-
   const fetchStorePickup = () => {
     setStorePickUpLoading(true);
     searchClinicApi()
@@ -727,6 +720,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setStorePickUpLoading(false);
         aphConsole.log('clinic response', data.data.data, data);
         setClinics && setClinics(data.data.data);
+        setTestCentresLoaded(true);
       })
       .catch((e) => {
         setStorePickUpLoading(false);
@@ -1324,7 +1318,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();

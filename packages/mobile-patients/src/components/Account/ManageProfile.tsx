@@ -280,7 +280,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       }}
     >
       {renderHeader()}
-      <ScrollView bounces={false} style={{ marginTop: 20 }}>
+      <ScrollView bounces={false} contentContainerStyle={{ paddingTop: 20 }}>
         {renderProfilesDetails()}
         <View style={{ padding: 40 }} />
       </ScrollView>

@@ -4,6 +4,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import {
   EPrescription,
   PhysicalPrescription,
+  useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
@@ -47,6 +48,7 @@ import {
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadDocument } from '../../graphql/types/uploadDocument';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelectionView';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -111,6 +113,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const { setLoading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
+  const { deliveryAddressId, storeId } = useShoppingCart();
 
   // const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
   //   return Promise.all(
@@ -191,9 +194,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               patientId: (currentPatient && currentPatient.id) || '',
               medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
               prescriptionImageUrl: uploadUrlscheck!.join(','),
-              shopId: '0',
+              shopId: storeId || '0',
               appointmentId: '',
-              patinetAddressId: '',
+              patinetAddressId: deliveryAddressId || '',
               prismPrescriptionFileId: ePresAndPhysicalPresUrls
                 .join(',')
                 .split(',')
@@ -266,9 +269,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 patientId: (currentPatient && currentPatient.id) || '',
                 medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
                 prescriptionImageUrl: uploadUrlscheck!.join(','),
-                shopId: '0',
+                shopId: storeId || '0',
                 appointmentId: '',
-                patinetAddressId: '',
+                patinetAddressId: deliveryAddressId || '',
                 prismPrescriptionFileId: filtered.join(','),
               };
               console.log('prescriptionMedicineInput', prescriptionMedicineInput);
@@ -520,6 +523,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         <ScrollView bounces={false} style={{ flex: 1 }}>
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
+          {/* {!![...PhysicalPrescriptions, ...EPrescriptions].length && ( */}
+          <View style={{ marginTop: 20 }}>{renderLabel('Where should we deliver?')}</View>
+          <StorePickupOrAddressSelectionView navigation={props.navigation} />
+          {/* )} */}
         </ScrollView>
       </SafeAreaView>
       <Text
@@ -539,7 +546,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       </Text>
       <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
         <Button
-          disabled={PhysicalPrescriptions.length == 0 && EPrescriptions.length == 0}
+          disabled={
+            !(PhysicalPrescriptions.length || EPrescriptions.length) ||
+            !(storeId || deliveryAddressId)
+          }
           title={'SUBMIT PRESCRIPTION'}
           onPress={onPressSubmit}
           style={{ marginHorizontal: 60, flex: 1 }}

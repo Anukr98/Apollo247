@@ -669,14 +669,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           }
           placeholder={'Enter pin code'}
           maxLength={6}
-          textInputprops={{
-            onSubmitEditing: () => {
-              if (isAddressValid) {
-                onSavePress();
-              }
-            },
-            returnKeyType: 'done',
-          }}
+          // textInputprops={{
+          //   onSubmitEditing: () => {
+          //     if (isAddressValid) {
+          //       onSavePress();
+          //     }
+          //   },
+          //   returnKeyType: 'done',
+          // }}
         />
         {/* <TextInputComponent
           value={landMark}

@@ -439,7 +439,6 @@ export const Symptoms: React.FC = (props) => {
                 <AphTextField
                   placeholder=""
                   value={since}
-                  inputProps={{ maxLength: 30 }}
                   onChange={(event) => {
                     setSince(event.target.value);
                     clearError();
@@ -461,7 +460,6 @@ export const Symptoms: React.FC = (props) => {
                 <AphTextField
                   placeholder=""
                   value={howOften}
-                  inputProps={{ maxLength: 30 }}
                   onChange={(event) => {
                     setHowOften(event.target.value);
                     clearError();
@@ -482,7 +480,6 @@ export const Symptoms: React.FC = (props) => {
                 <label>Severity</label>
                 <AphTextField
                   placeholder=""
-                  inputProps={{ maxLength: 30 }}
                   value={severity}
                   onChange={(event) => {
                     setSeverity(event.target.value);

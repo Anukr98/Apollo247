@@ -127,10 +127,6 @@ export type GooglePlacesType =
   | 'administrative_area_level_1'
   | 'country';
 
-export enum ProductCategory {
-  HOT_SELLERS = '1174',
-}
-
 export interface PlaceByIdApiResponse {
   result: PlacesApiResponse['results'][0];
 }

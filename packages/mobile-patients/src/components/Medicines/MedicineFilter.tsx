@@ -3,21 +3,19 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { DropdownGreen, Reload } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { getMedicinePageProducts } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useFetch } from '@aph/mobile-patients/src/hooks/fetchHook';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
   Dimensions,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 
@@ -179,6 +177,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
     );
   };
 
+  const getDiscount = (text: string) => {
+    return text && !isNaN(parseInt(text)) ? parseInt(text) : undefined;
+  };
+
   const renderDiscount = () => {
     return (
       <View
@@ -200,15 +202,22 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
         />
         <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
         <InputField
+          maxLength={3}
           fromPlaceholder={'Discount in %'}
           toPlaceholder={'Discount in %'}
           fromValue={`${discount.from == undefined ? '' : discount.from}`}
           toValue={`${discount.to == undefined ? '' : discount.to}`}
           onFromChangeText={(text) => {
-            setdiscount({ ...discount, from: text ? parseInt(text) : undefined });
+            setdiscount({
+              ...discount,
+              from: getDiscount(text),
+            });
           }}
           onToChangeText={(text) => {
-            setdiscount({ ...discount, to: text ? parseInt(text) : undefined });
+            setdiscount({
+              ...discount,
+              to: getDiscount(text),
+            });
           }}
         />
       </View>
@@ -238,10 +247,13 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           fromValue={`${price.from == undefined ? '' : price.from}`}
           toValue={`${price.to == undefined ? '' : price.to}`}
           onFromChangeText={(text) => {
-            setprice({ ...price, from: text ? parseInt(text) : undefined });
+            setprice({
+              ...price,
+              from: text && !isNaN(parseInt(text)) ? parseInt(text) : undefined,
+            });
           }}
           onToChangeText={(text) => {
-            setprice({ ...price, to: text ? parseInt(text) : undefined });
+            setprice({ ...price, to: text && !isNaN(parseInt(text)) ? parseInt(text) : undefined });
           }}
         />
       </View>
@@ -255,6 +267,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           backgroundColor: '#f7f8f5',
           padding: 20,
           marginTop: 8,
+          marginBottom: 20,
           shadowColor: theme.colors.SHADOW_GRAY,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.4,
@@ -272,7 +285,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           selectedText={sortBy}
           menuContainerStyle={{
             alignItems: 'flex-end',
-            marginTop: 24,
             marginLeft: Dimensions.get('window').width / 2 - 110,
           }}
           lastContainerStyle={{ borderBottomWidth: 0 }}
@@ -327,6 +339,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
       </View>
     );
   };
+  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 0 } : {};
 
   return (
     <Overlay
@@ -347,13 +360,19 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           }}
         >
           {renderHeader()}
-          <ScrollView bounces={false}>
-            {renderCategories()}
-            {renderDiscount()}
-            {renderPrice()}
-            {renderSortBy()}
-          </ScrollView>
-          {renderApplyFilterButton()}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={{ flex: 1 }}
+            {...keyboardVerticalOffset}
+          >
+            <ScrollView bounces={false}>
+              {renderCategories()}
+              {renderDiscount()}
+              {renderPrice()}
+              {renderSortBy()}
+            </ScrollView>
+            {renderApplyFilterButton()}
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </View>
     </Overlay>
@@ -365,6 +384,7 @@ interface InputFieldProps {
   toPlaceholder: string;
   fromValue: string;
   toValue: string;
+  maxLength?: number;
   onFromChangeText: (text: string) => void;
   onToChangeText: (text: string) => void;
 }
@@ -398,7 +418,8 @@ const InputField: React.FC<InputFieldProps> = (props) => {
             placeholder={props.fromPlaceholder}
             underlineColorAndroid="transparent"
             placeholderTextColor="#01475b"
-            maxLength={100}
+            keyboardType="numeric"
+            maxLength={props.maxLength || 100}
           />
         </View>
       </View>
@@ -440,7 +461,8 @@ const InputField: React.FC<InputFieldProps> = (props) => {
             placeholder={props.toPlaceholder}
             underlineColorAndroid="transparent"
             placeholderTextColor="#01475b"
-            maxLength={100}
+            keyboardType="numeric"
+            maxLength={props.maxLength || 100}
           />
         </View>
       </View>

@@ -45,6 +45,7 @@ import {
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -64,6 +65,10 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+} from '../graphql/types/GetMedicineOrdersList';
 import { MedicineFeedBackData } from '../strings/AppConfig';
 import { RadioSelectionItem } from './Medicines/RadioSelectionItem';
 import { Spearator } from './ui/BasicComponents';
@@ -104,10 +109,15 @@ const cancelOptions: [string, string][] = [
   ['MCCR0049', 'Already purchased'],
 ];
 
+type OrderRefetch = (
+  variables?: GetMedicineOrdersListVariables
+) => Promise<ApolloQueryResult<GetMedicineOrdersList>>;
+
 export interface OrderDetailsSceneProps extends NavigationScreenProps {
-  orderAutoId: string;
-  showOrderSummaryTab: boolean;
-  goToHomeOnBack: boolean;
+  orderAutoId?: string;
+  showOrderSummaryTab?: boolean;
+  goToHomeOnBack?: boolean;
+  refetchOrders: OrderRefetch;
 }
 {
 }
@@ -117,7 +127,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
-  const refetchOrders = props.navigation.getParam('refetch');
+  const refetchOrders: OrderRefetch = props.navigation.getParam('refetch');
 
   const client = useApolloClient();
 
@@ -306,6 +316,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               mou: medicineDetails.mou,
               name: medicineDetails!.name,
               price: medicineDetails!.price,
+              specialPrice: medicineDetails.special_price
+                ? typeof medicineDetails.special_price == 'string'
+                  ? parseInt(medicineDetails.special_price)
+                  : medicineDetails.special_price
+                : undefined,
               quantity: items[index].qty || 1,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
               thumbnail: medicineDetails.thumbnail || medicineDetails.image,
@@ -594,7 +609,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             .catch(() => {
               setInitialSate();
             });
-          refetchOrders().then((data: any) => {
+          refetchOrders().then((data) => {
             const _orders = g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || [];
             console.log(_orders, 'hdub');
             setOrders(_orders);

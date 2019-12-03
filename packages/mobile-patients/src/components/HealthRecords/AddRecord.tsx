@@ -145,7 +145,7 @@ const replaceStringWithChar = (str: string) => {
   return ss.toLowerCase();
 };
 
-const MedicalTest: RecordTypeType[] = [
+export const MedicalTest: RecordTypeType[] = [
   { value: 'gm', key: MedicalTestUnit.GM },
   {
     value: 'gm/dl',
@@ -245,9 +245,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const isRecordParameterFilled = () => {
     const medicalRecordsVaild = medicalRecordParameters
       .map((item) => {
-        return item !== MedicalRecordInitialValues ? item : undefined;
+        return item !== MedicalRecordInitialValues
+          ? {
+              ...item,
+              result: parseFloat(((item && item.result) || 0).toString()),
+              maximum: parseFloat(((item && item.maximum) || 0).toString()),
+              minimum: parseFloat(((item && item.minimum) || 0).toString()),
+            }
+          : undefined;
       })
       .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
+    console.log(medicalRecordsVaild);
+
     if (medicalRecordsVaild.length > 0) {
       setmedicalRecordParameters(medicalRecordsVaild);
       return medicalRecordsVaild;
@@ -368,6 +377,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               })
               .catch((e: string) => {
+                setImageError(true);
                 console.log('Error occured', e);
               })
               .finally(() => {
@@ -379,6 +389,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
         })
         .catch((e) => {
+          setImageError(true);
           setshowSpinner(false);
           console.log({ e });
         });

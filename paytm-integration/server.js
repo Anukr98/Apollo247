@@ -118,7 +118,7 @@ app.get('/consultpayment', (req, res) => {
     data: {
       query: `
           query {
-            getPatientById(patientId:"${req.query.patientId}") {
+            getAthsToken(patientId:"${req.query.patientId}") {
               patient {
                 id
                 emailAddress
