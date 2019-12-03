@@ -81,6 +81,8 @@ const appointmentsSummary: Resolver<
         row1 +=
           serialNo +
           '\t' +
+          'NA' +
+          '\t' +
           appt.id +
           '\t' +
           patientDetails.mobileNumber.toString() +
@@ -91,11 +93,15 @@ const appointmentsSummary: Resolver<
           ' ' +
           patientDetails.lastName +
           '\t' +
-          bookingDateTime +
-          '\t' +
           istDateTime +
           '\t' +
           appt.appointmentType +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
           '\t' +
           doctorDetails.mobileNumber.toString() +
           '\t' +
@@ -107,11 +113,53 @@ const appointmentsSummary: Resolver<
           '\t' +
           doctorDetails.specialty.name +
           '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
           appt.isFollowUp +
           '\t' +
           followUpBooked +
           '\t' +
-          caseSheetId +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
           '\t' +
           caseSheetId +
           '\t' +
@@ -136,43 +184,91 @@ const appointmentsSummary: Resolver<
     const header =
       'Sl No' +
       '\t' +
-      ' Appointment Id' +
+      'Date' +
+      '\t' +
+      'Consult id' +
       '\t' +
       'Patient Mobile' +
       '\t' +
       'Patient UHID' +
       '\t' +
-      'Patient Name' +
-      '\t' +
-      'Booking Date Time' +
+      'Patient Full Name' +
       '\t' +
       'Appointment Date Time' +
       '\t' +
       'Appointment Type' +
       '\t' +
+      'Start time of chat' +
+      '\t' +
+      'End time of chat' +
+      '\t' +
+      'JD Mobile' +
+      '\t' +
       'SD Mobile' +
       '\t' +
-      'SD Name' +
+      'SD Full Name' +
       '\t' +
-      'Doctor Type' +
+      'Entity of Doctor' +
       '\t' +
-      'Doctor Speciality' +
+      'Speciality of SD' +
       '\t' +
-      'Is Followup' +
+      'Patient Start Time' +
       '\t' +
-      'Is Followup Booked' +
+      'Patient End Time' +
       '\t' +
-      'Prescription Id' +
+      'SD start Time' +
       '\t' +
-      'Case Sheet Id' +
+      'SD End Time' +
       '\t' +
-      'Prescription Issued Y/N' +
+      'Start time of Audio call done by SD' +
       '\t' +
-      'Consult Rescheduled' +
+      'End time of Audio call done by SD' +
+      '\t' +
+      'No. of Audio calls in this consult by SD' +
+      '\t' +
+      'Start time of Video call done by SD' +
+      '\t' +
+      'End time of Video call done by SD' +
+      '\t' +
+      'No. of video calls by SD in this consult by SD' +
+      '\t' +
+      'JD Start Time' +
+      '\t' +
+      'JD End Time' +
+      '\t' +
+      'Start time of Audio call done by JD' +
+      '\t' +
+      'End time of Audio call done by JD' +
+      '\t' +
+      'No. of Audio calls in this consult by JD' +
+      '\t' +
+      'Start time of Video call done by JD' +
+      '\t' +
+      'End time of Video call done by JD' +
+      '\t' +
+      'No. of video calls by SD in this consult by JD' +
+      '\t' +
+      'Fresh Consult or Follow Up?' +
+      '\t' +
+      'Followup booked Y/N' +
+      '\t' +
+      'Chat Transcript ID' +
+      '\t' +
+      'Audio Call ID' +
+      '\t' +
+      'Video Call ID' +
+      '\t' +
+      'Prescription ID' +
+      '\t' +
+      'Case Sheet ID' +
+      '\t' +
+      'Prescription issued by SD Y/N' +
+      '\t' +
+      'Consult Rescheduled?' +
       '\t' +
       'Reschedule Reason' +
       '\t' +
-      'Is Cancelled' +
+      'Consult cancelled Y/N' +
       '\n';
 
     //const row1 = '0' + '\t' + ' 21' + '\t' + 'Rob' + '\n';
