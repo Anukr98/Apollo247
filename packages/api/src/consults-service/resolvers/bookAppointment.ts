@@ -34,6 +34,8 @@ export const bookAppointmentTypeDefs = gql`
     PENDING
     PAYMENT_PENDING
     NO_SHOW
+    JUNIOR_DOCTOR_STARTED
+    JUNIOR_DOCTOR_ENDED
   }
 
   enum APPOINTMENT_TYPE {
@@ -244,7 +246,7 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
   }
 
-  // check if patient cancelled appointment for more than 3 weeks in a week
+  // check if patient cancelled appointment for more than 3 times in a week
 
   const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
   const cancelledCount = await apptsrepo.checkPatientCancelledHistory(

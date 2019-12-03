@@ -311,7 +311,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
           rightComponent={
             <TouchableOpacity activeOpacity={1} onPress={deleteDeviceToken}>
-              <Text>Logout</Text>
+              <Text style={theme.viewStyles.text('M', 16, '#01475b')}>Logout</Text>
             </TouchableOpacity>
           }
         />
@@ -400,10 +400,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 textAlign: 'center',
                 height: 92,
                 width: width,
-                paddingTop: 10,
+                paddingTop: 20,
               }}
             >
-              {`${buildName()} V ${DeviceInfo.getVersion()}(${DeviceInfo.getBuildNumber()})`}
+              {`${buildName()} - v ${DeviceInfo.getVersion()}.${DeviceInfo.getBuildNumber()}`}
             </Text>
           </View>
         </Animated.ScrollView>

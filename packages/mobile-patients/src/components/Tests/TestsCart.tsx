@@ -1318,7 +1318,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();

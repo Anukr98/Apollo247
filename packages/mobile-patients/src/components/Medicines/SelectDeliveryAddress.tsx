@@ -1,17 +1,18 @@
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Alert, Platform } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -22,7 +23,13 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SelectDeliveryAddressProps extends NavigationScreenProps {}
+export interface SelectDeliveryAddressProps extends NavigationScreenProps {
+  isTest?: boolean;
+  selectedAddress: string;
+  isChanged: (val: boolean, id?: string) => void;
+}
+{
+}
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
   const isTest = props.navigation.getParam('isTest');
@@ -37,6 +44,8 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
   const [selectedId, setselectedId] = useState<string>(selectedAddressId || selectedAddress);
   const [selectedPinCode, setselectedPinCode] = useState<string>(selectedAddressId);
   const [loading, setLoading] = useState<boolean>(false);
+  const { showAphAlert } = useUIElements();
+
   const renderBottomButtons = () => {
     return (
       <StickyBottomComponent defaultBG>
@@ -52,26 +61,25 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             } else {
               pinCodeServiceabilityApi(selectedPinCode)
                 .then(({ data: { Availability } }) => {
-                  setLoading(false);
                   if (Availability) {
                     setSelectedAddressId && setSelectedAddressId(selectedId);
                     props.navigation.goBack();
                     CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
                   } else {
-                    Alert.alert(
-                      'Alert',
-                      'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
-                    );
-                    CommonLogEvent(
-                      AppRoutes.SelectDeliveryAddress,
-                      'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
-                    );
+                    showAphAlert!({
+                      title: 'Uh oh.. :(',
+                      description:
+                        'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+                    });
+                    CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Pincode unserviceable.');
                     setSelectedAddressId && setSelectedAddressId('');
                   }
                 })
                 .catch((e) => {
-                  setLoading(false);
                   Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
+                })
+                .finally(() => {
+                  setLoading(false);
                 });
             }
           }}
@@ -116,7 +124,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             borderRadius: 0,
           }}
           onPressLeftIcon={() => {
-            isChanged(false);
+            isChanged && isChanged(false);
             props.navigation.goBack();
           }}
         />

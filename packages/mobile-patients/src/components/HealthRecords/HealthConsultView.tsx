@@ -400,6 +400,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                       mou: medicineDetails.mou,
                                       name: medicineDetails!.name,
                                       price: medicineDetails!.price,
+                                      specialPrice: medicineDetails.special_price
+                                        ? typeof medicineDetails.special_price == 'string'
+                                          ? parseInt(medicineDetails.special_price)
+                                          : medicineDetails.special_price
+                                        : undefined,
                                       quantity: qty,
                                       prescriptionRequired:
                                         medicineDetails.is_prescription_required == '1',

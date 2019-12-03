@@ -51,6 +51,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   UPLOAD_FILE_TYPES,
   ConsultQueueInput,
+  FEEDBACKTYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -113,6 +114,8 @@ import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Me
 import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { ChatQuestions } from './ChatQuestions';
+import { FeedbackPopup } from '../FeedbackPopup';
+import { g } from '../../helpers/helperFunctions';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -150,7 +153,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //     });
   // }, []);
   const appointmentData = props.navigation.state.params!.data;
-  // console.log('appointmentData', appointmentData);
+
+  console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -1109,6 +1113,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } catch (error) {}
   };
 
+  const [showFeedback, setShowFeedback] = useState(false);
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message);
     if (message.message.isTyping) {
@@ -1138,6 +1143,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopInterval();
         setConvertVideo(false);
         addMessages(message);
+        setShowFeedback(true);
+        // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
@@ -4484,6 +4491,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {renderPrescriptionModal()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
+      <FeedbackPopup
+        onComplete={() => {
+          setShowFeedback(false)
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+            })
+          );
+        }}
+        transactionId={channel}
+        title="We value your feedback! :)"
+        description="How was your overall experience with the following consultation —"
+        info={{
+          title: `Dr. ${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
+          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm a')}`,
+          photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
+        }}
+        type={FEEDBACKTYPE.CONSULT}
+        isVisible={showFeedback}
+      />
+
       {loading && <Spinner />}
     </View>
   );

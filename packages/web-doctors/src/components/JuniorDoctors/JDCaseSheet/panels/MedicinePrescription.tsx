@@ -490,7 +490,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [tabletsCount, setTabletsCount] = React.useState<number>(0);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -776,7 +776,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -804,15 +804,17 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    } else {
+    }
+    // else if (daySlotsSelected.length === 0) {
+    //   setErrorState({
+    //     ...errorState,
+    //     daySlotErr: true,
+    //     tobeTakenErr: false,
+    //     durationErr: false,
+    //     dosageErr: false,
+    //   });
+    // }
+    else {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1173,7 +1175,7 @@ export const MedicinePrescription: React.FC = () => {
                           <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
                             {tobeTakenHtml}
                           </div>
-                          {errorState.tobeTakenErr && (
+                          {/* {errorState.tobeTakenErr && (
                             <FormHelperText
                               className={classes.helpText}
                               component="div"
@@ -1181,14 +1183,14 @@ export const MedicinePrescription: React.FC = () => {
                             >
                               Please select to be taken.
                             </FormHelperText>
-                          )}
+                          )} */}
                         </div>
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day*</div>
                       <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                      {errorState.daySlotErr && (
+                      {/* {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
                           component="div"
@@ -1196,7 +1198,7 @@ export const MedicinePrescription: React.FC = () => {
                         >
                           Please select time of the Day.
                         </FormHelperText>
-                      )}
+                      )} */}
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={`${classes.sectionTitle} ${classes.noPadding}`}>

@@ -136,11 +136,43 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const { locationDetails } = useAppCommonData();
+
   useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
+    if (!(locationDetails && locationDetails.pincode)) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          getPlaceInfoByLatLng(latitude, longitude)
+            .then((obj) => {
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const _pincode = (
+                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                  ).long_name;
+                  setPinCode && setPinCode(_pincode || '');
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+        },
+        (error) => {
+          console.log(error.code, error.message, 'getCurrentPosition error');
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+      console.log('pincode');
+    } else {
+      setPinCode && setPinCode(locationDetails.pincode);
     }
-  }, [currentPatient]);
+  }, []);
 
   useEffect(() => {
     if (deliveryAddressId && addresses) {
@@ -198,33 +230,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     onFinishUpload();
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
-  /*  useEffect(() => {
-    getCartInfo()
-      .then((cartInfo) => {
-        setcartDetails(cartInfo);
-        let cartStatus = {} as typeof medicineCardStatus;
-        cartInfo &&
-          cartInfo.items.forEach((item) => {
-            cartStatus[item.sku] = {
-              isAddedToCart: true,
-              isCardExpanded: true,
-              unit: item.qty,
-              price: item.price!,
-            };
-          });
-        setMedicineCardStatus({
-          ...medicineCardStatus,
-          ...cartStatus,
-        });
-        setMedicineList(cartInfo.items);
-        setshowSpinner(false);
-      })
-      .catch((e) => {
-        Alert.alert(JSON.stringify({ e }));
-        setshowSpinner(false);
-      });
-  }, []);*/
-
   const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
     if (!(unit < 1)) {
       updateCartItem && updateCartItem({ id, quantity: unit });
@@ -243,7 +248,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'MEDICINE CART'}
+        title={'MEDICINES CART'}
         rightComponent={
           <View>
             <TouchableOpacity
@@ -335,6 +340,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               }}
               medicineName={medicine.name!}
               price={medicine.price!}
+              specialPrice={medicine.specialPrice}
               unit={medicine.quantity}
               imageUrl={imageUrl}
               onPressAdd={() => {}}

@@ -391,11 +391,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       id: sku,
       mou,
       name,
-      price: special_price
+      price: price,
+      specialPrice: special_price
         ? typeof special_price == 'string'
           ? parseInt(special_price)
           : special_price
-        : price,
+        : undefined,
       prescriptionRequired: is_prescription_required == '1',
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
@@ -759,6 +760,57 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       </>
     );
   };
+
+  // const renderInfo = () => {
+  //   const description = medicineDetails.description
+  //     .replace(/&lt;/g, '<')
+  //     .replace(/&gt;rn/g, '>')
+  //     .replace(/&gt;/g, '>');
+  //   console.log(description);
+
+  //   if (!!description)
+  //     return (
+  //       <View>
+  //         <Text
+  //           style={{
+  //             ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1),
+  //             paddingHorizontal: 20,
+  //             paddingTop: 20,
+  //             paddingBottom: 17,
+  //           }}
+  //         >
+  //           Product Information
+  //         </Text>
+  //         <View
+  //           style={[
+  //             {
+  //               backgroundColor: theme.colors.WHITE,
+  //               flex: 1,
+  //               padding: 20,
+  //               ...theme.viewStyles.shadowStyle,
+  //             },
+  //           ]}
+  //         >
+  //           <View>
+  //             <WebView
+  //               bounces={false}
+  //               style={{
+  //                 // color: theme.colors.SKY_BLUE,
+  //                 ...theme.fonts.IBMPlexSansMedium(14),
+  //                 // lineHeight: 22,
+  //                 width: '100%',
+  //                 height: 'auto',
+  //               }}
+  //               source={{
+  //                 html: description,
+  //               }}
+  //             />
+  //           </View>
+  //         </View>
+  //       </View>
+  //     );
+  // };
+
   const renderInfo = () => {
     const description = filterHtmlContent(medicineDetails.description);
     if (!!description)

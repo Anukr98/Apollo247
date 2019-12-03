@@ -26,7 +26,7 @@ export interface PhysicalPrescription {
   // path: string;
   base64: string;
   uploadedUrl?: string;
-  prismPrescriptionFileId?:string;
+  prismPrescriptionFileId?: string;
 }
 
 export interface EPrescription {
@@ -230,7 +230,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const cartTotal: ShoppingCartContextProps['cartTotal'] = parseFloat(
     cartItems
-      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
+      .reduce(
+        (currTotal, currItem) =>
+          currTotal + currItem.quantity * (currItem.specialPrice || currItem.price),
+        0
+      )
       .toFixed(2)
   );
 
