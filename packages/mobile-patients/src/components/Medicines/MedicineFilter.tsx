@@ -16,6 +16,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 
@@ -60,8 +61,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
   const { onClose, onApplyFilter, hideCategoryFilter } = props;
 
   const [discount, setdiscount] = useState<FilterRange>({
-    from: undefined,
-    to: undefined,
+    from: 0,
+    to: 100,
   });
   const [price, setprice] = useState<FilterRange>({
     from: undefined,
@@ -84,7 +85,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setprice({ from: undefined, to: undefined });
-              setdiscount({ from: undefined, to: undefined });
+              setdiscount({ from: 0, to: 100 });
               setSortBy(undefined);
               setcategoryIds(['']);
             }}
@@ -333,6 +334,13 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
             alignItems: 'center',
           }}
           onPress={() => {
+            if (discount.from == undefined || discount.to == undefined) {
+              Alert.alert('Uh oh.. :(', `Minimum and maximum discount is madatory.`);
+              return;
+            } else if (discount.from > 100 || discount.to > 100) {
+              Alert.alert('Uh oh.. :(', `Discount should be less than 100.`);
+              return;
+            }
             onApplyFilter(discount, price, sortBy, categoryIds.filter((i) => i));
           }}
         />
@@ -391,9 +399,10 @@ interface InputFieldProps {
 
 const InputField: React.FC<InputFieldProps> = (props) => {
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+    <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
       <View
         style={{
+          flex: 1,
           ...theme.viewStyles.card(0, 0),
           flexDirection: 'row',
           justifyContent: 'center',
@@ -408,7 +417,7 @@ const InputField: React.FC<InputFieldProps> = (props) => {
           style={{
             marginRight: 10,
             marginLeft: 10,
-            width: 130,
+            width: '82.85%',
             height: 48,
           }}
         >
@@ -429,7 +438,8 @@ const InputField: React.FC<InputFieldProps> = (props) => {
           ...theme.fonts.IBMPlexSansSemiBold(13),
           letterSpacing: 0.5,
           justifyContent: 'center',
-          marginTop: 10,
+          marginTop: 15,
+          marginHorizontal: 11,
           color: '#01475b',
         }}
       >
@@ -437,6 +447,7 @@ const InputField: React.FC<InputFieldProps> = (props) => {
       </Text>
       <View
         style={{
+          flex: 1,
           ...theme.viewStyles.card(0, 0),
           flexDirection: 'row',
           justifyContent: 'center',
@@ -451,7 +462,7 @@ const InputField: React.FC<InputFieldProps> = (props) => {
           style={{
             marginRight: 10,
             marginLeft: 10,
-            width: 130,
+            width: '82.85%',
             height: 48,
           }}
         >

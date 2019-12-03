@@ -2052,15 +2052,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('pdf', rowData.url);
-
-                    if ((Platform.OS = 'android')) {
-                      Linking.openURL(rowData.url).catch((err) =>
-                        console.error('An error occurred', err)
-                      );
-                    } else {
-                      setShowWeb(true);
+                     // setShowWeb(true);
+                      setPatientImageshow(true);
                       setUrl(rowData.url);
-                    }
+                    // if ((Platform.OS = 'android')) {
+                    //   setShowWeb(true);
+                    //   setUrl(rowData.url);
+                    //   // Linking.openURL(rowData.url).catch((err) =>
+                    //   //   console.error('An error occurred', err)
+                    //   // );
+                    // } else {
+                    //   setShowWeb(true);
+                    //   setUrl(rowData.url);
+                    // }
                   }}
                 >
                   <View
@@ -2075,14 +2079,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       marginLeft: 38,
                     }}
                   >
-                    <FileBig
+                    <Image
+                      source={{ uri: rowData.url }}
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 180,
+                        height: 180,
+                        borderRadius: 10,
+                      }}
+                    />
+                    {/* <FileBig
                       style={{
                         resizeMode: 'stretch',
                         width: 200,
                         height: 200,
                         borderRadius: 10,
                       }}
-                    />
+                    /> */}
                   </View>
                 </TouchableOpacity>
               )}
