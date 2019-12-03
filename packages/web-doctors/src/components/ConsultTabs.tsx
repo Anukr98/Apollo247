@@ -440,13 +440,10 @@ export const ConsultTabs: React.FC = () => {
     pubnub.addListener({
       status(statusEvent: any) {},
       message(message: any) {
-        insertText[insertText.length] = message.message;
         console.log(message.message);
+        insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         setLastMsg(message);
-        setTimeout(() => {
-          console.log(messages);
-        }, 600);
       },
       presence(presenceEvent: any) {
         setPresenceEventObject(presenceEvent);

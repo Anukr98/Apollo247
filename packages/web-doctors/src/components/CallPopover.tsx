@@ -598,6 +598,7 @@ let intervalcallId: any;
 let stoppedTimerCall: number;
 let patientMsgs: any = [];
 let intervalMissCall: any;
+let MissedcallStoppedTimerCall: number;
 let missedCallCounter: number = 0;
 let intervalCallAbundant: any;
 let isConsultStarted: boolean = false;
@@ -687,12 +688,13 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   //call abundant timer end
 
   // timer for ring called start
-  const [ringingCallTime, setRingingCallTime] = useState<number>(30);
+  const [ringingCallTime, setRingingCallTime] = useState<number>(45);
   const missedCallIntervalTimer = (timer: number) => {
+    console.log(timer);
     intervalMissCall = setInterval(() => {
       timer = timer - 1;
       console.log(timer);
-      stoppedTimerCall = timer;
+      MissedcallStoppedTimerCall = timer;
       setRingingCallTime(timer);
       if (timer < 1) {
         console.log("stop ringing");
@@ -701,7 +703,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
         if (missedCallCounter >= 3) {
-          callInitiateReschedule(true);
+          setShowAbandonment(true);
+          //callInitiateReschedule(true);
         }
       }
     }, 1000);
@@ -831,6 +834,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
     setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
+    clearInterval(intervalMissCall);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ";path=/;";
     const text = {
@@ -925,6 +929,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
     setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
+    clearInterval(intervalMissCall);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ";path=/;";
     const text = {
@@ -1182,9 +1187,9 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       //pubnub.unsubscribe({ channels: [channel] });
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
-      clearInterval(timerIntervalId);
-      clearInterval(intervalMissCall);
-      clearInterval(intervalId);
+      //clearInterval(timerIntervalId);
+      //clearInterval(intervalMissCall);
+      // clearInterval(intervalId);
     };
   }, [props.pubnub]);
 
@@ -1452,16 +1457,20 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
               id: props.doctorId,
               message: rescheduleconsult,
               transferInfo: reschduleObject,
-              messageDate: new Date()
+              messageDate: new Date(),
+              isTyping: true
             },
             channel: channel, //chanel
             storeInHistory: true
           },
           (status: any, response: any) => {}
         );
+        unSubscribeBrowserButtonsListener();
         setIsPopoverOpen(false);
         setDisableOnCancel(true);
-        // }
+        if (document.getElementById("homeId")) {
+          document.getElementById("homeId")!.click();
+        }
       })
       .catch(e => {
         //setIsLoading(false);
@@ -1649,17 +1658,16 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  // disabled={
-                  //   currentUserType === LoggedInUserType.SECRETARY ||
-                  //   startAppointmentButton ||
-                  //   disableOnCancel ||
-                  //   (appointmentInfo!.appointmentState !== "NEW" &&
-                  //     appointmentInfo!.appointmentState !== "TRANSFER" &&
-                  //     appointmentInfo!.appointmentState !== "RESCHEDULE") ||
-                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  //     appointmentInfo!.status !== STATUS.PENDING &&
-                  //     appointmentInfo!.status !== "JUNIOR_DOCTOR_STARTED")
-                  // }
+                  disabled={
+                    currentUserType === LoggedInUserType.SECRETARY ||
+                    startAppointmentButton ||
+                    disableOnCancel ||
+                    (appointmentInfo!.appointmentState !== "NEW" &&
+                      appointmentInfo!.appointmentState !== "TRANSFER" &&
+                      appointmentInfo!.appointmentState !== "RESCHEDULE") ||
+                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                      appointmentInfo!.status !== STATUS.PENDING)
+                  }
                   onClick={() => {
                     !props.startAppointment
                       ? onStartConsult()
@@ -1733,7 +1741,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       props.setStartConsultAction(false);
                       autoSend(audioCallMsg);
                       setIsVideoCall(false);
-                      missedCallIntervalTimer(30);
+                      missedCallIntervalTimer(45);
                     }}
                   >
                     <img src={require("images/call_popup.svg")} alt="" />
@@ -1748,7 +1756,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       props.setStartConsultAction(true);
                       autoSend(videoCallMsg);
                       setIsVideoCall(true);
-                      missedCallIntervalTimer(30);
+                      missedCallIntervalTimer(45);
                     }}
                   >
                     <img src={require("images/video_popup.svg")} alt="" />
