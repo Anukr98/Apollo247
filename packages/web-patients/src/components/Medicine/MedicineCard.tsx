@@ -66,9 +66,7 @@ export const MedicineCard: React.FC = (props) => {
           <div className={classes.priceGroup}>
             Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
           </div>
-          <AphButton className={classes.addToCartBtn}>
-            Add To Cart
-          </AphButton>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={4}>
@@ -80,9 +78,7 @@ export const MedicineCard: React.FC = (props) => {
           <div className={classes.priceGroup}>
             Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
           </div>
-          <AphButton className={classes.addToCartBtn}>
-            Add To Cart
-          </AphButton>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={4}>
@@ -94,9 +90,7 @@ export const MedicineCard: React.FC = (props) => {
           <div className={classes.priceGroup}>
             Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
           </div>
-          <AphButton className={classes.addToCartBtn}>
-            Add To Cart
-          </AphButton>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={4}>
@@ -108,9 +102,7 @@ export const MedicineCard: React.FC = (props) => {
           <div className={classes.priceGroup}>
             Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
           </div>
-          <AphButton className={classes.addToCartBtn}>
-            Add To Cart
-          </AphButton>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={4}>
@@ -122,9 +114,7 @@ export const MedicineCard: React.FC = (props) => {
           <div className={classes.priceGroup}>
             Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
           </div>
-          <AphButton className={classes.addToCartBtn}>
-            Add To Cart
-          </AphButton>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={4}>
@@ -136,9 +126,7 @@ export const MedicineCard: React.FC = (props) => {
           <div className={classes.priceGroup}>
             Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
           </div>
-          <AphButton className={classes.addToCartBtn}>
-            Add To Cart
-          </AphButton>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
     </Grid>

@@ -97,10 +97,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.medicineSearchForm}>
-        <AphTextField
-          placeholder="Search meds, brands and more"
-          className={classes.searchInput}
-        />
+        <AphTextField placeholder="Search meds, brands and more" className={classes.searchInput} />
         <AphButton className={classes.searchBtn}>
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>

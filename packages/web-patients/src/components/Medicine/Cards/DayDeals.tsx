@@ -84,79 +84,85 @@ export const DayDeals: React.FC = (props) => {
         <div className={classes.card}>
           <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
             <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>Personal<br /> Care Products</div>
+              <div className={classes.cardTitle}>
+                Personal
+                <br /> Care Products
+              </div>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/img_offers.png')} alt="" />
               </div>
             </div>
-            <div className={classes.offerDetails}>
-              Upto 30% Off
-            </div>
+            <div className={classes.offerDetails}>Upto 30% Off</div>
           </Link>
         </div>
         <div className={classes.card}>
           <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
             <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>Baby<br /> Care Products</div>
+              <div className={classes.cardTitle}>
+                Baby
+                <br /> Care Products
+              </div>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/img_offers.png')} alt="" />
               </div>
             </div>
-            <div className={classes.offerDetails}>
-              Upto 20% Off
-            </div>
+            <div className={classes.offerDetails}>Upto 20% Off</div>
           </Link>
         </div>
         <div className={classes.card}>
           <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
             <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>Home<br /> Testing Kits</div>
+              <div className={classes.cardTitle}>
+                Home
+                <br /> Testing Kits
+              </div>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/img_offers.png')} alt="" />
               </div>
             </div>
-            <div className={classes.offerDetails}>
-              Upto 25% Off
-            </div>
+            <div className={classes.offerDetails}>Upto 25% Off</div>
           </Link>
         </div>
         <div className={classes.card}>
           <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
             <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>Personal<br /> Care Products</div>
+              <div className={classes.cardTitle}>
+                Personal
+                <br /> Care Products
+              </div>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/img_offers.png')} alt="" />
               </div>
             </div>
-            <div className={classes.offerDetails}>
-              Upto 50% Off
-            </div>
+            <div className={classes.offerDetails}>Upto 50% Off</div>
           </Link>
         </div>
         <div className={classes.card}>
           <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
             <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>Baby<br /> Care Products</div>
+              <div className={classes.cardTitle}>
+                Baby
+                <br /> Care Products
+              </div>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/img_offers.png')} alt="" />
               </div>
             </div>
-            <div className={classes.offerDetails}>
-              Upto 50% Off
-            </div>
+            <div className={classes.offerDetails}>Upto 50% Off</div>
           </Link>
         </div>
         <div className={classes.card}>
           <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
             <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>Home<br /> Testing Kits</div>
+              <div className={classes.cardTitle}>
+                Home
+                <br /> Testing Kits
+              </div>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/img_offers.png')} alt="" />
               </div>
             </div>
-            <div className={classes.offerDetails}>
-              Upto 30% Off
-            </div>
+            <div className={classes.offerDetails}>Upto 30% Off</div>
           </Link>
         </div>
       </Slider>

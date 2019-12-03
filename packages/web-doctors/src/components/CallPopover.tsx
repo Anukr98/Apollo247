@@ -1190,6 +1190,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     CANCEL_APPOINTMENT
   );
 
+  const navigateToCalendar = () => {
+    window.location.href = clientRoutes.calendar();
+  };
+
   const rescheduleConsultAction = () => {
     // do api call
     //setIsLoading(true);
@@ -1279,6 +1283,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           );
           setIsPopoverOpen(false);
           setDisableOnCancel(true);
+          navigateToCalendar();
           // }
         })
         .catch((e) => {
@@ -1886,7 +1891,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         (status, response) => {}
                       );
-                      window.location.href = clientRoutes.calendar();
+                      navigateToCalendar();
                     })
                     .catch((e: ApolloError) => {
                       setCancelError(e.graphQLErrors[0].message);
