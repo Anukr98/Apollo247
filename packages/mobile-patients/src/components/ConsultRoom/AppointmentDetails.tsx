@@ -34,6 +34,7 @@ import {
   APPOINTMENT_STATE,
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
+  STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -401,7 +402,16 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     }
   };
 
-  if (data.doctorInfo)
+  if (data.doctorInfo) {
+    let showCancel =
+      (dateIsAfter &&
+        (data.status === STATUS.IN_PROGRESS &&
+          data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE)) ||
+      data.status == STATUS.NO_SHOW ||
+      false;
+    if (showCancel == false) {
+      showCancel = dateIsAfter;
+    }
     return (
       <View
         style={{
@@ -770,6 +780,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         {showSpinner && <Spinner />}
       </View>
     );
+  }
 
   return null;
 };
