@@ -432,7 +432,7 @@ export const CaseSheet: React.FC = () => {
         </Typography>
         <AphTextField
           fullWidth
-          placeholder="What you enter here won't be shown to the patient.."
+          // placeholder="What you enter here won't be shown to the patient.."
           defaultValue={notes}
           onChange={(e) => {
             setCasesheetNotes(e.target.value);

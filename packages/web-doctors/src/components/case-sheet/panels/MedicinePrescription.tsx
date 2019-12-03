@@ -1152,7 +1152,7 @@ export const MedicinePrescription: React.FC = () => {
                         <h6>Instructions (if any)</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
-                            placeholder="Eg. Root of Administration, Gaps in Dosage, etc."
+                            placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
                             value={medicineInstruction}
                             onChange={(event: any) => {
                               setMedicineInstruction(event.target.value);

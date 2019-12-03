@@ -1188,7 +1188,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Time of the Day*</div>
+                      <div className={classes.sectionTitle}>Time of the Day</div>
                       <div className={classes.numberTablets}>{daySlotsHtml}</div>
                       {/* {errorState.daySlotErr && (
                         <FormHelperText
