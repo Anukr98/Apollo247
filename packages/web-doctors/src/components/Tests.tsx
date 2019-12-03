@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Chip, Theme, MenuItem, Paper, Button } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { Grid, FormHelperText, Modal, CircularProgress } from '@material-ui/core';
+import { AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -11,7 +13,25 @@ import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
 import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-
+import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
+import {
+  GET_DOCTOR_FAVOURITE_TEST_LIST,
+  ADD_DOCTOR_FAVOURITE_TEST,
+  UPDATE_DOCTOR_FAVOURITE_TEST,
+  DELETE_DOCTOR_FAVOURITE_TEST,
+} from 'graphql/profiles';
+import {
+  AddDoctorFavouriteTest,
+  AddDoctorFavouriteTestVariables,
+} from 'graphql/types/AddDoctorFavouriteTest';
+import {
+  UpdateDoctorFavouriteTest,
+  UpdateDoctorFavouriteTestVariables,
+} from 'graphql/types/UpdateDoctorFavouriteTest';
+import {
+  DeleteDoctorFavouriteTest,
+  DeleteDoctorFavouriteTestVariables,
+} from 'graphql/types/DeleteDoctorFavouriteTest';
 interface OptionType {
   itemname: string;
   __typename: 'DiagnosticPrescription';
@@ -81,6 +101,91 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
     },
+    medicinePopup: {
+      width: 480,
+      margin: '30px auto 0 auto',
+      boxShadow: 'none',
+    },
+    popupHeadingCenter: {
+      padding: '20px 10px',
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'center',
+        padding: '0 25px',
+        marginTop: 5,
+      },
+    },
+    dialogContent: {
+      padding: 20,
+      minHeight: 400,
+      position: 'relative',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.6)',
+        marginBottom: 5,
+        marginTop: 5,
+        lineHeight: 'normal',
+      },
+    },
+    numberTablets: {
+      fontSize: 16,
+      color: '#02475b',
+      fontWeight: 500,
+      marginBottom: 0,
+      '& button': {
+        border: '1px solid #00b38e',
+        padding: '5px 10px',
+        fontSize: 12,
+        fontWeight: 'normal',
+        borderRadius: 14,
+        marginRight: 15,
+        color: '#00b38e',
+        backgroundColor: '#fff',
+        '&:focus': {
+          outline: 'none',
+        },
+      },
+    },
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      position: 'relative',
+      textAlign: 'right',
+      fontSize: 14,
+      fontWeight: 600,
+      '& button': {
+        borderRadius: 10,
+        minwidth: 130,
+        padding: '8px 20px',
+        fontSize: 14,
+        fontWeight: 600,
+      },
+    },
+    cancelBtn: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
+      border: 'none',
+      marginRight: 10,
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
+    },
+    updateBtn: {
+      backgroundColor: '#fc9916 !important',
+    },
+    loader: {
+      left: '50%',
+      top: 41,
+      position: 'relative',
+    },
     textFieldWrapper: {
       border: 'solid 1px #30c1a3',
       borderRadius: 10,
@@ -101,6 +206,9 @@ const useStyles = makeStyles((theme: Theme) =>
           backgroundColor: '#f0f4f5 !important',
         },
       },
+    },
+    iconRight: {
+      float: 'right',
     },
     suggestionsList: {
       margin: 0,
@@ -257,6 +365,8 @@ export const Tests: React.FC = () => {
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
   const { caseSheetEdit, patientDetails } = useContext(CaseSheetContext);
+  const [updateText, setUpdateText] = useState('');
+  const [updateId, setUpdateId] = useState('');
 
   const fetchDignostic = async (value: string) => {
     client
@@ -304,6 +414,33 @@ export const Tests: React.FC = () => {
   function getSuggestionValue(suggestion: any | null) {
     return suggestion!.itemName;
   }
+
+  useEffect(() => {
+    client
+      .query<GetDoctorFavouriteTestList>({
+        query: GET_DOCTOR_FAVOURITE_TEST_LIST,
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        const temp: any =
+          _data.data &&
+          _data.data.getDoctorFavouriteTestList &&
+          _data.data.getDoctorFavouriteTestList.testList;
+
+        const xArr: any = selectedValues && selectedValues.length > 0 ? selectedValues : [];
+        temp.map((data1: any) => {
+          if (data1) {
+            xArr!.push(data1);
+          }
+        });
+
+        setSelectedValues(xArr);
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor Favourite Medicine List', e);
+      });
+  }, []);
+
   useEffect(() => {
     if (searchInput && searchInput.length > 2) {
       setSuggestions(getSuggestions(searchInput));
@@ -351,6 +488,7 @@ export const Tests: React.FC = () => {
   const [otherDiagnostic, setOtherDiagnostic] = useState('');
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
   const [lengthOfSuggestions, setLengthOfSuggestions] = useState<number>(1);
+  const [isUpdate, setIsUpdate] = useState(false);
 
   const handleChange = (itemname: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
@@ -365,9 +503,38 @@ export const Tests: React.FC = () => {
       [itemname]: newValue,
     });
   };
+  const [testLoader, setTestLoader] = useState<boolean>(false);
+  const getTest = () => {
+    setTestLoader(true);
+    client
+      .query<GetDoctorFavouriteTestList>({
+        query: GET_DOCTOR_FAVOURITE_TEST_LIST,
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        const temp: any =
+          _data.data &&
+          _data.data.getDoctorFavouriteTestList &&
+          _data.data.getDoctorFavouriteTestList.testList;
 
+        const xArr: any = [];
+        temp.map((data1: any) => {
+          if (data1) {
+            xArr!.push(data1);
+          }
+        });
+
+        setSelectedValues(xArr);
+        setTestLoader(false);
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor Favourite Medicine List', e);
+        setTestLoader(false);
+      });
+  };
   const handleDelete = (item: any, idx: number) => {
     // suggestions.splice(0, 0, item);
+    deleteTest(idx);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -381,39 +548,125 @@ export const Tests: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+
+  const saveMedicines = (value: any) => {
+    client
+      .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
+        mutation: ADD_DOCTOR_FAVOURITE_TEST,
+        variables: {
+          itemname: value.itemName,
+        },
+      })
+      .then((data) => {
+        console.log('data after mutation' + data);
+        getTest();
+      });
+  };
+
+  const deleteTest = (idx: any) => {
+    if (selectedValues && selectedValues[idx].id!) {
+      client
+        .mutate<DeleteDoctorFavouriteTest, DeleteDoctorFavouriteTestVariables>({
+          mutation: DELETE_DOCTOR_FAVOURITE_TEST,
+          variables: {
+            testId: selectedValues[idx].id!,
+          },
+        })
+        .then((data) => {
+          console.log('data after mutation' + data);
+        });
+    }
+  };
+  const updateModalValue = (idx: any) => {
+    setUpdateId(selectedValues[idx].id);
+    setUpdateText(
+      selectedValues[idx].itemname ? selectedValues[idx].itemname : selectedValues[idx].itemName
+    );
+    setIsUpdate(true);
+  };
+  const updateTest = (value: any) => {
+    client
+      .mutate<UpdateDoctorFavouriteTest, UpdateDoctorFavouriteTestVariables>({
+        mutation: UPDATE_DOCTOR_FAVOURITE_TEST,
+        variables: {
+          id: updateId,
+          itemname: value,
+        },
+      })
+      .then((data) => {
+        console.log('data after mutation' + data);
+        getTest();
+      });
+  };
+
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.fullWidth}>
         <Typography component="h5" variant="h5">
           Tests
         </Typography>
-        <Typography component="div" className={classes.listContainer}>
-          {selectedValues !== null &&
-            selectedValues &&
-            selectedValues.length > 0 &&
-            selectedValues!.map((item: any, idx: any) =>
-              item && item.itemName
-                ? item.itemName!.trim() !== '' && (
-                    <Chip
-                      className={classes.othersBtn}
-                      key={idx}
-                      label={item!.itemName}
-                      onDelete={() => handleDelete(item, idx)}
-                      deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                    />
-                  )
-                : item.itemname &&
-                  item.itemname!.trim() !== '' && (
-                    <Chip
-                      className={classes.othersBtn}
-                      key={idx}
-                      label={item!.itemname}
-                      onDelete={() => handleDelete(item, idx)}
-                      deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                    />
-                  )
-            )}
-        </Typography>
+        {testLoader ? (
+          <CircularProgress className={classes.loader} />
+        ) : (
+          <Typography component="div" className={classes.listContainer}>
+            {selectedValues !== null &&
+              selectedValues &&
+              selectedValues.length > 0 &&
+              selectedValues!.map((item: any, idx: any) =>
+                item && item.itemName
+                  ? item.itemName!.trim() !== '' && (
+                      <li key={idx}>
+                        {item!.itemName}
+                        <span className={classes.iconRight}>
+                          <img
+                            onClick={() => updateModalValue(idx)}
+                            src={require('images/round_edit_24_px.svg')}
+                            alt=""
+                          />
+                          <img
+                            onClick={() => handleDelete(item, idx)}
+                            src={require('images/ic_cancel_green.svg')}
+                            alt=""
+                          />
+                        </span>
+                      </li>
+                    )
+                  : //   <Chip
+                    //     className={classes.othersBtn}
+                    //     key={idx}
+                    //     label={item!.itemName}
+                    //     onDelete={() => handleDelete(item, idx)}
+                    //     deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                    //   />
+                    // )
+                    item.itemname &&
+                    item.itemname!.trim() !== '' && (
+                      <li key={idx}>
+                        {item!.itemname}
+                        <span className={classes.iconRight}>
+                          <img
+                            onClick={() => updateModalValue(idx)}
+                            src={require('images/round_edit_24_px.svg')}
+                            alt=""
+                          />
+                          <img
+                            onClick={() => handleDelete(item, idx)}
+                            src={require('images/ic_cancel_green.svg')}
+                            alt=""
+                          />
+                        </span>
+                      </li>
+                      // <Chip
+                      //   className={classes.othersBtn}
+                      //   key={idx}
+                      //   label={item!.itemname}
+                      //   onDelete={() => handleDelete(item, idx)}
+                      //   deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                      // />
+                    )
+              )}
+          </Typography>
+        )}
       </Typography>
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
@@ -443,6 +696,7 @@ export const Tests: React.FC = () => {
                 emptySelectedValue.push(suggestion);
                 setSelectedValues(emptySelectedValue);
               }
+              saveMedicines(suggestion);
               setShowAddCondition(false);
               suggestions = suggestions.filter(
                 (val) => selectedValues && !selectedValues!.includes(val!)
@@ -474,7 +728,7 @@ export const Tests: React.FC = () => {
             )}
           />
         )}
-        {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
+        {lengthOfSuggestions < 2 && otherDiagnostic.length > 2 && (
           <div>
             <span>
               <AphButton
@@ -483,6 +737,10 @@ export const Tests: React.FC = () => {
                 color="primary"
                 onClick={() => {
                   if (otherDiagnostic.trim() !== '') {
+                    const obj = {
+                      itemName: otherDiagnostic,
+                    };
+                    saveMedicines(obj);
                     selectedValues!.splice(idx, 0, {
                       itemname: otherDiagnostic,
                       __typename: 'DiagnosticPrescription',
@@ -504,7 +762,61 @@ export const Tests: React.FC = () => {
             </span>
           </div>
         )}
+        }
       </Typography>
+
+      <Modal
+        open={isUpdate}
+        onClose={() => setIsUpdate(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.medicinePopup}>
+          <AphDialogTitle className={classes.popupHeadingCenter}>
+            <div>
+              <div>
+                <div className={classes.dialogContent}>
+                  <Grid container spacing={2}>
+                    <Grid item lg={12} xs={12}>
+                      <h6>UPDATE TEST</h6>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          value={updateText}
+                          onChange={(event: any) => {
+                            setUpdateText(event.target.value);
+                          }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                </div>
+              </div>
+              <div className={classes.dialogActions}>
+                <AphButton
+                  className={classes.cancelBtn}
+                  color="primary"
+                  onClick={() => {
+                    setIsUpdate(false);
+                  }}
+                >
+                  Cancel
+                </AphButton>
+
+                <AphButton
+                  color="primary"
+                  className={classes.updateBtn}
+                  onClick={() => {
+                    updateTest(updateText);
+                    setIsUpdate(false);
+                  }}
+                >
+                  Update Test
+                </AphButton>
+              </div>
+            </div>
+          </AphDialogTitle>
+        </Paper>
+      </Modal>
     </Typography>
   );
 };

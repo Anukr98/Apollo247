@@ -822,6 +822,7 @@ export const GET_DOCTOR_FAVOURITE_TEST_LIST = gql`
   query GetDoctorFavouriteTestList {
     getDoctorFavouriteTestList {
       testList {
+        id
         itemname
       }
     }
