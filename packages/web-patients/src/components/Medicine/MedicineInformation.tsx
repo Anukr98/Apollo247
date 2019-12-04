@@ -4,6 +4,7 @@ import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
+import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -64,6 +65,15 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#01475b',
       marginBottom: 16,
+      cursor: 'pointer',
+      position: 'relative',
+      paddingRight: 40,
+    },
+    dropDownArrow: {
+      position: 'absolute',
+      right: 8,
+      top: '50%',
+      marginTop: -12,
     },
     deliveryInfo: {
       backgroundColor: '#f7f8f5',
@@ -192,13 +202,18 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 72,
       },
     },
+    substitutePopover: {
+      margin: 0,
+    },
   });
 });
 
 export const MedicineInformation: React.FC = (props) => {
   const classes = useStyles();
   const [medicineQty] = React.useState(1);
-  const mascotRef = useRef(null);
+  const notifyPopRef = useRef(null);
+  const subDrugsRef = useRef(null);
+  const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   return (
@@ -207,7 +222,16 @@ export const MedicineInformation: React.FC = (props) => {
         <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 350px' }}>
           <div className={classes.customScroll}>
             <div className={classes.sectionTitle}>Substitute Drugs</div>
-            <div className={classes.substitutes}>Pick from 9 available substitutes</div>
+            <div
+              className={classes.substitutes}
+              onClick={() => setIsSubDrugsPopoverOpen(true)}
+              ref={subDrugsRef}
+            >
+              Pick from 9 available substitutes
+              <div className={classes.dropDownArrow}>
+                <img src={require('images/ic_dropdown_green.svg')} alt="" />
+              </div>
+            </div>
             <div className={classes.sectionTitle}>Check Delivery Time</div>
             <div className={classes.deliveryInfo}>
               <div className={classes.deliveryTimeGroup}>
@@ -273,7 +297,7 @@ export const MedicineInformation: React.FC = (props) => {
       </div>
       <Popover
         open={isPopoverOpen}
-        anchorEl={mascotRef.current}
+        anchorEl={notifyPopRef.current}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'right',
@@ -292,6 +316,22 @@ export const MedicineInformation: React.FC = (props) => {
             <MedicineNotifyPopover />
           </div>
         </div>
+      </Popover>
+      <Popover
+        open={isSubDrugsPopoverOpen}
+        anchorEl={subDrugsRef.current}
+        onClose={() => setIsSubDrugsPopoverOpen(false)}
+        className={classes.substitutePopover}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        <SubstituteDrugsList />
       </Popover>
     </div>
   );
