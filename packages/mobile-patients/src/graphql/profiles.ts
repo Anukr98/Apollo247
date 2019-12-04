@@ -34,6 +34,7 @@ export const UPDATE_PATIENT = gql`
         uhid
         dateOfBirth
         emailAddress
+        photoUrl
       }
     }
   }
