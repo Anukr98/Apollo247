@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem } from '@material-ui/core';
+import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -49,6 +50,11 @@ const useStyles = makeStyles((theme: Theme) => {
           marginLeft: 8,
         },
       },
+    },
+    notifyBtn: {
+      width: '100% !important',
+      color: '#fc9916',
+      margin: '0 !important',
     },
     substitutes: {
       backgroundColor: '#f7f8f5',
@@ -155,12 +161,45 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e',
       fontWeight: 600,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   });
 });
 
 export const MedicineInformation: React.FC = (props) => {
   const classes = useStyles();
   const [medicineQty] = React.useState(1);
+  const mascotRef = useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -228,7 +267,32 @@ export const MedicineInformation: React.FC = (props) => {
       <div className={classes.bottomActions}>
         <AphButton>Add To Cart</AphButton>
         <AphButton color="primary">Buy Now</AphButton>
+        <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
+          Notify when in stock
+        </AphButton>
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <MedicineNotifyPopover />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };
