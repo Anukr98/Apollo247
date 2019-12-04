@@ -328,7 +328,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
     } else if (typeof discount.to == 'number' && discount.from == undefined) {
       Alert.alert('Uh oh.. :(', `Please provide minimum discount value.`);
       return;
-    } else if (discount.from && discount.to && (discount.from > 100 || discount.to > 100)) {
+    } else if (
+      typeof discount.to == 'number' &&
+      typeof discount.from == 'number' &&
+      (discount.from > 100 || discount.to > 100)
+    ) {
       Alert.alert('Uh oh.. :(', `Discount cannot be more than 100.`);
       return;
     }
