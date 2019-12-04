@@ -1386,6 +1386,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === stopConsultJr) {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
+         thirtySecondTimer && clearTimeout(thirtySecondTimer);
+         minuteTimer && clearTimeout(minuteTimer);
         setConvertVideo(false);
         addMessages(message);
         //setShowFeedback(true);
@@ -1418,6 +1420,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setjrDoctorJoined(true);
         updateSessionAPI();
         checkingAppointmentDates();
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
@@ -2058,7 +2062,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View
           style={{
             width: 244,
-            height: 116,
+            height: 130,
             backgroundColor: '#0087ba',
             marginLeft: 38,
             borderRadius: 10,
@@ -2074,10 +2078,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               paddingTop: 12,
             }}
           >
-            {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
-              ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
-              : "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
-            // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
+            {
+              // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
+              //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
+              //   :
+              "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
+              // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
             }
           </Text>
         </View>
