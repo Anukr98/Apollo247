@@ -1195,7 +1195,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!appointmentData.isJdQuestionsComplete) {
+    if (appointmentData.isJdQuestionsComplete) {
       thirtySecondCall();
       minuteCaller();
     } else {
