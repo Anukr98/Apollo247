@@ -130,32 +130,32 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const TodatTm = new Date().toLocaleDateString().split('/');
     invalidStTime =
       stTm[2] +
-      '/' +
-      (stTm[0] && stTm[0].length < 2 ? '0' + stTm[0] : stTm[0]) +
-      '/' +
-      (stTm[1] && stTm[1].length < 2 ? '0' + stTm[1] : stTm[1]) <
+        '/' +
+        (stTm[0] && stTm[0].length < 2 ? '0' + stTm[0] : stTm[0]) +
+        '/' +
+        (stTm[1] && stTm[1].length < 2 ? '0' + stTm[1] : stTm[1]) <
       TodatTm[2] +
-      '/' +
-      (TodatTm[0] && TodatTm[0].length < 2 ? '0' + TodatTm[0] : TodatTm[0]) +
-      '/' +
-      (TodatTm[1] && TodatTm[1].length < 2 ? '0' + TodatTm[1] : TodatTm[1]);
+        '/' +
+        (TodatTm[0] && TodatTm[0].length < 2 ? '0' + TodatTm[0] : TodatTm[0]) +
+        '/' +
+        (TodatTm[1] && TodatTm[1].length < 2 ? '0' + TodatTm[1] : TodatTm[1]);
     console.log(
       stTm[2] +
-      '/' +
-      (stTm[0] && stTm[0].length < 2 ? '0' + stTm[0] : stTm[0]) +
-      '/' +
-      (stTm[1] && stTm[1].length < 2 ? '0' + stTm[1] : stTm[1]),
+        '/' +
+        (stTm[0] && stTm[0].length < 2 ? '0' + stTm[0] : stTm[0]) +
+        '/' +
+        (stTm[1] && stTm[1].length < 2 ? '0' + stTm[1] : stTm[1]),
       TodatTm[2] +
-      '/' +
-      (TodatTm[0] && TodatTm[0].length < 2 ? '0' + TodatTm[0] : TodatTm[0]) +
-      '/' +
-      (TodatTm[1] && TodatTm[1].length < 2 ? '0' + TodatTm[1] : TodatTm[1])
+        '/' +
+        (TodatTm[0] && TodatTm[0].length < 2 ? '0' + TodatTm[0] : TodatTm[0]) +
+        '/' +
+        (TodatTm[1] && TodatTm[1].length < 2 ? '0' + TodatTm[1] : TodatTm[1])
     );
     if (
       daySelected &&
       startTime &&
       stTm[2] + '/' + stTm[0] + '/' + stTm[1] ===
-      TodatTm[2] + '/' + TodatTm[0] + '/' + TodatTm[1] &&
+        TodatTm[2] + '/' + TodatTm[0] + '/' + TodatTm[1] &&
       format(new Date(), 'HH:mm').toString() > startTime
     ) {
       invalidTime = true;
@@ -240,7 +240,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           '&:after': {
             borderBottom: '2px solid #00b38e !important',
           },
-
         },
         '& input': {
           fontSize: 18,
@@ -335,7 +334,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           fontSize: 14,
           fontWeight: 600,
           padding: '8px 20px',
-
         },
       },
       blockCalBtn: {
@@ -395,7 +393,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         fontSize: 0,
       },
     },
-
   });
   const classes = useStyles();
 
@@ -445,7 +442,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function (o) {
+      _.filter(consultHours, function(o) {
         if (o && o.weekDay) {
           return o.weekDay === selectedDay;
         }
@@ -463,7 +460,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function (o) {
+      _.filter(consultHours, function(o) {
         if (o && o.weekDay) {
           return o.weekDay === selectedDay;
         }
@@ -507,7 +504,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     if (startEndList && startEndList.length > 0) {
       const xyz =
         startEndList &&
-        _.filter(startEndList, function (o) {
+        _.filter(startEndList, function(o) {
           if (o && o.start) {
             return new Date(o.start).getDate() === new Date(obj.start).getDate();
           }
@@ -543,7 +540,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function (o) {
+      _.filter(consultHours, function(o) {
         if (o && o.weekDay) {
           return o.weekDay === selectedDay;
         }
@@ -594,6 +591,31 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   };
   const [isTimeValid, setIsTimeValid] = useState(true);
   const [isallreadyInArray, setIsallreadyInArray] = useState(true);
+  const [isPastTime, setIsPastTime] = useState(true);
+
+  useEffect(() => {
+    if (new Date(start).getDate() === new Date().getDate()) {
+      if (startTime) {
+        const [shours, smins] = startTime.split(':');
+        var startHour = shours;
+        var startMinute = smins;
+        var startTimeObject = new Date();
+        startTimeObject.setHours(Number(startHour), Number(startMinute));
+        const currentHours = new Date().getHours();
+        const currentMinuts = new Date().getMinutes() + 1;
+        var currentTimeObject = new Date();
+        currentTimeObject.setHours(Number(currentHours), Number(currentMinuts));
+        if (startTimeObject < currentTimeObject) {
+          setIsPastTime(false);
+        } else {
+          setIsPastTime(true);
+        }
+      }
+    } else {
+      setIsPastTime(true);
+    }
+  }, [startTime, start]);
+
   useEffect(() => {
     if (startTime && endTime) {
       const [shours, smins] = startTime.split(':');
@@ -660,6 +682,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     }
   }, [startTime, endTime, customTimeArray]);
 
+  useEffect(() => {
+    if (isOverlapError && customTimeArray) {
+      customTimeArray.length = 0;
+      setSelectedBlockOption(BlockOption.entireday);
+    }
+  }, [isOverlapError, customTimeArray]);
   useEffect(() => {
     if (selectedBlockOption === 'entireday') {
       setInvalid(dateInvalid || timeInvalid || invalidStTime || invalidTime);
@@ -747,7 +775,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       disableToolbar
                       variant="inline"
                       // format="MM/dd/yyyy"
-                      format='iii, dd/MM/yyyy'
+                      format="iii, dd/MM/yyyy"
                       margin="normal"
                       id="date-picker-inline"
                       label={
@@ -781,12 +809,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         disableToolbar
                         variant="inline"
                         // format="MM/dd/yyyy"
-                        format='iii, dd/MM/yyy'
+                        format="iii, dd/MM/yyy"
                         margin="normal"
                         id="date-picker-inline"
                         label="To"
                         disabled={!start}
-                        minDate={new Date()}
+                        minDate={new Date(start)}
                         value={end}
                         onChange={(date) => {
                           setEnd(date ? getFormattedDate(date) : '');
@@ -884,7 +912,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                     consultHours.startTime
                                   )} - ${convertFrom24To12Format(consultHours.endTime)} | ${
                                     consultHours.consultMode
-                                    }`}
+                                  }`}
                                   onChange={() => {
                                     setChackedSingleValue(consultHours);
                                     setChecked(!checked);
@@ -1043,8 +1071,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               </Grid>
                             </ThemeProvider>
                           </MuiPickersUtilsProvider>
-                          {!isTimeValid && <p className={classes.errorMsg}> End time Shoud be greater</p>}
-                          {!isallreadyInArray && <p className={classes.errorMsg}>Time is Collapsing</p>}
+                          {!isTimeValid && (
+                            <p className={classes.errorMsg}> End time Shoud be greater</p>
+                          )}
+                          {!isallreadyInArray && (
+                            <p className={classes.errorMsg}>Time is Collapsing</p>
+                          )}
+                          {!isPastTime && (
+                            <p className={classes.errorMsg}>You can not block past time </p>
+                          )}
                           <div>
                             <AphButton
                               variant="contained"
@@ -1142,7 +1177,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       return (
                         <Button
                           type="submit"
-                          disabled={loading || invalid}
+                          disabled={
+                            loading || invalid || !isTimeValid || !isallreadyInArray || !isPastTime
+                          }
                           variant="contained"
                           className={classes.blockCalBtn}
                           onClick={() => {
@@ -1153,8 +1190,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             //console.log(startDate, endDate);
 
                             if (durationSelected) {
-                              startDate.setHours(0);
-                              startDate.setMinutes(0);
+                              if (new Date().getDate() === new Date(start).getDate()) {
+                                const currentHours = new Date().getHours();
+                                const currentMinuts = new Date().getMinutes() + 1;
+                                startDate.setHours(parseInt(currentHours.toString(), 10));
+                                startDate.setMinutes(parseInt(currentMinuts.toString(), 10));
+                              } else {
+                                startDate.setHours(0);
+                                startDate.setMinutes(0);
+                              }
                               endDate.setHours(23);
                               endDate.setMinutes(59);
                             } else if (selectedBlockOption === 'entireday') {
@@ -1166,8 +1210,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                 endDate.setHours(parseInt(endHours, 10));
                                 endDate.setMinutes(parseInt(endMins, 10));
                               } else {
-                                startDate.setHours(0);
-                                startDate.setMinutes(0);
+                                if (new Date().getDate() === new Date(start).getDate()) {
+                                  const currentHours = new Date().getHours();
+                                  const currentMinuts = new Date().getMinutes() + 1;
+                                  startDate.setHours(parseInt(currentHours.toString(), 10));
+                                  startDate.setMinutes(parseInt(currentMinuts.toString(), 10));
+                                } else {
+                                  startDate.setHours(0);
+                                  startDate.setMinutes(0);
+                                }
                                 endDate.setHours(23);
                                 endDate.setMinutes(59);
                               }
