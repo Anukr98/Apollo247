@@ -520,7 +520,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           try {
             const text = {
               id: patientId,
-              message: 'Smoke:\n' + item.v[0] || 'No',
+              message: 'Smoke:\n' + (item.v[0] || 'No'),
               messageDate: currentDateTime,
             };
             setMessageText('');
