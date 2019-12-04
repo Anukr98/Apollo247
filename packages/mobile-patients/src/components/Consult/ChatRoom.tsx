@@ -424,6 +424,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Height:\n' + data.height,
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
@@ -436,6 +437,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Weight:\n' + data.weight,
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[1] && sendAnswerMessage(text);
@@ -448,6 +450,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Medicine Allergy:\n' + data.drugAllergies,
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[2] && sendAnswerMessage(text);
@@ -460,6 +463,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Food Allergy:\n' + data.dietAllergies,
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[3] && sendAnswerMessage(text);
@@ -472,6 +476,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Temperature:\n' + data.temperature,
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[4] && sendAnswerMessage(text);
@@ -484,6 +489,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Blood Pressure:\n' + data.bp,
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[5] && sendAnswerMessage(text);
@@ -498,6 +504,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               message:
                 'Family members suffering suffer from — COPD, Cancer, Hypertension or Diabetes:\n' +
                 data.familyHistory,
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[6] && sendAnswerMessage(text);
@@ -514,6 +521,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Smoke:\n' + item.v[0] || 'No',
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[7] && sendAnswerMessage(text);
@@ -530,6 +538,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Drink: \n' + (item.v[0] || 'No'),
+              messageDate: currentDateTime,
             };
             setMessageText('');
             !isSendAnswers[8] && sendAnswerMessage(text);
@@ -1024,11 +1033,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }, 1000);
     } catch (error) {
-      console.log('error in call abandoment',error);
-      
+      console.log('error in call abandoment', error);
     }
-
-    
   };
 
   const stopCallAbondmentTimer = () => {
@@ -1121,12 +1127,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
 
             // setTimeout(() => {
-              console.log('inserting');
+            console.log('inserting');
 
-              insertText = newmessage;
-              setMessages(newmessage as []);
-              checkAutomatedPatientText();
-              checkForRescheduleMessage(newmessage);
+            insertText = newmessage;
+            setMessages(newmessage as []);
+            checkAutomatedPatientText();
+            checkForRescheduleMessage(newmessage);
             // }, 100);
 
             setTimeout(() => {
@@ -1150,7 +1156,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     if (result.length > 0) {
       console.log('checkForRescheduleMessage ', result);
-      NextAvailableSlot(result[0], 'Followup', false);
+      NextAvailableSlot(result[0], 'Transfer', false);
     }
   };
 
@@ -1382,6 +1388,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopInterval();
         setConvertVideo(false);
         addMessages(message);
+        //setShowFeedback(true);
+        // ************* SHOW FEEDBACK POUP ************* \\
+      } else if (message.message.message === stopConsultMsg) {
+        console.log('listener remainingTime', remainingTime);
+        stopInterval();
+        setConvertVideo(false);
+        //addMessages(message);
         setShowFeedback(true);
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
@@ -1463,7 +1476,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return obj.message === rescheduleConsultMsg;
     });
 
-    checkForRescheduleMessage(result);
+    checkForRescheduleMessage(insertText);
 
     setTimeout(() => {
       flatListRef.current! &&
@@ -1920,118 +1933,118 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </StickyBottomComponent>
           </View>
           {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
-           <View
-            style={{
-              width: 244,
-              height: 206,
-              backgroundColor: '#0087ba',
-              marginLeft: 38,
-              borderRadius: 10,
-              marginBottom: 4,
-            }}
-          >
-            <Text
+            <View
               style={{
-                color: 'white',
-                lineHeight: 22,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
-                marginHorizontal: 16,
-                marginTop: 12,
+                width: 244,
+                height: 206,
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+                marginBottom: 4,
               }}
             >
-              I’ve also scheduled a{' '}
-              <Text
-                style={{
-                  color: 'white',
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansBold(15),
-                  textAlign: 'left',
-                }}
-              >
-                free follow-up{' '}
-              </Text>
               <Text
                 style={{
                   color: 'white',
                   lineHeight: 22,
                   ...theme.fonts.IBMPlexSansMedium(15),
                   textAlign: 'left',
+                  marginHorizontal: 16,
+                  marginTop: 12,
                 }}
               >
-                for you —
+                I’ve also scheduled a{' '}
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansBold(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  free follow-up{' '}
+                </Text>
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  for you —
+                </Text>
               </Text>
-            </Text>
-            <View
-              style={{
-                marginHorizontal: 16,
-                marginTop: 9,
-                opacity: 0.5,
-                height: 2,
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                borderRadius: 1,
-                borderColor: '#ffffff',
-                overflow: 'hidden',
-              }}
-            />
-            <Text
-              style={{
-                marginHorizontal: 16,
-                marginTop: 9,
-                lineHeight: 22,
-                ...theme.fonts.IBMPlexSansSemiBold(15),
-                color: 'white',
-              }}
-            >
-              {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
-            </Text>
-            <View
-              style={{
-                marginHorizontal: 16,
-                marginTop: 10,
-                opacity: 0.5,
-                height: 2,
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                borderRadius: 1,
-                borderColor: '#ffffff',
-                overflow: 'hidden',
-              }}
-            />
-            <StickyBottomComponent
-              style={{
-                paddingHorizontal: 0,
-                backgroundColor: 'transparent',
-                shadowColor: 'transparent',
-                paddingTop: 13,
-              }}
-            >
-              <Button
-                title={'RESCHEDULE'}
+              <View
                 style={{
-                  flex: 0.5,
-                  marginLeft: 16,
-                  marginRight: 5,
-                  backgroundColor: '#0087ba',
-                  borderWidth: 2,
-                  borderColor: '#fcb715',
-                }}
-                titleTextStyle={{ color: 'white' }}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
-
-                  console.log('Button Clicked');
-                  NextAvailableSlot(rowData, 'Followup', false);
-                  setTransferData(rowData.transferInfo);
-                  setTimeout(() => {
-                    flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-                  }, 200);
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
                 }}
               />
-            </StickyBottomComponent>
-          </View>
-           )}
+              <Text
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  lineHeight: 22,
+                  ...theme.fonts.IBMPlexSansSemiBold(15),
+                  color: 'white',
+                }}
+              >
+                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+              </Text>
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 10,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
+                }}
+              />
+              <StickyBottomComponent
+                style={{
+                  paddingHorizontal: 0,
+                  backgroundColor: 'transparent',
+                  shadowColor: 'transparent',
+                  paddingTop: 13,
+                }}
+              >
+                <Button
+                  title={'RESCHEDULE'}
+                  style={{
+                    flex: 0.5,
+                    marginLeft: 16,
+                    marginRight: 5,
+                    backgroundColor: '#0087ba',
+                    borderWidth: 2,
+                    borderColor: '#fcb715',
+                  }}
+                  titleTextStyle={{ color: 'white' }}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+
+                    console.log('Button Clicked');
+                    NextAvailableSlot(rowData, 'Followup', false);
+                    setTransferData(rowData.transferInfo);
+                    setTimeout(() => {
+                      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+                    }, 200);
+                  }}
+                />
+              </StickyBottomComponent>
+            </View>
+          )}
           {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
         </View>
       </>
@@ -2826,7 +2839,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
       rowData.message === acceptedCallMsg ||
-      rowData.message === stopConsultMsg ||
+      // rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated
     ) {
       return null;
@@ -3129,6 +3142,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   ) => {
     let checkAppointmentId;
     let checkAppointmentDate;
+    console.log(rowData, 'rowDatacheckIfReschduleApi');
+    console.log(Value, 'Value');
 
     if (isAutomatic) {
       checkAppointmentId = channel;

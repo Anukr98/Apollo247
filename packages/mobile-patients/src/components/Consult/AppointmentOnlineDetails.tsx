@@ -273,43 +273,43 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       cancelledById: data.patientId,
     };
     // console.log(appointmentTransferInput, 'appointmentTransferInput');
-    if (!deviceTokenApICalled) {
-      setDeviceTokenApICalled(true);
-      client
-        .mutate<cancelAppointment, cancelAppointmentVariables>({
-          mutation: CANCEL_APPOINTMENT,
-          variables: {
-            cancelAppointmentInput: appointmentTransferInput,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data: any) => {
-          setshowSpinner(false);
-          setSucessPopup(true);
-          console.log(data, 'datacancel');
-          // props.navigation.dispatch(
-          //   StackActions.reset({
-          //     index: 0,
-          //     key: null,
-          //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          //   })
-          // );
-        })
-        .catch((e: any) => {
-          setshowSpinner(false);
-          console.log('Error occured while adding Doctor', e);
-          const message = e.message ? e.message.split(':')[1].trim() : '';
-          if (
-            message == 'INVALID_APPOINTMENT_ID' ||
-            message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
-          ) {
-            showAphAlert!({
-              title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-              description: 'Ongoing / Completed appointments cannot be cancelled.',
-            });
-          }
-        });
-    }
+    //if (!deviceTokenApICalled) {
+    // setDeviceTokenApICalled(true);
+    client
+      .mutate<cancelAppointment, cancelAppointmentVariables>({
+        mutation: CANCEL_APPOINTMENT,
+        variables: {
+          cancelAppointmentInput: appointmentTransferInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        setshowSpinner(false);
+        setSucessPopup(true);
+        console.log(data, 'datacancel');
+        // props.navigation.dispatch(
+        //   StackActions.reset({
+        //     index: 0,
+        //     key: null,
+        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+        //   })
+        // );
+      })
+      .catch((e: any) => {
+        setshowSpinner(false);
+        console.log('Error occured while adding Doctor', e);
+        const message = e.message ? e.message.split(':')[1].trim() : '';
+        if (
+          message == 'INVALID_APPOINTMENT_ID' ||
+          message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
+        ) {
+          showAphAlert!({
+            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+            description: 'Ongoing / Completed appointments cannot be cancelled.',
+          });
+        }
+      });
+    // }
   };
 
   const rescheduleAPI = (availability: any) => {
