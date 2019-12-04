@@ -1,6 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  APPOINTMENT_TYPE,
+  APPOINTMENT_STATE,
+  BOOKINGSOURCE,
+  DEVICETYPE,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -28,11 +34,23 @@ export const bookAppointmentTypeDefs = gql`
     PENDING
     PAYMENT_PENDING
     NO_SHOW
+    JUNIOR_DOCTOR_STARTED
+    JUNIOR_DOCTOR_ENDED
   }
 
   enum APPOINTMENT_TYPE {
     ONLINE
     PHYSICAL
+    BOTH
+  }
+
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+  enum DEVICETYPE {
+    IOS
+    ANDROID
   }
 
   type AppointmentBooking {
@@ -66,6 +84,9 @@ export const bookAppointmentTypeDefs = gql`
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID!
+    symptoms: String
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
   }
 
   type BookAppointmentResult {
@@ -87,6 +108,9 @@ type BookAppointmentInput = {
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string;
+  symptoms?: string;
+  bookingSource?: BOOKINGSOURCE;
+  deviceType?: DEVICETYPE;
 };
 
 type AppointmentBooking = {
@@ -115,6 +139,11 @@ type AppointmentBookingResult = {
 };
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
+enum CONSULTFLAG {
+  OUTOFCONSULTHOURS = 'OUTOFCONSULTHOURS',
+  OUTOFBUFFERTIME = 'OUTOFBUFFERTIME',
+  INCONSULTHOURS = 'INCONSULTHOURS',
+}
 
 const bookAppointment: Resolver<
   null,
@@ -168,11 +197,15 @@ const bookAppointment: Resolver<
 
   //check if doctor slot is blocked
   const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const recCount = await blockRepo.checkIfSlotBlocked(
+  const slotDetails = await blockRepo.checkIfSlotBlocked(
     appointmentInput.appointmentDateTime,
     appointmentInput.doctorId
   );
-  if (recCount > 0) {
+  if (
+    slotDetails[0] &&
+    (slotDetails[0].consultMode === APPOINTMENT_TYPE.BOTH.toString() ||
+      slotDetails[0].consultMode === appointmentInput.appointmentType.toString())
+  ) {
     throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
@@ -205,11 +238,15 @@ const bookAppointment: Resolver<
     doctorsDb
   );
 
-  if (!checkHours) {
+  if (checkHours === CONSULTFLAG.OUTOFBUFFERTIME) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  }
+
+  if (checkHours === CONSULTFLAG.OUTOFCONSULTHOURS) {
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
   }
 
-  // check if patient cancelled appointment for more than 3 weeks in a week
+  // check if patient cancelled appointment for more than 3 times in a week
 
   const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
   const cancelledCount = await apptsrepo.checkPatientCancelledHistory(
@@ -279,6 +316,8 @@ const bookAppointment: Resolver<
     appointment.displayId.toString() +
     '<br>Patient Name :-' +
     patientDetails.firstName +
+    '<br>Mobile Number :-' +
+    patientDetails.mobileNumber +
     '<br>Patient Location (city) :-\nDoctor Name :-' +
     docDetails.firstName +
     ' ' +
@@ -293,13 +332,13 @@ const bookAppointment: Resolver<
     format(addMinutes(istDateTime, 15), 'hh:mm') +
     '<br>Mode of Consult :-' +
     appointmentInput.appointmentType;
-  const toEmailId =
+  /*const toEmailId =
     process.env.NODE_ENV == 'dev' ||
     process.env.NODE_ENV == 'development' ||
     process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_EMAILID
-      : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;
-
+      : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;*/
+  const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
     process.env.NODE_ENV == 'development' ||

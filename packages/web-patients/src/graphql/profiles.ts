@@ -53,6 +53,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const CANCEL_APPOINTMENT = gql`
+  mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
+    cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
+      status
+    }
+  }
+`;
+
 export const GET_PATIENT_ADDRESS_LIST = gql`
   query GetPatientAddressList($patientId: String) {
     getPatientAddressList(patientId: $patientId) {

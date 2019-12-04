@@ -25,10 +25,23 @@ export const makeAppointmentPaymentTypeDefs = gql`
     responseCode: String!
     responseMessage: String!
     bankTxnId: String
+    orderId: String
+  }
+
+  type AppointmentPayment {
+    id: ID!
+    amountPaid: Float!
+    paymentRefId: String
+    paymentStatus: String!
+    paymentDateTime: DateTime!
+    responseCode: String!
+    responseMessage: String!
+    bankTxnId: String!
+    orderId: String!
   }
 
   type AppointmentPaymentResult {
-    appointment: AppointmentBooking
+    appointment: AppointmentPayment
   }
 
   extend type Mutation {
@@ -37,7 +50,19 @@ export const makeAppointmentPaymentTypeDefs = gql`
 `;
 
 type AppointmentPaymentResult = {
-  appointment: Appointment;
+  appointment: AppointmentPayment;
+};
+
+type AppointmentPayment = {
+  id: string;
+  amountPaid: number;
+  paymentRefId: string;
+  paymentStatus: string;
+  paymentDateTime: Date;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
 };
 
 type AppointmentPaymentInput = {
@@ -49,6 +74,7 @@ type AppointmentPaymentInput = {
   responseCode: string;
   responseMessage: string;
   bankTxnId: string;
+  orderId: string;
 };
 
 type AppointmentInputArgs = { paymentInput: AppointmentPaymentInput };
@@ -72,12 +98,12 @@ const makeAppointmentPayment: Resolver<
   const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
   apptPaymentAttrs.appointment = processingAppointment;
   apptPaymentAttrs.paymentType = APPOINTMENT_PAYMENT_TYPE.ONLINE;
-  await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
+  const paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
 
   //update appointment status to PENDING
   await apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.PENDING);
 
-  return { appointment: processingAppointment };
+  return { appointment: paymentInfo };
 };
 
 export const makeAppointmentPaymentResolvers = {

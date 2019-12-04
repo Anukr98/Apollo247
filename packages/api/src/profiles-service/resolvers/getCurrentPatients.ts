@@ -37,17 +37,42 @@ export const getCurrentPatientsTypeDefs = gql`
 
   type Patient @key(fields: "id") {
     addressList: [PatientAddress!]
-    id: ID!
-    firstName: String
-    lastName: String
-    mobileNumber: String!
-    gender: Gender
-    uhid: String
-    emailAddress: String
-    dateOfBirth: Date
-    relation: Relation
-    photoUrl: String
     allergies: String
+    dateOfBirth: Date
+    emailAddress: String
+    familyHistory: [FamilyHistory]
+    firstName: String
+    gender: Gender
+    id: ID!
+    lastName: String
+    lifeStyle: [LifeStyle]
+    mobileNumber: String!
+    patientMedicalHistory: MedicalHistory
+    photoUrl: String
+    athsToken: String
+    relation: Relation
+    uhid: String
+  }
+
+  type LifeStyle {
+    description: String
+  }
+
+  type FamilyHistory {
+    description: String
+    relation: String
+  }
+
+  type MedicalHistory {
+    bp: String
+    dietAllergies: String
+    drugAllergies: String
+    height: String
+    menstrualHistory: String
+    pastMedicalHistory: String
+    pastSurgicalHistory: String
+    temperature: String
+    weight: String
   }
 
   type GetCurrentPatientsResult {
@@ -82,7 +107,6 @@ const getCurrentPatients: Resolver<
     headers: { Host: prismHost },
     timeOut: ApiConstants.PRISM_TIMEOUT,
   };
-
   const prismAuthToken = await fetch(
     `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`,
     prismHeaders
@@ -95,7 +119,9 @@ const getCurrentPatients: Resolver<
       isPrismWorking = 0;
     });
   let uhids;
+  console.log(prismAuthToken, 'prismAuthToken');
   if (prismAuthToken != null) {
+    console.log('url2', prismBaseUrl, '/getusers?authToken=', prismAuthToken.response);
     uhids = await fetch(
       `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`,
       prismHeaders
@@ -109,6 +135,7 @@ const getCurrentPatients: Resolver<
       });
   }
   console.log(uhids, 'uhid', isPrismWorking);
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
@@ -139,27 +166,35 @@ const getCurrentPatients: Resolver<
   } else {
     isPrismWorking = 0;
   }
+  const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
   if (isPrismWorking == 0) {
-    patientPromises = [
-      findOrCreatePatient(
-        { uhid: '', mobileNumber },
-        {
-          firebaseUid,
-          firstName: '',
-          lastName: '',
-          gender: undefined,
-          mobileNumber,
-          uhid: '',
-        }
-      ),
-    ];
+    if (checkPatients == null || checkPatients.length == 0) {
+      patientPromises = [
+        findOrCreatePatient(
+          { uhid: '', mobileNumber },
+          {
+            firebaseUid,
+            firstName: '',
+            lastName: '',
+            gender: undefined,
+            mobileNumber,
+            uhid: '',
+          }
+        ),
+      ];
+    }
   }
 
   const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
   });
   console.log(updatePatients);
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  /*
+  checkPatients.map(async (patient) => {
+    if ((patient.uhid == '' || patient.uhid == null) && patient.firstName.trim() != '') {
+      await patientRepo.createNewUhid(patient.id);
+    }
+  });*/
   const patients = await patientRepo.findByMobileNumber(mobileNumber);
   return { patients };
 };

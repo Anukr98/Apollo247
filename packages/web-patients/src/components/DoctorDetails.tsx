@@ -25,6 +25,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
+import { LocationProvider } from 'components/LocationProvider';
 
 type Params = { id: string };
 
@@ -120,11 +121,12 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
     },
     modalBox: {
-      maxWidth: 320,
+      maxWidth: 676,
       margin: 'auto',
       marginTop: 88,
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: theme.palette.common.white,
       position: 'relative',
+      outline: 'none',
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
@@ -138,9 +140,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(2,71,91,0.5)',
       padding: '14px 10px',
       textTransform: 'none',
-      [theme.breakpoints.down('xs')]: {
-        width: '50%',
-      },
+      minWidth: '50%',
     },
     tabSelected: {
       color: theme.palette.secondary.dark,
@@ -352,7 +352,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               )}
 
-              {availableForPhysicalConsultation && !isPayrollDoctor && (
+              {availableForPhysicalConsultation && (
                 <Tab
                   classes={{
                     root: classes.tabRoot,
@@ -372,9 +372,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </TabContainer>
             )}
 
-            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
+            {tabValue === 1 && availableForPhysicalConsultation && (
               <TabContainer>
-                <VisitClinic doctorDetails={doctorDetails} />
+                <LocationProvider>
+                  <VisitClinic doctorDetails={doctorDetails} />
+                </LocationProvider>
               </TabContainer>
             )}
           </Paper>

@@ -11,11 +11,13 @@ import {
   PrismGetUsersResponse,
   PrismSignUpUserData,
 } from 'types/prism';
+
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
+import { AthsTokenResponse } from 'types/uhidCreateTypes';
 
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
@@ -41,6 +43,15 @@ export class PatientRepository extends Repository<Patient> {
   findByMobileNumber(mobileNumber: string) {
     return this.find({
       where: { mobileNumber, isActive: true },
+      relations: [
+        'lifeStyle',
+        'healthVault',
+        'familyHistory',
+        'patientAddress',
+        'patientDeviceTokens',
+        'patientNotificationSettings',
+        'patientMedicalHistory',
+      ],
     });
   }
 
@@ -202,10 +213,50 @@ export class PatientRepository extends Repository<Patient> {
         return res.json();
       })
       .catch((error) => {
-        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
 
-    return labResults;
+    return labResults.errorCode == '0' ? labResults.response : [];
+  }
+
+  async getPatientHealthChecks(uhid: string, authToken: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const healthChecks = await fetch(
+      `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`,
+      prismHeaders
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
+      });
+
+    return healthChecks.errorCode == '0' ? healthChecks.response : [];
+  }
+
+  async getPatientHospitalizations(uhid: string, authToken: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const hospitalizations = await fetch(
+      `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`,
+      prismHeaders
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
+      });
+
+    return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
   }
 
   saveNewProfile(patientAttrs: Partial<Patient>) {
@@ -224,6 +275,10 @@ export class PatientRepository extends Repository<Patient> {
 
   updateUhid(id: string, uhid: string) {
     return this.update(id, { uhid });
+  }
+
+  updateToken(id: string, athsToken: string) {
+    return this.update(id, { athsToken });
   }
 
   deleteProfile(id: string) {
@@ -310,5 +365,42 @@ export class PatientRepository extends Repository<Patient> {
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
     console.log(uhidResp, 'uhid resp');
     this.updateUhid(id, uhidResp.result.toString());
+  }
+
+  async createAthsToken(id: string) {
+    const patientDetails = await this.getPatientDetails(id);
+    if (patientDetails == null)
+      throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
+    const athsTokenInput = {
+      AdminId: process.env.ATHS_TOKEN_ADMIN ? process.env.ATHS_TOKEN_ADMIN.toString() : '',
+      AdminPassword: process.env.ATHS_TOKEN_PWD ? process.env.ATHS_TOKEN_PWD.toString() : '',
+      FirstName: patientDetails.firstName,
+      LastName: patientDetails.lastName,
+      countryCode: ApiConstants.COUNTRY_CODE.toString(),
+      PhoneNumber: patientDetails.mobileNumber,
+      DOB: format(patientDetails.dateOfBirth, 'dd/MM/yyyy'),
+      Gender: '1',
+      PartnerUserId: '1012',
+      SourceApp: process.env.ATHS_SOURCE_APP ? process.env.ATHS_SOURCE_APP.toString() : '',
+    };
+    const athsTokenUrl = process.env.ATHS_TOKEN_CREATE ? process.env.ATHS_TOKEN_CREATE : '';
+    const tokenResp = await fetch(athsTokenUrl, {
+      method: 'POST',
+      body: JSON.stringify(athsTokenInput),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    //console.log(tokenResp, 'token resp');
+    const textRes = await tokenResp.text();
+    const tokenResult: AthsTokenResponse = JSON.parse(textRes);
+    if (tokenResult.Result && tokenResult.Result != '') {
+      this.updateToken(id, JSON.parse(tokenResult.Result).Token);
+    }
+    console.log(
+      tokenResult,
+      'respp',
+      tokenResult.Result,
+      JSON.parse(tokenResult.Result),
+      JSON.parse(tokenResult.Result).Token
+    );
   }
 }

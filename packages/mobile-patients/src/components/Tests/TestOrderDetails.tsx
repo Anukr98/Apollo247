@@ -98,9 +98,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
-
+  const setOrders = props.navigation.getParam('setOrders');
   const client = useApolloClient();
-
+  const refetchOrders = props.navigation.getParam('refetch');
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
@@ -140,6 +140,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         })
       );
     } else {
+      refetchOrders().then((data: any) => {
+        const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrders(_orders);
+      });
       props.navigation.goBack();
     }
     return false;
@@ -471,6 +475,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             .catch(() => {
               setInitialSate();
             });
+          refetchOrders().then((data: any) => {
+            const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+            setOrders(_orders);
+          });
         } else {
           Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
         }

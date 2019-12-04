@@ -145,7 +145,7 @@ const replaceStringWithChar = (str: string) => {
   return ss.toLowerCase();
 };
 
-const MedicalTest: RecordTypeType[] = [
+export const MedicalTest: RecordTypeType[] = [
   { value: 'gm', key: MedicalTestUnit.GM },
   {
     value: 'gm/dl',
@@ -241,16 +241,46 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       )
     );
   };
+
+  const isRecordParameterFilled = () => {
+    const medicalRecordsVaild = medicalRecordParameters
+      .map((item) => {
+        return item !== MedicalRecordInitialValues
+          ? {
+              ...item,
+              result: parseFloat(((item && item.result) || 0).toString()),
+              maximum: parseFloat(((item && item.maximum) || 0).toString()),
+              minimum: parseFloat(((item && item.minimum) || 0).toString()),
+            }
+          : undefined;
+      })
+      .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
+    console.log(medicalRecordsVaild);
+
+    if (medicalRecordsVaild.length > 0) {
+      setmedicalRecordParameters(medicalRecordsVaild);
+      return medicalRecordsVaild;
+    } else {
+      return [];
+    }
+  };
+
   const isValid = () => {
     const valid = medicalRecordParameters.map((item) => {
-      return (
-        (item.maximum || item.minimum || item.result || item.parameterName) &&
-        item.maximum! > item.minimum! &&
-        item.result! <= item.maximum! &&
-        item.result! >= item.minimum!
-      );
+      return {
+        maxmin: item.maximum && item.minimum && item.maximum! > item.minimum!,
+        changed:
+          item.result !== MedicalRecordInitialValues.result &&
+          item.unit !== MedicalRecordInitialValues.unit &&
+          item.parameterName !== MedicalRecordInitialValues.parameterName
+            ? true
+            : false,
+        notinitial: item === MedicalRecordInitialValues,
+      };
     });
-    return valid.find((i) => i === false) !== undefined;
+    return (
+      valid.find((i) => i.maxmin === false || (i.changed === false && !i.notinitial)) !== undefined
+    );
   };
 
   const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
@@ -263,10 +293,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const formatNumber = (value: string) => {
-    let number = value.indexOf('.') === value.length - 1 ? value : parseFloat(value);
+    let number =
+      value.indexOf('.') === value.length - 1 ||
+      value.indexOf('0', value.length - 1) === value.length - 1 ||
+      value.indexOf('-') === value.length - 1
+        ? value
+        : parseFloat(value);
     return number;
   };
-
   const onSavePress = () => {
     setshowSpinner(true);
     console.log('images', Images);
@@ -310,7 +344,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   sourceName: '',
                   observations: observations,
                   additionalNotes: additionalNotes,
-                  medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
+                  medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
                   documentURLs: uploadUrlscheck!.join(','),
                   prismFileIds: filtered.join(','),
                 };
@@ -343,6 +377,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               })
               .catch((e: string) => {
+                setImageError(true);
                 console.log('Error occured', e);
               })
               .finally(() => {
@@ -354,6 +389,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
         })
         .catch((e) => {
+          setImageError(true);
           setshowSpinner(false);
           console.log({ e });
         });
@@ -367,7 +403,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         sourceName: '',
         observations: observations,
         additionalNotes: additionalNotes,
-        medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
+        medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
         documentURLs: '',
         prismFileIds: '',
       };

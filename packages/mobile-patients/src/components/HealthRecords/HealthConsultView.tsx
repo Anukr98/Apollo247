@@ -400,6 +400,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                       mou: medicineDetails.mou,
                                       name: medicineDetails!.name,
                                       price: medicineDetails!.price,
+                                      specialPrice: medicineDetails.special_price
+                                        ? typeof medicineDetails.special_price == 'string'
+                                          ? parseInt(medicineDetails.special_price)
+                                          : medicineDetails.special_price
+                                        : undefined,
                                       quantity: qty,
                                       prescriptionRequired:
                                         medicineDetails.is_prescription_required == '1',
@@ -519,13 +524,16 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             'HEALTH_CONSULT_VIEW',
                             'Navigate to Medicine consult details'
                           ),
-                            props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
-                              data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
-                              medicineDate: moment(props.PastData!.quoteDateTime).format(
-                                'DD MMM YYYY'
-                              ),
-                              PrescriptionUrl: props.PastData!.prescriptionImageUrl,
-                            });
+                            console.log('MedicineConsultDetails', props.PastData);
+
+                          props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
+                            data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
+                            medicineDate: moment(props.PastData!.quoteDateTime).format(
+                              'DD MMM YYYY'
+                            ),
+                            PrescriptionUrl: props.PastData!.prescriptionImageUrl,
+                            prismPrescriptionFileId: props.PastData!.prismPrescriptionFileId,
+                          });
                         }}
                       >
                         <View style={{ flexDirection: 'row' }}>

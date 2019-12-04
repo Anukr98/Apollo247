@@ -57,7 +57,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       patientId,
       doctorId,
       cancelledById: patientId,
-      bookingDate: Between(newStartDate, newEndDate),
+      cancelledDate: Between(newStartDate, newEndDate),
     };
     return this.count({ where: whereClause });
   }
@@ -425,9 +425,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       nextDate = addDays(appointmentDate, 1);
       weekDay = format(nextDate, 'EEEE').toUpperCase();
     }
-    //console.log(weekDay, 'weekday');
-    //console.log('entered here', selDate, weekDay);
-    let consultFlag = false;
+    enum CONSULTFLAG {
+      OUTOFCONSULTHOURS = 'OUTOFCONSULTHOURS',
+      OUTOFBUFFERTIME = 'OUTOFBUFFERTIME',
+      INCONSULTHOURS = 'INCONSULTHOURS',
+    }
+    let consultFlag;
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     let docConsultHrs: ConsultHours[];
     if (appointmentType == 'ONLINE') {
@@ -435,33 +438,34 @@ export class AppointmentRepository extends Repository<Appointment> {
     } else {
       docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
     }
-
     if (docConsultHrs && docConsultHrs.length > 0) {
       docConsultHrs.map((docConsultHr) => {
-        if (consultFlag == false) {
-          //get the slots of the day first
-          let st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
-          let consultStartTime = new Date(st);
-          const consultEndTime = new Date(ed);
-          //console.log(consultStartTime, consultEndTime);
-          let previousDate: Date = appointmentDate;
-          if (consultEndTime < consultStartTime) {
-            previousDate = addDays(previousDate, -1);
-            st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-            consultStartTime = new Date(st);
-          }
-          //console.log(consultStartTime, 'start time');
-          //console.log(consultEndTime, 'end time');
-          if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
-            consultFlag = true;
-          } else {
-            consultFlag = false;
-          }
+        // if (consultFlag == CONSULTFLAG.OUTOFCONSULTHOURS) {
+        //get the slots of the day first
+        let st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+        const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+        let consultStartTime = new Date(st);
+        const consultEndTime = new Date(ed);
+        const appointmentDateInfo = new Date(appointmentDate);
+        const currentDate = new Date();
+        let previousDate: Date = appointmentDate;
+        const currentBuffer = (appointmentDateInfo.getTime() - currentDate.getTime()) / (1000 * 60);
+        if (consultEndTime < consultStartTime) {
+          previousDate = addDays(previousDate, -1);
+          st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+          consultStartTime = new Date(st);
         }
+        if (currentBuffer < docConsultHr.consultBuffer) {
+          consultFlag = CONSULTFLAG.OUTOFBUFFERTIME;
+        } else if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
+          consultFlag = CONSULTFLAG.INCONSULTHOURS;
+        } else {
+          consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
+        }
+        // }
       });
     } else {
-      consultFlag = false;
+      consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
     }
     return consultFlag;
   }
@@ -487,6 +491,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const inputStartDate = format(addDays(selectedDate, -1), 'yyyy-MM-dd');
     const currentStartDate = new Date(inputStartDate + 'T18:30');
     const currentEndDate = new Date(format(selectedDate, 'yyyy-MM-dd').toString() + 'T18:29');
+    let consultBuffer = 0;
     const doctorAppointments = await this.find({
       where: {
         doctorId,
@@ -511,6 +516,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
         const duration = Math.floor(60 / docConsultHr.consultDuration);
         console.log(duration, 'doctor duration');
+        consultBuffer = docConsultHr.consultBuffer;
+
         let slotsCount =
           (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
         if (slotsCount - Math.floor(slotsCount) == 0.5) {
@@ -576,7 +583,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       let foundFlag = 0;
       availableSlots.map((slot) => {
         const slotDate = new Date(slot);
-        if (slotDate >= new Date() && foundFlag == 0) {
+
+        const timeWithBuffer = addMinutes(new Date(), consultBuffer);
+
+        if (slotDate >= timeWithBuffer && foundFlag == 0) {
           finalSlot = slot;
           foundFlag = 1;
         }
@@ -692,6 +702,12 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
+    return this.update(id, {
+      isJdQuestionsComplete,
+    });
+  }
+
   rescheduleAppointmentByDoctor(
     id: string,
     appointmentDateTime: Date,
@@ -717,6 +733,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         doctorCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -726,6 +743,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy,
         cancelledById,
         patientCancelReason: cancelReason,
+        cancelledDate: new Date(),
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -796,7 +814,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
     return this.find({
-      where: [{ bookingDate: Between(newStartDate, newEndDate), appointmentState: 'NEW' }],
+      where: [
+        {
+          bookingDate: Between(newStartDate, newEndDate),
+          appointmentState: 'NEW',
+          status: Not(STATUS.CANCELLED),
+        },
+      ],
       order: { bookingDate: 'DESC' },
     });
   }

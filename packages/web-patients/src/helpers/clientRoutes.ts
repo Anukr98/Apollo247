@@ -8,8 +8,9 @@ export const clientRoutes = {
   welcome: () => '/',
   doctorDetails: (doctorId: string) => `/doctor-details/${doctorId}`,
   doctorsLanding: () => '/doctors',
-  consultRoom: () => '/consult-room',
+  appointments: () => '/appointments',
   testsAndMedicine: () => '/tests-medicines',
+  medicines: () => '/medicines',
   healthRecords: () => '/health-records',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
@@ -19,6 +20,9 @@ export const clientRoutes = {
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
   trackOrders: () => '/track-orders',
+  medicineAllBrands: () => '/view-all-brands',
+  medicineSearchByBrand: () => '/search-by-brand',
+  searchByMedicine: () => '/search-medicine',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
