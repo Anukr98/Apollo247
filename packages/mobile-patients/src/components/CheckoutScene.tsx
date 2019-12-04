@@ -204,7 +204,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     });
 
   const placeOrder = (orderId: string, orderAutoId: number) => {
-    savePayment({
+    const paymentInfo: SaveMedicineOrderPaymentVariables = {
       medicinePaymentInput: {
         orderId: orderId,
         orderAutoId: orderAutoId,
@@ -214,7 +214,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         responseCode: '',
         responseMessage: '',
       },
-    })
+    };
+    console.log(JSON.stringify(paymentInfo));
+
+    savePayment(paymentInfo)
       .then(({ data }) => {
         const { errorCode, errorMessage } = (g(data, 'SaveMedicineOrder') || {})!;
         console.log({ errorCode, errorMessage });
