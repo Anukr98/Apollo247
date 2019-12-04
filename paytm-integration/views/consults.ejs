@@ -1,0 +1,26 @@
+<html>
+  <head></head>
+  <body onload="document.forms[0].submit()">
+    <form
+      name="PostForm"
+      method="POST"
+      action="https://staging.askapollo.com/Online-Consultation/common/OnlinePhysicalAppointmentPayment.aspx"
+    >
+      <input name="SourceApp" type="text" value="7729FD68-C552-4C90-B31E-98AA6C84FEBF~WEB" />
+      <input name="PatientId" type="text" value="<%= patientId %>" />
+      <input name="MarchantId" type="text" value="<%= merchantId %>" />
+      <input name="InterBookAppointmentId" type="text" value="0" />
+      <input name="CouponId" type="text" value="0" />
+      <input name="GatewayName" type="text" value="Paytm" />
+      <input name="TransactionAmount" type="text" value="1" />
+      <input name="ReturnURL" type="text" value="<%= baseUrl %>/consulttransaction" />
+      <input name="CurrencyFormat" type="text" value="INR" />
+      <input name="AuthenticationToken" type="text" value="<%= athsToken %>" />
+      <input name="PaymentFor" type="text" value="PhysicalAppointment" />
+      <input name="Amount" type="text" value="<%= price %>" />
+      <input name="EmailId" type="text" value="" />
+      <input name="PhoneNo" type="text" value="<%= mobileNumber %>" />
+      <input name="PatientName" type="text" value="<%= patientName %>" />
+    </form>
+  </body>
+</html>

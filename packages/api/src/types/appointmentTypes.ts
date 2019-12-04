@@ -55,3 +55,9 @@ export interface AppointmentResp {
 export interface SampleMessage {
   message: string;
 }
+export interface SymptomsList {
+  symptom: string;
+  since: null;
+  howOften: null;
+  severity: null;
+}

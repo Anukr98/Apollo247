@@ -223,7 +223,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'followup',
-      value: 'Follow up',
+      value: 'Follow up (Free)',
       state: followUpPanel,
       component: <FollowUp startAppointment={props.startAppointment} />,
     },
@@ -293,7 +293,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       <Divider className={classes.divider} />
       <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Personal Notes
+          Personal Notes (What you enter here won't be shown to the patient..)
         </Typography>
         <Typography component="div" className={classes.textFieldWrapper}>
           <AphTextField

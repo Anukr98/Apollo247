@@ -50,6 +50,10 @@ export const LocationProvider: React.FC = (props) => {
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_LOCATION_SERVICE_KEY}`
             )
             .then((res) => {
+              localStorage.setItem(
+                'currentAddress',
+                res.data.results[0].address_components[2].short_name
+              );
               setCurrentLocation(res.data.results[0].address_components[2].short_name);
             });
         },

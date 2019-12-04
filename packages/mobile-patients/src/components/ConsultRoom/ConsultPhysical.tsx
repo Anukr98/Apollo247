@@ -41,7 +41,10 @@ import Permissions from 'react-native-permissions';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import moment from 'moment';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { CommonLogEvent, CommonScreenLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
@@ -109,6 +112,9 @@ export interface ConsultPhysicalProps {
   setshowSpinner: (arg0: boolean) => void;
   setshowOfflinePopup: (arg0: boolean) => void;
   scrollToSlots: (top?: number) => void;
+  setselectedClinic: (
+    arg0: getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null
+  ) => void;
 }
 export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const timings = [
@@ -467,6 +473,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
                 onPress={() => {
                   setselectedClinic(item);
                   setShowPopup(false);
+                  props.setselectedClinic(item);
                 }}
               >
                 {`${item.facility.streetLine1}, ${

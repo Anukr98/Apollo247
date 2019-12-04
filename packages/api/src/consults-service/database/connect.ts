@@ -26,6 +26,9 @@ import {
   AdminUsers,
   Secretary,
   DoctorSecretary,
+  DoctorsFavouriteMedicine,
+  DoctorsFavouriteAdvice,
+  DoctorsFavouriteTests,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -53,6 +56,7 @@ import {
   DiagnosticHotSellers,
   DiagnosticOrgans,
   DiagnosticPincodeHubs,
+  PatientFeedback,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -96,6 +100,9 @@ export const connect = async () => {
         AdminUsers,
         Secretary,
         DoctorSecretary,
+        DoctorsFavouriteMedicine,
+        DoctorsFavouriteAdvice,
+        DoctorsFavouriteTests,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -131,6 +138,7 @@ export const connect = async () => {
         DiagnosticHotSellers,
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
+        PatientFeedback,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

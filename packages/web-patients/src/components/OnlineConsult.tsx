@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useRef, useEffect } from 'react';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
@@ -16,12 +16,6 @@ import { Mutation } from 'react-apollo';
 import { BookAppointment, BookAppointmentVariables } from 'graphql/types/BookAppointment';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import { format } from 'date-fns';
@@ -39,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
     },
     consultGroup: {
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.text.primary,
       padding: 16,
       marginTop: 10,
@@ -51,6 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 1.43,
       letterSpacing: 0.35,
       color: theme.palette.secondary.light,
+      borderRadius: 10,
       '& p': {
         marginTop: 0,
       },
@@ -86,11 +81,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomActions: {
       padding: '10px 15px 15px 15px',
-      boxShadow: '0 -5px 20px 0 #f7f8f5',
       position: 'relative',
+      textAlign: 'center',
       '& button': {
         borderRadius: 10,
         textTransform: 'none',
+        minWidth: 288,
       },
     },
     noSlotsAvailable: {
@@ -98,27 +94,34 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
       fontWeight: 500,
       lineHeight: 1.71,
-      paddingTop: 15,
-      paddingBottom: 5,
+      padding: 6,
     },
     customScrollBar: {
       paddingTop: 10,
-      paddingBottom: 30,
+      paddingLeft: 20,
+      paddingRight: 20,
     },
     timeSlots: {
       paddingTop: 0,
     },
     scheduleCalendar: {
       display: 'none',
+      padding: 10,
+      minHeight: 278,
+      marginBottom: 0,
     },
     scheduleTimeSlots: {
       display: 'none',
+      padding: 10,
+      minHeight: 278,
+      marginBottom: 0,
     },
     showCalendar: {
       display: 'inline-block',
     },
     showTimeSlot: {
       display: 'inline-block',
+      paddingTop: 0,
     },
     circlularProgress: {
       display: 'flex',
@@ -131,12 +134,25 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#0087ba',
     },
-    confirmationColor: {
-      color: '#fcb716',
-    },
     disabledButton: {
       color: '#00b38e !important',
       opacity: 0.5,
+    },
+    dialogBody: {
+      padding: 20,
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      '& span': {
+        fontWeight: 'bold',
+      },
+    },
+    dialogActions: {
+      padding: 16,
+      textAlign: 'center',
+      '& button': {
+        minWidth: 288,
+      },
     },
   };
 });
@@ -347,13 +363,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
             {differenceInMinutes > 0 ? (
               <p>
-                Dr. {doctorName} is available in {differenceInMinutes} mins!
-                <br /> Would you like to consult now or schedule for later?
+                Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
+                consult now or schedule for later?
               </p>
             ) : null}
             <div className={classes.actions}>
@@ -388,42 +404,50 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </AphButton>
             </div>
           </div>
-          <div
-            className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
-              showCalendar || scheduleLater || !consultNowAvailable ? classes.showCalendar : ''
-            }`}
-            ref={calendarRef}
-          >
-            <AphCalendar
-              getDate={(dateSelected: string) => setDateSelected(dateSelected)}
-              selectedDate={new Date(apiDateFormat)}
-            />
-          </div>
-          {morningSlots.length > 0 ||
-          afternoonSlots.length > 0 ||
-          eveningSlots.length > 0 ||
-          lateNightSlots.length > 0 ? (
-            <div
-              className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-                showCalendar || scheduleLater || !consultNowAvailable ? classes.showTimeSlot : ''
-              }`}
-            >
-              <DayTimeSlots
-                morningSlots={morningSlots}
-                afternoonSlots={afternoonSlots}
-                eveningSlots={eveningSlots}
-                latenightSlots={lateNightSlots}
-                doctorName={doctorName}
-                timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
-              />
-            </div>
-          ) : (
-            <div className={classes.consultGroup}>
-              <div className={classes.noSlotsAvailable}>
-                Oops! No slots available with Dr. {doctorName} :(
+          <Grid container spacing={2}>
+            <Grid item sm={6}>
+              <div
+                className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
+                  showCalendar || scheduleLater || !consultNowAvailable ? classes.showCalendar : ''
+                }`}
+                ref={calendarRef}
+              >
+                <AphCalendar
+                  getDate={(dateSelected: string) => setDateSelected(dateSelected)}
+                  selectedDate={new Date(apiDateFormat)}
+                />
               </div>
-            </div>
-          )}
+            </Grid>
+            <Grid item sm={6}>
+              {morningSlots.length > 0 ||
+              afternoonSlots.length > 0 ||
+              eveningSlots.length > 0 ||
+              lateNightSlots.length > 0 ? (
+                <div
+                  className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                    showCalendar || scheduleLater || !consultNowAvailable
+                      ? classes.showTimeSlot
+                      : ''
+                  }`}
+                >
+                  <DayTimeSlots
+                    morningSlots={morningSlots}
+                    afternoonSlots={afternoonSlots}
+                    eveningSlots={eveningSlots}
+                    latenightSlots={lateNightSlots}
+                    doctorName={doctorName}
+                    timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                  />
+                </div>
+              ) : (
+                <div className={classes.consultGroup}>
+                  <div className={classes.noSlotsAvailable}>
+                    Oops! No slots available with Dr. {doctorName} :(
+                  </div>
+                </div>
+              )}
+            </Grid>
+          </Grid>
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
@@ -460,26 +484,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         >
           {(mutate) => (
             <AphButton
-              fullWidth
               color="primary"
               disabled={disableSubmit || mutationLoading || isDialogOpen}
               onClick={() => {
                 setMutationLoading(true);
                 mutate();
-                // console.log(
-                //   new Date(
-                //     new Date(
-                //       `${apiDateFormat} ${
-                //         timeSelected !== ''
-                //           ? timeSelected.padStart(5, '0')
-                //           : slotAvailableNext.padStart(5, '0')
-                //       }:00`
-                //     )
-                //   ).toISOString(),
-                //   timeSelected,
-                //   slotAvailableNext
-                // );
-                // console.log(slotAvailableNext, '---------------------');
               }}
               className={
                 disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
@@ -494,32 +503,31 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           )}
         </Mutation>
       </div>
-      <Dialog
+      <AphDialog
         open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
         disableBackdropClick
         disableEscapeKeyDown
+        onClose={() => setIsDialogOpen(false)}
+        maxWidth="sm"
       >
-        <DialogTitle className={classes.confirmationColor}>Appointment Confirmation</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Your appointment has been successfully booked with Dr. {doctorName}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
+        <AphDialogTitle>Appointment Confirmation</AphDialogTitle>
+        <div className={classes.dialogBody}>
+          Your appointment has been successfully booked with <span>Dr. {doctorName}</span>
+        </div>
+        <div className={classes.dialogActions}>
+          <AphButton
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
               setIsPopoverOpen(false);
-              window.location.href = clientRoutes.consultRoom();
+              window.location.href = clientRoutes.appointments();
             }}
             autoFocus
           >
             Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </AphButton>
+        </div>
+      </AphDialog>
     </div>
   );
 };

@@ -277,6 +277,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         displayId
         appointmentState
         isConsultStarted
+        isJdQuestionsComplete
         doctorInfo {
           id
           salutation
@@ -339,6 +340,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
             streetLine2
             streetLine3
             city
+            facilityType
           }
         }
       }
@@ -878,8 +880,8 @@ export const SAVE_DEVICE_TOKEN = gql`
 // `;
 
 export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
-  query getPatientPastMedicineSearches($patientId: ID!) {
-    getPatientPastMedicineSearches(patientId: $patientId) {
+  query getPatientPastMedicineSearches($patientId: ID!, $type: SEARCH_TYPE) {
+    getPatientPastMedicineSearches(patientId: $patientId, type: $type) {
       searchType
       typeId
       name
@@ -1306,6 +1308,49 @@ export const GET_MEDICAL_RECORD = gql`
   }
 `;
 
+export const GET_MEDICAL_PRISM_RECORD = gql`
+  query getPatientPrismMedicalRecords($patientId: ID!) {
+    getPatientPrismMedicalRecords(patientId: $patientId) {
+      labTests {
+        id
+        labTestName
+        labTestSource
+        labTestDate
+        labTestReferredBy
+        additionalNotes
+        testResultPrismFileIds
+        labTestResultParameters {
+          parameterName
+          unit
+          result
+          range
+        }
+        departmentName
+        signingDocName
+      }
+      healthChecks {
+        id
+        healthCheckName
+        healthCheckDate
+        healthCheckPrismFileIds
+        healthCheckSummary
+        source
+        appointmentDate
+        followupDate
+      }
+      hospitalizations {
+        id
+        diagnosisNotes
+        dateOfDischarge
+        dateOfHospitalization
+        dateOfNextVisit
+        hospitalizationPrismFileIds
+        source
+      }
+    }
+  }
+`;
+
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
@@ -1597,7 +1642,7 @@ export const DELETE_DEVICE_TOKEN = gql`
 `;
 
 export const SEARCH_DIAGNOSTICS = gql`
-  query searchDiagnostics($city: String, $patientId: String, $searchText: String) {
+  query searchDiagnostics($city: String, $patientId: String, $searchText: String!) {
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
       diagnostics {
         id
@@ -1674,6 +1719,30 @@ export const UPLOAD_CHAT_FILE_PRISM = gql`
     ) {
       status
       fileId
+    }
+  }
+`;
+
+export const ADD_PATIENT_FEEDBACK = gql`
+  mutation addPatientFeedback($patientFeedbackInput: PatientFeedbackInput) {
+    addPatientFeedback(patientFeedbackInput: $patientFeedbackInput) {
+      status
+    }
+  }
+`;
+
+export const AUTOMATED_QUESTIONS = gql`
+  mutation addToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
+    addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
+      id
+      doctorId
+      totalJuniorDoctorsOnline
+      juniorDoctorsList {
+        juniorDoctorId
+        doctorName
+        queueCount
+      }
+      totalJuniorDoctors
     }
   }
 `;

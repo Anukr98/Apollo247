@@ -19,6 +19,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Remove, AddIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PATIENT_ADDRESS_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   addressContainer: {
@@ -48,6 +49,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   const { setAddresses, addresses } = useShoppingCart();
+  const { setAddresses: setAdd } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -75,6 +77,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       setaddressList(data.getPatientAddressList.addressList);
       setshowSpinner(false);
       setAddresses && setAddresses(data.getPatientAddressList.addressList);
+      setAdd && setAdd(data.getPatientAddressList.addressList);
     }
   }
 
@@ -97,51 +100,51 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     return (
       addresses &&
       addresses.map((address, i) => (
-        <View style={styles.cardStyle} key={i}>
-          <TouchableOpacity onPress={() => updateDataAddres('Update', address)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => updateDataAddres('Update', address)}>
+          <View style={styles.cardStyle} key={i}>
             <Text style={styles.textStyle}>{`${address.addressLine1}${
               address.addressLine2 ? ' ' + address.addressLine2 : ''
             } \n${address.landmark ? `${address.landmark}\n` : ''}${
               address.city ? `${address.city}, ` : ''
             }${address.state ? `${address.state}- ` : ''}${address.zipcode}`}</Text>
-          </TouchableOpacity>
-          <CapsuleView
-            title={
-              address.addressType === PATIENT_ADDRESS_TYPE.OTHER
-                ? address.otherAddressType!
-                : address.addressType!
-            }
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              backgroundColor: '#0087ba',
-              opacity: 0.4,
-              width: 116,
-              height: 24,
-            }}
-            titleTextStyle={{
-              ...theme.fonts.IBMPlexSansBold(9),
-              color: '#02475b',
-              paddingHorizontal: 10,
-              letterSpacing: 0.5,
-              opacity: 1,
-            }}
-            isActive={false}
-          ></CapsuleView>
-          {/* <View style={{ padding: 3 }}>
+            <CapsuleView
+              title={
+                address.addressType === PATIENT_ADDRESS_TYPE.OTHER
+                  ? address.otherAddressType!
+                  : address.addressType!
+              }
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                backgroundColor: '#0087ba',
+                opacity: 0.4,
+                width: 116,
+                height: 24,
+              }}
+              titleTextStyle={{
+                ...theme.fonts.IBMPlexSansBold(9),
+                color: '#02475b',
+                paddingHorizontal: 10,
+                letterSpacing: 0.5,
+                opacity: 1,
+              }}
+              isActive={false}
+            ></CapsuleView>
+            {/* <View style={{ padding: 3 }}>
             <TouchableOpacity onPress={() => updateDataAddres('Update', address)}>
               <View style={{ alignItems: 'flex-end' }}>
                 <AddIcon />
               </View>
             </TouchableOpacity> */}
-          {/* <TouchableOpacity onPress={() => deleteDataAddres(address)}>
+            {/* <TouchableOpacity onPress={() => deleteDataAddres(address)}>
               <View style={{ alignItems: 'flex-end' }}>
                 <Remove />
               </View>
             </TouchableOpacity> */}
-          {/* </View> */}
-        </View>
+            {/* </View> */}
+          </View>
+        </TouchableOpacity>
       ))
     );
   };

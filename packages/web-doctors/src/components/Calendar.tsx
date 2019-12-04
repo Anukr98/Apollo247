@@ -312,6 +312,7 @@ export const Calendar: React.FC = () => {
     pollInterval: pageRefreshTimeInSeconds * 1000,
     notifyOnNetworkStatusChange: true,
   });
+  // console.log('currentPatient', currentPatient!.displayName);
 
   return (
     <div className={classes.welcome}>
@@ -322,7 +323,7 @@ export const Calendar: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.tabHeading}>
             <Typography variant="h1">{`hello  ${(
-              (currentPatient && currentPatient!.lastName) ||
+              (currentPatient && currentPatient!.displayName) ||
               ''
             ).toLowerCase()} :)`}</Typography>
             {viewSelection === 'day' ? (

@@ -453,7 +453,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [tabletsCount, setTabletsCount] = React.useState<number>(0);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -757,7 +757,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -785,15 +785,17 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    } else {
+    }
+    //  else if (daySlotsSelected.length === 0) {
+    //   setErrorState({
+    //     ...errorState,
+    //     daySlotErr: true,
+    //     tobeTakenErr: false,
+    //     durationErr: false,
+    //     dosageErr: false,
+    //   });
+    // }
+    else {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1035,7 +1037,7 @@ export const MedicinePrescription: React.FC = () => {
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Dosage*</h6>
+                        <h6>Quantity (Per Dosage)*</h6>
                         <AphTextField
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount}
@@ -1054,7 +1056,7 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Units*</h6>
+                        <h6>Units/Types*</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
@@ -1088,14 +1090,17 @@ export const MedicinePrescription: React.FC = () => {
                             <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
                               drops
                             </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
-                              NA
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="OINTMENT">
+                              ointment
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="OTHER">
+                              other
                             </MenuItem>
                           </AphSelect>
                         </div>
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Duration of Consumption*</h6>
+                        <h6>Duration (in days)*</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
@@ -1120,7 +1125,7 @@ export const MedicinePrescription: React.FC = () => {
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>To be taken</h6>
                         <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                        {errorState.tobeTakenErr && (
+                        {/* {errorState.tobeTakenErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
@@ -1128,12 +1133,12 @@ export const MedicinePrescription: React.FC = () => {
                           >
                             Please select to be taken.
                           </FormHelperText>
-                        )}
+                        )} */}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Time of the Day*</h6>
+                        <h6>Time of the Day</h6>
                         <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                        {errorState.daySlotErr && (
+                        {/* {errorState.daySlotErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
@@ -1141,12 +1146,13 @@ export const MedicinePrescription: React.FC = () => {
                           >
                             Please select time of the day.
                           </FormHelperText>
-                        )}
+                        )} */}
                       </Grid>
                       <Grid item lg={12} xs={12}>
                         <h6>Instructions (if any)</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
+                            placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
                             value={medicineInstruction}
                             onChange={(event: any) => {
                               setMedicineInstruction(event.target.value);

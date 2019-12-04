@@ -24,6 +24,7 @@ import {
   PatientMedicalHistory,
   Gender,
 } from 'profiles-service/entities';
+import { DoctorType } from 'doctors-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
 import { DiagnosticData } from 'consults-service/data/diagnostics';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
@@ -37,6 +38,7 @@ import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/pa
 import { PatientLifeStyleRepository } from 'profiles-service/repositories/patientLifeStyleRepository';
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
+import { SymptomsList } from 'types/appointmentTypes';
 
 export type DiagnosisJson = {
   name: string;
@@ -764,9 +766,8 @@ const createJuniorDoctorCaseSheet: Resolver<
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  if (doctorData.doctorType != 'JUNIOR') throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData.doctorType != DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //check if junior doctor case-sheet exists already
   caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
@@ -780,6 +781,23 @@ const createJuniorDoctorCaseSheet: Resolver<
     createdDoctorId: doctorData.id,
     doctorType: doctorData.doctorType,
   };
+
+  if (appointmentData.symptoms && appointmentData.symptoms.length > 0) {
+    const symptoms = appointmentData.symptoms.split(',');
+    const symptomList: SymptomsList[] = [];
+    symptoms.map((symptom) => {
+      const eachsymptom = {
+        symptom: symptom,
+        since: null,
+        howOften: null,
+        severity: null,
+      };
+      symptomList.push(eachsymptom);
+    });
+
+    caseSheetAttrs.symptoms = JSON.parse(JSON.stringify(symptomList));
+  }
+
   caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   return caseSheetDetails;
 };
@@ -794,7 +812,7 @@ const createSeniorDoctorCaseSheet: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  if (doctorData.doctorType == 'JUNIOR') throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData.doctorType == DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //get appointment details
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
