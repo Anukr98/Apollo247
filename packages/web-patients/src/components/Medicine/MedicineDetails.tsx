@@ -4,8 +4,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
-import { MedicineFilter } from 'components/Medicine/MedicineFilter';
 import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
+import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -308,7 +308,7 @@ export const MedicineDetails: React.FC = (props) => {
                 </div>
               </Scrollbars>
             </div>
-            <MedicineFilter />
+            <MedicineInformation />
           </div>
         </div>
       </div>
