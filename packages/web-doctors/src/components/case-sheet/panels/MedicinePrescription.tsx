@@ -9,9 +9,14 @@ import {
   Button,
   MenuItem,
   createStyles,
-  CircularProgress,
+  CircularProgress
 } from '@material-ui/core';
-import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
+import {
+  AphTextField,
+  AphButton,
+  AphDialogTitle,
+  AphSelect
+} from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -24,13 +29,13 @@ import { GET_DOCTOR_FAVOURITE_MEDICINE } from 'graphql/doctors';
 import {
   GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList,
   GetDoctorFavouriteMedicineList,
-  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
+  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
 } from 'graphql/types/GetDoctorFavouriteMedicineList';
 import { useApolloClient } from 'react-apollo-hooks';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN
 };
 
 interface OptionType {
@@ -45,7 +50,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
-      placeholder="Search"
+      placeholder='Search'
       fullWidth
       InputProps={{
         inputRef: (node: any) => {
@@ -53,8 +58,8 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          root: classes.inputRoot,
-        },
+          root: classes.inputRoot
+        }
       }}
       {...other}
     />
@@ -69,14 +74,14 @@ function renderSuggestion(
   const parts = parse(suggestion.label, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
+    <MenuItem selected={isHighlighted} component='div'>
       <div>
-        {parts.map((part) => (
+        {parts.map(part => (
           <span
             key={part.text}
             style={{
               fontWeight: part.highlight ? 500 : 400,
-              whiteSpace: 'pre',
+              whiteSpace: 'pre'
             }}
           >
             {part.text}
@@ -90,11 +95,11 @@ function renderSuggestion(
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
-      position: 'relative',
+      position: 'relative'
     },
     input: {
       color: 'black',
-      paddingTop: 0,
+      paddingTop: 0
     },
     suggestionsContainerOpen: {
       position: 'absolute',
@@ -103,7 +108,7 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
       color: 'black',
-      boxShadow: 'none',
+      boxShadow: 'none'
     },
     suggestion: {
       display: 'block',
@@ -111,9 +116,9 @@ const useStyles = makeStyles((theme: Theme) =>
       borderBottom: '1px solid rgba(2,71,91,0.1)',
       '&:hover': {
         '& div': {
-          backgroundColor: '#f0f4f5 !important',
-        },
-      },
+          backgroundColor: '#f0f4f5 !important'
+        }
+      }
     },
     suggestionsList: {
       margin: 0,
@@ -121,10 +126,10 @@ const useStyles = makeStyles((theme: Theme) =>
       listStyleType: 'none',
       color: '#02475b',
       fontSize: 18,
-      fontWeight: 500,
+      fontWeight: 500
     },
     root: {
-      flexGrow: 1,
+      flexGrow: 1
     },
     paper: {
       textAlign: 'left',
@@ -141,19 +146,19 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 14,
         color: '#02475b',
         margin: 0,
-        fontWeight: 600,
+        fontWeight: 600
       },
       '& h6': {
         fontSize: 12,
         color: '#02475b',
         margin: 0,
-        fontWeight: 'normal',
-      },
+        fontWeight: 'normal'
+      }
     },
     medicinePopup: {
       width: 480,
       margin: '30px auto 0 auto',
-      boxShadow: 'none',
+      boxShadow: 'none'
     },
     activeCard: {
       // border: '1px solid #00b38e',
@@ -162,7 +167,7 @@ const useStyles = makeStyles((theme: Theme) =>
     checkImg: {
       position: 'absolute',
       right: 16,
-      top: 16,
+      top: 16
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
@@ -172,11 +177,11 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 600,
       paddingLeft: 4,
       '&:hover': {
-        backgroundColor: 'transparent',
+        backgroundColor: 'transparent'
       },
       '& img': {
-        marginRight: 8,
-      },
+        marginRight: 8
+      }
     },
     darkGreenaddBtn: {
       backgroundColor: 'transparent',
@@ -190,18 +195,18 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0,
       marginTop: 12,
       '&:hover': {
-        backgroundColor: 'transparent',
+        backgroundColor: 'transparent'
       },
       '& img': {
-        marginRight: 8,
-      },
+        marginRight: 8
+      }
     },
     medicineHeading: {
       fontSize: 14,
       fontWeight: 500,
       lineHeight: 'normal',
       color: 'rgba(2, 71, 91, 0.6) !important',
-      marginBottom: 12,
+      marginBottom: 12
     },
     favmedicineHeading: {
       fontSize: 14,
@@ -209,6 +214,7 @@ const useStyles = makeStyles((theme: Theme) =>
       lineHeight: 'normal',
       color: 'rgba(2, 71, 91, 0.6) !important',
       marginBottom: 12,
+      paddingLeft: 335
     },
     backArrow: {
       cursor: 'pointer',
@@ -216,15 +222,15 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       top: -2,
       '& img': {
-        verticalAlign: 'middle',
-      },
+        verticalAlign: 'middle'
+      }
     },
     cross: {
       position: 'absolute',
       right: -10,
       top: -9,
       fontSize: 18,
-      color: '#02475b',
+      color: '#02475b'
     },
     dialogActions: {
       padding: 20,
@@ -239,11 +245,11 @@ const useStyles = makeStyles((theme: Theme) =>
         minwidth: 130,
         padding: '8px 20px',
         fontSize: 14,
-        fontWeight: 600,
-      },
+        fontWeight: 600
+      }
     },
     updateBtn: {
-      backgroundColor: '#fc9916 !important',
+      backgroundColor: '#fc9916 !important'
     },
     cancelBtn: {
       fontSize: 14,
@@ -255,11 +261,11 @@ const useStyles = makeStyles((theme: Theme) =>
       marginRight: 10,
       '&:hover': {
         backgroundColor: 'transparent',
-        color: '#fc9916',
-      },
+        color: '#fc9916'
+      }
     },
     shadowHide: {
-      overflow: 'hidden',
+      overflow: 'hidden'
     },
     dialogContent: {
       padding: 20,
@@ -271,16 +277,16 @@ const useStyles = makeStyles((theme: Theme) =>
         color: 'rgba(2, 71, 91, 0.6)',
         marginBottom: 5,
         marginTop: 5,
-        lineHeight: 'normal',
-      },
+        lineHeight: 'normal'
+      }
     },
     popupHeading: {
       '& h6': {
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
-        textAlign: 'left',
-      },
+        textAlign: 'left'
+      }
     },
     popupHeadingCenter: {
       padding: '20px 10px',
@@ -290,8 +296,8 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 600,
         textAlign: 'center',
         padding: '0 25px',
-        marginTop: 5,
-      },
+        marginTop: 5
+      }
     },
     numberTablets: {
       fontSize: 16,
@@ -308,34 +314,34 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#00b38e',
         backgroundColor: '#fff',
         '&:focus': {
-          outline: 'none',
-        },
-      },
+          outline: 'none'
+        }
+      }
     },
     tabletcontent: {
       margin: '0 10px',
       position: 'relative',
-      top: -5,
+      top: -5
     },
     activeBtn: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
-      fontWeight: 600,
+      fontWeight: 600
     },
     helpText: {
       paddingLeft: 0,
       paddingRight: 20,
-      paddingBottom: 10,
+      paddingBottom: 10
     },
     medicineDilog: {
       '& .dialogBoxClose': {
-        display: 'none !important',
-      },
+        display: 'none !important'
+      }
     },
     loader: {
       left: '50%',
       top: 41,
-      position: 'relative',
+      position: 'relative'
     },
     updateSymptom: {
       backgroundColor: 'transparent',
@@ -349,8 +355,8 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 30,
       padding: '5px 10px',
       '&:hover': {
-        backgroundColor: 'transparent',
-      },
+        backgroundColor: 'transparent'
+      }
     },
     deleteSymptom: {
       backgroundColor: 'transparent',
@@ -364,33 +370,33 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 30,
       padding: '5px 10px',
       '&:hover': {
-        backgroundColor: 'transparent',
-      },
+        backgroundColor: 'transparent'
+      }
     },
     inputRoot: {
       '&:before': {
-        borderBottom: '2px solid #00b38e',
+        borderBottom: '2px solid #00b38e'
       },
       '&:after': {
-        borderBottom: '2px solid #00b38e',
+        borderBottom: '2px solid #00b38e'
       },
       '& input': {
         fontSize: 15,
         fontWeight: 500,
         color: '#02475b !important',
-        paddingTop: 0,
+        paddingTop: 0
       },
       '&:hover': {
         '&:before': {
-          borderBottom: '2px solid #00b38e !important',
+          borderBottom: '2px solid #00b38e !important'
         },
         '&:after': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-      },
+          borderBottom: '2px solid #00b38e !important'
+        }
+      }
     },
     selectDropdown: {
-      paddingTop: 3,
+      paddingTop: 3
     },
     menuPaper: {
       width: 200,
@@ -405,42 +411,42 @@ const useStyles = makeStyles((theme: Theme) =>
           fontSize: 16,
           fontWeight: 500,
           '&:hover': {
-            backgroundColor: '#fff',
-          },
-        },
-      },
+            backgroundColor: '#fff'
+          }
+        }
+      }
     },
     menuSelected: {
       backgroundColor: '#f0f4f5 !important',
       color: '#02475b !important',
-      fontWeight: 'bold',
+      fontWeight: 'bold'
     },
     unitsSelect: {
-      marginTop: -7,
+      marginTop: -7
     },
     medicineCard: {
-    color: 'rgba(0, 0, 0, 0.54)',
-    border: '1px solid rgba(2,71,91,0.1)',
-    padding: '12px 40px 12px 12px',
-    position: 'relative',
-    maxWidth: '100%',
-    boxShadow: 'none',
-    textAlign: 'left',
-    borderRadius: 5,
-    marginBottom: 12,
-    backgroundColor: 'rgba(0,0,0,0.02)',
-    '& h5': {
-      color: '#02475b',
-      margin: 0,
-      fontSize: 14,
-      fontWeight: 600,
+      color: 'rgba(0, 0, 0, 0.54)',
+      border: '1px solid rgba(2,71,91,0.1)',
+      padding: '12px 40px 12px 12px',
+      position: 'relative',
+      maxWidth: '100%',
+      boxShadow: 'none',
+      textAlign: 'left',
+      borderRadius: 5,
+      marginBottom: 12,
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      '& h5': {
+        color: '#02475b',
+        margin: 0,
+        fontSize: 14,
+        fontWeight: 600
       },
       '& h6': {
         color: '#02475b',
         margin: 0,
-        fontSize: 12,
-      },
-    },
+        fontSize: 12
+      }
+    }
   })
 );
 
@@ -480,67 +486,76 @@ export const MedicinePrescription: React.FC = () => {
 
   const {
     medicinePrescription: selectedMedicinesArr,
-    setMedicinePrescription: setSelectedMedicinesArr,
+    setMedicinePrescription: setSelectedMedicinesArr
   } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
-  const [isEditFavMedicine, setIsEditFavMedicine] = React.useState<boolean>(false);
+  const [isEditFavMedicine, setIsEditFavMedicine] = React.useState<boolean>(
+    false
+  );
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
   const [isUpdate, setIsUpdate] = React.useState(false);
-  const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
+  const [medicineInstruction, setMedicineInstruction] = React.useState<string>(
+    ''
+  );
   const [favouriteMedicine, setFavouriteMedicine] = React.useState<
-    (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
+    | (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]
+    | null
   >([]);
-  const [favMedicineName , setFavMedicineName] = React.useState<string>('');
+  const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const client = useApolloClient();
-  client
-    .query<GetDoctorFavouriteMedicineList>({
-      query: GET_DOCTOR_FAVOURITE_MEDICINE,
-      fetchPolicy: 'no-cache',
-    })
-    .then((data) => {
-      setFavouriteMedicine(
-        data &&
-          data.data &&
-          data.data.getDoctorFavouriteMedicineList &&
-          data.data.getDoctorFavouriteMedicineList.medicineList
-      );
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  useEffect(() => {
+    client
+      .query<GetDoctorFavouriteMedicineList>({
+        query: GET_DOCTOR_FAVOURITE_MEDICINE,
+        fetchPolicy: 'no-cache'
+      })
+      .then(data => {
+        setFavouriteMedicine(
+          data &&
+            data.data &&
+            data.data.getDoctorFavouriteMedicineList &&
+            data.data.getDoctorFavouriteMedicineList.medicineList
+        );
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }, []);
 
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
     tobeTakenErr: false,
     durationErr: false,
-    dosageErr: false,
+    dosageErr: false
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
-  const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
+  const [consumptionDuration, setConsumptionDuration] = React.useState<string>(
+    ''
+  );
   const [tabletsCount, setTabletsCount] = React.useState<number>(0);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
       value: 'Morning',
-      selected: false,
+      selected: false
     },
     {
       id: 'noon',
       value: 'Noon',
-      selected: false,
+      selected: false
     },
     {
       id: 'evening',
       value: 'Evening',
-      selected: false,
+      selected: false
     },
     {
       id: 'night',
       value: 'Night',
-      selected: false,
-    },
+      selected: false
+    }
   ]);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -549,15 +564,17 @@ export const MedicinePrescription: React.FC = () => {
     {
       id: 'afterfood',
       value: 'After Food',
-      selected: false,
+      selected: false
     },
     {
       id: 'beforefood',
       value: 'Before Food',
-      selected: false,
-    },
+      selected: false
+    }
   ]);
-  const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
+  const [selectedMedicines, setSelectedMedicines] = React.useState<
+    MedicineObject[]
+  >([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
   const [medicine, setMedicine] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -586,15 +603,15 @@ export const MedicinePrescription: React.FC = () => {
         {
           headers: {
             Authorization: apiDetails.authToken,
-            Accept: '*/*',
+            Accept: '*/*'
           },
           cancelToken: new CancelToken(function executor(c) {
             // An executor function receives a cancel function as a parameter
             cancel = c;
-          }),
+          })
         }
       )
-      .then((result) => {
+      .then(result => {
         const medicines = result.data.products ? result.data.products : [];
         medicines.forEach((res: any) => {
           const data = { label: '', sku: '' };
@@ -610,7 +627,7 @@ export const MedicinePrescription: React.FC = () => {
           setLoading(false);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         if (error.toString().includes('404')) {
           setIsSuggestionFetched(false);
           setLoading(false);
@@ -649,7 +666,9 @@ export const MedicinePrescription: React.FC = () => {
     setDaySlots(dayslots);
 
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
-    setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
+    setConsumptionDuration(
+      selectedMedicinesArr![idx].medicineConsumptionDurationInDays!
+    );
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
     setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
@@ -660,10 +679,9 @@ export const MedicinePrescription: React.FC = () => {
     setIdx(idx);
   };
   const updateFavMedicine = (idx: any) => {
-    
+    setSelectedValue(idx.medicineName);
     setFavMedicineName(idx.medicineName);
     setShowDosage(true);
-       
   };
   useEffect(() => {
     if (idx >= 0) {
@@ -678,14 +696,15 @@ export const MedicinePrescription: React.FC = () => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
       selectedMedicinesArr!.forEach((res: any) => {
         const inputParamsArr: any = {
-          medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
+          medicineConsumptionDurationInDays:
+            res.medicineConsumptionDurationInDays,
           medicineDosage: String(res.medicineDosage),
           medicineInstructions: res.medicineInstructions,
           medicineTimings: res.medicineTimings,
           medicineToBeTaken: res.medicineToBeTaken,
           medicineName: res.medicineName,
           medicineUnit: res.medicineUnit,
-          id: res.id,
+          id: res.id
         };
         const inputParams: any = {
           id: res.medicineName.trim(),
@@ -693,13 +712,13 @@ export const MedicinePrescription: React.FC = () => {
           name: res.medicineName,
           times: res.medicineTimings.length,
           daySlots: res.medicineTimings.join(' , ').toLowerCase(),
-          duration: `${Number(res.medicineConsumptionDurationInDays)} days ${toBeTaken(
-            res.medicineToBeTaken
-          )
+          duration: `${Number(
+            res.medicineConsumptionDurationInDays
+          )} days ${toBeTaken(res.medicineToBeTaken)
             .join(',')
             .toLowerCase()}`,
           selected: true,
-          medicineUnit: res.medicineUnit,
+          medicineUnit: res.medicineUnit
         };
         // const xArr = selectedMedicinesArr;
         // xArr!.push(inputParamsArr);
@@ -736,20 +755,22 @@ export const MedicinePrescription: React.FC = () => {
     setToBeTakenSlots(slots);
   };
 
-  const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
-    const daySlotitem = _daySlotitem!;
-    return (
-      <button
-        key={daySlotitem.id}
-        className={daySlotitem.selected ? classes.activeBtn : ''}
-        onClick={() => {
-          daySlotsToggleAction(daySlotitem.id);
-        }}
-      >
-        {daySlotitem.value}
-      </button>
-    );
-  });
+  const daySlotsHtml = daySlots.map(
+    (_daySlotitem: SlotsObject | null, index: number) => {
+      const daySlotitem = _daySlotitem!;
+      return (
+        <button
+          key={daySlotitem.id}
+          className={daySlotitem.selected ? classes.activeBtn : ''}
+          onClick={() => {
+            daySlotsToggleAction(daySlotitem.id);
+          }}
+        >
+          {daySlotitem.value}
+        </button>
+      );
+    }
+  );
   const addUpdateMedicines = () => {
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
@@ -765,13 +786,16 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0) {
+    if (
+      (tabletsCount && isNaN(Number(tabletsCount))) ||
+      Number(tabletsCount) < 0
+    ) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
         daySlotErr: false,
         durationErr: false,
-        dosageErr: true,
+        dosageErr: true
       });
     } /* else if (isTobeTakenSelected.length === 0) {
       setErrorState({
@@ -791,7 +815,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: true,
         daySlotErr: false,
         tobeTakenErr: false,
-        dosageErr: false,
+        dosageErr: false
       });
     }
     //  else if (daySlotsSelected.length === 0) {
@@ -809,7 +833,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         daySlotErr: false,
         tobeTakenErr: false,
-        dosageErr: false,
+        dosageErr: false
       });
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
@@ -819,7 +843,7 @@ export const MedicinePrescription: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         id: selectedId,
-        medicineUnit: medicineUnit,
+        medicineUnit: medicineUnit
       };
 
       const inputParams: any = {
@@ -828,9 +852,11 @@ export const MedicinePrescription: React.FC = () => {
         name: selectedValue,
         times: daySlotsSelected.length,
         daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
-        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
+        duration: `${consumptionDuration} day(s) ${toBeTaken(
+          toBeTakenSlotsArr
+        ).join(',')}`,
         selected: true,
-        medicineUnit: medicineUnit,
+        medicineUnit: medicineUnit
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -871,24 +897,26 @@ export const MedicinePrescription: React.FC = () => {
     }
   };
 
-  const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
-    const tobeTakenitem = _tobeTakenitem!;
-    return (
-      <button
-        key={tobeTakenitem.id}
-        className={tobeTakenitem.selected ? classes.activeBtn : ''}
-        onClick={() => {
-          toBeTakenSlotsToggleAction(tobeTakenitem.id);
-        }}
-      >
-        {tobeTakenitem.value}
-      </button>
-    );
-  });
+  const tobeTakenHtml = toBeTakenSlots.map(
+    (_tobeTakenitem: SlotsObject | null, index: number) => {
+      const tobeTakenitem = _tobeTakenitem!;
+      return (
+        <button
+          key={tobeTakenitem.id}
+          className={tobeTakenitem.selected ? classes.activeBtn : ''}
+          onClick={() => {
+            toBeTakenSlotsToggleAction(tobeTakenitem.id);
+          }}
+        >
+          {tobeTakenitem.value}
+        </button>
+      );
+    }
+  );
 
   const [state, setState] = React.useState({
     single: '',
-    popper: '',
+    popper: ''
   });
   const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>('');
@@ -912,7 +940,7 @@ export const MedicinePrescription: React.FC = () => {
     }
     setState({
       ...state,
-      [name]: newValue,
+      [name]: newValue
     });
   };
 
@@ -922,144 +950,169 @@ export const MedicinePrescription: React.FC = () => {
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
-    renderSuggestion,
+    renderSuggestion
   };
   return (
-    <div className={classes.root}>      
-      <Grid container spacing={1}>
-      <Grid item lg={6} xs={12}>
-      <div className={classes.medicineHeading}>Medicines</div>
-        {selectedMedicinesArr!.map((_medicine: any, index: number) => {
-          const medicine = _medicine!;
-
-          const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
-          const whenString =
-            medicine.medicineToBeTaken.length > 0
-              ? toBeTaken(medicine.medicineToBeTaken)
-                  .join(', ')
-                  .toLowerCase()
-              : '';
-          const unitHtml =
-            medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
-              ? medicine.medicineUnit.toLowerCase()
-              : 'times';
-          const timesString =
-            medicine.medicineTimings.length > 0
-              ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
-              : '';
-          const dosageCount =
-            medicine.medicineTimings.length > 0
-              ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
-              : medicine.medicineDosage;
-          return (
-           
-                 
-                <div style={{ position: 'relative' }}>
-                  <Paper className={classes.medicineCard}>
-                                <h5>{medicine.medicineName}</h5>
-                                
-                    <h6>
-                                    {/*medicine.medicineTimings.length*/}
-                                    {dosageCount} {unitHtml} a day{' '}
-                                    {timesString.length > 0 && timesString} for {duration}
-                                    {whenString.length > 0 && whenString}
-                                  
-                    </h6>
-                              
-                  </Paper>
-                            
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.updateSymptom }}
-                    onClick={() => updateMedicine(index)}
-                  >
-                                
-                    <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-                              
-                  </AphButton>
-                          
-                </div>
-             
-          );
-        })}
-{caseSheetEdit && (
+    <div className={classes.root}>
+      {/*   <div className={classes.medicineHeading}>Medicines</div>
+      {caseSheetEdit && (
         <AphButton
-          variant="contained"
-          color="primary"
+          variant='contained'
+          color='primary'
           classes={{ root: classes.btnAddDoctor }}
           onClick={() => setIsDialogOpen(true)}
         >
-          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
+          <img src={require('images/ic_dark_plus.svg')} alt='' /> ADD Medicine
         </AphButton>
-      )}
-        </Grid>
-      <Grid item lg={6} xs={12}>
-        <div className={classes.favmedicineHeading}>Favourite Medicines</div>
-        {favouriteMedicine &&
-          favouriteMedicine.map((favMedicine, id,index) => {
-            const favDuration = `${Number(
-              favMedicine && favMedicine.medicineConsumptionDurationInDays
+      )} */}
+      <Grid container spacing={1}>
+        <Grid item lg={6} xs={12}>
+          <div className={classes.medicineHeading}>Medicines</div>
+          {selectedMedicinesArr!.map((_medicine: any, index: number) => {
+            const medicine = _medicine!;
+
+            const duration = `${Number(
+              medicine.medicineConsumptionDurationInDays
             )} days`;
-            const favWhenString =
-              favMedicine &&
-              favMedicine.medicineToBeTaken &&
-              favMedicine.medicineToBeTaken.length > 0
-                ? toBeTaken(favMedicine && favMedicine.medicineToBeTaken)
+            const whenString =
+              medicine.medicineToBeTaken.length > 0
+                ? toBeTaken(medicine.medicineToBeTaken)
                     .join(', ')
                     .toLowerCase()
                 : '';
-            const favUnitHtml =
-              favMedicine!.medicineUnit && favMedicine!.medicineUnit !== 'NA'
-                ? favMedicine && favMedicine.medicineUnit && favMedicine.medicineUnit.toLowerCase()
+            const unitHtml =
+              medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
+                ? medicine.medicineUnit.toLowerCase()
                 : 'times';
-            const favTimesString =
-              favMedicine && favMedicine.medicineTimings && favMedicine.medicineTimings.length > 0
-                ? '(' + favMedicine &&
-                  favMedicine.medicineTimings &&
-                  favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+            const timesString =
+              medicine.medicineTimings.length > 0
+                ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
                 : '';
-            const favDosageCount =
-              favMedicine && favMedicine.medicineDosage === ''
-                ? favMedicine &&
-                  favMedicine.medicineTimings &&
-                  favMedicine.medicineTimings.length > 0
-                  ? parseInt(favMedicine && favMedicine.medicineDosage) *
-                    favMedicine.medicineTimings.length
-                  : favMedicine && favMedicine.medicineDosage
-                : '';
-            const favMedicineName = favMedicine && favMedicine.medicineName;
+            const dosageCount =
+              medicine.medicineTimings.length > 0
+                ? parseInt(medicine.medicineDosage) *
+                  medicine.medicineTimings.length
+                : medicine.medicineDosage;
             return (
-              
-                
-                  <div style={{ position: 'relative' }}>
-                    <Paper className={`${classes.paper} ${classes.activeCard}`}>
-                      <h5>{favMedicineName}</h5>
-                      <h6>
-                        {favDosageCount} {favUnitHtml} a day{' '}
-                        {favTimesString.length > 0 && favTimesString} for {favDuration}{' '}
-                        {favWhenString.length > 0 && favWhenString}
-                      </h6>
-                    </Paper>
-                    <AphButton
-                      variant="contained"
-                      color="primary"
-                      classes={{ root: classes.updateSymptom }}
-                      onClick={(id) => {
-                        setIsEditFavMedicine(true);
-                        updateFavMedicine(favMedicine);
-                      }}
-                    >
-                      <img
-                        src={favouriteMedicine && require('images/round_edit_24_px.svg')}
-                        alt=""
-                      />
-                    </AphButton>
-                  </div>
-              
+              <div style={{ position: 'relative' }}>
+                <Paper className={classes.medicineCard}>
+                              <h5>{medicine.medicineName}</h5>
+                              
+                  <h6>
+                                  {/*medicine.medicineTimings.length*/}
+                                  {dosageCount} {unitHtml} a day{' '}
+                                  {timesString.length > 0 && timesString} for 
+                    {duration}
+                    {' '}
+                                  {whenString.length > 0 && whenString}
+                                
+                  </h6>
+                            
+                </Paper>
+                          
+                <AphButton
+                  variant='contained'
+                  color='primary'
+                  classes={{ root: classes.updateSymptom }}
+                  onClick={() => updateMedicine(index)}
+                >
+                              
+                  <img
+                    src={
+                      caseSheetEdit && require('images/round_edit_24_px.svg')
+                    }
+                    alt=''
+                  />
+                            
+                </AphButton>
+                        
+              </div>
             );
           })}
-</Grid>
+          {caseSheetEdit && (
+            <AphButton
+              variant='contained'
+              color='primary'
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <img src={require('images/ic_dark_plus.svg')} alt='' /> ADD
+              Medicine
+            </AphButton>
+          )}
+        </Grid>
+        <Grid item lg={6} xs={12}>
+          <div className={classes.favmedicineHeading}>Favourite Medicines</div>
+          {favouriteMedicine &&
+            favouriteMedicine.map((favMedicine, id, index) => {
+              const favDuration = `${Number(
+                favMedicine && favMedicine.medicineConsumptionDurationInDays
+              )} days`;
+              const favWhenString =
+                favMedicine &&
+                favMedicine.medicineToBeTaken &&
+                favMedicine.medicineToBeTaken.length > 0
+                  ? toBeTaken(favMedicine && favMedicine.medicineToBeTaken)
+                      .join(', ')
+                      .toLowerCase()
+                  : '';
+              const favUnitHtml =
+                favMedicine!.medicineUnit && favMedicine!.medicineUnit !== 'NA'
+                  ? favMedicine &&
+                    favMedicine.medicineUnit &&
+                    favMedicine.medicineUnit.toLowerCase()
+                  : 'times';
+              const favTimesString =
+                favMedicine &&
+                favMedicine.medicineTimings &&
+                favMedicine.medicineTimings.length > 0
+                  ? '(' + favMedicine &&
+                    favMedicine.medicineTimings &&
+                    favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                  : '';
+              const favDosageCount =
+                favMedicine && favMedicine.medicineDosage === ''
+                  ? favMedicine &&
+                    favMedicine.medicineTimings &&
+                    favMedicine.medicineTimings.length > 0
+                    ? parseInt(favMedicine && favMedicine.medicineDosage) *
+                      favMedicine.medicineTimings.length
+                    : favMedicine && favMedicine.medicineDosage
+                  : '';
+              const favMedicineName = favMedicine && favMedicine.medicineName;
+              return (
+                <div style={{ position: 'relative' }}>
+                  <Paper className={`${classes.paper} ${classes.activeCard}`}>
+                    <h5>{favMedicineName}</h5>
+                    <h6>
+                      {favDosageCount} {favUnitHtml} a day{' '}
+                      {favTimesString.length > 0 && favTimesString} for{' '}
+                      {favDuration} {favWhenString.length > 0 && favWhenString}
+                    </h6>
+                  </Paper>
+                  <AphButton
+                    variant='contained'
+                    color='primary'
+                    classes={{ root: classes.updateSymptom }}
+                    onClick={id => {
+                      setIsEditFavMedicine(true);
+                      //  setSelectedMedicinesArr(favMedicine);
+
+                      updateFavMedicine(favMedicine);
+                    }}
+                  >
+                    <img
+                      src={
+                        favouriteMedicine &&
+                        require('images/round_edit_24_px.svg')
+                      }
+                      alt=''
+                    />
+                  </AphButton>
+                </div>
+              );
+            })}
+        </Grid>
       </Grid>
       {isEditFavMedicine && (
         <Modal
@@ -1069,26 +1122,33 @@ export const MedicinePrescription: React.FC = () => {
           disableEscapeKeyDown
         >
           <Paper className={classes.medicinePopup}>
-          <AphDialogTitle
-            className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
-          >
-            {showDosage && (
-              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
-                <img src={require('images/ic_back.svg')} alt="" />
-              </div>
-            )}
-            {showDosage ? favMedicineName.toUpperCase() : 'ADD FAVOURITE MEDICINE'}
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => {
-                  setIsEditFavMedicine(false);
-                  setShowDosage(false);
-                }}
-              />
-            </Button>
-          </AphDialogTitle>
+            <AphDialogTitle
+              className={
+                !showDosage ? classes.popupHeading : classes.popupHeadingCenter
+              }
+            >
+              {showDosage && (
+                <div
+                  className={classes.backArrow}
+                  onClick={() => setShowDosage(false)}
+                >
+                  <img src={require('images/ic_back.svg')} alt='' />
+                </div>
+              )}
+              {showDosage
+                ? favMedicineName.toUpperCase()
+                : 'ADD FAVOURITE MEDICINE'}
+              <Button className={classes.cross}>
+                <img
+                  src={require('images/ic_cross.svg')}
+                  alt=''
+                  onClick={() => {
+                    setIsEditFavMedicine(false);
+                    setShowDosage(false);
+                  }}
+                />
+              </Button>
+            </AphDialogTitle>
             <div>
               <div>
                 <div className={classes.dialogContent}>
@@ -1105,7 +1165,7 @@ export const MedicinePrescription: React.FC = () => {
                       {errorState.dosageErr && (
                         <FormHelperText
                           className={classes.helpText}
-                          component="div"
+                          component='div'
                           error={errorState.durationErr}
                         >
                           Please Enter Dosage(Number only)
@@ -1120,34 +1180,49 @@ export const MedicinePrescription: React.FC = () => {
                           value={medicineUnit}
                           MenuProps={{
                             classes: {
-                              paper: classes.menuPaper,
+                              paper: classes.menuPaper
                             },
                             anchorOrigin: {
                               vertical: 'bottom',
-                              horizontal: 'right',
+                              horizontal: 'right'
                             },
                             transformOrigin: {
                               vertical: 'top',
-                              horizontal: 'right',
-                            },
+                              horizontal: 'right'
+                            }
                           }}
                           onChange={(e: any) => {
                             setMedicineUnit(e.target.value as string);
                           }}
                         >
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
+                          <MenuItem
+                            classes={{ selected: classes.menuSelected }}
+                            value='TABLET'
+                          >
                             tablet
                           </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
+                          <MenuItem
+                            classes={{ selected: classes.menuSelected }}
+                            value='CAPSULE'
+                          >
                             capsule
                           </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
+                          <MenuItem
+                            classes={{ selected: classes.menuSelected }}
+                            value='ML'
+                          >
                             ml
                           </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
+                          <MenuItem
+                            classes={{ selected: classes.menuSelected }}
+                            value='DROPS'
+                          >
                             drops
                           </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
+                          <MenuItem
+                            classes={{ selected: classes.menuSelected }}
+                            value='NA'
+                          >
                             NA
                           </MenuItem>
                         </AphSelect>
@@ -1157,7 +1232,7 @@ export const MedicinePrescription: React.FC = () => {
                       <h6>Duration of Consumption*</h6>
                       <div className={classes.numberTablets}>
                         <AphTextField
-                          placeholder=""
+                          placeholder=''
                           inputProps={{ maxLength: 6 }}
                           value={consumptionDuration}
                           onChange={(event: any) => {
@@ -1168,7 +1243,7 @@ export const MedicinePrescription: React.FC = () => {
                         {errorState.durationErr && (
                           <FormHelperText
                             className={classes.helpText}
-                            component="div"
+                            component='div'
                             error={errorState.durationErr}
                           >
                             Please Enter Duration in days(Number only)
@@ -1178,11 +1253,13 @@ export const MedicinePrescription: React.FC = () => {
                     </Grid>
                     <Grid item lg={6} md={6} xs={12}>
                       <h6>To be taken</h6>
-                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                      <div className={classes.numberTablets}>
+                        {tobeTakenHtml}
+                      </div>
                       {errorState.tobeTakenErr && (
                         <FormHelperText
                           className={classes.helpText}
-                          component="div"
+                          component='div'
                           error={errorState.tobeTakenErr}
                         >
                           Please select to be taken.
@@ -1191,11 +1268,13 @@ export const MedicinePrescription: React.FC = () => {
                     </Grid>
                     <Grid item lg={12} xs={12}>
                       <h6>Time of the Day*</h6>
-                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      <div className={classes.numberTablets}>
+                        {daySlotsHtml}
+                      </div>
                       {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
-                          component="div"
+                          component='div'
                           error={errorState.daySlotErr}
                         >
                           Please select time of the day.
@@ -1219,7 +1298,7 @@ export const MedicinePrescription: React.FC = () => {
               <div className={classes.dialogActions}>
                 <AphButton
                   className={classes.cancelBtn}
-                  color="primary"
+                  color='primary'
                   onClick={() => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
@@ -1229,7 +1308,7 @@ export const MedicinePrescription: React.FC = () => {
                 </AphButton>
                 {isUpdate ? (
                   <AphButton
-                    color="primary"
+                    color='primary'
                     onClick={() => {
                       addUpdateMedicines();
                     }}
@@ -1238,7 +1317,7 @@ export const MedicinePrescription: React.FC = () => {
                   </AphButton>
                 ) : (
                   <AphButton
-                    color="primary"
+                    color='primary'
                     className={classes.updateBtn}
                     onClick={() => {
                       addUpdateMedicines();
@@ -1261,18 +1340,23 @@ export const MedicinePrescription: React.FC = () => {
       >
         <Paper className={classes.medicinePopup}>
           <AphDialogTitle
-            className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
+            className={
+              !showDosage ? classes.popupHeading : classes.popupHeadingCenter
+            }
           >
             {showDosage && (
-              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
-                <img src={require('images/ic_back.svg')} alt="" />
+              <div
+                className={classes.backArrow}
+                onClick={() => setShowDosage(false)}
+              >
+                <img src={require('images/ic_back.svg')} alt='' />
               </div>
             )}
             {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
             <Button className={classes.cross}>
               <img
                 src={require('images/ic_cross.svg')}
-                alt=""
+                alt=''
                 onClick={() => {
                   setIsDialogOpen(false);
                   setShowDosage(false);
@@ -1288,7 +1372,7 @@ export const MedicinePrescription: React.FC = () => {
                     onSuggestionSelected={(e, { suggestion }) => {
                       setState({
                         single: '',
-                        popper: '',
+                        popper: ''
                       });
                       setShowDosage(true);
                       setSelectedValue(suggestion.label);
@@ -1304,16 +1388,20 @@ export const MedicinePrescription: React.FC = () => {
                       placeholder: 'Search',
                       value: state.single,
 
-                      onChange: handleChange('single'),
+                      onChange: handleChange('single')
                     }}
                     theme={{
                       container: classes.container,
-                      suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                      suggestionsContainerOpen:
+                        classes.suggestionsContainerOpen,
                       suggestionsList: classes.suggestionsList,
-                      suggestion: classes.suggestion,
+                      suggestion: classes.suggestion
                     }}
-                    renderSuggestionsContainer={(options) => (
-                      <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                    renderSuggestionsContainer={options => (
+                      <Scrollbars
+                        autoHide={true}
+                        style={{ height: 'calc(45vh' }}
+                      >
                         <Paper {...options.containerProps} square>
                           {options.children}
                         </Paper>
@@ -1325,12 +1413,12 @@ export const MedicinePrescription: React.FC = () => {
                       <span>
                         <AphButton
                           className={classes.darkGreenaddBtn}
-                          variant="contained"
-                          color="primary"
+                          variant='contained'
+                          color='primary'
                           onClick={() => {
                             setState({
                               single: '',
-                              popper: '',
+                              popper: ''
                             });
                             setShowDosage(true);
                             setSelectedValue(medicine);
@@ -1339,12 +1427,17 @@ export const MedicinePrescription: React.FC = () => {
                             setMedicine('');
                           }}
                         >
-                          <img src={require('images/ic_add_circle.svg')} alt="" />
+                          <img
+                            src={require('images/ic_add_circle.svg')}
+                            alt=''
+                          />
                         </AphButton>
                       </span>
                     </div>
                   )}
-                  {loading ? <CircularProgress className={classes.loader} /> : null}
+                  {loading ? (
+                    <CircularProgress className={classes.loader} />
+                  ) : null}
                 </div>
               </div>
             ) : (
@@ -1364,7 +1457,7 @@ export const MedicinePrescription: React.FC = () => {
                         {errorState.dosageErr && (
                           <FormHelperText
                             className={classes.helpText}
-                            component="div"
+                            component='div'
                             error={errorState.durationErr}
                           >
                             Please Enter Dosage(Number only)
@@ -1379,34 +1472,49 @@ export const MedicinePrescription: React.FC = () => {
                             value={medicineUnit}
                             MenuProps={{
                               classes: {
-                                paper: classes.menuPaper,
+                                paper: classes.menuPaper
                               },
                               anchorOrigin: {
                                 vertical: 'bottom',
-                                horizontal: 'right',
+                                horizontal: 'right'
                               },
                               transformOrigin: {
                                 vertical: 'top',
-                                horizontal: 'right',
-                              },
+                                horizontal: 'right'
+                              }
                             }}
                             onChange={(e: any) => {
                               setMedicineUnit(e.target.value as string);
                             }}
                           >
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
+                            <MenuItem
+                              classes={{ selected: classes.menuSelected }}
+                              value='TABLET'
+                            >
                               tablet
                             </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
+                            <MenuItem
+                              classes={{ selected: classes.menuSelected }}
+                              value='CAPSULE'
+                            >
                               capsule
                             </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
+                            <MenuItem
+                              classes={{ selected: classes.menuSelected }}
+                              value='ML'
+                            >
                               ml
                             </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
+                            <MenuItem
+                              classes={{ selected: classes.menuSelected }}
+                              value='DROPS'
+                            >
                               drops
                             </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
+                            <MenuItem
+                              classes={{ selected: classes.menuSelected }}
+                              value='NA'
+                            >
                               NA
                             </MenuItem>
                           </AphSelect>
@@ -1416,7 +1524,7 @@ export const MedicinePrescription: React.FC = () => {
                         <h6>Duration of Consumption*</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
-                            placeholder=""
+                            placeholder=''
                             inputProps={{ maxLength: 6 }}
                             value={consumptionDuration}
                             onChange={(event: any) => {
@@ -1427,7 +1535,7 @@ export const MedicinePrescription: React.FC = () => {
                           {errorState.durationErr && (
                             <FormHelperText
                               className={classes.helpText}
-                              component="div"
+                              component='div'
                               error={errorState.durationErr}
                             >
                               Please Enter Duration in days(Number only)
@@ -1437,7 +1545,9 @@ export const MedicinePrescription: React.FC = () => {
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>To be taken</h6>
-                        <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                        <div className={classes.numberTablets}>
+                          {tobeTakenHtml}
+                        </div>
                         {/* {errorState.tobeTakenErr && (
                           <FormHelperText
                             className={classes.helpText}
@@ -1450,7 +1560,9 @@ export const MedicinePrescription: React.FC = () => {
                       </Grid>
                       <Grid item lg={12} xs={12}>
                         <h6>Time of the Day*</h6>
-                        <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                        <div className={classes.numberTablets}>
+                          {daySlotsHtml}
+                        </div>
                         {/* {errorState.daySlotErr && (
                           <FormHelperText
                             className={classes.helpText}
@@ -1478,7 +1590,7 @@ export const MedicinePrescription: React.FC = () => {
                 <div className={classes.dialogActions}>
                   <AphButton
                     className={classes.cancelBtn}
-                    color="primary"
+                    color='primary'
                     onClick={() => {
                       setIsDialogOpen(false);
                       setShowDosage(false);
@@ -1488,7 +1600,7 @@ export const MedicinePrescription: React.FC = () => {
                   </AphButton>
                   {isUpdate ? (
                     <AphButton
-                      color="primary"
+                      color='primary'
                       onClick={() => {
                         addUpdateMedicines();
                       }}
@@ -1497,7 +1609,7 @@ export const MedicinePrescription: React.FC = () => {
                     </AphButton>
                   ) : (
                     <AphButton
-                      color="primary"
+                      color='primary'
                       className={classes.updateBtn}
                       onClick={() => {
                         addUpdateMedicines();

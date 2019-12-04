@@ -18,7 +18,6 @@ export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_m
   medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
   medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineName: string;
-  doctorId: string | null;
   id: string;
 }
 
