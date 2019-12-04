@@ -149,6 +149,9 @@ export class Appointment extends BaseEntity {
   isFollowPaid: Boolean;
 
   @Column({ nullable: true, default: false })
+  isJdQuestionsComplete: Boolean;
+
+  @Column({ nullable: true, default: false })
   isTransfer: Boolean;
 
   @Column({ nullable: true, default: false })

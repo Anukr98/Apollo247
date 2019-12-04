@@ -87,7 +87,7 @@ export const Navigation: React.FC = (props) => {
         to={clientRoutes.medicines()}
         className={
           currentPath === clientRoutes.medicines() ||
-            currentPath === clientRoutes.prescriptionsLanding()
+          currentPath === clientRoutes.prescriptionsLanding()
             ? classes.menuItemActive
             : ''
         }
@@ -98,7 +98,7 @@ export const Navigation: React.FC = (props) => {
         to={clientRoutes.cartLanding()}
         className={`${classes.iconLink} ${
           currentPath === clientRoutes.cartLanding() ? classes.menuItemActive : ''
-          }`}
+        }`}
       >
         <span>
           <img src={require('images/ic_cart.svg')} alt="Shopping Cart" />
