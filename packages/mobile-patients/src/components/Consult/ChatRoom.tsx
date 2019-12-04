@@ -2076,7 +2076,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
               ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
-              : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`}
+              : "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
+            // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
+            }
           </Text>
         </View>
         <View
