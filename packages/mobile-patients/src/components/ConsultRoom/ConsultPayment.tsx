@@ -46,7 +46,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   // const name = currentPatient && currentPatient.firstName;
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -64,10 +64,6 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   }, []);
 
   const handleBack = async () => {
-    // showAphAlert!({
-    //   title: `Hi ${name ? name + ',' : ''}`,
-    //   description: 'Do you want to go back?',
-    // });
     Alert.alert('Alert', 'Do you want to go back?', [
       { text: 'No' },
       { text: 'Yes', onPress: () => props.navigation.goBack() },
@@ -129,6 +125,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     const redirectedUrl = data.url;
     console.log({ data, redirectedUrl });
     console.log(`RedirectedUrl: ${redirectedUrl}`);
+
     const isMatchesSuccessUrl =
       (redirectedUrl &&
         redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1) ||
@@ -152,16 +149,17 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   };
 
   const renderWebView = () => {
-    // consultpayment?appointmentId=&patientId=&price=
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}price=${price}`;
-    console.log('URL:\t', url);
-
+    const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}`;
+    console.log(`%cCONSULT_PG_URL:\t${url}`, 'color: #bada55');
+    // PATH: /consultpayment?appointmentId=&patientId=&price=
     // comment below line
     // return null;
 
     return (
       <WebView
+        onLoadStart={() => setLoading!(true)}
+        onLoadEnd={() => setLoading!(false)}
         bounces={false}
         useWebKit={true}
         source={{ uri: url }}
