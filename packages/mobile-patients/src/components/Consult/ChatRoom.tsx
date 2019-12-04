@@ -824,12 +824,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    // restore: true,
-    // keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
-    // heartbeatInterval: 20,
+    restore: true,
+    keepAlive: true,
+    autoNetworkDetection: true,
+    listenToBrowserNetworkEvents: true,
+    presenceTimeout: 20,
+    heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
 
@@ -877,14 +877,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         );
 
-        // pubnub
-        //   .time()
-        //   .then((value: FetchTimeResponse) => {
-        //     console.log('FetchTimeResponse', value);
-        //   })
-        //   .catch((error) => {
-        //     console.log('error', error);
-        //   });
+        pubnub
+          .time()
+          .then((value: FetchTimeResponse) => {
+            console.log('FetchTimeResponse', value);
+          })
+          .catch((error) => {
+            console.log('error', error);
+          });
 
         if (presenceEvent.occupancy >= 2) {
           console.log('calljoined');
@@ -894,37 +894,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           callAbondmentMethod();
         }
       },
-      // disconnect: (disconnect: any) => {
-      //   console.log('disconnected', disconnect);
-      // },
-      // reconnect: (reconnect: any) => {
-      //   console.log('reconnected', reconnect);
-      // },
-      // error: (obj: any) => {
-      //   console.log('ERROR ' + JSON.stringify(obj));
-      // },
-      // callback: (obj: any) => {
-      //   console.log('callback ' + JSON.stringify(obj));
-      // },
-      // signal: (signalEvent: SignalEvent) => {
-      //   console.log('signalEvent ' + JSON.stringify(signalEvent));
-      // },
+      disconnect: (disconnect: any) => {
+        console.log('disconnected', disconnect);
+      },
+      reconnect: (reconnect: any) => {
+        console.log('reconnected', reconnect);
+      },
+      error: (obj: any) => {
+        console.log('ERROR ' + JSON.stringify(obj));
+      },
+      callback: (obj: any) => {
+        console.log('callback ' + JSON.stringify(obj));
+      },
+      signal: (signalEvent: SignalEvent) => {
+        console.log('signalEvent ' + JSON.stringify(signalEvent));
+      },
 
-      // user: (userEvent: UserEvent) => {
-      //   console.log('userEvent ' + JSON.stringify(userEvent));
-      // },
+      user: (userEvent: UserEvent) => {
+        console.log('userEvent ' + JSON.stringify(userEvent));
+      },
 
-      // space: (spaceEvent: SpaceEvent) => {
-      //   console.log('spaceEvent ' + JSON.stringify(spaceEvent));
-      // },
+      space: (spaceEvent: SpaceEvent) => {
+        console.log('spaceEvent ' + JSON.stringify(spaceEvent));
+      },
 
-      // membership: (membershipEvent: MembershipEvent) => {
-      //   console.log('membershipEvent ' + JSON.stringify(membershipEvent));
-      // },
+      membership: (membershipEvent: MembershipEvent) => {
+        console.log('membershipEvent ' + JSON.stringify(membershipEvent));
+      },
 
-      // messageAction: (messageActionEvent: MessageActionEvent) => {
-      //   console.log('messageActionEvent ' + JSON.stringify(messageActionEvent));
-      // },
+      messageAction: (messageActionEvent: MessageActionEvent) => {
+        console.log('messageActionEvent ' + JSON.stringify(messageActionEvent));
+      },
     });
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
