@@ -66,6 +66,7 @@ import Pubnub, {
   SpaceEvent,
   MembershipEvent,
   MessageActionEvent,
+  FetchTimeResponse,
 } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -591,15 +592,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
-      // startCallAbondmentTimer(180, false);
-      // eventsAfterConnectionDestroyed();
-      // disconnectCallText();
+      startCallAbondmentTimer(180, false);
+      eventsAfterConnectionDestroyed();
+      disconnectCallText();
     },
     streamPropertyChanged: (event: string) => {
       console.log('session streamPropertyChanged destroyed!', event);
-      // startCallAbondmentTimer(180, false);
-      // eventsAfterConnectionDestroyed();
-      // disconnectCallText();
+      startCallAbondmentTimer(180, false);
+      eventsAfterConnectionDestroyed();
+      disconnectCallText();
     },
     otrnError: (error: string) => {
       console.log(
@@ -637,12 +638,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    restore: true,
-    keepAlive: true,
-    autoNetworkDetection: true,
-    listenToBrowserNetworkEvents: true,
-    presenceTimeout: 20,
-    heartbeatInterval: 20,
+    // restore: true,
+    // keepAlive: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
+    // presenceTimeout: 20,
+    // heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
 
@@ -690,6 +691,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         );
 
+        // pubnub
+        //   .time()
+        //   .then((value: FetchTimeResponse) => {
+        //     console.log('FetchTimeResponse', value);
+        //   })
+        //   .catch((error) => {
+        //     console.log('error', error);
+        //   });
+
         if (presenceEvent.occupancy >= 2) {
           console.log('calljoined');
           stopCallAbondmentTimer();
@@ -698,37 +708,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           callAbondmentMethod();
         }
       },
-      disconnect: (disconnect: any) => {
-        console.log('disconnected', disconnect);
-      },
-      reconnect: (reconnect: any) => {
-        console.log('reconnected', reconnect);
-      },
-      error: (obj: any) => {
-        console.log('ERROR ' + JSON.stringify(obj));
-      },
-      callback: (obj: any) => {
-        console.log('callback ' + JSON.stringify(obj));
-      },
-      signal: (signalEvent: SignalEvent) => {
-        console.log('signalEvent ' + JSON.stringify(signalEvent));
-      },
+      // disconnect: (disconnect: any) => {
+      //   console.log('disconnected', disconnect);
+      // },
+      // reconnect: (reconnect: any) => {
+      //   console.log('reconnected', reconnect);
+      // },
+      // error: (obj: any) => {
+      //   console.log('ERROR ' + JSON.stringify(obj));
+      // },
+      // callback: (obj: any) => {
+      //   console.log('callback ' + JSON.stringify(obj));
+      // },
+      // signal: (signalEvent: SignalEvent) => {
+      //   console.log('signalEvent ' + JSON.stringify(signalEvent));
+      // },
 
-      user: (userEvent: UserEvent) => {
-        console.log('userEvent ' + JSON.stringify(userEvent));
-      },
+      // user: (userEvent: UserEvent) => {
+      //   console.log('userEvent ' + JSON.stringify(userEvent));
+      // },
 
-      space: (spaceEvent: SpaceEvent) => {
-        console.log('spaceEvent ' + JSON.stringify(spaceEvent));
-      },
+      // space: (spaceEvent: SpaceEvent) => {
+      //   console.log('spaceEvent ' + JSON.stringify(spaceEvent));
+      // },
 
-      membership: (membershipEvent: MembershipEvent) => {
-        console.log('membershipEvent ' + JSON.stringify(membershipEvent));
-      },
+      // membership: (membershipEvent: MembershipEvent) => {
+      //   console.log('membershipEvent ' + JSON.stringify(membershipEvent));
+      // },
 
-      messageAction: (messageActionEvent: MessageActionEvent) => {
-        console.log('messageActionEvent ' + JSON.stringify(messageActionEvent));
-      },
+      // messageAction: (messageActionEvent: MessageActionEvent) => {
+      //   console.log('messageActionEvent ' + JSON.stringify(messageActionEvent));
+      // },
     });
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -804,27 +814,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const startCallAbondmentTimer = (timer: number, isDoctorNoShow: boolean) => {
     // if (callAbandonmentTimer) return;
+    try {
+      callAbandonmentTimer && clearInterval(callAbandonmentTimer);
 
-    setTransferData(appointmentData);
-    callAbandonmentTimer = setInterval(() => {
-      timer = timer - 1;
-      callAbandonmentStoppedTimer = timer;
-      setCallAbundantCallTime(timer);
+      setTransferData(appointmentData);
+      callAbandonmentTimer = setInterval(() => {
+        timer = timer - 1;
+        callAbandonmentStoppedTimer = timer;
+        setCallAbundantCallTime(timer);
 
-      console.log('callAbandonmentStoppedTimer', timer);
+        console.log('callAbandonmentStoppedTimer', timer);
 
-      if (timer < 1) {
-        console.log('call Abundant', appointmentData);
+        if (timer < 1) {
+          console.log('call Abundant', appointmentData);
 
-        if (isDoctorNoShow) {
-          setIsDoctorNoShow(true);
-        } else {
-          NextAvailableSlot(appointmentData, 'Transfer', true);
+          if (isDoctorNoShow) {
+            setIsDoctorNoShow(true);
+          } else {
+            NextAvailableSlot(appointmentData, 'Transfer', true);
+          }
+          setCallAbundantCallTime(0);
+          callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
-        setCallAbundantCallTime(0);
-        callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-      }
-    }, 1000);
+      }, 1000);
+    } catch (error) {
+      console.log('error in call abandoment',error);
+      
+    }
+
+    
   };
 
   const stopCallAbondmentTimer = () => {
