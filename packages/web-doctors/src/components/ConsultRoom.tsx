@@ -703,12 +703,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
               <div>
                 <img src={require("images/ic_round_call.svg")} />
                 <span>{rowData.message}</span>
-                {rowData.messageDate && (
-                  <span>{convertChatTime(rowData.messageDate)}</span>
-                )}
                 <span className={classes.durationMsg}>
                   Duration- {rowData.duration}
                 </span>
+                {rowData.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )}
               </div>
             ) : (
               // <div>
@@ -885,9 +885,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                     ? "You missed a video call"
                     : "You missed a voice call"}
                 </span>
-                {rowData.messageDate && (
-                  <span>{convertChatTime(rowData.messageDate)}</span>
-                )}
               </>
             ) : rowData.duration ? (
               <div>
