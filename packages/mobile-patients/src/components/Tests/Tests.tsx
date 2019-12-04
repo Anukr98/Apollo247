@@ -77,9 +77,10 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  FlatList,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   labelView: {

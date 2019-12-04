@@ -205,31 +205,43 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 .toString(),
             };
             console.log('prescriptionMedicineInput', prescriptionMedicineInput);
-            const { _data } = client.mutate<
-              SavePrescriptionMedicineOrder,
-              SavePrescriptionMedicineOrderVariables
-            >({
-              mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-              variables: { prescriptionMedicineInput },
-            });
-            setLoading!(false);
-            const errorMessage = g(_data, 'SavePrescriptionMedicineOrder', 'errorMessage');
-            if (errorMessage) {
-              setLoading!(false);
-              renderUploadErrorPopup(
-                (errorMessage && errorMessage.endsWith('.') ? errorMessage : `${errorMessage}.`) ||
-                  'Something went wrong.'
-              );
-            } else {
-              props.navigation.goBack();
-              renderSuccessPopup();
-            }
+            client
+              .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
+                mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+                variables: { prescriptionMedicineInput },
+              })
+              .then((_data) => {
+                setLoading!(false);
+                const errorMessage = g(
+                  _data,
+                  'data',
+                  'SavePrescriptionMedicineOrder',
+                  'errorMessage'
+                );
+                if (errorMessage) {
+                  setLoading!(false);
+                  renderUploadErrorPopup(
+                    (errorMessage && errorMessage.endsWith('.')
+                      ? errorMessage
+                      : `${errorMessage}.`) || 'Something went wrong.'
+                  );
+                } else {
+                  props.navigation.goBack();
+                  renderSuccessPopup();
+                }
+              })
+              .catch((e) => {
+                console.log('Error \n', { e });
+              });
           } else {
-            Alert.alert('Images are not uploaded');
+            setLoading!(false);
+            renderUploadErrorPopup('Unable to upload Images.');
+            // Alert.alert('Images are not uploaded');
           }
         })
         .catch((e: string) => {
           console.log('Error occured', e);
+          renderUploadErrorPopup('Something went wrong.');
         })
         .finally(() => {
           setLoading!(false);
@@ -275,27 +287,38 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 prismPrescriptionFileId: filtered.join(','),
               };
               console.log('prescriptionMedicineInput', prescriptionMedicineInput);
-              const { _data } = client.mutate<
-                SavePrescriptionMedicineOrder,
-                SavePrescriptionMedicineOrderVariables
-              >({
-                mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-                variables: { prescriptionMedicineInput },
-              });
-              setLoading!(false);
-              const errorMessage = g(_data, 'SavePrescriptionMedicineOrder', 'errorMessage');
-              if (errorMessage) {
-                renderUploadErrorPopup(
-                  (errorMessage && errorMessage.endsWith('.')
-                    ? errorMessage
-                    : `${errorMessage}.`) || 'Something went wrong.'
-                );
-              } else {
-                props.navigation.goBack();
-                renderSuccessPopup();
-              }
+              client
+                .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
+                  mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+                  variables: { prescriptionMedicineInput },
+                })
+                .then((_data) => {
+                  setLoading!(false);
+                  const errorMessage = g(
+                    _data,
+                    'data',
+                    'SavePrescriptionMedicineOrder',
+                    'errorMessage'
+                  );
+                  if (errorMessage) {
+                    setLoading!(false);
+                    renderUploadErrorPopup(
+                      (errorMessage && errorMessage.endsWith('.')
+                        ? errorMessage
+                        : `${errorMessage}.`) || 'Something went wrong.'
+                    );
+                  } else {
+                    props.navigation.goBack();
+                    renderSuccessPopup();
+                  }
+                })
+                .catch((e) => {
+                  console.log('Error \n', { e });
+                  renderUploadErrorPopup('Something went wrong.');
+                });
             })
             .catch((e: string) => {
+              renderUploadErrorPopup('Something went wrong.');
               console.log('Error occured', e);
             })
             .finally(() => {

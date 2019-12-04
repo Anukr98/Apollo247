@@ -1,25 +1,35 @@
-import { isIphone5s, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import {
+  FeedbackInfoCard,
+  FeedbackInfoCardProps,
+} from '@aph/mobile-patients/src/components/ui/FeedbackInfoCard';
+import {
+  RatingSmilyView,
+  RatingStatus,
+} from '@aph/mobile-patients/src/components/ui/RatingSmilyView';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { ADD_PATIENT_FEEDBACK } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  addPatientFeedback,
+  addPatientFeedbackVariables,
+} from '@aph/mobile-patients/src/graphql/types/addPatientFeedback';
+import { FEEDBACKTYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { aphConsole, g, isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  ConsultFeedBackData,
+  MedicineFeedBackData,
+  TestsFeedBackData,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { ADD_PATIENT_FEEDBACK } from '../graphql/profiles';
-import {
-  addPatientFeedback,
-  addPatientFeedbackVariables,
-} from '../graphql/types/addPatientFeedback';
-import { FEEDBACKTYPE } from '../graphql/types/globalTypes';
-import { ConsultFeedBackData, MedicineFeedBackData, TestsFeedBackData } from '../strings/AppConfig';
-import { RadioSelectionItem } from './Medicines/RadioSelectionItem';
-import { Spearator } from './ui/BasicComponents';
-import { BottomPopUp } from './ui/BottomPopUp';
-import { Button } from './ui/Button';
-import { FeedbackInfoCard, FeedbackInfoCardProps } from './ui/FeedbackInfoCard';
-import { RatingSmilyView, RatingStatus } from './ui/RatingSmilyView';
-import { TextInputComponent } from './ui/TextInputComponent';
-import { useUIElements } from './UIElementsProvider';
-import { useAllCurrentPatients } from '../hooks/authHooks';
 
 const styles = StyleSheet.create({
   containerStyles: {
@@ -82,24 +92,28 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
   const onSubmitFeedBack = () => {
     setLoading!(true);
     // call api here
+    const variables: addPatientFeedbackVariables = {
+      patientFeedbackInput: {
+        feedbackType: props.type,
+        patientId: g(currentPatient, 'id')!,
+        rating: ratingStatus,
+        transactionId: props.transactionId,
+        reason: ratingOption,
+        thankyouNote: ratingSuggestion,
+      },
+    };
+    aphConsole.log(JSON.stringify(variables));
+
     client
       .mutate<addPatientFeedback, addPatientFeedbackVariables>({
         mutation: ADD_PATIENT_FEEDBACK,
-        variables: {
-          patientFeedbackInput: {
-            feedbackType: props.type,
-            patientId: g(currentPatient, 'id')!,
-            rating: ratingStatus,
-            transactionId: props.transactionId,
-            reason: ratingOption,
-            thankyouNote: ratingSuggestion,
-          },
-        },
+        variables,
       })
       .then(({}) => {
         props.onComplete && props.onComplete();
       })
-      .catch(() => {
+      .catch((e) => {
+        aphConsole.log({ e });
         Alert.alert('Uh oh.. :(', 'Something went wrong, please try later.');
       })
       .finally(() => {
