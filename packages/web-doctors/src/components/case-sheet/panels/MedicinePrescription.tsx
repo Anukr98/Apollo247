@@ -32,6 +32,7 @@ import {
   GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
 } from 'graphql/types/GetDoctorFavouriteMedicineList';
 import { useApolloClient } from 'react-apollo-hooks';
+import { relative } from 'path';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -131,17 +132,31 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       flexGrow: 1
     },
-    paper: {
-      textAlign: 'left',
-      color: theme.palette.text.secondary,
-      marginBottom: 12,
+    mediceneContainer: {
       backgroundColor: 'rgba(0,0,0,0.02)',
       border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 40px 12px 12px',
-      maxWidth: '100%',
       borderRadius: 5,
+      padding: 5,
+      position: 'relative',
+      '& img': {
+        border: '1px solid #00b38e',
+        borderRadius: '50%',
+        maxWidth: 24,
+      },
+    },
+    paper: {
+      textAlign: 'left',
+      color: theme.palette.text.secondary,      
+      padding: '12px 25px 12px 5px',
+      borderRadius: 0,
+      maxWidth: '100%',
       position: 'relative',
       boxShadow: 'none',
+      backgroundColor: 'transparent',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:last-child': {
+        borderBottom: 'none',
+      },
       '& h5': {
         fontSize: 14,
         color: '#02475b',
@@ -208,13 +223,16 @@ const useStyles = makeStyles((theme: Theme) =>
       color: 'rgba(2, 71, 91, 0.6) !important',
       marginBottom: 12
     },
+    favMedBg: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+    },
     favmedicineHeading: {
       fontSize: 14,
       fontWeight: 500,
       lineHeight: 'normal',
       color: 'rgba(2, 71, 91, 0.6) !important',
       marginBottom: 12,
-      paddingLeft: 335
     },
     backArrow: {
       cursor: 'pointer',
@@ -347,13 +365,13 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       top: 5,
-      right: 4,
+      right: 2,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       minWidth: 30,
-      padding: '5px 10px',
+      padding: '5px 0',
       '&:hover': {
         backgroundColor: 'transparent'
       }
@@ -1043,6 +1061,7 @@ export const MedicinePrescription: React.FC = () => {
         </Grid>
         <Grid item lg={6} xs={12}>
           <div className={classes.favmedicineHeading}>Favourite Medicines</div>
+         <div  className={classes.mediceneContainer}>
           {favouriteMedicine &&
             favouriteMedicine.map((favMedicine, id, index) => {
               const favDuration = `${Number(
@@ -1081,8 +1100,8 @@ export const MedicinePrescription: React.FC = () => {
                   : '';
               const favMedicineName = favMedicine && favMedicine.medicineName;
               return (
-                <div style={{ position: 'relative' }}>
-                  <Paper className={`${classes.paper} ${classes.activeCard}`}>
+                <div className={classes.paper}>
+                  <Paper className={classes.favMedBg}>
                     <h5>{favMedicineName}</h5>
                     <h6>
                       {favDosageCount} {favUnitHtml} a day{' '}
@@ -1104,7 +1123,7 @@ export const MedicinePrescription: React.FC = () => {
                     <img
                       src={
                         favouriteMedicine &&
-                        require('images/round_edit_24_px.svg')
+                        require('images/add_doctor_white.svg')
                       }
                       alt=''
                     />
@@ -1112,6 +1131,7 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               );
             })}
+            </div>
         </Grid>
       </Grid>
       {isEditFavMedicine && (

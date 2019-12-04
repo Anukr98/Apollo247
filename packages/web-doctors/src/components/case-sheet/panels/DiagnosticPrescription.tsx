@@ -5,7 +5,8 @@ import {
   Theme,
   MenuItem,
   Paper,
-  Button
+  Button,
+  Grid,
 } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
@@ -160,13 +161,14 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     listContainer: {
       display: 'flex',
-      flexFlow: 'column'
+      flexFlow: 'column',
     },
     icon: {
       color: '#00b38e'
     },
     textFieldContainer: {
-      width: '100%'
+      width: '100%',
+      position: 'relative',
     },
     othersBtn: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
@@ -210,6 +212,26 @@ const useStyles = makeStyles((theme: Theme) =>
       },
       '& img': {
         marginRight: 8
+      }
+    },
+    btnAddDoctorright: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      position: 'absolute',
+      right: 5,
+      // pointerEvents: 'none',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent'
+      },
+      '& img': {
+        marginRight: 8,
+        border: '1px solid #00b38e',
+        borderRadius: '50%',
+        maxWidth: 24,
       }
     },
     darkGreenaddBtn: {
@@ -400,6 +422,8 @@ export const DiagnosticPrescription: React.FC = () => {
   };
   return (
     <Typography component='div' className={classes.contentContainer}>
+      <Grid container spacing={1}>
+      <Grid item lg={6} xs={12}>
       <Typography component='div' className={classes.fullWidth}>
         <Typography component='h5' variant='h5'>
           Tests
@@ -507,8 +531,7 @@ export const DiagnosticPrescription: React.FC = () => {
           />
         )}
         {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
-          <div>
-            <span>
+         
               <AphButton
                 className={classes.darkGreenaddBtn}
                 variant='contained'
@@ -533,10 +556,13 @@ export const DiagnosticPrescription: React.FC = () => {
               >
                 <img src={require('images/ic_add_circle.svg')} alt='' />
               </AphButton>
-            </span>
-          </div>
         )}
       </Typography>
+      </Grid>
+      <Grid item lg={6} xs={12}>
+      <Typography component='h5' variant='h5'>
+      Favorite Tests
+        </Typography>
       {favTests ? (
         favTests.map((favTest: any, id: any) => {
           return (
@@ -545,8 +571,14 @@ export const DiagnosticPrescription: React.FC = () => {
               className={classes.listContainer}
               key={id}
             >
+              
+              <Chip
+                className={classes.othersBtn}
+                key={idx}
+                label={favTest && favTest.itemname}
+              />
               <AphButton
-                className={classes.btnAddDoctor}
+                className={classes.btnAddDoctorright}
                 variant='contained'
                 color='primary'
                 onClick={() => {
@@ -564,19 +596,18 @@ export const DiagnosticPrescription: React.FC = () => {
                   // handleChange('single');
                 }}
               >
-                <img src={require('images/ic_dark_plus.svg')} alt='' />
+                <img src={require('images/add_doctor_white.svg')} alt='' />
+                
               </AphButton>
-              <Chip
-                className={classes.othersBtn}
-                key={idx}
-                label={favTest && favTest.itemname}
-              />
+              
             </Typography>
           );
         })
       ) : (
         <></>
       )}
+  </Grid>
+  </Grid>
     </Typography>
   );
 };

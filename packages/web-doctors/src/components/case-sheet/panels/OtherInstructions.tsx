@@ -104,8 +104,10 @@ const useStyles = makeStyles((theme: Theme) =>
       color: "#02475b !important",
       padding: "5px 0",
       "& img": {
-        float: "right",
-        paddingTop: 5
+        float: 'right',
+        border: '1px solid #00b38e',
+        borderRadius: '50%',
+        maxWidth: 24,
       },
       "&:focus": {
         backgroundColor: "rgba(0,0,0,0.02)"
