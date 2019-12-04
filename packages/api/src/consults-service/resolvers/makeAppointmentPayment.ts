@@ -101,7 +101,11 @@ const makeAppointmentPayment: Resolver<
   const paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
 
   //update appointment status to PENDING
-  await apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.PENDING);
+  if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
+    await apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.PENDING);
+  } else {
+    await apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.CANCELLED);
+  }
 
   return { appointment: paymentInfo };
 };
