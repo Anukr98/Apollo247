@@ -359,6 +359,9 @@ export class MedicineOrdersStatus extends BaseEntity {
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
 
+  @Column({ nullable: true, default: true })
+  hideStatus: boolean;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

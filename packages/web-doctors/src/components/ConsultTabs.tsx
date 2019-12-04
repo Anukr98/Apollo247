@@ -1081,12 +1081,15 @@ export const ConsultTabs: React.FC = () => {
         }
       })
       .then(_data => {
+        console.log(_data);
         if (
           _data &&
           _data.data &&
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
+          const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
+          document.cookie = cookieStr + ";path=/;";
           setcallId(_data.data.sendCallNotification.callDetails.id);
         }
       })

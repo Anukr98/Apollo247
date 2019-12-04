@@ -888,18 +888,34 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
     sendStopCallNotificationFn();
   };
   const sendStopCallNotificationFn = () => {
+    const doctorCallId = getCookieValue("doctorCallId");
+    console.log(doctorCallId);
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
         fetchPolicy: "no-cache",
         variables: {
-          appointmentCallId: props.callId
+          appointmentCallId: doctorCallId
         }
       })
       .catch((error: ApolloError) => {
         console.log("Error in Call Notification", error.message);
         alert("An error occurred while sending notification to Client.");
       });
+  };
+  const getCookieValue = (id: string) => {
+    const name = id + "=";
+    const ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === " ") {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
   };
   const autoSend = (callType: string) => {
     const text = {
@@ -1391,6 +1407,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   // flag: true is for missed call reschedule & false for normal
   const callInitiateReschedule = (flag: boolean) => {
     const today = moment();
+    unSubscribeBrowserButtonsListener();
     const rescheduleParam = flag
       ? {
           appointmentId: props.appointmentId,
@@ -1469,7 +1486,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
           },
           (status: any, response: any) => {}
         );
-        unSubscribeBrowserButtonsListener();
+
         setIsPopoverOpen(false);
         setDisableOnCancel(true);
         if (document.getElementById("homeId")) {

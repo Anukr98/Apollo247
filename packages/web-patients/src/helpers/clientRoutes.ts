@@ -23,6 +23,7 @@ export const clientRoutes = {
   medicineAllBrands: () => '/view-all-brands',
   medicineSearchByBrand: () => '/search-by-brand',
   searchByMedicine: () => '/search-medicine',
+  medicineDetails: () => '/medicine-details',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
