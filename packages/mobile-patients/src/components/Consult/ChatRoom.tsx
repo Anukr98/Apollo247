@@ -53,6 +53,7 @@ import {
   STATUS,
   ConsultQueueInput,
   FEEDBACKTYPE,
+  REQUEST_ROLES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -69,6 +70,7 @@ import Pubnub, {
   MembershipEvent,
   MessageActionEvent,
   FetchTimeResponse,
+  HereNowResponse,
 } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -175,7 +177,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const appointmentData = props.navigation.state.params!.data;
 
-  console.log('appointmentData', appointmentData);
+  // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -729,16 +731,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: string) => {
-      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+      // console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisableWarning: (error: string) => {
-      console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
+      // console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisableWarningLifted: (error: string) => {
-      console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
+      // console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     audioNetworkStats: (error: object) => {
-      console.log(`audioNetworkStats subscriberEventHandlers: ${JSON.stringify(error)}`);
+      // console.log(`audioNetworkStats subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
   };
 
@@ -778,15 +780,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
-      startCallAbondmentTimer(180, false);
+      // startCallAbondmentTimer(180, false);
       eventsAfterConnectionDestroyed();
-      disconnectCallText();
+      // disconnectCallText();
     },
     streamPropertyChanged: (event: string) => {
       console.log('session streamPropertyChanged destroyed!', event);
-      startCallAbondmentTimer(180, false);
+      // startCallAbondmentTimer(180, false);
       eventsAfterConnectionDestroyed();
-      disconnectCallText();
+      // disconnectCallText();
     },
     otrnError: (error: string) => {
       console.log(
@@ -824,6 +826,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
+    uuid: REQUEST_ROLES.PATIENT,
     restore: true,
     keepAlive: true,
     autoNetworkDetection: true,
@@ -832,18 +835,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
+  let abondmentStarted = false;
 
   useEffect(() => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
-    // pubnub && pubnub.unsubscribe({ channels: [channel] });
-
     pubnub.subscribe({
       channels: [channel],
       withPresence: true,
     });
-    console.log('pubnubsubscribe');
 
     getHistory(0);
 
@@ -864,66 +865,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
-        console.log('presenceEvent', presenceEvent);
-        pubnub.hereNow(
-          {
-            channels: [channel],
-            includeUUIDs: true,
-            includeState: true,
-          },
-          (status, response) => {
-            console.log('presenceEventstatus', status);
-            console.log('presenceresponse', response);
-          }
-        );
+        // console.log('presenceEvent', presenceEvent);
 
         pubnub
-          .time()
-          .then((value: FetchTimeResponse) => {
-            console.log('FetchTimeResponse', value);
+          .hereNow({
+            channels: [channel],
+            includeUUIDs: true,
+          })
+          .then((response: HereNowResponse) => {
+            console.log('hereNowresponse', response);
+            // console.log(
+            //   'callAbondmentMethodoccupancyDoctor',
+            //   response.channels[appointmentData.id].occupants
+            // );
+
+            const data: any = response.channels[appointmentData.id].occupants;
+
+            const occupancyDoctor = data.filter((obj: any) => {
+              // console.log('resultinsertText', obj.message);
+              return obj.uuid === REQUEST_ROLES.DOCTOR;
+            });
+            console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
+
+            if (response.totalOccupancy >= 2) {
+              console.log('calljoined');
+              stopCallAbondmentTimer();
+              abondmentStarted = false;
+            } else {
+              if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
+                if (abondmentStarted == false) {
+                  abondmentStarted = true;
+                  console.log('callAbondmentMethod');
+                  callAbondmentMethod();
+                  eventsAfterConnectionDestroyed();
+                }
+              }
+            }
           })
           .catch((error) => {
-            console.log('error', error);
+            console.log(error);
           });
-
-        if (presenceEvent.occupancy >= 2) {
-          console.log('calljoined');
-          stopCallAbondmentTimer();
-        } else {
-          console.log('callAbondmentMethod');
-          callAbondmentMethod();
-        }
-      },
-      disconnect: (disconnect: any) => {
-        console.log('disconnected', disconnect);
-      },
-      reconnect: (reconnect: any) => {
-        console.log('reconnected', reconnect);
-      },
-      error: (obj: any) => {
-        console.log('ERROR ' + JSON.stringify(obj));
-      },
-      callback: (obj: any) => {
-        console.log('callback ' + JSON.stringify(obj));
-      },
-      signal: (signalEvent: SignalEvent) => {
-        console.log('signalEvent ' + JSON.stringify(signalEvent));
-      },
-
-      user: (userEvent: UserEvent) => {
-        console.log('userEvent ' + JSON.stringify(userEvent));
-      },
-
-      space: (spaceEvent: SpaceEvent) => {
-        console.log('spaceEvent ' + JSON.stringify(spaceEvent));
-      },
-
-      membership: (membershipEvent: MembershipEvent) => {
-        console.log('membershipEvent ' + JSON.stringify(membershipEvent));
-      },
-
-      messageAction: (messageActionEvent: MessageActionEvent) => {
-        console.log('messageActionEvent ' + JSON.stringify(messageActionEvent));
       },
     });
 
@@ -971,8 +952,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     if (
       startConsultResult.length > 0 &&
-      stopConsultResult.length == 0 &&
-      appointmentData.status === STATUS.COMPLETED
+      stopConsultResult.length == 0 
+      // appointmentData.status === STATUS.COMPLETED
     ) {
       console.log('callAbondmentMethod scenario');
       // console.log('callAbondmentMethod scenario', appointmentData.status === STATUS.COMPLETED);
@@ -984,14 +965,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         startConsultJRResult.length,
         stopConsultJRResult.length,
         dateIsAfter,
-        appointmentData.status
+        startConsultResult.length > 0
       );
 
       if (
         startConsultJRResult.length > 0 &&
         stopConsultJRResult.length > 0 &&
         dateIsAfter &&
-        appointmentData.status === STATUS.PENDING
+        startConsultResult.length > 0
       ) {
         startCallAbondmentTimer(180, true);
       }
@@ -999,10 +980,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const startCallAbondmentTimer = (timer: number, isDoctorNoShow: boolean) => {
-    // if (callAbandonmentTimer) return;
     try {
-      callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-
       setTransferData(appointmentData);
       callAbandonmentTimer = setInterval(() => {
         timer = timer - 1;
@@ -1024,11 +1002,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }, 1000);
     } catch (error) {
-      console.log('error in call abandoment',error);
-      
+      console.log('error in call abandoment', error);
     }
-
-    
   };
 
   const stopCallAbondmentTimer = () => {
@@ -1121,12 +1096,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
 
             // setTimeout(() => {
-              console.log('inserting');
+            console.log('inserting');
 
-              insertText = newmessage;
-              setMessages(newmessage as []);
-              checkAutomatedPatientText();
-              checkForRescheduleMessage(newmessage);
+            insertText = newmessage;
+            setMessages(newmessage as []);
+            checkAutomatedPatientText();
+            checkForRescheduleMessage(newmessage);
             // }, 100);
 
             setTimeout(() => {
@@ -1382,7 +1357,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopInterval();
         setConvertVideo(false);
         addMessages(message);
-        setShowFeedback(true);
+        setShowFeedback(false);
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
         message.message.message === 'Audio call ended' ||
@@ -1920,118 +1895,118 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </StickyBottomComponent>
           </View>
           {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
-           <View
-            style={{
-              width: 244,
-              height: 206,
-              backgroundColor: '#0087ba',
-              marginLeft: 38,
-              borderRadius: 10,
-              marginBottom: 4,
-            }}
-          >
-            <Text
+            <View
               style={{
-                color: 'white',
-                lineHeight: 22,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
-                marginHorizontal: 16,
-                marginTop: 12,
+                width: 244,
+                height: 206,
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+                marginBottom: 4,
               }}
             >
-              I’ve also scheduled a{' '}
-              <Text
-                style={{
-                  color: 'white',
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansBold(15),
-                  textAlign: 'left',
-                }}
-              >
-                free follow-up{' '}
-              </Text>
               <Text
                 style={{
                   color: 'white',
                   lineHeight: 22,
                   ...theme.fonts.IBMPlexSansMedium(15),
                   textAlign: 'left',
+                  marginHorizontal: 16,
+                  marginTop: 12,
                 }}
               >
-                for you —
+                I’ve also scheduled a{' '}
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansBold(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  free follow-up{' '}
+                </Text>
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  for you —
+                </Text>
               </Text>
-            </Text>
-            <View
-              style={{
-                marginHorizontal: 16,
-                marginTop: 9,
-                opacity: 0.5,
-                height: 2,
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                borderRadius: 1,
-                borderColor: '#ffffff',
-                overflow: 'hidden',
-              }}
-            />
-            <Text
-              style={{
-                marginHorizontal: 16,
-                marginTop: 9,
-                lineHeight: 22,
-                ...theme.fonts.IBMPlexSansSemiBold(15),
-                color: 'white',
-              }}
-            >
-              {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
-            </Text>
-            <View
-              style={{
-                marginHorizontal: 16,
-                marginTop: 10,
-                opacity: 0.5,
-                height: 2,
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                borderRadius: 1,
-                borderColor: '#ffffff',
-                overflow: 'hidden',
-              }}
-            />
-            <StickyBottomComponent
-              style={{
-                paddingHorizontal: 0,
-                backgroundColor: 'transparent',
-                shadowColor: 'transparent',
-                paddingTop: 13,
-              }}
-            >
-              <Button
-                title={'RESCHEDULE'}
+              <View
                 style={{
-                  flex: 0.5,
-                  marginLeft: 16,
-                  marginRight: 5,
-                  backgroundColor: '#0087ba',
-                  borderWidth: 2,
-                  borderColor: '#fcb715',
-                }}
-                titleTextStyle={{ color: 'white' }}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
-
-                  console.log('Button Clicked');
-                  NextAvailableSlot(rowData, 'Followup', false);
-                  setTransferData(rowData.transferInfo);
-                  setTimeout(() => {
-                    flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-                  }, 200);
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
                 }}
               />
-            </StickyBottomComponent>
-          </View>
-           )}
+              <Text
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  lineHeight: 22,
+                  ...theme.fonts.IBMPlexSansSemiBold(15),
+                  color: 'white',
+                }}
+              >
+                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+              </Text>
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 10,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
+                }}
+              />
+              <StickyBottomComponent
+                style={{
+                  paddingHorizontal: 0,
+                  backgroundColor: 'transparent',
+                  shadowColor: 'transparent',
+                  paddingTop: 13,
+                }}
+              >
+                <Button
+                  title={'RESCHEDULE'}
+                  style={{
+                    flex: 0.5,
+                    marginLeft: 16,
+                    marginRight: 5,
+                    backgroundColor: '#0087ba',
+                    borderWidth: 2,
+                    borderColor: '#fcb715',
+                  }}
+                  titleTextStyle={{ color: 'white' }}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+
+                    console.log('Button Clicked');
+                    NextAvailableSlot(rowData, 'Followup', false);
+                    setTransferData(rowData.transferInfo);
+                    setTimeout(() => {
+                      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+                    }, 200);
+                  }}
+                />
+              </StickyBottomComponent>
+            </View>
+          )}
           {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
         </View>
       </>
