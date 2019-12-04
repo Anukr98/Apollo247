@@ -1693,6 +1693,7 @@ export const UPLOAD_DOCUMENT = gql`
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
       status
       fileId
+      filePath
     }
   }
 `;
