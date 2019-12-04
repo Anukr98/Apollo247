@@ -50,6 +50,7 @@ import {
   BookTransferAppointmentInput,
   TRANSFER_INITIATED_TYPE,
   UPLOAD_FILE_TYPES,
+  STATUS,
   ConsultQueueInput,
   FEEDBACKTYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -61,7 +62,14 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import Pubnub from 'pubnub';
+import Pubnub, {
+  SignalEvent,
+  UserEvent,
+  SpaceEvent,
+  MembershipEvent,
+  MessageActionEvent,
+  FetchTimeResponse,
+} from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -85,6 +93,7 @@ import {
   View,
   BackHandler,
   WebView,
+  StyleSheet,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
@@ -121,8 +130,11 @@ const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
-let timerId: NodeJS.Timeout;
+let timerId: any;
 let diffInHours: number;
+let callAbandonmentTimer: any;
+let callAbandonmentStoppedTimer: number;
+let messageSent: string;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -132,26 +144,35 @@ type rescheduleType = {
   isPaid: number;
 };
 
+const styles = StyleSheet.create({
+  rescheduleTextStyles: {
+    ...theme.viewStyles.yellowTextStyle,
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  claimStyles: {
+    flex: 0.5,
+    marginLeft: 5,
+    marginRight: 8,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+  rescheduletyles: {
+    flex: 0.5,
+    marginRight: 5,
+    marginLeft: 8,
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+});
+
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  // useEffect(() => {
-  //   RNFetchBlob.config({
-  //     // add this option that makes response data to be stored as a file,
-  //     // this is much more performant.
-  //     fileCache: true,
-  //   })
-  //     .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
-  //       //some headers ..
-  //     })
-  //     .then((res) => {
-  //       // the temp file path
-  //       console.log('The file saved to res ', res);
-  //       console.log('The file saved to ', res.path());
-  //     });
-  // }, []);
   const appointmentData = props.navigation.state.params!.data;
 
   console.log('appointmentData', appointmentData);
@@ -160,6 +181,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     : '';
 
   // console.log('appointmentData', appointmentData);
+
+  const dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -255,7 +278,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
   const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
-  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(true);
+  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
   const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
     false,
@@ -295,7 +318,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const channel = appointmentData.id;
   const doctorId = appointmentData.doctorInfo.id;
 
-  let intervalId: NodeJS.Timeout;
+  let intervalId: any;
   let stoppedTimer: number;
   let thirtySecondTimer: any;
   let minuteTimer: any;
@@ -307,12 +330,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
 
+  let currentDateTime = new Date();
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
+
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
@@ -684,6 +710,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     error: (error: string) => {
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const subscriberEventHandlers = {
@@ -696,13 +725,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisabled: (error: string) => {
+      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisableWarning: (error: string) => {
+      console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisableWarningLifted: (error: string) => {
+      console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    audioNetworkStats: (error: object) => {
+      console.log(`audioNetworkStats subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const sessionEventHandlers = {
     error: (error: string) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
-    connectionCreated: (event: string) => {},
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
+    },
     connectionDestroyed: (event: string) => {
       console.log('session stream connectionDestroyed!', event);
       eventsAfterConnectionDestroyed();
@@ -727,6 +773,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     signal: (event: string) => {
       console.log('session stream signal!', event);
     },
+    streamCreated: (event: string) => {
+      console.log('session streamCreated created!', event);
+    },
+    streamDestroyed: (event: string) => {
+      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
+      startCallAbondmentTimer(180, false);
+      eventsAfterConnectionDestroyed();
+      disconnectCallText();
+    },
+    streamPropertyChanged: (event: string) => {
+      console.log('session streamPropertyChanged destroyed!', event);
+      startCallAbondmentTimer(180, false);
+      eventsAfterConnectionDestroyed();
+      disconnectCallText();
+    },
+    otrnError: (error: string) => {
+      console.log(
+        `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
+      );
+    },
   };
 
   const eventsAfterConnectionDestroyed = () => {
@@ -734,9 +800,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setIsAudioCall(false);
     stopTimer();
     setCallAccepted(false);
-    setHideStatusBar(true);
+    setHideStatusBar(false);
     setConvertVideo(false);
     KeepAwake.activate();
+    setMute(true);
+    setShowVideo(true);
+    setCameraPosition('front');
+    setChatReceived(false);
+
     setTimerStyles({
       position: 'absolute',
       marginHorizontal: 20,
@@ -753,6 +824,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
+    // restore: true,
+    // keepAlive: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
+    // presenceTimeout: 20,
+    // heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
 
@@ -760,10 +837,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
+    // pubnub && pubnub.unsubscribe({ channels: [channel] });
+
     pubnub.subscribe({
       channels: [channel],
       withPresence: true,
     });
+    console.log('pubnubsubscribe');
 
     getHistory(0);
 
@@ -780,15 +860,71 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        console.log('messageevent', message);
+        // console.log('messageevent', message);
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
         console.log('presenceEvent', presenceEvent);
+        pubnub.hereNow(
+          {
+            channels: [channel],
+            includeUUIDs: true,
+            includeState: true,
+          },
+          (status, response) => {
+            console.log('presenceEventstatus', status);
+            console.log('presenceresponse', response);
+          }
+        );
+
+        // pubnub
+        //   .time()
+        //   .then((value: FetchTimeResponse) => {
+        //     console.log('FetchTimeResponse', value);
+        //   })
+        //   .catch((error) => {
+        //     console.log('error', error);
+        //   });
 
         if (presenceEvent.occupancy >= 2) {
+          console.log('calljoined');
+          stopCallAbondmentTimer();
+        } else {
+          console.log('callAbondmentMethod');
+          callAbondmentMethod();
         }
       },
+      // disconnect: (disconnect: any) => {
+      //   console.log('disconnected', disconnect);
+      // },
+      // reconnect: (reconnect: any) => {
+      //   console.log('reconnected', reconnect);
+      // },
+      // error: (obj: any) => {
+      //   console.log('ERROR ' + JSON.stringify(obj));
+      // },
+      // callback: (obj: any) => {
+      //   console.log('callback ' + JSON.stringify(obj));
+      // },
+      // signal: (signalEvent: SignalEvent) => {
+      //   console.log('signalEvent ' + JSON.stringify(signalEvent));
+      // },
+
+      // user: (userEvent: UserEvent) => {
+      //   console.log('userEvent ' + JSON.stringify(userEvent));
+      // },
+
+      // space: (spaceEvent: SpaceEvent) => {
+      //   console.log('spaceEvent ' + JSON.stringify(spaceEvent));
+      // },
+
+      // membership: (membershipEvent: MembershipEvent) => {
+      //   console.log('membershipEvent ' + JSON.stringify(membershipEvent));
+      // },
+
+      // messageAction: (messageActionEvent: MessageActionEvent) => {
+      //   console.log('messageActionEvent ' + JSON.stringify(messageActionEvent));
+      // },
     });
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -803,8 +939,102 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
       minuteTimer && clearTimeout(minuteTimer);
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
+      callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+      timerId && clearInterval(timerId);
+      intervalId && clearInterval(intervalId);
     };
   }, []);
+
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+  const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
+
+  const callAbondmentMethod = () => {
+    const startConsultResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === startConsultMsg;
+    });
+
+    const stopConsultResult = insertText.filter((obj: any) => {
+      // console.log('callAbondmentMethodstopConsultResult', obj.message);
+      return obj.message === stopConsultMsg;
+    });
+
+    const startConsultJRResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === startConsultjr;
+    });
+
+    const stopConsultJRResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === stopConsultJr;
+    });
+
+    if (
+      startConsultResult.length > 0 &&
+      stopConsultResult.length == 0 &&
+      appointmentData.status === STATUS.COMPLETED
+    ) {
+      console.log('callAbondmentMethod scenario');
+      // console.log('callAbondmentMethod scenario', appointmentData.status === STATUS.COMPLETED);
+
+      startCallAbondmentTimer(180, false);
+    } else {
+      console.log(
+        'doctor no show scenario',
+        startConsultJRResult.length,
+        stopConsultJRResult.length,
+        dateIsAfter,
+        appointmentData.status
+      );
+
+      if (
+        startConsultJRResult.length > 0 &&
+        stopConsultJRResult.length > 0 &&
+        dateIsAfter &&
+        appointmentData.status === STATUS.PENDING
+      ) {
+        startCallAbondmentTimer(180, true);
+      }
+    }
+  };
+
+  const startCallAbondmentTimer = (timer: number, isDoctorNoShow: boolean) => {
+    // if (callAbandonmentTimer) return;
+    try {
+      callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+
+      setTransferData(appointmentData);
+      callAbandonmentTimer = setInterval(() => {
+        timer = timer - 1;
+        callAbandonmentStoppedTimer = timer;
+        setCallAbundantCallTime(timer);
+
+        console.log('callAbandonmentStoppedTimer', timer);
+
+        if (timer < 1) {
+          console.log('call Abundant', appointmentData);
+
+          if (isDoctorNoShow) {
+            setIsDoctorNoShow(true);
+          } else {
+            NextAvailableSlot(appointmentData, 'Transfer', true);
+          }
+          setCallAbundantCallTime(0);
+          callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+        }
+      }, 1000);
+    } catch (error) {
+      console.log('error in call abandoment',error);
+      
+    }
+
+    
+  };
+
+  const stopCallAbondmentTimer = () => {
+    console.log('stopCallAbondmentTimer', callAbandonmentTimer);
+    callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+  };
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
@@ -860,15 +1090,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, res) => {
         try {
-          const end: number = res.endTimeToken ? res.endTimeToken : 1;
+          const end: any = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
-          // console.log('msgs', msgs);
+          console.log('msgs', msgs);
 
           res.messages.forEach((element, index) => {
             newmessage[newmessage.length] = element.entry;
           });
-          // console.log('res', res);
+          // console.log('newmessage', newmessage);
           setLoading(false);
 
           if (messages.length !== newmessage.length) {
@@ -882,19 +1112,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               updateSessionAPI();
               checkingAppointmentDates();
             }
-            insertText = newmessage;
-            setMessages(newmessage as []);
-            console.log('newmessage', newmessage);
-            if (newmessage.find((item) => item.message.includes('Height'))) {
-              setDisplayChatQuestions(false);
-            }
+
+            // console.log('newmessage', newmessage);
             if (msgs.length == 100) {
               console.log('hihihihihi');
               getHistory(end);
+              return;
             }
 
-            checkAutomatedPatientText();
-            checkForRescheduleMessage(newmessage);
+            // setTimeout(() => {
+              console.log('inserting');
+
+              insertText = newmessage;
+              setMessages(newmessage as []);
+              checkAutomatedPatientText();
+              checkForRescheduleMessage(newmessage);
+            // }, 100);
 
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
@@ -917,9 +1150,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     if (result.length > 0) {
       console.log('checkForRescheduleMessage ', result);
-      checkIfReschduleApi(result[0], 'Followup');
-      NextAvailableSlot(result[0], 'Followup');
-      setCheckReschudule(true);
+      NextAvailableSlot(result[0], 'Followup', false);
     }
   };
 
@@ -954,6 +1185,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           automatedText: successSteps,
           id: doctorId,
           isTyping: true,
+          messageDate: currentDateTime,
         },
         storeInHistory: true,
         sendByPost: true,
@@ -963,10 +1195,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (false) {
-      //To-Do: api-key needs to be replaced
+    if (appointmentData.isJdQuestionsComplete) {
       thirtySecondCall();
       minuteCaller();
+    } else {
+      setDisplayChatQuestions(true);
     }
   }, []);
 
@@ -1013,6 +1246,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }’s team is with another patient right now. Your consultation prep will start soon.`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: currentDateTime,
               },
               storeInHistory: true,
               sendByPost: true,
@@ -1068,6 +1302,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: currentDateTime,
               },
               storeInHistory: true,
               sendByPost: true,
@@ -1115,11 +1350,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const [showFeedback, setShowFeedback] = useState(false);
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    console.log('pubNubMessages', message);
+    // console.log('pubNubMessages', message);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
         setOnSubscribe(true);
+        stopCallAbondmentTimer();
+        setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
         // console.log("AUDIO_CALL_STARTED");
@@ -1128,6 +1365,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
         setIsAudio(false);
+        stopCallAbondmentTimer();
+        setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
       } else if (message.message.message === startConsultMsg) {
@@ -1188,6 +1427,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
         setShowPopup(true);
+      } else if (message.message.message === rescheduleConsultMsg) {
+        console.log('rescheduleConsultMsg');
+        // checkForRescheduleMessage(message.message);
+        addMessages(message);
       }
     } else {
       console.log('succss');
@@ -1196,17 +1439,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('addMessages', addMessages);
+    // console.log('addMessages', message, message.timetoken);
+    if (message.message.id !== patientId) {
+      stopCallAbondmentTimer();
+      setIsDoctorNoShow(false);
+    }
+
+    // const timeStamp = parseInt(message.timetoken) / parseInt('10000000');
+    // console.log('timeStamp', timeStamp);
+
+    // let dateObj = new Date(timeStamp * 1000);
+    // let utcString = dateObj.toLocaleString();
+    // console.log('utcString', utcString);
+
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
     if (!isCall || !isAudioCall) {
       setChatReceived(true);
     }
 
-    checkForRescheduleMessage(insertText);
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === rescheduleConsultMsg;
+    });
+
+    checkForRescheduleMessage(result);
 
     setTimeout(() => {
-      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: false });
+      flatListRef.current! &&
+        flatListRef.current!.scrollToEnd({
+          animated: false,
+        });
     }, 300);
   };
 
@@ -1241,6 +1504,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const text = {
         id: patientId,
         message: textMessage,
+        messageDate: currentDateTime,
       };
 
       setMessageText('');
@@ -1267,7 +1531,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferReschedule = (rowData: any, index: number) => {
-    console.log('transferReschedule', rowData);
+    // console.log('transferReschedule', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -1450,9 +1714,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule clicked');
 
                     try {
-                      checkIfReschduleApi(rowData, 'Transfer');
-                      NextAvailableSlot(rowData, 'Transfer');
-                      setCheckReschudule(true);
+                      NextAvailableSlot(rowData, 'Transfer', false);
                       setTransferData(rowData.transferInfo);
                       setTimeout(() => {
                         flatListRef.current! &&
@@ -1580,7 +1842,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 onPress={() => {
                   try {
                     CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
-
                     console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
 
                     let dirs = RNFetchBlob.fs.dirs;
@@ -1659,121 +1920,118 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </StickyBottomComponent>
           </View>
           {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
-            <View
+           <View
+            style={{
+              width: 244,
+              height: 206,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              marginBottom: 4,
+            }}
+          >
+            <Text
               style={{
-                width: 244,
-                height: 206,
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-                marginBottom: 4,
+                color: 'white',
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+                marginHorizontal: 16,
+                marginTop: 12,
               }}
             >
+              I’ve also scheduled a{' '}
+              <Text
+                style={{
+                  color: 'white',
+                  lineHeight: 22,
+                  ...theme.fonts.IBMPlexSansBold(15),
+                  textAlign: 'left',
+                }}
+              >
+                free follow-up{' '}
+              </Text>
               <Text
                 style={{
                   color: 'white',
                   lineHeight: 22,
                   ...theme.fonts.IBMPlexSansMedium(15),
                   textAlign: 'left',
-                  marginHorizontal: 16,
-                  marginTop: 12,
                 }}
               >
-                I’ve also scheduled a{' '}
-                <Text
-                  style={{
-                    color: 'white',
-                    lineHeight: 22,
-                    ...theme.fonts.IBMPlexSansBold(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  free follow-up{' '}
-                </Text>
-                <Text
-                  style={{
-                    color: 'white',
-                    lineHeight: 22,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  for you —
-                </Text>
+                for you —
               </Text>
-              <View
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <Text
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansSemiBold(15),
+                color: 'white',
+              }}
+            >
+              {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 10,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <StickyBottomComponent
+              style={{
+                paddingHorizontal: 0,
+                backgroundColor: 'transparent',
+                shadowColor: 'transparent',
+                paddingTop: 13,
+              }}
+            >
+              <Button
+                title={'RESCHEDULE'}
                 style={{
-                  marginHorizontal: 16,
-                  marginTop: 9,
-                  opacity: 0.5,
-                  height: 2,
-                  borderStyle: 'dashed',
-                  borderWidth: 1,
-                  borderRadius: 1,
-                  borderColor: '#ffffff',
-                  overflow: 'hidden',
+                  flex: 0.5,
+                  marginLeft: 16,
+                  marginRight: 5,
+                  backgroundColor: '#0087ba',
+                  borderWidth: 2,
+                  borderColor: '#fcb715',
+                }}
+                titleTextStyle={{ color: 'white' }}
+                onPress={() => {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+
+                  console.log('Button Clicked');
+                  NextAvailableSlot(rowData, 'Followup', false);
+                  setTransferData(rowData.transferInfo);
+                  setTimeout(() => {
+                    flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+                  }, 200);
                 }}
               />
-              <Text
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 9,
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansSemiBold(15),
-                  color: 'white',
-                }}
-              >
-                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
-              </Text>
-              <View
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 10,
-                  opacity: 0.5,
-                  height: 2,
-                  borderStyle: 'dashed',
-                  borderWidth: 1,
-                  borderRadius: 1,
-                  borderColor: '#ffffff',
-                  overflow: 'hidden',
-                }}
-              />
-              <StickyBottomComponent
-                style={{
-                  paddingHorizontal: 0,
-                  backgroundColor: 'transparent',
-                  shadowColor: 'transparent',
-                  paddingTop: 13,
-                }}
-              >
-                <Button
-                  title={'RESCHEDULE'}
-                  style={{
-                    flex: 0.5,
-                    marginLeft: 16,
-                    marginRight: 5,
-                    backgroundColor: '#0087ba',
-                    borderWidth: 2,
-                    borderColor: '#fcb715',
-                  }}
-                  titleTextStyle={{ color: 'white' }}
-                  onPress={() => {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
-
-                    console.log('Button Clicked');
-                    checkIfReschduleApi(rowData, 'Followup');
-                    NextAvailableSlot(rowData, 'Followup');
-                    setCheckReschudule(true);
-                    setTransferData(rowData.transferInfo);
-                    setTimeout(() => {
-                      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-                    }, 200);
-                  }}
-                />
-              </StickyBottomComponent>
-            </View>
-          )}
-
+            </StickyBottomComponent>
+          </View>
+           )}
           {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
         </View>
       </>
@@ -1805,8 +2063,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
               ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
-              : "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."}
-            {/* : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`} */}
+              : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`}
           </Text>
         </View>
         <View
@@ -2052,9 +2309,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('pdf', rowData.url);
-                     // setShowWeb(true);
-                      setPatientImageshow(true);
-                      setUrl(rowData.url);
+                    // setShowWeb(true);
+                    setPatientImageshow(true);
+                    setUrl(rowData.url);
                     // if ((Platform.OS = 'android')) {
                     //   setShowWeb(true);
                     //   setUrl(rowData.url);
@@ -2109,17 +2366,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : rowData.message === '^^#startconsult' ? (
@@ -2131,17 +2403,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : rowData.message === stopConsultJr ? (
@@ -2153,39 +2440,69 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : (
-            <View
-              style={{
-                backgroundColor: 'white',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              <Text
+            <>
+              <View
                 style={{
-                  color: '#0087ba',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  textAlign: 'left',
+                  backgroundColor: 'white',
+                  marginLeft: 38,
+                  borderRadius: 10,
                 }}
               >
-                {rowData.message}
-              </Text>
-            </View>
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    paddingHorizontal: 16,
+                    paddingTop: 8,
+                    paddingBottom: 3,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
+              </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+            </>
           )}
         </View>
       </View>
@@ -2302,6 +2619,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   </Text>
                 )}
               </View>
+              <Text
+                style={{
+                  color: '#890000',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+              <View style={{ backgroundColor: 'transparent', height: 5, width: 20 }} />
             </View>
           </View>
         ) : (
@@ -2375,14 +2704,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
-                    marginLeft: 0,
                     textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
                   Duration - {rowData.duration}
                 </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingLeft: 16,
+                    paddingVertical: 4,
+                    paddingRight: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
               </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
             </View>
           </View>
         )}
@@ -2401,17 +2742,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {rowData.automatedText ? (
-          <Text
-            style={{
-              color: '#ffffff',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-            }}
-          >
-            {rowData.automatedText}
-          </Text>
+          <>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingTop: 8,
+                paddingBottom: 4,
+                paddingHorizontal: 16,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+              }}
+            >
+              {rowData.automatedText}
+            </Text>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingHorizontal: 16,
+                paddingVertical: 4,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+          </>
         ) : null}
       </View>
     );
@@ -2429,17 +2785,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {rowData.automatedText ? (
-          <Text
-            style={{
-              color: '#ffffff',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-            }}
-          >
-            {rowData.automatedText}
-          </Text>
+          <>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingTop: 8,
+                paddingBottom: 4,
+                paddingHorizontal: 16,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+              }}
+            >
+              {rowData.automatedText}
+            </Text>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingHorizontal: 16,
+                paddingVertical: 4,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+          </>
         ) : null}
       </View>
     );
@@ -2455,7 +2826,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
       rowData.message === acceptedCallMsg ||
-      rowData.message === stopConsultMsg
+      rowData.message === stopConsultMsg ||
+      rowData.message === cancelConsultInitiated
     ) {
       return null;
     }
@@ -2539,13 +2911,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
+                    marginLeft: 14,
                     textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
                   Duration - {rowData.duration}
                 </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingLeft: 16,
+                    paddingVertical: 4,
+                    paddingRight: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
               </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
             </View>
           ) : (
             <View>
@@ -2622,33 +3008,68 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   )}
                 </View>
               ) : (
-                <View
-                  style={{
-                    backgroundColor: 'white',
-                    // width: 244,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-end',
-                  }}
-                >
-                  <Text
+                <>
+                  <View
                     style={{
-                      color: '#01475b',
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      textAlign: 'left',
-                      ...theme.fonts.IBMPlexSansMedium(16),
+                      backgroundColor: 'white',
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      alignSelf: 'flex-end',
                     }}
                   >
-                    {rowData.message}
-                  </Text>
-                </View>
+                    <Text
+                      style={{
+                        color: '#01475b',
+                        paddingTop: 8,
+                        paddingBottom: 3,
+                        paddingHorizontal: 16,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(16),
+                      }}
+                    >
+                      {rowData.message}
+                    </Text>
+                    <Text
+                      style={{
+                        color: 'rgba(2,71,91,0.6)',
+                        paddingHorizontal: 16,
+                        paddingVertical: 4,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(10),
+                      }}
+                    >
+                      {convertChatTime(rowData)}
+                    </Text>
+                  </View>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               )}
             </View>
           )}
         </View>
       );
     }
+  };
+
+  const convertChatTime = (timeStamp: any) => {
+    let utcString;
+    if (timeStamp.messageDate) {
+      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
+        moment(timeStamp.messageDate).format('YYYY-MM-DD')
+      );
+      if (dateValidate == 0) {
+        utcString = moment
+          .utc(timeStamp.messageDate)
+          .local()
+          .format('h:mm A');
+      } else {
+        utcString = moment
+          .utc(timeStamp.messageDate)
+          .local()
+          .format('DD MMM, YYYY h:mm A');
+      }
+    }
+    return utcString ? utcString : '--';
   };
 
   const transferAppointmentAPI = (
@@ -2700,15 +3121,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
   };
 
-  const checkIfReschduleApi = (rowData: any, Value: string) => {
+  const checkIfReschduleApi = (
+    rowData: any,
+    Value: string,
+    isAutomatic: boolean,
+    nextSlotAvailable: string
+  ) => {
+    let checkAppointmentId;
+    let checkAppointmentDate;
+
+    if (isAutomatic) {
+      checkAppointmentId = channel;
+
+      checkAppointmentDate = nextSlotAvailable;
+      console.log(
+        'checkIfReschedulesuccess',
+        checkAppointmentId,
+        checkAppointmentDate,
+        isAutomatic
+      );
+    } else {
+      checkAppointmentId = rowData.transferInfo.appointmentId;
+
+      checkAppointmentDate =
+        Value === 'Followup'
+          ? rowData.transferInfo.folloupDateTime
+          : rowData.transferInfo.transferDateTime;
+      console.log(
+        'checkIfReschedulesuccess',
+        checkAppointmentId,
+        checkAppointmentDate,
+        isAutomatic
+      );
+    }
+
     setLoading(true);
-    checkIfRescheduleAppointment(
-      client,
-      rowData.transferInfo.appointmentId,
-      Value === 'Followup'
-        ? rowData.transferInfo.folloupDateTime
-        : rowData.transferInfo.transferDateTime
-    )
+    checkIfRescheduleAppointment(client, checkAppointmentId, checkAppointmentDate)
       .then((_data: any) => {
         setLoading(false);
         try {
@@ -2722,32 +3170,50 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             isPaid: result.isPaid,
           };
           setNewRescheduleCount(data);
+          setCheckReschudule(true);
         } catch (error) {}
       })
       .catch((e: any) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('checkIfRescheduleerror', error);
+      })
+      .finally(() => {
+        console.log('checkIfReschedulesuccessfinally transferData', transferData);
+        if (isAutomatic) {
+          setdisplayoverlay(true);
+        }
       });
   };
 
-  const NextAvailableSlot = (rowData: any, Value: string) => {
+  const NextAvailableSlot = (rowData: any, Value: string, isAutomatic: boolean) => {
     console.log('NextAvailableSlot', rowData);
     setLoading(true);
+    let todayDate;
+    let slotDoctorId;
 
-    const todayDate = moment
-      .utc(
-        Value === 'Followup'
-          ? rowData.transferInfo.folloupDateTime
-          : rowData.transferInfo.transferDateTime
-      )
-      .local()
-      .format('YYYY-MM-DD');
+    if (isAutomatic) {
+      todayDate = moment
+        .utc(appointmentData.appointmentDateTime)
+        .local()
+        .format('YYYY-MM-DD');
+      slotDoctorId = appointmentData.doctorId;
+    } else {
+      todayDate = moment
+        .utc(
+          Value === 'Followup'
+            ? rowData.transferInfo.folloupDateTime
+            : rowData.transferInfo.transferDateTime
+        )
+        .local()
+        .format('YYYY-MM-DD');
+      slotDoctorId =
+        Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+    }
+
     console.log('todayDate', todayDate);
-
-    const slotDoctorId =
-      Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
     console.log('slotDoctorId', slotDoctorId);
+
     setDoctorScheduleId(slotDoctorId);
 
     getNextAvailableSlots(client, slotDoctorId, todayDate)
@@ -2756,6 +3222,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         try {
           console.log(data, 'nextavailable res');
           setNextSlotAvailable(data[0].availableSlot);
+          checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
         } catch (error) {
           setNextSlotAvailable('');
         }
@@ -2763,7 +3230,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .catch((e: string) => {
         setLoading(false);
         console.log('Error occured ', e);
-      });
+      })
+      .finally(() => {});
   };
 
   const rescheduleAPI = (rowData: any, bookRescheduleInput: any) => {
@@ -2811,8 +3279,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     // console.log('renderChatView');
 
     return (
-      <View style={{ width: width, height: heightList, marginTop: 0 }}>
+      <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
+          style={{
+            // flexGrow: 1,
+            flex: 1,
+          }}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
@@ -2823,10 +3295,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           bounces={false}
           data={messages}
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.2}
           renderItem={({ item, index }) => renderChatRow(item, index)}
           keyExtractor={(_, index) => index.toString()}
           numColumns={1}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
         />
       </View>
     );
@@ -2862,11 +3336,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
                 resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
+                onPublishStart={(event: any) => {
+                  console.log('onPublishStart', event);
+                }}
+                onPublishStop={(event: any) => {
+                  console.log('onPublishStop', event);
+                }}
+                onPublishError={(event: any) => {
+                  console.log('onPublishError', event);
+                }}
               />
               <OTSubscriber
                 style={subscriberStyles}
                 subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
+                onSubscribeStart={(event: any) => {
+                  console.log('Watching started', event);
+                }}
+                onSubscribeStop={(event: any) => {
+                  console.log('onSubscribeStop', event);
+                }}
+                onSubscribeError={(event: any) => {
+                  console.log('onSubscribeError', event);
+                }}
                 properties={{
                   subscribeToAudio: true,
                   subscribeToVideo: true,
@@ -2994,6 +3486,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
             resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
+            onPublishStart={(event: any) => {
+              console.log('onPublishStart', event);
+            }}
+            onPublishStop={(event: any) => {
+              console.log('onPublishStop', event);
+            }}
+            onPublishError={(event: any) => {
+              console.log('onPublishError', event);
+            }}
           />
           <OTSubscriber
             style={
@@ -3006,6 +3507,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
             eventHandlers={subscriberEventHandlers}
             subscribeToSelf={true}
+            onSubscribeStart={(event: any) => {
+              console.log('Watching started', event);
+            }}
+            onSubscribeStop={(event: any) => {
+              console.log('onSubscribeStop', event);
+            }}
+            onSubscribeError={(event: any) => {
+              console.log('onSubscribeError', event);
+            }}
             properties={{
               subscribeToAudio: true,
               subscribeToVideo: convertVideo ? true : false,
@@ -3232,6 +3742,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Audio call ended',
                     duration: callTimerStarted,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3245,6 +3756,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3297,6 +3809,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   message: 'Video call ended',
                   duration: callTimerStarted,
                   id: patientId,
+                  messageDate: currentDateTime,
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -3310,6 +3823,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   isTyping: true,
                   message: endCallMsg,
                   id: patientId,
+                  messageDate: currentDateTime,
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -3499,6 +4013,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Video call ended',
                     duration: callTimerStarted,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3512,6 +4027,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
+                    messageDate: currentDateTime,
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3609,9 +4125,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setConvertVideo(false);
             changeVideoStyles();
             setDropdownVisible(false);
-
-            // InCallManager.setSpeakerphoneOn(true)
-            // InCallManager.chooseAudioRoute('EARPIECE')
             if (token) {
               PublishAudioVideo();
             } else {
@@ -3668,6 +4181,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message: {
           isTyping: true,
           message: acceptedCallMsg,
+          messageDate: currentDateTime,
         },
         channel: channel,
         storeInHistory: false,
@@ -3689,6 +4203,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           message: isAudio ? 'Audio call ended' : 'Video call ended',
           duration: callTimerStarted,
           id: patientId,
+          messageDate: currentDateTime,
         },
         channel: channel,
         storeInHistory: true,
@@ -3702,6 +4217,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isTyping: true,
           message: endCallMsg,
           id: patientId,
+          messageDate: currentDateTime,
         },
         channel: channel,
         storeInHistory: true,
@@ -3775,6 +4291,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: imageconsult,
                     fileType: 'image',
                     url: uploadUrlscheck![0],
+                    messageDate: currentDateTime,
                   };
 
                   pubnub.publish(
@@ -4001,6 +4518,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         message: imageconsult,
                         fileType: 'image',
                         url: item,
+                        messageDate: currentDateTime,
                       };
 
                       pubnub.publish(
@@ -4185,7 +4703,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
       ) : null}
-
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,
@@ -4440,6 +4957,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      {isDoctorNoShow && (
+        <BottomPopUp
+          title={`Hi ${userName},`}
+          description={
+            "Opps! seems like doctor hasn't joined. Please cancel the appointment or reschedule it."
+          }
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <TouchableOpacity
+              style={styles.claimStyles}
+              onPress={() => {
+                setIsDoctorNoShow(false);
+              }}
+            >
+              <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.rescheduletyles}
+              onPress={() => {
+                NextAvailableSlot(appointmentData, 'Transfer', true);
+                setIsDoctorNoShow(false);
+              }}
+            >
+              <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'RESCHEDULE'}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
       {showPopup && (
         <BottomPopUp
           title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
@@ -4483,23 +5036,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <OverlayRescheduleView
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
-          doctor={transferData ? transferData.doctorInfo : null}
+          doctor={transferData ? transferData.doctorInfo : appointmentData.doctorInfo}
           patientId={currentPatient ? currentPatient.id : ''}
-          clinics={transferData ? transferData.doctorInfo.doctorHospital : []}
+          clinics={
+            transferData
+              ? transferData.doctorInfo.doctorHospital
+              : appointmentData.doctorInfo.doctorHospital
+          }
           doctorId={doctorScheduleId}
           renderTab={
             appointmentData.appointmentType === 'ONLINE' ? 'Consult Online' : 'Visit Clinic'
           }
           rescheduleCount={newRescheduleCount && newRescheduleCount}
-          appointmentId={transferData.appointmentId}
-          data={transferData}
+          appointmentId={transferData ? transferData.appointmentId : appointmentData.id}
+          data={transferData ? transferData : appointmentData}
           bookFollowUp={false}
           KeyFollow={'RESCHEDULE'}
           isfollowupcount={0}
         />
       )}
-      <View></View>
-
       {uploadPrescriptionPopup()}
       {renderPrescriptionModal()}
       {patientImageshow && imageOpen()}

@@ -813,6 +813,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 style={styles.gotItStyles}
                 onPress={() => {
                   setshowNotExistAlert(false);
+                  props.navigation.goBack();
                 }}
               >
                 <Text style={styles.gotItTextStyles}>OK, GOT IT</Text>

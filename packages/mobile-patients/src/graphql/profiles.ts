@@ -278,6 +278,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         displayId
         appointmentState
         isConsultStarted
+        isJdQuestionsComplete
         doctorInfo {
           id
           salutation
