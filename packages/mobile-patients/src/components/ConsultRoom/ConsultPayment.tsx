@@ -95,7 +95,12 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
         <View style={{ height: 60, alignItems: 'flex-end' }}>
           <TouchableOpacity
             activeOpacity={1}
-            style={{ height: 60, paddingRight: 25, backgroundColor: 'transparent' }}
+            style={{
+              height: 60,
+              paddingRight: 25,
+              backgroundColor: 'transparent',
+              justifyContent: 'center',
+            }}
             onPress={() => {
               hideAphAlert!();
               props.navigation.navigate(AppRoutes.TabBar);
