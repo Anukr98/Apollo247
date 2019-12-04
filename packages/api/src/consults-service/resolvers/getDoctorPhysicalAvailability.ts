@@ -94,7 +94,16 @@ const getDoctorPhysicalAvailableSlots: Resolver<
           const startDateStr = format(stTime, 'yyyy-MM-dd');
           const endStr = ':00.000Z';
           const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
-          availableSlots.push(generatedSlot);
+          const timeWithBuffer = addMinutes(new Date(), timeSlot.consultBuffer);
+          console.log(
+            new Date(generatedSlot),
+            new Date(),
+            new Date(generatedSlot) > timeWithBuffer,
+            ' dates comparision'
+          );
+          if (new Date(generatedSlot) > timeWithBuffer) {
+            availableSlots.push(generatedSlot);
+          }
           return generatedSlot;
         });
       const lastSlot = new Date(availableSlots[availableSlots.length - 1]);

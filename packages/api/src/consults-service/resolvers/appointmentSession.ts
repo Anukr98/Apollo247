@@ -11,12 +11,14 @@ import {
   RescheduleAppointmentDetails,
   TRANSFER_STATUS,
   APPOINTMENT_STATE,
+  AppointmentNoShow,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -56,6 +58,7 @@ export const createAppointmentSessionTypeDefs = gql`
   input EndAppointmentSessionInput {
     appointmentId: ID!
     status: STATUS!
+    noShowBy: REQUEST_ROLES
   }
 
   extend type Mutation {
@@ -115,6 +118,7 @@ type endAppointmentSessionInputArgs = {
 type EndAppointmentSessionInput = {
   appointmentId: string;
   status: STATUS;
+  noShowBy: REQUEST_ROLES;
 };
 
 const createJuniorAppointmentSession: Resolver<
@@ -391,6 +395,12 @@ const endAppointmentSession: Resolver<
 
   if (endAppointmentSessionInput.status == STATUS.NO_SHOW) {
     const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+    const noShowRepo = consultsDb.getCustomRepository(AppointmentNoShowRepository);
+    const noShowAttrs: Partial<AppointmentNoShow> = {
+      noShowType: endAppointmentSessionInput.noShowBy,
+      appointment: apptDetails,
+    };
+    await noShowRepo.saveNoShow(noShowAttrs);
     const rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails> = {
       rescheduleReason: '',
       rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
