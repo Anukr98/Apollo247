@@ -3,6 +3,7 @@ import { Theme, Button, Avatar, Modal } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { AphInput, AphButton, AphTextField } from "@aph/web-ui-components";
 //import Pubnub from "pubnub";
+import moment from "moment";
 import Scrollbars from "react-custom-scrollbars";
 import { CaseSheetContext } from "context/CaseSheetContext";
 import { ApolloError } from "apollo-client";
@@ -600,7 +601,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
         // console.log(error);
       });
   };
-
+  const convertChatTime = (timeStamp: any) => {
+    let utcString;
+    if (timeStamp) {
+      const dateValidate = moment(moment().format("YYYY-MM-DD")).diff(
+        moment(timeStamp).format("YYYY-MM-DD")
+      );
+      if (dateValidate == 0) {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format("h:mm A");
+      } else {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format("DD MMM, YYYY h:mm A");
+      }
+    }
+    console.log(timeStamp, utcString);
+    return utcString ? utcString : "--";
+  };
   const send = () => {
     const text = {
       id: doctorId,
@@ -667,12 +688,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
           <div className={rowData.duration ? classes.callMsg : classes.doctor}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === "00 : 00" ? (
-              <span className={classes.none}>
-                <img src={require("images/ic_missedcall.svg")} />
-                {rowData.message.toLocaleLowerCase() === "video call ended"
-                  ? "You missed a video call"
-                  : "You missed a voice call"}
-              </span>
+              <>
+                <span className={classes.none}>
+                  <img src={require("images/ic_missedcall.svg")} />
+                  {rowData.message.toLocaleLowerCase() === "video call ended"
+                    ? "You missed a video call"
+                    : "You missed a voice call"}
+                </span>
+                {/* {rowData.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )} */}
+              </>
             ) : rowData.duration ? (
               <div>
                 <img src={require("images/ic_round_call.svg")} />
@@ -680,6 +706,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                 <span className={classes.durationMsg}>
                   Duration- {rowData.duration}
                 </span>
+                {rowData.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )}
               </div>
             ) : (
               // <div>
@@ -717,9 +746,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                     className={classes.imageUpload}
                   >
                     <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <span>{convertChatTime(rowData.messageDate)}</span>
+                    )}
                   </div>
                 ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <span>{convertChatTime(rowData.messageDate)}</span>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -749,12 +786,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
         <div className={classes.patientChat}>
           <div className={rowData.duration ? classes.callMsg : ""}>
             {rowData.duration === "00 : 00" ? (
-              <span className={classes.missCall}>
-                <img src={require("images/ic_missedcall.svg")} />
-                {rowData.message.toLocaleLowerCase() === "video call ended"
-                  ? "You missed a video call"
-                  : "You missed a voice call"}
-              </span>
+              <>
+                <span className={classes.missCall}>
+                  <img src={require("images/ic_missedcall.svg")} />
+                  {rowData.message.toLocaleLowerCase() === "video call ended"
+                    ? "You missed a video call"
+                    : "You missed a voice call"}
+                </span>
+                {rowData!.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )}
+              </>
             ) : rowData.duration ? (
               <div>
                 <img src={require("images/ic_round_call.svg")} />
@@ -762,6 +804,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                 <span className={classes.durationMsg}>
                   Duration- {rowData.duration}
                 </span>
+                {rowData!.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )}
               </div>
             ) : (
               <div
@@ -793,9 +838,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                     className={classes.imageUpload}
                   >
                     <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <span>{convertChatTime(rowData.messageDate)}</span>
+                    )}
                   </div>
                 ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <span>{convertChatTime(rowData.messageDate)}</span>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -825,12 +878,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
           <div className={rowData.duration ? classes.callMsg : classes.doctor}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === "00 : 00" ? (
-              <span className={classes.none}>
-                <img src={require("images/ic_missedcall.svg")} />
-                {rowData.message.toLocaleLowerCase() === "video call ended"
-                  ? "You missed a video call"
-                  : "You missed a voice call"}
-              </span>
+              <>
+                <span className={classes.none}>
+                  <img src={require("images/ic_missedcall.svg")} />
+                  {rowData.message.toLocaleLowerCase() === "video call ended"
+                    ? "You missed a video call"
+                    : "You missed a voice call"}
+                </span>
+              </>
             ) : rowData.duration ? (
               <div>
                 <img src={require("images/ic_round_call.svg")} />
@@ -838,6 +893,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                 <span className={classes.durationMsg}>
                   Duration- {rowData.duration}
                 </span>
+                {rowData.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )}
               </div>
             ) : (
               // <div>
@@ -884,9 +942,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                     className={classes.imageUpload}
                   >
                     <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <span>{convertChatTime(rowData.messageDate)}</span>
+                    )}
                   </div>
                 ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <span>{convertChatTime(rowData.messageDate)}</span>
+                    )}
+                  </>
                 )}
               </div>
             )}

@@ -6,6 +6,7 @@ import Pubnub from "pubnub";
 import Scrollbars from "react-custom-scrollbars";
 import { JDConsult } from "components/JuniorDoctors/JDConsult";
 import { ApolloError } from "apollo-client";
+import moment from "moment";
 
 // import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
 // import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
@@ -332,6 +333,7 @@ interface MessagesObjectProps {
   automatedText: string;
   duration: string;
   url: string;
+  messageDate: string;
 }
 
 interface ConsultRoomProps {
@@ -543,7 +545,27 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
       }
     );
   };
-
+  const convertChatTime = (timeStamp: any) => {
+    let utcString;
+    if (timeStamp) {
+      const dateValidate = moment(moment().format("YYYY-MM-DD")).diff(
+        moment(timeStamp).format("YYYY-MM-DD")
+      );
+      if (dateValidate == 0) {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format("h:mm A");
+      } else {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format("DD MMM, YYYY h:mm A");
+      }
+    }
+    console.log(timeStamp, utcString);
+    return utcString ? utcString : "--";
+  };
   const uploadfile = (url: string) => {
     // console.log('ram');
     apolloClient
@@ -638,7 +660,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                 <span>
                   <img src={require("images/ic_round_call.svg")} />
                 </span>
-                <span>{rowData.message}</span>
+                {rowData.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )}
               </div>
               <div className={classes.callDuration}>
                 Duration- {rowData.duration}
@@ -672,9 +696,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                   }}
                 >
                   <img src={rowData.url} alt={rowData.url} />
+                  {rowData.messageDate && (
+                    <span>{convertChatTime(rowData.messageDate)}</span>
+                  )}
                 </div>
               ) : (
-                <span>{getAutomatedMessage(rowData)}</span>
+                <>
+                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.messageDate && (
+                    <span>{convertChatTime(rowData.messageDate)}</span>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -712,6 +744,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                     ? "You missed a video call"
                     : "You missed a voice call"}
                 </span>
+                {rowData.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )}
               </div>
             </div>
           ) : rowData.duration ? (
@@ -725,6 +760,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
               <div className={classes.callDuration}>
                 Duration- {rowData.duration}
               </div>
+              {rowData.messageDate && (
+                <span>{convertChatTime(rowData.messageDate)}</span>
+              )}
             </div>
           ) : (
             <div
@@ -754,9 +792,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                   className={classes.imageUpload}
                 >
                   <img src={rowData.url} alt={rowData.url} />
+                  {rowData.messageDate && (
+                    <span>{convertChatTime(rowData.messageDate)}</span>
+                  )}
                 </div>
               ) : (
-                <span>{getAutomatedMessage(rowData)}</span>
+                <>
+                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.messageDate && (
+                    <span>{convertChatTime(rowData.messageDate)}</span>
+                  )}
+                </>
               )}
             </div>
           )}
