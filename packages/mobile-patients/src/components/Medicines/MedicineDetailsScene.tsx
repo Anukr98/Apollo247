@@ -46,6 +46,7 @@ import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
+import HTML from 'react-native-render-html';
 
 const { width, height } = Dimensions.get('window');
 
@@ -761,58 +762,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     );
   };
 
-  // const renderInfo = () => {
-  //   const description = medicineDetails.description
-  //     .replace(/&lt;/g, '<')
-  //     .replace(/&gt;rn/g, '>')
-  //     .replace(/&gt;/g, '>');
-  //   console.log(description);
-
-  //   if (!!description)
-  //     return (
-  //       <View>
-  //         <Text
-  //           style={{
-  //             ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1),
-  //             paddingHorizontal: 20,
-  //             paddingTop: 20,
-  //             paddingBottom: 17,
-  //           }}
-  //         >
-  //           Product Information
-  //         </Text>
-  //         <View
-  //           style={[
-  //             {
-  //               backgroundColor: theme.colors.WHITE,
-  //               flex: 1,
-  //               padding: 20,
-  //               ...theme.viewStyles.shadowStyle,
-  //             },
-  //           ]}
-  //         >
-  //           <View>
-  //             <WebView
-  //               bounces={false}
-  //               style={{
-  //                 // color: theme.colors.SKY_BLUE,
-  //                 ...theme.fonts.IBMPlexSansMedium(14),
-  //                 // lineHeight: 22,
-  //                 width: '100%',
-  //                 height: 'auto',
-  //               }}
-  //               source={{
-  //                 html: description,
-  //               }}
-  //             />
-  //           </View>
-  //         </View>
-  //       </View>
-  //     );
-  // };
-
   const renderInfo = () => {
-    const description = filterHtmlContent(medicineDetails.description);
+    const description = medicineDetails.description
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;rn/g, '>')
+      .replace(/&gt;/g, '>');
+    console.log(description);
+
     if (!!description)
       return (
         <View>
@@ -837,30 +793,69 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             ]}
           >
             <View>
-              <Text
-                style={{
-                  color: theme.colors.SKY_BLUE,
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  lineHeight: 22,
+              <HTML
+                html={description}
+                baseFontStyle={{
+                  ...theme.viewStyles.text('M', 14, '#0087ba', 1),
                 }}
-              >
-                {description}
-              </Text>
-              {/* <WebView
-                source={{
-                  html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description}</p>`,
-                }}
-                style={{
-                  backgroundColor: 'red',
-                  width: '100%',
-                  height: 100,
-                }}
-              /> */}
+                imagesMaxWidth={Dimensions.get('window').width}
+              />
             </View>
           </View>
         </View>
       );
   };
+
+  // const renderInfo = () => {
+  //   const description = filterHtmlContent(medicineDetails.description);
+  //   if (!!description)
+  //     return (
+  //       <View>
+  //         <Text
+  //           style={{
+  //             ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1),
+  //             paddingHorizontal: 20,
+  //             paddingTop: 20,
+  //             paddingBottom: 17,
+  //           }}
+  //         >
+  //           Product Information
+  //         </Text>
+  //         <View
+  //           style={[
+  //             {
+  //               backgroundColor: theme.colors.WHITE,
+  //               flex: 1,
+  //               padding: 20,
+  //               ...theme.viewStyles.shadowStyle,
+  //             },
+  //           ]}
+  //         >
+  //           <View>
+  //             <Text
+  //               style={{
+  //                 color: theme.colors.SKY_BLUE,
+  //                 ...theme.fonts.IBMPlexSansMedium(14),
+  //                 lineHeight: 22,
+  //               }}
+  //             >
+  //               {description}
+  //             </Text>
+  //             {/* <WebView
+  //               source={{
+  //                 html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description}</p>`,
+  //               }}
+  //               style={{
+  //                 backgroundColor: 'red',
+  //                 width: '100%',
+  //                 height: 100,
+  //               }}
+  //             /> */}
+  //           </View>
+  //         </View>
+  //       </View>
+  //     );
+  // };
 
   const renderIconOrImage = (data: MedicineProductDetails) => {
     return (
