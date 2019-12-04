@@ -685,7 +685,7 @@ export const MedicinePrescription: React.FC = () => {
         : '';
     const dosageCount =
       medicine.medicineTimings.length > 0
-        ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+        ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
         : medicine.medicineDosage;
     return (
       <div key={index} style={{ position: 'relative' }}>
