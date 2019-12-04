@@ -223,9 +223,12 @@ const initiateRescheduleAppointment: Resolver<
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-
-  if (appointment.status !== STATUS.PENDING && appointment.status !== STATUS.CONFIRMED) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  if (
+    appointment.status !== STATUS.PENDING &&
+    appointment.status !== STATUS.CONFIRMED &&
+    appointment.status !== STATUS.IN_PROGRESS
+  ) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_STATUS_TO_RESCHEDULE, undefined, {});
   }
 
   if (RescheduleAppointmentInput.rescheduledDateTime < new Date())
