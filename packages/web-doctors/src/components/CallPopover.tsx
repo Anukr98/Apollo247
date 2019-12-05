@@ -704,19 +704,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
       timer = timer - 1;
+      console.log(timer);
       stoppedTimerCall = timer;
       setRemainingCallTime(timer);
       if (timer < 1) {
         setRemainingCallTime(0);
         clearInterval(intervalcallId);
-        if (patientMsgs.length === 0 || props.appointmentStatus === STATUS.IN_PROGRESS) {
-          console.log(props.appointmentStatus, patientMsgs.length);
+        if (patientMsgs.length === 0) {
+          //console.log(patientMsgs.length);
+          //alert("noShowAction for patient");
           noShowAction();
         }
       }
     }, 1000);
   };
-
+ 
   const noShowAction = () => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -725,22 +727,29 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           endAppointmentSessionInput: {
             appointmentId: props.appointmentId,
             status: STATUS.NO_SHOW,
-          },
+            noShowBy: REQUEST_ROLES.PATIENT
+          }
         },
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache"
       })
-      .then((_data) => {
+      .then(_data => {
         unSubscribeBrowserButtonsListener();
-        alert('Since the patient has not joined the chat, we are rescheduling the appointment.');
-        if (document.getElementById('homeId')) {
-          document.getElementById('homeId')!.click();
+        alert(
+          "Since the patient has not joined the chat, we are rescheduling the appointment."
+        );
+        if (document.getElementById("homeId")) {
+          document.getElementById("homeId")!.click();
         }
         //window.location.href = clientRoutes.calendar();
       })
-      .catch((e) => {
+      .catch(e => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
-        console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
+        console.log(
+          "Error occured while END_APPOINTMENT_SESSION",
+          errorMessage,
+          error
+        );
         alert(errorMessage);
       });
   };
@@ -1170,7 +1179,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       //clearInterval(intervalMissCall);
       // clearInterval(intervalId);
     };
-  }, [props.pubnub]);
+  }, []);
 
   useEffect(() => {
     const lastMsg = props.lastMsg;
@@ -1196,11 +1205,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       } else {
         setIsNewMsg(false);
       }
-      if (!props.startAppointment && lastMsg.message.id === params.patientId) {
+      if (isConsultStarted && lastMsg.message.id === params.patientId) {
         patientMsgs.push(lastMsg.message.message);
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
-        patientMsgs.push(lastMsg.message.message);
+        //patientMsgs.push(lastMsg.message.message);
         setIsCallAccepted(true);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
@@ -1613,16 +1622,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  disabled={
-                    currentUserType === LoggedInUserType.SECRETARY ||
-                    startAppointmentButton ||
-                    disableOnCancel ||
-                    (appointmentInfo!.appointmentState !== 'NEW' &&
-                      appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                      appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
+                  // disabled={
+                  //   currentUserType === LoggedInUserType.SECRETARY ||
+                  //   startAppointmentButton ||
+                  //   disableOnCancel ||
+                  //   (appointmentInfo!.appointmentState !== 'NEW' &&
+                  //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                  //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  //     appointmentInfo!.status !== STATUS.PENDING)
+                  // }
                   onClick={() => {
                     !props.startAppointment ? onStartConsult() : onStopConsult();
                     !props.startAppointment ? startInterval(900) : stopInterval();
