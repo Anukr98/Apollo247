@@ -162,6 +162,10 @@ const useStyles = makeStyles((theme: Theme) =>
     listContainer: {
       display: 'flex',
       flexFlow: 'column',
+      borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
+      '&:last-child':{
+        borderBottom: 'none',
+      },
     },
     icon: {
       color: '#00b38e'
@@ -170,16 +174,24 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       position: 'relative',
     },
-    othersBtn: {
+    favTestContainer: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
+      padding: '10px 20px 10px 10px',
+      borderRadius: 5,
+    },
+    othersBtn: {      
       height: 'auto',
+      border: '1px solid rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0,0,0,0.02)',
       marginBottom: 12,
       borderRadius: 5,
       fontWeight: 600,
       fontSize: 14,
       color: '#02475b !important',
       whiteSpace: 'normal',
+      paddingRight: 5,
+    
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)'
       },
@@ -189,7 +201,30 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10
-      }
+      },
+    },
+    othersBtnFav: {      
+      height: 'auto',
+      backgroundColor: 'transparent',
+      // border: '1px solid rgba(2, 71, 91, 0.15)',
+      // marginBottom: 12,
+      borderRadius: 0,
+      fontWeight: 600,
+      fontSize: 14,
+      color: '#02475b !important',
+      whiteSpace: 'normal',
+      paddingRight: 5,
+    
+      '&:focus': {
+        backgroundColor: 'rgba(0,0,0,0.02)'
+      },
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'left',
+        whiteSpace: 'normal',
+        padding: 10
+      },
     },
     textFieldColor: {
       '& input': {
@@ -228,7 +263,7 @@ const useStyles = makeStyles((theme: Theme) =>
         backgroundColor: 'transparent'
       },
       '& img': {
-        marginRight: 8,
+        marginRight: 20,
         border: '1px solid #00b38e',
         borderRadius: '50%',
         maxWidth: 24,
@@ -241,8 +276,8 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      right: 0,
-      bottom: '30px',
+      right: -20,
+      bottom: 0,
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent'
@@ -563,6 +598,7 @@ export const DiagnosticPrescription: React.FC = () => {
       <Typography component='h5' variant='h5'>
       Favorite Tests
         </Typography>
+        <div className={classes.favTestContainer}>
       {favTests ? (
         favTests.map((favTest: any, id: any) => {
           return (
@@ -573,7 +609,7 @@ export const DiagnosticPrescription: React.FC = () => {
             >
               
               <Chip
-                className={classes.othersBtn}
+                className={classes.othersBtnFav}
                 key={idx}
                 label={favTest && favTest.itemname}
               />
@@ -606,6 +642,7 @@ export const DiagnosticPrescription: React.FC = () => {
       ) : (
         <></>
       )}
+      </div>
   </Grid>
   </Grid>
     </Typography>
