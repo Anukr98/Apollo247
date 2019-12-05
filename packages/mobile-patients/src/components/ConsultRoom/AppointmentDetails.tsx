@@ -404,10 +404,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel =
-      dateIsAfter && data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
-        ? true
-        : dateIsAfter;
+    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
     return (
       <View
         style={{
@@ -759,6 +756,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             bookFollowUp={false}
             KeyFollow={'RESCHEDULE'}
             isfollowupcount={0}
+            isInitiatedByDoctor={false}
           />
         )}
         {resheduleoverlay && doctorDetails && (

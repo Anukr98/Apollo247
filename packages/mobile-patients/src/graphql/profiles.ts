@@ -883,13 +883,11 @@ export const SAVE_DEVICE_TOKEN = gql`
   }
 `;
 
-// export const END_APPOINTMENT_SESSION = gql`
-//   mutation endAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput!) {
-//     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput) {
-//       status
-//     }
-//   }
-// `;
+export const END_APPOINTMENT_SESSION = gql`
+  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
+    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
+  }
+`;
 
 export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   query getPatientPastMedicineSearches($patientId: ID!, $type: SEARCH_TYPE) {

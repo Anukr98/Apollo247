@@ -443,10 +443,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel =
-      dateIsAfter && data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
-        ? true
-        : dateIsAfter;
+    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -717,6 +714,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             bookFollowUp={false}
             KeyFollow={'RESCHEDULE'}
             isfollowupcount={0}
+            isInitiatedByDoctor={false}
           />
         )}
 
