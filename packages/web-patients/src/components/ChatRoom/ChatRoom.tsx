@@ -1,4 +1,4 @@
-import { Theme, Popover } from '@material-ui/core';
+import { Theme, Modal, Popover } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -15,7 +15,24 @@ import {
 } from 'graphql/types/GetDoctorDetailsById';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { ChatMessage } from 'components/ChatRoom/ChatMessage';
+import Paper from '@material-ui/core/Paper';
+import { OnlineConsult } from 'components/OnlineConsult';
+import { AphButton } from '@aph/web-ui-components';
+import { useApolloClient } from 'react-apollo-hooks';
+import moment from 'moment';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from 'graphql/types/GetDoctorNextAvailableSlot';
+import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from 'graphql/types/bookRescheduleAppointment';
+import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+// import { ChatMessage } from "components/ChatRoom/ChatMessage";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,6 +191,91 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    modalBox: {
+      maxWidth: 676,
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: theme.palette.common.white,
+      position: 'relative',
+      outline: 'none',
+    },
+    tabsRoot: {
+      backgroundColor: theme.palette.common.white,
+      borderRadius: '10px 10px 0 0',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+    },
+    tabRoot: {
+      fontSize: 16,
+      fontWeight: 500,
+      textAlign: 'center',
+      color: 'rgba(2,71,91,0.5)',
+      padding: '14px 10px',
+      textTransform: 'none',
+      minWidth: '50%',
+    },
+    tabSelected: {
+      color: theme.palette.secondary.dark,
+    },
+    tabsIndicator: {
+      backgroundColor: '#00b38e',
+      height: 4,
+    },
+    rootTabContainer: {
+      padding: 0,
+    },
+    actions: {
+      padding: '0 20px 20px 20px',
+      display: 'flex',
+      '& button': {
+        borderRadius: 10,
+        color: '#fc9916',
+        padding: 0,
+        boxShadow: 'none',
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    modalBoxClose: {
+      position: 'absolute',
+      right: -48,
+      top: 0,
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.common.white,
+      cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
+    },
+    viewButton: {
+      width: 'calc(50% - 5px)',
+      marginLeft: 5,
+      display: 'block',
+      fontSize: 13,
+      backgroundColor: '#fcb716',
+      padding: 10,
+      height: 40,
+      borderRadius: 10,
+      marginRight: 0,
+      '&:hover': {
+        backgroundColor: '#fcb716 !important',
+      },
+    },
   };
 });
 
@@ -187,7 +289,12 @@ export const ChatRoom: React.FC = (props) => {
   const doctorId = params.doctorId;
   const { isSignedIn } = useAuth();
   const mascotRef = useRef(null);
-  const [isPopoverOpen] = React.useState<boolean>(true);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
+  const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
+  const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+  const patientId = (currentPatient && currentPatient.id) || '';
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -195,6 +302,62 @@ export const ChatRoom: React.FC = (props) => {
   >(GET_DOCTOR_DETAILS_BY_ID, {
     variables: { id: doctorId },
   });
+
+  const rescheduleAPI = (bookRescheduleInput: BookRescheduleAppointmentInput) => {
+    client
+      .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
+        mutation: BOOK_APPOINTMENT_RESCHEDULE,
+        variables: {
+          bookRescheduleAppointmentInput: bookRescheduleInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log(data, 'data');
+      })
+      .catch((e: string) => {
+        console.log(e, 'error');
+      });
+  };
+
+  const availableSlot = (slotDoctorId: string, todayDate: any) =>
+    client.query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+      query: GET_DOCTOR_NEXT_AVAILABILITY,
+      variables: {
+        DoctorNextAvailableSlotInput: {
+          doctorIds: [slotDoctorId],
+          availableDate: moment(todayDate).format('YYYY-MM-DD'),
+        },
+      },
+    });
+
+  const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
+    availableSlot(slotDoctorId, todayDate)
+      .then(({ data }: any) => {
+        try {
+          if (
+            data &&
+            data.getDoctorNextAvailableSlot &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+          ) {
+            console.log(data);
+            setNextSlotAvailable(
+              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
+            );
+          }
+        } catch (error) {
+          setNextSlotAvailable('');
+          alert(error);
+        }
+      })
+      .catch((e: string) => {
+        alert(e);
+      });
+  };
 
   if (loading) {
     return <LinearProgress />;
@@ -222,6 +385,15 @@ export const ChatRoom: React.FC = (props) => {
               </div>
             </a>
             Consult Room
+            <AphButton
+              className={classes.viewButton}
+              onClick={() => {
+                nextAvailableSlot(params.doctorId, new Date());
+                setIsPopoverOpen(true);
+              }}
+            >
+              Reschedule
+            </AphButton>
           </div>
           <div className={classes.doctorListingSection}>
             <div className={classes.leftSection}>
@@ -253,13 +425,38 @@ export const ChatRoom: React.FC = (props) => {
                   hasDoctorJoined={(hasDoctorJoined: boolean) =>
                     setHasDoctorJoined(hasDoctorJoined)
                   }
+                  isModalOpen={isModalOpen}
+                  setIsModalOpen={setIsModalOpen}
+                  nextSlotAvailable={nextSlotAvailable}
+                  availableNextSlot={nextAvailableSlot}
+                  rescheduleAPI={rescheduleAPI}
                 />
               )}
             </div>
           </div>
         </div>
       </div>
-      {/* <Popover
+      {data && (
+        <Modal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox}>
+            <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            <OnlineConsult
+              setIsPopoverOpen={setIsModalOpen}
+              doctorDetails={data}
+              onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
+              isRescheduleConsult={true}
+            />
+          </Paper>
+        </Modal>
+      )}
+      <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
         anchorOrigin={{
@@ -277,10 +474,40 @@ export const ChatRoom: React.FC = (props) => {
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            <ChatMessage />
+            <div className={classes.windowBody}>
+              {/* <Typography variant="h2">hi! :)</Typography> */}
+              <p>
+                We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.
+              </p>
+              <p>
+                Next slot for Dr.{' '}
+                {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName}`} is
+                available on -{moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton onClick={() => setIsModalOpen(true)}>CHANGE SLOT</AphButton>
+              <AphButton
+                onClick={() => {
+                  const bookRescheduleInput = {
+                    appointmentId: params.appointmentId,
+                    doctorId: params.doctorId,
+                    newDateTimeslot: nextSlotAvailable,
+                    initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                    initiatedId: patientId,
+                    patientId: patientId,
+                    rescheduledId: '',
+                  };
+                  rescheduleAPI(bookRescheduleInput);
+                  setIsPopoverOpen(false);
+                }}
+              >
+                ACCEPT
+              </AphButton>
+            </div>
           </div>
         </div>
-      </Popover> */}
+      </Popover>
     </div>
   );
 };

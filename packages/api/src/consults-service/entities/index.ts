@@ -149,6 +149,9 @@ export class Appointment extends BaseEntity {
   isFollowPaid: Boolean;
 
   @Column({ nullable: true, default: false })
+  isJdQuestionsComplete: Boolean;
+
+  @Column({ nullable: true, default: false })
   isTransfer: Boolean;
 
   @Column({ nullable: true, default: false })
@@ -212,6 +215,9 @@ export class Appointment extends BaseEntity {
     (appointmentPayments) => appointmentPayments.appointment
   )
   appointmentPayments: AppointmentPayments[];
+
+  @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
+  appointmentNoShow: AppointmentNoShow[];
 
   @OneToMany(
     (type) => AppointmentDocuments,
@@ -378,6 +384,7 @@ export class AppointmentCallDetails extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
+
 //Junior AppointmentSessions starts
 @Entity()
 export class JuniorAppointmentSessions extends BaseEntity {
@@ -699,6 +706,36 @@ export class DoctorNextAvaialbleSlots extends BaseEntity {
   }
 }
 //DoctorNextAvaialbleSlots ends
+
+//Appointment no show details start
+@Entity()
+export class AppointmentNoShow extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  noShowType: REQUEST_ROLES;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentNoShow)
+  appointment: Appointment;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Appointment no show details end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

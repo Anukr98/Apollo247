@@ -685,7 +685,7 @@ export const MedicinePrescription: React.FC = () => {
         : '';
     const dosageCount =
       medicine.medicineTimings.length > 0
-        ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+        ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
         : medicine.medicineDosage;
     return (
       <div key={index} style={{ position: 'relative' }}>
@@ -1037,7 +1037,7 @@ export const MedicinePrescription: React.FC = () => {
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Quantity (Per Dosage)</h6>
+                        <h6>Quantity (Per Dosage)*</h6>
                         <AphTextField
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount}
@@ -1056,7 +1056,7 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Units/Types</h6>
+                        <h6>Units/Types*</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
@@ -1100,7 +1100,7 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Duration (In days)</h6>
+                        <h6>Duration (in days)*</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
@@ -1152,7 +1152,7 @@ export const MedicinePrescription: React.FC = () => {
                         <h6>Instructions (if any)</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
-                            placeholder="Eg. Root of Administration, Gaps in Dosage, etc."
+                            placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
                             value={medicineInstruction}
                             onChange={(event: any) => {
                               setMedicineInstruction(event.target.value);

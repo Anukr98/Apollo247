@@ -65,18 +65,25 @@ const uploadDocument: Resolver<
   console.log(prismUserList);
 
   //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
+  let uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
+  //remove below line: static code to be removed
+  uhid = 'AHB.0000724284';
 
   if (!uhid) {
     return { status: false, fileId: '', filePath: blobUrl };
   }
 
+  //get authtoken for the logged in user mobile number
+  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
+
+  if (!prismUHIDAuthToken) return { status: false, fileId: '', filePath: blobUrl };
+
   //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
 
   const fileId = await patientsRepo.uploadDocumentToPrism(
     uhid,
-    prismAuthToken,
+    prismUHIDAuthToken,
     uploadDocumentInput
   );
 

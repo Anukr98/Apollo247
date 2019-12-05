@@ -415,6 +415,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   if (onlineJrDocs.length > 0) {
     await getJuniorDocInfo();
   }
+  // update JdQuestionStatus
+  await apptRepo.updateJdQuestionStatus(appointmentId, true);
+
   return {
     id,
     doctorId,
