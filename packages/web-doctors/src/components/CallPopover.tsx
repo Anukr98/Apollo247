@@ -718,7 +718,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
- 
+
   const noShowAction = () => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -727,29 +727,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           endAppointmentSessionInput: {
             appointmentId: props.appointmentId,
             status: STATUS.NO_SHOW,
-            noShowBy: REQUEST_ROLES.PATIENT
-          }
+            noShowBy: REQUEST_ROLES.PATIENT,
+          },
         },
-        fetchPolicy: "no-cache"
+        fetchPolicy: 'no-cache',
       })
-      .then(_data => {
+      .then((_data) => {
         unSubscribeBrowserButtonsListener();
-        alert(
-          "Since the patient has not joined the chat, we are rescheduling the appointment."
-        );
-        if (document.getElementById("homeId")) {
-          document.getElementById("homeId")!.click();
+        alert('Since the patient has not joined the chat, we are rescheduling the appointment.');
+        if (document.getElementById('homeId')) {
+          document.getElementById('homeId')!.click();
         }
         //window.location.href = clientRoutes.calendar();
       })
-      .catch(e => {
+      .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
-        console.log(
-          "Error occured while END_APPOINTMENT_SESSION",
-          errorMessage,
-          error
-        );
+        console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
         alert(errorMessage);
       });
   };
