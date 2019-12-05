@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Theme, Button, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar, Modal, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
-import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { UPDATE_APPOINTMENT_SESSION } from 'graphql/consult';
-import {
-  UpdateAppointmentSession,
-  UpdateAppointmentSessionVariables,
-} from 'graphql/types/UpdateAppointmentSession';
-import { useMutation } from 'react-apollo-hooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { DoctorChatCard } from 'components/ChatRoom/DoctorChatCard';
 import moment from 'moment';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from 'graphql/types/GetDoctorNextAvailableSlot';
-import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
-import { useApolloClient } from 'react-apollo-hooks';
+import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+// import { DoctorChatCard } from "components/ChatRoom/DoctorChatCard";
+// import { UPDATE_APPOINTMENT_SESSION } from "graphql/consult";
+// import {
+//   UpdateAppointmentSession,
+//   UpdateAppointmentSessionVariables
+// } from "graphql/types/UpdateAppointmentSession";
+// import { useMutation } from "react-apollo-hooks";
+// import { ChatVideo } from "components/ChatRoom/ChatVideo";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -297,6 +292,62 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fcb716 !important',
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    actions: {
+      padding: '0 20px 20px 20px',
+      display: 'flex',
+      '& button': {
+        borderRadius: 10,
+        color: '#fc9916',
+        padding: 0,
+        boxShadow: 'none',
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
   };
 });
 
@@ -315,6 +366,11 @@ interface ChatWindowProps {
   doctorId: string;
   hasDoctorJoined: (hasDoctorJoined: boolean) => void;
   doctorDetails: DoctorDetails;
+  isModalOpen: boolean;
+  setIsModalOpen: (isModalOpen: boolean) => void;
+  nextSlotAvailable: string;
+  availableNextSlot: (slotDoctorId: string, todayDate: Date) => void;
+  rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
 }
 
 interface AutoMessageStrings {
@@ -380,7 +436,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [jrDoctorJoined, setJrDoctorJoined] = React.useState<boolean>(false);
   const [doctorJoined, setDoctorJoined] = React.useState<boolean>(false);
   const [reschedule, setReschedule] = React.useState<boolean>(false);
-  const client = useApolloClient();
+  // const client = useApolloClient();
+  const mascotRef = useRef(null);
 
   const autoMessageStrings: AutoMessageStrings = {
     videoCallMsg: '^^callme`video^^',
@@ -777,49 +834,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   //     }
   //   );
   // };
-  const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
+  // const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
 
-  const availableSlot = (slotDoctorId: string, todayDate: any) =>
-    client.query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
-      query: GET_DOCTOR_NEXT_AVAILABILITY,
-      variables: {
-        DoctorNextAvailableSlotInput: {
-          doctorIds: [slotDoctorId],
-          availableDate: moment(todayDate).format('YYYY-MM-DD'),
-        },
-      },
-    });
-
-  const nextAvailableSlot = (rowData: any, Value: string) => {
-    const todayDate = moment
-      .utc(
-        Value === 'Followup'
-          ? rowData.transferInfo.folloupDateTime
-          : rowData.transferInfo.transferDateTime
-      )
-      .local()
-      .format('YYYY-MM-DD');
+  const nextAvailableSlot = (rowData: any, value: string) => {
+    const todayDate = new Date(
+      value === 'Followup'
+        ? rowData.transferInfo.folloupDateTime
+        : rowData.transferInfo.transferDateTime
+    );
 
     const slotDoctorId =
-      Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
-
-    availableSlot(slotDoctorId, todayDate)
-      .then(({ data }: any) => {
-        try {
-          if (
-            data &&
-            data.getDoctorNextAvailableSlot &&
-            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-          ) {
-            setNextSlotAvailable(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
-          }
-        } catch (error) {
-          setNextSlotAvailable('');
-        }
-      })
-      .catch((e: string) => {
-        alert(e);
-      });
+      value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+    props.availableNextSlot(slotDoctorId, todayDate);
   };
 
   const showPrescriptionCard = () => (
@@ -827,7 +853,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       {`Hello ${currentPatient &&
         currentPatient.firstName},\nHope your consultation went well… Here is your prescription.`}
       <div className={classes.bubbleActions}>
-        <AphButton>Download</AphButton>
+        <AphButton className={classes.viewButton}>Download</AphButton>
         <AphButton className={classes.viewButton}>View</AphButton>
       </div>
     </div>
@@ -843,8 +869,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         </div>
       ) : (
         <div>
-          <div>`I've rescheduled your appointment --</div>
-          <div>{rowData.transferInfo.transferDateTime}</div>
+          <div>I've rescheduled your appointment --</div>
+          <div>
+            {moment(rowData.transferInfo.transferDateTime).format('Do MMMM, dddd \nhh:mm a')}
+          </div>
         </div>
       )}
       <div className={classes.bubbleActions}>
@@ -867,15 +895,33 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         {rowData.message === autoMessageStrings.rescheduleconsult &&
         rowData.transferInfo.rescheduleCount < 4
           ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
-          : `Since you hace already rescheduled 3 times with ${rowData.transferInfo.doctorInfo.displayName}, we will consider this a new paid appointment.`}
+          : `Since you have already rescheduled 3 times with ${rowData.transferInfo.doctorInfo.displayName}, we will consider this a new paid appointment.`}
       </div>
       <div>{`Next slot for ${rowData.transferInfo.doctorInfo.displayName} is available on —`}</div>
-      <div>slot</div>
+      <div>{moment(props.nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}</div>
       <div className={classes.bubbleActions}>
-        <AphButton className={classes.viewButton} onClick={() => setReschedule(false)}>
-          Accept
+        <AphButton
+          className={classes.viewButton}
+          onClick={() => {
+            const bookRescheduleInput = {
+              appointmentId: rowData.transferInfo.appointmentId,
+              doctorId: rowData.transferInfo.transferDateTime
+                ? rowData.transferInfo.doctorInfo.id
+                : rowData.transferInfo.doctorId,
+              newDateTimeslot: props.nextSlotAvailable,
+              initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+              initiatedId: patientId,
+              patientId: patientId,
+              rescheduledId: '',
+            };
+            props.rescheduleAPI(bookRescheduleInput);
+          }}
+        >
+          ACCEPT
         </AphButton>
-        <AphButton className={classes.viewButton}>Change Slot</AphButton>
+        <AphButton className={classes.viewButton} onClick={() => props.setIsModalOpen(true)}>
+          CHANGE SLOT
+        </AphButton>
       </div>
     </div>
   );

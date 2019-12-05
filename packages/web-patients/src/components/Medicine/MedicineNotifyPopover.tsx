@@ -19,7 +19,8 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       '& button': {
         borderRadius: 10,
-        minWidth: 156,
+        minWidth: 'auto',
+        boxShadow: 'none',
         '&:first-child': {
           color: '#fc9916',
         },
@@ -36,35 +37,17 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type AllowLocationProps = {
-  setIsLocationPopoverOpen: (isLocationPopoverOpen: boolean) => void;
-  setIsPopoverOpen: (isPopoverOpen: boolean) => void;
-};
-
-export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
+export const MedicineNotifyPopover: React.FC = (props) => {
   const classes = useStyles({});
 
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
-        <Typography variant="h2">Hi! :)</Typography>
-        <p>
-          We need to know your location to function better. Please allow us to auto detect your
-          location or enter location manually.
-        </p>
+        <Typography variant="h2">Okay! :)</Typography>
+        <p>You will be notified when Crocin Advance Tab is back in stock.</p>
       </div>
       <div className={classes.actions}>
-        <AphButton
-          onClick={() => {
-            props.setIsPopoverOpen(false);
-            props.setIsLocationPopoverOpen(true);
-          }}
-        >
-          Enter Manualy
-        </AphButton>
-        <AphButton color="primary" onClick={() => props.setIsPopoverOpen(false)}>
-          Allow Auto Detect
-        </AphButton>
+        <AphButton>Ok, Got it</AphButton>
       </div>
     </div>
   );
