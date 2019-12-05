@@ -74,11 +74,12 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   }, [isChanged]);
 
   useEffect(() => {
-    refetch().then(({ data }) => {
-      const _orders = g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || [];
-      setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
-      setisChanged(!isChanged);
-    });
+    refetch &&
+      refetch().then(({ data }) => {
+        const _orders = g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || [];
+        setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
+        setisChanged(!isChanged);
+      });
   }, []);
 
   // let { data, error, loading, refetch } = useQuery<
