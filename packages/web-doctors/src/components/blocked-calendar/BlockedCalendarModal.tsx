@@ -1072,18 +1072,24 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             </ThemeProvider>
                           </MuiPickersUtilsProvider>
                           {!isTimeValid && (
-                            <p className={classes.errorMsg}> End time Shoud be greater</p>
+                            <p className={classes.errorMsg}>
+                              End time should be greater than start time
+                            </p>
                           )}
                           {!isallreadyInArray && (
-                            <p className={classes.errorMsg}>Time is Collapsing</p>
+                            <p className={classes.errorMsg}>
+                              You are trying to duplicate the blocking of same slot, please recheck
+                              and try again
+                            </p>
                           )}
                           {!isPastTime && (
-                            <p className={classes.errorMsg}>You can not block past time </p>
+                            <p className={classes.errorMsg}>Past time slots cannot be blocked</p>
                           )}
                           <div>
                             <AphButton
                               variant="contained"
                               color="primary"
+                              disabled={!isTimeValid || !isallreadyInArray || !isPastTime}
                               classes={{ root: classes.addblockedHours }}
                               onClick={(e) => addTimeArray()}
                             >
@@ -1146,7 +1152,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           )} */}
           </div>
           {isOverlapError && (
-            <div style={{ color: 'red' }}>Error! Blocked calendar items cannot overlap</div>
+            <div style={{ color: 'red' }}>
+              You are trying to duplicate the blocking of same slot, please recheck and try again !
+            </div>
           )}
         </DialogContent>
         <DialogActions className={classes.modalFooter}>
