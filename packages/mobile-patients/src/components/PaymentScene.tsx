@@ -62,20 +62,20 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     ]);
   };
 
-  useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
+  // useEffect(() => {
+  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+  //     BackHandler.addEventListener('hardwareBackPress', handleBack);
+  //   });
 
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
+  //   const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+  //     BackHandler.removeEventListener('hardwareBackPress', handleBack);
+  //   });
 
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
-    };
-  }, []);
+  //   return () => {
+  //     _didFocusSubscription && _didFocusSubscription.remove();
+  //     _willBlurSubscription && _willBlurSubscription.remove();
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -94,7 +94,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   };
 
   const handleOrderSuccess = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({
