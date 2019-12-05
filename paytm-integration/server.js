@@ -134,24 +134,19 @@ app.get('/consultpayment', (req, res) => {
     },
   })
     .then((response) => {
-      console.log(
-        response,
-        response.data,
-        response.data.data.getPatientById,
-        'get patient details'
-      );
+      console.log(response, response.data, response.data.data.getAthsToken, 'get patient details');
       if (
         response &&
         response.data &&
         response.data.data &&
-        response.data.data.getPatientById &&
-        response.data.data.getPatientById.patient
+        response.data.data.getAthsToken &&
+        response.data.data.getAthsToken.patient
       ) {
-        const responsePatientId = response.data.data.getPatientById.patient.id;
+        const responsePatientId = response.data.data.getAthsToken.patient.id;
         console.log(
           responsePatientId,
           'responsePatientId',
-          response.data.data.getPatientById.patient.athsToken
+          response.data.data.getAthsToken.patient.athsToken
         );
         if (responsePatientId == '') {
           res.statusCode = 401;
@@ -174,12 +169,12 @@ app.get('/consultpayment', (req, res) => {
               console.log(resp.data, resp.data.Result);
               req.session.appointmentId = req.query.appointmentId;
               res.render('consults.ejs', {
-                athsToken: response.data.data.getPatientById.patient.athsToken,
+                athsToken: response.data.data.getAthsToken.patient.athsToken,
                 merchantId: resp.data.Result,
                 price: req.query.price,
                 patientId: req.query.patientId,
-                patientName: response.data.data.getPatientById.patient.firstName,
-                mobileNumber: response.data.data.getPatientById.patient.mobileNumber,
+                patientName: response.data.data.getAthsToken.patient.firstName,
+                mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
                 baseUrl: 'https://aph.dev.pmt.popcornapps.com',
               });
             })
