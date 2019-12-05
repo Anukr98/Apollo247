@@ -658,11 +658,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   //call abundant timer start
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
-      console.log(timer);
+      console.log(timer, 'CallAbundant_time');
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -684,7 +684,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     console.log(timer);
     intervalMissCall = setInterval(() => {
       timer = timer - 1;
-      console.log(timer);
+      console.log(timer, 'ring_time');
       MissedcallStoppedTimerCall = timer;
       setRingingCallTime(timer);
       if (timer < 1) {
@@ -704,21 +704,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   // timer for No show called
   const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
   const callIntervalTimer = (timer: number) => {
-    // intervalcallId = setInterval(() => {
-    //   timer = timer - 1;
-    //   console.log(timer);
-    //   stoppedTimerCall = timer;
-    //   setRemainingCallTime(timer);
-    //   if (timer < 1) {
-    //     setRemainingCallTime(0);
-    //     clearInterval(intervalcallId);
-    //     if (patientMsgs.length === 0) {
-    //       //console.log(patientMsgs.length);
-    //       //alert("noShowAction for patient");
-    //       noShowAction();
-    //     }
-    //   }
-    // }, 1000);
+    intervalcallId = setInterval(() => {
+      console.log(didPatientJoined);
+      if (!didPatientJoined) {
+        timer = timer - 1;
+        console.log(timer, 'no_show');
+        stoppedTimerCall = timer;
+        setRemainingCallTime(timer);
+        if (timer < 1) {
+          setRemainingCallTime(0);
+          clearInterval(intervalcallId);
+          if (patientMsgs.length === 0) {
+            noShowAction();
+          }
+        }
+      }
+    }, 1000);
   };
 
   const noShowAction = () => {
@@ -740,7 +741,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         if (document.getElementById('homeId')) {
           document.getElementById('homeId')!.click();
         }
-        //window.location.href = clientRoutes.calendar();
+        window.location.href = clientRoutes.calendar();
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -1104,7 +1105,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     if (props.appointmentStatus === STATUS.COMPLETED) {
       setRemainingCallTime(0);
-      //clearInterval(intervalcallId);
+      clearInterval(intervalcallId);
     }
   }, [props.appointmentStatus]);
   //const pubnub = new Pubnub(config);
@@ -1177,7 +1178,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       console.log(abondmentStarted, 'abondmentStarted');
       console.log(occupancyPatient, 'occupancyPatient');
       if (presenceEventObject.totalOccupancy >= 2) {
-        //console.log("11111111111111");
         didPatientJoined = true;
         clearInterval(intervalCallAbundant);
         abondmentStarted = false;
@@ -1185,8 +1185,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
           if (!abondmentStarted && didPatientJoined) {
             abondmentStarted = true;
-            console.log('22222222222222222222');
-            callAbundantIntervalTimer(180);
+            callAbundantIntervalTimer(200);
             // eventsAfterConnectionDestroyed();
           }
         }
@@ -2171,7 +2170,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <Button
               className={classes.consultButton}
               onClick={() => {
-                noShowAction(true);
+                noShowAction();
               }}
             >
               Reschedule
