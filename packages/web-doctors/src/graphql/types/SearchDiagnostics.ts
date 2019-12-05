@@ -23,5 +23,5 @@ export interface SearchDiagnostics {
 export interface SearchDiagnosticsVariables {
   city?: string | null;
   patientId?: string | null;
-  searchText: string;
+  searchText?: string | null;
 }
