@@ -1218,26 +1218,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     console.log(props.presenceEventObject);
     const presenceEventObject = props.presenceEventObject;
     if (presenceEventObject && isConsultStarted) {
-      console.log(presenceEventObject);
-      // const data: any = presenceEventObject.channels[props.appointmentId].occupants;
-      // const occupancyPatient = data.filter((obj: any) => {
-      //   return obj.uuid === REQUEST_ROLES.PATIENT;
-      // });
-      // console.log(abondmentStarted, 'abondmentStarted');
-      // console.log(occupancyPatient, 'occupancyPatient');
-      // if (presenceEventObject.totalOccupancy >= 2) {
-      //   didPatientJoined = true;
-      //   clearInterval(intervalCallAbundant);
-      //   abondmentStarted = false;
-      // } else {
-      //   if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-      //     if (!abondmentStarted && didPatientJoined) {
-      //       abondmentStarted = true;
-      //       callAbundantIntervalTimer(200);
-      //       // eventsAfterConnectionDestroyed();
-      //     }
-      //   }
-      // }
+      console.log('presenceEventObject', presenceEventObject);
+      const data: any = presenceEventObject.channels[props.appointmentId].occupants;
+      const occupancyPatient = data.filter((obj: any) => {
+        return obj.uuid === REQUEST_ROLES.PATIENT;
+      });
+      console.log(abondmentStarted, 'abondmentStarted');
+      console.log(occupancyPatient, 'occupancyPatient');
+      if (presenceEventObject.totalOccupancy >= 2) {
+        didPatientJoined = true;
+        clearInterval(intervalCallAbundant);
+        abondmentStarted = false;
+      } else {
+        if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
+          if (!abondmentStarted && didPatientJoined) {
+            abondmentStarted = true;
+            callAbundantIntervalTimer(200);
+            // eventsAfterConnectionDestroyed();
+          }
+        }
+      }
     }
   }, [props.presenceEventObject]);
   const onStartConsult = () => {
