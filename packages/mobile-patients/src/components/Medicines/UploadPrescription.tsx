@@ -235,7 +235,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               });
           } else {
             setLoading!(false);
-            renderUploadErrorPopup('Unable to upload Images.');
+            renderUploadErrorPopup('Unable to upload images.');
             // Alert.alert('Images are not uploaded');
           }
         })
@@ -279,7 +279,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
               const prescriptionMedicineInput: PrescriptionMedicineInput = {
                 patientId: (currentPatient && currentPatient.id) || '',
-                medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+                medicineDeliveryType: deliveryAddressId
+                  ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                  : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
                 prescriptionImageUrl: uploadUrlscheck!.join(','),
                 shopId: storeId || '0',
                 appointmentId: '',
@@ -326,7 +328,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             });
         } else {
           setLoading!(false);
-          renderUploadErrorPopup('Uploaded Images failed.');
+          renderUploadErrorPopup('Uploaded images failed.');
         }
 
         // const uploadedUrls = uploadedFiles.map(({ data }) => g(data, 'uploadFile', 'filePath')!);
