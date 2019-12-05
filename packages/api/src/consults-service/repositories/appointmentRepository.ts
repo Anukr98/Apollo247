@@ -163,7 +163,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   ) {
     const whereClause = {
       patientId,
-      appointmentDateTime: LessThan(new Date()),
+      //appointmentDateTime: LessThan(new Date()),
       status: STATUS.COMPLETED,
       appointmentType: In([APPOINTMENT_TYPE.ONLINE, APPOINTMENT_TYPE.PHYSICAL]),
     };

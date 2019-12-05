@@ -1288,13 +1288,16 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       <div className={classes.pageSubHeader}>
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>Consult Room</div>
-          <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
+
+          {/* code commented as requested by the testing team
+          ------------------------------------------------------------
+           <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
             {startAppointment
               ? `Consultation Duration ${
                   minutes.toString().length < 2 ? '0' + minutes : minutes
                 } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
               : getTimerText()}
-          </div>
+          </div> */}
         </div>
         <div className={classes.headerRightGroup}>
           {startAppointment ? (
