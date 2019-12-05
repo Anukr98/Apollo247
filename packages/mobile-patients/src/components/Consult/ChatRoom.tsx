@@ -862,8 +862,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     uuid: REQUEST_ROLES.PATIENT,
     restore: true,
     keepAlive: true,
-    autoNetworkDetection: true,
-    listenToBrowserNetworkEvents: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
     presenceTimeout: 20,
     heartbeatInterval: 20,
   };
@@ -958,22 +958,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const callAbondmentMethod = () => {
     const startConsultResult = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
       return obj.message === startConsultMsg;
     });
 
     const stopConsultResult = insertText.filter((obj: any) => {
-      // console.log('callAbondmentMethodstopConsultResult', obj.message);
       return obj.message === stopConsultMsg;
     });
 
     const startConsultJRResult = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
       return obj.message === startConsultjr;
     });
 
     const stopConsultJRResult = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
       return obj.message === stopConsultJr;
     });
 
@@ -982,7 +978,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.COMPLETED) return;
       abondmentStarted = true;
 
-      startCallAbondmentTimer(180, false);
+      startCallAbondmentTimer(200, false);
     } else {
       console.log(
         'doctor no show scenario',
@@ -998,10 +994,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         dateIsAfter &&
         startConsultResult.length > 0
       ) {
-        if (stopConsultResult.length > 0) return;
+        if (stopConsultResult.length > 0 || appointmentData.status === STATUS.COMPLETED) return;
         abondmentStarted = true;
 
-        startCallAbondmentTimer(180, true);
+        startCallAbondmentTimer(200, true);
       }
     }
   };
