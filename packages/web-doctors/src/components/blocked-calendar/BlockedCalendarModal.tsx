@@ -1061,27 +1061,29 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                     <ThemeProvider theme={defaultMaterialTheme}>
                                       <Grid container alignItems="flex-start" spacing={0}>
                                         <Grid item lg={5} sm={5} xs={5}>
-                                          <TextField
-                                            onChange={(e) => {
-                                              changeListStartTime(e.currentTarget.value, index);
-                                              const obj = customTimeArray;
-                                              obj[index].startTime = e.currentTarget.value;
-                                              setStartVal(obj);
-                                              setStartVal1(e.currentTarget.value);
-                                            }}
-                                            value={
-                                              startVal[index].startTime === item.startTime
-                                                ? item.startTime
-                                                : startVal1
-                                            }
-                                            label="From"
-                                            type="time"
-                                            InputLabelProps={{ shrink: true }}
-                                            InputProps={{
-                                              style: { color: 'black ' },
-                                            }}
-                                            className={classes.timepicker}
-                                          />
+                                          <form noValidate>
+                                            <TextField
+                                              onChange={(e) => {
+                                                changeListStartTime(e.currentTarget.value, index);
+                                                const obj = customTimeArray;
+                                                obj[index].startTime = e.currentTarget.value;
+                                                setStartVal(obj);
+                                                setStartVal1(e.currentTarget.value);
+                                              }}
+                                              value={
+                                                startVal[index].startTime === item.startTime
+                                                  ? item.startTime
+                                                  : startVal1
+                                              }
+                                              label="From"
+                                              type="time"
+                                              InputLabelProps={{ shrink: true }}
+                                              InputProps={{
+                                                style: { color: 'black ' },
+                                              }}
+                                              className={classes.timepicker}
+                                            />
+                                          </form>
                                         </Grid>
                                         <Grid
                                           item
@@ -1093,30 +1095,32 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                           -
                                         </Grid>
                                         <Grid item lg={5} sm={5} xs={5}>
-                                          <TextField
-                                            onChange={(e) => {
-                                              changeListEndTime(e.currentTarget.value, index);
-                                              const obj = customTimeArray;
-                                              obj[index].endTime = e.currentTarget.value;
-                                              setVal(obj);
-                                              setVal1(e.currentTarget.value);
-                                            }}
-                                            value={
-                                              val[index].endTime === item.endTime
-                                                ? item.endTime
-                                                : val1
-                                            }
-                                            label="To"
-                                            type="time"
-                                            InputLabelProps={{ shrink: true }}
-                                            InputProps={{
-                                              style: {
-                                                color: 'black',
-                                                width: '100%',
-                                              },
-                                            }}
-                                            className={classes.timepicker}
-                                          />
+                                          <form noValidate>
+                                            <TextField
+                                              onChange={(e) => {
+                                                changeListEndTime(e.currentTarget.value, index);
+                                                const obj = customTimeArray;
+                                                obj[index].endTime = e.currentTarget.value;
+                                                setVal(obj);
+                                                setVal1(e.currentTarget.value);
+                                              }}
+                                              value={
+                                                val[index].endTime === item.endTime
+                                                  ? item.endTime
+                                                  : val1
+                                              }
+                                              label="To"
+                                              type="time"
+                                              InputLabelProps={{ shrink: true }}
+                                              InputProps={{
+                                                style: {
+                                                  color: 'black',
+                                                  width: '100%',
+                                                },
+                                              }}
+                                              className={classes.timepicker}
+                                            />
+                                          </form>
                                         </Grid>
                                       </Grid>
                                     </ThemeProvider>
@@ -1128,35 +1132,39 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             <ThemeProvider theme={defaultMaterialTheme}>
                               <Grid container alignItems="flex-start" spacing={0}>
                                 <Grid item lg={5} sm={5} xs={5}>
-                                  <TextField
-                                    onChange={(e) => {
-                                      setStartTime(e.currentTarget.value);
-                                    }}
-                                    value={startTime}
-                                    label="From"
-                                    type="time"
-                                    InputLabelProps={{ shrink: true }}
-                                    InputProps={{ style: { color: 'black ' } }}
-                                    className={classes.timepicker}
-                                  />
+                                  <form noValidate>
+                                    <TextField
+                                      onChange={(e) => {
+                                        setStartTime(e.currentTarget.value);
+                                      }}
+                                      value={startTime}
+                                      label="From"
+                                      type="time"
+                                      InputLabelProps={{ shrink: true }}
+                                      InputProps={{ style: { color: 'black ' } }}
+                                      className={classes.timepicker}
+                                    />
+                                  </form>
                                 </Grid>
                                 <Grid item lg={2} sm={2} xs={2} className={classes.deviderLine}>
                                   -
                                 </Grid>
                                 <Grid item lg={5} sm={5} xs={5}>
-                                  <TextField
-                                    onChange={(e) => {
-                                      setEndTime(e.currentTarget.value);
-                                    }}
-                                    value={endTime}
-                                    label="To"
-                                    type="time"
-                                    InputLabelProps={{ shrink: true }}
-                                    InputProps={{
-                                      style: { color: 'black', width: '100%' },
-                                    }}
-                                    className={classes.timepicker}
-                                  />
+                                  <form noValidate>
+                                    <TextField
+                                      onChange={(e) => {
+                                        setEndTime(e.currentTarget.value);
+                                      }}
+                                      value={endTime}
+                                      label="To"
+                                      type="time"
+                                      InputLabelProps={{ shrink: true }}
+                                      InputProps={{
+                                        style: { color: 'black', width: '100%' },
+                                      }}
+                                      className={classes.timepicker}
+                                    />
+                                  </form>
                                 </Grid>
                               </Grid>
                             </ThemeProvider>
