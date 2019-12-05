@@ -405,8 +405,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   if (data.doctorInfo) {
     let showCancel =
       (dateIsAfter &&
-        (data.status === STATUS.IN_PROGRESS &&
-          data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE)) ||
+        data.status === STATUS.IN_PROGRESS &&
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE) ||
       data.status == STATUS.NO_SHOW ||
       false;
     if (showCancel == false) {
@@ -757,6 +757,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             bookFollowUp={false}
             KeyFollow={'RESCHEDULE'}
             isfollowupcount={0}
+            isInitiatedByDoctor={false}
           />
         )}
         {resheduleoverlay && doctorDetails && (

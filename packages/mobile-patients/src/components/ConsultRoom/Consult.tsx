@@ -760,19 +760,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           activeOpacity={1}
                           onPress={() => {
                             CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
-                            // item.appointmentType === 'ONLINE'
-                            //   ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                            //       data: item,
-                            //       from: 'notification',
-                            //     })
-                            //   : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                            //       data: item,
-                            //       from: 'notification',
-                            //     });
-                            props.navigation.navigate(AppRoutes.ChatRoom, {
-                              data: item,
-                              callType: '',
-                            });
+                            item.appointmentType === 'ONLINE'
+                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                  data: item,
+                                  from: 'notification',
+                                })
+                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                  data: item,
+                                  from: 'notification',
+                                });
                           }}
                         >
                           <Text style={styles.prepareForConsult}>RESCHEDULE</Text>
@@ -846,7 +842,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             {day1.diff(day2, 'days') == 0
                               ? 'Today'
                               : day1.diff(day2, 'days') +
-                                'more ' +
+                                ' more ' +
                                 (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
                           </Text>
                         </View>

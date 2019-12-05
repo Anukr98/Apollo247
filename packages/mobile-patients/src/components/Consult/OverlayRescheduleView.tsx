@@ -74,6 +74,7 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   bookFollowUp: boolean;
   KeyFollow: string;
   isfollowupcount: number;
+  isInitiatedByDoctor: boolean;
   // availableSlots: string[] | null;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
@@ -97,6 +98,12 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   const [date, setDate] = useState<Date>(new Date());
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [
+    selectedClinic,
+    setselectedClinic,
+  ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
+    props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
+  );
 
   const scrollViewRef = React.useRef<any>(null);
 
@@ -194,6 +201,19 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               onPress={() => {
                 CommonLogEvent('OVERLAY_RESCHEDULE', 'OverlayReschduleView_Clicked');
                 if (props.KeyFollow !== 'RESCHEDULE') {
+                  const doctorClinics = props.clinics.filter((item) => {
+                    if (item && item.facility && item.facility.facilityType)
+                      return item.facility.facilityType === 'HOSPITAL';
+                  });
+
+                  const hospitalId = isConsultOnline
+                    ? doctorClinics.length > 0 && doctorClinics[0].facility
+                      ? doctorClinics[0].facility.id
+                      : ''
+                    : selectedClinic
+                    ? selectedClinic.facility.id
+                    : '';
+
                   const timeSlot =
                     tabs[0].title === selectedTab &&
                     isConsultOnline &&
@@ -207,7 +227,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     doctorId: props.doctorId,
                     appointmentDateTime: timeSlot,
                     appointmentType: APPOINTMENT_TYPE.ONLINE,
-                    hospitalId: '',
+                    hospitalId: hospitalId,
                     followUpParentId: props.appointmentId,
                   };
                   console.log('inputfollowup', props.appointmentId);
@@ -252,9 +272,13 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     initiatedBy:
                       props.data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
                         ? TRANSFER_INITIATED_TYPE.DOCTOR
+                        : props.isInitiatedByDoctor
+                        ? TRANSFER_INITIATED_TYPE.DOCTOR
                         : TRANSFER_INITIATED_TYPE.PATIENT,
                     initiatedId:
                       props.data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                        ? props.doctorId
+                        : props.isInitiatedByDoctor
                         ? props.doctorId
                         : props.patientId,
                     patientId: props.patientId,
@@ -400,6 +424,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   scrollToSlots={scrollToSlots}
                   setshowOfflinePopup={setshowOfflinePopup}
                   setshowSpinner={setshowSpinner}
+                  setselectedClinic={setselectedClinic}
                 />
               )}
               <View style={{ height: 96 }} />

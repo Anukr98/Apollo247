@@ -385,6 +385,12 @@ export interface EditProfileInput {
   id: string;
 }
 
+export interface EndAppointmentSessionInput {
+  appointmentId: string;
+  status: STATUS;
+  noShowBy?: REQUEST_ROLES | null;
+}
+
 export interface FilterDoctorInput {
   patientId?: string | null;
   specialty?: string | null;
