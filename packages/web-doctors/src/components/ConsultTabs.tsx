@@ -437,7 +437,7 @@ export const ConsultTabs: React.FC = () => {
         setLastMsg(message);
       },
       presence(presenceEvent: any) {
-        setPresenceEventObject(presenceEvent);
+        //setPresenceEventObject(presenceEvent);
         console.log(presenceEvent);
         //setPresenceEventObject(presenceEvent);
         pubnub
