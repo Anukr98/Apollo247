@@ -886,7 +886,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const doctorBblockedSlots: string[] = [];
     if (timeSlot.length > 0) {
       const duration = Math.floor(60 / timeSlot[0].consultDuration);
-      console.log(duration, 'doctor duration');
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
           let blockedSlotsCount =
