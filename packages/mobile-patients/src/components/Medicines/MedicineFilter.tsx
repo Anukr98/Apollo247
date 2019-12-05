@@ -204,8 +204,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
         <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
         <InputField
           maxLength={3}
-          fromPlaceholder={'Discount in %'}
-          toPlaceholder={'Discount in %'}
+          fromPlaceholder={'Discount'}
+          toPlaceholder={'Discount'}
           fromValue={`${discount.from == undefined ? '' : discount.from}`}
           toValue={`${discount.to == undefined ? '' : discount.to}`}
           onFromChangeText={(text) => {
@@ -328,7 +328,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
     } else if (typeof discount.to == 'number' && discount.from == undefined) {
       Alert.alert('Uh oh.. :(', `Please provide minimum discount value.`);
       return;
-    } else if (discount.from && discount.to && (discount.from > 100 || discount.to > 100)) {
+    } else if (
+      typeof discount.to == 'number' &&
+      typeof discount.from == 'number' &&
+      (discount.from > 100 || discount.to > 100)
+    ) {
       Alert.alert('Uh oh.. :(', `Discount cannot be more than 100.`);
       return;
     }

@@ -676,6 +676,23 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               }
               keyExtractor={(_, index) => `${index}`}
               bounces={false}
+              ListEmptyComponent={
+                discount.from ||
+                ((discount.to && discount.to != 100) || false) ||
+                price.from ||
+                price.to ? (
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      marginTop: 20,
+                      ...theme.viewStyles.text('M', 14, '#02475b'),
+                    }}
+                  >
+                    No results matching your filter criteria, please change the filter and try
+                    again.
+                  </Text>
+                ) : null
+              }
               ListHeaderComponent={
                 (filteredMedicineList.length > 0 && (
                   <SectionHeaderComponent

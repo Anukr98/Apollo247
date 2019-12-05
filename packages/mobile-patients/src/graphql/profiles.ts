@@ -16,6 +16,17 @@ export const GET_CURRENT_PATIENTS = gql`
         gender
         dateOfBirth
         photoUrl
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
       }
     }
   }
@@ -34,6 +45,7 @@ export const UPDATE_PATIENT = gql`
         uhid
         dateOfBirth
         emailAddress
+        photoUrl
       }
     }
   }
@@ -1557,6 +1569,7 @@ export const GET_APPOINTMENT_DATA = gql`
         isFollowUp
         displayId
         rescheduleCount
+        isJdQuestionsComplete
         doctorInfo {
           id
           salutation
@@ -1691,6 +1704,7 @@ export const UPLOAD_DOCUMENT = gql`
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
       status
       fileId
+      filePath
     }
   }
 `;

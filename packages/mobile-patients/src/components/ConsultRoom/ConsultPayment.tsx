@@ -5,7 +5,7 @@ import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceH
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   BackHandler,
@@ -18,6 +18,7 @@ import {
   WebView,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -45,29 +46,27 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   const doctorName = props.navigation.getParam('doctorName');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
+  const [loading, setLoading] = useState(true);
   // const name = currentPatient && currentPatient.firstName;
   const { showAphAlert, hideAphAlert } = useUIElements();
 
-  useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
+  // useEffect(() => {
+  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+  //     BackHandler.addEventListener('hardwareBackPress', handleBack);
+  //   });
 
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
+  //   const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+  //     BackHandler.removeEventListener('hardwareBackPress', handleBack);
+  //   });
 
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
-    };
-  }, []);
+  //   return () => {
+  //     _didFocusSubscription && _didFocusSubscription.remove();
+  //     _willBlurSubscription && _willBlurSubscription.remove();
+  //   };
+  // }, []);
 
   const handleBack = async () => {
-    // showAphAlert!({
-    //   title: `Hi ${name ? name + ',' : ''}`,
-    //   description: 'Do you want to go back?',
-    // });
+    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     Alert.alert('Alert', 'Do you want to go back?', [
       { text: 'No' },
       { text: 'Yes', onPress: () => props.navigation.goBack() },
@@ -83,7 +82,9 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
   };
 
-  const handleOrderSuccess = () => {
+  const handleOrderSuccess = async () => {
+    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -99,7 +100,12 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
         <View style={{ height: 60, alignItems: 'flex-end' }}>
           <TouchableOpacity
             activeOpacity={1}
-            style={{ height: 60, paddingRight: 25, backgroundColor: 'transparent' }}
+            style={{
+              height: 60,
+              paddingRight: 25,
+              backgroundColor: 'transparent',
+              justifyContent: 'center',
+            }}
             onPress={() => {
               hideAphAlert!();
               props.navigation.navigate(AppRoutes.TabBar);
@@ -129,6 +135,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     const redirectedUrl = data.url;
     console.log({ data, redirectedUrl });
     console.log(`RedirectedUrl: ${redirectedUrl}`);
+
     const isMatchesSuccessUrl =
       (redirectedUrl &&
         redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1) ||
@@ -152,16 +159,17 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   };
 
   const renderWebView = () => {
-    // consultpayment?appointmentId=&patientId=&price=
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}price=${price}`;
-    console.log('URL:\t', url);
-
+    const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}`;
+    console.log(`%cCONSULT_PG_URL:\t${url}`, 'color: #bada55');
+    // PATH: /consultpayment?appointmentId=&patientId=&price=
     // comment below line
     // return null;
 
     return (
       <WebView
+        onLoadStart={() => setLoading!(true)}
+        onLoadEnd={() => setLoading!(false)}
         bounces={false}
         useWebKit={true}
         source={{ uri: url }}
@@ -181,8 +189,9 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
             onPress: handleBack,
           }}
         />
-        {renderWebView()}
+        <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
+      {loading && <Spinner />}
     </View>
   );
 };
