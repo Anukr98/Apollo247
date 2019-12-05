@@ -62,6 +62,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   rescheduleCount: number | null;
   appointmentState: APPOINTMENT_STATE | null;
   isConsultStarted: boolean | null;
+  isJdQuestionsComplete: boolean | null;
   doctorInfo: getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 

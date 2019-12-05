@@ -551,8 +551,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setUserAnswers(data);
     if (isSendAnswers.find((item) => item === false) === undefined) {
       requestToJrDoctor();
-      thirtySecondCall();
-      minuteCaller();
+      const startConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultjr;
+      });
+      console.log(startConsultjrResult, 'startConsultjrResult');
+      if (startConsultjrResult.length == 0) {
+        thirtySecondCall();
+        minuteCaller();
+      } else {
+      }
     }
   };
 
@@ -1203,6 +1211,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     if (appointmentData.isJdQuestionsComplete) {
+      console.log({});
+
       thirtySecondCall();
       minuteCaller();
     } else {
@@ -1235,11 +1245,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.message === jdThankyou;
         });
 
+        const stopConsultjrResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === stopConsultJr;
+        });
+
+        const languageQueueResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === languageQue;
+        });
+
         if (
           result.length === 0 &&
           startConsultResult.length === 0 &&
           startConsultjrResult.length === 0 &&
-          jdThankyouResult.length === 0
+          jdThankyouResult.length === 0 &&
+          stopConsultjrResult.length === 0 &&
+          languageQueueResult.length === 0
         ) {
           // console.log('result.length ', result);
           pubnub.publish(
@@ -1294,11 +1316,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.message === jdThankyou;
         });
 
+        const stopConsultjrResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === stopConsultJr;
+        });
+
+        const languageQueueResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === languageQue;
+        });
+
         if (
           result.length === 0 &&
           startConsultResult.length === 0 &&
           startConsultjrResult.length === 0 &&
-          jdThankyouResult.length === 0
+          jdThankyouResult.length === 0 &&
+          stopConsultjrResult.length === 0 &&
+          languageQueueResult.length === 0
         ) {
           // console.log('result.length ', result);
           pubnub.publish(
@@ -1356,7 +1390,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
-  const {showAphAlert} = useUIElements()
+  const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     // console.log('pubNubMessages', message);
     if (message.message.isTyping) {
@@ -1388,10 +1422,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === stopConsultJr) {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
-         thirtySecondTimer && clearTimeout(thirtySecondTimer);
-         minuteTimer && clearTimeout(minuteTimer);
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         setConvertVideo(false);
         addMessages(message);
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         //setShowFeedback(true);
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (message.message.message === stopConsultMsg) {
@@ -1417,6 +1453,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === covertAudioMsg) {
         console.log('covertVideoMsg', covertAudioMsg);
         setConvertVideo(false);
+      } else if (message.message.message === consultPatientStartedMsg) {
+        console.log('consultPatientStartedMsg');
+        addMessages(message);
       } else if (message.message.message === startConsultjr) {
         console.log('succss1');
         setjrDoctorJoined(true);
@@ -1439,9 +1478,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === languageQue) {
         console.log('languageQue');
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === jdThankyou) {
         console.log('jdThankyou');
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
@@ -1458,7 +1501,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('addMessages', message, message.timetoken);
+    //console.log('addMessages', message, message.timetoken);
+    console.log('startConsultjr', message.message.message);
+
     if (message.message.id !== patientId) {
       stopCallAbondmentTimer();
       setIsDoctorNoShow(false);
@@ -1937,6 +1982,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
               />
             </StickyBottomComponent>
+            <Text
+              style={{
+                color: '#ffffff',
+                marginLeft: 27,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+                lineHeight: 24,
+                letterSpacing: 0.04,
+                marginTop: 50,
+                marginRight: 16,
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
           </View>
           {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
             <View
@@ -2049,6 +2108,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 />
               </StickyBottomComponent>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  marginLeft: 27,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  lineHeight: 24,
+                  letterSpacing: 0.04,
+                  marginTop: 50,
+                  marginRight: 16,
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
             </View>
           )}
           {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
@@ -2064,7 +2137,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View
           style={{
             width: 244,
-            height: 130,
+            // height: 130,
             backgroundColor: '#0087ba',
             marginLeft: 38,
             borderRadius: 10,
@@ -2087,6 +2160,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
               // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
             }
+          </Text>
+          <Text
+            style={{
+              color: '#ffffff',
+              marginLeft: 27,
+              textAlign: 'right',
+              ...theme.fonts.IBMPlexSansMedium(10),
+              lineHeight: 24,
+              letterSpacing: 0.04,
+              marginTop: 0,
+              marginRight: 16,
+            }}
+          >
+            {convertChatTime(rowData)}
           </Text>
         </View>
         <View
@@ -2241,6 +2328,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             />
           </StickyBottomComponent>
+          <Text
+            style={{
+              color: '#ffffff',
+              marginLeft: 27,
+              textAlign: 'right',
+              ...theme.fonts.IBMPlexSansMedium(10),
+              lineHeight: 24,
+              letterSpacing: 0.04,
+              marginTop: 53,
+              marginRight: 16,
+            }}
+          >
+            {convertChatTime(rowData)}
+          </Text>
         </View>
       </>
     );
@@ -2849,7 +2950,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
       rowData.message === acceptedCallMsg ||
-      // rowData.message === stopConsultMsg ||
+      rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated
     ) {
       return null;
@@ -3676,7 +3777,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setChatReceived(false);
-
               setSubscriberStyles({
                 width: 155,
                 height: 205,
@@ -4781,7 +4881,109 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         ) : null}
         {renderChatView()}
-        <KeyboardAvoidingView behavior="padding" enabled>
+        {Platform.OS == 'ios' ? (
+          <KeyboardAvoidingView behavior="padding" enabled>
+            <View
+              style={{
+                width: width,
+                height: 66,
+                backgroundColor: 'white',
+                bottom: isIphoneX() ? 36 : 0,
+              }}
+            >
+              <View style={{ flexDirection: 'row', width: width }}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginTop: 9,
+                    marginLeft: 5,
+                  }}
+                  onPress={async () => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                  }}
+                >
+                  <AddAttachmentIcon
+                    style={{ width: 24, height: 24, marginTop: 10, marginLeft: 14 }}
+                  />
+                </TouchableOpacity>
+                <View>
+                  <TextInput
+                    autoCorrect={false}
+                    placeholder="Type here…"
+                    multiline={true}
+                    style={{
+                      marginLeft: 16,
+                      marginTop: 5,
+                      height: 40,
+                      width: width - 120,
+                      ...theme.fonts.IBMPlexSansMedium(16),
+                    }}
+                    value={messageText}
+                    blurOnSubmit={false}
+                    // returnKeyType="send"
+                    onChangeText={(value) => {
+                      setMessageText(value);
+                      setDropdownVisible(false);
+                    }}
+                    onFocus={() => setDropdownVisible(false)}
+                    onSubmitEditing={() => {
+                      Keyboard.dismiss();
+                    }}
+                  />
+                  <View
+                    style={{
+                      marginLeft: 16,
+                      marginTop: 0,
+                      height: 2,
+                      width: width - 120,
+                      backgroundColor: '#00b38e',
+                    }}
+                  />
+                </View>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginTop: 10,
+                    marginLeft: 2,
+                  }}
+                  onPress={async () => {
+                    const textMessage = messageText.trim();
+                    console.log('ChatSend', textMessage);
+
+                    if (textMessage.length == 0) {
+                      Alert.alert('Apollo', 'Please write something to send message.');
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                      return;
+                    }
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                    send(textMessage);
+                  }}
+                >
+                  <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+                </TouchableOpacity>
+              </View>
+              {displayChatQuestions && Platform.OS === 'ios' && (
+                <ChatQuestions
+                  onItemDone={(value: { k: string; v: string[] }) => {
+                    console.log('and', value);
+                    setAnswerData([value]);
+                  }}
+                  onDonePress={(values: { k: string; v: string[] }[]) => {
+                    setAnswerData(values);
+                    setDisplayChatQuestions(false);
+                  }}
+                />
+              )}
+            </View>
+          </KeyboardAvoidingView>
+        ) : (
+          //  <KeyboardAvoidingView behavior="padding" enabled>
           <View
             style={{
               width: width,
@@ -4867,20 +5069,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
               </TouchableOpacity>
             </View>
-            {displayChatQuestions && Platform.OS === 'ios' && (
-              <ChatQuestions
-                onItemDone={(value: { k: string; v: string[] }) => {
-                  console.log('and', value);
-                  setAnswerData([value]);
-                }}
-                onDonePress={(values: { k: string; v: string[] }[]) => {
-                  setAnswerData(values);
-                  setDisplayChatQuestions(false);
-                }}
-              />
-            )}
           </View>
-        </KeyboardAvoidingView>
+        )
+        // </KeyboardAvoidingView>
+        }
+
         {displayChatQuestions && Platform.OS === 'android' && (
           <ChatQuestions
             onItemDone={(value: { k: string; v: string[] }) => {
@@ -5087,7 +5280,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <FeedbackPopup
         onComplete={() => {
           setShowFeedback(false);
-          showAphAlert!({ title: 'Thanks :)', description: 'Your feedback has been submitted. Thanks for your time.' });
+          showAphAlert!({
+            title: 'Thanks :)',
+            description: 'Your feedback has been submitted. Thanks for your time.',
+          });
         }}
         transactionId={channel}
         title="We value your feedback! :)"
@@ -5100,7 +5296,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         type={FEEDBACKTYPE.CONSULT}
         isVisible={showFeedback}
       />
-      
+
       {loading && <Spinner />}
     </View>
   );

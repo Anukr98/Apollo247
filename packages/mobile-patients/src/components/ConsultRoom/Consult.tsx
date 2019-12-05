@@ -842,7 +842,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             {day1.diff(day2, 'days') == 0
                               ? 'Today'
                               : day1.diff(day2, 'days') +
-                                'more ' +
+                                ' more ' +
                                 (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
                           </Text>
                         </View>

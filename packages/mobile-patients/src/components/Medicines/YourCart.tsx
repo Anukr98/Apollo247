@@ -755,6 +755,30 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     console.log('unUploadedPres', unUploadedPres);
     multiplePhysicalPrescriptionUpload(unUploadedPres)
       .then((data) => {
+        //This is new, uncomment and test when API is working
+        // const uploadUrls = data.map((item) =>
+        //   item.data!.uploadDocument.status
+        //     ? {
+        //         fileId: item.data!.uploadDocument.fileId!,
+        //         url: item.data!.uploadDocument.filePath!,
+        //       }
+        //     : null
+        // );
+
+        // const newuploadedPrescriptions = unUploadedPres.map(
+        //   (item, index) =>
+        //     ({
+        //       ...item,
+        //       uploadedUrl: uploadUrls![index]!.url,
+        //       prismPrescriptionFileId: uploadUrls![index]!.fileId,
+        //     } as PhysicalPrescription)
+        // );
+        // console.log('precp:di', newuploadedPrescriptions);
+
+        // setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+        // setisPhysicalUploadComplete(true);
+
+        //This is prism Url generation
         const uploadUrlscheck = data.map((item) =>
           item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
         );
@@ -763,7 +787,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           return el != null;
         });
         console.log('filtered', filtered);
-
         if (filtered.length > 0) {
           client
             .query<downloadDocuments>({
@@ -801,6 +824,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         } else {
           Alert.alert('your uploaded images are failed');
         }
+        //This the origin code before Prism
         // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
         // const newuploadedPrescriptions = unUploadedPres.map(
         //   (item, index) =>
