@@ -701,7 +701,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
             setIsallreadyInArray(true);
           }
           if (endTime && startTime) {
-            alert();
             const [ehours, emins] = endTime.split(':');
             var endHour = ehours;
             var endMinute = emins;
@@ -864,6 +863,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       value={start}
                       minDate={new Date()}
                       onChange={(date) => {
+                        setIsOverlapError(false);
                         setStart(date ? getFormattedDate(date) : '');
                         findBlockSlot(date ? getFormattedDate(date) : '');
                         getDateRange(date ? date : '', end ? end : '');
