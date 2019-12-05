@@ -473,7 +473,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         }
       });
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
-    const startTime = consultDurationDay.startTime;
+    const startTime =
+      consultDurationDay && consultDurationDay.startTime ? consultDurationDay.startTime : '';
     const endTime = consultDurationDay.endTime;
 
     const [startHours, startMins] = startTime.split(':');
@@ -553,10 +554,16 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         }
       });
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
-    const startTime = convertFrom24To12Format(consultDurationDay.startTime);
-    const endTime = convertFrom24To12Format(consultDurationDay.endTime);
+    const startTime = convertFrom24To12Format(
+      consultDurationDay && consultDurationDay.startTime ? consultDurationDay.startTime : ''
+    );
+    const endTime = convertFrom24To12Format(
+      consultDurationDay && consultDurationDay.endTime ? consultDurationDay.endTime : ''
+    );
     var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
-    return ` ${startTime} - ${endTime}  | ${consultDurationDay.consultMode}`;
+    return ` ${startTime} - ${endTime}  | ${
+      consultDurationDay && consultDurationDay.consultMode ? consultDurationDay.consultMode : ''
+    }`;
   };
 
   const changeListEndTime = (value: any, index: any) => {
@@ -612,7 +619,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   }, [isPastTimeError, isOverlapError, customTimeArray]);
   useEffect(() => {
     if (new Date(start).getDate() === new Date().getDate()) {
-      if (startTime) {
+      if (startTime && startTime.length > 0) {
         const [shours, smins] = startTime.split(':');
         var startHour = shours;
         var startMinute = smins;
@@ -634,7 +641,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   }, [startTime, start]);
 
   useEffect(() => {
-    if (startTime && endTime) {
+    if (startTime && endTime && startTime.length > 0 && endTime.length > 0) {
       const [shours, smins] = startTime.split(':');
       var startHour = shours;
       var startMinute = smins;
@@ -661,37 +668,39 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     }
   }, [startTime, endTime]);
   useEffect(() => {
-    if (startTime && customTimeArray) {
+    if (startTime && customTimeArray && startTime.length > 0 && customTimeArray.length > 0) {
       const [shours, smins] = startTime.split(':');
       var startHour = shours;
       var startMinute = smins;
       var startTimeObject = new Date();
       startTimeObject.setHours(Number(startHour), Number(startMinute));
       customTimeArray.map((value: any) => {
-        const [arrayshours, arraysmins] = value.startTime.split(':');
-        var arraystartHour = arrayshours;
-        var arraystartMinute = arraysmins;
-        //  var startSecond = extractedStartSecond;
-        const [arrayehours, arrayemins] = value.endTime.split(':');
-        var arrayendHour = arrayehours;
-        var arrayendMinute = arrayemins;
-        //  var endSecond = extractedEndSecond;
+        if (value && value.length > 0 && value.startTime && value.endTime) {
+          const [arrayshours, arraysmins] = value.startTime.split(':');
+          var arraystartHour = arrayshours;
+          var arraystartMinute = arraysmins;
+          //  var startSecond = extractedStartSecond;
+          const [arrayehours, arrayemins] = value.endTime.split(':');
+          var arrayendHour = arrayehours;
+          var arrayendMinute = arrayemins;
+          //  var endSecond = extractedEndSecond;
 
-        //Create date object and set the time to that
-        var startArrayTimeObject = new Date();
-        startArrayTimeObject.setHours(Number(arraystartHour), Number(arraystartMinute));
+          //Create date object and set the time to that
+          var startArrayTimeObject = new Date();
+          startArrayTimeObject.setHours(Number(arraystartHour), Number(arraystartMinute));
 
-        //Create date object and set the time to that
-        var endArrayTimeObject = new Date(startTimeObject);
-        endArrayTimeObject.setHours(Number(arrayendHour), Number(arrayendMinute));
-        if (startArrayTimeObject <= startTimeObject) {
-          if (startTimeObject < endArrayTimeObject) {
-            setIsallreadyInArray(false);
+          //Create date object and set the time to that
+          var endArrayTimeObject = new Date(startTimeObject);
+          endArrayTimeObject.setHours(Number(arrayendHour), Number(arrayendMinute));
+          if (startArrayTimeObject <= startTimeObject) {
+            if (startTimeObject < endArrayTimeObject) {
+              setIsallreadyInArray(false);
+            } else {
+              setIsallreadyInArray(true);
+            }
           } else {
             setIsallreadyInArray(true);
           }
-        } else {
-          setIsallreadyInArray(true);
         }
       });
 
@@ -860,7 +869,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         id="date-picker-inline"
                         label="To"
                         disabled={!start}
-                        minDate={new Date(start)}
+                        minDate={nextTODate(start)}
                         value={end}
                         onChange={(date) => {
                           setEnd(date ? getFormattedDate(date) : '');
@@ -956,7 +965,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             <div className={classes.formDate}>
                               {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
                             </div>
-                            {consultHours && (
+                            {consultHours && consultHours.length > 0 && (
                               <FormGroup>
                                 <FormControlLabel
                                   control={<Checkbox value="consultHours" />}
