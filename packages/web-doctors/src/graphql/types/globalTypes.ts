@@ -109,6 +109,7 @@ export enum Relation {
 }
 
 export enum STATUS {
+  CALL_ABANDON = "CALL_ABANDON",
   CANCELLED = "CANCELLED",
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
