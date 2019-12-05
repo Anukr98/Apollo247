@@ -174,6 +174,22 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '5px 0',
       },
     },
+    prescriptionBox: {
+      backgroundColor: '#f7f8f5',
+      padding: '8px 12px',
+      display: 'flex',
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: '#02475b',
+      borderRadius: 5,
+      alignItems: 'center',
+      marginTop: 8,
+      marginBottom: 16,
+    },
+    preImg: {
+      marginLeft: 'auto',
+      paddingLeft: 20,
+    },
   };
 });
 
@@ -218,6 +234,12 @@ export const MedicineDetails: React.FC = (props) => {
                       <div className={classes.textInfo}>
                         <label>Pack Of</label>
                         15 Tablets
+                      </div>
+                      <div className={classes.prescriptionBox}>
+                        <span>This medicine requires doctor’s prescription</span>
+                        <span className={classes.preImg}>
+                          <img src={require('images/ic_tablets.svg')} alt="" />
+                        </span>
                       </div>
                       <Tabs
                         value={tabValue}

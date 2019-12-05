@@ -5,6 +5,7 @@ import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-componen
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
+import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -205,6 +206,23 @@ const useStyles = makeStyles((theme: Theme) => {
     substitutePopover: {
       margin: 0,
     },
+    selectedDrugs: {
+      width: '100%',
+    },
+    price: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      opacity: 0.6,
+    },
+    regularPrice: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#01475b',
+      opacity: 0.6,
+      textDecoration: 'line-through',
+      paddingRight: 5,
+    },
   });
 });
 
@@ -213,7 +231,9 @@ export const MedicineInformation: React.FC = (props) => {
   const [medicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
+  const addToCartRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
+  const [isAddCartPopoverOpen, setIsAddCartPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   return (
@@ -227,7 +247,11 @@ export const MedicineInformation: React.FC = (props) => {
               onClick={() => setIsSubDrugsPopoverOpen(true)}
               ref={subDrugsRef}
             >
-              Pick from 9 available substitutes
+              <span>Pick from 9 available substitutes</span>
+              <div className={classes.selectedDrugs}>
+                <div>Doliprane 500mg Tab</div>
+                <div className={classes.price}>Rs. 65.5</div>
+              </div>
               <div className={classes.dropDownArrow}>
                 <img src={require('images/ic_dropdown_green.svg')} alt="" />
               </div>
@@ -285,11 +309,14 @@ export const MedicineInformation: React.FC = (props) => {
             </div>
             <div className={classes.medicineNoStock}>Out Of Stock</div>
           </div>
-          <div className={classes.medicinePrice}>Rs. 120</div>
+          <div className={classes.medicinePrice}>
+            <span className={classes.regularPrice}>(Rs. 999)</span>
+            Rs. 120
+          </div>
         </div>
       </div>
       <div className={classes.bottomActions}>
-        <AphButton>Add To Cart</AphButton>
+        <AphButton onClick={() => setIsAddCartPopoverOpen(true)}>Add To Cart</AphButton>
         <AphButton color="primary">Buy Now</AphButton>
         <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
           Notify when in stock
@@ -314,6 +341,28 @@ export const MedicineInformation: React.FC = (props) => {
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
             <MedicineNotifyPopover />
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={isAddCartPopoverOpen}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <AddToCartPopover />
           </div>
         </div>
       </Popover>
