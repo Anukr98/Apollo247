@@ -82,7 +82,7 @@ export const DayDeals: React.FC = (props) => {
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         <div className={classes.card}>
-          <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
+          <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardTitle}>
                 Personal
@@ -96,7 +96,7 @@ export const DayDeals: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
+          <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardTitle}>
                 Baby
@@ -110,7 +110,7 @@ export const DayDeals: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
+          <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardTitle}>
                 Home
@@ -124,7 +124,7 @@ export const DayDeals: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
+          <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardTitle}>
                 Personal
@@ -138,7 +138,7 @@ export const DayDeals: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
+          <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardTitle}>
                 Baby
@@ -152,7 +152,7 @@ export const DayDeals: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link className={classes.cardLink} to={clientRoutes.yourOrders()}>
+          <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardTitle}>
                 Home
