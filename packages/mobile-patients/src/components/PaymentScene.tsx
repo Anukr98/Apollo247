@@ -91,7 +91,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     });
   };
 
-  const handleOrderSuccess = () => {
+  const handleOrderSuccess = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,

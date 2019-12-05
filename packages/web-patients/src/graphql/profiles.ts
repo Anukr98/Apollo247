@@ -78,3 +78,22 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
     }
   }
 `;
+
+export const BOOK_APPOINTMENT_RESCHEDULE = gql`
+  mutation bookRescheduleAppointment(
+    $bookRescheduleAppointmentInput: BookRescheduleAppointmentInput!
+  ) {
+    bookRescheduleAppointment(bookRescheduleAppointmentInput: $bookRescheduleAppointmentInput) {
+      appointmentDetails {
+        appointmentType
+        id
+        doctorId
+        appointmentState
+        appointmentDateTime
+        status
+        patientId
+        rescheduleCount
+      }
+    }
+  }
+`;

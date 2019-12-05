@@ -125,6 +125,7 @@ import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { ChatQuestions } from './ChatQuestions';
 import { FeedbackPopup } from '../FeedbackPopup';
 import { g } from '../../helpers/helperFunctions';
+import { useUIElements } from '../UIElementsProvider';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -520,7 +521,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           try {
             const text = {
               id: patientId,
-              message: 'Smoke:\n' + item.v[0] || 'No',
+              message: 'Smoke:\n' + (item.v[0] || 'No'),
               messageDate: currentDateTime,
             };
             setMessageText('');
@@ -1389,6 +1390,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
+  const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     // console.log('pubNubMessages', message);
     if (message.message.isTyping) {
@@ -1420,6 +1422,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === stopConsultJr) {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         setConvertVideo(false);
         addMessages(message);
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
@@ -1457,7 +1461,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setjrDoctorJoined(true);
         updateSessionAPI();
         checkingAppointmentDates();
-
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
+        addMessages(message);
+      } else if (message.message.message === consultPatientStartedMsg) {
+        console.log('consultPatientStartedMsg');
         addMessages(message);
       } else if (message.message.message === imageconsult) {
         console.log('imageconsult');
@@ -2129,7 +2137,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View
           style={{
             width: 244,
-            height: 116,
+            height: 130,
             backgroundColor: '#0087ba',
             marginLeft: 38,
             borderRadius: 10,
@@ -2145,9 +2153,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               paddingTop: 12,
             }}
           >
-            {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
-              ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
-              : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`}
+            {
+              // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
+              //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
+              //   :
+              "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
+              // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
+            }
           </Text>
           <Text
             style={{
@@ -5268,13 +5280,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <FeedbackPopup
         onComplete={() => {
           setShowFeedback(false);
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          showAphAlert!({
+            title: 'Thanks :)',
+            description: 'Your feedback has been submitted. Thanks for your time.',
+          });
         }}
         transactionId={channel}
         title="We value your feedback! :)"

@@ -603,13 +603,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         isVisible={medFeedback.visible}
         onComplete={() => {
           setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          showAphAlert!({
+            title: 'Thanks :)',
+            description: 'Your feedback has been submitted. Thanks for your time.',
+          });
         }}
       />
     </View>

@@ -62,6 +62,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     id: ID!
     orderStatus: MEDICINE_ORDER_STATUS
     statusDate: DateTime
+    hideStatus: Boolean
   }
 
   type MedicineOrderPayments {

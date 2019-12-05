@@ -18,6 +18,17 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
+import winston from 'winston';
+
+const filePath = 'api/src/profile-service/patientRepository/';
+const authLog = {
+  level: 'info',
+  path: '',
+  message: '',
+  time: '',
+  response: '',
+  error: '',
+};
 
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
@@ -82,15 +93,16 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     mobileNumber = '8019677178';
-
-    const authTokenResult = await fetch(
-      `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`,
-      prismHeaders
-    )
+    const url = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
+    const msg = `External_API_Call: ${url}`;
+    const authTokenResult = await fetch(url, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
       .catch((error: PrismGetAuthTokenError) => {
+        this.createLog(msg, 'getPrismAuthToken->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
       });
+
+    this.createLog(msg, 'getPrismAuthToken->response', JSON.stringify(authTokenResult), '');
 
     return authTokenResult !== null ? authTokenResult.response : null;
   }
@@ -103,17 +115,39 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    const usersResult = await fetch(
-      `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`,
-      prismHeaders
-    )
+    const url = `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`;
+    const msg = `External_API_Call: ${url}`;
+    const usersResult = await fetch(url, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetUsersResponse>)
       .catch((error: PrismGetUsersError) => {
+        this.createLog(msg, 'getPrismUsersList->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
       });
 
-    console.log('Prism Users List:', usersResult);
+    this.createLog(msg, 'getPrismUsersList->response', JSON.stringify(usersResult), '');
+
     return usersResult && usersResult.response ? usersResult.response.signUpUserData : [];
+  }
+
+  //getPrismAuthTokenByUHID
+  async getPrismAuthTokenByUHID(uhid: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const url = `${process.env.PRISM_GET_UHID_AUTH_TOKEN_API}?uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
+    const authTokenResult = await fetch(url, prismHeaders)
+      .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
+      .catch((error: PrismGetAuthTokenError) => {
+        this.createLog(msg, 'getPrismAuthTokenByUHID->catchBlock', '', JSON.stringify(error));
+        throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
+      });
+
+    this.createLog(msg, 'getPrismAuthTokenByUHID->response', JSON.stringify(authTokenResult), '');
+
+    return authTokenResult !== null ? authTokenResult.response : null;
   }
 
   async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
@@ -128,8 +162,19 @@ export class PatientRepository extends Repository<Patient> {
       });
     }
 
-    const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
-    return matchedUser.length > 0 ? matchedUser[0].UHID : 'AHB.0000724284';
+    let uhid;
+    if (
+      (patientData.uhid === null || patientData.uhid === '') &&
+      patientData.firstName.trim() !== ''
+    ) {
+      const createUhidResponse = await this.createNewUhid(patientData.id);
+      uhid = createUhidResponse;
+    } else {
+      const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
+      uhid = matchedUser.length > 0 ? matchedUser[0].UHID : 'AHB.0000724284';
+    }
+
+    return uhid;
   }
 
   //utility method to get prism user details
@@ -139,17 +184,18 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    const detailsResult = await fetch(
-      `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`,
-      prismHeaders
-    )
+    const url = `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
+    const detailsResult = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
+        this.createLog(msg, 'getPrismUsersDetails->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
       });
 
+    this.createLog(msg, 'getPrismUsersDetails->response', JSON.stringify(detailsResult), '');
     return detailsResult;
   }
 
@@ -172,9 +218,11 @@ export class PatientRepository extends Repository<Patient> {
       filename: documentName,
     };
 
+    const url = `${process.env.PRISM_UPLOAD_RECORDS_API}`;
+    const msg = `External_API_Call: ${url}`;
     const options = {
       method: 'POST',
-      url: `${process.env.PRISM_UPLOAD_RECORDS_API}`,
+      url: url,
       headers: {
         Connection: 'keep-alive',
         'Accept-Encoding': 'gzip, deflate',
@@ -190,9 +238,16 @@ export class PatientRepository extends Repository<Patient> {
         return JSON.parse(res);
       })
       .catch((err) => {
+        this.createLog(msg, 'uploadDocumentToPrism->catchBlock', '', JSON.stringify(err));
         console.log('Upload Prism Error: ', err);
         throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
       });
+
+    this.createLog(msg, 'uploadDocumentToPrism->response', JSON.stringify(uploadResult), '');
+
+    if (uploadResult.errorCode != '0' || uploadResult.response == 'fail') {
+      throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+    }
 
     return uploadResult && uploadResult.response
       ? `${uploadResult.response}_${documentName}`
@@ -287,6 +342,12 @@ export class PatientRepository extends Repository<Patient> {
 
   async createNewUhid(id: string) {
     const patientDetails = await this.getPatientDetails(id);
+    this.createLog(
+      'Patient Details',
+      'createNewUhid()->patientDetails',
+      JSON.stringify(patientDetails),
+      ''
+    );
     if (patientDetails == null)
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
     const newUhidUrl = process.env.CREATE_NEW_UHID_URL ? process.env.CREATE_NEW_UHID_URL : '';
@@ -352,6 +413,14 @@ export class PatientRepository extends Repository<Patient> {
         Citizenship: '',
       },
     };
+    this.createLog(
+      'UHID Patient Input',
+      'createNewUhid()->uhidInput',
+      JSON.stringify(uhidInput),
+      ''
+    );
+
+    const msg = `External_API_Call: ${newUhidUrl}`;
     const uhidCreateResp = await fetch(newUhidUrl, {
       method: 'POST',
       body: JSON.stringify(uhidInput),
@@ -362,9 +431,22 @@ export class PatientRepository extends Repository<Patient> {
     });
 
     const textProcessRes = await uhidCreateResp.text();
+    this.createLog(msg, 'createNewUhid->response', textProcessRes, '');
+    console.log('textProcessRes', textProcessRes);
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
     console.log(uhidResp, 'uhid resp');
     this.updateUhid(id, uhidResp.result.toString());
+    return uhidResp.result;
+  }
+
+  createLog(message: string, context: string, response: string, error: string) {
+    authLog.level = error == '' ? 'info' : 'error';
+    authLog.message = message;
+    authLog.time = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    authLog.path = `${filePath}${context}`;
+    authLog.response = response;
+    authLog.error = JSON.stringify(error);
+    winston.log(authLog);
   }
 
   async createAthsToken(id: string) {

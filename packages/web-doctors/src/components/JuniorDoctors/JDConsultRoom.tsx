@@ -969,7 +969,10 @@ export const JDConsultRoom: React.FC = () => {
   const endConsultAutoAction = () => {
     saveCasesheetAction(true, true);
     mutationRemoveConsult().then(() => {
-      window.location.href = clientRoutes.juniorDoctor();
+      //window.location.href = clientRoutes.juniorDoctor();
+      if (document.getElementById('homeId')) {
+        document.getElementById('homeId')!.click();
+      }
     });
     // savePatientAllergiesMutation();
     // savePatientFamilyHistoryMutation();
@@ -1291,7 +1294,10 @@ export const JDConsultRoom: React.FC = () => {
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
-              window.location.href = clientRoutes.juniorDoctor();
+              if (document.getElementById('homeId')) {
+                document.getElementById('homeId')!.click();
+              }
+              //window.location.href = clientRoutes.juniorDoctor();
             }}
             autoFocus
           >
