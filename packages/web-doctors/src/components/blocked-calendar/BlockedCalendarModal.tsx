@@ -94,6 +94,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [isOverlapError, setIsOverlapError] = useState(false);
+  const [isPastTimeError, setIsPastTimeError] = useState(false);
   const [blockReason, setBlockReason] = useState('personal leave');
   const [val, setVal] = useState(customTimeArray);
   const [val1, setVal1] = useState();
@@ -171,9 +172,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     setStartTime('');
     setEndTime('');
     setIsOverlapError(false);
+    setIsPastTimeError(false);
     dialogProps.onClose();
     customTimeArray.length = 0;
     setSelectedBlockOption(BlockOption.entireday);
+    setIsTimeValid(true);
+    setIsallreadyInArray(true);
+    setIsPastTime(true);
+    setIsOverlapError(false);
+
     if (dateRange && dateRange > 0) {
       setDateRange((dateRange.length = 0));
     }
@@ -592,7 +599,17 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [isTimeValid, setIsTimeValid] = useState(true);
   const [isallreadyInArray, setIsallreadyInArray] = useState(true);
   const [isPastTime, setIsPastTime] = useState(true);
-
+  useEffect(() => {
+    if (isPastTimeError || isOverlapError) {
+      customTimeArray.length = 0;
+      setStartTime('');
+      setEndTime('');
+    }
+  }, [isPastTimeError, isOverlapError, customTimeArray]);
+  useEffect(() => {
+    if (checked) {
+    }
+  }, [isPastTimeError, isOverlapError, customTimeArray]);
   useEffect(() => {
     if (new Date(start).getDate() === new Date().getDate()) {
       if (startTime) {
@@ -624,7 +641,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       //  var startSecond = extractedStartSecond;
       const [ehours, emins] = endTime.split(':');
       var endHour = ehours;
-      var endMinute = emins;
+      var endMinute = Number(emins) - 1;
       //  var endSecond = extractedEndSecond;
 
       //Create date object and set the time to that
@@ -686,11 +703,25 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     if (isOverlapError && customTimeArray) {
       customTimeArray.length = 0;
       setSelectedBlockOption(BlockOption.entireday);
+      setIsTimeValid(true);
+      setIsallreadyInArray(true);
+      setIsPastTime(true);
+      setIsPastTimeError(false);
+      setIsOverlapError(false);
+      setChecked(false);
     }
   }, [isOverlapError, customTimeArray]);
   useEffect(() => {
     if (selectedBlockOption === 'entireday') {
       setInvalid(dateInvalid || timeInvalid || invalidStTime || invalidTime);
+      setIsTimeValid(true);
+      setIsallreadyInArray(true);
+      setIsPastTime(true);
+      setIsPastTimeError(false);
+      setChecked(false);
+      customTimeArray.length = 0;
+      setChackedSingleValue('');
+      // setStartEndList([])
     } else if (
       durationSelected &&
       selectedBlockOption === 'consulthours' &&
@@ -709,6 +740,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       setInvalid(true);
     } else if (selectedBlockOption === 'consulthours' && chackedSingleValue && checked) {
       setInvalid(false);
+    } else if (selectedBlockOption === 'consulthours' && chackedSingleValue && !checked) {
+      setInvalid(true);
     } else if (selectedBlockOption === 'customtime') {
       setInvalid(customTimeArray && customTimeArray.length < 1);
       if (startTime && endTime) {
@@ -733,7 +766,14 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     durationSelected,
     startEndList,
   ]);
-
+  useEffect(() => {
+    if (
+      durationSelected &&
+      (selectedBlockOption === 'entireday' || selectedBlockOption === 'customtime')
+    ) {
+      setStartEndList('');
+    }
+  }, [durationSelected, selectedBlockOption, startEndList]);
   return (
     <span>
       <Dialog
@@ -750,6 +790,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
               setSelectedValue((e.target as HTMLInputElement).value as RadioValues);
 
               setSelectedBlockOption(BlockOption.entireday);
+              setIsTimeValid(true);
+              setIsallreadyInArray(true);
+              setIsPastTime(true);
+              setIsPastTimeError(false);
+              setIsOverlapError(false);
+              setChecked(false);
             }}
             row
           >
@@ -836,9 +882,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                   <RadioGroup
                     className={classes.radioGroup}
                     value={selectedBlockOption}
-                    onChange={(e) =>
-                      setSelectedBlockOption((e.target as HTMLInputElement).value as BlockOption)
-                    }
+                    onChange={(e) => {
+                      setSelectedBlockOption((e.target as HTMLInputElement).value as BlockOption);
+                      setIsTimeValid(true);
+                      setIsallreadyInArray(true);
+                      setIsPastTime(true);
+                      setIsPastTimeError(false);
+                      setIsOverlapError(false);
+                      setChecked(false);
+                    }}
                     row
                   >
                     <FormControlLabel
@@ -1156,6 +1208,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
               You are trying to duplicate the blocking of same slot, please recheck and try again !
             </div>
           )}
+          {isPastTimeError && <div style={{ color: 'red' }}>Past time slots cannot be blocked</div>}
         </DialogContent>
         <DialogActions className={classes.modalFooter}>
           <Button
@@ -1257,6 +1310,10 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                 AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS
                               );
                               setIsOverlapError(isOverlapError);
+                              const isPastTimeError = allMessages.includes(
+                                AphErrorMessages.INVALID_DATES
+                              );
+                              setIsPastTimeError(isPastTimeError);
                             };
                             const isUpdate = item && item.id != null;
                             //console.log(addArgs);

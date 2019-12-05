@@ -13,7 +13,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import _ from 'lodash';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format, addMinutes } from 'date-fns';
+import { format } from 'date-fns';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';

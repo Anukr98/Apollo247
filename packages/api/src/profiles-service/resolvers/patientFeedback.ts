@@ -36,7 +36,7 @@ export const addPatientFeedbackTypeDefs = gql`
 type PatientFeedbackInput = {
   patientId: string;
   rating: string;
-  thankyouNote: string;
+  thankyouNote?: string;
   reason: string;
   feedbackType: FEEDBACKTYPE;
   transactionId: string;
@@ -73,7 +73,7 @@ const addPatientFeedback: Resolver<
   const addPatientFeedbackAttrs: Partial<PatientFeedback> = {
     patient: patient,
     rating: patientFeedbackInput.rating,
-    thankyouNote: patientFeedbackInput.thankyouNote,
+    thankyouNote: patientFeedbackInput.thankyouNote || '',
     reason: patientFeedbackInput.reason,
     feedbackType: patientFeedbackInput.feedbackType,
     transactionId: patientFeedbackInput.transactionId,
