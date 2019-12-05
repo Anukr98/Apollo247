@@ -393,22 +393,30 @@ const endAppointmentSession: Resolver<
     await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
   }
 
-  if (endAppointmentSessionInput.status == STATUS.NO_SHOW) {
+  if (
+    endAppointmentSessionInput.status == STATUS.NO_SHOW ||
+    endAppointmentSessionInput.status == STATUS.CALL_ABANDON
+  ) {
     const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
     const noShowRepo = consultsDb.getCustomRepository(AppointmentNoShowRepository);
     const noShowAttrs: Partial<AppointmentNoShow> = {
       noShowType: endAppointmentSessionInput.noShowBy,
       appointment: apptDetails,
+      noShowStatus: endAppointmentSessionInput.status,
     };
     await noShowRepo.saveNoShow(noShowAttrs);
     const rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails> = {
-      rescheduleReason: '',
+      rescheduleReason: endAppointmentSessionInput.status.toString(),
       rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-      rescheduleInitiatedId: apptDetails.doctorId,
+      rescheduleInitiatedId: apptDetails.patientId,
       rescheduledDateTime: new Date(),
       rescheduleStatus: TRANSFER_STATUS.INITIATED,
       appointment: apptDetails,
     };
+    if (endAppointmentSessionInput.noShowBy == REQUEST_ROLES.DOCTOR) {
+      rescheduleAppointmentAttrs.rescheduleInitiatedBy = TRANSFER_INITIATED_TYPE.DOCTOR;
+      rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
+    }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
     await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
     // send notification

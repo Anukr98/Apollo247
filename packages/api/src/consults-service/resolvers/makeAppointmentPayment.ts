@@ -1,11 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import {
-  Appointment,
-  AppointmentPayments,
-  STATUS,
-  APPOINTMENT_PAYMENT_TYPE,
-} from 'consults-service/entities';
+import { AppointmentPayments, STATUS, APPOINTMENT_PAYMENT_TYPE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
