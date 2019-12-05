@@ -41,6 +41,7 @@ import {
   UPLOAD_CHAT_FILE,
   UPLOAD_CHAT_FILE_PRISM,
   DOWNLOAD_DOCUMENT,
+  CANCEL_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookTransferAppointment,
@@ -131,6 +132,10 @@ import { ChatQuestions } from './ChatQuestions';
 import { FeedbackPopup } from '../FeedbackPopup';
 import { g } from '../../helpers/helperFunctions';
 import { useUIElements } from '../UIElementsProvider';
+import {
+  cancelAppointment,
+  cancelAppointmentVariables,
+} from '../../graphql/types/cancelAppointment';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -172,6 +177,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.APP_YELLOW_COLOR,
     borderRadius: 10,
     ...theme.viewStyles.shadowStyle,
+  },
+  gotItStyles: {
+    height: 60,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
   },
 });
 
@@ -298,6 +311,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     false,
     false,
   ]);
+  const [sucesspopup, setSucessPopup] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -640,6 +654,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
   };
 
+  const cancelAppointmentApi = () => {
+    setLoading(true);
+    const appointmentTransferInput = {
+      appointmentId: appointmentData.id,
+      cancelReason: '',
+      cancelledBy: REQUEST_ROLES.DOCTOR, //appointmentDate,
+      cancelledById: appointmentData.doctorId,
+    };
+    console.log(appointmentTransferInput, 'appointmentTransferInput');
+
+    client
+      .mutate<cancelAppointment, cancelAppointmentVariables>({
+        mutation: CANCEL_APPOINTMENT,
+        variables: {
+          cancelAppointmentInput: appointmentTransferInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        setLoading(false);
+        setSucessPopup(true);
+        console.log(data, 'datacancel');
+      })
+      .catch((e: any) => {
+        setLoading(false);
+        console.log('Error occured while adding Doctor', e);
+        const message = e.message ? e.message.split(':')[1].trim() : '';
+        if (
+          message == 'INVALID_APPOINTMENT_ID' ||
+          message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
+        ) {
+          showAphAlert!({
+            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+            description: 'Ongoing / Completed appointments cannot be cancelled.',
+          });
+        }
+      });
+  };
+
   const requestReadSmsPermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
@@ -831,13 +884,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
-      // startCallAbondmentTimer(180, false);
       eventsAfterConnectionDestroyed();
       // disconnectCallText();
     },
     streamPropertyChanged: (event: string) => {
       console.log('session streamPropertyChanged destroyed!', event);
-      // startCallAbondmentTimer(180, false);
       eventsAfterConnectionDestroyed();
       // disconnectCallText();
     },
@@ -996,7 +1047,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.COMPLETED) return;
       abondmentStarted = true;
 
-      startCallAbondmentTimer(200, false);
+      startCallAbondmentTimer(200, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1015,12 +1066,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.status === STATUS.COMPLETED) return;
         abondmentStarted = true;
 
-        startCallAbondmentTimer(200, true);
+        startCallAbondmentTimer(200, false);
       }
     }
   };
 
-  const startCallAbondmentTimer = (timer: number, isDoctorNoShow: boolean) => {
+  const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
     try {
       setTransferData(appointmentData);
       callAbandonmentTimer = setInterval(() => {
@@ -1032,9 +1083,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         if (timer < 1) {
           console.log('call Abundant', appointmentData);
-          endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
+          endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
 
-          if (isDoctorNoShow) {
+          if (isCallAbandment) {
             setIsDoctorNoShow(true);
           } else {
             NextAvailableSlot(appointmentData, 'Transfer', true);
@@ -5201,17 +5252,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               style={styles.claimStyles}
               onPress={() => {
                 setIsDoctorNoShow(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.TabBar,
-                      }),
-                    ],
-                  })
-                );
+                cancelAppointmentApi();
               }}
             >
               <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
@@ -5267,6 +5308,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      {sucesspopup && (
+        <BottomPopUp title={`Hi, ${userName} :)`} description={'Appointment sucessfully cancelled'}>
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <View style={{ height: 60 }}>
+              <TouchableOpacity
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setSucessPopup(false);
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                    })
+                  );
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BottomPopUp>
+      )}
       {displayoverlay && transferData && (
         <OverlayRescheduleView
           setdisplayoverlay={() => setdisplayoverlay(false)}
@@ -5283,7 +5354,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             appointmentData.appointmentType === 'ONLINE' ? 'Consult Online' : 'Visit Clinic'
           }
           rescheduleCount={newRescheduleCount && newRescheduleCount}
-          appointmentId={transferData ? transferData.appointmentId : appointmentData.id}
+          appointmentId={
+            transferData
+              ? transferData.appointmentId
+                ? transferData.appointmentId
+                : transferData.id
+              : appointmentData.id
+          }
           data={transferData ? transferData : appointmentData}
           bookFollowUp={false}
           KeyFollow={'RESCHEDULE'}
