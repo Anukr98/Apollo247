@@ -2137,7 +2137,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View
           style={{
             width: 244,
-            height: 130,
+            // height: 130,
             backgroundColor: '#0087ba',
             marginLeft: 38,
             borderRadius: 10,
@@ -2169,7 +2169,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(10),
               lineHeight: 24,
               letterSpacing: 0.04,
-              marginTop: 50,
+              marginTop: 0,
               marginRight: 16,
             }}
           >
@@ -2336,7 +2336,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(10),
               lineHeight: 24,
               letterSpacing: 0.04,
-              marginTop: 50,
+              marginTop: 53,
               marginRight: 16,
             }}
           >

@@ -16,6 +16,17 @@ export const GET_CURRENT_PATIENTS = gql`
         gender
         dateOfBirth
         photoUrl
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
       }
     }
   }
@@ -1560,6 +1571,7 @@ export const GET_APPOINTMENT_DATA = gql`
         isFollowUp
         displayId
         rescheduleCount
+        isJdQuestionsComplete
         doctorInfo {
           id
           salutation

@@ -25,6 +25,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { Button } from '../ui/Button';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { MaterialMenu } from '../ui/MaterialMenu';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const { height, width } = Dimensions.get('window');
 
@@ -230,7 +231,7 @@ const slides: Slide[] = [
     inputPlacerholder: '---/---',
     buttonText: ['No Idea'],
     inputData: ['value', 'value'],
-    keyboardType: 'decimal-pad',
+    keyboardType: 'numbers-and-punctuation',
   },
   {
     key: 'familyHistory',
@@ -252,6 +253,8 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   const [values, setValues] = useState<{ k: string; v: string[] }[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
   const [isSend, setisSend] = useState<boolean[]>(slides.map((item) => false));
+  const { currentPatient } = useAllCurrentPatients();
+
   useEffect(() => {
     const v = slides.map((item) => {
       return {
@@ -259,9 +262,56 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         v: item.inputData.map((i) => (item.dropDown && i === 'drop' ? item.dropDown[0].value : '')),
       };
     });
+
+    if (currentPatient && currentPatient.patientMedicalHistory) {
+      currentPatient.patientMedicalHistory.bp
+        ? (v.find((i) => i.k === 'bp')!.v = [
+            currentPatient.patientMedicalHistory.bp !== 'No Idea'
+              ? currentPatient.patientMedicalHistory.bp
+              : '',
+            currentPatient.patientMedicalHistory.bp === 'No Idea'
+              ? currentPatient.patientMedicalHistory.bp
+              : '',
+          ])
+        : null;
+      currentPatient.patientMedicalHistory.height
+        ? (v.find((i) => i.k === 'height')!.v =
+            currentPatient.patientMedicalHistory.height !== 'No Idea'
+              ? [...currentPatient.patientMedicalHistory.height.split(' ')]
+              : ['', 'cm'])
+        : null;
+      currentPatient.patientMedicalHistory.weight
+        ? (v.find((i) => i.k === 'weight')!.v = [
+            currentPatient.patientMedicalHistory.weight !== 'No Idea'
+              ? currentPatient.patientMedicalHistory.weight
+              : '',
+          ])
+        : null;
+      currentPatient.patientMedicalHistory.dietAllergies
+        ? currentPatient.patientMedicalHistory.dietAllergies === 'No'
+          ? (v.find((i) => i.k === 'diet')!.v = ['No'])
+          : (v.find((i) => i.k === 'dietAllergies')!.v = [
+              currentPatient.patientMedicalHistory.dietAllergies,
+            ])
+        : null;
+      currentPatient.patientMedicalHistory.drugAllergies
+        ? currentPatient.patientMedicalHistory.drugAllergies === 'No'
+          ? (v.find((i) => i.k === 'drug')!.v = ['No'])
+          : (v.find((i) => i.k === 'drugAllergies')!.v = [
+              currentPatient.patientMedicalHistory.drugAllergies,
+            ])
+        : null;
+      currentPatient.patientMedicalHistory.temperature
+        ? (v.find((i) => i.k === 'temperature')!.v = [
+            currentPatient.patientMedicalHistory.temperature,
+          ])
+        : null;
+    }
+
     setValues(v);
     // appIntroSliderRef.current.goToSlide(6);
   }, []);
+
   useEffect(() => {
     firebase.analytics().setAnalyticsCollectionEnabled(true);
     firebase.analytics().setCurrentScreen('ChatQuestions', 'ChatQuestions');
