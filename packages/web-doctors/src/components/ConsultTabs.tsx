@@ -427,7 +427,7 @@ export const ConsultTabs: React.FC = () => {
     autoNetworkDetection: true,
     listenToBrowserNetworkEvents: true,
     presenceTimeout: 20,
-    heartbeatInterval: 10,
+    heartbeatInterval: 20,
     uuid: REQUEST_ROLES.DOCTOR
   };
   useEffect(() => {
@@ -455,13 +455,14 @@ export const ConsultTabs: React.FC = () => {
         setLastMsg(message);
       },
       presence(presenceEvent: any) {
+        console.log(presenceEvent);
         //setPresenceEventObject(presenceEvent);
         pubnub
           .hereNow({
             channels: [appointmentId],
             includeUUIDs: true
           })
-          .then(response => {
+          .then((response: any) => {
             console.log("hereNowresponse", response);
             setPresenceEventObject(response);
           })

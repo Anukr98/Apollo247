@@ -306,17 +306,17 @@ const useStyles = makeStyles((theme: Theme) => {
     timeStamp: {
       fontSize: 10,
       fontWeight: 500,
-      textAlign: 'right',
+      textAlign: "right",
       marginRight: -7,
       marginBottom: -5,
-      paddingTop: 5,
+      paddingTop: 5
     },
     timeStampImg: {
       fontSize: 10,
       fontWeight: 500,
-      textAlign: 'right',
-      paddingTop: 5,
-    },
+      textAlign: "right",
+      paddingTop: 5
+    }
   };
 });
 
@@ -616,7 +616,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
       });
   };
   const convertChatTime = (timeStamp: any) => {
-    console.log(timeStamp);
     let utcString;
     if (timeStamp) {
       const dateValidate = moment(moment().format("YYYY-MM-DD")).diff(
@@ -721,59 +720,65 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                   Duration- {rowData.duration}
                 </span>
                 {rowData.messageDate && (
-                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  <div className={classes.timeStamp}>
+                    {convertChatTime(rowData.messageDate)}
+                  </div>
                 )}
               </div>
             ) : (
-                  // <div>
-                  //   <span>{getAutomatedMessage(rowData)}</span>
-                  // </div>
-                  <div
-                    className={`${classes.chatBubble} ${
-                      rowData.message === documentUpload
-                        ? classes.chatImgBubble
-                        : ""
-                      }`}
-                  >
-                    {leftComponent == 1 && rowData.duration && (
-                      <div className={classes.patientAvatar}>
-                        <Avatar
-                          className={classes.avatar}
-                          src={
-                            patientDetails && patientDetails.photoUrl
-                              ? patientDetails.photoUrl
-                              : require("images/no_photo_icon_round.svg")
-                          }
-                          alt=""
-                        />
-                      </div>
-                    )}
-                    {rowData.message === documentUpload ? (
-                      // <div>
-                      //   <img src={rowData.url} alt={rowData.url} />
-                      // </div>
-                      <div
-                        onClick={() => {
-                          setModalOpen(true);
-                          setImgPrevUrl(rowData.url);
-                        }}
-                        className={classes.imageUpload}
-                      >
-                        <img src={rowData.url} alt={rowData.url} />
-                        {rowData.messageDate && (
-                          <div className={classes.timeStampImg}>{convertChatTime(rowData.messageDate)}</div>
-                        )}
-                      </div>
-                    ) : (
-                        <>
-                          <span>{getAutomatedMessage(rowData)}</span>
-                          {rowData.messageDate && (
-                            <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
-                          )}
-                        </>
-                      )}
+              // <div>
+              //   <span>{getAutomatedMessage(rowData)}</span>
+              // </div>
+              <div
+                className={`${classes.chatBubble} ${
+                  rowData.message === documentUpload
+                    ? classes.chatImgBubble
+                    : ""
+                }`}
+              >
+                {leftComponent == 1 && rowData.duration && (
+                  <div className={classes.patientAvatar}>
+                    <Avatar
+                      className={classes.avatar}
+                      src={
+                        patientDetails && patientDetails.photoUrl
+                          ? patientDetails.photoUrl
+                          : require("images/no_photo_icon_round.svg")
+                      }
+                      alt=""
+                    />
                   </div>
                 )}
+                {rowData.message === documentUpload ? (
+                  // <div>
+                  //   <img src={rowData.url} alt={rowData.url} />
+                  // </div>
+                  <div
+                    onClick={() => {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }}
+                    className={classes.imageUpload}
+                  >
+                    <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <div className={classes.timeStampImg}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <div className={classes.timeStamp}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -808,7 +813,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                     : "You missed a voice call"}
                 </span>
                 {rowData!.messageDate && (
-                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  <div className={classes.timeStamp}>
+                    {convertChatTime(rowData.messageDate)}
+                  </div>
                 )}
               </>
             ) : rowData.duration ? (
@@ -819,53 +826,59 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                   Duration- {rowData.duration}
                 </span>
                 {rowData!.messageDate && (
-                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  <div className={classes.timeStamp}>
+                    {convertChatTime(rowData.messageDate)}
+                  </div>
                 )}
               </div>
             ) : (
-                  <div
-                    className={`${classes.chatBubble} ${classes.patientBubble} ${
-                      rowData.message === documentUpload
-                        ? classes.chatImgBubble
-                        : ""
-                      }`}
-                  >
-                    {rightComponent == 1 && !rowData.duration && (
-                      <div className={classes.patientAvatar}>
-                        <Avatar
-                          className={classes.avatar}
-                          src={
-                            patientDetails && patientDetails.photoUrl
-                              ? patientDetails!.photoUrl
-                              : require("images/no_photo_icon_round.svg")
-                          }
-                          alt=""
-                        />
-                      </div>
-                    )}
-                    {rowData.message === documentUpload ? (
-                      <div
-                        onClick={() => {
-                          setModalOpen(true);
-                          setImgPrevUrl(rowData.url);
-                        }}
-                        className={classes.imageUpload}
-                      >
-                        <img src={rowData.url} alt={rowData.url} />
-                        {rowData.messageDate && (
-                          <div className={classes.timeStampImg}>{convertChatTime(rowData.messageDate)}</div>
-                        )}
-                      </div>
-                    ) : (
-                        <>
-                          <span>{getAutomatedMessage(rowData)}</span>
-                          {rowData.messageDate && (
-                            <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
-                          )}
-                        </>
-                      )}
+              <div
+                className={`${classes.chatBubble} ${classes.patientBubble} ${
+                  rowData.message === documentUpload
+                    ? classes.chatImgBubble
+                    : ""
+                }`}
+              >
+                {rightComponent == 1 && !rowData.duration && (
+                  <div className={classes.patientAvatar}>
+                    <Avatar
+                      className={classes.avatar}
+                      src={
+                        patientDetails && patientDetails.photoUrl
+                          ? patientDetails!.photoUrl
+                          : require("images/no_photo_icon_round.svg")
+                      }
+                      alt=""
+                    />
                   </div>
                 )}
+                {rowData.message === documentUpload ? (
+                  <div
+                    onClick={() => {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }}
+                    className={classes.imageUpload}
+                  >
+                    <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <div className={classes.timeStampImg}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <div className={classes.timeStamp}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -908,68 +921,74 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
                   Duration- {rowData.duration}
                 </span>
                 {rowData.messageDate && (
-                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  <div className={classes.timeStamp}>
+                    {convertChatTime(rowData.messageDate)}
+                  </div>
                 )}
               </div>
             ) : (
-                  // <div>
-                  //   {rowData.message === documentUpload ? (
-                  //     <div style={{ width: '200px', height: 'auto' }}>
-                  //       <a href={rowData.url} target="_blank">
-                  //         <img
-                  //           style={{ width: '200px', height: 'auto' }}
-                  //           src={rowData.url}
-                  //           alt={rowData.url}
-                  //         />
-                  //       </a>
-                  //     </div>
-                  //   ) : (
-                  //     <span>{getAutomatedMessage(rowData)}</span>
-                  //   )}
-                  // </div>
-                  <div
-                    className={`${classes.chatBubble} ${
-                      rowData.message === documentUpload
-                        ? classes.chatImgBubble
-                        : ""
-                      }`}
-                  >
-                    {leftComponent == 1 && !rowData.duration && (
-                      <div className={classes.patientAvatar}>
-                        <Avatar
-                          className={classes.avatar}
-                          src={
-                            patientDetails && patientDetails.photoUrl
-                              ? patientDetails!.photoUrl
-                              : require("images/no_photo_icon_round.svg")
-                          }
-                          alt=""
-                        />
-                      </div>
-                    )}
-                    {rowData.message === documentUpload ? (
-                      <div
-                        onClick={() => {
-                          setModalOpen(true);
-                          setImgPrevUrl(rowData.url);
-                        }}
-                        className={classes.imageUpload}
-                      >
-                        <img src={rowData.url} alt={rowData.url} />
-                        {rowData.messageDate && (
-                          <div className={classes.timeStampImg}>{convertChatTime(rowData.messageDate)}</div>
-                        )}
-                      </div>
-                    ) : (
-                        <>
-                          <span>{getAutomatedMessage(rowData)}</span>
-                          {rowData.messageDate && (
-                            <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
-                          )}
-                        </>
-                      )}
+              // <div>
+              //   {rowData.message === documentUpload ? (
+              //     <div style={{ width: '200px', height: 'auto' }}>
+              //       <a href={rowData.url} target="_blank">
+              //         <img
+              //           style={{ width: '200px', height: 'auto' }}
+              //           src={rowData.url}
+              //           alt={rowData.url}
+              //         />
+              //       </a>
+              //     </div>
+              //   ) : (
+              //     <span>{getAutomatedMessage(rowData)}</span>
+              //   )}
+              // </div>
+              <div
+                className={`${classes.chatBubble} ${
+                  rowData.message === documentUpload
+                    ? classes.chatImgBubble
+                    : ""
+                }`}
+              >
+                {leftComponent == 1 && !rowData.duration && (
+                  <div className={classes.patientAvatar}>
+                    <Avatar
+                      className={classes.avatar}
+                      src={
+                        patientDetails && patientDetails.photoUrl
+                          ? patientDetails!.photoUrl
+                          : require("images/no_photo_icon_round.svg")
+                      }
+                      alt=""
+                    />
                   </div>
                 )}
+                {rowData.message === documentUpload ? (
+                  <div
+                    onClick={() => {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }}
+                    className={classes.imageUpload}
+                  >
+                    <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <div className={classes.timeStampImg}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <div className={classes.timeStamp}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -981,8 +1000,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-      })
+          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+        })
       : "";
   // const toggelChatVideo = () => {
   //   setIsNewMsg(false);

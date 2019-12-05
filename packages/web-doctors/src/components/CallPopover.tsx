@@ -602,6 +602,7 @@ let MissedcallStoppedTimerCall: number;
 let missedCallCounter: number = 0;
 let intervalCallAbundant: any;
 let isConsultStarted: boolean = false;
+let abondmentStarted: boolean = false;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -1247,12 +1248,40 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
 
   useEffect(() => {
     console.log(props.presenceEventObject);
+    // const presenceEventObject = props.presenceEventObject;
+    // if (presenceEventObject && presenceEventObject !== null) {
+    //   if (presenceEventObject.occupancy === 1 && isConsultStarted) {
+    //     callAbundantIntervalTimer(180);
+    //   } else {
+    //     clearInterval(intervalCallAbundant);
+    //   }
+    // }
     const presenceEventObject = props.presenceEventObject;
-    if (presenceEventObject && presenceEventObject !== null) {
-      if (presenceEventObject.occupancy === 1 && isConsultStarted) {
-        callAbundantIntervalTimer(180);
-      } else {
+    if (presenceEventObject && isConsultStarted) {
+      //console.log(presenceEventObject);
+      const data: any =
+        presenceEventObject.channels[props.appointmentId].occupants;
+      const occupancyPatient = data.filter((obj: any) => {
+        return obj.uuid === REQUEST_ROLES.PATIENT;
+      });
+      console.log(abondmentStarted, "abondmentStarted");
+      console.log(occupancyPatient, "occupancyPatient");
+      if (presenceEventObject.totalOccupancy >= 2) {
+        console.log("11111111111111");
         clearInterval(intervalCallAbundant);
+        abondmentStarted = false;
+      } else {
+        if (
+          presenceEventObject.totalOccupancy === 1 &&
+          occupancyPatient.length === 0
+        ) {
+          if (!abondmentStarted) {
+            abondmentStarted = true;
+            console.log("22222222222222222222");
+            callAbundantIntervalTimer(180);
+            // eventsAfterConnectionDestroyed();
+          }
+        }
       }
     }
   }, [props.presenceEventObject]);
@@ -1679,16 +1708,16 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  disabled={
-                    currentUserType === LoggedInUserType.SECRETARY ||
-                    startAppointmentButton ||
-                    disableOnCancel ||
-                    (appointmentInfo!.appointmentState !== "NEW" &&
-                      appointmentInfo!.appointmentState !== "TRANSFER" &&
-                      appointmentInfo!.appointmentState !== "RESCHEDULE") ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
+                  // disabled={
+                  //   currentUserType === LoggedInUserType.SECRETARY ||
+                  //   startAppointmentButton ||
+                  //   disableOnCancel ||
+                  //   (appointmentInfo!.appointmentState !== "NEW" &&
+                  //     appointmentInfo!.appointmentState !== "TRANSFER" &&
+                  //     appointmentInfo!.appointmentState !== "RESCHEDULE") ||
+                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  //     appointmentInfo!.status !== STATUS.PENDING)
+                  // }
                   onClick={() => {
                     !props.startAppointment
                       ? onStartConsult()
