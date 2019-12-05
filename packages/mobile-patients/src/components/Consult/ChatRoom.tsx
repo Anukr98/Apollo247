@@ -596,17 +596,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
-      if (abondmentStarted == true) {
-        console.log('nextAppState :' + nextAppState);
-        // endCallAppointmentSessionAPI();
-      }
+      console.log('nextAppState :' + nextAppState, abondmentStarted);
+      handleCallTheEdSessionAPI();
     }
   };
 
-  const endCallAppointmentSessionAPI = () => {
+  const handleCallTheEdSessionAPI = () => {
+    console.log('API not Called');
+
+    if (abondmentStarted == true) {
+      console.log('API Called');
+      endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
+    }
+  };
+
+  const endCallAppointmentSessionAPI = (status: STATUS) => {
     console.log('endCallAppointmentSessionAPI called');
 
-    endCallSessionAppointment(client, appointmentData.id, STATUS.NO_SHOW, REQUEST_ROLES.DOCTOR)
+    endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
       .then(({ data }: any) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
       })
@@ -915,8 +922,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             } else {
               if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
                 if (abondmentStarted == false) {
-                  abondmentStarted = true;
-                  console.log('callAbondmentMethod');
+                  console.log('callAbondmentMethod', abondmentStarted);
                   callAbondmentMethod();
                   eventsAfterConnectionDestroyed();
                 }
@@ -971,13 +977,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return obj.message === stopConsultJr;
     });
 
-    if (
-      startConsultResult.length > 0 &&
-      stopConsultResult.length == 0
-      //
-    ) {
+    if (startConsultResult.length > 0 && stopConsultResult.length == 0) {
       console.log('callAbondmentMethod scenario');
       if (appointmentData.status === STATUS.COMPLETED) return;
+      abondmentStarted = true;
+
       startCallAbondmentTimer(180, false);
     } else {
       console.log(
@@ -995,6 +999,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         startConsultResult.length > 0
       ) {
         if (stopConsultResult.length > 0) return;
+        abondmentStarted = true;
 
         startCallAbondmentTimer(180, true);
       }
@@ -1013,7 +1018,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         if (timer < 1) {
           console.log('call Abundant', appointmentData);
-          endCallAppointmentSessionAPI();
+          endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
 
           if (isDoctorNoShow) {
             setIsDoctorNoShow(true);
@@ -4717,15 +4722,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
-          onPressLeftIcon={() =>
+          onPressLeftIcon={() => {
             props.navigation.dispatch(
               StackActions.reset({
                 index: 0,
                 key: null,
                 actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
               })
-            )
-          }
+            );
+            handleCallTheEdSessionAPI();
+          }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
 
