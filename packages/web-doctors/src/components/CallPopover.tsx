@@ -596,6 +596,8 @@ let MissedcallStoppedTimerCall: number;
 let missedCallCounter: number = 0;
 let intervalCallAbundant: any;
 let isConsultStarted: boolean = false;
+let abondmentStarted: boolean = false;
+let didPatientJoined: boolean = false;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -656,11 +658,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   //call abundant timer start
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
-      console.log(timer);
+      console.log(timer, 'CallAbundant_time');
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -682,7 +684,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     console.log(timer);
     intervalMissCall = setInterval(() => {
       timer = timer - 1;
-      console.log(timer);
+      console.log(timer, 'ring_time');
       MissedcallStoppedTimerCall = timer;
       setRingingCallTime(timer);
       if (timer < 1) {
@@ -703,17 +705,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
-      timer = timer - 1;
-      console.log(timer);
-      stoppedTimerCall = timer;
-      setRemainingCallTime(timer);
-      if (timer < 1) {
-        setRemainingCallTime(0);
-        clearInterval(intervalcallId);
-        if (patientMsgs.length === 0) {
-          //console.log(patientMsgs.length);
-          //alert("noShowAction for patient");
-          noShowAction();
+      console.log(didPatientJoined);
+      if (!didPatientJoined) {
+        timer = timer - 1;
+        console.log(timer, 'no_show');
+        stoppedTimerCall = timer;
+        setRemainingCallTime(timer);
+        if (timer < 1) {
+          setRemainingCallTime(0);
+          clearInterval(intervalcallId);
+          if (patientMsgs.length === 0) {
+            noShowAction();
+          }
         }
       }
     }, 1000);
@@ -738,7 +741,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         if (document.getElementById('homeId')) {
           document.getElementById('homeId')!.click();
         }
-        //window.location.href = clientRoutes.calendar();
+        window.location.href = clientRoutes.calendar();
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -1214,12 +1217,27 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     console.log(props.presenceEventObject);
     const presenceEventObject = props.presenceEventObject;
-    if (presenceEventObject && presenceEventObject !== null) {
-      if (presenceEventObject.occupancy === 1 && isConsultStarted) {
-        callAbundantIntervalTimer(180);
-      } else {
-        clearInterval(intervalCallAbundant);
-      }
+    if (presenceEventObject && isConsultStarted) {
+      console.log(presenceEventObject);
+      // const data: any = presenceEventObject.channels[props.appointmentId].occupants;
+      // const occupancyPatient = data.filter((obj: any) => {
+      //   return obj.uuid === REQUEST_ROLES.PATIENT;
+      // });
+      // console.log(abondmentStarted, 'abondmentStarted');
+      // console.log(occupancyPatient, 'occupancyPatient');
+      // if (presenceEventObject.totalOccupancy >= 2) {
+      //   didPatientJoined = true;
+      //   clearInterval(intervalCallAbundant);
+      //   abondmentStarted = false;
+      // } else {
+      //   if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
+      //     if (!abondmentStarted && didPatientJoined) {
+      //       abondmentStarted = true;
+      //       callAbundantIntervalTimer(200);
+      //       // eventsAfterConnectionDestroyed();
+      //     }
+      //   }
+      // }
     }
   }, [props.presenceEventObject]);
   const onStartConsult = () => {
@@ -1616,16 +1634,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  // disabled={
-                  //   currentUserType === LoggedInUserType.SECRETARY ||
-                  //   startAppointmentButton ||
-                  //   disableOnCancel ||
-                  //   (appointmentInfo!.appointmentState !== 'NEW' &&
-                  //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                  //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  //     appointmentInfo!.status !== STATUS.PENDING)
-                  // }
+                  disabled={
+                    currentUserType === LoggedInUserType.SECRETARY ||
+                    startAppointmentButton ||
+                    disableOnCancel ||
+                    (appointmentInfo!.appointmentState !== 'NEW' &&
+                      appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                      appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                      appointmentInfo!.status !== STATUS.PENDING)
+                  }
                   onClick={() => {
                     !props.startAppointment ? onStartConsult() : onStopConsult();
                     !props.startAppointment ? startInterval(900) : stopInterval();
@@ -2200,7 +2218,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <Button
               className={classes.consultButton}
               onClick={() => {
-                callInitiateReschedule(true);
+                noShowAction();
               }}
             >
               Reschedule
