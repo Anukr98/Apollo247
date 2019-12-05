@@ -176,6 +176,7 @@ const SaveMedicineOrder: Resolver<
       medicineOrders: saveOrder,
       orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
       statusDate: new Date(),
+      hideStatus: false,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(
       medicineOrderStatusAttrs,

@@ -182,6 +182,7 @@ interface OnlineConsultProps {
   setIsPopoverOpen: (openPopup: boolean) => void;
   doctorDetails: DoctorDetails;
   onBookConsult: (popover: boolean) => void;
+  isRescheduleConsult: boolean;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
@@ -365,45 +366,48 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
         <div className={classes.customScrollBar}>
-          <div className={classes.consultGroup}>
-            {differenceInMinutes > 0 ? (
-              <p>
-                Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
-                consult now or schedule for later?
-              </p>
-            ) : null}
-            <div className={classes.actions}>
-              <AphButton
-                onClick={(e) => {
-                  setShowCalendar(false);
-                  setConsultNow(true);
-                  setScheduleLater(false);
-                }}
-                color="secondary"
-                className={`${classes.button} ${
-                  consultNow && slotAvailableNext !== '' && !scheduleLater && consultNowAvailable
-                    ? classes.buttonActive
-                    : classes.disabledButton
-                } ${consultNow && slotAvailableNext === '' ? classes.disabledButton : ''}`}
-                disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
-              >
-                Consult Now
-              </AphButton>
-              <AphButton
-                onClick={(e) => {
-                  setShowCalendar(!showCalendar);
-                  setScheduleLater(true);
-                  setConsultNow(false);
-                }}
-                color="secondary"
-                className={`${classes.button} ${
-                  showCalendar || scheduleLater || !consultNowAvailable ? classes.buttonActive : ''
-                }`}
-              >
-                Schedule For Later
-              </AphButton>
+          {!props.isRescheduleConsult && (
+            <div className={classes.consultGroup}>
+              {differenceInMinutes > 0 ? (
+                <p>
+                  Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
+                  consult now or schedule for later?
+                </p>
+              ) : null}
+              <div className={classes.actions}>
+                <AphButton
+                  onClick={(e) => {
+                    setShowCalendar(false);
+                    setConsultNow(true);
+                    setScheduleLater(false);
+                  }}
+                  color="secondary"
+                  className={`${classes.button} ${
+                    consultNow && slotAvailableNext !== '' && !scheduleLater && consultNowAvailable
+                      ? classes.buttonActive
+                      : classes.disabledButton
+                  } ${consultNow && slotAvailableNext === '' ? classes.disabledButton : ''}`}
+                  disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
+                >
+                  Consult Now
+                </AphButton>
+                <AphButton
+                  onClick={(e) => {
+                    setShowCalendar(!showCalendar);
+                    setScheduleLater(true);
+                  }}
+                  color="secondary"
+                  className={`${classes.button} ${
+                    showCalendar || scheduleLater || !consultNowAvailable
+                      ? classes.buttonActive
+                      : ''
+                  }`}
+                >
+                  Schedule For Later
+                </AphButton>
+              </div>
             </div>
-          </div>
+          )}
           <Grid container spacing={2}>
             <Grid item sm={6}>
               <div
@@ -450,59 +454,65 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           </Grid>
         </div>
       </Scrollbars>
-      <div className={classes.bottomActions}>
-        <Mutation<BookAppointment, BookAppointmentVariables>
-          mutation={BOOK_APPOINTMENT}
-          variables={{
-            bookAppointment: {
-              patientId: currentPatient ? currentPatient.id : '',
-              doctorId: doctorId,
-              appointmentDateTime:
-                consultNow && !scheduleLater
-                  ? autoSlot
-                  : new Date(
-                      `${apiDateFormat} ${
-                        timeSelected !== ''
-                          ? timeSelected.padStart(5, '0')
-                          : slotAvailableNext.padStart(5, '0')
-                      }:00`
-                    ).toISOString(),
-              appointmentType: APPOINTMENT_TYPE.ONLINE,
-              hospitalId: hospitalId,
-            },
-          }}
-          onCompleted={() => {
-            disableSubmit = false;
-            setMutationLoading(false);
-            setIsDialogOpen(true);
-          }}
-          onError={(errorResponse) => {
-            alert(errorResponse);
-            disableSubmit = false;
-            setMutationLoading(false);
-          }}
-        >
-          {(mutate) => (
-            <AphButton
-              color="primary"
-              disabled={disableSubmit || mutationLoading || isDialogOpen}
-              onClick={() => {
-                setMutationLoading(true);
-                mutate();
-              }}
-              className={
-                disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
-              }
-            >
-              {mutationLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                `PAY Rs. ${onlineConsultationFees}`
-              )}
-            </AphButton>
-          )}
-        </Mutation>
-      </div>
+      {props.isRescheduleConsult ? (
+        <div>
+          <AphButton>Reschedule</AphButton>
+        </div>
+      ) : (
+        <div className={classes.bottomActions}>
+          <Mutation<BookAppointment, BookAppointmentVariables>
+            mutation={BOOK_APPOINTMENT}
+            variables={{
+              bookAppointment: {
+                patientId: currentPatient ? currentPatient.id : '',
+                doctorId: doctorId,
+                appointmentDateTime:
+                  consultNow && !scheduleLater
+                    ? autoSlot
+                    : new Date(
+                        `${apiDateFormat} ${
+                          timeSelected !== ''
+                            ? timeSelected.padStart(5, '0')
+                            : slotAvailableNext.padStart(5, '0')
+                        }:00`
+                      ).toISOString(),
+                appointmentType: APPOINTMENT_TYPE.ONLINE,
+                hospitalId: hospitalId,
+              },
+            }}
+            onCompleted={() => {
+              disableSubmit = false;
+              setMutationLoading(false);
+              setIsDialogOpen(true);
+            }}
+            onError={(errorResponse) => {
+              alert(errorResponse);
+              disableSubmit = false;
+              setMutationLoading(false);
+            }}
+          >
+            {(mutate) => (
+              <AphButton
+                color="primary"
+                disabled={disableSubmit || mutationLoading || isDialogOpen}
+                onClick={() => {
+                  setMutationLoading(true);
+                  mutate();
+                }}
+                className={
+                  disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
+                }
+              >
+                {mutationLoading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  `PAY Rs. ${onlineConsultationFees}`
+                )}
+              </AphButton>
+            )}
+          </Mutation>
+        </div>
+      )}
       <AphDialog
         open={isDialogOpen}
         disableBackdropClick

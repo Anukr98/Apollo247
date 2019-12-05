@@ -16,6 +16,7 @@ export enum APPOINTMENT_STATE {
 }
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
 }
@@ -119,6 +120,8 @@ export enum STATUS {
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+  JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
+  JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
@@ -133,6 +136,11 @@ export enum Salutation {
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
+}
+
+export enum TRANSFER_INITIATED_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
 }
 
 export enum WeekDay {
@@ -159,6 +167,16 @@ export interface BookAppointmentInput {
   symptoms?: string | null;
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
+}
+
+export interface BookRescheduleAppointmentInput {
+  appointmentId: string;
+  doctorId: string;
+  newDateTimeslot: any;
+  initiatedBy: TRANSFER_INITIATED_TYPE;
+  initiatedId: string;
+  patientId: string;
+  rescheduledId?: string | null;
 }
 
 export interface CancelAppointmentInput {
