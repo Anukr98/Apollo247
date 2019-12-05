@@ -141,12 +141,12 @@ const useStyles = makeStyles((theme: Theme) =>
       '& img': {
         border: '1px solid #00b38e',
         borderRadius: '50%',
-        maxWidth: 24,
-      },
+        maxWidth: 24
+      }
     },
     paper: {
       textAlign: 'left',
-      color: theme.palette.text.secondary,      
+      color: theme.palette.text.secondary,
       padding: '12px 25px 12px 5px',
       borderRadius: 0,
       maxWidth: '100%',
@@ -155,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       borderBottom: '1px solid rgba(2,71,91,0.1)',
       '&:last-child': {
-        borderBottom: 'none',
+        borderBottom: 'none'
       },
       '& h5': {
         fontSize: 14,
@@ -225,14 +225,14 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     favMedBg: {
       backgroundColor: 'transparent',
-      boxShadow: 'none',
+      boxShadow: 'none'
     },
     favmedicineHeading: {
       fontSize: 14,
       fontWeight: 500,
       lineHeight: 'normal',
       color: 'rgba(2, 71, 91, 0.6) !important',
-      marginBottom: 12,
+      marginBottom: 12
     },
     backArrow: {
       cursor: 'pointer',
@@ -972,17 +972,6 @@ export const MedicinePrescription: React.FC = () => {
   };
   return (
     <div className={classes.root}>
-      {/*   <div className={classes.medicineHeading}>Medicines</div>
-      {caseSheetEdit && (
-        <AphButton
-          variant='contained'
-          color='primary'
-          classes={{ root: classes.btnAddDoctor }}
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <img src={require('images/ic_dark_plus.svg')} alt='' /> ADD Medicine
-        </AphButton>
-      )} */}
       <Grid container spacing={1}>
         <Grid item lg={6} xs={12}>
           <div className={classes.medicineHeading}>Medicines</div>
@@ -1012,13 +1001,13 @@ export const MedicinePrescription: React.FC = () => {
                   medicine.medicineTimings.length
                 : medicine.medicineDosage;
             return (
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
                               <h5>{medicine.medicineName}</h5>
                               
                   <h6>
-                                  {/*medicine.medicineTimings.length*/}
-                                  {dosageCount} {unitHtml} a day{' '}
+                                                 {dosageCount} {unitHtml} a day
+                    {' '}
                                   {timesString.length > 0 && timesString} for 
                     {duration}
                     {' '}
@@ -1061,77 +1050,80 @@ export const MedicinePrescription: React.FC = () => {
         </Grid>
         <Grid item lg={6} xs={12}>
           <div className={classes.favmedicineHeading}>Favourite Medicines</div>
-         <div  className={classes.mediceneContainer}>
-          {favouriteMedicine &&
-            favouriteMedicine.map((favMedicine, id, index) => {
-              const favDuration = `${Number(
-                favMedicine && favMedicine.medicineConsumptionDurationInDays
-              )} days`;
-              const favWhenString =
-                favMedicine &&
-                favMedicine.medicineToBeTaken &&
-                favMedicine.medicineToBeTaken.length > 0
-                  ? toBeTaken(favMedicine && favMedicine.medicineToBeTaken)
-                      .join(', ')
-                      .toLowerCase()
-                  : '';
-              const favUnitHtml =
-                favMedicine!.medicineUnit && favMedicine!.medicineUnit !== 'NA'
-                  ? favMedicine &&
-                    favMedicine.medicineUnit &&
-                    favMedicine.medicineUnit.toLowerCase()
-                  : 'times';
-              const favTimesString =
-                favMedicine &&
-                favMedicine.medicineTimings &&
-                favMedicine.medicineTimings.length > 0
-                  ? '(' + favMedicine &&
-                    favMedicine.medicineTimings &&
-                    favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
-                  : '';
-              const favDosageCount =
-                favMedicine && favMedicine.medicineDosage === ''
-                  ? favMedicine &&
-                    favMedicine.medicineTimings &&
-                    favMedicine.medicineTimings.length > 0
-                    ? parseInt(favMedicine && favMedicine.medicineDosage) *
-                      favMedicine.medicineTimings.length
-                    : favMedicine && favMedicine.medicineDosage
-                  : '';
-              const favMedicineName = favMedicine && favMedicine.medicineName;
-              return (
-                <div className={classes.paper}>
-                  <Paper className={classes.favMedBg}>
-                    <h5>{favMedicineName}</h5>
-                    <h6>
-                      {favDosageCount} {favUnitHtml} a day{' '}
-                      {favTimesString.length > 0 && favTimesString} for{' '}
-                      {favDuration} {favWhenString.length > 0 && favWhenString}
-                    </h6>
-                  </Paper>
-                  <AphButton
-                    variant='contained'
-                    color='primary'
-                    classes={{ root: classes.updateSymptom }}
-                    onClick={id => {
-                      setIsEditFavMedicine(true);
-                      //  setSelectedMedicinesArr(favMedicine);
+          <div className={classes.mediceneContainer}>
+            {favouriteMedicine &&
+              favouriteMedicine.map((favMedicine, id, index) => {
+                const favDuration = `${Number(
+                  favMedicine && favMedicine.medicineConsumptionDurationInDays
+                )} days`;
+                const favWhenString =
+                  favMedicine &&
+                  favMedicine.medicineToBeTaken &&
+                  favMedicine.medicineToBeTaken.length > 0
+                    ? toBeTaken(favMedicine && favMedicine.medicineToBeTaken)
+                        .join(', ')
+                        .toLowerCase()
+                    : '';
+                const favUnitHtml =
+                  favMedicine!.medicineUnit &&
+                  favMedicine!.medicineUnit !== 'NA'
+                    ? favMedicine &&
+                      favMedicine.medicineUnit &&
+                      favMedicine.medicineUnit.toLowerCase()
+                    : 'times';
+                const favTimesString =
+                  favMedicine &&
+                  favMedicine.medicineTimings &&
+                  favMedicine.medicineTimings.length > 0
+                    ? '(' + favMedicine &&
+                      favMedicine.medicineTimings &&
+                      favMedicine.medicineTimings.join(' , ').toLowerCase() +
+                        ')'
+                    : '';
+                const favDosageCount =
+                  favMedicine && favMedicine.medicineDosage === ''
+                    ? favMedicine &&
+                      favMedicine.medicineTimings &&
+                      favMedicine.medicineTimings.length > 0
+                      ? parseInt(favMedicine && favMedicine.medicineDosage) *
+                        favMedicine.medicineTimings.length
+                      : favMedicine && favMedicine.medicineDosage
+                    : '';
+                const favMedicineName = favMedicine && favMedicine.medicineName;
+                return (
+                  <div className={classes.paper} key={id}>
+                    <Paper className={classes.favMedBg}>
+                      <h5>{favMedicineName}</h5>
+                      <h6>
+                        {favDosageCount} {favUnitHtml} a day{' '}
+                        {favTimesString.length > 0 && favTimesString} for{' '}
+                        {favDuration}{' '}
+                        {favWhenString.length > 0 && favWhenString}
+                      </h6>
+                    </Paper>
+                    <AphButton
+                      variant='contained'
+                      color='primary'
+                      classes={{ root: classes.updateSymptom }}
+                      onClick={id => {
+                        setIsEditFavMedicine(true);
+                        //  setSelectedMedicinesArr(favMedicine);
 
-                      updateFavMedicine(favMedicine);
-                    }}
-                  >
-                    <img
-                      src={
-                        favouriteMedicine &&
-                        require('images/add_doctor_white.svg')
-                      }
-                      alt=''
-                    />
-                  </AphButton>
-                </div>
-              );
-            })}
-            </div>
+                        updateFavMedicine(favMedicine);
+                      }}
+                    >
+                      <img
+                        src={
+                          favouriteMedicine &&
+                          require('images/add_doctor_white.svg')
+                        }
+                        alt=''
+                      />
+                    </AphButton>
+                  </div>
+                );
+              })}
+          </div>
         </Grid>
       </Grid>
       {isEditFavMedicine && (
