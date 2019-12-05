@@ -142,7 +142,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { showAphAlert, setLoading } = useUIElements();
   const vars: GetMedicineOrderDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
-    orderAutoId: orderAutoId,
+    orderAutoId: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
   };
   console.log(JSON.stringify(vars));
   const { data, loading, refetch } = useQuery<
