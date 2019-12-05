@@ -48,12 +48,12 @@ export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) =
   var otherOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
   const dateText = sameDay
     ? // ? format(item.start, 'iii, P')
-    item.start.toLocaleDateString('en-AU', options)
+      item.start.toLocaleDateString('en-AU', options)
     : // : `${format(item.start, 'P')} - ${format(item.end, 'P')}`;
-    `${item.start.toLocaleDateString('en-AU', otherOptions)} - ${item.end.toLocaleDateString(
-      'en-AU',
-      otherOptions
-    )}`;
+      `${item.start.toLocaleDateString('en-AU', otherOptions)} - ${item.end.toLocaleDateString(
+        'en-AU',
+        otherOptions
+      )}`;
   const timeText = sameDay ? `${format(item.start, 'p')} - ${format(item.end, 'p')}` : 'All slots';
   return (
     <div className={classes.blockedCalendarBlock}>
