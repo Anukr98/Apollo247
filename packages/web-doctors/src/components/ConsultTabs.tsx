@@ -427,7 +427,7 @@ export const ConsultTabs: React.FC = () => {
     autoNetworkDetection: true,
     listenToBrowserNetworkEvents: true,
     presenceTimeout: 20,
-    //heartbeatInterval: 20,
+    heartbeatInterval: 10,
     uuid: REQUEST_ROLES.DOCTOR
   };
   useEffect(() => {
@@ -455,59 +455,19 @@ export const ConsultTabs: React.FC = () => {
         setLastMsg(message);
       },
       presence(presenceEvent: any) {
-        setPresenceEventObject(presenceEvent);
-        console.log(presenceEvent);
-        pubnub.hereNow(
-          {
-            channels: [appointmentId],
-            includeUUIDs: true,
-            includeState: true
-          },
-          (status, response) => {
-            console.log("presenceEventstatus", status);
-            console.log("presenceresponse", response);
-          }
-        );
-
+        //setPresenceEventObject(presenceEvent);
         pubnub
-          .time()
-          .then((value: any) => {
-            console.log("FetchTimeResponse", value);
+          .hereNow({
+            channels: [appointmentId],
+            includeUUIDs: true
+          })
+          .then(response => {
+            console.log("hereNowresponse", response);
+            setPresenceEventObject(response);
           })
           .catch(error => {
-            console.log("error", error);
+            console.log(error);
           });
-      },
-      // disconnect: (disconnect: any) => {
-      //   console.log("disconnected", disconnect);
-      // },
-      // reconnect: (reconnect: any) => {
-      //   console.log("reconnected", reconnect);
-      // },
-      // error: (obj: any) => {
-      //   console.log("ERROR " + JSON.stringify(obj));
-      // },
-      // callback: (obj: any) => {
-      //   console.log("callback " + JSON.stringify(obj));
-      // },
-      signal: (signalEvent: any) => {
-        console.log("signalEvent " + JSON.stringify(signalEvent));
-      },
-
-      user: (userEvent: any) => {
-        console.log("userEvent " + JSON.stringify(userEvent));
-      },
-
-      space: (spaceEvent: any) => {
-        console.log("spaceEvent " + JSON.stringify(spaceEvent));
-      },
-
-      membership: (membershipEvent: any) => {
-        console.log("membershipEvent " + JSON.stringify(membershipEvent));
-      },
-
-      messageAction: (messageActionEvent: any) => {
-        console.log("messageActionEvent " + JSON.stringify(messageActionEvent));
       }
     });
     return () => {
