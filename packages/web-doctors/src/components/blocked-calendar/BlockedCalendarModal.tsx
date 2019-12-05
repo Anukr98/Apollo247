@@ -798,6 +798,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     startEndList,
   ]);
   useEffect(() => {
+    if (selectedBlockOption === 'entireday' || selectedBlockOption === 'consulthours') {
+      setStartTime('');
+      setEndTime('');
+    }
+  }, [startTime, endTime, selectedBlockOption]);
+  useEffect(() => {
     if (
       durationSelected &&
       (selectedBlockOption === 'entireday' || selectedBlockOption === 'customtime')
@@ -892,7 +898,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         id="date-picker-inline"
                         label="To"
                         disabled={!start}
-                        minDate={nextTODate(start)}
+                        minDate={new Date(start)}
                         value={end}
                         onChange={(date) => {
                           setEnd(date ? getFormattedDate(date) : '');
@@ -988,7 +994,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             <div className={classes.formDate}>
                               {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
                             </div>
-                            {consultHours && consultHours.length > 0 && (
+                            {consultHours && (
                               <FormGroup>
                                 <FormControlLabel
                                   control={<Checkbox value="consultHours" />}
