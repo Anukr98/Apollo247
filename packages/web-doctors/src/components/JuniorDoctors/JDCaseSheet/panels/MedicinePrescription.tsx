@@ -723,7 +723,7 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       const dosageCount =
         medicine.medicineTimings.length > 0
-          ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+          ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
           : medicine.medicineDosage;
       return (
         <div key={index} className={classes.medicineBox}>
@@ -1206,7 +1206,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                       <div className={classes.numberTablets}>
                         <AphTextField
-                          placeholder="Eg. Root of Administration, Gaps in Dosage, etc."
+                          placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
                           value={medicineInstruction}
                           onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);

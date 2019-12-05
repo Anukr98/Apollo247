@@ -560,6 +560,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'bold',
       },
     },
+    consultDurShow: {
+      display: 'block',
+    },
     consultMenuPopover: {
       minWidth: 160,
       borderRadius: 10,
@@ -741,6 +744,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: stopcallMsg,
       isTyping: true,
+      messageDate: new Date(),
     };
     pubnub.publish(
       {
@@ -762,6 +766,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       //duration: `10:00`,
       isTyping: true,
+      messageDate: new Date(),
     };
     pubnub.publish(
       {
@@ -800,6 +805,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       message: callType,
       // props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
       isTyping: true,
+      messageDate: new Date(),
     };
     pubnub.publish(
       {
@@ -827,6 +833,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: stopcallMsg,
       isTyping: true,
+      messageDate: new Date(),
     };
     props.isAudioVideoCallEnded(false);
     pubnub.publish(
@@ -850,6 +857,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message: {
             isTyping: true,
             message: convertVideo ? covertVideoMsg : covertAudioMsg,
+            messageDate: new Date(),
           },
           channel: channel,
           storeInHistory: false,
@@ -997,6 +1005,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           '! ' +
           props.assignedDoctorDisplayName +
           ', will be with you at your booked consultation time.',
+        messageDate: new Date(),
       };
       pubnub.publish(
         {
@@ -1078,6 +1087,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           setIsCallAccepted(true);
         }
       },
+      presence: (presenceEvent) => {
+        console.log(presenceEvent);
+      },
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
@@ -1100,6 +1112,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         "'s team. Sorry that you aren’t in the best state. We'll do our best to make things better. Let's get a few quick questions out of the way before " +
         props.assignedDoctorDisplayName +
         ' starts the consultation.',
+      messageDate: new Date(),
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1117,6 +1130,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         automatedText:
           'Before I go any further, would you be comfortable continuing to talk in English?',
         isTyping: true,
+        messageDate: new Date(),
       };
       pubnub.publish(
         {
@@ -1141,6 +1155,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         ', I have everything I need. I will share these details with ' +
         props.assignedDoctorDisplayName +
         ', who will be here with you soon.',
+      messageDate: new Date(),
     };
     unSubscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1182,6 +1197,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     //           id: props.doctorId,
     //           message: followupconsult,
     //           transferInfo: followupObj,
+    //messageDate: new Date(),
     //         },
     //         channel: channel,
     //         storeInHistory: true,
@@ -1272,13 +1288,16 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       <div className={classes.pageSubHeader}>
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>Consult Room</div>
-          <div className={classes.consultDur}>
+
+          {/* code commented as requested by the testing team
+          ------------------------------------------------------------
+           <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
             {startAppointment
               ? `Consultation Duration ${
                   minutes.toString().length < 2 ? '0' + minutes : minutes
                 } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
               : getTimerText()}
-          </div>
+          </div> */}
         </div>
         <div className={classes.headerRightGroup}>
           {startAppointment ? (
@@ -1681,7 +1700,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
                     mutationRemoveConsult();
-                    window.location.href = clientRoutes.juniorDoctor();
+                    if (document.getElementById('homeId')) {
+                      document.getElementById('homeId')!.click();
+                    }
+                    //window.location.href = clientRoutes.juniorDoctor();
                   })
                   .catch((e: ApolloError) => {
                     setCancelError(e.graphQLErrors[0].message);

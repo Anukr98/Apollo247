@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import { CallPopover } from 'components/CallPopover';
+import Pubnub from 'pubnub';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -285,7 +286,17 @@ const storageClient = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
-
+interface MessagesObjectProps {
+  id: string;
+  message: string;
+  username: string;
+  automatedText: string;
+  duration: string;
+  url: string;
+  messageDate: string;
+}
+//let messages: MessagesObjectProps[] = [];
+let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
   const params = useParams<Params>();
@@ -387,14 +398,98 @@ export const ConsultTabs: React.FC = () => {
   const [jrdName, setJrdName] = useState<string>('');
   const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
   const isSecretary = currentUserType === LoggedInUserType.SECRETARY;
+  const [lastMsg, setLastMsg] = useState<any>(null);
+  const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
+  const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
 
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
+    ssl: true,
+    restore: true,
+    keepAlive: true,
+    //autoNetworkDetection: true,
+    //listenToBrowserNetworkEvents: true,
+    presenceTimeout: 20,
+    heartbeatInterval: 20,
+    uuid: REQUEST_ROLES.DOCTOR,
+  };
   useEffect(() => {
     if (startAppointment) {
-      //followUp[0] = startAppointment;
-      // setFollowUp(followUp);
+      followUp[0] = startAppointment;
+      setFollowUp(followUp);
     }
   }, [startAppointment]);
+  const pubnub = new Pubnub(config);
 
+  useEffect(() => {
+    pubnub.subscribe({
+      channels: [appointmentId],
+      withPresence: true,
+    });
+    getHistory(0);
+    pubnub.addListener({
+      status(statusEvent: any) {
+        console.log('statusEvent', statusEvent);
+      },
+      message(message: any) {
+        console.log(message.message);
+        insertText[insertText.length] = message.message;
+        setMessages(() => [...insertText]);
+        setLastMsg(message);
+      },
+      presence(presenceEvent: any) {
+        //setPresenceEventObject(presenceEvent);
+        console.log(presenceEvent);
+        //setPresenceEventObject(presenceEvent);
+        pubnub
+          .hereNow({
+            channels: [appointmentId],
+            includeUUIDs: true,
+          })
+          .then((response: any) => {
+            console.log('hereNowresponse', response);
+            setPresenceEventObject(response);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+    });
+    return () => {
+      pubnub.unsubscribe({ channels: [appointmentId] });
+    };
+  }, []);
+  const getHistory = (timetoken: number) => {
+    pubnub.history(
+      {
+        channel: appointmentId,
+        reverse: true,
+        count: 1000,
+        stringifiedTimeToken: true,
+        start: timetoken,
+      },
+      (status: any, res: any) => {
+        const newmessage: MessagesObjectProps[] = messages;
+        res.messages.forEach((element: any, index: number) => {
+          //newmessage[index] = element.entry;
+          newmessage.push(element.entry);
+        });
+        insertText = newmessage;
+        //if (messages.length !== newmessage.length) {
+        setMessages(newmessage);
+        //}
+        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        if (res.messages.length == 100) {
+          getHistory(end);
+        }
+        //resetMessagesAction();
+        //srollToBottomAction();
+      }
+    );
+  };
   /* case sheet data*/
 
   /* need to be worked later */
@@ -599,19 +694,19 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
           }
 
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
-          ) {
-            jrdSalutation =
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
-          }
+          // if (
+          //   _data &&
+          //   _data.data &&
+          //   _data.data.getCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
+          // ) {
+          //   jrdSalutation =
+          //     _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
+          // }
 
-          setJrdName(`${jrdSalutation} ${jrdFirstName} ${jrdLastName}`);
+          setJrdName(`${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -905,12 +1000,15 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data) => {
+        console.log(_data);
         if (
           _data &&
           _data.data &&
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
+          const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
+          document.cookie = cookieStr + ';path=/;';
           setcallId(_data.data.sendCallNotification.callDetails.id);
         }
       })
@@ -1255,6 +1353,9 @@ export const ConsultTabs: React.FC = () => {
                 //sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
                 callId={callId}
+                pubnub={pubnub}
+                lastMsg={lastMsg}
+                presenceEventObject={presenceEventObject}
               />
               <div>
                 {!isPdfPageOpen || isSecretary ? (
@@ -1303,6 +1404,9 @@ export const ConsultTabs: React.FC = () => {
                             appointmentId={paramId}
                             doctorId={doctorId}
                             patientId={patientId}
+                            pubnub={pubnub}
+                            lastMsg={lastMsg}
+                            messages={messages}
                           />
                         </div>
                       </div>

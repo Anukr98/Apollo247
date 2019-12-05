@@ -3460,6 +3460,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "hideStatus",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -9537,18 +9549,6 @@
             "deprecationReason": null
           },
           {
-            "name": "doctorId",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "ID",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": null,
             "args": [],
@@ -10242,6 +10242,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "isJdQuestionsComplete",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -10383,6 +10395,12 @@
           },
           {
             "name": "JUNIOR_DOCTOR_ENDED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "CALL_ABANDON",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11718,6 +11736,18 @@
           },
           {
             "name": "isConsultStarted",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "isJdQuestionsComplete",
             "description": null,
             "args": [],
             "type": {
@@ -22677,6 +22707,16 @@
                 "name": "STATUS",
                 "ofType": null
               }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "noShowBy",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "REQUEST_ROLES",
+              "ofType": null
             },
             "defaultValue": null
           }

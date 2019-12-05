@@ -352,7 +352,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               )}
 
-              {availableForPhysicalConsultation && (
+              {availableForPhysicalConsultation && !isPayrollDoctor && (
                 <Tab
                   classes={{
                     root: classes.tabRoot,
@@ -368,11 +368,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorDetails}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
+                  isRescheduleConsult={false}
                 />
               </TabContainer>
             )}
 
-            {tabValue === 1 && availableForPhysicalConsultation && (
+            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
               <TabContainer>
                 <LocationProvider>
                   <VisitClinic doctorDetails={doctorDetails} />

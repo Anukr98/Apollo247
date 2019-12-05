@@ -14,6 +14,7 @@ export enum APPOINTMENT_TYPE {
 
 export enum APPT_CALL_TYPE {
   AUDIO = "AUDIO",
+  CHAT = "CHAT",
   VIDEO = "VIDEO",
 }
 
@@ -108,10 +109,13 @@ export enum Relation {
 }
 
 export enum STATUS {
+  CALL_ABANDON = "CALL_ABANDON",
   CANCELLED = "CANCELLED",
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+  JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
+  JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
@@ -192,6 +196,7 @@ export interface DiagnosticPrescriptionInput {
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
+  noShowBy?: REQUEST_ROLES | null;
 }
 
 export interface MedicinePrescriptionInput {
