@@ -400,14 +400,14 @@ const bookRescheduleAppointment: Resolver<
     <body>
     <p> Appointment has been rescheduled on Apollo 247 app with the following details:</p>
     <ul>
-    <li>Appointment No  : <%- rescheduledapptDetails.displayId.toString() %></li>
-    <li>Patient Name  : <%- patientDetails.firstName %></li>
-    <li>Mobile Number   : <%- patientDetails.mobileNumber %></li>
-    <li>Doctor Name  : <%- docDetails.firstName %></li>
+    <li>Appointment No  : <%- rescheduledapptNo %></li>
+    <li>Patient Name  : <%- PatientfirstName %></li>
+    <li>Mobile Number   : <%- PatientMobileNumber %></li>
+    <li>Doctor Name  : <%- docfirstName %></li>
     <li>Doctor Location (ATHS/Hyd Hosp/Chennai Hosp) : <%- hospitalCity %></li>
     <li>Appointment Date  : <%- apptDate %></li>
     <li>Appointment Slot  : <%- apptTime %></li>
-    <li>Mode of Consult : <%-  rescheduledapptDetails.appointmentType %></li>
+    <li>Mode of Consult : <%-  rescheduledapptType %></li>
     </ul>
     </body> 
     </html>
@@ -427,12 +427,14 @@ const bookRescheduleAppointment: Resolver<
   const apptTime = format(istDateTime, 'hh:mm');
 
   const mailContent = mailContentTemplate({
-    hospitalCity,
+    hospitalCity: hospitalCity || 'N/A',
     apptDate,
     apptTime,
-    patientDetails,
-    rescheduledapptDetails,
-    docDetails,
+    PatientfirstName: patientDetails.firstName || 'N/A',
+    PatientMobileNumber: patientDetails.mobileNumber || 'N/A',
+    rescheduledapptType: rescheduledapptDetails.appointmentType || 'N/A',
+    rescheduledapptNo: rescheduledapptDetails.displayId.toString() || 'N/A',
+    docfirstName: docDetails.firstName || 'N/A',
   });
 
   const emailsubject = _.template(`
