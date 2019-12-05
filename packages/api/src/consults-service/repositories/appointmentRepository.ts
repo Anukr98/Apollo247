@@ -2,7 +2,6 @@ import {
   EntityRepository,
   Repository,
   Between,
-  MoreThan,
   LessThan,
   Brackets,
   Not,
@@ -90,7 +89,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       },
     });*/
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime Between(:fromDate, :toDate)', {
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: startDate,
         toDate: endDate,
       })
@@ -199,7 +198,7 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
-      .where('appointment.appointmentDateTime Between(:fromDate, :toDate)', {
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: newStartDate,
         toDate: newEndDate,
       })
@@ -227,7 +226,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });*/
 
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime Between(:fromDate, :toDate)', {
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: startDate,
         toDate: endDate,
       })
@@ -331,7 +330,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });*/
 
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime Between(:fromDate, :toDate)', {
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: startDate,
         toDate: endDate,
       })
@@ -377,7 +376,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });*/
 
     const weekPastAppts = await this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime Between(:fromDate, :toDate)', {
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: weekPastDateUTC,
         toDate: new Date(),
       })
@@ -587,7 +586,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       order: { appointmentDateTime: 'ASC' },
     });*/
     const doctorAppointments = await this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime Between(:fromDate, :toDate)', {
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: currentStartDate,
         toDate: currentEndDate,
       })
@@ -861,7 +860,7 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
-      .where('appointment.appointmentDateTime Between(:fromDate, :toDate)', {
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: newStartDate,
         toDate: newEndDate,
       })
@@ -935,7 +934,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });*/
 
     return this.createQueryBuilder('appointment')
-      .where('appointment.bookingDate Between(:fromDate, :toDate)', {
+      .where('(appointment.bookingDate Between :fromDate AND :toDate)', {
         fromDate: newStartDate,
         toDate: newEndDate,
       })
