@@ -70,8 +70,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
 
-      console.log(allPatients, 'allPatientssplash');
-      console.log(mePatient, 'mePatientsplash');
+      // console.log(allPatients, 'allPatientssplash');
+      // console.log(mePatient, 'mePatientsplash');
 
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);

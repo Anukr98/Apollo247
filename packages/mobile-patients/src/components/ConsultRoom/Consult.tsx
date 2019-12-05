@@ -314,7 +314,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     });
   }, [currentPatient]);
 
-  console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
+  // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
   const inputData = {
     patientId: currentPatient ? currentPatient!.id : '',
     appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
@@ -333,7 +333,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        console.log(data, 'GET_PATIENT_APPOINTMENTS');
+        // console.log(data, 'GET_PATIENT_APPOINTMENTS');
         if (
           data &&
           data.getPatinetAppointments &&

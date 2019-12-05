@@ -796,6 +796,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               data={data}
               KeyFollow={'Followup'}
               isfollowupcount={isfollowcount}
+              isInitiatedByDoctor={false}
             />
           )}
         </SafeAreaView>

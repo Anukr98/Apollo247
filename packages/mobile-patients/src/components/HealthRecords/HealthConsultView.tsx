@@ -147,9 +147,9 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     } else {
       if (Platform.OS === 'ios') {
         try {
-          Linking.openURL(AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)).catch(
-            (err) => console.error('An error occurred', err)
-          );
+          Linking.openURL(
+            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)
+          ).catch((err) => console.error('An error occurred', err));
         } catch {}
       }
       let dirs = RNFetchBlob.fs.dirs;

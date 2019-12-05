@@ -74,7 +74,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     },
     fetchPolicy: 'no-cache',
   });
-  aphConsole.log({ data, loading, error });
+  // aphConsole.log({ data, loading, error });
 
   const getMedicines = (
     medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
