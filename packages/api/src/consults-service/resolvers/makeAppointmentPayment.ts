@@ -88,7 +88,7 @@ const makeAppointmentPayment: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const processingAppointment = await apptsRepo.findByIdAndStatus(
     paymentInput.appointmentId,
-    STATUS.PENDING
+    STATUS.PAYMENT_PENDING
   );
   if (!processingAppointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
@@ -103,8 +103,6 @@ const makeAppointmentPayment: Resolver<
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     await apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.PENDING);
-  } else {
-    await apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.CANCELLED);
   }
 
   return { appointment: paymentInfo };
