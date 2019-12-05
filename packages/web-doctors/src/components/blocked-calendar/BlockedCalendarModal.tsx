@@ -179,7 +179,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     setIsTimeValid(true);
     setIsallreadyInArray(true);
     setIsPastTime(true);
-    setIsOverlapError(false);
 
     if (dateRange && dateRange > 0) {
       setDateRange((dateRange.length = 0));
@@ -675,7 +674,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       var startTimeObject = new Date();
       startTimeObject.setHours(Number(startHour), Number(startMinute));
       customTimeArray.map((value: any) => {
-        if (value && value.length > 0 && value.startTime && value.endTime) {
+        if (value && value.startTime && value.endTime) {
           const [arrayshours, arraysmins] = value.startTime.split(':');
           var arraystartHour = arrayshours;
           var arraystartMinute = arraysmins;
@@ -701,6 +700,30 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           } else {
             setIsallreadyInArray(true);
           }
+          if (endTime && startTime) {
+            alert();
+            const [ehours, emins] = endTime.split(':');
+            var endHour = ehours;
+            var endMinute = emins;
+            var endTimeObject = new Date();
+            endTimeObject.setHours(Number(endHour), Number(endMinute));
+
+            if (startTimeObject <= startArrayTimeObject) {
+              if (startArrayTimeObject <= endTimeObject) {
+                setIsallreadyInArray(false);
+              } else {
+                setIsallreadyInArray(true);
+              }
+            } else if (startArrayTimeObject < startTimeObject) {
+              if (startTimeObject < endArrayTimeObject) {
+                setIsallreadyInArray(false);
+              } else {
+                setIsallreadyInArray(true);
+              }
+            } else {
+              setIsallreadyInArray(true);
+            }
+          }
         }
       });
 
@@ -716,7 +739,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       setIsallreadyInArray(true);
       setIsPastTime(true);
       setIsPastTimeError(false);
-      setIsOverlapError(false);
+      // setIsOverlapError(false);
       setChecked(false);
     }
   }, [isOverlapError, customTimeArray]);
