@@ -603,6 +603,7 @@ let missedCallCounter: number = 0;
 let intervalCallAbundant: any;
 let isConsultStarted: boolean = false;
 let abondmentStarted: boolean = false;
+let didPatientJoined: boolean = false;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -716,16 +717,15 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
       timer = timer - 1;
+      console.log(timer);
       stoppedTimerCall = timer;
       setRemainingCallTime(timer);
       if (timer < 1) {
         setRemainingCallTime(0);
         clearInterval(intervalcallId);
-        if (
-          patientMsgs.length === 0 ||
-          props.appointmentStatus === STATUS.IN_PROGRESS
-        ) {
-          console.log(props.appointmentStatus, patientMsgs.length);
+        if (patientMsgs.length === 0) {
+          //console.log(patientMsgs.length);
+          //alert("noShowAction for patient");
           noShowAction();
         }
       }
@@ -739,7 +739,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         variables: {
           endAppointmentSessionInput: {
             appointmentId: props.appointmentId,
-            status: STATUS.NO_SHOW
+            status: STATUS.NO_SHOW,
+            noShowBy: REQUEST_ROLES.PATIENT
           }
         },
         fetchPolicy: "no-cache"
@@ -822,11 +823,6 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
-  useEffect(() => {
-    if (remainingCallTime === 0) {
-      clearInterval(intervalcallId);
-    }
-  });
   const stopIntervalTimer = () => {
     setStartingTime(0);
     timerIntervalId && clearInterval(timerIntervalId);
@@ -1142,64 +1138,13 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   useEffect(() => {
     if (props.appointmentStatus === STATUS.COMPLETED) {
       setRemainingCallTime(0);
-      clearInterval(intervalcallId);
+      //clearInterval(intervalcallId);
     }
   }, [props.appointmentStatus]);
   //const pubnub = new Pubnub(config);
   const pubnub = props.pubnub;
 
   useEffect(() => {
-    // pubnub.subscribe({
-    //   channels: [channel],
-    //   withPresence: true
-    // });
-    // pubnub.addListener({
-    //   status(statusEvent: any) {},
-    //   message(message: any) {
-    //     console.log(message.message);
-    //     if (
-    //       !showVideoChat &&
-    //       message.message.message !== videoCallMsg &&
-    //       message.message.message !== audioCallMsg &&
-    //       message.message.message !== stopcallMsg &&
-    //       message.message.message !== acceptcallMsg &&
-    //       message.message.message !== transferconsult &&
-    //       message.message.message !== rescheduleconsult &&
-    //       message.message.message !== followupconsult &&
-    //       message.message.message !== startConsult &&
-    //       message.message.message !== patientConsultStarted &&
-    //       message.message.message !== firstMessage &&
-    //       message.message.message !== secondMessage &&
-    //       message.message.message !== covertVideoMsg &&
-    //       message.message.message !== covertAudioMsg &&
-    //       message.message.message !== cancelConsultInitiated
-    //     ) {
-    //       setIsNewMsg(true);
-    //     } else {
-    //       setIsNewMsg(false);
-    //     }
-    //     if (
-    //       !props.startAppointment &&
-    //       message.message.id === params.patientId
-    //     ) {
-    //       patientMsgs.push(message.message.message);
-    //     }
-    //     if (message.message && message.message.message === acceptcallMsg) {
-    //       patientMsgs.push(message.message.message);
-    //       setIsCallAccepted(true);
-    //       clearInterval(intervalMissCall);
-    //       missedCallCounter = 0;
-    //     }
-    //   },
-    //   presence(presenceEvent: any) {
-    //     console.log(presenceEvent, isConsultStarted);
-    //     if (presenceEvent.occupancy === 1 && isConsultStarted) {
-    //       callAbundantIntervalTimer(30);
-    //     } else {
-    //       clearInterval(intervalCallAbundant);
-    //     }
-    //   }
-    // });
     return function cleanup() {
       //pubnub.unsubscribe({ channels: [channel] });
       clearInterval(intervalcallId);
@@ -1208,7 +1153,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       //clearInterval(intervalMissCall);
       // clearInterval(intervalId);
     };
-  }, [props.pubnub]);
+  }, []);
 
   useEffect(() => {
     const lastMsg = props.lastMsg;
@@ -1234,11 +1179,11 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       } else {
         setIsNewMsg(false);
       }
-      if (!props.startAppointment && lastMsg.message.id === params.patientId) {
+      if (isConsultStarted && lastMsg.message.id === params.patientId) {
         patientMsgs.push(lastMsg.message.message);
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
-        patientMsgs.push(lastMsg.message.message);
+        //patientMsgs.push(lastMsg.message.message);
         setIsCallAccepted(true);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
@@ -1267,7 +1212,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       console.log(abondmentStarted, "abondmentStarted");
       console.log(occupancyPatient, "occupancyPatient");
       if (presenceEventObject.totalOccupancy >= 2) {
-        console.log("11111111111111");
+        //console.log("11111111111111");
+        didPatientJoined = true;
         clearInterval(intervalCallAbundant);
         abondmentStarted = false;
       } else {
@@ -1275,7 +1221,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
           presenceEventObject.totalOccupancy === 1 &&
           occupancyPatient.length === 0
         ) {
-          if (!abondmentStarted) {
+          if (!abondmentStarted && didPatientJoined) {
             abondmentStarted = true;
             console.log("22222222222222222222");
             callAbundantIntervalTimer(180);
@@ -1708,16 +1654,16 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  // disabled={
-                  //   currentUserType === LoggedInUserType.SECRETARY ||
-                  //   startAppointmentButton ||
-                  //   disableOnCancel ||
-                  //   (appointmentInfo!.appointmentState !== "NEW" &&
-                  //     appointmentInfo!.appointmentState !== "TRANSFER" &&
-                  //     appointmentInfo!.appointmentState !== "RESCHEDULE") ||
-                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  //     appointmentInfo!.status !== STATUS.PENDING)
-                  // }
+                  disabled={
+                    currentUserType === LoggedInUserType.SECRETARY ||
+                    startAppointmentButton ||
+                    disableOnCancel ||
+                    (appointmentInfo!.appointmentState !== "NEW" &&
+                      appointmentInfo!.appointmentState !== "TRANSFER" &&
+                      appointmentInfo!.appointmentState !== "RESCHEDULE") ||
+                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                      appointmentInfo!.status !== STATUS.PENDING)
+                  }
                   onClick={() => {
                     !props.startAppointment
                       ? onStartConsult()
