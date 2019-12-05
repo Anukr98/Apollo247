@@ -596,8 +596,6 @@ let MissedcallStoppedTimerCall: number;
 let missedCallCounter: number = 0;
 let intervalCallAbundant: any;
 let isConsultStarted: boolean = false;
-let abondmentStarted: boolean = false;
-let didPatientJoined: boolean = false;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -797,6 +795,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  useEffect(() => {
+    if (remainingCallTime === 0) {
+      clearInterval(intervalcallId);
+    }
+  });
   const stopIntervalTimer = () => {
     setStartingTime(0);
     timerIntervalId && clearInterval(timerIntervalId);
@@ -1112,6 +1115,57 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = props.pubnub;
 
   useEffect(() => {
+    // pubnub.subscribe({
+    //   channels: [channel],
+    //   withPresence: true
+    // });
+    // pubnub.addListener({
+    //   status(statusEvent: any) {},
+    //   message(message: any) {
+    //     console.log(message.message);
+    //     if (
+    //       !showVideoChat &&
+    //       message.message.message !== videoCallMsg &&
+    //       message.message.message !== audioCallMsg &&
+    //       message.message.message !== stopcallMsg &&
+    //       message.message.message !== acceptcallMsg &&
+    //       message.message.message !== transferconsult &&
+    //       message.message.message !== rescheduleconsult &&
+    //       message.message.message !== followupconsult &&
+    //       message.message.message !== startConsult &&
+    //       message.message.message !== patientConsultStarted &&
+    //       message.message.message !== firstMessage &&
+    //       message.message.message !== secondMessage &&
+    //       message.message.message !== covertVideoMsg &&
+    //       message.message.message !== covertAudioMsg &&
+    //       message.message.message !== cancelConsultInitiated
+    //     ) {
+    //       setIsNewMsg(true);
+    //     } else {
+    //       setIsNewMsg(false);
+    //     }
+    //     if (
+    //       !props.startAppointment &&
+    //       message.message.id === params.patientId
+    //     ) {
+    //       patientMsgs.push(message.message.message);
+    //     }
+    //     if (message.message && message.message.message === acceptcallMsg) {
+    //       patientMsgs.push(message.message.message);
+    //       setIsCallAccepted(true);
+    //       clearInterval(intervalMissCall);
+    //       missedCallCounter = 0;
+    //     }
+    //   },
+    //   presence(presenceEvent: any) {
+    //     console.log(presenceEvent, isConsultStarted);
+    //     if (presenceEvent.occupancy === 1 && isConsultStarted) {
+    //       callAbundantIntervalTimer(30);
+    //     } else {
+    //       clearInterval(intervalCallAbundant);
+    //     }
+    //   }
+    // });
     return function cleanup() {
       //pubnub.unsubscribe({ channels: [channel] });
       clearInterval(intervalcallId);
@@ -1160,14 +1214,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   useEffect(() => {
     console.log(props.presenceEventObject);
-    // const presenceEventObject = props.presenceEventObject;
-    // if (presenceEventObject && presenceEventObject !== null) {
-    //   if (presenceEventObject.occupancy === 1 && isConsultStarted) {
-    //     callAbundantIntervalTimer(180);
-    //   } else {
-    //     clearInterval(intervalCallAbundant);
-    //   }
-    // }
     const presenceEventObject = props.presenceEventObject;
     if (presenceEventObject && isConsultStarted) {
       //console.log(presenceEventObject);
