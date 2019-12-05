@@ -516,7 +516,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     };
   }, []);
 
-  const getHistory = (timetoken: number) => {
+  const getHistory = (timetoken: string | number) => {
     pubnub.history(
       {
         channel: channel,
@@ -536,7 +536,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
         //}
-        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        const end: string | number = res.endTimeToken ? res.endTimeToken : 1;
         if (res.messages.length == 100) {
           getHistory(end);
         }
