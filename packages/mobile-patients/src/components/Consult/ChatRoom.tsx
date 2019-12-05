@@ -1010,9 +1010,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         startConsultJRResult.length > 0 &&
         stopConsultJRResult.length > 0 &&
         dateIsAfter &&
-        startConsultResult.length > 0
+        startConsultResult.length == 0
       ) {
-        if (stopConsultResult.length > 0 || appointmentData.status === STATUS.COMPLETED) return;
+        if (appointmentData.status === STATUS.COMPLETED) return;
         abondmentStarted = true;
 
         startCallAbondmentTimer(200, true);
