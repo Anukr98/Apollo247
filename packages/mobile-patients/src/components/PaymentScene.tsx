@@ -19,6 +19,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -50,8 +51,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
-  const { showAphAlert, setLoading, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const [loading, setLoading] = useState(true);
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Do you want to go back?', [
@@ -84,7 +86,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean) => {
     hideAphAlert!();
-    props.navigation.replace(AppRoutes.OrderDetailsScene, {
+    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
       orderAutoId,
@@ -275,6 +277,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         />
         {renderWebView()}
       </SafeAreaView>
+      {loading && <Spinner />}
     </View>
   );
 };

@@ -5,7 +5,7 @@ import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceH
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   BackHandler,
@@ -18,6 +18,7 @@ import {
   WebView,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -45,25 +46,27 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   const doctorName = props.navigation.getParam('doctorName');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
+  const [loading, setLoading] = useState(true);
   // const name = currentPatient && currentPatient.firstName;
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
-  useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
+  // useEffect(() => {
+  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+  //     BackHandler.addEventListener('hardwareBackPress', handleBack);
+  //   });
 
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
+  //   const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+  //     BackHandler.removeEventListener('hardwareBackPress', handleBack);
+  //   });
 
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
-    };
-  }, []);
+  //   return () => {
+  //     _didFocusSubscription && _didFocusSubscription.remove();
+  //     _willBlurSubscription && _willBlurSubscription.remove();
+  //   };
+  // }, []);
 
   const handleBack = async () => {
+    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     Alert.alert('Alert', 'Do you want to go back?', [
       { text: 'No' },
       { text: 'Yes', onPress: () => props.navigation.goBack() },
@@ -80,7 +83,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   };
 
   const handleOrderSuccess = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({
@@ -188,6 +191,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
         />
         <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
+      {loading && <Spinner />}
     </View>
   );
 };
