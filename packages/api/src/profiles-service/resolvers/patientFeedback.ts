@@ -65,6 +65,9 @@ const addPatientFeedback: Resolver<
     const appointmentDetails = await appointmentRepo.findByAppointmentId(
       patientFeedbackInput.transactionId
     );
+    if (!appointmentDetails[0]) {
+      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+    }
     doctorId = appointmentDetails[0].doctorId;
   }
   const addPatientFeedbackAttrs: Partial<PatientFeedback> = {
