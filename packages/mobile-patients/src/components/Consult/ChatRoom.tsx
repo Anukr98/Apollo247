@@ -1047,7 +1047,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.COMPLETED) return;
       abondmentStarted = true;
 
-      startCallAbondmentTimer(15, true);
+      startCallAbondmentTimer(200, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1066,7 +1066,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.status === STATUS.COMPLETED) return;
         abondmentStarted = true;
 
-        startCallAbondmentTimer(15, false);
+        startCallAbondmentTimer(200, false);
       }
     }
   };
