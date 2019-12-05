@@ -596,6 +596,8 @@ let MissedcallStoppedTimerCall: number;
 let missedCallCounter: number = 0;
 let intervalCallAbundant: any;
 let isConsultStarted: boolean = false;
+let abondmentStarted: boolean = false;
+let didPatientJoined: boolean = false;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
