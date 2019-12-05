@@ -125,6 +125,7 @@ import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { ChatQuestions } from './ChatQuestions';
 import { FeedbackPopup } from '../FeedbackPopup';
 import { g } from '../../helpers/helperFunctions';
+import { useUIElements } from '../UIElementsProvider';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -1355,6 +1356,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
+  const {showAphAlert} = useUIElements()
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     // console.log('pubNubMessages', message);
     if (message.message.isTyping) {
@@ -5085,13 +5087,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <FeedbackPopup
         onComplete={() => {
           setShowFeedback(false);
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          showAphAlert!({ title: 'Thanks :)', description: 'Your feedback has been submitted. Thanks for your time.' });
         }}
         transactionId={channel}
         title="We value your feedback! :)"
@@ -5104,7 +5100,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         type={FEEDBACKTYPE.CONSULT}
         isVisible={showFeedback}
       />
-
+      
       {loading && <Spinner />}
     </View>
   );

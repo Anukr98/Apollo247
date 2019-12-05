@@ -79,7 +79,9 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
   };
 
-  const handleOrderSuccess = () => {
+  const handleOrderSuccess = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -184,7 +186,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
             onPress: handleBack,
           }}
         />
-        {renderWebView()}
+        <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
     </View>
   );
