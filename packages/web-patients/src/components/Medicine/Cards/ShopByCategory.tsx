@@ -55,7 +55,7 @@ export const ShopByCategory: React.FC = (props) => {
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/ic_personalcare.svg')} alt="" />
@@ -65,7 +65,7 @@ export const ShopByCategory: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/ic_mom_baby.svg')} alt="" />
@@ -75,7 +75,7 @@ export const ShopByCategory: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/ic_apple.svg')} alt="" />
@@ -85,7 +85,7 @@ export const ShopByCategory: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/ic_healthcare.svg')} alt="" />
@@ -95,7 +95,7 @@ export const ShopByCategory: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/ic_offer.svg')} alt="" />
@@ -105,7 +105,7 @@ export const ShopByCategory: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/ic_holland.png')} alt="" />
@@ -115,7 +115,7 @@ export const ShopByCategory: React.FC = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/category/ic_apollo.png')} alt="" />
