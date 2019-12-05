@@ -884,31 +884,33 @@ export class AppointmentRepository extends Repository<Appointment> {
     const timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
-    const duration = Math.floor(60 / timeSlot[0].consultDuration);
-    console.log(duration, 'doctor duration');
-    if (blockedSlots.length > 0) {
-      blockedSlots.map((blockedSlot) => {
-        let blockedSlotsCount =
-          (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
-        let slot = blockedSlot.start;
-        if (!Number.isInteger(blockedSlotsCount)) {
-          blockedSlotsCount = Math.ceil(blockedSlotsCount);
-        }
-        console.log(
-          blockedSlotsCount,
-          'blocked count',
-          differenceInMinutes(blockedSlot.end, blockedSlot.start)
-        );
-        Array(blockedSlotsCount)
-          .fill(0)
-          .map(() => {
-            const genBlockSlot =
-              format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'HH:mm') + ':00.000Z';
-            doctorBblockedSlots.push(genBlockSlot);
-            slot = addMinutes(slot, timeSlot[0].consultDuration);
-          });
-      });
-      console.log(doctorBblockedSlots, 'doctor slots');
+    if (timeSlot.length > 0) {
+      const duration = Math.floor(60 / timeSlot[0].consultDuration);
+      console.log(duration, 'doctor duration');
+      if (blockedSlots.length > 0) {
+        blockedSlots.map((blockedSlot) => {
+          let blockedSlotsCount =
+            (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
+          let slot = blockedSlot.start;
+          if (!Number.isInteger(blockedSlotsCount)) {
+            blockedSlotsCount = Math.ceil(blockedSlotsCount);
+          }
+          console.log(
+            blockedSlotsCount,
+            'blocked count',
+            differenceInMinutes(blockedSlot.end, blockedSlot.start)
+          );
+          Array(blockedSlotsCount)
+            .fill(0)
+            .map(() => {
+              const genBlockSlot =
+                format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'HH:mm') + ':00.000Z';
+              doctorBblockedSlots.push(genBlockSlot);
+              slot = addMinutes(slot, timeSlot[0].consultDuration);
+            });
+        });
+        console.log(doctorBblockedSlots, 'doctor slots');
+      }
     }
     return doctorBblockedSlots;
   }
