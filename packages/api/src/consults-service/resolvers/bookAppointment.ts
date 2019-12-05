@@ -36,6 +36,7 @@ export const bookAppointmentTypeDefs = gql`
     NO_SHOW
     JUNIOR_DOCTOR_STARTED
     JUNIOR_DOCTOR_ENDED
+    CALL_ABANDON
   }
 
   enum APPOINTMENT_TYPE {
