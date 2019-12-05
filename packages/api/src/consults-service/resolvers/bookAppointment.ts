@@ -36,6 +36,7 @@ export const bookAppointmentTypeDefs = gql`
     NO_SHOW
     JUNIOR_DOCTOR_STARTED
     JUNIOR_DOCTOR_ENDED
+    CALL_ABANDON
   }
 
   enum APPOINTMENT_TYPE {
@@ -259,7 +260,7 @@ const bookAppointment: Resolver<
 
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
-    status: STATUS.PENDING,
+    status: STATUS.PAYMENT_PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
     appointmentState: APPOINTMENT_STATE.NEW,

@@ -330,121 +330,121 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
   const AvailabilityHtml =
     data && data.consultHours
       ? data.consultHours.map(
-        (_item: GetDoctorDetails_getDoctorDetails_consultHours | null, index: number) => {
-          const item = _item!;
-          return (
-            <div key={index.toString()} className={classes.tabContent}>
-              <ExpansionPanel className={`${classes.serviceItem} ${classes.pointerNone}`}>
-                <ExpansionPanelSummary className={classes.feesTabResponsive}>
-                  <div className={classes.columnTime}>
-                    <Typography className={classes.primaryHeading}>{`${convertTime(
-                      item.startTime
-                    )} - ${convertTime(item.endTime)}`}</Typography>
-                  </div>
-                  <div className={classes.columnDays}>
-                    <Typography className={classes.heading}>
-                      {item.weekDay.toLowerCase()} &nbsp; | &nbsp;
+          (_item: GetDoctorDetails_getDoctorDetails_consultHours | null, index: number) => {
+            const item = _item!;
+            return (
+              <div key={index.toString()} className={classes.tabContent}>
+                <ExpansionPanel className={`${classes.serviceItem} ${classes.pointerNone}`}>
+                  <ExpansionPanelSummary className={classes.feesTabResponsive}>
+                    <div className={classes.columnTime}>
+                      <Typography className={classes.primaryHeading}>{`${convertTime(
+                        item.startTime
+                      )} - ${convertTime(item.endTime)}`}</Typography>
+                    </div>
+                    <div className={classes.columnDays}>
+                      <Typography className={classes.heading}>
+                        {item.weekDay.toLowerCase()} &nbsp; | &nbsp;
                         <span className={classes.cosultMode}>
-                        {item.consultMode === 'PHYSICAL' && 'Physical'}
-                        {item.consultMode === 'BOTH' && 'Physical , Online'}
-                        {item.consultMode === 'ONLINE' && 'Online'}
-                      </span>
-                    </Typography>
-                  </div>
-                  {item.consultType && <div className={classes.columnType}>(FIXED)</div>}
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.details}>
-                  <div>
-                    <div className={classes.column}>
-                      <Typography variant="h5">
-                        <form className={classes.timeForm}>
-                          Enter your preferred consult hours:
-                            <AphInput
-                            inputProps={{ type: 'text' }}
-                            value={convertTime(item.startTime)}
-                            className={classes.textField}
-                          />
-                          <span className={classes.timeDivider}> - </span>
-                          <AphInput
-                            inputProps={{ type: 'text' }}
-                            value={convertTime(item.endTime)}
-                            className={classes.textField}
-                          />
-                        </form>
-                        <br />
+                          {item.consultMode === 'PHYSICAL' && 'Physical'}
+                          {item.consultMode === 'BOTH' && 'Physical , Online'}
+                          {item.consultMode === 'ONLINE' && 'Online'}
+                        </span>
                       </Typography>
                     </div>
+                    {item.consultType && <div className={classes.columnType}>(FIXED)</div>}
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.details}>
                     <div>
-                      <div>
-                        <Typography variant="h5" className={classes.timeForm}>
-                          Which days you wish to apply these hours to?
-                          </Typography>
-                        <DaySelector selectedDays={item.weekDay} />
+                      <div className={classes.column}>
+                        <Typography variant="h5">
+                          <form className={classes.timeForm}>
+                            Enter your preferred consult hours:
+                            <AphInput
+                              inputProps={{ type: 'text' }}
+                              value={convertTime(item.startTime)}
+                              className={classes.textField}
+                            />
+                            <span className={classes.timeDivider}> - </span>
+                            <AphInput
+                              inputProps={{ type: 'text' }}
+                              value={convertTime(item.endTime)}
+                              className={classes.textField}
+                            />
+                          </form>
+                          <br />
+                        </Typography>
                       </div>
                       <div>
-                        <Typography variant="h5" className={classes.timeForm}>
-                          What type of consults will you be available for?
+                        <div>
+                          <Typography variant="h5" className={classes.timeForm}>
+                            Which days you wish to apply these hours to?
                           </Typography>
-                        <AphButton
-                          variant="contained"
-                          classes={
-                            item.consultMode === 'PHYSICAL'
-                              ? { root: classes.btnActive }
-                              : { root: classes.btnInactive }
-                          }
-                        >
-                          Physical
+                          <DaySelector selectedDays={item.weekDay} />
+                        </div>
+                        <div>
+                          <Typography variant="h5" className={classes.timeForm}>
+                            What type of consults will you be available for?
+                          </Typography>
+                          <AphButton
+                            variant="contained"
+                            classes={
+                              item.consultMode === 'PHYSICAL'
+                                ? { root: classes.btnActive }
+                                : { root: classes.btnInactive }
+                            }
+                          >
+                            Physical
                           </AphButton>
 
-                        <AphButton
-                          variant="contained"
-                          classes={
-                            item.consultMode === 'ONLINE'
-                              ? { root: classes.btnActive }
-                              : { root: classes.btnInactive }
-                          }
-                        >
-                          Online
+                          <AphButton
+                            variant="contained"
+                            classes={
+                              item.consultMode === 'ONLINE'
+                                ? { root: classes.btnActive }
+                                : { root: classes.btnInactive }
+                            }
+                          >
+                            Online
                           </AphButton>
-                      </div>
-                      <Typography className={classes.instructions}>
-                        Note: Any addition or modification to your consultation hours will take
-                        effect only after 24 hours.
+                        </div>
+                        <Typography className={classes.instructions}>
+                          Note: Any addition or modification to your consultation hours will take
+                          effect only after 24 hours.
                         </Typography>
-                      <Grid
-                        container
-                        alignItems="flex-start"
-                        spacing={0}
-                        className={classes.btnContainer}
-                      >
-                        <Grid item lg={12} sm={12} xs={12}>
-                          <AphButton
-                            variant="contained"
-                            color="primary"
-                            classes={{ root: classes.cancelBtn }}
-                          // onClick={() => onBack()}
-                          >
-                            CANCEL
+                        <Grid
+                          container
+                          alignItems="flex-start"
+                          spacing={0}
+                          className={classes.btnContainer}
+                        >
+                          <Grid item lg={12} sm={12} xs={12}>
+                            <AphButton
+                              variant="contained"
+                              color="primary"
+                              classes={{ root: classes.cancelBtn }}
+                              // onClick={() => onBack()}
+                            >
+                              CANCEL
                             </AphButton>
-                          <AphButton
-                            variant="contained"
-                            color="primary"
-                            classes={{ root: classes.saveBtn }}
-                          // onClick={() => onNext()}
-                          >
-                            SAVE
+                            <AphButton
+                              variant="contained"
+                              color="primary"
+                              classes={{ root: classes.saveBtn }}
+                              // onClick={() => onNext()}
+                            >
+                              SAVE
                             </AphButton>
+                          </Grid>
                         </Grid>
-                      </Grid>
+                      </div>
                     </div>
-                  </div>
-                </ExpansionPanelDetails>
-                <Divider />
-              </ExpansionPanel>
-            </div>
-          );
-        }
-      )
+                  </ExpansionPanelDetails>
+                  <Divider />
+                </ExpansionPanel>
+              </div>
+            );
+          }
+        )
       : '';
   return <div className={classes.ProfileContainer}>{AvailabilityHtml}</div>;
 };
