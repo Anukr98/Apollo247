@@ -17,6 +17,7 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { APPOINTMENT_STATE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -64,6 +65,12 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
         actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
       })
     );
+  };
+
+  const acceptChange = () => {
+    try {
+      props.reschduleDateTime ? props.acceptChange() : null;
+    } catch (error) {}
   };
 
   return (
@@ -274,9 +281,12 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                           const dateIsAfter = moment(props.appadatetime).isAfter(
                             moment(new Date())
                           );
-                          if (dateIsAfter) {
+                          if (
+                            props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                            dateIsAfter
+                          )
                             props.setdisplayoverlay();
-                          } else {
+                          else {
                             setBottompopup(true);
                             //props.setResheduleoverlay(false);
                             // Alert.alert(
@@ -301,11 +311,13 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       console.log('today', moment(new Date()));
                       const dateIsAfter = moment(props.appadatetime).isAfter(moment(new Date()));
                       console.log('changeslotbuttonconstion', dateIsAfter);
-                      if (dateIsAfter) {
-                        try {
-                          props.reschduleDateTime ? props.acceptChange() : null;
-                        } catch (error) {}
-                      } else {
+
+                      if (
+                        props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                        dateIsAfter
+                      )
+                        acceptChange();
+                      else {
                         // Alert.alert(
                         //   'Appointment cannot be rescheduled once it is past the scheduled time'
                         // );
