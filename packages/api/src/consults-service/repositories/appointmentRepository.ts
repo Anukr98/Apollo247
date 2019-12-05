@@ -72,7 +72,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   checkIfAppointmentExist(doctorId: string, appointmentDateTime: Date) {
-    return this.count({ where: { doctorId, appointmentDateTime, status: Not(STATUS.CANCELLED) } });
+    return this.count({
+      where: {
+        doctorId,
+        appointmentDateTime,
+        status: Not([STATUS.CANCELLED, STATUS.PAYMENT_PENDING]),
+      },
+    });
   }
 
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
