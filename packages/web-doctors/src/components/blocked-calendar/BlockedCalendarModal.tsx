@@ -1362,24 +1362,79 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               };
                               updateBlockedCalendarItem(updateArgs).catch(handleError);
                             } else if (durationSelected && selectedBlockOption === 'consulthours') {
-                              const addMultiArgs = {
-                                refetchQueries: [
-                                  {
-                                    query: GET_BLOCKED_CALENDAR,
-                                    variables: { doctorId },
-                                  },
-                                ],
-                                awaitRefetchQueries: true,
-                                variables: {
-                                  blockCalendarInputs: {
-                                    doctorId,
-                                    reason: '',
-                                    itemDetails: startEndList,
-                                  },
-                                },
-                              };
+                              if (start === end) {
+                                const [startHours, startMins] = chackedSingleValue.startTime.split(
+                                  ':'
+                                );
+                                let localhours = Number(startHours) + 5;
+                                let localMinuts = Number(startMins) + 30;
 
-                              BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                                if (localMinuts > 59) {
+                                  localMinuts = Number(localMinuts) - 60;
+                                  localhours = Number(localhours) + 1;
+                                  if (localhours > 23) {
+                                    localhours = 0;
+                                  }
+                                }
+
+                                startDate.setHours(parseInt(localhours.toString(), 10));
+                                startDate.setMinutes(parseInt(localMinuts.toString(), 10));
+                                const [endHours, endMins] = chackedSingleValue.endTime.split(':');
+                                let localEndhours = Number(endHours) + 5;
+                                let localEndMinuts = Number(endMins) + 30;
+
+                                if (localEndMinuts > 59) {
+                                  localEndMinuts = Number(localEndMinuts) - 60;
+                                  localEndhours = Number(localEndhours) + 1;
+                                  if (localEndhours > 23) {
+                                    localEndhours = 0;
+                                  }
+                                }
+                                endDate.setHours(parseInt(localEndhours.toString(), 10));
+                                endDate.setMinutes(parseInt(localEndMinuts.toString(), 10));
+
+                                const addMultiArgs = {
+                                  refetchQueries: [
+                                    {
+                                      query: GET_BLOCKED_CALENDAR,
+                                      variables: { doctorId },
+                                    },
+                                  ],
+                                  awaitRefetchQueries: true,
+                                  variables: {
+                                    blockCalendarInputs: {
+                                      doctorId,
+                                      reason: '',
+                                      itemDetails: [
+                                        {
+                                          start: startDate.toISOString(),
+                                          end: endDate.toISOString(),
+                                          consultMode: chackedSingleValue.consultMode,
+                                        },
+                                      ],
+                                    },
+                                  },
+                                };
+                                BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                              } else {
+                                const addMultiArgs = {
+                                  refetchQueries: [
+                                    {
+                                      query: GET_BLOCKED_CALENDAR,
+                                      variables: { doctorId },
+                                    },
+                                  ],
+                                  awaitRefetchQueries: true,
+                                  variables: {
+                                    blockCalendarInputs: {
+                                      doctorId,
+                                      reason: '',
+                                      itemDetails: startEndList,
+                                    },
+                                  },
+                                };
+                                BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                              }
                             } else if (selectedBlockOption === 'consulthours') {
                               if (selectedBlockOption === 'consulthours' && chackedSingleValue) {
                                 const [startHours, startMins] = chackedSingleValue.startTime.split(
