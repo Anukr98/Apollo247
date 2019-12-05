@@ -67,9 +67,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       (item) =>
         !(
           (item!.medicineOrdersStatus || []).length == 1 &&
-          (item!.medicineOrdersStatus || []).find(
-            (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
-          )
+          (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
         )
     );
     setOrders(filteredOrders);

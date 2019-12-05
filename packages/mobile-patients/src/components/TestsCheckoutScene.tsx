@@ -166,12 +166,12 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const [isCashOnDelivery, setCashOnDelivery] = useState(true);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
-  const [orderInfo, setOrderInfo] = useState({
-    pickupStoreName: '',
-    pickupStoreAddress: '',
-    orderId: '',
-    displayId: '',
-  });
+  // const [orderInfo, setOrderInfo] = useState({
+  //   pickupStoreName: '',
+  //   pickupStoreAddress: '',
+  //   orderId: '',
+  //   displayId: '',
+  // });
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
@@ -217,6 +217,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     });
 
   const initiateOrder = async () => {
+    setShowSpinner(true);
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
     const {
       slotStartTime,
@@ -227,7 +228,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       city, // ignore city for now from this and take from "locationForDiagnostics" context
       diagnosticBranchCode,
     } = diagnosticSlot || {};
-    setShowSpinner(true);
 
     const slotTimings = (slotStartTime && slotEndTime
       ? `${slotStartTime}-${slotEndTime}`
@@ -275,7 +275,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { orderInfo });
-    setShowSpinner(false);
     saveOrder(orderInfo)
       .then(({ data }) => {
         console.log('\nOrder-Success\n', { data });
@@ -295,13 +294,13 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           // Order-Success
           // Show popup here & clear info
           clearCartInfo && clearCartInfo();
-          setOrderInfo({
-            orderId: `${orderId}`,
-            displayId: `${displayId || orderId}`,
-            pickupStoreAddress: '',
-            pickupStoreName: '',
-          });
-          handleOrderSuccess();
+          // setOrderInfo({
+          //   orderId: `${orderId}`,
+          //   displayId: `${displayId || orderId}`,
+          //   pickupStoreAddress: '',
+          //   pickupStoreName: '',
+          // });
+          handleOrderSuccess(`${orderId}`, `${displayId}`);
         }
       })
       .catch((error) => {
@@ -521,16 +520,16 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     );
   };
 
-  const navigateToOrderDetails = (showOrderSummaryTab: boolean) => {
+  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     hideAphAlert!();
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
-      orderId: orderInfo.orderId,
+      orderId: orderId,
     });
   };
 
-  const handleOrderSuccess = () => {
+  const handleOrderSuccess = (orderId: string, displayId: string) => {
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -579,7 +578,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                 textAlign: 'right',
               }}
             >
-              {`#${orderInfo.displayId}`}
+              {`#${displayId}`}
             </Text>
           </View>
           <View
@@ -592,12 +591,15 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             }}
           />
           <View style={styles.popupButtonStyle}>
-            <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateToOrderDetails(true)}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => navigateToOrderDetails(true, orderId)}
+            >
               <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false)}
+              onPress={() => navigateToOrderDetails(false, orderId)}
             >
               <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
             </TouchableOpacity>

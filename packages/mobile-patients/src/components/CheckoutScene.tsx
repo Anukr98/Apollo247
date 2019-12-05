@@ -167,12 +167,12 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
-  const [orderInfo, setOrderInfo] = useState({
-    pickupStoreName: '',
-    pickupStoreAddress: '',
-    orderId: '',
-    orderAutoId: 0,
-  });
+  // const [orderInfo, setOrderInfo] = useState({
+  //   pickupStoreName: '',
+  //   pickupStoreAddress: '',
+  //   orderId: '',
+  //   orderAutoId: 0,
+  // });
   // const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
@@ -204,6 +204,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     });
 
   const placeOrder = (orderId: string, orderAutoId: number) => {
+    console.log('placeOrder\t', { orderId, orderAutoId });
     const paymentInfo: SaveMedicineOrderPaymentVariables = {
       medicinePaymentInput: {
         orderId: orderId,
@@ -220,6 +221,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     savePayment(paymentInfo)
       .then(({ data }) => {
         const { errorCode, errorMessage } = (g(data, 'SaveMedicineOrder') || {})!;
+        console.log({ data });
         console.log({ errorCode, errorMessage });
         setShowSpinner(false);
         if (errorCode || errorMessage) {
@@ -231,13 +233,13 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           clearCartInfo && clearCartInfo();
-          setOrderInfo({
-            orderId: orderId,
-            orderAutoId: orderAutoId,
-            pickupStoreAddress: '',
-            pickupStoreName: '',
-          });
-          handleOrderSuccess();
+          // setOrderInfo({
+          //   orderId: orderId!,
+          //   orderAutoId: orderAutoId!,
+          //   pickupStoreAddress: '',
+          //   pickupStoreName: '',
+          // });
+          handleOrderSuccess(`${orderAutoId}`);
         }
       })
       .catch((e) => {
@@ -321,6 +323,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         }
 
         if (isCashOnDelivery) {
+          console.log('isCashOnDelivery\t', { orderId, orderAutoId });
+
           placeOrder(orderId, orderAutoId);
         } else {
           console.log('Redirect To Payment Gateway');
@@ -335,16 +339,17 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       });
   };
 
-  const navigateToOrderDetails = (showOrderSummaryTab: boolean) => {
+  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderAutoId: string) => {
     hideAphAlert!();
     props.navigation.navigate(AppRoutes.OrderDetailsScene, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
-      orderAutoId: orderInfo.orderAutoId,
+      orderAutoId: orderAutoId,
     });
   };
 
-  const handleOrderSuccess = () => {
+  const handleOrderSuccess = (orderAutoId: string) => {
+    console.log('handleOrderSuccess\n', { orderAutoId });
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -393,7 +398,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                 textAlign: 'right',
               }}
             >
-              {`#${orderInfo.orderAutoId}`}
+              {`#${orderAutoId}`}
             </Text>
           </View>
           <View
@@ -435,12 +440,15 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               }}
             /> */}
           <View style={styles.popupButtonStyle}>
-            <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateToOrderDetails(true)}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => navigateToOrderDetails(true, orderAutoId)}
+            >
               <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false)}
+              onPress={() => navigateToOrderDetails(false, orderAutoId)}
             >
               <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
             </TouchableOpacity>

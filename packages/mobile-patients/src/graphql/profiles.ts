@@ -924,6 +924,7 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
           id
           orderStatus
           statusDate
+          hideStatus
         }
       }
     }

@@ -193,8 +193,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     fetchPolicy: 'cache-first',
   });
 
-  const _orders =
-    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
+  // Note: if hideStatus = true means display it, false measn hide it
+  const _orders = (
+    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
+    []
+  ).filter(
+    (item) =>
+      !(
+        (item!.medicineOrdersStatus || []).length == 1 &&
+        (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+      )
+  );
+  console.log('ORDERS\n', { _orders });
+
   // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
