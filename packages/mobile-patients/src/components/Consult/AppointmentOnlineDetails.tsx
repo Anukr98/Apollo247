@@ -33,7 +33,7 @@ import {
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 45,
     marginLeft: width - 120,
-    marginTop: 64,
+    marginTop: 40,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -443,15 +443,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    let showCancel =
-      (dateIsAfter &&
-        (data.status === STATUS.IN_PROGRESS &&
-          data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE)) ||
-      data.status == STATUS.NO_SHOW ||
-      false;
-    if (showCancel == false) {
-      showCancel = dateIsAfter;
-    }
+    const showCancel =
+      dateIsAfter && data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        ? true
+        : dateIsAfter;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -591,7 +586,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               height: height,
               width: width,
               flex: 1,
-              top: 0,
+              top: statusBarHeight(),
               left: 0,
               right: 0,
               bottom: 0,
