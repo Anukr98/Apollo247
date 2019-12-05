@@ -1115,6 +1115,7 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           id
           orderStatus
           statusDate
+          hideStatus
         }
         medicineOrderLineItems {
           medicineSKU
