@@ -140,11 +140,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
+  const vars: GetMedicineOrderDetailsVariables = {
+    patientId: currentPatient && currentPatient.id,
+    orderAutoId: orderAutoId,
+  };
+  console.log(JSON.stringify(vars));
   const { data, loading, refetch } = useQuery<
     GetMedicineOrderDetails,
     GetMedicineOrderDetailsVariables
   >(GET_MEDICINE_ORDER_DETAILS, {
-    variables: { patientId: currentPatient && currentPatient.id, orderAutoId: orderAutoId },
+    variables: vars,
   });
   const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
   console.log({ order });
@@ -152,7 +157,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderDetails = ((!loading && order) ||
     {}) as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
-    (item) => item!.orderStatus != MEDICINE_ORDER_STATUS.QUOTE
+    (item) => item!.hideStatus
   );
 
   const handleBack = async () => {
@@ -580,15 +585,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const onPressConfirmCancelOrder = () => {
     setShowSpinner(true);
+    const variables: saveOrderCancelStatusVariables = {
+      orderCancelInput: {
+        orderNo: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
+        remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0]!,
+      },
+    };
+
+    console.log(JSON.stringify(variables));
+
     client
       .mutate<saveOrderCancelStatus, saveOrderCancelStatusVariables>({
         mutation: SAVE_ORDER_CANCEL_STATUS,
-        variables: {
-          orderCancelInput: {
-            orderNo: orderAutoId,
-            remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0]!,
-          },
-        },
+        variables,
       })
       .then(({ data }) => {
         aphConsole.log({
@@ -610,7 +619,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               setInitialSate();
             });
           refetchOrders().then((data) => {
-            const _orders = g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || [];
+            const _orders = (
+              g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || []
+            ).filter(
+              (item) =>
+                !(
+                  (item!.medicineOrdersStatus || []).length == 1 &&
+                  (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+                )
+            );
             console.log(_orders, 'hdub');
             setOrders(_orders);
           });
