@@ -515,7 +515,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule ? 1 : dateIsAfter ? 1 : 0.5,
+                opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
               }}
               onPress={() => {
                 CommonLogEvent(
@@ -523,11 +523,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   'Reschdule_Appointment_Online_Details_Clicked'
                 );
                 try {
-                  isAwaitingReschedule
-                    ? NextAvailableSlotAPI()
-                    : dateIsAfter
-                    ? NextAvailableSlotAPI()
-                    : null;
+                  isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}
               }}
             />

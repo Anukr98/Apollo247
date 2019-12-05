@@ -281,11 +281,12 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                           const dateIsAfter = moment(props.appadatetime).isAfter(
                             moment(new Date())
                           );
-                          if (props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE)
+                          if (
+                            props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                            dateIsAfter
+                          )
                             props.setdisplayoverlay();
-                          else if (dateIsAfter) {
-                            props.setdisplayoverlay();
-                          } else {
+                          else {
                             setBottompopup(true);
                             //props.setResheduleoverlay(false);
                             // Alert.alert(
@@ -311,11 +312,12 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       const dateIsAfter = moment(props.appadatetime).isAfter(moment(new Date()));
                       console.log('changeslotbuttonconstion', dateIsAfter);
 
-                      if (props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE)
+                      if (
+                        props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                        dateIsAfter
+                      )
                         acceptChange();
-                      else if (dateIsAfter) {
-                        acceptChange();
-                      } else {
+                      else {
                         // Alert.alert(
                         //   'Appointment cannot be rescheduled once it is past the scheduled time'
                         // );
