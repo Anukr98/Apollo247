@@ -204,8 +204,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
         <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
         <InputField
           maxLength={3}
-          fromPlaceholder={'Discount in %'}
-          toPlaceholder={'Discount in %'}
+          fromPlaceholder={'Discount'}
+          toPlaceholder={'Discount'}
           fromValue={`${discount.from == undefined ? '' : discount.from}`}
           toValue={`${discount.to == undefined ? '' : discount.to}`}
           onFromChangeText={(text) => {
