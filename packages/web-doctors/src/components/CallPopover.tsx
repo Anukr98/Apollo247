@@ -715,21 +715,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           setRemainingCallTime(0);
           clearInterval(intervalcallId);
           if (patientMsgs.length === 0) {
-            noShowAction();
+            noShowAction(STATUS.NO_SHOW);
           }
         }
       }
     }, 1000);
   };
 
-  const noShowAction = () => {
+  const noShowAction = (status: STATUS) => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
         mutation: END_APPOINTMENT_SESSION,
         variables: {
           endAppointmentSessionInput: {
             appointmentId: props.appointmentId,
-            status: STATUS.NO_SHOW,
+            status: status,
             noShowBy: REQUEST_ROLES.PATIENT,
           },
         },
@@ -737,9 +737,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       })
       .then((_data) => {
         unSubscribeBrowserButtonsListener();
-        alert('Since the patient has not joined the chat, we are rescheduling the appointment.');
-        if (document.getElementById('homeId')) {
-          document.getElementById('homeId')!.click();
+        if (status === STATUS.NO_SHOW) {
+          alert(
+            'Since the patient is not responding from last 3 mins, we are rescheduling this appointment.'
+          );
         }
         window.location.href = clientRoutes.calendar();
       })
@@ -1218,26 +1219,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     console.log(props.presenceEventObject);
     const presenceEventObject = props.presenceEventObject;
     if (presenceEventObject && isConsultStarted) {
-      console.log(presenceEventObject);
-      // const data: any = presenceEventObject.channels[props.appointmentId].occupants;
-      // const occupancyPatient = data.filter((obj: any) => {
-      //   return obj.uuid === REQUEST_ROLES.PATIENT;
-      // });
-      // console.log(abondmentStarted, 'abondmentStarted');
-      // console.log(occupancyPatient, 'occupancyPatient');
-      // if (presenceEventObject.totalOccupancy >= 2) {
-      //   didPatientJoined = true;
-      //   clearInterval(intervalCallAbundant);
-      //   abondmentStarted = false;
-      // } else {
-      //   if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-      //     if (!abondmentStarted && didPatientJoined) {
-      //       abondmentStarted = true;
-      //       callAbundantIntervalTimer(200);
-      //       // eventsAfterConnectionDestroyed();
-      //     }
-      //   }
-      // }
+      console.log('presenceEventObject', presenceEventObject);
+      const data: any = presenceEventObject.channels[props.appointmentId].occupants;
+      const occupancyPatient = data.filter((obj: any) => {
+        return obj.uuid === REQUEST_ROLES.PATIENT;
+      });
+      console.log(abondmentStarted, 'abondmentStarted');
+      console.log(occupancyPatient, 'occupancyPatient');
+      if (presenceEventObject.totalOccupancy >= 2) {
+        didPatientJoined = true;
+        clearInterval(intervalCallAbundant);
+        abondmentStarted = false;
+      } else {
+        if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
+          if (!abondmentStarted && didPatientJoined) {
+            abondmentStarted = true;
+            callAbundantIntervalTimer(200);
+            // eventsAfterConnectionDestroyed();
+          }
+        }
+      }
     }
   }, [props.presenceEventObject]);
   const onStartConsult = () => {
@@ -2218,7 +2219,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <Button
               className={classes.consultButton}
               onClick={() => {
-                noShowAction();
+                noShowAction(STATUS.CALL_ABANDON);
               }}
             >
               Reschedule
