@@ -87,10 +87,8 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism auth token
   async getPrismAuthToken(mobileNumber: string) {
-    //setting mobile number to static value in local/dev env prism calls
-    if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-      mobileNumber = '8019677178';
-    }
+    //setting mobile number to static value in non-production environments
+    mobileNumber = process.env.NODE_ENV === 'production' ? mobileNumber : '8019677178';
 
     const prismHeaders = {
       method: 'GET',
@@ -113,10 +111,8 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
-    //setting mobile number to static value in local/dev environments
-    if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-      mobileNumber = '8019677178';
-    }
+    //setting mobile number to static value in non-production environments
+    mobileNumber = process.env.NODE_ENV === 'production' ? mobileNumber : '8019677178';
 
     const prismHeaders = {
       method: 'GET',
@@ -181,10 +177,8 @@ export class PatientRepository extends Repository<Patient> {
       uhid = matchedUser.length > 0 ? matchedUser[0].UHID : null;
     }
 
-    //setting mobile number to static value in local/dev environments
-    if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-      uhid = 'AHB.0000724284';
-    }
+    //setting mobile number to static value in non-production environments
+    uhid = process.env.NODE_ENV === 'production' ? uhid : 'AHB.0000724284';
 
     return uhid;
   }
