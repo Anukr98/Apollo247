@@ -1009,11 +1009,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
-  console.log(
-    moment()
-      .format('dddd')
-      .toUpperCase()
-  );
+
   const startConstultCheck = () => {
     const selectedDay = moment()
       .format('dddd')
