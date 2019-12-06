@@ -77,9 +77,9 @@ type AddMedicalRecordInput = {
 type AddMedicalRecordParametersInput = {
   parameterName: string;
   unit: MedicalTestUnit;
-  result: string;
-  minimum: string;
-  maximum: string;
+  result: number;
+  minimum: number;
+  maximum: number;
 };
 
 type MedicalRecordInputArgs = { addMedicalRecordInput: AddMedicalRecordInput };
