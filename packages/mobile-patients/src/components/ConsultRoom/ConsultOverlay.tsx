@@ -199,7 +199,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       }`
     );
     getNetStatus().then((status) => {
-      setdisablePay(true);
+      // setdisablePay(true);
       if (status) {
         if (props.FollowUp == false) {
           const timeSlot =
