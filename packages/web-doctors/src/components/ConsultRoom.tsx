@@ -606,7 +606,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
   const convertChatTime = (timeStamp: any) => {
-    console.log(timeStamp);
     let utcString;
     if (timeStamp) {
       const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
