@@ -434,6 +434,17 @@ export const ConsultTabs: React.FC = () => {
         console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
+        if (
+          message.message.url &&
+          message.message.fileType &&
+          message.message.fileType === 'image'
+        ) {
+          const data = {
+            documentPath: message.message.url,
+          };
+          setDocumentArray(data);
+        }
+
         setLastMsg(message);
       },
       presence(presenceEvent: any) {
