@@ -2175,7 +2175,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </Text>
             </View>
           )}
-          {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
+          {/* {checkReschudule && reschduleLoadView(rowData, index, 'Followup')} */}
         </View>
       </>
     );
