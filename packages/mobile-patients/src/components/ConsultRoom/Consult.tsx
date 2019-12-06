@@ -333,7 +333,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        // console.log(data, 'GET_PATIENT_APPOINTMENTS');
+        console.log(data, 'GET_PATIENT_APPOINTMENTS');
         if (
           data &&
           data.getPatinetAppointments &&

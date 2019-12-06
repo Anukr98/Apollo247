@@ -541,7 +541,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const appointmentData = _data.data.getAppointmentData.appointmentsHistory;
           if (appointmentData) {
             switch (notificationType) {
-              case 'Reschedule-Appointment':
+              case 'Reschedule_Appointment':
                 {
                   appointmentData[0].appointmentType === 'ONLINE'
                     ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {

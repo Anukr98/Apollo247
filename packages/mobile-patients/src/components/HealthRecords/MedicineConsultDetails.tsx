@@ -113,7 +113,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { loading, setLoading } = useUIElements();
 
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
-  //console.log('a', data);
+  console.log('a', data);
   const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
   // const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
@@ -156,12 +156,12 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   }, []);
 
   const addToCart = () => {
-    if (!data.medicineSKU) {
+    if (data && !data.medicineSKU) {
       Alert.alert('Alert', 'Item not available.');
       return;
     }
     setLoading && setLoading(true);
-    getMedicineDetailsApi(data.medicineSKU)
+    getMedicineDetailsApi(data && data.medicineSKU)
       .then(({ data: { productdp } }) => {
         setLoading && setLoading(false);
         const medicineDetails = (productdp && productdp[0]) || {};
@@ -256,14 +256,17 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
 
                         for (var i = 0; i < arr.length; i++) {
                           if (Platform.OS === 'ios') {
-                            try {
-                              CameraRoll.saveToCameraRoll(arr[i]);
-                              Alert.alert('Download Completed');
-                              CommonLogEvent(
-                                'MEDICINE_CONSULT_DETAILS',
-                                'Download compelete for Prescription'
-                              );
-                            } catch {}
+                            Linking.openURL(arr[i]).catch((err) =>
+                              console.error('An error occurred', err)
+                            );
+                            // try {
+                            //   CameraRoll.saveToCameraRoll(arr[i]);
+                            //   Alert.alert('Download Completed');
+                            //   CommonLogEvent(
+                            //     'MEDICINE_CONSULT_DETAILS',
+                            //     'Download compelete for Prescription'
+                            //   );
+                            // } catch {}
                           } else {
                             Linking.openURL(arr[i]).catch((err) =>
                               console.error('An error occurred', err)
@@ -325,7 +328,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             <Text
               style={{ ...theme.fonts.IBMPlexSansSemiBold(23), color: '#02475b', marginBottom: 4 }}
             >
-              {data.medicineName}
+              {data === 'Prescription uploaded by Patient'
+                ? 'Prescription uploaded by Patient'
+                : data && data.medicineName}
             </Text>
             <Text
               style={{
@@ -353,24 +358,26 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             </View>
           ))}
         </ScrollView>
-        <View
-          style={{
-            marginLeft: 20,
-            marginRight: 20,
-            flex: 1,
-            justifyContent: 'flex-end',
-            marginBottom: 36,
-          }}
-        >
-          <Button
-            title="RE-ORDER MEDICINES"
-            disabled={data.medicineSKU == null ? true : false}
-            onPress={() => {
-              addToCart();
-              CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
+        {data && (
+          <View
+            style={{
+              marginLeft: 20,
+              marginRight: 20,
+              flex: 1,
+              justifyContent: 'flex-end',
+              marginBottom: 36,
             }}
-          />
-        </View>
+          >
+            <Button
+              title="RE-ORDER MEDICINES"
+              disabled={data && data.medicineSKU == null ? true : false}
+              onPress={() => {
+                addToCart();
+                CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
+              }}
+            />
+          </View>
+        )}
       </SafeAreaView>
     </View>
   );
