@@ -433,7 +433,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.onlineConsultLabel}>Online Consult</Text>
                   <Text style={styles.onlineConsultAmount}>
-                    Rs. {doctorDetails.onlineConsultationFees}
+                    {/* Rs. {doctorDetails.onlineConsultationFees} */}
+                    <Text
+                      style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}
+                    >
+                      (Rs. 999)
+                    </Text>{' '}
+                    Rs. 1
                   </Text>
                   <AvailabilityCapsule availableTime={availableTime} />
                 </View>
