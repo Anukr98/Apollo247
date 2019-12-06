@@ -174,7 +174,7 @@ const uploadChatDocumentToPrism: Resolver<
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
 
   //check if current user uhid matches with response uhids
-  let uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
 
   if (!uhid) {
     return { status: false, fileId: '' };

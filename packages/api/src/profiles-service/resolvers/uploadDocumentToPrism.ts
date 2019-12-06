@@ -65,7 +65,7 @@ const uploadDocument: Resolver<
   console.log(prismUserList);
 
   //check if current user uhid matches with response uhids
-  let uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
+  const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
 
   if (!uhid) {
     return { status: false, fileId: '', filePath: blobUrl };
