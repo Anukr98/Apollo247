@@ -1363,7 +1363,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
             aria-describedby={id}
             disabled={
               disableOnCancel ||
-              appointmentInfo!.appointmentState !== 'NEW' ||
+              (appointmentInfo!.appointmentState !== 'NEW' &&
+                appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
               (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 appointmentInfo!.status !== STATUS.PENDING)
             }
@@ -1377,7 +1378,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
             disabled={
               // startAppointmentButton ||
               disableOnCancel ||
-              appointmentInfo!.appointmentState !== 'NEW' ||
+              (appointmentInfo!.appointmentState !== 'NEW' &&
+                appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
               (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 appointmentInfo!.status !== STATUS.PENDING)
             }

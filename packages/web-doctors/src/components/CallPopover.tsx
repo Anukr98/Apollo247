@@ -38,6 +38,7 @@ import {
   STATUS,
   DoctorType,
 } from 'graphql/types/globalTypes';
+import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { END_CALL_NOTIFICATION } from 'graphql/consults';
 import {
@@ -1008,14 +1009,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
+
   const startConstultCheck = () => {
+    const selectedDay = moment()
+      .format('dddd')
+      .toUpperCase();
+    const consultHours = currentDoctor && currentDoctor.consultHours;
+    let duration = 15;
+    if (consultHours) {
+      const filteredDay =
+        consultHours &&
+        _.filter(consultHours, function(o) {
+          if (o && o.weekDay) {
+            return o.weekDay === selectedDay;
+          }
+        });
+      const consultDurationDay: any =
+        filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
+      duration =
+        consultDurationDay &&
+        Object.keys(consultDurationDay).length !== 0 &&
+        consultDurationDay.consultDuration
+          ? consultDurationDay.consultDuration
+          : 15;
+    }
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
     const disableyear = disableconsult.getFullYear();
     const disablemonth = disableconsult.getMonth() + 1;
     const disableday = disableconsult.getDate();
     let disablehour = disableconsult.getHours();
-    let disableminute = disableconsult.getMinutes() + 15;
+    //let disableminute = disableconsult.getMinutes() + 15;
+    let disableminute = disableconsult.getMinutes() + duration;
     const minusTime = new Date(disableconsult.getTime() - 15 * 60000);
     const disablesecond = disableconsult.getSeconds();
     if (disableminute > 59) {
