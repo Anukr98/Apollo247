@@ -87,12 +87,16 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism auth token
   async getPrismAuthToken(mobileNumber: string) {
+    //setting mobile number to static value in local/dev env prism calls
+    if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
+      mobileNumber = '8019677178';
+    }
+
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    mobileNumber = '8019677178';
     const url = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
     const msg = `External_API_Call: ${url}`;
     const authTokenResult = await fetch(url, prismHeaders)
@@ -109,7 +113,11 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
-    mobileNumber = '8019677178';
+    //setting mobile number to static value in local/dev environments
+    if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
+      mobileNumber = '8019677178';
+    }
+
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
@@ -167,11 +175,15 @@ export class PatientRepository extends Repository<Patient> {
       (patientData.uhid === null || patientData.uhid === '') &&
       patientData.firstName.trim() !== ''
     ) {
-      const createUhidResponse = await this.createNewUhid(patientData.id);
-      uhid = createUhidResponse;
+      uhid = await this.createNewUhid(patientData.id);
     } else {
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
-      uhid = matchedUser.length > 0 ? matchedUser[0].UHID : 'AHB.0000724284';
+      uhid = matchedUser.length > 0 ? matchedUser[0].UHID : null;
+    }
+
+    //setting mobile number to static value in local/dev environments
+    if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
+      uhid = 'AHB.0000724284';
     }
 
     return uhid;
@@ -446,9 +458,7 @@ export class PatientRepository extends Repository<Patient> {
 
     const textProcessRes = await uhidCreateResp.text();
     this.createLog(msg, 'createNewUhid->response', textProcessRes, '');
-    console.log('textProcessRes', textProcessRes);
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
-    console.log(uhidResp, 'uhid resp');
     this.updateUhid(id, uhidResp.result.toString());
     return uhidResp.result;
   }

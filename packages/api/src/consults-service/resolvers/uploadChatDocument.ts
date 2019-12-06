@@ -180,9 +180,6 @@ const uploadChatDocumentToPrism: Resolver<
     return { status: false, fileId: '' };
   }
 
-  //remove below line for prod: static code to be removed
-  uhid = 'AHB.0000724284';
-
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
 
