@@ -1077,7 +1077,9 @@ export const ConsultTabs: React.FC = () => {
       });
       // convert itemName to itemname
       diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
-        return { itemname: prescription.itemName };
+        return {
+          itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
+        };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
