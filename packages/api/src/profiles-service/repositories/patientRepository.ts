@@ -260,6 +260,8 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
+    const url = `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
     const labResults = await fetch(
       `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`,
       prismHeaders
@@ -268,8 +270,11 @@ export class PatientRepository extends Repository<Patient> {
         return res.json();
       })
       .catch((error) => {
+        this.createLog(msg, 'getPatientLabResults->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
+
+    this.createLog(msg, 'getPatientLabResults->response', JSON.stringify(labResults), '');
 
     return labResults.errorCode == '0' ? labResults.response : [];
   }
@@ -280,16 +285,18 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    const healthChecks = await fetch(
-      `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`,
-      prismHeaders
-    )
+    const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
+    const healthChecks = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
+        this.createLog(msg, 'getPatientHealthChecks->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
+
+    this.createLog(msg, 'getPatientHealthChecks->response', JSON.stringify(healthChecks), '');
 
     return healthChecks.errorCode == '0' ? healthChecks.response : [];
   }
@@ -300,16 +307,23 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    const hospitalizations = await fetch(
-      `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`,
-      prismHeaders
-    )
+    const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
+    const hospitalizations = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
+        this.createLog(msg, 'getPatientHospitalizations->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
+
+    this.createLog(
+      msg,
+      'getPatientHospitalizations->response',
+      JSON.stringify(hospitalizations),
+      ''
+    );
 
     return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
   }
