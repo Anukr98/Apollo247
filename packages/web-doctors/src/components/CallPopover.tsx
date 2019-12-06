@@ -704,8 +704,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
-      console.log(didPatientJoined);
-      if (!didPatientJoined) {
+      console.log(didPatientJoined, props.appointmentStatus);
+      if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED) {
         timer = timer - 1;
         console.log(timer, 'no_show');
         stoppedTimerCall = timer;
@@ -1151,14 +1151,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     console.log(props.presenceEventObject);
     const presenceEventObject = props.presenceEventObject;
-    if (presenceEventObject && isConsultStarted) {
-      console.log('presenceEventObject', presenceEventObject);
+    if (presenceEventObject && isConsultStarted && props.appointmentStatus !== STATUS.COMPLETED) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
       const occupancyPatient = data.filter((obj: any) => {
         return obj.uuid === REQUEST_ROLES.PATIENT;
       });
-      console.log(abondmentStarted, 'abondmentStarted');
-      console.log(occupancyPatient, 'occupancyPatient');
       if (presenceEventObject.totalOccupancy >= 2) {
         didPatientJoined = true;
         clearInterval(intervalCallAbundant);
