@@ -191,7 +191,9 @@ const dataAdapter = (
       const consultDurationDay: any =
         filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
       const timeDuration =
-        consultDurationDay && consultDurationDay.length > 0 && consultDurationDay.consultDuration
+        consultDurationDay &&
+        Object.keys(consultDurationDay).length !== 0 &&
+        consultDurationDay.consultDuration
           ? consultDurationDay.consultDuration
           : 15;
       const endTime = getTime(addMinutes(startTime, timeDuration));

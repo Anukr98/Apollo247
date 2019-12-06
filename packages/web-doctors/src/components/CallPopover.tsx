@@ -745,7 +745,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             'Since the patient is not responding from last 3 mins, we are rescheduling this appointment.'
           );
         }
-        window.location.href = clientRoutes.calendar();
+        navigateToCalendar();
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -1387,26 +1387,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         },
       })
       .then((_data) => {
-        const rescheduledDateTime =
-          (_data &&
-            _data.data &&
-            _data.data.initiateRescheduleAppointment &&
-            _data.data.initiateRescheduleAppointment.rescheduleAppointment &&
-            _data.data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime) ||
-          '';
-        const rescheduleCount =
-          (_data &&
-            _data.data &&
-            _data.data.initiateRescheduleAppointment &&
-            _data.data.initiateRescheduleAppointment.rescheduleCount) ||
-          0;
-        const reschduleId =
-          (_data &&
-            _data.data &&
-            _data.data.initiateRescheduleAppointment &&
-            _data.data.initiateRescheduleAppointment.rescheduleAppointment &&
-            _data.data.initiateRescheduleAppointment.rescheduleAppointment.id) ||
-          '';
+        let rescheduledDateTime = '';
+        let rescheduleCount = 0;
+        let reschduleId = '';
+        if (_data && _data.data && _data.data.initiateRescheduleAppointment) {
+          if (_data.data.initiateRescheduleAppointment.rescheduleAppointment) {
+            rescheduledDateTime =
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime ||
+              '';
+            reschduleId = _data.data.initiateRescheduleAppointment.rescheduleAppointment.id || '';
+          }
+          rescheduleCount = _data.data.initiateRescheduleAppointment.rescheduleCount || 0;
+        }
         const reschduleObject: any = {
           appointmentId: props.appointmentId,
           transferDateTime: rescheduledDateTime,
@@ -1415,7 +1407,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           doctorInfo: currentPatient,
           reschduleId: reschduleId,
         };
-
         pubnub.publish(
           {
             message: {
@@ -1433,9 +1424,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
         setIsPopoverOpen(false);
         setDisableOnCancel(true);
-        if (document.getElementById('homeId')) {
-          document.getElementById('homeId')!.click();
-        }
+        navigateToCalendar();
       })
       .catch((e) => {
         //setIsLoading(false);
@@ -2048,9 +2037,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         (status: any, response: any) => {}
                       );
-                      if (document.getElementById('homeId')) {
-                        document.getElementById('homeId')!.click();
-                      }
+                      navigateToCalendar();
                     })
                     .catch((e: ApolloError) => {
                       setCancelError(e.graphQLErrors[0].message);
@@ -2145,10 +2132,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       (status: any, response: any) => {}
                     );
-                    if (document.getElementById('homeId')) {
-                      document.getElementById('homeId')!.click();
-                    }
-                    //window.location.href = clientRoutes.calendar();
+                    navigateToCalendar();
                   })
                   .catch((e: ApolloError) => {
                     setCancelError(e.graphQLErrors[0].message);
