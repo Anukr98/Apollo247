@@ -11,7 +11,6 @@ import {
   FormHelperText,
 } from '@material-ui/core';
 import { Prompt, Link } from 'react-router-dom';
-//import Pubnub from "pubnub";
 import moment from 'moment';
 import { isEmpty } from 'lodash';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
@@ -705,8 +704,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
-      console.log(didPatientJoined);
-      if (!didPatientJoined) {
+      const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
+      console.log(didPatientJoined, props.appointmentStatus, isAfter);
+      if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
         console.log(timer, 'no_show');
         stoppedTimerCall = timer;
@@ -718,6 +718,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             noShowAction(STATUS.NO_SHOW);
           }
         }
+      } else {
+        clearInterval(intervalcallId);
       }
     }, 1000);
   };
@@ -860,7 +862,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const sendStopCallNotificationFn = () => {
     const doctorCallId = getCookieValue('doctorCallId');
-    console.log(doctorCallId);
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
@@ -1072,23 +1073,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
   const channel = props.appointmentId;
-  // const subscribekey: string = process.env.SUBSCRIBE_KEY
-  //   ? process.env.SUBSCRIBE_KEY
-  //   : "";
-  // const publishkey: string = process.env.PUBLISH_KEY
-  //   ? process.env.PUBLISH_KEY
-  //   : "";
-  // const config: Pubnub.PubnubConfig = {
-  //   subscribeKey: subscribekey,
-  //   publishKey: publishkey,
-  //   ssl: true
-  // };
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
   useEffect(() => {
     if (props.urlToPatient) {
       onStopConsult();
-      // props.startAppointmentClick(!props.startAppointment);
-      // setStartAppointmentButton(true);
     }
   }, [props.urlToPatient]);
   useEffect(() => {
@@ -1118,59 +1106,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = props.pubnub;
 
   useEffect(() => {
-    // pubnub.subscribe({
-    //   channels: [channel],
-    //   withPresence: true
-    // });
-    // pubnub.addListener({
-    //   status(statusEvent: any) {},
-    //   message(message: any) {
-    //     console.log(message.message);
-    //     if (
-    //       !showVideoChat &&
-    //       message.message.message !== videoCallMsg &&
-    //       message.message.message !== audioCallMsg &&
-    //       message.message.message !== stopcallMsg &&
-    //       message.message.message !== acceptcallMsg &&
-    //       message.message.message !== transferconsult &&
-    //       message.message.message !== rescheduleconsult &&
-    //       message.message.message !== followupconsult &&
-    //       message.message.message !== startConsult &&
-    //       message.message.message !== patientConsultStarted &&
-    //       message.message.message !== firstMessage &&
-    //       message.message.message !== secondMessage &&
-    //       message.message.message !== covertVideoMsg &&
-    //       message.message.message !== covertAudioMsg &&
-    //       message.message.message !== cancelConsultInitiated
-    //     ) {
-    //       setIsNewMsg(true);
-    //     } else {
-    //       setIsNewMsg(false);
-    //     }
-    //     if (
-    //       !props.startAppointment &&
-    //       message.message.id === params.patientId
-    //     ) {
-    //       patientMsgs.push(message.message.message);
-    //     }
-    //     if (message.message && message.message.message === acceptcallMsg) {
-    //       patientMsgs.push(message.message.message);
-    //       setIsCallAccepted(true);
-    //       clearInterval(intervalMissCall);
-    //       missedCallCounter = 0;
-    //     }
-    //   },
-    //   presence(presenceEvent: any) {
-    //     console.log(presenceEvent, isConsultStarted);
-    //     if (presenceEvent.occupancy === 1 && isConsultStarted) {
-    //       callAbundantIntervalTimer(30);
-    //     } else {
-    //       clearInterval(intervalCallAbundant);
-    //     }
-    //   }
-    // });
     return function cleanup() {
-      //pubnub.unsubscribe({ channels: [channel] });
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
       //clearInterval(timerIntervalId);
@@ -1214,18 +1150,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }
   }, [props.lastMsg]);
-
+  // console.log(
+  //   moment(new Date()),
+  //   moment(props.appointmentDateTime),
+  //   moment(new Date()).isAfter(moment(props.appointmentDateTime))
+  // );
   useEffect(() => {
-    console.log(props.presenceEventObject);
+    const apptDatetime = moment(new Date(props.appointmentDateTime)).format('YYYY-MM-DD HH:mm:ss');
+    const todayDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const presenceEventObject = props.presenceEventObject;
-    if (presenceEventObject && isConsultStarted) {
-      console.log('presenceEventObject', presenceEventObject);
+    if (presenceEventObject && isConsultStarted && props.appointmentStatus !== STATUS.COMPLETED) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
       const occupancyPatient = data.filter((obj: any) => {
         return obj.uuid === REQUEST_ROLES.PATIENT;
       });
-      console.log(abondmentStarted, 'abondmentStarted');
-      console.log(occupancyPatient, 'occupancyPatient');
       if (presenceEventObject.totalOccupancy >= 2) {
         didPatientJoined = true;
         clearInterval(intervalCallAbundant);
