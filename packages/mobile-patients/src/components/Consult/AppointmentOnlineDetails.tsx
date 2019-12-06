@@ -188,7 +188,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-  const [completedStatus, setCompletedStatus] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -522,7 +521,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 console.log(data.status, 'statis');
 
                 if (data.status == STATUS.COMPLETED) {
-                  setCompletedStatus(true);
+                  showAphAlert!({
+                    title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+                    description: 'Opps ! Already the appointment is completed',
+                  });
                 } else {
                   CommonLogEvent(
                     AppRoutes.AppointmentOnlineDetails,
@@ -579,32 +581,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             </View>
           </BottomPopUp>
         )}
-        {completedStatus && (
-          <BottomPopUp title={'Hi:)'} description="Opps ! Already the appointment is completed">
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <TouchableOpacity
-                style={{
-                  height: 60,
-                  paddingRight: 25,
-                  backgroundColor: 'transparent',
-                }}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'SELECTED_SLOT_ISSUE_Clicked');
-                  setCompletedStatus(false);
-                }}
-              >
-                <Text
-                  style={{
-                    paddingTop: 16,
-                    ...theme.viewStyles.yellowTextStyle,
-                  }}
-                >
-                  OK, GOT IT
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </BottomPopUp>
-        )}
+
         {cancelAppointment && (
           <View
             style={{
