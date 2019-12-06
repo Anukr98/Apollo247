@@ -402,9 +402,9 @@ export const CasesheetView: React.FC = (props) => {
               <div className={classes.sectionHeader}>Diagnostic Tests</div>
               <div className={classes.medicationList}>
                 <ol>
-                  {diagnosticPrescription.map((prescription) => (
-                    <li>{prescription.itemname}</li>
-                  ))}
+                  {diagnosticPrescription.map(
+                    (prescription) => prescription.itemname && <li>{prescription.itemname}</li>
+                  )}
                 </ol>
               </div>
             </>
@@ -415,8 +415,11 @@ export const CasesheetView: React.FC = (props) => {
                 <>
                   <div className={classes.sectionHeader}>Advice Given</div>
                   <div className={classes.advice}>
-                    {otherInstructions.map((instruction) => (
-                      <span>{instruction.instruction}</span>
+                    {otherInstructions.map((instruction, index) => (
+                      <span>
+                        {`${instruction.instruction}`}
+                        {index < otherInstructions.length - 1 && ','}
+                      </span>
                     ))}
                   </div>
                 </>
