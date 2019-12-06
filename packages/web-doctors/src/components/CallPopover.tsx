@@ -2001,9 +2001,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       if (showVideo) {
                         stopAudioVideoCall();
                       }
+                      unSubscribeBrowserButtonsListener();
                       setIsCancelPopoverOpen(false);
                       cancelConsultAction();
-                      unSubscribeBrowserButtonsListener();
                       const text = {
                         id: props.doctorId,
                         message: cancelConsultInitiated,
