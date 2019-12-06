@@ -279,7 +279,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
         );
       } else {
-        setpincode(locationDetails.pincode);
+        validateAndSetPincode(locationDetails.pincode);
       }
     }
   }, []);
@@ -292,7 +292,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressLine1 &&
     // addressLine1.length > 1 &&
     pincode &&
-    pincode.length == 6 &&
+    pincode.length === 6 &&
     city &&
     city.length > 1 &&
     state &&

@@ -115,7 +115,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!currentPatient) {
+    if (!currentPatient || !currentPatient.uhid) {
       getPatientApiCall();
     }
     currentPatient && setprofileDetails(currentPatient);
