@@ -260,11 +260,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         )}
         {caseSheetDetails && caseSheetDetails.followUp ? (
           <View>
-            <Text style={styles.descriptionStyle}>
+            {/* <Text style={styles.descriptionStyle}>
               This is a follow-up consult to the {props.navigation.state.params!.appointmentType}{' '}
               Visit on{' '}
               {caseSheetDetails && moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}
-            </Text>
+            </Text> */}
             <Text
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
               onPress={() => {

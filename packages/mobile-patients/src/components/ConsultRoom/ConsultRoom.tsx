@@ -284,11 +284,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .getToken()
       .then((token) => {
         console.log('token', token);
+        console.log('DeviceInfo', DeviceInfo);
         if (token !== deviceToken2.deviceToken) {
           const input = {
             deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
             deviceToken: token,
-            deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
+            deviceOS: '',
+            // deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
             patientId: currentPatient ? currentPatient.id : '',
           };
           console.log('input', input);

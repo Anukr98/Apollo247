@@ -156,7 +156,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
-
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -532,13 +531,20 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
               }}
               onPress={() => {
-                CommonLogEvent(
-                  AppRoutes.AppointmentDetails,
-                  'RESCHEDULE APPOINTMENT DETAILS CLICKED'
-                );
-                try {
-                  isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
-                } catch (error) {}
+                if (data.status == STATUS.COMPLETED) {
+                  showAphAlert!({
+                    title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+                    description: 'Opps ! Already the appointment is completed',
+                  });
+                } else {
+                  CommonLogEvent(
+                    AppRoutes.AppointmentDetails,
+                    'RESCHEDULE APPOINTMENT DETAILS CLICKED'
+                  );
+                  try {
+                    isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
+                  } catch (error) {}
+                }
               }}
             />
             {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
@@ -589,6 +595,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
+
         {cancelAppointment && (
           <View
             style={{

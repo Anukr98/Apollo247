@@ -518,13 +518,22 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
               }}
               onPress={() => {
-                CommonLogEvent(
-                  AppRoutes.AppointmentOnlineDetails,
-                  'Reschdule_Appointment_Online_Details_Clicked'
-                );
-                try {
-                  isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
-                } catch (error) {}
+                console.log(data.status, 'statis');
+
+                if (data.status == STATUS.COMPLETED) {
+                  showAphAlert!({
+                    title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+                    description: 'Opps ! Already the appointment is completed',
+                  });
+                } else {
+                  CommonLogEvent(
+                    AppRoutes.AppointmentOnlineDetails,
+                    'Reschdule_Appointment_Online_Details_Clicked'
+                  );
+                  try {
+                    isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
+                  } catch (error) {}
+                }
               }}
             />
             {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
@@ -572,6 +581,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             </View>
           </BottomPopUp>
         )}
+
         {cancelAppointment && (
           <View
             style={{
