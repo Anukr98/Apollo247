@@ -1064,6 +1064,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       ':' +
       disablesecond;
     const disableaddedTime = new Date(disableaddedMinutes);
+    const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
+    const curTm1 = new Date().toISOString();
+
+    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19)) {
+      clearInterval(intervalcallId);
+      callIntervalTimer(180);
+    }
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
@@ -1183,8 +1190,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   //   moment(new Date()).isAfter(moment(props.appointmentDateTime))
   // );
   useEffect(() => {
-    const apptDatetime = moment(new Date(props.appointmentDateTime)).format('YYYY-MM-DD HH:mm:ss');
-    const todayDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const presenceEventObject = props.presenceEventObject;
     if (presenceEventObject && isConsultStarted && props.appointmentStatus !== STATUS.COMPLETED) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
