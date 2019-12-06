@@ -904,9 +904,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
-    let conDuration = 0;
     if (timeSlot.length > 0) {
-      conDuration = timeSlot[0].consultDuration;
       const duration = Math.floor(60 / timeSlot[0].consultDuration);
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
@@ -939,7 +937,6 @@ export class AppointmentRepository extends Repository<Appointment> {
               if (firstSlot) {
                 firstSlot = false;
                 const prevSlot = subMinutes(slot, 5); //addMinutes(slot, -5);
-                console.log(prevSlot, 'prevslot');
                 if (
                   Math.abs(differenceInMinutes(prevSlot, blockedSlot.start)) <
                   timeSlot[0].consultDuration
@@ -951,6 +948,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               }
               slot = addMinutes(slot, timeSlot[0].consultDuration);
             });
+          if (new Date(doctorBblockedSlots[blockedSlotsCount - 1]) >= blockedSlot.end) {
+            doctorBblockedSlots[blockedSlotsCount - 1] = '';
+          }
         });
         console.log(doctorBblockedSlots, 'doctor slots');
       }
