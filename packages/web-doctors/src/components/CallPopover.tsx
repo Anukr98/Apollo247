@@ -704,8 +704,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
-      console.log(didPatientJoined, props.appointmentStatus);
-      if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED) {
+      const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
+      console.log(didPatientJoined, props.appointmentStatus, isAfter);
+      if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
         console.log(timer, 'no_show');
         stoppedTimerCall = timer;
@@ -717,6 +718,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             noShowAction(STATUS.NO_SHOW);
           }
         }
+      } else {
+        clearInterval(intervalcallId);
       }
     }, 1000);
   };
@@ -1147,9 +1150,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }
   }, [props.lastMsg]);
-
+  // console.log(
+  //   moment(new Date()),
+  //   moment(props.appointmentDateTime),
+  //   moment(new Date()).isAfter(moment(props.appointmentDateTime))
+  // );
   useEffect(() => {
-    console.log(props.presenceEventObject);
+    const apptDatetime = moment(new Date(props.appointmentDateTime)).format('YYYY-MM-DD HH:mm:ss');
+    const todayDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const presenceEventObject = props.presenceEventObject;
     if (presenceEventObject && isConsultStarted && props.appointmentStatus !== STATUS.COMPLETED) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
@@ -1565,16 +1573,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  disabled={
-                    currentUserType === LoggedInUserType.SECRETARY ||
-                    startAppointmentButton ||
-                    disableOnCancel ||
-                    (appointmentInfo!.appointmentState !== 'NEW' &&
-                      appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                      appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
+                  // disabled={
+                  //   currentUserType === LoggedInUserType.SECRETARY ||
+                  //   startAppointmentButton ||
+                  //   disableOnCancel ||
+                  //   (appointmentInfo!.appointmentState !== 'NEW' &&
+                  //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                  //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  //     appointmentInfo!.status !== STATUS.PENDING)
+                  // }
                   onClick={() => {
                     !props.startAppointment ? onStartConsult() : onStopConsult();
                     !props.startAppointment ? startInterval(900) : stopInterval();
