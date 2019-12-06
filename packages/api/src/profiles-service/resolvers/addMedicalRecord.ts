@@ -19,6 +19,7 @@ export const addPatientMedicalRecordTypeDefs = gql`
     GM
     _PERCENT_
     GM_SLASH_DL
+    NONE
   }
 
   enum MedicalRecordType {
@@ -45,9 +46,9 @@ export const addPatientMedicalRecordTypeDefs = gql`
   input AddMedicalRecordParametersInput {
     parameterName: String
     unit: MedicalTestUnit
-    result: Float
-    minimum: Float
-    maximum: Float
+    result: String
+    minimum: String
+    maximum: String
   }
 
   type AddMedicalRecordResult {
@@ -76,9 +77,9 @@ type AddMedicalRecordInput = {
 type AddMedicalRecordParametersInput = {
   parameterName: string;
   unit: MedicalTestUnit;
-  result: number;
-  minimum: number;
-  maximum: number;
+  result: string;
+  minimum: string;
+  maximum: string;
 };
 
 type MedicalRecordInputArgs = { addMedicalRecordInput: AddMedicalRecordInput };

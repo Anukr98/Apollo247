@@ -119,6 +119,7 @@ export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
   GM_SLASH_DL = 'GM_SLASH_DL',
+  NONE = 'NONE',
 }
 
 export enum MedicalRecordType {
@@ -870,20 +871,20 @@ export class MedicalRecordParameters extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('decimal', { precision: 5, scale: 2 })
-  maximum: number;
+  @Column({ nullable: true })
+  maximum: string;
 
   @ManyToOne((type) => MedicalRecords, (medicalRecords) => medicalRecords.medicalRecordParameters)
   medicalRecords: MedicalRecords;
 
-  @Column('decimal', { precision: 5, scale: 2 })
-  minimum: number;
+  @Column({ nullable: true })
+  minimum: string;
 
   @Column()
   parameterName: string;
 
-  @Column('decimal', { precision: 5, scale: 2 })
-  result: number;
+  @Column({ nullable: true })
+  result: string;
 
   @Column()
   unit: MedicalTestUnit;
