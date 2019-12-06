@@ -167,7 +167,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
           price:
             tabs[0].title === selectedTab
-              ? props.doctor!.onlineConsultationFees
+              ? 1 //props.doctor!.onlineConsultationFees
               : props.doctor!.physicalConsultationFees,
         });
       })
@@ -255,11 +255,19 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={`PAY Rs. ${
-            tabs[0].title === selectedTab
-              ? props.doctor!.onlineConsultationFees
-              : props.doctor!.physicalConsultationFees
-          }`}
+          title={
+            tabs[0].title === selectedTab ? (
+              <Text>
+                PAY{' '}
+                <Text style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}>
+                  (Rs. 999)
+                </Text>{' '}
+                Rs. 1
+              </Text> //props.doctor!.onlineConsultationFees
+            ) : (
+              `PAY Rs. ${props.doctor!.physicalConsultationFees}`
+            )
+          }
           disabled={
             disablePay
               ? true
