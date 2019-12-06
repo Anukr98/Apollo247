@@ -50,7 +50,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   checkPatientCancelledHistory(patientId: string, doctorId: string) {
-    const newStartDate = new Date(format(addDays(new Date(), -8), 'yyyy-MM-dd') + 'T18:30');
+    const newStartDate = new Date(format(addDays(new Date(), -9), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30');
     const whereClause = {
       patientId,
