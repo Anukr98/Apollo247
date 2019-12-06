@@ -33,15 +33,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 20,
       },
     },
-    tabsRoot: {
-      marginLeft: 20,
-      marginRight: 20,
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-    },
   };
 });
 
-export const CartLanding: React.FC = (props) => {
+export const MedicineCartLanding: React.FC = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
