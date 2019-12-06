@@ -231,11 +231,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               );
               if (errorMessage) {
                 setLoading!(false);
-                renderUploadErrorPopup(
-                  (errorMessage && errorMessage.endsWith('.')
-                    ? errorMessage
-                    : `${errorMessage}.`) || 'Something went wrong.'
-                );
+                renderUploadErrorPopup('Something went wrong.');
               } else {
                 props.navigation.goBack();
                 renderSuccessPopup();
