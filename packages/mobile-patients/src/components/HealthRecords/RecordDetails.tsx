@@ -350,23 +350,31 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                   <TouchableOpacity
                     activeOpacity={1}
                     onPress={() => {
-                      for (var i = 0; i < placeImage.length; i++) {
-                        console.log('one', placeImage[i]);
-                        if (Platform.OS === 'ios') {
-                          try {
-                            Linking.openURL(placeImage[i]).catch((err) =>
-                              console.error('An error occurred', err)
-                            );
-                            // CameraRoll.saveToCameraRoll(placeImage[i]);
-                            // Alert.alert('Download Completed');
-                            CommonLogEvent('RECORD_DETAILS', 'Download complete for prescription');
-                          } catch {}
-                        } else {
-                          Linking.openURL(placeImage[i]).catch((err) =>
+                      placeImage.forEach((item: string) => {
+                        try {
+                          Linking.openURL(item).catch((err) =>
                             console.error('An error occurred', err)
                           );
-                        }
-                      }
+                          CommonLogEvent('RECORD_DETAILS', 'Download complete for prescription');
+                        } catch {}
+                      });
+                      // for (var i = 0; i < placeImage.length; i++) {
+                      //   console.log('one', placeImage[i]);
+                      //   if (Platform.OS === 'ios') {
+                      //     try {
+                      //       Linking.openURL(placeImage[i]).catch((err) =>
+                      //         console.error('An error occurred', err)
+                      //       );
+                      //       // CameraRoll.saveToCameraRoll(placeImage[i]);
+                      //       // Alert.alert('Download Completed');
+                      //       CommonLogEvent('RECORD_DETAILS', 'Download complete for prescription');
+                      //     } catch {}
+                      //   } else {
+                      //     Linking.openURL(placeImage[i]).catch((err) =>
+                      //       console.error('An error occurred', err)
+                      //     );
+                      //   }
+                      // }
                       // const urls = data.documentURLs.split(',');
                       // console.log('test', urls);
                       // if (!data.documentURLs || data.documentURLs === '[object Object]') {

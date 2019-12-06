@@ -154,94 +154,41 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       'Graph ql call for save prescription medicine order'
     );
     setLoading!(true);
-    const ePresUrls = EPrescriptions.map((item) => {
-      return item!.prismPrescriptionFileId;
-    });
-
-    console.log('ePresUrls', ePresUrls);
-    let ePresAndPhysicalPresUrls = [...ePresUrls];
-    console.log(
-      'ePresAndPhysicalPresUrls',
-      ePresAndPhysicalPresUrls
-        .join(',')
-        .split(',')
-        .map((item) => item.trim())
-        .filter((i) => i)
-    );
-
-    if (ePresAndPhysicalPresUrls.length > 0) {
+    if (EPrescriptions.length > 0) {
+      const prescriptionMedicineInput: PrescriptionMedicineInput = {
+        patientId: (currentPatient && currentPatient.id) || '',
+        medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+        prescriptionImageUrl: EPrescriptions.map((item) => item.uploadedUrl).join(','),
+        shopId: storeId || '0',
+        appointmentId: '',
+        patinetAddressId: deliveryAddressId || '',
+        prismPrescriptionFileId: EPrescriptions.map((item) => item.prismPrescriptionFileId).join(
+          ','
+        ),
+      };
+      console.log('prescriptionMedicineInput', prescriptionMedicineInput);
       client
-        .query<downloadDocuments>({
-          query: DOWNLOAD_DOCUMENT,
-          fetchPolicy: 'no-cache',
-          variables: {
-            downloadDocumentsInput: {
-              patientId: currentPatient && currentPatient.id,
-              fileIds: ePresAndPhysicalPresUrls
-                .join(',')
-                .split(',')
-                .map((item) => item.trim())
-                .filter((i) => i),
-            },
-          },
+        .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
+          mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+          variables: { prescriptionMedicineInput },
         })
-        .then(({ data }) => {
-          console.log(data, 'DOWNLOAD_DOCUMENT');
-          const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-          if (uploadUrlscheck!.length > 0) {
-            const prescriptionMedicineInput: PrescriptionMedicineInput = {
-              patientId: (currentPatient && currentPatient.id) || '',
-              medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
-              prescriptionImageUrl: uploadUrlscheck!.join(','),
-              shopId: storeId || '0',
-              appointmentId: '',
-              patinetAddressId: deliveryAddressId || '',
-              prismPrescriptionFileId: ePresAndPhysicalPresUrls
-                .join(',')
-                .split(',')
-                .map((item) => item.trim())
-                .filter((i) => i)
-                .toString(),
-            };
-            console.log('prescriptionMedicineInput', prescriptionMedicineInput);
-            client
-              .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
-                mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-                variables: { prescriptionMedicineInput },
-              })
-              .then((_data) => {
-                setLoading!(false);
-                const errorMessage = g(
-                  _data,
-                  'data',
-                  'SavePrescriptionMedicineOrder',
-                  'errorMessage'
-                );
-                if (errorMessage) {
-                  setLoading!(false);
-                  renderUploadErrorPopup(
-                    (errorMessage && errorMessage.endsWith('.')
-                      ? errorMessage
-                      : `${errorMessage}.`) || 'Something went wrong.'
-                  );
-                } else {
-                  props.navigation.goBack();
-                  renderSuccessPopup();
-                }
-              })
-              .catch((e) => {
-                console.log('Error \n', { e });
-              });
-          } else {
+        .then((_data) => {
+          setLoading!(false);
+          const errorMessage = g(_data, 'data', 'SavePrescriptionMedicineOrder', 'errorMessage');
+          if (errorMessage) {
             setLoading!(false);
-            renderUploadErrorPopup('Unable to upload images.');
-            // Alert.alert('Images are not uploaded');
+            renderUploadErrorPopup(
+              (errorMessage && errorMessage.endsWith('.') ? errorMessage : `${errorMessage}.`) ||
+                'Something went wrong.'
+            );
+          } else {
+            props.navigation.goBack();
+            renderSuccessPopup();
           }
         })
-        .catch((e: string) => {
-          console.log('Error occured', e);
+        .catch((e) => {
           renderUploadErrorPopup('Something went wrong.');
+          console.log('Error \n', { e });
         })
         .finally(() => {
           setLoading!(false);
@@ -254,77 +201,52 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         const uploadedFiles = await uploadMultipleFiles(PhysicalPrescriptions);
         console.log('medicineuploadfiles', uploadedFiles);
         const uploadUrlscheck = uploadedFiles.map((item) =>
-          item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
+          item.data!.uploadDocument.status ? item.data!.uploadDocument : null
         );
         console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-        var filtered = uploadUrlscheck.filter(function(el) {
-          return el != null;
-        });
+        var filtered = uploadUrlscheck.filter((el) => el != null);
         console.log('filtered', filtered);
         if (filtered.length > 0) {
+          const prescriptionMedicineInput: PrescriptionMedicineInput = {
+            patientId: (currentPatient && currentPatient.id) || '',
+            medicineDeliveryType: deliveryAddressId
+              ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+              : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+            prescriptionImageUrl: filtered.map((item) => item!.filePath).join(','),
+            shopId: storeId || '0',
+            appointmentId: '',
+            patinetAddressId: deliveryAddressId || '',
+            prismPrescriptionFileId: filtered.map((item) => item!.fileId).join(','),
+          };
+          console.log('prescriptionMedicineInput', prescriptionMedicineInput);
           client
-            .query<downloadDocuments>({
-              query: DOWNLOAD_DOCUMENT,
-              fetchPolicy: 'no-cache',
-              variables: {
-                downloadDocumentsInput: {
-                  patientId: currentPatient && currentPatient.id,
-                  fileIds: filtered,
-                },
-              },
+            .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
+              mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+              variables: { prescriptionMedicineInput },
             })
-            .then(({ data }) => {
-              console.log(data, 'DOWNLOAD_DOCUMENT');
-              const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-              console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-              const prescriptionMedicineInput: PrescriptionMedicineInput = {
-                patientId: (currentPatient && currentPatient.id) || '',
-                medicineDeliveryType: deliveryAddressId
-                  ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-                  : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-                prescriptionImageUrl: uploadUrlscheck!.join(','),
-                shopId: storeId || '0',
-                appointmentId: '',
-                patinetAddressId: deliveryAddressId || '',
-                prismPrescriptionFileId: filtered.join(','),
-              };
-              console.log('prescriptionMedicineInput', prescriptionMedicineInput);
-              client
-                .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
-                  mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-                  variables: { prescriptionMedicineInput },
-                })
-                .then((_data) => {
-                  setLoading!(false);
-                  const errorMessage = g(
-                    _data,
-                    'data',
-                    'SavePrescriptionMedicineOrder',
-                    'errorMessage'
-                  );
-                  if (errorMessage) {
-                    setLoading!(false);
-                    renderUploadErrorPopup(
-                      (errorMessage && errorMessage.endsWith('.')
-                        ? errorMessage
-                        : `${errorMessage}.`) || 'Something went wrong.'
-                    );
-                  } else {
-                    props.navigation.goBack();
-                    renderSuccessPopup();
-                  }
-                })
-                .catch((e) => {
-                  console.log('Error \n', { e });
-                  renderUploadErrorPopup('Something went wrong.');
-                });
-            })
-            .catch((e: string) => {
-              renderUploadErrorPopup('Something went wrong.');
-              console.log('Error occured', e);
-            })
-            .finally(() => {
+            .then((_data) => {
               setLoading!(false);
+              const errorMessage = g(
+                _data,
+                'data',
+                'SavePrescriptionMedicineOrder',
+                'errorMessage'
+              );
+              if (errorMessage) {
+                setLoading!(false);
+                renderUploadErrorPopup(
+                  (errorMessage && errorMessage.endsWith('.')
+                    ? errorMessage
+                    : `${errorMessage}.`) || 'Something went wrong.'
+                );
+              } else {
+                props.navigation.goBack();
+                renderSuccessPopup();
+              }
+            })
+            .catch((e) => {
+              console.log('Error \n', { e });
+              renderUploadErrorPopup('Something went wrong.');
             });
         } else {
           setLoading!(false);
