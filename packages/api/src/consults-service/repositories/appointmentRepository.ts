@@ -380,6 +380,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
       })
+      .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
 
     //get past appointments till one week
@@ -402,6 +403,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
       })
+      .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
 
     const consultRoomAppts = upcomingAppts.concat(weekPastAppts);
