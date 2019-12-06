@@ -871,20 +871,20 @@ export class MedicalRecordParameters extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
-  maximum: string;
+  @Column('decimal', { precision: 5, scale: 2 })
+  maximum: number;
 
   @ManyToOne((type) => MedicalRecords, (medicalRecords) => medicalRecords.medicalRecordParameters)
   medicalRecords: MedicalRecords;
 
-  @Column({ nullable: true })
-  minimum: string;
+  @Column('decimal', { precision: 5, scale: 2 })
+  minimum: number;
 
   @Column()
   parameterName: string;
 
-  @Column({ nullable: true })
-  result: string;
+  @Column('decimal', { precision: 5, scale: 2 })
+  result: number;
 
   @Column()
   unit: MedicalTestUnit;
