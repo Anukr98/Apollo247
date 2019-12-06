@@ -290,6 +290,14 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
+    bookRescheduleAppointmentInput.appointmentId
+  );
+
+  if (rescheduleDetails) {
+    bookRescheduleAppointmentInput.initiatedBy = rescheduleDetails.rescheduleInitiatedBy;
+  }
+
   if (apptDetails.status == STATUS.COMPLETED || apptDetails.status == STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -392,9 +400,6 @@ const bookRescheduleAppointment: Resolver<
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
-    const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetailsByAppointment(
-      bookRescheduleAppointmentInput.appointmentId
-    );
     if (rescheduleDetails) {
       rescheduleDetails.id;
       await rescheduleApptRepo.updateReschedule(rescheduleDetails.id, TRANSFER_STATUS.COMPLETED);
