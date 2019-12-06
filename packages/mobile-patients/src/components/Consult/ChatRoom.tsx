@@ -1,9 +1,7 @@
-import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DropDown } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   AddAttachmentIcon,
@@ -12,11 +10,9 @@ import {
   ChatIcon,
   ChatSend,
   ChatWithNotification,
-  CrossPopup,
+  DoctorCall,
   DoctorImage,
-  DoctorPlaceholderImage,
   EndCallIcon,
-  FileBig,
   FrontCameraIcon,
   FullScreenIcon,
   Loader,
@@ -27,62 +23,61 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
+  FileBig,
+  Remove,
+  CrossPopup,
+  DoctorPlaceholderImage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
-  CommonLogEvent,
-  CommonScreenLog,
   DeviceHelper,
+  CommonScreenLog,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
-  CANCEL_APPOINTMENT,
-  DOWNLOAD_DOCUMENT,
   UPDATE_APPOINTMENT_SESSION,
+  UPLOAD_CHAT_FILE,
   UPLOAD_CHAT_FILE_PRISM,
+  DOWNLOAD_DOCUMENT,
+  CANCEL_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  bookRescheduleAppointment,
-  bookRescheduleAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import {
   bookTransferAppointment,
   bookTransferAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
 import {
   BookTransferAppointmentInput,
+  TRANSFER_INITIATED_TYPE,
+  UPLOAD_FILE_TYPES,
+  STATUS,
   ConsultQueueInput,
   FEEDBACKTYPE,
   REQUEST_ROLES,
-  STATUS,
-  TRANSFER_INITIATED_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
   updateAppointmentSessionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointmentSession';
-import {
-  addToConsultQueueWithAutomatedQuestions,
-  checkIfRescheduleAppointment,
-  endCallSessionAppointment,
-  getNextAvailableSlots,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import Pubnub, { HereNowResponse } from 'pubnub';
+import Pubnub, {
+  SignalEvent,
+  UserEvent,
+  SpaceEvent,
+  MembershipEvent,
+  MessageActionEvent,
+  FetchTimeResponse,
+  HereNowResponse,
+} from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
-  AppState,
-  AppStateStatus,
   AsyncStorage,
-  BackHandler,
   Dimensions,
   FlatList,
   Image,
@@ -95,28 +90,52 @@ import {
   Platform,
   SafeAreaView,
   StatusBar,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  BackHandler,
   WebView,
+  StyleSheet,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
+import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
 import SoftInputMode from 'react-native-set-soft-input-mode';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
+import {
+  uploadChatDocument,
+  uploadChatDocumentVariables,
+} from '@aph/mobile-patients/src/graphql/types/uploadChatDocument';
+import {
+  addToConsultQueue,
+  checkIfRescheduleAppointment,
+  getNextAvailableSlots,
+  addToConsultQueueWithAutomatedQuestions,
+  endCallSessionAppointment,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
+import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { ChatQuestions } from './ChatQuestions';
+import { FeedbackPopup } from '../FeedbackPopup';
+import { g } from '../../helpers/helperFunctions';
+import { useUIElements } from '../UIElementsProvider';
+import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '../../graphql/types/cancelAppointment';
-import { downloadDocuments } from '../../graphql/types/downloadDocuments';
-import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
-import { g } from '../../helpers/helperFunctions';
-import { FeedbackPopup } from '../FeedbackPopup';
-import { useUIElements } from '../UIElementsProvider';
-import { ChatQuestions } from './ChatQuestions';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -1627,6 +1646,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferReschedule = (rowData: any, index: number) => {
+    // console.log('transferReschedule', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
