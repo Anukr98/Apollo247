@@ -1290,7 +1290,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         <Button
                           type="submit"
                           disabled={
-                            loading || invalid || !isTimeValid || !isallreadyInArray || !isPastTime
+                            loading ||
+                            invalid ||
+                            !isTimeValid ||
+                            !isallreadyInArray ||
+                            !isPastTime ||
+                            new Date(start).getDate() > new Date(end).getDate()
                           }
                           variant="contained"
                           className={classes.blockCalBtn}
