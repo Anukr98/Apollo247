@@ -188,6 +188,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
+  const [completedStatus, setCompletedStatus] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -518,13 +519,19 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
               }}
               onPress={() => {
-                CommonLogEvent(
-                  AppRoutes.AppointmentOnlineDetails,
-                  'Reschdule_Appointment_Online_Details_Clicked'
-                );
-                try {
-                  isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
-                } catch (error) {}
+                console.log(data.status, 'statis');
+
+                if (data.status == STATUS.COMPLETED) {
+                  setCompletedStatus(true);
+                } else {
+                  CommonLogEvent(
+                    AppRoutes.AppointmentOnlineDetails,
+                    'Reschdule_Appointment_Online_Details_Clicked'
+                  );
+                  try {
+                    isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
+                  } catch (error) {}
+                }
               }}
             />
             {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
@@ -558,6 +565,32 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 onPress={() => {
                   CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'SELECTED_SLOT_ISSUE_Clicked');
                   setBottompopup(false);
+                }}
+              >
+                <Text
+                  style={{
+                    paddingTop: 16,
+                    ...theme.viewStyles.yellowTextStyle,
+                  }}
+                >
+                  OK, GOT IT
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </BottomPopUp>
+        )}
+        {completedStatus && (
+          <BottomPopUp title={'Hi:)'} description="Opps ! Already the appointment is completed">
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                style={{
+                  height: 60,
+                  paddingRight: 25,
+                  backgroundColor: 'transparent',
+                }}
+                onPress={() => {
+                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'SELECTED_SLOT_ISSUE_Clicked');
+                  setCompletedStatus(false);
                 }}
               >
                 <Text
