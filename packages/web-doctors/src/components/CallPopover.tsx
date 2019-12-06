@@ -813,6 +813,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
+    setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
@@ -918,6 +919,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideo(false);
     setShowVideoChat(false);
     clearInterval(intervalMissCall);
+    setDisableOnCancel(false);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     const text = {
@@ -1646,6 +1648,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       handleClose();
                       props.setStartConsultAction(false);
                       autoSend(audioCallMsg);
+                      setDisableOnCancel(true);
                       setIsVideoCall(false);
                       missedCallIntervalTimer(45);
                     }}
@@ -1662,6 +1665,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       props.setStartConsultAction(true);
                       autoSend(videoCallMsg);
                       setIsVideoCall(true);
+                      setDisableOnCancel(true);
                       missedCallIntervalTimer(45);
                     }}
                   >
@@ -1997,9 +2001,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       if (showVideo) {
                         stopAudioVideoCall();
                       }
+                      unSubscribeBrowserButtonsListener();
                       setIsCancelPopoverOpen(false);
                       cancelConsultAction();
-                      unSubscribeBrowserButtonsListener();
                       const text = {
                         id: props.doctorId,
                         message: cancelConsultInitiated,
