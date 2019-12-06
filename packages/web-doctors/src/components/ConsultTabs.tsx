@@ -21,18 +21,18 @@ import {
   Gender,
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
-  STATUS
+  STATUS,
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheetVariables
+  GetJuniorDoctorCaseSheetVariables,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 // import Dialog from '@material-ui/core/Dialog';
 // import DialogActions from '@material-ui/core/DialogActions';
@@ -47,15 +47,15 @@ import _omit from 'lodash/omit';
 
 import {
   CreateAppointmentSession,
-  CreateAppointmentSessionVariables
+  CreateAppointmentSessionVariables,
 } from 'graphql/types/CreateAppointmentSession';
 import {
   EndAppointmentSession,
-  EndAppointmentSessionVariables
+  EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
 import {
   UpdatePatientPrescriptionSentStatus,
-  UpdatePatientPrescriptionSentStatusVariables
+  UpdatePatientPrescriptionSentStatusVariables,
 } from 'graphql/types/UpdatePatientPrescriptionSentStatus';
 
 import {
@@ -66,13 +66,10 @@ import {
   CREATE_CASESHEET_FOR_SRD,
   // GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
-  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 
-import {
-  ModifyCaseSheet,
-  ModifyCaseSheetVariables
-} from 'graphql/types/ModifyCaseSheet';
+import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 
 // import {
 //   GetJuniorDoctorCaseSheet,
@@ -87,12 +84,12 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
 
 import {
   CreateSeniorDoctorCaseSheet,
-  CreateSeniorDoctorCaseSheetVariables
+  CreateSeniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
@@ -106,7 +103,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
 import {
   SendCallNotification,
-  SendCallNotificationVariables
+  SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -114,17 +111,17 @@ const useStyles = makeStyles((theme: Theme) => {
     consultRoom: {
       paddingTop: 64,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 64
-      }
+        paddingTop: 64,
+      },
     },
     chatContainer: {
-      minHeight: 'calc(100vh - 360px)'
+      minHeight: 'calc(100vh - 360px)',
     },
     headerSticky: {
       position: 'fixed',
       width: '100%',
       zIndex: 999,
-      top: 0
+      top: 0,
     },
     container: {
       maxWidth: 1064,
@@ -132,12 +129,12 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
-      minHeight: 500
+      minHeight: 500,
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
       borderRadius: 0,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)'
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
     },
     tabRoot: {
       fontSize: 16,
@@ -150,31 +147,31 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 1,
       lineHeight: 'normal',
       [theme.breakpoints.down('xs')]: {
-        width: '50%'
-      }
+        width: '50%',
+      },
     },
     tabSelected: {
       fontWeight: theme.typography.fontWeightBold,
-      color: '#02475b'
+      color: '#02475b',
     },
     tabsIndicator: {
       backgroundColor: '#00b38e',
-      height: 4
+      height: 4,
     },
     DisplayNone: {
-      display: 'none !important'
+      display: 'none !important',
     },
     typography: {
-      padding: theme.spacing(2)
+      padding: theme.spacing(2),
     },
     pointerNone: {
-      pointerEvents: 'none'
+      pointerEvents: 'none',
     },
     none: {
-      display: 'none'
+      display: 'none',
     },
     block: {
-      display: 'block'
+      display: 'block',
     },
     modalBox: {
       maxWidth: 320,
@@ -190,8 +187,8 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         marginBottom: 30,
         marginTop: 0,
-        color: '#02475b'
-      }
+        color: '#02475b',
+      },
     },
     modalPdfBox: {
       maxWidth: '90%',
@@ -199,17 +196,17 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       marginTop: 88,
       backgroundColor: '#eeeeee',
-      position: 'relative'
+      position: 'relative',
     },
     tabHeader: {
       height: 30,
       borderTopLeftRadius: '10px',
-      borderTopRightRadius: '10px'
+      borderTopRightRadius: '10px',
     },
     loading: {
       position: 'absolute',
       left: '50%',
-      top: '45%'
+      top: '45%',
     },
     tabBody: {
       minHeight: 60,
@@ -221,9 +218,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 700,
         lineHeight: 1.4,
-        color: '#01475b'
+        color: '#01475b',
         // paddingBottom: 15,
-      }
+      },
     },
     tabPdfBody: {
       display: 'none',
@@ -232,7 +229,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: '15px',
       paddingTop: '10px',
       paddingRight: '15px',
-      textAlign: 'center'
+      textAlign: 'center',
       /* padding: 15px; */
     },
     cross: {
@@ -240,7 +237,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 0,
       top: '10px',
       fontSize: '18px',
-      color: '#02475b'
+      color: '#02475b',
     },
     consultButton: {
       fontSize: 14,
@@ -252,8 +249,8 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
-        backgroundColor: '#e28913'
-      }
+        backgroundColor: '#e28913',
+      },
     },
     cancelConsult: {
       width: 120,
@@ -265,22 +262,22 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fff'
-      }
+        backgroundColor: '#fff',
+      },
     },
     popupDialog: {
-      maxWidth: 320
+      maxWidth: 320,
     },
     headingTxt: {
       fontSize: 20,
       color: '#02475b',
-      fontWeight: 600
+      fontWeight: 600,
     },
     contentTxt: {
       marginTop: 30,
       color: '#02475b',
-      fontSize: 14
-    }
+      fontSize: 14,
+    },
   };
 });
 
@@ -312,8 +309,8 @@ export const ConsultTabs: React.FC = () => {
     CreateSeniorDoctorCaseSheetVariables
   >(CREATE_CASESHEET_FOR_SRD, {
     variables: {
-      appointmentId: paramId
-    }
+      appointmentId: paramId,
+    },
   });
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
@@ -323,10 +320,7 @@ export const ConsultTabs: React.FC = () => {
   // setdoctorId(currentPatient.id);
 
   const [tabValue, setTabValue] = useState<number>(
-    params &&
-      params!.tabValue &&
-      params!.tabValue !== null &&
-      params!.tabValue !== ''
+    params && params!.tabValue && params!.tabValue !== null && params!.tabValue !== ''
       ? parseInt(params!.tabValue, 10)
       : 0
   );
@@ -338,23 +332,19 @@ export const ConsultTabs: React.FC = () => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
-  const [doctorId, setdoctorId] = useState<string>(
-    currentPatient ? currentPatient.id : ''
-  );
+  const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
 
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
-  const [startAppointment, setStartAppointment] = React.useState<boolean>(
-    false
-  );
+  const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
   const [callId, setcallId] = useState<string>('');
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const TabContainer: React.FC = props => {
-    return <Typography component='div'>{props.children}</Typography>;
+  const TabContainer: React.FC = (props) => {
+    return <Typography component="div">{props.children}</Typography>;
   };
   const client = useApolloClient();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
@@ -370,17 +360,13 @@ export const ConsultTabs: React.FC = () => {
   const [otherInstructions, setOtherInstructions] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<
-    any[] | null
-  >(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
 
   const [notes, setSRDNotes] = useState<string | null>(null);
-  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(
-    null
-  );
+  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
@@ -412,12 +398,8 @@ export const ConsultTabs: React.FC = () => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
 
-  const subscribekey: string = process.env.SUBSCRIBE_KEY
-    ? process.env.SUBSCRIBE_KEY
-    : '';
-  const publishkey: string = process.env.PUBLISH_KEY
-    ? process.env.PUBLISH_KEY
-    : '';
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
@@ -428,7 +410,7 @@ export const ConsultTabs: React.FC = () => {
     //listenToBrowserNetworkEvents: true,
     presenceTimeout: 20,
     heartbeatInterval: 20,
-    uuid: REQUEST_ROLES.DOCTOR
+    uuid: REQUEST_ROLES.DOCTOR,
   };
   useEffect(() => {
     if (startAppointment) {
@@ -441,7 +423,7 @@ export const ConsultTabs: React.FC = () => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [appointmentId],
-      withPresence: true
+      withPresence: true,
     });
     getHistory(0);
     pubnub.addListener({
@@ -461,16 +443,16 @@ export const ConsultTabs: React.FC = () => {
         pubnub
           .hereNow({
             channels: [appointmentId],
-            includeUUIDs: true
+            includeUUIDs: true,
           })
           .then((response: any) => {
             console.log('hereNowresponse', response);
             setPresenceEventObject(response);
           })
-          .catch(error => {
+          .catch((error) => {
             console.log(error);
           });
-      }
+      },
     });
     return () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
@@ -483,7 +465,7 @@ export const ConsultTabs: React.FC = () => {
         reverse: true,
         count: 1000,
         stringifiedTimeToken: true,
-        start: timetoken
+        start: timetoken,
       },
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
@@ -517,9 +499,9 @@ export const ConsultTabs: React.FC = () => {
         .query<GetCaseSheet>({
           query: GET_CASESHEET,
           fetchPolicy: 'no-cache',
-          variables: { appointmentId: appointmentId }
+          variables: { appointmentId: appointmentId },
         })
-        .then(_data => {
+        .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails &&
@@ -527,81 +509,62 @@ export const ConsultTabs: React.FC = () => {
             ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
             : '';
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis(
-                (_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
-              )
+            ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+            ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-              )
+            ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
             : setDiagnosticPrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-              )
+            ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
-            ? setSRDNotes(
-                (_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .notes as unknown) as string
-              )
+            ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setSRDNotes('');
           _data!.data!.getCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getCaseSheet!
-                  .juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
+                _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
               ] as unknown) as string[])
             : setConsultType([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
               ] as unknown) as boolean[])
             : setFollowUp([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
             ? setFollowUpAfterInDays(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
               ] as unknown) as string[])
             : setFollowUpAfterInDays([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType
             ? setFollowUpConsultType(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType,
               ] as unknown) as string[])
             : setFollowUpConsultType([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
-            ? setAppointmentStatus(
-                _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
-              )
+            ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
-            ? setSentToPatient(
-                _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
-              )
+            ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
             : setSentToPatient(false);
           if (
             _data.data &&
@@ -609,8 +572,7 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails &&
             _data.data.getCaseSheet.caseSheetDetails.appointment &&
             _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.status ===
-              'COMPLETED'
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
           ) {
             setIsPdfPageOpen(true);
           }
@@ -622,9 +584,7 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
             _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
           ) {
-            const url = storageClient.getBlobUrl(
-              _data.data.getCaseSheet.caseSheetDetails.blobName
-            );
+            const url = storageClient.getBlobUrl(_data.data.getCaseSheet.caseSheetDetails.blobName);
             setPrescriptionPdf(url);
           }
           if (
@@ -632,13 +592,11 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet &&
             _data.data.getCaseSheet.caseSheetDetails &&
             _data.data.getCaseSheet.caseSheetDetails.appointment &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment
-              .appointmentDateTime
+            _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
           ) {
             //setappointmentDateTime('2019-08-27T17:30:00.000Z');
             setappointmentDateTime(
-              _data.data.getCaseSheet.caseSheetDetails.appointment
-                .appointmentDateTime
+              _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
           // patient medical and family history
@@ -649,42 +607,27 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.patientDetails &&
             _data.data.getCaseSheet.patientDetails.patientMedicalHistory
           ) {
-            setBp(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.bp ||
-                ''
-            );
+            setBp(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.bp || '');
             setDietAllergies(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .dietAllergies || ''
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.dietAllergies || ''
             );
             setDrugAllergies(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .drugAllergies || ''
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.drugAllergies || ''
             );
-            setHeight(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .height || ''
-            );
+            setHeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.height || '');
             setMenstrualHistory(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .menstrualHistory || ''
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.menstrualHistory || ''
             );
             setPastMedicalHistory(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .pastMedicalHistory || ''
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastMedicalHistory || ''
             );
             setPastSurgicalHistory(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .pastSurgicalHistory || ''
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastSurgicalHistory || ''
             );
             setTemperature(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .temperature || ''
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.temperature || ''
             );
-            setWeight(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-                .weight || ''
-            );
+            setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
           }
 
           const patientFamilyHistory =
@@ -706,9 +649,7 @@ export const ConsultTabs: React.FC = () => {
           );
 
           setLifeStyle(
-            patientLifeStyle && patientLifeStyle!.description
-              ? patientLifeStyle!.description
-              : ''
+            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
 
           // set Jrd name and Jrd Casesheet submit date.
@@ -722,9 +663,7 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.juniorDoctorCaseSheet &&
             _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate
           ) {
-            setJrdSubmitDate(
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate
-            );
+            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate);
           }
 
           if (
@@ -732,14 +671,11 @@ export const ConsultTabs: React.FC = () => {
             _data.data &&
             _data.data.getCaseSheet &&
             _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet
-              .createdDoctorProfile &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-              .firstName
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName
           ) {
             jrdFirstName =
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-                .firstName;
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName;
           }
 
           if (
@@ -747,14 +683,11 @@ export const ConsultTabs: React.FC = () => {
             _data.data &&
             _data.data.getCaseSheet &&
             _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet
-              .createdDoctorProfile &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-              .lastName
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName
           ) {
             jrdLastName =
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-                .lastName;
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
           }
 
           // if (
@@ -772,20 +705,16 @@ export const ConsultTabs: React.FC = () => {
           setJrdName(`${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
-          const networkErrorMessage = error.networkError
-            ? error.networkError.message
-            : null;
+          const networkErrorMessage = error.networkError ? error.networkError.message : null;
           const allMessages = error.graphQLErrors
-            .map(e => e.message)
+            .map((e) => e.message)
             .concat(networkErrorMessage ? networkErrorMessage : []);
-          const isCasesheetNotExists = allMessages.includes(
-            AphErrorMessages.NO_CASESHEET_EXIST
-          );
+          const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
           if (isCasesheetNotExists) {
             console.log(error);
             setError('Creating Casesheet. Please wait....');
             mutationCreateSrdCaseSheet()
-              .then(response => {
+              .then((response) => {
                 window.location.href = clientRoutes.ConsultTabs(
                   appointmentId,
                   patientId,
@@ -811,30 +740,26 @@ export const ConsultTabs: React.FC = () => {
         .query<GetJuniorDoctorCaseSheet, GetJuniorDoctorCaseSheetVariables>({
           query: GET_CASESHEET_JRD,
           fetchPolicy: 'no-cache',
-          variables: { appointmentId: appointmentId }
+          variables: { appointmentId: appointmentId },
         })
-        .then(_data => {
+        .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
-            ? setCaseSheetId(
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
-              )
+            ? setCaseSheetId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id)
             : '';
 
           const patientFamilyHistory =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory
-              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-                  .familyHistory[0]
+              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory[0]
               : null;
 
           const patientLifeStyle =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle
-              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-                  .lifeStyle[0]
+              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle[0]
               : null;
 
           setFamilyHistory(
@@ -844,83 +769,59 @@ export const ConsultTabs: React.FC = () => {
           );
 
           setLifeStyle(
-            patientLifeStyle && patientLifeStyle!.description
-              ? patientLifeStyle!.description
-              : ''
+            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
 
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !==
-          null
-            ? setDiagnosis(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
+            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
+            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as any[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
+            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
+            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!
-                  .juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .consultType
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType,
               ] as unknown) as string[])
             : setConsultType([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUp
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp,
               ] as unknown) as boolean[])
             : setFollowUp([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .followUpAfterInDays
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays
             ? setFollowUpAfterInDays(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUpAfterInDays
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays,
               ] as unknown) as string[])
             : setFollowUpAfterInDays([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUpDate
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
 
           /* patient personal data state vars */
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUpDate
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
           if (
@@ -928,23 +829,18 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment &&
-            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
-              .appointmentDateTime
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
           ) {
             //setappointmentDateTime('2019-08-27T17:30:00.000Z');
             setappointmentDateTime(
-              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
-                .appointmentDateTime
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
           const cardStripArr = [];
           if (
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-              .dateOfBirth &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-              .dateOfBirth !== null &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-              .dateOfBirth !== ''
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth &&
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== null &&
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== ''
           ) {
             cardStripArr.push(
               Math.abs(
@@ -957,25 +853,15 @@ export const ConsultTabs: React.FC = () => {
           }
           if (
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender !==
-              null
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender !== null
           ) {
-            if (
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
-              Gender.FEMALE
-            ) {
+            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.FEMALE) {
               cardStripArr.push('F');
             }
-            if (
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
-              Gender.MALE
-            ) {
+            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.MALE) {
               cardStripArr.push('M');
             }
-            if (
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
-              Gender.OTHER
-            ) {
+            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.OTHER) {
               cardStripArr.push('O');
             }
           }
@@ -989,9 +875,7 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.patientDetails &&
             _data.data.getJuniorDoctorCaseSheet.patientDetails.gender
           ) {
-            setGender(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.gender
-            );
+            setGender(_data.data.getJuniorDoctorCaseSheet.patientDetails.gender);
           }
 
           // patient medical and family history
@@ -1000,44 +884,40 @@ export const ConsultTabs: React.FC = () => {
             _data.data &&
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.patientDetails &&
-            _data.data.getJuniorDoctorCaseSheet.patientDetails
-              .patientMedicalHistory
+            _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
           ) {
             setBp(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.bp || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.bp || ''
             );
             setDietAllergies(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.dietAllergies || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .dietAllergies || ''
             );
             setDrugAllergies(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.drugAllergies || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .drugAllergies || ''
             );
             setHeight(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.height || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.height || ''
             );
             setMenstrualHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.menstrualHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .menstrualHistory || ''
             );
             setPastMedicalHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.pastMedicalHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .pastMedicalHistory || ''
             );
             setPastSurgicalHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.pastSurgicalHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .pastSurgicalHistory || ''
             );
             setTemperature(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.temperature || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .temperature || ''
             );
             setWeight(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.weight || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
             );
 
             // set Jrd name and Jrd Casesheet submit date.
@@ -1051,8 +931,7 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
             ) {
               setJrdSubmitDate(
-                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
-                  .createdDate
+                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDate
               );
             }
 
@@ -1061,14 +940,13 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
               _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
-                .createdDoctorProfile &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
-                .createdDoctorProfile.firstName
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
+                .firstName
             ) {
               jrdFirstName =
-                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
-                  .createdDoctorProfile.firstName;
+                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
+                  .firstName;
             }
 
             if (
@@ -1076,27 +954,22 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
               _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
-                .createdDoctorProfile &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
-                .createdDoctorProfile.lastName
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
+                .lastName
             ) {
               jrdLastName =
-                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
-                  .createdDoctorProfile.lastName;
+                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
+                  .lastName;
             }
           }
         })
         .catch((error: ApolloError) => {
-          const networkErrorMessage = error.networkError
-            ? error.networkError.message
-            : null;
+          const networkErrorMessage = error.networkError ? error.networkError.message : null;
           const allMessages = error.graphQLErrors
-            .map(e => e.message)
+            .map((e) => e.message)
             .concat(networkErrorMessage ? networkErrorMessage : []);
-          const isCasesheetNotExists = allMessages.includes(
-            AphErrorMessages.NO_CASESHEET_EXIST
-          );
+          const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
           if (isCasesheetNotExists) {
             setError('Casesheet is not created by Doctor.....');
           }
@@ -1119,10 +992,10 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           appointmentId: appointmentId,
           callType: callType,
-          doctorType: DOCTOR_CALL_TYPE.SENIOR
-        }
+          doctorType: DOCTOR_CALL_TYPE.SENIOR,
+        },
       })
-      .then(_data => {
+      .then((_data) => {
         console.log(_data);
         if (
           _data &&
@@ -1142,23 +1015,20 @@ export const ConsultTabs: React.FC = () => {
 
   const sendToPatientAction = () => {
     client
-      .mutate<
-        UpdatePatientPrescriptionSentStatus,
-        UpdatePatientPrescriptionSentStatusVariables
-      >({
+      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
         variables: {
           caseSheetId: caseSheetId,
-          sentToPatient: true
-        }
+          sentToPatient: true,
+        },
       })
-      .then(_data => {
+      .then((_data) => {
         setAppointmentStatus('COMPLETED');
         setSentToPatient(true);
         setIsPdfPageOpen(true);
         setUrlToPatient(true);
       })
-      .catch(e => {
+      .catch((e) => {
         setError('Error occured while sending prescription to patient');
         console.log('Error occured while sending prescription to patient', e);
         setSaving(false);
@@ -1192,37 +1062,33 @@ export const ConsultTabs: React.FC = () => {
       medicinePrescriptionFinal = null,
       otherInstructionsFinal = null;
     if (symptoms && symptoms.length > 0) {
-      symptomsFinal = symptoms.map(symptom => {
+      symptomsFinal = symptoms.map((symptom) => {
         return _omit(symptom, '__typename');
       });
     }
     if (diagnosis && diagnosis.length > 0) {
-      diagnosisFinal = diagnosis.map(diagnosis => {
+      diagnosisFinal = diagnosis.map((diagnosis) => {
         return _omit(diagnosis, ['__typename', 'id']);
       });
     }
     if (diagnosticPrescription && diagnosticPrescription.length > 0) {
-      const diagnosticPrescriptionFinal1 = diagnosticPrescription.map(
-        prescription => {
-          return _omit(prescription, ['__typename']);
-        }
-      );
+      const diagnosticPrescriptionFinal1 = diagnosticPrescription.map((prescription) => {
+        return _omit(prescription, ['__typename']);
+      });
       // convert itemName to itemname
-      diagnosticPrescriptionFinal = diagnosticPrescription.map(prescription => {
+      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
         return {
-          itemname: prescription.itemName
-            ? prescription.itemName
-            : prescription.itemname
+          itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
         };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
-      medicinePrescriptionFinal = medicinePrescription.map(prescription => {
+      medicinePrescriptionFinal = medicinePrescription.map((prescription) => {
         return _omit(prescription, ['__typename']);
       });
     }
     if (otherInstructions && otherInstructions.length > 0) {
-      otherInstructionsFinal = otherInstructions.map(instruction => {
+      otherInstructionsFinal = otherInstructions.map((instruction) => {
         return _omit(instruction, ['__typename']);
       });
     }
@@ -1266,20 +1132,14 @@ export const ConsultTabs: React.FC = () => {
             pastSurgicalHistory: pastSurgicalHistory,
             temperature: temperature,
             weight: weight,
-            bp: bp
-          }
+            bp: bp,
+          },
         },
-        fetchPolicy: 'no-cache'
+        fetchPolicy: 'no-cache',
       })
-      .then(_data => {
-        if (
-          _data &&
-          _data!.data!.modifyCaseSheet &&
-          _data!.data!.modifyCaseSheet!.blobName
-        ) {
-          const url = storageClient.getBlobUrl(
-            _data!.data!.modifyCaseSheet!.blobName
-          );
+      .then((_data) => {
+        if (_data && _data!.data!.modifyCaseSheet && _data!.data!.modifyCaseSheet!.blobName) {
+          const url = storageClient.getBlobUrl(_data!.data!.modifyCaseSheet!.blobName);
           setPrescriptionPdf(url);
           setSaving(false);
         }
@@ -1291,7 +1151,7 @@ export const ConsultTabs: React.FC = () => {
           sendToPatientAction();
         }
       })
-      .catch(e => {
+      .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
@@ -1311,19 +1171,19 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           endAppointmentSessionInput: {
             appointmentId: appointmentId,
-            status: STATUS.COMPLETED
-          }
+            status: STATUS.COMPLETED,
+          },
         },
-        fetchPolicy: 'no-cache'
+        fetchPolicy: 'no-cache',
       })
-      .then(_data => {
+      .then((_data) => {
         // setIsPopoverOpen(true);
         //setIsPdfPopoverOpen(true);
         //setIsEnded(true);
         setAppointmentStatus('COMPLETED');
         setIsPdfPageOpen(true);
       })
-      .catch(e => {
+      .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while End casesheet', errorMessage, error);
@@ -1339,9 +1199,9 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           createAppointmentSessionInput: {
             appointmentId: paramId,
-            requestRole: REQUEST_ROLES.DOCTOR
-          }
-        }
+            requestRole: REQUEST_ROLES.DOCTOR,
+          },
+        },
       })
       .then((_data: any) => {
         setAppointmentStatus(STATUS.IN_PROGRESS);
@@ -1367,9 +1227,7 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(
-        flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
-      );
+      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO);
     }, 10);
   };
 
@@ -1384,9 +1242,7 @@ export const ConsultTabs: React.FC = () => {
       </div>
       {!loaded && <CircularProgress className={classes.loading} />}
 
-      {error && error !== '' && (
-        <Typography className={classes.tabRoot}>{error}</Typography>
-      )}
+      {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
         <CaseSheetContext.Provider
           value={{
@@ -1398,13 +1254,10 @@ export const ConsultTabs: React.FC = () => {
               ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
               : casesheetInfo!.getCaseSheet!.patientDetails,
             appointmentInfo: isSecretary
-              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .appointment
+              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment
               : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
             createdDoctorProfile:
-              !isSecretary &&
-              casesheetInfo!.getCaseSheet!.caseSheetDetails!
-                .createdDoctorProfile,
+              !isSecretary && casesheetInfo!.getCaseSheet!.caseSheetDetails!.createdDoctorProfile,
             followUpConsultType,
             setFollowUpConsultType,
             symptoms,
@@ -1431,14 +1284,12 @@ export const ConsultTabs: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: isSecretary
-              ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!
-                  .healthVault
+              ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault
               : casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
             appointmentDocuments: isSecretary
-              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .appointment!.appointmentDocuments
-              : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!
-                  .appointmentDocuments,
+              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
+                  .appointmentDocuments
+              : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!.appointmentDocuments,
             pastAppointments: isSecretary
               ? casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments
               : casesheetInfo!.getCaseSheet!.pastAppointments,
@@ -1467,20 +1318,17 @@ export const ConsultTabs: React.FC = () => {
             setTemperature,
             setGender,
             jrdName,
-            jrdSubmitDate
+            jrdSubmitDate,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
             <div className={classes.container}>
               <CallPopover
-                setStartConsultAction={(flag: boolean) =>
-                  setStartConsultAction(flag)
-                }
+                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
-                saveCasesheetAction={(
-                  flag: boolean,
-                  sendToPatientFlag: boolean
-                ) => saveCasesheetAction(flag, sendToPatientFlag)}
+                saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
+                  saveCasesheetAction(flag, sendToPatientFlag)
+                }
                 endConsultAction={endConsultAction}
                 appointmentId={appointmentId}
                 appointmentDateTime={appointmentDateTime}
@@ -1509,10 +1357,10 @@ export const ConsultTabs: React.FC = () => {
                     <div>
                       <Tabs
                         value={tabValue}
-                        variant='fullWidth'
+                        variant="fullWidth"
                         classes={{
                           root: classes.tabsRoot,
-                          indicator: classes.tabsIndicator
+                          indicator: classes.tabsIndicator,
                         }}
                         onChange={(e, newValue) => {
                           setTabValue(newValue);
@@ -1521,39 +1369,27 @@ export const ConsultTabs: React.FC = () => {
                         <Tab
                           classes={{
                             root: classes.tabRoot,
-                            selected: classes.tabSelected
+                            selected: classes.tabSelected,
                           }}
-                          label='Case Sheet'
+                          label="Case Sheet"
                         />
                         <Tab
                           classes={{
                             root: classes.tabRoot,
-                            selected: classes.tabSelected
+                            selected: classes.tabSelected,
                           }}
-                          label='Chat'
+                          label="Chat"
                         />
                       </Tabs>
                     </div>
                     <TabContainer>
-                      <div
-                        className={
-                          tabValue !== 0 ? classes.none : classes.block
-                        }
-                      >
-                        {casesheetInfo ? (
-                          <CaseSheet startAppointment={startAppointment} />
-                        ) : (
-                          ''
-                        )}
+                      <div className={tabValue !== 0 ? classes.none : classes.block}>
+                        {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                       </div>
                     </TabContainer>
 
                     <TabContainer>
-                      <div
-                        className={
-                          tabValue !== 1 ? classes.none : classes.block
-                        }
-                      >
+                      <div className={tabValue !== 1 ? classes.none : classes.block}>
                         <div className={classes.chatContainer}>
                           <ConsultRoom
                             startConsult={startConsult}
@@ -1591,7 +1427,7 @@ export const ConsultTabs: React.FC = () => {
             <Button className={classes.cross}>
               <img
                 src={require('images/ic_cross.svg')}
-                alt=''
+                alt=""
                 onClick={() => setIsConfirmDialogOpen(false)}
               />
             </Button>
@@ -1635,8 +1471,8 @@ export const ConsultTabs: React.FC = () => {
           </div>
           <div className={classes.contentTxt}>
             <span>
-              After ending the consult you will get the option to preview/edit
-              case sheet and send prescription to the patient
+              After ending the consult you will get the option to preview/edit case sheet and send
+              prescription to the patient
             </span>
           </div>
         </Paper>

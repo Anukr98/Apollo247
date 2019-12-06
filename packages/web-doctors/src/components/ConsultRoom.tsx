@@ -1210,7 +1210,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </Button>
                 )}
                 <AphTextField
-                autoFocus
+                  autoFocus
                   className={classes.inputWidth}
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."

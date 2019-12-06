@@ -8,32 +8,29 @@ import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   CreateAppointmentSession,
-  CreateAppointmentSessionVariables
+  CreateAppointmentSessionVariables,
 } from 'graphql/types/CreateAppointmentSession';
-import {
-  ModifyCaseSheet,
-  ModifyCaseSheetVariables
-} from 'graphql/types/ModifyCaseSheet';
+import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET_JRD,
   CREATE_CASESHEET_FOR_JRD,
-  MODIFY_CASESHEET
+  MODIFY_CASESHEET,
 } from 'graphql/profiles';
 import {
   CreateJuniorDoctorCaseSheet,
-  CreateJuniorDoctorCaseSheetVariables
+  CreateJuniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateJuniorDoctorCaseSheet';
 import {
   GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheetVariables
+  GetJuniorDoctorCaseSheetVariables,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
   REQUEST_ROLES,
@@ -42,7 +39,7 @@ import {
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
   Relation,
-  STATUS
+  STATUS,
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
@@ -58,7 +55,7 @@ import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import {
   RemoveFromConsultQueue,
-  RemoveFromConsultQueueVariables
+  RemoveFromConsultQueueVariables,
 } from 'graphql/types/RemoveFromConsultQueue';
 import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
 import Dialog from '@material-ui/core/Dialog';
@@ -69,7 +66,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { clientRoutes } from 'helpers/clientRoutes';
 import {
   GetDoctorDetailsById,
-  GetDoctorDetailsByIdVariables
+  GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
@@ -81,7 +78,7 @@ import _omit from 'lodash/omit';
 import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
 import {
   SendCallNotification,
-  SendCallNotificationVariables
+  SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 
 // interface SymptomObject {
@@ -96,47 +93,47 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       paddingTop: 65,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 65
-      }
+        paddingTop: 65,
+      },
     },
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      paddingBottom: 20
+      paddingBottom: 20,
     },
     pageContainer: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
       marginTop: 28,
-      borderRadius: '0 0 5px 5px'
+      borderRadius: '0 0 5px 5px',
     },
     pageHeader: {
       backgroundColor: theme.palette.common.white,
       display: 'flex',
-      position: 'relative'
+      position: 'relative',
     },
     patientSection: {
       width: '50%',
-      display: 'flex'
+      display: 'flex',
     },
     doctorSection: {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'flex-end',
-      padding: 15
+      padding: 15,
     },
     noDoctorImage: {
       padding: 20,
-      paddingBottom: 0
+      paddingBottom: 0,
     },
     patientImage: {
       paddingRight: 7,
       '& img': {
-        verticalAlign: 'middle'
-      }
+        verticalAlign: 'middle',
+      },
     },
     patientInfo: {
-      padding: 15
+      padding: 15,
     },
     patientName: {
       fontSize: 22,
@@ -144,9 +141,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       borderBottom: '1px solid #00b38e',
       '& span': {
-        color: 'rgba(2, 71, 91, 0.6)'
+        color: 'rgba(2, 71, 91, 0.6)',
       },
-      marginBottom: 5
+      marginBottom: 5,
     },
     patientTextInfo: {
       fontSize: 14,
@@ -155,66 +152,66 @@ const useStyles = makeStyles((theme: Theme) => {
       '& label': {
         opacity: 0.8,
         color: '#02475b',
-        fontSize: 12
-      }
+        fontSize: 12,
+      },
     },
     doctorImg: {
-      paddingRight: 12
+      paddingRight: 12,
     },
     avatar: {
       width: 60,
       height: 60,
       backgroundColor: '#f7f8f5',
       '& img': {
-        maxWidth: '100%'
-      }
+        maxWidth: '100%',
+      },
     },
     doctorInfo: {
       paddingRight: 55,
-      fontWeight: 500
+      fontWeight: 500,
     },
     assign: {
       fontSize: 12,
       color: '#02475b',
-      opacity: 0.8
+      opacity: 0.8,
     },
     doctorName: {
       fontSize: 16,
       color: '#01475b',
-      paddingTop: 5
+      paddingTop: 5,
     },
     doctorType: {
       fontSize: 10,
       opacity: 0.6,
       color: '#01475b',
       textTransform: 'uppercase',
-      paddingTop: 2
+      paddingTop: 2,
     },
     doctorContact: {
       color: '#0087ba',
       fontSize: 14,
-      paddingTop: 8
+      paddingTop: 8,
     },
     caseSheetBody: {
       paddingLeft: 74,
-      paddingRight: 15
+      paddingRight: 15,
     },
     chatBody: {
-      paddingRight: 74
+      paddingRight: 74,
     },
     contentGroup: {
       display: 'flex',
-      position: 'relative'
+      position: 'relative',
     },
     leftSection: {
       width: 'calc(50% - 1px)',
-      borderRight: '1px solid rgba(2,71,91,0.2)'
+      borderRight: '1px solid rgba(2,71,91,0.2)',
     },
     rightSection: {
-      width: '50%'
+      width: '50%',
     },
     blockGroup: {
-      width: '100%'
+      width: '100%',
     },
     blockHeader: {
       boxShadow: '0 2px 10px 0 rgba(128, 128, 128, 0.2)',
@@ -223,27 +220,27 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 500,
       textAlign: 'center',
-      color: '#02475b'
+      color: '#02475b',
     },
     blockBody: {
-      padding: '10px 5px 0 5px'
+      padding: '10px 5px 0 5px',
     },
     customScroll: {
       padding: '10px 15px',
-      paddingBottom: 20
+      paddingBottom: 20,
     },
     boxGroup: {
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.common.white,
       borderRadius: 10,
       padding: '30px 30px 10px 30px',
-      marginBottom: 10
+      marginBottom: 10,
     },
     headerSticky: {
       position: 'fixed',
       width: '100%',
       zIndex: 999,
-      top: 0
+      top: 0,
     },
     tabRoot: {
       fontSize: 16,
@@ -256,8 +253,8 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 1,
       lineHeight: 'normal',
       [theme.breakpoints.down('xs')]: {
-        width: '50%'
-      }
+        width: '50%',
+      },
     },
     modalBox: {
       maxWidth: 320,
@@ -272,8 +269,8 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         marginBottom: 50,
         marginTop: 0,
-        color: '#02475b'
-      }
+        color: '#02475b',
+      },
     },
     modalPdfBox: {
       maxWidth: '90%',
@@ -281,12 +278,12 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       marginTop: 88,
       backgroundColor: '#eeeeee',
-      position: 'relative'
+      position: 'relative',
     },
     tabHeader: {
       height: 30,
       borderTopLeftRadius: '10px',
-      borderTopRightRadius: '10px'
+      borderTopRightRadius: '10px',
     },
     tabBody: {
       minHeight: 60,
@@ -298,8 +295,8 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 700,
         lineHeight: 1.4,
-        color: '#01475b'
-      }
+        color: '#01475b',
+      },
     },
     tabPdfBody: {
       display: 'none',
@@ -308,14 +305,14 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: '15px',
       paddingTop: '10px',
       paddingRight: '15px',
-      textAlign: 'center'
+      textAlign: 'center',
     },
     cross: {
       position: 'absolute',
       right: 0,
       top: '10px',
       fontSize: '18px',
-      color: '#02475b'
+      color: '#02475b',
     },
     consultButton: {
       fontSize: 14,
@@ -329,8 +326,8 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
-        backgroundColor: '#e28913'
-      }
+        backgroundColor: '#e28913',
+      },
     },
     cancelConsult: {
       width: '100%',
@@ -341,13 +338,13 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fff'
-      }
+        backgroundColor: '#fff',
+      },
     },
     backArrowSection: {
       position: 'fixed',
       width: '100%',
-      top: 93
+      top: 93,
     },
     backArrow: {
       cursor: 'pointer',
@@ -363,41 +360,39 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '36px',
         borderRadius: '50%',
         textAlign: 'center',
-        backgroundColor: '#02475b'
+        backgroundColor: '#02475b',
       },
       '& img': {
-        verticalAlign: 'bottom'
-      }
+        verticalAlign: 'bottom',
+      },
     },
     whiteArrow: {
       verticalAlign: 'middle',
       [theme.breakpoints.down(1220)]: {
-        display: 'none'
-      }
+        display: 'none',
+      },
     },
     blackArrow: {
       verticalAlign: 'middle',
       [theme.breakpoints.up(1220)]: {
-        display: 'none'
-      }
+        display: 'none',
+      },
     },
     popoverTile: {
       color: '#fcb716',
-      fontWeight: 500
+      fontWeight: 500,
     },
     countdownLoader: {
       position: 'absolute',
       right: 12,
-      top: 12
-    }
+      top: 12,
+    },
   };
 });
 
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
-  const { patientId, appointmentId, queueId, isActive } = useParams<
-    JDConsultRoomParams
-  >();
+  const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   // const [isAutoSubmitDialogOpened, setIsAutoSubmitDialogOpened] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
@@ -412,8 +407,8 @@ export const JDConsultRoom: React.FC = () => {
     RemoveFromConsultQueueVariables
   >(REMOVE_FROM_CONSULT_QUEUE, {
     variables: {
-      id: parseInt(queueId, 10)
-    }
+      id: parseInt(queueId, 10),
+    },
   });
 
   const mutationCreateJrdCaseSheet = useMutation<
@@ -421,8 +416,8 @@ export const JDConsultRoom: React.FC = () => {
     CreateJuniorDoctorCaseSheetVariables
   >(CREATE_CASESHEET_FOR_JRD, {
     variables: {
-      appointmentId: appointmentId
-    }
+      appointmentId: appointmentId,
+    },
   });
 
   const [isEnded] = useState<boolean>(false);
@@ -434,35 +429,25 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [saving, setSaving] = useState<boolean>(false);
-  const [startAppointment, setStartAppointment] = React.useState<boolean>(
-    false
-  );
-  const [isAudioVideoCall, setIsAuditoVideoCall] = React.useState<boolean>(
-    false
-  );
+  const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [isAudioVideoCall, setIsAuditoVideoCall] = React.useState<boolean>(false);
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const client = useApolloClient();
 
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-    | null
+    GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[] | null
   >(null);
   const [diagnosis, setDiagnosis] = useState<
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-    | null
+    GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[] | null
   >(null);
   const [otherInstructions, setOtherInstructions] = useState<
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-    | null
+    GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<
-    any[] | null
-  >(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
-    | null
+    GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
   const [userCardStrip, setUserCardStrip] = useState<string>('');
 
@@ -474,9 +459,7 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(
-    null
-  );
+  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
   const [autoCloseCaseSheet, setAutoCloseCaseSheet] = useState<boolean>(false);
 
   const [bp, setBp] = useState<string>('');
@@ -506,11 +489,11 @@ export const JDConsultRoom: React.FC = () => {
 
   const {
     data: assignedDoctorDetailsData,
-    loading: assignedDoctorDetailsLoading
+    loading: assignedDoctorDetailsLoading,
   } = useQueryWithSkip<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
     GET_DOCTOR_DETAILS_BY_ID,
     {
-      variables: { id: assignedDoctorId || '' }
+      variables: { id: assignedDoctorId || '' },
     }
   );
 
@@ -588,16 +571,14 @@ export const JDConsultRoom: React.FC = () => {
       casesheetInfo.getJuniorDoctorCaseSheet &&
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails &&
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment &&
-      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
-        .displayId) ||
+      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.displayId) ||
     '';
   const patientAppointmentTimeUtc =
     (casesheetInfo &&
       casesheetInfo.getJuniorDoctorCaseSheet &&
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails &&
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment &&
-      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
-        .appointmentDateTime) ||
+      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime) ||
     '';
   const patientPhotoUrl =
     casesheetInfo &&
@@ -615,9 +596,7 @@ export const JDConsultRoom: React.FC = () => {
   }
 
   const patientRelationHeader =
-    patientRelation === Relation.ME
-      ? ' Self'
-      : _startCase(_toLower(patientRelation));
+    patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
 
   const scrollbars = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -633,30 +612,26 @@ export const JDConsultRoom: React.FC = () => {
         .query<GetJuniorDoctorCaseSheet, GetJuniorDoctorCaseSheetVariables>({
           query: GET_CASESHEET_JRD,
           fetchPolicy: 'no-cache',
-          variables: { appointmentId: appointmentId }
+          variables: { appointmentId: appointmentId },
         })
-        .then(_data => {
+        .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
-            ? setCaseSheetId(
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
-              )
+            ? setCaseSheetId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id)
             : '';
 
           const patientFamilyHistory =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory
-              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-                  .familyHistory[0]
+              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory[0]
               : null;
 
           const patientLifeStyle =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle
-              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-                  .lifeStyle[0]
+              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle[0]
               : null;
 
           setFamilyHistory(
@@ -666,93 +641,64 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           setLifeStyle(
-            patientLifeStyle && patientLifeStyle!.description
-              ? patientLifeStyle!.description
-              : ''
+            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
 
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !==
-          null
-            ? setDiagnosis(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
+            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
+            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as any[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
+            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
-              )
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
+            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-            ? setNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .notes as unknown) as string
-              )
+            ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .notes as unknown) as string)
             : setNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!
-                  .juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .consultType
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType,
               ] as unknown) as string[])
             : setConsultType([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUp
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp,
               ] as unknown) as boolean[])
             : setFollowUp([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-            .followUpAfterInDays
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays
             ? setFollowUpAfterInDays(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUpAfterInDays
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays,
               ] as unknown) as string[])
             : setFollowUpAfterInDays([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUpDate
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.doctorId
-            ? setAssignedDoctorId(
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .doctorId
-              )
+            ? setAssignedDoctorId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.doctorId)
             : setAssignedDoctorId(null);
           /* patient personal data state vars */
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .followUpDate
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
           if (
@@ -760,23 +706,18 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment &&
-            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
-              .appointmentDateTime
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
           ) {
             //setappointmentDateTime('2019-08-27T17:30:00.000Z');
             setappointmentDateTime(
-              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
-                .appointmentDateTime
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
           const cardStripArr = [];
           if (
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-              .dateOfBirth &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-              .dateOfBirth !== null &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
-              .dateOfBirth !== ''
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth &&
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== null &&
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== ''
           ) {
             cardStripArr.push(
               Math.abs(
@@ -789,25 +730,15 @@ export const JDConsultRoom: React.FC = () => {
           }
           if (
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender !==
-              null
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender !== null
           ) {
-            if (
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
-              Gender.FEMALE
-            ) {
+            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.FEMALE) {
               cardStripArr.push('F');
             }
-            if (
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
-              Gender.MALE
-            ) {
+            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.MALE) {
               cardStripArr.push('M');
             }
-            if (
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
-              Gender.OTHER
-            ) {
+            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.OTHER) {
               cardStripArr.push('O');
             }
           }
@@ -822,9 +753,7 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.patientDetails &&
             _data.data.getJuniorDoctorCaseSheet.patientDetails.gender
           ) {
-            setGender(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.gender
-            );
+            setGender(_data.data.getJuniorDoctorCaseSheet.patientDetails.gender);
           }
 
           // patient medical and family history
@@ -833,66 +762,58 @@ export const JDConsultRoom: React.FC = () => {
             _data.data &&
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.patientDetails &&
-            _data.data.getJuniorDoctorCaseSheet.patientDetails
-              .patientMedicalHistory
+            _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
           ) {
             setBp(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.bp || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.bp || ''
             );
             setDietAllergies(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.dietAllergies || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .dietAllergies || ''
             );
             setDrugAllergies(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.drugAllergies || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .drugAllergies || ''
             );
             setHeight(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.height || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.height || ''
             );
             setMenstrualHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.menstrualHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .menstrualHistory || ''
             );
             setPastMedicalHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.pastMedicalHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .pastMedicalHistory || ''
             );
             setPastSurgicalHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.pastSurgicalHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .pastSurgicalHistory || ''
             );
             setTemperature(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.temperature || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .temperature || ''
             );
             setWeight(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails
-                .patientMedicalHistory.weight || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
             );
           }
         })
         .catch((error: ApolloError) => {
-          const networkErrorMessage = error.networkError
-            ? error.networkError.message
-            : null;
+          const networkErrorMessage = error.networkError ? error.networkError.message : null;
           const allMessages = error.graphQLErrors
-            .map(e => e.message)
+            .map((e) => e.message)
             .concat(networkErrorMessage ? networkErrorMessage : []);
-          const isCasesheetNotExists = allMessages.includes(
-            AphErrorMessages.NO_CASESHEET_EXIST
-          );
+          const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
           if (isCasesheetNotExists) {
             setError('Creating Casesheet. Please wait....');
             mutationCreateJrdCaseSheet()
-              .then(response => {
+              .then((response) => {
                 window.location.href = clientRoutes.JDConsultRoom({
                   appointmentId: appointmentId,
                   patientId: patientId,
                   queueId: queueId,
-                  isActive: 'active'
+                  isActive: 'active',
                 });
               })
               .catch((e: ApolloError) => {
@@ -932,10 +853,10 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           appointmentId: appointmentId,
           callType: callType,
-          doctorType: DOCTOR_CALL_TYPE.JUNIOR
-        }
+          doctorType: DOCTOR_CALL_TYPE.JUNIOR,
+        },
       })
-      .then(_data => {
+      .then((_data) => {
         if (
           _data &&
           _data.data &&
@@ -959,37 +880,33 @@ export const JDConsultRoom: React.FC = () => {
       otherInstructionsFinal = null;
 
     if (symptoms && symptoms.length > 0) {
-      symptomsFinal = symptoms.map(symptom => {
+      symptomsFinal = symptoms.map((symptom) => {
         return _omit(symptom, '__typename');
       });
     }
     if (diagnosis && diagnosis.length > 0) {
-      diagnosisFinal = diagnosis.map(diagnosis => {
+      diagnosisFinal = diagnosis.map((diagnosis) => {
         return _omit(diagnosis, ['__typename', 'id']);
       });
     }
     if (diagnosticPrescription && diagnosticPrescription.length > 0) {
-      const diagnosticPrescriptionFinal1 = diagnosticPrescription.map(
-        prescription => {
-          return _omit(prescription, ['__typename']);
-        }
-      );
+      const diagnosticPrescriptionFinal1 = diagnosticPrescription.map((prescription) => {
+        return _omit(prescription, ['__typename']);
+      });
       // convert itemName to itemname
-      diagnosticPrescriptionFinal = diagnosticPrescription.map(prescription => {
+      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
         return {
-          itemname: prescription.itemName
-            ? prescription.itemName
-            : prescription.itemname
+          itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
         };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
-      medicinePrescriptionFinal = medicinePrescription.map(prescription => {
+      medicinePrescriptionFinal = medicinePrescription.map((prescription) => {
         return _omit(prescription, ['__typename']);
       });
     }
     if (otherInstructions && otherInstructions.length > 0) {
-      otherInstructionsFinal = otherInstructions.map(instruction => {
+      otherInstructionsFinal = otherInstructions.map((instruction) => {
         return _omit(instruction, ['__typename']);
       });
     }
@@ -1010,9 +927,7 @@ export const JDConsultRoom: React.FC = () => {
               otherInstructions: otherInstructionsFinal,
               medicinePrescription: medicinePrescriptionFinal,
               id: caseSheetId,
-              status: endConsult
-                ? CASESHEET_STATUS.COMPLETED
-                : CASESHEET_STATUS.PENDING,
+              status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
               lifeStyle: lifeStyle,
               familyHistory: familyHistory,
               dietAllergies: dietAllergies,
@@ -1023,18 +938,18 @@ export const JDConsultRoom: React.FC = () => {
               pastSurgicalHistory: pastSurgicalHistory,
               temperature: temperature,
               weight: weight,
-              bp: bp
-            }
+              bp: bp,
+            },
           },
-          fetchPolicy: 'no-cache'
+          fetchPolicy: 'no-cache',
         })
-        .then(_data => {
+        .then((_data) => {
           // savePatientAllergiesMutation();
           // savePatientFamilyHistoryMutation();
           // savePatientLifeStyleMutation();
           setSaving(false);
         })
-        .catch(e => {
+        .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           alert(errorMessage);
@@ -1080,9 +995,9 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           createAppointmentSessionInput: {
             appointmentId,
-            requestRole: REQUEST_ROLES.JUNIOR
-          }
-        }
+            requestRole: REQUEST_ROLES.JUNIOR,
+          },
+        },
       })
       .then((_data: any) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
@@ -1102,9 +1017,7 @@ export const JDConsultRoom: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(
-        flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
-      );
+      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO);
     }, 10);
   };
 
@@ -1117,9 +1030,7 @@ export const JDConsultRoom: React.FC = () => {
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails &&
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
     ) {
-      status =
-        casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
-          .status;
+      status = casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.status;
     }
     if (
       casesheetInfo &&
@@ -1127,8 +1038,7 @@ export const JDConsultRoom: React.FC = () => {
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails &&
       casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.status
     ) {
-      casesheetStatus =
-        casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.status;
+      casesheetStatus = casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.status;
     }
     return isActive === 'done' ||
       (casesheetStatus && casesheetStatus === STATUS.COMPLETED) ||
@@ -1148,7 +1058,7 @@ export const JDConsultRoom: React.FC = () => {
         <IdleTimer
           ref={idleTimerRef}
           element={document}
-          onIdle={e => {
+          onIdle={(e) => {
             setJrdNoFillDialog(true);
           }}
           debounce={250}
@@ -1158,18 +1068,14 @@ export const JDConsultRoom: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {error && error !== '' && (
-        <Typography className={classes.tabRoot}>{error}</Typography>
-      )}
+      {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
         <CaseSheetContextJrd.Provider
           value={{
             loading: !loaded,
             caseSheetId: appointmentId,
-            patientDetails: casesheetInfo!.getJuniorDoctorCaseSheet!
-              .patientDetails,
-            appointmentInfo: casesheetInfo!.getJuniorDoctorCaseSheet!
-              .caseSheetDetails!.appointment,
+            patientDetails: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails,
+            appointmentInfo: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment,
             symptoms,
             setSymptoms,
             notes,
@@ -1195,12 +1101,10 @@ export const JDConsultRoom: React.FC = () => {
             setFollowUpAfterInDays,
             followUpDate,
             setFollowUpDate,
-            healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!
-              .patientDetails!.healthVault,
-            appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!
-              .caseSheetDetails!.appointment!.appointmentDocuments,
-            pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!
-              .pastAppointments,
+            healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDocuments,
+            pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
             setCasesheetNotes,
             autoCloseCaseSheet,
             height,
@@ -1227,7 +1131,7 @@ export const JDConsultRoom: React.FC = () => {
             setWeight,
             setBp,
             setTemperature,
-            setGender
+            setGender,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
@@ -1238,10 +1142,7 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.backArrowSection}>
                     <div className={classes.backArrow}>
                       <a href={clientRoutes.juniorDoctor()}>
-                        <img
-                          className={classes.blackArrow}
-                          src={require('images/ic_back.svg')}
-                        />
+                        <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                         <img
                           className={classes.whiteArrow}
                           src={require('images/ic_back_white.svg')}
@@ -1258,11 +1159,9 @@ export const JDConsultRoom: React.FC = () => {
                       <img
                         style={{ width: '100px' }}
                         src={
-                          patientPhotoUrl !== ''
-                            ? patientPhotoUrl
-                            : require('images/no_photo.png')
+                          patientPhotoUrl !== '' ? patientPhotoUrl : require('images/no_photo.png')
                         }
-                        alt='Patient Profile Photo'
+                        alt="Patient Profile Photo"
                       />
                     </div>
                     <div className={classes.patientInfo}>
@@ -1271,8 +1170,7 @@ export const JDConsultRoom: React.FC = () => {
                         <span>({userCardStrip})</span>
                       </div>
                       <div className={classes.patientTextInfo}>
-                        <label>UHID:</label> {patientUhid} |{' '}
-                        <label>Relation:</label>
+                        <label>UHID:</label> {patientUhid} | <label>Relation:</label>
                         {patientRelationHeader}
                       </div>
                       <div className={classes.patientTextInfo}>
@@ -1295,7 +1193,7 @@ export const JDConsultRoom: React.FC = () => {
                                 ? assignedDoctorPhoto
                                 : require('images/no_photo.png')
                             }
-                            alt='Doctor Profile Photo'
+                            alt="Doctor Profile Photo"
                             className={classes.avatar}
                           />
                         </div>
@@ -1304,9 +1202,7 @@ export const JDConsultRoom: React.FC = () => {
                           <div
                             className={classes.doctorName}
                           >{`${assignedDoctorSalutation}${'.'} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
-                          <div className={classes.doctorType}>
-                            {assignedDoctorSpecialty}
-                          </div>
+                          <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
                           <div className={classes.doctorContact}>
                             {assignedDoctorMobile.slice(0, 3)}{' '}
                             {assignedDoctorMobile.split('+91').join(' ')}
@@ -1320,9 +1216,7 @@ export const JDConsultRoom: React.FC = () => {
 
                 {!disableChat() && (
                   <JDCallPopover
-                    setStartConsultAction={(flag: boolean) =>
-                      setStartConsultAction(flag)
-                    }
+                    setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
                     saveCasesheetAction={(flag: boolean, endConsult: boolean) =>
                       saveCasesheetAction(flag, endConsult)
@@ -1353,13 +1247,8 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.leftSection}>
                     <div className={classes.blockGroup}>
                       <div className={classes.blockHeader}>Case Sheet</div>
-                      <div
-                        className={`${classes.blockBody} ${classes.caseSheetBody}`}
-                      >
-                        <Scrollbars
-                          autoHide={false}
-                          style={{ height: 'calc(100vh - 230px' }}
-                        >
+                      <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
+                        <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 230px' }}>
                           <div className={classes.customScroll}>
                             {casesheetInfo ? <CaseSheet /> : null}
                           </div>
@@ -1379,9 +1268,7 @@ export const JDConsultRoom: React.FC = () => {
                           doctorId={doctorId}
                           patientId={patientId}
                           disableChat={disableChat()}
-                          isNewMessage={(isNewMessage: boolean) =>
-                            setIsNewMessage(isNewMessage)
-                          }
+                          isNewMessage={(isNewMessage: boolean) => setIsNewMessage(isNewMessage)}
                           autoCloseCaseSheet={autoCloseCaseSheet}
                         />
                       </div>
@@ -1402,13 +1289,11 @@ export const JDConsultRoom: React.FC = () => {
         disableEscapeKeyDown
       >
         <DialogContent>
-          <DialogContentText>
-            Casesheet has been successfully submitted.
-          </DialogContentText>
+          <DialogContentText>Casesheet has been successfully submitted.</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button
-            color='primary'
+            color="primary"
             onClick={() => {
               setIsDialogOpen(false);
               if (document.getElementById('homeId')) {
@@ -1429,17 +1314,15 @@ export const JDConsultRoom: React.FC = () => {
         disableBackdropClick
         disableEscapeKeyDown
       >
-        <DialogTitle className={classes.popoverTile}>
-          Apollo 24x7 - Alert
-        </DialogTitle>
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Alert</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Hi! Seems like you've gone offline. Please click on 'OK' to continue
-            chatting with your patient.
+            Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with your
+            patient.
             <div className={classes.countdownLoader}>
               <ReactCountdownClock
                 seconds={60}
-                color='#fcb716'
+                color="#fcb716"
                 alpha={0.9}
                 size={50}
                 onComplete={() => triggerAutoEndConsult()}
@@ -1449,7 +1332,7 @@ export const JDConsultRoom: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button
-            color='primary'
+            color="primary"
             onClick={() => {
               setJrdNoFillDialog(false);
             }}

@@ -12,7 +12,7 @@ import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: '100%'
+      width: '100%',
     },
     previewHeader: {
       backgroundColor: theme.palette.common.white,
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.2)',
       fontSize: 16,
       fontWeight: 'bold',
-      color: '#02475b'
+      color: '#02475b',
     },
     prescriptionPreview: {
       backgroundColor: '#fff',
@@ -29,10 +29,10 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 40px)',
       color: 'rgba(0, 0, 0, 0.6)',
       margin: 20,
-      padding: 20
+      padding: 20,
     },
     pageHeader: {
-      display: 'flex'
+      display: 'flex',
     },
     doctorInformation: {
       marginLeft: 'auto',
@@ -44,64 +44,64 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         '& span': {
           fontWeight: 'normal',
-          fontSize: 10
-        }
-      }
+          fontSize: 10,
+        },
+      },
     },
     address: {
-      fontSize: 8
+      fontSize: 8,
     },
     logo: {
       '& img': {
-        height: 65
-      }
+        height: 65,
+      },
     },
     pageContent: {
-      padding: '20px 0 0 0'
+      padding: '20px 0 0 0',
     },
     sectionHeader: {
       fontSize: 11,
       fontWeight: 500,
       color: 'rgba(0, 0, 0, 0.7)',
       backgroundColor: '#f7f7f7',
-      padding: '8px 12px'
+      padding: '8px 12px',
     },
     accountDetails: {
       fontSize: 10,
       color: 'rgba(0, 0, 0, 0.6)',
-      padding: 12
+      padding: 12,
     },
     infoRow: {
       display: 'flex',
-      paddingBottom: 5
+      paddingBottom: 5,
     },
     label: {
       width: 80,
-      paddingRight: 10
+      paddingRight: 10,
     },
     patientName: {
       fontSize: 12,
       color: '#02475b',
-      fontWeight: 500
+      fontWeight: 500,
     },
     chiefComplaints: {
       fontSize: 12,
       color: 'rgba(0, 0, 0, 0.6)',
-      padding: 12
+      padding: 12,
     },
     complaintsInfoRow: {
-      paddingBottom: 5
+      paddingBottom: 5,
     },
     complaintsLabel: {
       fontSize: 12,
       fontWeight: 500,
-      color: '#01475b'
+      color: '#01475b',
     },
     diagnosis: {
       fontSize: 12,
       color: '#02475b',
       fontWeight: 500,
-      padding: 12
+      padding: 12,
     },
     medicationList: {
       fontSize: 12,
@@ -118,44 +118,44 @@ const useStyles = makeStyles((theme: Theme) => {
             color: 'rgba(0, 0, 0, 0.6)',
             fontWeight: 'normal',
             paddingTop: 3,
-            display: 'inline-block'
-          }
-        }
-      }
+            display: 'inline-block',
+          },
+        },
+      },
     },
     advice: {
       fontSize: 12,
-      padding: 12
+      padding: 12,
     },
     disclaimer: {
       fontSize: 10,
       borderTop: 'solid 1px rgba(2, 71, 91, 0.15)',
       color: 'rgba(0, 0, 0, 0.5)',
-      paddingTop: 10
+      paddingTop: 10,
     },
     pageNumbers: {
       textAlign: 'center',
       color: '#02475b',
       fontSize: 8,
       fontWeight: 500,
-      paddingBottom: 15
+      paddingBottom: 15,
     },
     labelContent: {
-      width: '100%'
+      width: '100%',
     },
     followUpContent: {
       padding: 12,
       fontSize: 12,
       color: '#02475b',
-      fontWeight: 500
+      fontWeight: 500,
     },
     labelBlue: {
-      color: '#02475b'
-    }
+      color: '#02475b',
+    },
   };
 });
 
-export const CasesheetView: React.FC = props => {
+export const CasesheetView: React.FC = (props) => {
   const classes = useStyles();
   const {
     patientDetails,
@@ -174,7 +174,7 @@ export const CasesheetView: React.FC = props => {
     otherInstructions,
     followUpAfterInDays,
     followUpDate,
-    followUpConsultType
+    followUpConsultType,
   } = useContext(CaseSheetContext);
 
   let doctorFacilityDetails = null;
@@ -190,9 +190,7 @@ export const CasesheetView: React.FC = props => {
     }
   };
 
-  const convertMedicineTobeTaken = (
-    medicineTiming: MEDICINE_TO_BE_TAKEN | null
-  ) => {
+  const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
       let timing = _toLower(medicineTiming);
       if (timing.includes('_')) {
@@ -235,29 +233,21 @@ export const CasesheetView: React.FC = props => {
           ? prescription.medicineUnit.toLowerCase()
           : 'times';
       const dosageCount =
-        prescription!.medicineTimings!.length > 0 &&
-        prescription!.medicineDosage
-          ? parseInt(prescription!.medicineDosage) *
-            prescription!.medicineTimings!.length
+        prescription!.medicineTimings!.length > 0 && prescription!.medicineDosage
+          ? parseInt(prescription!.medicineDosage) * prescription!.medicineTimings!.length
           : prescription!.medicineDosage;
-      const duration = `for ${Number(
-        prescription.medicineConsumptionDurationInDays
-      )} days`;
+      const duration = `for ${Number(prescription.medicineConsumptionDurationInDays)} days`;
       return (
         <li>
           {prescription.medicineName}
           <br />
           <span>
             {`${dosageCount} ${unitHtml} a day ${
-              prescription.medicineTimings &&
-              prescription.medicineTimings.length > 0
-                ? `(${prescription.medicineTimings.map(
-                    (timing: any) => timing
-                  )})`
+              prescription.medicineTimings && prescription.medicineTimings.length > 0
+                ? `(${prescription.medicineTimings.map((timing: any) => timing)})`
                 : ''
             } ${duration}${
-              prescription.medicineToBeTaken &&
-              prescription.medicineToBeTaken.length > 0
+              prescription.medicineToBeTaken && prescription.medicineToBeTaken.length > 0
                 ? `; ${prescription.medicineToBeTaken.map((timing: any) =>
                     convertMedicineTobeTaken(timing)
                   )}`
@@ -274,7 +264,7 @@ export const CasesheetView: React.FC = props => {
       <div className={classes.prescriptionPreview}>
         <div className={classes.pageHeader}>
           <div className={classes.logo}>
-            <img src={require('images/ic_logo_insideapp.svg')} alt='' />
+            <img src={require('images/ic_logo_insideapp.svg')} alt="" />
           </div>
           {createdDoctorProfile ? (
             <div className={classes.doctorInformation}>
@@ -285,8 +275,7 @@ export const CasesheetView: React.FC = props => {
                   createdDoctorProfile.specialty.specialistSingularTerm
                     ? createdDoctorProfile.specialty.specialistSingularTerm
                     : ''
-                } | MCI Reg. No. ${createdDoctorProfile.registrationNumber ||
-                  ''}`}</span>
+                } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
               </h3>
               {doctorFacilityDetails ? (
                 <>
@@ -299,22 +288,10 @@ export const CasesheetView: React.FC = props => {
                       doctorFacilityDetails.streetLine3
                         ? `| ${doctorFacilityDetails.streetLine3}`
                         : ''
-                    } ${
-                      doctorFacilityDetails.city
-                        ? ` | ${doctorFacilityDetails.city}`
-                        : ''
-                    }  ${
-                      doctorFacilityDetails.zipcode
-                        ? ` - ${doctorFacilityDetails.zipcode}`
-                        : ''
-                    }  ${
-                      doctorFacilityDetails.state
-                        ? ` | ${doctorFacilityDetails.state}`
-                        : ''
-                    } ${
-                      doctorFacilityDetails.country
-                        ? `,${doctorFacilityDetails.country}`
-                        : ''
+                    } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
+                      doctorFacilityDetails.zipcode ? ` - ${doctorFacilityDetails.zipcode}` : ''
+                    }  ${doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''} ${
+                      doctorFacilityDetails.country ? `,${doctorFacilityDetails.country}` : ''
                     }`}
                   </p>
                 </>
@@ -330,9 +307,8 @@ export const CasesheetView: React.FC = props => {
               <div className={classes.labelContent}>
                 {patientDetails ? (
                   <div className={classes.patientName}>
-                    {`${patientDetails.firstName}  ${patientDetails.lastName}`}{' '}
-                    | {patientDetails.gender} |{' '}
-                    {getAge(patientDetails.dateOfBirth)}
+                    {`${patientDetails.firstName}  ${patientDetails.lastName}`} |{' '}
+                    {patientDetails.gender} | {getAge(patientDetails.dateOfBirth)}
                   </div>
                 ) : null}
               </div>
@@ -363,9 +339,7 @@ export const CasesheetView: React.FC = props => {
               <div className={classes.infoRow}>
                 <div className={classes.label}>Appt Id</div>
                 <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>
-                    {appointmentInfo.displayId}
-                  </div>
+                  <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
                 </div>
               </div>
             ) : null}
@@ -374,9 +348,7 @@ export const CasesheetView: React.FC = props => {
                 <div className={classes.label}>Consult Date</div>
                 <div className={classes.labelContent}>
                   <div className={classes.labelBlue}>
-                    {moment(appointmentInfo.appointmentDateTime).format(
-                      'DD/MM/YYYY'
-                    )}
+                    {moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}
                   </div>
                 </div>
               </div>
@@ -385,9 +357,7 @@ export const CasesheetView: React.FC = props => {
               <div className={classes.infoRow}>
                 <div className={classes.label}>Consult Type</div>
                 <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>
-                    {_startCase(_toLower(consultType[0]))}
-                  </div>
+                  <div className={classes.labelBlue}>{_startCase(_toLower(consultType[0]))}</div>
                 </div>
               </div>
             ) : null}
@@ -396,11 +366,9 @@ export const CasesheetView: React.FC = props => {
             <>
               <div className={classes.sectionHeader}>Chief Complaints</div>
               <div className={classes.chiefComplaints}>
-                {symptoms.map(symptom => (
+                {symptoms.map((symptom) => (
                   <div className={classes.complaintsInfoRow}>
-                    <div className={classes.complaintsLabel}>
-                      {symptom.symptom}
-                    </div>
+                    <div className={classes.complaintsLabel}>{symptom.symptom}</div>
                     <div className={classes.labelContent}>
                       {`Since: Last ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
                     </div>
@@ -413,7 +381,7 @@ export const CasesheetView: React.FC = props => {
             <>
               <div className={classes.sectionHeader}>Diagnosis</div>
               <div className={classes.diagnosis}>
-                {diagnosis.map(diagnos => (
+                {diagnosis.map((diagnos) => (
                   <div className={classes.infoRow}>
                     <div className={classes.labelContent}>{diagnos.name}</div>
                   </div>
@@ -435,8 +403,7 @@ export const CasesheetView: React.FC = props => {
               <div className={classes.medicationList}>
                 <ol>
                   {diagnosticPrescription.map(
-                    prescription =>
-                      prescription.itemname && <li>{prescription.itemname}</li>
+                    (prescription) => prescription.itemname && <li>{prescription.itemname}</li>
                   )}
                 </ol>
               </div>
@@ -457,14 +424,10 @@ export const CasesheetView: React.FC = props => {
                   </div>
                 </>
               ) : null}
-              {followUp.length > 0 &&
-              followUp[0] &&
-              parseInt(followUpAfterInDays[0]) > 0 ? (
+              {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Follow Up</div>
-                  <div className={classes.followUpContent}>
-                    {getFollowUpData()}
-                  </div>
+                  <div className={classes.followUpContent}>{getFollowUpData()}</div>
                 </>
               ) : null}
             </>
@@ -476,9 +439,8 @@ export const CasesheetView: React.FC = props => {
           <div className={classes.pageNumbers}>Page 1 of 2</div>
         ) : null}
         <div className={classes.disclaimer}>
-          Disclaimer: The prescription has been issued based on your inputs
-          during chat/call with the doctor. In case of emergency please visit a
-          nearby hospital.
+          Disclaimer: The prescription has been issued based on your inputs during chat/call with
+          the doctor. In case of emergency please visit a nearby hospital.
         </div>
       </div>
       {isPageContentFull() &&
