@@ -289,6 +289,11 @@ const bookRescheduleAppointment: Resolver<
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
+
+  if (apptDetails.status == STATUS.COMPLETED || apptDetails.status == STATUS.CANCELLED) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+
   // doctor details
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
   const docDetails = await doctor.findById(apptDetails.doctorId);
