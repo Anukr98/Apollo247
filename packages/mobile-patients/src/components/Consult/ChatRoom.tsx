@@ -579,7 +579,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(startConsultjrResult, 'startConsultjrResult');
       if (startConsultjrResult.length == 0) {
         thirtySecondCall();
-        minuteCaller();
+        // minuteCaller();
       } else {
       }
     }
@@ -1267,7 +1267,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log({});
 
       thirtySecondCall();
-      minuteCaller();
+      // minuteCaller();
     } else {
       setDisplayChatQuestions(true);
     }
