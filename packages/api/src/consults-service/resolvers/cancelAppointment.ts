@@ -63,7 +63,9 @@ const cancelAppointment: Resolver<
   }
 
   if (
-    appointment.status == STATUS.IN_PROGRESS &&
+    (appointment.status == STATUS.IN_PROGRESS ||
+      appointment.status == STATUS.NO_SHOW ||
+      appointment.status == STATUS.CALL_ABANDON) &&
     cancelAppointmentInput.cancelledBy !== REQUEST_ROLES.DOCTOR &&
     appointment.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE
   )
