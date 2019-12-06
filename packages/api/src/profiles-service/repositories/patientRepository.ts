@@ -238,7 +238,7 @@ export class PatientRepository extends Repository<Patient> {
       headers: {
         Connection: 'keep-alive',
         'Accept-Encoding': 'gzip, deflate',
-        Host: 'blue.phrdemo.com',
+        Host: `${process.env.PRISM_HOST}`,
         Accept: '*/*',
       },
       formData: formData,
