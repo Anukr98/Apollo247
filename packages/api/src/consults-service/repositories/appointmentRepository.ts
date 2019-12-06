@@ -72,13 +72,24 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   checkIfAppointmentExist(doctorId: string, appointmentDateTime: Date) {
-    return this.count({
+    /*return this.count({
       where: {
         doctorId,
         appointmentDateTime,
         status: Not([STATUS.CANCELLED, STATUS.PAYMENT_PENDING]),
       },
-    });
+    });*/
+
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime = :fromDate', {
+        fromDate: appointmentDateTime,
+      })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
+      .getCount();
   }
 
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
@@ -819,6 +830,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       appointmentDateTime,
       rescheduleCountByDoctor,
       appointmentState,
+      status: STATUS.PENDING,
     });
   }
 
@@ -894,9 +906,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       const duration = Math.floor(60 / timeSlot[0].consultDuration);
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
+          const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
+          const addMin = Math.abs(
+            (startMin % timeSlot[0].consultDuration) - timeSlot[0].consultDuration
+          );
+          let slot = blockedSlot.start;
+          if (addMin != timeSlot[0].consultDuration) {
+            slot = addMinutes(blockedSlot.start, addMin);
+          }
+          console.log(startMin, addMin, slot, 'start min');
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
-          let slot = blockedSlot.start;
           if (!Number.isInteger(blockedSlotsCount)) {
             blockedSlotsCount = Math.ceil(blockedSlotsCount);
           }

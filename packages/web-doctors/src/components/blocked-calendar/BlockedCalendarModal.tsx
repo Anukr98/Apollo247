@@ -985,15 +985,19 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     />
                     {selectedBlockOption === 'consulthours' && (
                       <div className={classes.entireDayContent}>
-                        <p>
-                          These are your active consult hours for the selected day. Select which
-                          ones you’d like to block:
-                        </p>
                         {start === end && (
                           <div>
-                            <div className={classes.formDate}>
-                              {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
-                            </div>
+                            {consultHours ? (
+                              <div className={classes.formDate}>
+                                <p>
+                                  These are your active consult hours for the selected day. Select
+                                  which ones you’d like to block:
+                                </p>
+                                {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
+                              </div>
+                            ) : (
+                              <p>You don't have any active consult hours on the selected day</p>
+                            )}
                             {consultHours && (
                               <FormGroup>
                                 <FormControlLabel
@@ -1015,6 +1019,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         )}
                         {start !== end && (
                           <div>
+                            {dateRange && dateRange.length > 0 ? (
+                              <p>
+                                These are your active consult hours for the selected day. Select
+                                which ones you’d like to block:
+                              </p>
+                            ) : (
+                              <p>You don't have any active consult hours on the selected day</p>
+                            )}
+
                             {dateRange &&
                               dateRange.length > 0 &&
                               dateRange.map((item: any) => (
@@ -1285,7 +1298,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         <Button
                           type="submit"
                           disabled={
-                            loading || invalid || !isTimeValid || !isallreadyInArray || !isPastTime
+                            loading ||
+                            invalid ||
+                            !isTimeValid ||
+                            !isallreadyInArray ||
+                            !isPastTime ||
+                            new Date(start).getDate() > new Date(end).getDate()
                           }
                           variant="contained"
                           className={classes.blockCalBtn}
