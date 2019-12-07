@@ -177,6 +177,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (currentPatient) {
       setProfile(currentPatient);
+      ordersRefetch().then((data: any) => {
+        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrdersFetched(orderData);
+      });
     }
   }, [currentPatient]);
 

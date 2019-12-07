@@ -129,7 +129,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     setProfile(currentPatient!);
+    ordersRefetch().then(({ data }) => {
+      const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+        (item) =>
+          !(
+            (item!.medicineOrdersStatus || []).length == 1 &&
+            (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+          )
+      );
+      setOrdersFetched(ordersData);
+    });
   }, [currentPatient]);
+
   useEffect(() => {
     // getting from local storage first for immediate rendering
     AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
@@ -174,7 +185,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
     if (ordersFetched.length === 0) {
       ordersRefetch().then(({ data }) => {
-        const ordersData = (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+        const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
           (item) =>
             !(
               (item!.medicineOrdersStatus || []).length == 1 &&
