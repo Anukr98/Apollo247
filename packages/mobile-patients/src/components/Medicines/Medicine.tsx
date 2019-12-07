@@ -27,6 +27,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import {
   Brand,
@@ -153,9 +154,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
-            () => {}
-          );
+          AsyncStorage.setItem(
+            MEDICINE_LANDING_PAGE_DATA,
+            JSON.stringify(localData)
+          ).catch(() => {});
         setData(d.data);
         setLoading(false);
       })
@@ -168,7 +170,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         });
       });
     if (_orders.length === 0) {
-      ordersRefetch();
+      ordersRefetch().then(({ data }) => {
+        const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! ||
+          []) as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[];
+        _orders = ordersData.filter(
+          (item) =>
+            !(
+              (item!.medicineOrdersStatus || []).length == 1 &&
+              (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+            )
+        );
+      });
     }
   }, []);
 
@@ -194,7 +206,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   });
 
   // Note: if hideStatus = true means display it, false measn hide it
-  const _orders = (
+  let _orders = (
     (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
     []
   ).filter(

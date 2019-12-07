@@ -307,12 +307,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   );
 
-  const _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
+  let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
 
   useEffect(() => {
     hRefetch();
     if (_orders.length == 0) {
-      ordersRefetch();
+      ordersRefetch().then((data: any) => {
+        _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+      });
     }
   }, []);
 

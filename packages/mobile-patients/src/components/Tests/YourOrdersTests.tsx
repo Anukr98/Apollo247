@@ -41,7 +41,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [orders, setOrders] = useState<
     getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]
   >(props.navigation.getParam('orders'));
-  const refetch = props.navigation.getParam('refetch');
+  const refetch =
+    props.navigation.getParam('refetch') ||
+    useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
+      variables: {
+        patientId: currentPatient && currentPatient.id,
+      },
+      fetchPolicy: 'cache-first',
+    }).refetch;
   const error = props.navigation.getParam('error');
   const loading = props.navigation.getParam('loading');
 

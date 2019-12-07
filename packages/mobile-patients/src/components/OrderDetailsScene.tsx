@@ -19,6 +19,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_MEDICINE_ORDER_DETAILS,
   SAVE_ORDER_CANCEL_STATUS,
+  GET_MEDICINE_ORDERS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderDetails,
@@ -117,7 +118,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
-  const refetchOrders: OrderRefetch = props.navigation.getParam('refetch');
 
   const client = useApolloClient();
 
@@ -134,6 +134,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     patientId: currentPatient && currentPatient.id,
     orderAutoId: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
   };
+  const refetchOrders: OrderRefetch =
+    props.navigation.getParam('refetch') ||
+    useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
+      variables: { patientId: currentPatient && currentPatient.id },
+      fetchPolicy: 'cache-first',
+    }).refetch;
   console.log(JSON.stringify(vars));
   const { data, loading, refetch } = useQuery<
     GetMedicineOrderDetails,

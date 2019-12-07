@@ -155,7 +155,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   const _pincode = (
                     addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
                   ).long_name;
-                  setPinCode && setPinCode(_pincode || '');
+                  fetchStorePickup(_pincode || '');
                 }
               } catch {}
             })
@@ -170,7 +170,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       );
       console.log('pincode');
     } else {
-      setPinCode && setPinCode(locationDetails.pincode);
+      fetchStorePickup(locationDetails.pincode);
     }
   }, []);
 

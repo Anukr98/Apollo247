@@ -24,6 +24,8 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { useQuery } from 'react-apollo-hooks';
+import { GET_MEDICINE_ORDERS_LIST } from '../graphql/profiles';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -52,7 +54,12 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const [orders, setOrders] = useState<
     GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
   >(props.navigation.getParam('orders'));
-  const refetch: OrderRefetch = props.navigation.getParam('refetch');
+  const refetch: OrderRefetch =
+    props.navigation.getParam('refetch') ||
+    useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
+      variables: { patientId: currentPatient && currentPatient.id },
+      fetchPolicy: 'cache-first',
+    }).refetch;
   const error = props.navigation.getParam('error');
   const loading = props.navigation.getParam('loading');
   const [isChanged, setisChanged] = useState<boolean>(false);
