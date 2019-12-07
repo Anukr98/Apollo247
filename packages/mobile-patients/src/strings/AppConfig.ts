@@ -70,6 +70,7 @@ const ConfigurationDev = {
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
@@ -92,6 +93,7 @@ const ConfigurationQA = {
   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
@@ -114,6 +116,7 @@ const ConfigurationProd = {
   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://pmt.apollo247.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
