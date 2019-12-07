@@ -159,7 +159,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   };
 
   const renderWebView = () => {
-    const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
+    const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}`;
     console.log(`%cCONSULT_PG_URL:\t${url}`, 'color: #bada55');
     // PATH: /consultpayment?appointmentId=&patientId=&price=
