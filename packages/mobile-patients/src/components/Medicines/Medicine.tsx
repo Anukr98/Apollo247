@@ -114,6 +114,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const cartItemsCount = cartItems.length;
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
+  const [ordersFetched, setOrdersFetched] = useState<
+    (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
+  >([]);
 
   const { showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -169,17 +172,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           description: "We're unable to fetch products, try later.",
         });
       });
-    if (_orders.length === 0) {
+    if (ordersFetched.length === 0) {
       ordersRefetch().then(({ data }) => {
-        const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! ||
-          []) as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[];
-        _orders = ordersData.filter(
+        const ordersData = (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
           (item) =>
             !(
               (item!.medicineOrdersStatus || []).length == 1 &&
               (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
             )
         );
+        setOrdersFetched(ordersData);
       });
     }
   }, []);
@@ -206,17 +208,34 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   });
 
   // Note: if hideStatus = true means display it, false measn hide it
-  let _orders = (
-    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-    []
-  ).filter(
-    (item) =>
-      !(
-        (item!.medicineOrdersStatus || []).length == 1 &&
-        (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-      )
-  );
-  console.log('ORDERS\n', { _orders });
+  // let _orders = (
+  //   (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
+  //   []
+  // ).filter(
+  //   (item) =>
+  //     !(
+  //       (item!.medicineOrdersStatus || []).length == 1 &&
+  //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+  //     )
+  // );
+
+  useEffect(() => {
+    if (!ordersLoading) {
+      const data = (
+        (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
+        []
+      ).filter(
+        (item) =>
+          !(
+            (item!.medicineOrdersStatus || []).length == 1 &&
+            (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+          )
+      );
+      setOrdersFetched(data);
+    }
+  }, [ordersLoading]);
+
+  // console.log('ORDERS\n', { _orders });
 
   // Common Views
 
@@ -415,11 +434,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      (!ordersLoading && _orders.length > 0 && (
+      (!ordersLoading && ordersFetched.length > 0 && (
         <ListCard
           onPress={() =>
             props.navigation.navigate(AppRoutes.YourOrdersScene, {
-              orders: _orders,
+              orders: ordersFetched,
               refetch: ordersRefetch,
               error: ordersError,
               loading: ordersLoading,

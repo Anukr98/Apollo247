@@ -31,6 +31,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   getDiagnosticsCites,
@@ -145,6 +146,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     []
   );
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+  const [ordersFetched, setOrdersFetched] = useState<
+    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
+  >([]);
 
   const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
     getDiagnosticsData
@@ -307,13 +311,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   );
 
-  let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
+  // let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
+
+  useEffect(() => {
+    if (!ordersLoading) {
+      const orderData = g(orders, 'getDiagnosticOrdersList', 'ordersList') || [];
+      setOrdersFetched(orderData);
+    }
+  }, [ordersLoading]);
 
   useEffect(() => {
     hRefetch();
-    if (_orders.length == 0) {
+    if (ordersFetched.length == 0) {
       ordersRefetch().then((data: any) => {
-        _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrdersFetched(orderData);
       });
     }
   }, []);
@@ -610,11 +622,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderYourOrders = () => {
     if (ordersLoading) return renderSectionLoader(70);
     return (
-      (!ordersLoading && _orders.length > 0 && (
+      (!ordersLoading && ordersFetched.length > 0 && (
         <ListCard
           onPress={() =>
             props.navigation.navigate(AppRoutes.YourOrdersTest, {
-              orders: _orders,
+              orders: ordersFetched,
               isTest: true,
               refetch: ordersRefetch,
               error: ordersError,
