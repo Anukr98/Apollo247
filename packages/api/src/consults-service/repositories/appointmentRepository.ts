@@ -740,8 +740,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     else return 0;
   }
 
-  updateAppointmentStatus(id: string, status: STATUS) {
-    this.update(id, { status }).catch((createErrors) => {
+  updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean) {
+    this.update(id, { status, isSeniorConsultStarted }).catch((createErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
   }
@@ -795,7 +795,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
-    this.update(id, { appointmentState, isConsultStarted: false });
+    this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -1022,5 +1022,9 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   updateConsultStarted(id: string, status: Boolean) {
     return this.update(id, { isConsultStarted: status });
+  }
+
+  updateSeniorConsultStarted(id: string, status: Boolean) {
+    return this.update(id, { isSeniorConsultStarted: status });
   }
 }

@@ -257,7 +257,8 @@ const createAppointmentSession: Resolver<
     ) {
       await apptRepo.updateAppointmentStatus(
         createAppointmentSessionInput.appointmentId,
-        STATUS.IN_PROGRESS
+        STATUS.IN_PROGRESS,
+        true
       );
     }
     // If appointment started with junior doctor
@@ -320,7 +321,8 @@ const createAppointmentSession: Resolver<
   ) {
     await apptRepo.updateAppointmentStatus(
       createAppointmentSessionInput.appointmentId,
-      STATUS.IN_PROGRESS
+      STATUS.IN_PROGRESS,
+      true
     );
   }
   await repo.saveAppointmentSession(appointmentSessionAttrs);
@@ -383,7 +385,8 @@ const endAppointmentSession: Resolver<
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   await apptRepo.updateAppointmentStatus(
     endAppointmentSessionInput.appointmentId,
-    endAppointmentSessionInput.status
+    endAppointmentSessionInput.status,
+    true
   );
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSession = await apptSessionRepo.getAppointmentSession(
