@@ -25,7 +25,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   NavigationActions,
   NavigationScreenProps,
@@ -721,14 +721,24 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       }
                       let dirs = RNFetchBlob.fs.dirs;
 
+                      console.log('blollb', props.navigation.state.params!.BlobName);
+                      let fileName: string =
+                        props.navigation.state.params!.BlobName.substring(
+                          0,
+                          props.navigation.state.params!.BlobName.indexOf('.pdf')
+                        ) + '.pdf';
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
                         addAndroidDownloads: {
+                          title: fileName,
                           useDownloadManager: true,
                           notification: false,
                           mime: 'application/pdf',
-                          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                          path:
+                            Platform.OS === 'ios'
+                              ? dirs.MainBundleDir
+                              : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
                           description: 'File downloaded by download manager.',
                         },
                       })
@@ -743,9 +753,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         )
                         .then((res) => {
                           setLoading && setLoading(false);
-                          if (Platform.OS === 'android') {
-                            Alert.alert('Download Complete');
-                          }
+                          // if (Platform.OS === 'android') {
+                          //   Alert.alert('Download Complete');
+                          // }
                           Platform.OS === 'ios'
                             ? RNFetchBlob.ios.previewDocument(res.path())
                             : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');

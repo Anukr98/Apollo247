@@ -26,7 +26,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
