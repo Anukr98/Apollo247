@@ -21,10 +21,11 @@ import {
   Linking,
   CameraRoll,
   PermissionsAndroid,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   useShoppingCart,
@@ -41,6 +42,7 @@ import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { useUIElements } from '../UIElementsProvider';
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   imageView: {
     ...theme.viewStyles.cardViewStyle,
@@ -344,19 +346,41 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             </Text>
           </View>
         </View>
-        <ScrollView>
-          {arr.map((item: string) => (
-            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
-              <Image
-                source={{ uri: item }}
-                style={{
-                  width: '100%',
-                  height: 425,
-                }}
-                resizeMode="contain"
-              />
-            </View>
-          ))}
+        <ScrollView style={{ marginTop: 20 }}>
+          {arr.map((item: string) => {
+            if (item.indexOf('.pdf') > -1) {
+              return (
+                <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Button
+                    title={
+                      'Open File' +
+                      (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
+                    }
+                    onPress={() =>
+                      props.navigation.navigate(AppRoutes.RenderPdf, {
+                        uri: item,
+                        title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
+                      })
+                    }
+                  ></Button>
+                </View>
+              );
+            } else {
+              return (
+                <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Image
+                    source={{ uri: item }}
+                    style={{
+                      width: '100%',
+                      height: 425,
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+              );
+            }
+          })}
+          <View style={{ height: 40 }}></View>
         </ScrollView>
         {data && (
           <View

@@ -35,6 +35,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { BottomPopUp } from '../ui/BottomPopUp';
 import { string } from '../../strings/string';
 import { MedicalTest } from './AddRecord';
+import { Button } from '../ui/Button';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -298,19 +300,40 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         }}
       >
         <ScrollView>
-          {placeImage.map((item: string, i: number) => (
-            <View key={i} style={{ marginHorizontal: 20, marginBottom: 15 }}>
-              <Image
-                source={{ uri: item }}
-                style={{
-                  // flex: 1,
-                  width: '100%',
-                  height: 425,
-                }}
-                resizeMode="contain"
-              />
-            </View>
-          ))}
+          {placeImage.map((item: string, i: number) => {
+            if (item.indexOf('.pdf') > -1) {
+              return (
+                <View key={i} style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Button
+                    title={
+                      'Open File' +
+                      (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
+                    }
+                    onPress={() =>
+                      props.navigation.navigate(AppRoutes.RenderPdf, {
+                        uri: item,
+                        title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
+                      })
+                    }
+                  ></Button>
+                </View>
+              );
+            } else {
+              return (
+                <View key={i} style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Image
+                    source={{ uri: item }}
+                    style={{
+                      // flex: 1,
+                      width: '100%',
+                      height: 425,
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+              );
+            }
+          })}
         </ScrollView>
       </View>
     );
