@@ -118,7 +118,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   console.log('a', data);
   const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
-  // const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
+  const blobURL: string = props.navigation.state.params
+    ? props.navigation.state.params.PrescriptionUrl
+    : {};
   var arr = url;
 
   const prismFile = props.navigation.state.params
@@ -133,6 +135,8 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
     if (prismFile == null || prismFile == '') {
       Alert.alert('There is no prism filed ');
     } else {
+      const prismFeilds = prismFile.split(',');
+      const blobUrls = blobURL.split(',');
       client
         .query<downloadDocuments>({
           query: DOWNLOAD_DOCUMENT,
@@ -140,14 +144,17 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           variables: {
             downloadDocumentsInput: {
               patientId: currentPatient && currentPatient.id,
-              fileIds: prismFile.split(','),
+              fileIds: prismFeilds,
             },
           },
         })
         .then(({ data }) => {
           console.log(data, 'DOWNLOAD_DOCUMENT');
-          const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+          let uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
+            (item, index) => item || blobUrls[index]
+          );
           console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+
           uploadUrlscheck && setUrls(uploadUrlscheck);
         })
         .catch((e: string) => {

@@ -127,7 +127,8 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const client = useApolloClient();
   useEffect(() => {
     if (data.prismFileIds) {
-      const urls = data.prismFileIds.split(',');
+      const prismFileds = data.prismFileIds.split(',');
+      const urls = data.prescriptionImageUrl.split(',');
       console.log('prismFileIds', urls.join(','));
       setshowSpinner(true);
       client
@@ -137,14 +138,16 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           variables: {
             downloadDocumentsInput: {
               patientId: currentPatient && currentPatient.id,
-              fileIds: urls,
+              fileIds: prismFileds,
             },
           },
         })
         .then(({ data }) => {
           setshowSpinner(false);
           console.log(data, 'DOWNLOAD_DOCUMENT');
-          const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+          const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
+            (item, index) => item || urls[index]
+          );
           setPlaceImage(uploadUrlscheck);
           console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
         })
