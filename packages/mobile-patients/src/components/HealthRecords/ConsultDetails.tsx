@@ -730,15 +730,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
+                        path:
+                          Platform.OS === 'ios'
+                            ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                              '/' +
+                              (fileName || 'Apollo_Prescription.pdf')
+                            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
                         addAndroidDownloads: {
                           title: fileName,
                           useDownloadManager: true,
-                          notification: false,
+                          notification: true,
                           mime: 'application/pdf',
-                          path:
-                            Platform.OS === 'ios'
-                              ? dirs.MainBundleDir
-                              : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
                           description: 'File downloaded by download manager.',
                         },
                       })
