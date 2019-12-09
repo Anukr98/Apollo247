@@ -147,6 +147,7 @@ export enum MedicalRecordType {
 export enum MedicalTestUnit {
   GM = "GM",
   GM_SLASH_DL = "GM_SLASH_DL",
+  NONE = "NONE",
   _PERCENT_ = "_PERCENT_",
 }
 
