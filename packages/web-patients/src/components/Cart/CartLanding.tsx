@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Header } from 'components/Header';
-import { MedicineCart } from 'components/Cart/MedicineCart';
+import { Cart } from 'components/Cart/Cart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -33,10 +33,15 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 20,
       },
     },
+    tabsRoot: {
+      marginLeft: 20,
+      marginRight: 20,
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+    },
   };
 });
 
-export const MedicineCartLanding: React.FC = (props) => {
+export const CartLanding: React.FC = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -47,7 +52,7 @@ export const MedicineCartLanding: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.cartPage}>
-          <MedicineCart />
+          <Cart />
         </div>
       </div>
     </div>

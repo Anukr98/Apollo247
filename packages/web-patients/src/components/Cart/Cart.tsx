@@ -9,7 +9,6 @@ import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
-import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT_RESULT } from 'graphql/medicines';
@@ -136,14 +135,13 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     count: {
-      paddingLeft: 10,
+      marginLeft: 'auto',
     },
     pastSearches: {
       paddingBottom: 10,
     },
     topHeader: {
       paddingTop: 0,
-      textTransform: 'uppercase',
     },
     addItemBtn: {
       padding: 0,
@@ -151,7 +149,17 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       fontWeight: 'bold',
       paddingLeft: 20,
-      marginLeft: 'auto',
+      marginLeft: 20,
+      position: 'relative',
+      '&:before': {
+        position: 'absolute',
+        content: '""',
+        left: 0,
+        right: 0,
+        width: 0.5,
+        height: 41,
+        backgroundColor: 'rgba(2,71,91,0.1)',
+      },
     },
     deliveryAddress: {
       backgroundColor: '#f7f8f5',
@@ -204,7 +212,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     priceCol: {
       marginLeft: 'auto',
-      fontWeight: 'bold',
     },
     totalPrice: {
       marginLeft: 'auto',
@@ -267,61 +274,14 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     uploadPrescription: {
-      borderRadius: 5,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      backgroundColor: theme.palette.common.white,
-      padding: '10px 15px',
-      marginBottom: 20,
+      paddingBottom: 10,
+      marginTop: -5,
     },
-    prescriptionRow: {
-      display: 'flex',
-      alignItems: 'center',
+    noPrescriptionUpload: {
       fontSize: 14,
       fontWeight: 500,
       color: '#0087ba',
-      '& >span': {
-        paddingRight: 20,
-      },
-      '& button': {
-        marginLeft: 'auto',
-      },
-    },
-    consultDoctor: {
-      display: 'flex',
-      alignItems: 'center',
-      fontSize: 14,
-      fontWeight: 500,
-      color: '#02475b',
-      borderTop: '0.5px solid rgba(2,71,91,0.3)',
-      paddingTop: 10,
-      marginTop: 10,
-      '& >span': {
-        paddingRight: 20,
-      },
-    },
-    consultDoctoLink: {
-      marginLeft: 'auto',
-      fontSize: 13,
-      fontWeight: 'bold',
-      color: '#fc9916',
-      textTransform: 'uppercase',
-    },
-    uploadedPreList: {
-      borderRadius: 5,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      backgroundColor: theme.palette.common.white,
-      padding: 10,
-      marginBottom: 20,
-    },
-    uploadMore: {
-      textAlign: 'right',
-      '& button': {
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
-        fontWeight: 'bold',
-        color: '#fc9916',
-        padding: 0,
-      },
+      paddingBottom: 10,
     },
     presUploadBtn: {
       backgroundColor: 'transparent',
@@ -329,14 +289,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       fontWeight: 'bold',
       color: '#fc9916',
-      minWidth: 155,
+      marginTop: 10,
       padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
-    },
-    uppercase: {
-      textTransform: 'uppercase',
     },
   };
 });
@@ -350,7 +307,7 @@ export interface PrescriptionFormat {
   imageUrl: string | null;
 }
 
-export const MedicineCart: React.FC = (props) => {
+export const Cart: React.FC = (props) => {
   const classes = useStyles();
 
   const defPresObject = {
@@ -372,6 +329,20 @@ export const MedicineCart: React.FC = (props) => {
   const [prescriptions, setPrescriptions] = React.useState<PrescriptionFormat[]>([]);
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
+
+  // const codPaymentMutation = useMutation<
+  //   SaveMedicineOrderPayment,
+  //   SaveMedicineOrderPaymentVariables
+  // >(SAVE_MEDICINE_ORDER_PAYMENT_RESULT, {
+  //   variables: {
+  //     medicinePaymentInput: {
+  //       orderAutoId: orderAutoId,
+  //       amountPaid: amountPaid,
+  //     },
+  //   },
+  // });
+
+  // console.log(prescriptions, '..........');
 
   const removePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
@@ -398,6 +369,11 @@ export const MedicineCart: React.FC = (props) => {
   const totalAmount = (grossValue + deliveryCharges).toFixed(2);
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
+  // const cartItems = localStorage.getItem('cartItems')
+  //   ? JSON.parse(localStorage.getItem('cartItems') || '')
+  //   : [];
+  // console.log(cartItems);
+
   const disableSubmit = deliveryAddressId === '';
   const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
 
@@ -418,20 +394,37 @@ export const MedicineCart: React.FC = (props) => {
         })
       : [];
 
+  // console.log('cart items for api........', typeof cartItemsForApi, cartItemsForApi);
+
+  // console.log(
+  //   deliveryMode,
+  //   deliveryAddressId,
+  //   cartTotal,
+  //   cartItems,
+  //   uploadPrescriptionRequired,
+  //   couponCode,
+  //   paymentMethod
+  // );
+
+  // console.log(
+  //   Array.prototype.map.call(prescriptions, (presDetails) => presDetails.imageUrl).toString(),
+  //   'pres data...........'
+  // );
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 148px)'}>
           <div className={classes.medicineListGroup}>
             <div className={classes.sectionHeader}>
-              <span>Medicines In Your Cart</span>
+              <span>Items In Your Cart</span>
               <span className={classes.count}>
-                ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
+                {cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0}
               </span>
               <AphButton
                 className={classes.addItemBtn}
                 onClick={() => {
-                  window.location.href = clientRoutes.medicines();
+                  window.location.href = clientRoutes.testsAndMedicine();
                 }}
               >
                 Add Items
@@ -442,170 +435,170 @@ export const MedicineCart: React.FC = (props) => {
                 <MedicineStripCard medicines={cartItems} />
                 {uploadPrescriptionRequired >= 0 ? (
                   <>
-                    <div className={classes.sectionHeader}>Upload Prescription</div>
-                    {prescriptions.length > 0 ? (
-                      <div className={classes.uploadedPreList}>
-                        {prescriptions.map((prescriptionDetails, index) => {
-                          const fileName = prescriptionDetails.name;
-                          const imageUrl = prescriptionDetails.imageUrl;
-                          return (
-                            <PrescriptionCard
-                              fileName={fileName || ''}
-                              imageUrl={imageUrl || ''}
-                              removePrescription={(fileName: string) =>
-                                removePrescription(fileName)
-                              }
-                              key={index}
-                            />
-                          );
-                        })}
-                        <div className={classes.uploadMore}>
-                          <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>
-                            Upload More
-                          </AphButton>
+                    <div className={classes.sectionHeader}>
+                      <span>Upload Prescription</span>
+                      <span className={classes.count}>
+                        <AphButton
+                          onClick={() => setIsUploadPreDialogOpen(true)}
+                          className={classes.presUploadBtn}
+                        >
+                          Upload
+                        </AphButton>
+                      </span>
+                    </div>
+                    <div className={classes.uploadPrescription}>
+                      {prescriptions.length > 0 ? (
+                        <>
+                          {prescriptions.map((prescriptionDetails, index) => {
+                            const fileName = prescriptionDetails.name;
+                            const imageUrl = prescriptionDetails.imageUrl;
+                            return (
+                              <PrescriptionCard
+                                fileName={fileName || ''}
+                                imageUrl={imageUrl || ''}
+                                removePrescription={(fileName: string) =>
+                                  removePrescription(fileName)
+                                }
+                                key={index}
+                              />
+                            );
+                          })}
+                        </>
+                      ) : (
+                        <div className={classes.noPrescriptionUpload}>
+                          Some of your medicines require prescription to make a purchase. Please
+                          upload the necessary prescriptions.
                         </div>
-                      </div>
-                    ) : (
-                      <div className={classes.uploadPrescription}>
-                        <div className={classes.prescriptionRow}>
-                          <span>
-                            Items in your cart marked with ‘Rx’ need prescriptions to complete your
-                            purchase. Please upload the necessary prescriptions
-                          </span>
-                          <AphButton
-                            onClick={() => setIsUploadPreDialogOpen(true)}
-                            className={classes.presUploadBtn}
-                          >
-                            Upload Prescription
-                          </AphButton>
-                        </div>
-                        <div className={classes.consultDoctor}>
-                          <span>Don’t have a prescription? Don’t worry!</span>
-                          <Link
-                            to={clientRoutes.doctorsLanding()}
-                            className={classes.consultDoctoLink}
-                          >
-                            Consult A Doctor
-                          </Link>
-                        </div>
-                      </div>
-                    )}
+                      )}
+
+                      {/* <EPrescriptionCard /> */}
+                    </div>
                   </>
                 ) : null}
               </>
             ) : null}
+
+            {/* <div className={classes.sectionHeader}>
+              <span>You Should Also Add</span>
+              <span className={classes.count}>04</span>
+            </div>
+            <div className={classes.pastSearches}>
+              <MedicineCard />
+            </div> */}
           </div>
         </Scrollbars>
       </div>
-      <div className={classes.rightSection}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 239px)' }}>
-          <div className={classes.medicineSection}>
-            <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
-              <span>Where Should We Deliver?</span>
-            </div>
-            <div className={classes.sectionGroup}>
-              <div className={classes.deliveryAddress}>
-                <Tabs
-                  value={tabValue}
-                  classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Home Delivery"
-                  />
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Store Pick Up"
-                  />
-                </Tabs>
-                {tabValue === 0 && (
-                  <TabContainer>
-                    <HomeDelivery
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
-                    />
-                  </TabContainer>
-                )}
-                {tabValue === 1 && (
-                  <TabContainer>
-                    <StorePickUp
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
-                      pincode={localStorage.getItem('dp') || ''}
-                    />
-                  </TabContainer>
-                )}
+      {cartItems.length > 0 ? (
+        <div className={classes.rightSection}>
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 239px)' }}>
+            <div className={classes.medicineSection}>
+              <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
+                <span>Where Should We Deliver?</span>
               </div>
-            </div>
-            <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
-              <span>Total Charges</span>
-            </div>
-            <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-              {couponCode === '' ? (
-                <div
-                  onClick={() => setIsApplyCouponDialogOpen(true)}
-                  className={`${classes.serviceType} ${classes.textVCenter}`}
-                >
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                  </span>
-                  <span className={classes.linkText}>Apply Coupon</span>
-                  <span className={classes.rightArrow}>
-                    <img src={require('images/ic_arrow_right.svg')} alt="" />
-                  </span>
-                </div>
-              ) : (
-                <div className={`${classes.serviceType} ${classes.textVCenter}`}>
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                  </span>
-                  <span className={classes.linkText}>Coupon Applied</span>
-                </div>
-              )}
-            </div>
-            <div className={`${classes.sectionGroup}`}>
-              <div className={classes.priceSection}>
-                <div className={classes.topSection}>
-                  <div className={classes.priceRow}>
-                    <span>Subtotal</span>
-                    <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
-                  </div>
-                  <div className={classes.priceRow}>
-                    <span>Delivery Charges</span>
-                    <span className={classes.priceCol}>
-                      {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '(+ Rs. 20) FREE'}
-                    </span>
-                  </div>
-                </div>
-                <div className={classes.bottomSection}>
-                  <div className={classes.priceRow}>
-                    <span>To Pay</span>
-                    <span className={classes.totalPrice}>
-                      {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
-                    </span>
-                  </div>
+              <div className={classes.sectionGroup}>
+                <div className={classes.deliveryAddress}>
+                  <Tabs
+                    value={tabValue}
+                    classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                    onChange={(e, newValue) => {
+                      setTabValue(newValue);
+                    }}
+                  >
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Home Delivery"
+                    />
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Store Pick Up"
+                    />
+                  </Tabs>
+                  {tabValue === 0 && (
+                    <TabContainer>
+                      <HomeDelivery
+                        updateDeliveryAddress={(deliveryAddressId) =>
+                          setDeliveryAddressId(deliveryAddressId)
+                        }
+                      />
+                    </TabContainer>
+                  )}
+                  {tabValue === 1 && (
+                    <TabContainer>
+                      <StorePickUp
+                        updateDeliveryAddress={(deliveryAddressId) =>
+                          setDeliveryAddressId(deliveryAddressId)
+                        }
+                        pincode={localStorage.getItem('dp') || ''}
+                      />
+                    </TabContainer>
+                  )}
                 </div>
               </div>
+              <div className={classes.sectionHeader}>
+                <span>Total Charges</span>
+              </div>
+              <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
+                {couponCode === '' ? (
+                  <div
+                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    className={`${classes.serviceType} ${classes.textVCenter}`}
+                  >
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Apply Coupon</span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </div>
+                ) : (
+                  <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Coupon Applied</span>
+                  </div>
+                )}
+              </div>
+              <div className={`${classes.sectionGroup}`}>
+                <div className={classes.priceSection}>
+                  <div className={classes.topSection}>
+                    <div className={classes.priceRow}>
+                      <span>Subtotal</span>
+                      <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
+                    </div>
+                    <div className={classes.priceRow}>
+                      <span>Delivery Charges</span>
+                      <span className={classes.priceCol}>
+                        {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '(+ Rs. 20) FREE'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={classes.bottomSection}>
+                    <div className={classes.priceRow}>
+                      <span>To Pay</span>
+                      <span className={classes.totalPrice}>
+                        {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </Scrollbars>
+          <div className={classes.checkoutBtn}>
+            <AphButton
+              onClick={() => setCheckoutDialogOpen(true)}
+              color="primary"
+              fullWidth
+              disabled={disableSubmit}
+              className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+            >
+              Proceed to pay — RS. {totalAmount}
+            </AphButton>
           </div>
-        </Scrollbars>
-        <div className={classes.checkoutBtn}>
-          <AphButton
-            onClick={() => setCheckoutDialogOpen(true)}
-            color="primary"
-            fullWidth
-            disabled={disableSubmit}
-            className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
-          >
-            Proceed to pay — RS. {totalAmount}
-          </AphButton>
         </div>
-      </div>
+      ) : null}
 
       <AphDialog open={checkoutDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} />
@@ -653,6 +646,13 @@ export const MedicineCart: React.FC = (props) => {
                 } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
                   setOrderAutoId(orderAutoId);
                   setAmountPaid(amountPaid);
+                  // codPaymentMutation()
+                  //   .then((data) => {
+                  //     console.log(data, 'in mutation.......');
+                  //   })
+                  //   .catch(() => {
+                  //     window.alert('An error occurred while saving your order :(');
+                  //   });
                 }
               }}
               onError={(errorResponse) => {
