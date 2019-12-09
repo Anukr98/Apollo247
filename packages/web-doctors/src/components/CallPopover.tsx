@@ -726,33 +726,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const noShowAction = (status: STATUS) => {
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: props.appointmentId,
-            status: status,
-            noShowBy: REQUEST_ROLES.PATIENT,
+    if (window.location.pathname.indexOf('Consulttabs')) {
+      client
+        .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+          mutation: END_APPOINTMENT_SESSION,
+          variables: {
+            endAppointmentSessionInput: {
+              appointmentId: props.appointmentId,
+              status: status,
+              noShowBy: REQUEST_ROLES.PATIENT,
+            },
           },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        unSubscribeBrowserButtonsListener();
-        if (status === STATUS.NO_SHOW) {
-          alert(
-            'Since the patient is not responding from last 3 mins, we are rescheduling this appointment.'
-          );
-        }
-        navigateToCalendar();
-      })
-      .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
-        alert(errorMessage);
-      });
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data) => {
+          unSubscribeBrowserButtonsListener();
+          if (status === STATUS.NO_SHOW) {
+            alert(
+              'Since the patient is not responding from last 3 mins, we are rescheduling this appointment.'
+            );
+          }
+          navigateToCalendar();
+        })
+        .catch((e) => {
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
+          alert(errorMessage);
+        });
+    } else {
+      clearInterval(intervalcallId);
+      clearInterval(intervalCallAbundant);
+    }
   };
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
