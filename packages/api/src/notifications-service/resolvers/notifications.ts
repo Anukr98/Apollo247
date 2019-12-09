@@ -484,9 +484,15 @@ export async function sendCartNotification(
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const medicineRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+  console.log(
+    pushNotificationInput.appointmentId,
+    parseInt(pushNotificationInput.appointmentId, 2),
+    'order auto id input'
+  );
   const medicineOrderDetails = await medicineRepo.getMedicineOrderWithId(
     parseInt(pushNotificationInput.appointmentId, 2)
   );
+  console.log(pushNotificationInput.appointmentId, 'order auto id input222');
   if (medicineOrderDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   const patientDetails = await patientRepo.getPatientDetails(medicineOrderDetails.patient.id);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
