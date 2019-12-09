@@ -79,6 +79,7 @@ const saveOrderDeliveryStatus: Resolver<
     appointmentId: orderDetails.orderAutoId.toString(),
     notificationType: NotificationType.MEDICINE_ORDER_DELIVERED,
   };
+  console.log(pushNotificationInput, 'pushNotificationInput');
   const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
   console.log(notificationResult, 'medicine order delivered notification');
 
