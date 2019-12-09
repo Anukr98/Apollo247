@@ -26,6 +26,7 @@ import {
   GET_DIAGNOSTIC_DATA,
   GET_DIAGNOSTIC_ORDER_LIST,
   SEARCH_DIAGNOSTICS,
+  SAVE_SEARCH,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -78,10 +79,10 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  FlatList,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -1485,6 +1486,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const savePastSeacrh = (sku: string, name: string) =>
+    client.mutate({
+      mutation: SAVE_SEARCH,
+      variables: {
+        saveSearchInput: {
+          type: SEARCH_TYPE.TEST,
+          typeId: sku,
+          typeName: name,
+          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      },
+    });
+
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
   ) => {
@@ -1502,6 +1516,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
+        savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: rate,

@@ -135,11 +135,12 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const [pdfView, setPDFView] = useState<boolean>(false);
 
   useEffect(() => {
-    if (prismFile == null || prismFile == '') {
-      Alert.alert('There is no prism filed ');
-    } else {
-      const prismFeilds = prismFile.split(',');
-      const blobUrls = blobURL.split(',');
+    // if (prismFile == null || prismFile == '') {
+    //   Alert.alert('There is no prism filed ');
+    // } else {
+    const prismFeilds = prismFile.split(',');
+    const blobUrls = blobURL.split(',');
+    prismFile &&
       client
         .query<downloadDocuments>({
           query: DOWNLOAD_DOCUMENT,
@@ -164,7 +165,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           console.log('Error occured', e);
         })
         .finally(() => {});
-    }
+    // }
   }, []);
 
   const addToCart = () => {

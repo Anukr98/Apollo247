@@ -589,7 +589,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       });
   };
   return (
-    <View>
+    <>
       <FeedbackPopup
         title="We value your feedback! :)"
         description="How was your overall experience with the following medicine delivery —"
@@ -599,7 +599,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           imageComponent: <MedicalIcon />,
         }}
         transactionId={medFeedback.transactionId}
-        type={FEEDBACKTYPE.CONSULT}
+        type={FEEDBACKTYPE.PHARMACY}
         isVisible={medFeedback.visible}
         onComplete={() => {
           setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
@@ -609,6 +609,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           });
         }}
       />
-    </View>
+    </>
   );
 };
