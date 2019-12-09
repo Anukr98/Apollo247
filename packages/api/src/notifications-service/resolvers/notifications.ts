@@ -55,6 +55,11 @@ export const getNotificationsTypeDefs = gql`
     appointmentId: String
   }
 
+  input CartPushNotificationInput {
+    notificationType: NotificationType
+    orderAutoId: Int
+  }
+
   extend type Query {
     sendPushNotification(
       pushNotificationInput: PushNotificationInput
@@ -107,6 +112,11 @@ export enum NotificationPriority {
 type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
+};
+
+type CartPushNotificationInput = {
+  notificationType: NotificationType;
+  orderAutoId: number;
 };
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
@@ -475,7 +485,7 @@ export async function sendNotification(
 }
 
 export async function sendCartNotification(
-  pushNotificationInput: PushNotificationInput,
+  pushNotificationInput: CartPushNotificationInput,
   patientsDb: Connection
 ) {
   let notificationTitle: string = '';
@@ -484,9 +494,11 @@ export async function sendCartNotification(
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const medicineRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+  console.log(pushNotificationInput.orderAutoId, 'order auto id input');
   const medicineOrderDetails = await medicineRepo.getMedicineOrderWithId(
-    parseInt(pushNotificationInput.appointmentId, 2)
+    pushNotificationInput.orderAutoId
   );
+  console.log(pushNotificationInput.orderAutoId, 'order auto id input222');
   if (medicineOrderDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   const patientDetails = await patientRepo.getPatientDetails(medicineOrderDetails.patient.id);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
@@ -514,7 +526,7 @@ export async function sendCartNotification(
     },
     data: {
       type: 'Cart_Ready',
-      orderId: pushNotificationInput.appointmentId,
+      orderId: pushNotificationInput.orderAutoId.toString(),
       orderAutoId: '',
       deliveredDate: '',
       firstName: patientDetails.firstName,
@@ -524,7 +536,7 @@ export async function sendCartNotification(
   if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
     payload.data = {
       type: 'Order_Delivered',
-      orderAutoId: pushNotificationInput.appointmentId,
+      orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
       deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
@@ -559,7 +571,7 @@ export async function sendCartNotification(
         let content =
           format(new Date(), 'yyyy-MM-dd hh:mm') +
           '\n apptid: ' +
-          pushNotificationInput.appointmentId +
+          pushNotificationInput.orderAutoId.toString() +
           '\n multicastId: ';
         content +=
           response.multicastId.toString() +
