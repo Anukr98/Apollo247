@@ -1382,13 +1382,13 @@ export const ConsultTabs: React.FC = () => {
                         />
                       </Tabs>
                     </div>
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 0 ? classes.none : classes.block}>
                         {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                       </div>
-                    </TabContainer>
+                    </div>
 
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 1 ? classes.none : classes.block}>
                         <div className={classes.chatContainer}>
                           <ConsultRoom
@@ -1404,7 +1404,7 @@ export const ConsultTabs: React.FC = () => {
                           />
                         </div>
                       </div>
-                    </TabContainer>
+                    </div>
                   </div>
                 ) : (
                   <div>
