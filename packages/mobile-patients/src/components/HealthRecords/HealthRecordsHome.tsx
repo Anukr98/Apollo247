@@ -43,7 +43,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   getPatientMedicalRecords,
@@ -348,8 +348,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.popToTop()}
-            // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+            // onPress={() => props.navigation.popToTop()}
+            onPress={() => {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                })
+              );
+            }}
           >
             <ApolloLogo />
           </TouchableOpacity>

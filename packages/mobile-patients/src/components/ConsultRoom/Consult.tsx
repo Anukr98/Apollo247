@@ -38,7 +38,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
 import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
@@ -876,8 +876,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           >
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => props.navigation.popToTop()}
-              // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+              // onPress={() => props.navigation.popToTop()}
+              onPress={() => {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                  })
+                );
+              }}
             >
               <ApolloLogo />
             </TouchableOpacity>
