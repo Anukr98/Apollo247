@@ -128,9 +128,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   // console.log('prismPrescriptionFileId', prismFile.split(','));
 
   useEffect(() => {
-    if (prismFile == null || prismFile == '') {
-      Alert.alert('There is no prism filed ');
-    } else {
+    // if (prismFile == null || prismFile == '') {
+    //   Alert.alert('There is no prism filed ');
+    // } else {
+    prismFile &&
       client
         .query<downloadDocuments>({
           query: DOWNLOAD_DOCUMENT,
@@ -152,7 +153,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           console.log('Error occured', e);
         })
         .finally(() => {});
-    }
+    // }
   }, []);
 
   const addToCart = () => {

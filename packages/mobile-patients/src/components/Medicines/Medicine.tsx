@@ -58,10 +58,10 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  FlatList,
+  
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { FlatList,NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
 
 const styles = StyleSheet.create({
