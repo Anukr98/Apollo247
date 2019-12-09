@@ -22,7 +22,7 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_MEDICINE_ORDERS_LIST, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   GetMedicineOrdersList,
@@ -44,7 +44,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
@@ -58,11 +58,11 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList,NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -168,10 +168,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(
-            MEDICINE_LANDING_PAGE_DATA,
-            JSON.stringify(localData)
-          ).catch(() => {});
+          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
+            () => {}
+          );
         setData(d.data);
         setLoading(false);
       })
@@ -1087,6 +1086,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const client = useApolloClient();
+  const savePastSeacrh = (sku: string, name: string) =>
+    client.mutate({
+      mutation: SAVE_SEARCH,
+      variables: {
+        saveSearchInput: {
+          type: SEARCH_TYPE.MEDICINE,
+          typeId: sku,
+          typeName: name,
+          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      },
+    });
+
   const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
     const { index, item } = data;
     const imgUri = item.thumbnail ? `${config.IMAGES_BASE_URL[0]}${item.thumbnail}` : '';
@@ -1098,6 +1111,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return renderSearchSuggestionItem({
       onPress: () => {
         CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
+        savePastSeacrh(`${item.id}`, item.name).catch((e) => {});
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
         });
