@@ -155,7 +155,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           setshowSpinner(false);
           console.log(data, 'DOWNLOAD_DOCUMENT');
           const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
-            (item, index) => item || (urls && urls.length <= index ? urls[index] : '')
+            (item, index) => item || (urls && urls.length <= index + 1 ? urls[index] : '')
           );
           setPlaceImage(uploadUrlscheck);
           console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');

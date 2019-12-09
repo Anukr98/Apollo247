@@ -138,7 +138,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
     // if (prismFile == null || prismFile == '') {
     //   Alert.alert('There is no prism filed ');
     // } else {
-    const prismFeilds = prismFile && prismFile.split(',');
     const blobUrls = blobURL && blobURL.split(',');
     prismFile &&
       client
@@ -148,14 +147,15 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           variables: {
             downloadDocumentsInput: {
               patientId: currentPatient && currentPatient.id,
-              fileIds: prismFeilds,
+              fileIds: prismFile && prismFile.split(','),
             },
           },
         })
         .then(({ data }) => {
           console.log(data, 'DOWNLOAD_DOCUMENT');
           let uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
-            (item, index) => item || (blobURL && blobUrls.length <= index ? blobUrls[index] : '')
+            (item, index) =>
+              item || (blobUrls && blobUrls.length <= index + 1 ? blobUrls[index] : '')
           );
           console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
 
