@@ -31,7 +31,7 @@ import {
   ShoppingCartItem,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
@@ -148,21 +148,26 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     } else {
       if (Platform.OS === 'ios') {
         try {
-          Linking.openURL(AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)).catch(
-            (err) => console.error('An error occurred', err)
-          );
+          Linking.openURL(
+            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)
+          ).catch((err) => console.error('An error occurred', err));
         } catch {}
       }
       let dirs = RNFetchBlob.fs.dirs;
 
+      let fileName: string = item.blobName.substring(0, item.blobName.indexOf('.pdf')) + '.pdf';
       setLoading(true);
       RNFetchBlob.config({
         fileCache: true,
         addAndroidDownloads: {
+          title: fileName,
           useDownloadManager: true,
           notification: false,
           mime: 'application/pdf',
-          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+          path:
+            Platform.OS === 'ios'
+              ? dirs.MainBundleDir
+              : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
           description: 'File downloaded by download manager.',
         },
       })

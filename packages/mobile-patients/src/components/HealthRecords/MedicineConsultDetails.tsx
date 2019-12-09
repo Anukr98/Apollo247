@@ -21,10 +21,11 @@ import {
   Linking,
   CameraRoll,
   PermissionsAndroid,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   useShoppingCart,
@@ -40,7 +41,9 @@ import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { useUIElements } from '../UIElementsProvider';
+import { RenderPdf } from '../ui/RenderPdf';
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   imageView: {
     ...theme.viewStyles.cardViewStyle,
@@ -116,7 +119,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   console.log('a', data);
   const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
-  // const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
+  const blobURL: string = props.navigation.state.params
+    ? props.navigation.state.params.PrescriptionUrl
+    : {};
   var arr = url;
 
   const prismFile = props.navigation.state.params
@@ -126,11 +131,14 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   // console.log('prismPrescriptionFileId', prismFile.split(','));
+  const [pdfUri, setPDFUri] = useState<string>('');
+  const [pdfView, setPDFView] = useState<boolean>(false);
 
   useEffect(() => {
     // if (prismFile == null || prismFile == '') {
     //   Alert.alert('There is no prism filed ');
     // } else {
+    const blobUrls = blobURL && blobURL.split(',');
     prismFile &&
       client
         .query<downloadDocuments>({
@@ -139,14 +147,18 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           variables: {
             downloadDocumentsInput: {
               patientId: currentPatient && currentPatient.id,
-              fileIds: prismFile.split(','),
+              fileIds: prismFile && prismFile.split(','),
             },
           },
         })
         .then(({ data }) => {
           console.log(data, 'DOWNLOAD_DOCUMENT');
-          const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+          let uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
+            (item, index) =>
+              item || (blobUrls && blobUrls.length <= index + 1 ? blobUrls[index] : '')
+          );
           console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+
           uploadUrlscheck && setUrls(uploadUrlscheck);
         })
         .catch((e: string) => {
@@ -319,7 +331,21 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           }
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-
+        {pdfView && (
+          <RenderPdf
+            uri={pdfUri}
+            title={
+              pdfUri.indexOf('fileName=') > -1
+                ? pdfUri.split('fileName=').pop() || 'Document'
+                : 'Document'
+            }
+            isPopup={true}
+            setDisplayPdf={() => {
+              setPDFView(false);
+            }}
+            navigation={props.navigation}
+          ></RenderPdf>
+        )}
         <View style={{ backgroundColor: '#f7f8f5' }}>
           <View style={{ marginLeft: 20, marginBottom: 8, marginTop: 17 }}>
             <MedicineRxIcon />
@@ -345,19 +371,58 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             </Text>
           </View>
         </View>
-        <ScrollView>
-          {arr.map((item: string) => (
-            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
-              <Image
-                source={{ uri: item }}
-                style={{
-                  width: '100%',
-                  height: 425,
-                }}
-                resizeMode="contain"
-              />
-            </View>
-          ))}
+        <ScrollView style={{ marginTop: 20 }}>
+          {arr.map((item: string) => {
+            if (item.indexOf('.pdf') > -1) {
+              return (
+                <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Button
+                    title={
+                      'Open File' +
+                      (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
+                    }
+                    onPress={
+                      () => {
+                        setPDFUri(item);
+                        setPDFView(true);
+                      }
+                      // (
+                      //   <RenderPdf
+                      //     uri={item}
+                      //     title={
+                      //       item.indexOf('fileName=') > -1
+                      //         ? item.split('fileName=').pop() || 'Document'
+                      //         : 'Document'
+                      //     }
+                      //     isPopup={true}
+                      //     navigation={props.navigation}
+                      //   ></RenderPdf>
+                      // )
+                      // props.navigation.navigate(AppRoutes.RenderPdf, {
+                      //   uri: item,
+                      //   title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
+                      //   isPopup: true,
+                      // })
+                    }
+                  ></Button>
+                </View>
+              );
+            } else {
+              return (
+                <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Image
+                    source={{ uri: item }}
+                    style={{
+                      width: '100%',
+                      height: 425,
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+              );
+            }
+          })}
+          <View style={{ height: 40 }}></View>
         </ScrollView>
         {data && (
           <View

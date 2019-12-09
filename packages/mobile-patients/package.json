@@ -51,7 +51,6 @@
     "@react-native-community/async-storage": "^1.6.1",
     "@types/pubnub": "^4.27.1",
     "@types/react-native-calendars": "^1.20.7",
-    "@types/react-native-fetch-blob": "^0.10.5",
     "@types/react-native-keep-awake": "^2.0.2",
     "@types/react-native-permissions": "^1.1.1",
     "@types/react-native-swipe-gestures": "^1.0.0",
@@ -84,7 +83,6 @@
     "react-native-device-info": "^2.3.2",
     "react-native-document-picker": "^3.2.4",
     "react-native-elements": "^1.1.0",
-    "react-native-fetch-blob": "^0.10.8",
     "react-native-firebase": "^5.5.4",
     "react-native-geocoding": "^0.4.0",
     "react-native-gesture-handler": "^1.2.1",
@@ -97,6 +95,7 @@
     "react-native-material-menu": "^0.4.0",
     "react-native-modal-datetime-picker": "^7.4.2",
     "react-native-otp-textinput": "0.0.6",
+    "react-native-pdf": "^5.1.0",
     "react-native-permissions": "^1.2.0",
     "react-native-popup-menu": "^0.15.6",
     "react-native-render-html": "^4.1.2",
@@ -108,6 +107,7 @@
     "react-native-vector-icons": "^6.5.0",
     "react-navigation": "^3.11.0",
     "resize-base64": "^1.0.12",
+    "rn-fetch-blob": "^0.10.15",
     "string-strip-html": "^4.3.5"
   },
   "jest": {

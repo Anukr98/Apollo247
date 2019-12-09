@@ -137,7 +137,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
           )
       );
-      setOrdersFetched(ordersData);
+      ordersData.length > 0 && setOrdersFetched(ordersData);
     });
   }, [currentPatient]);
 
@@ -191,7 +191,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
             )
         );
-        setOrdersFetched(ordersData);
+        ordersData.length > 0 && setOrdersFetched(ordersData);
       });
     }
   }, []);
@@ -231,17 +231,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     if (!ordersLoading) {
-      const data = (
-        (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-        []
-      ).filter(
+      const data = (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
         (item) =>
           !(
             (item!.medicineOrdersStatus || []).length == 1 &&
             (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
           )
       );
-      setOrdersFetched(data);
+      console.log('orders fetched', orders, 'data:', data);
+
+      data.length > 0 && setOrdersFetched(data);
     }
   }, [ordersLoading]);
 
@@ -274,7 +273,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          onPress={() => props.navigation.popToTop()}
+          // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
         >
           <ApolloLogo />
         </TouchableOpacity>
@@ -443,8 +443,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderYourOrders = () => {
+    console.log('rendereef', ordersFetched);
+
     return (
-      (!ordersLoading && ordersFetched.length > 0 && (
+      (ordersFetched.length > 0 && (
         <ListCard
           onPress={() =>
             props.navigation.navigate(AppRoutes.YourOrdersScene, {

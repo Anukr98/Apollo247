@@ -100,7 +100,7 @@ import {
   AppState,
   AppStateStatus,
 } from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
@@ -1963,7 +1963,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     console.log('dirs', dirs);
                     if (Platform.OS == 'ios') {
                     }
-
+                    let fileName: string =
+                      rowData.transferInfo &&
+                      rowData.transferInfo.pdfUrl &&
+                      rowData.transferInfo.pdfUrl.split('/').pop();
+                    fileName = fileName.substring(0, fileName.indexOf('.pdf')) + '.pdf';
                     console.log(
                       'pdf downloadDest',
                       rowData.transferInfo &&
@@ -1975,10 +1979,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     RNFetchBlob.config({
                       fileCache: true,
                       addAndroidDownloads: {
+                        title: fileName,
                         useDownloadManager: true,
                         notification: false,
                         mime: 'application/pdf',
-                        path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                        path:
+                          Platform.OS === 'ios'
+                            ? dirs.MainBundleDir
+                            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
                         description: 'File downloaded by download manager.',
                       },
                     })
@@ -1993,9 +2001,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         saveimageIos(rowData.transferInfo.pdfUrl);
                         // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                         // RNFetchBlob.ios.openDocument(res.path());
-                        if (Platform.OS === 'android') {
-                          Alert.alert('Download Complete');
-                        }
+                        // if (Platform.OS === 'android') {
+                        //   Alert.alert('Download Complete');
+                        // }
                         Platform.OS === 'ios'
                           ? RNFetchBlob.ios.previewDocument(res.path())
                           : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');

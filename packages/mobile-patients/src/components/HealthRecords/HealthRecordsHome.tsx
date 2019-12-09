@@ -22,6 +22,7 @@ import {
   GET_MEDICAL_RECORD,
   DELETE_PATIENT_MEDICAL_RECORD,
   CHECK_IF_FOLLOWUP_BOOKED,
+  GET_MEDICAL_PRISM_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -61,6 +62,12 @@ import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useUIElements } from '../UIElementsProvider';
+import {
+  getPatientPrismMedicalRecords,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const { width, height } = Dimensions.get('window');
 
@@ -116,6 +123,21 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const [medicalRecords, setmedicalRecords] = useState<
     (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
+  >([]);
+  const [labTests, setlabTests] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[]
+    | null
+    | undefined
+  >([]);
+  const [healthChecks, sethealthChecks] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[]
+    | null
+    | undefined
+  >([]);
+  const [hospitalizations, sethospitalizations] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
+    | null
+    | undefined
   >([]);
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
@@ -239,15 +261,47 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     [currentPatient]
   );
 
+  const fetchTestData = useCallback(
+    (loading: boolean = false) => {
+      loading && setLoading && setLoading(true);
+      client
+        .query<getPatientPrismMedicalRecords>({
+          query: GET_MEDICAL_PRISM_RECORD,
+          variables: {
+            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          console.log('data', data);
+          loading && setLoading && setLoading(false);
+          const labTestsData = g(data, 'getPatientPrismMedicalRecords', 'labTests');
+          const healthChecksData = g(data, 'getPatientPrismMedicalRecords', 'healthChecks');
+          const hospitalizationsData = g(data, 'getPatientPrismMedicalRecords', 'hospitalizations');
+          setlabTests(labTestsData);
+          sethealthChecks(healthChecksData);
+          sethospitalizations(hospitalizationsData);
+        })
+        .catch((error) => {
+          loading && setLoading && setLoading(false);
+          console.log('Error occured', { error });
+          //Alert.alert('Error', error.message);
+        });
+    },
+    [currentPatient]
+  );
+
   useEffect(() => {
     fetchPastData();
     fetchData();
+    fetchTestData();
   }, [currentPatient]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchPastData();
       fetchData();
+      fetchTestData();
       setDisplayFilter(false);
     });
     return () => {
@@ -294,7 +348,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+            onPress={() => props.navigation.popToTop()}
+            // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
           >
             <ApolloLogo />
           </TouchableOpacity>
@@ -578,6 +633,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               navigation={props.navigation}
               MedicalRecordData={medicalRecords}
               renderDeleteMedicalOrder={renderDeleteMedicalOrder}
+              labTestsData={labTests}
+              healthChecksData={healthChecks}
+              hospitalizationsData={hospitalizations}
             />
           )}
         </ScrollView>

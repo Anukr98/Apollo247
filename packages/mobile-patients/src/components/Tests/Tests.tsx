@@ -180,7 +180,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setProfile(currentPatient);
       ordersRefetch().then((data: any) => {
         const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        setOrdersFetched(orderData);
+        orderData.length > 0 && setOrdersFetched(orderData);
       });
     }
   }, [currentPatient]);
@@ -321,7 +321,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (!ordersLoading) {
       const orderData = g(orders, 'getDiagnosticOrdersList', 'ordersList') || [];
-      setOrdersFetched(orderData);
+      orderData.length > 0 && setOrdersFetched(orderData);
     }
   }, [ordersLoading]);
 
@@ -330,7 +330,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (ordersFetched.length == 0) {
       ordersRefetch().then((data: any) => {
         const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        setOrdersFetched(orderData);
+        orderData.length > 0 && setOrdersFetched(orderData);
       });
     }
   }, []);
@@ -602,7 +602,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          onPress={() => props.navigation.popToTop()}
+          // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
         >
           <ApolloLogo />
         </TouchableOpacity>

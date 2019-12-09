@@ -259,6 +259,7 @@ export const GET_APPOINTMENT_HISTORY = gql`
         hospitalId
         status
         bookingDate
+        isSeniorConsultStarted
       }
     }
   }
@@ -290,6 +291,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         appointmentState
         isConsultStarted
         isJdQuestionsComplete
+        isSeniorConsultStarted
         doctorInfo {
           id
           salutation
