@@ -39,7 +39,7 @@ import {
   BlockMultipleCalendarItems,
   BlockMultipleCalendarItemsVariables,
 } from 'graphql/types/BlockMultipleCalendarItems';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mutation } from 'react-apollo';
 import { format, parse } from 'date-fns';
 import { Item } from 'components/blocked-calendar/BlockedCalendar';
@@ -179,7 +179,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     setIsTimeValid(true);
     setIsallreadyInArray(true);
     setIsPastTime(true);
-    setIsOverlapError(false);
 
     if (dateRange && dateRange > 0) {
       setDateRange((dateRange.length = 0));
@@ -402,7 +401,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     },
   });
   const classes = useStyles();
-
+  const fromDatePickerRef = useRef(null);
+  const toDatePickerRef = useRef(null);
   const TextFieldComponent = (props: any) => {
     return <TextField {...props} disabled={true} />;
   };
@@ -675,7 +675,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       var startTimeObject = new Date();
       startTimeObject.setHours(Number(startHour), Number(startMinute));
       customTimeArray.map((value: any) => {
-        if (value && value.length > 0 && value.startTime && value.endTime) {
+        if (value && value.startTime && value.endTime) {
           const [arrayshours, arraysmins] = value.startTime.split(':');
           var arraystartHour = arrayshours;
           var arraystartMinute = arraysmins;
@@ -701,6 +701,29 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           } else {
             setIsallreadyInArray(true);
           }
+          if (endTime && startTime) {
+            const [ehours, emins] = endTime.split(':');
+            var endHour = ehours;
+            var endMinute = emins;
+            var endTimeObject = new Date();
+            endTimeObject.setHours(Number(endHour), Number(endMinute));
+
+            if (startTimeObject <= startArrayTimeObject) {
+              if (startArrayTimeObject <= endTimeObject) {
+                setIsallreadyInArray(false);
+              } else {
+                setIsallreadyInArray(true);
+              }
+            } else if (startArrayTimeObject < startTimeObject) {
+              if (startTimeObject < endArrayTimeObject) {
+                setIsallreadyInArray(false);
+              } else {
+                setIsallreadyInArray(true);
+              }
+            } else {
+              setIsallreadyInArray(true);
+            }
+          }
         }
       });
 
@@ -716,7 +739,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       setIsallreadyInArray(true);
       setIsPastTime(true);
       setIsPastTimeError(false);
-      setIsOverlapError(false);
+      // setIsOverlapError(false);
       setChecked(false);
     }
   }, [isOverlapError, customTimeArray]);
@@ -776,6 +799,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     startEndList,
   ]);
   useEffect(() => {
+    if (selectedBlockOption === 'entireday' || selectedBlockOption === 'consulthours') {
+      setStartTime('');
+      setEndTime('');
+    }
+  }, [startTime, endTime, selectedBlockOption]);
+  useEffect(() => {
     if (
       durationSelected &&
       (selectedBlockOption === 'entireday' || selectedBlockOption === 'customtime')
@@ -824,15 +853,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
             <div>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <ThemeProvider theme={defaultMaterialTheme}>
-                  <div>
+                  <div ref={fromDatePickerRef}>
                     <KeyboardDatePicker
                       className={classes.KeyboardDatePicker}
                       disableToolbar
                       variant="inline"
-                      // format="MM/dd/yyyy"
                       format="iii, dd/MM/yyyy"
                       margin="normal"
-                      id="date-picker-inline"
                       label={
                         daySelected
                           ? 'Which day would you like to block your calendar for?'
@@ -841,6 +868,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       value={start}
                       minDate={new Date()}
                       onChange={(date) => {
+                        setIsOverlapError(false);
                         setStart(date ? getFormattedDate(date) : '');
                         findBlockSlot(date ? getFormattedDate(date) : '');
                         getDateRange(date ? date : '', end ? end : '');
@@ -853,23 +881,32 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       KeyboardButtonProps={{
                         'aria-label': 'change date',
                       }}
+                      PopoverProps={{
+                        anchorEl: fromDatePickerRef.current,
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'center',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'center',
+                        },
+                      }}
                       autoOk
                       TextFieldComponent={TextFieldComponent}
                     />
                   </div>
                   {!daySelected && (
-                    <div>
+                    <div ref={toDatePickerRef}>
                       <KeyboardDatePicker
                         className={classes.KeyboardDatePicker}
                         disableToolbar
                         variant="inline"
-                        // format="MM/dd/yyyy"
                         format="iii, dd/MM/yyy"
                         margin="normal"
-                        id="date-picker-inline"
                         label="To"
                         disabled={!start}
-                        minDate={nextTODate(start)}
+                        minDate={new Date(start)}
                         value={end}
                         onChange={(date) => {
                           setEnd(date ? getFormattedDate(date) : '');
@@ -877,6 +914,17 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         }}
                         KeyboardButtonProps={{
                           'aria-label': 'change date',
+                        }}
+                        PopoverProps={{
+                          anchorEl: toDatePickerRef.current,
+                          anchorOrigin: {
+                            vertical: 'bottom',
+                            horizontal: 'center',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'center',
+                          },
                         }}
                         autoOk
                         TextFieldComponent={TextFieldComponent}
@@ -956,16 +1004,20 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     />
                     {selectedBlockOption === 'consulthours' && (
                       <div className={classes.entireDayContent}>
-                        <p>
-                          These are your active consult hours for the selected day. Select which
-                          ones you’d like to block:
-                        </p>
                         {start === end && (
                           <div>
-                            <div className={classes.formDate}>
-                              {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
-                            </div>
-                            {consultHours && consultHours.length > 0 && (
+                            {consultHours ? (
+                              <div className={classes.formDate}>
+                                <p>
+                                  These are your active consult hours for the selected day. Select
+                                  which ones you’d like to block:
+                                </p>
+                                {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
+                              </div>
+                            ) : (
+                              <p>You don't have any active consult hours on the selected day</p>
+                            )}
+                            {consultHours && (
                               <FormGroup>
                                 <FormControlLabel
                                   control={<Checkbox value="consultHours" />}
@@ -986,6 +1038,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         )}
                         {start !== end && (
                           <div>
+                            {dateRange && dateRange.length > 0 ? (
+                              <p>
+                                These are your active consult hours for the selected day. Select
+                                which ones you’d like to block:
+                              </p>
+                            ) : (
+                              <p>You don't have any active consult hours on the selected day</p>
+                            )}
+
                             {dateRange &&
                               dateRange.length > 0 &&
                               dateRange.map((item: any) => (
@@ -1032,27 +1093,29 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                     <ThemeProvider theme={defaultMaterialTheme}>
                                       <Grid container alignItems="flex-start" spacing={0}>
                                         <Grid item lg={5} sm={5} xs={5}>
-                                          <TextField
-                                            onChange={(e) => {
-                                              changeListStartTime(e.currentTarget.value, index);
-                                              const obj = customTimeArray;
-                                              obj[index].startTime = e.currentTarget.value;
-                                              setStartVal(obj);
-                                              setStartVal1(e.currentTarget.value);
-                                            }}
-                                            value={
-                                              startVal[index].startTime === item.startTime
-                                                ? item.startTime
-                                                : startVal1
-                                            }
-                                            label="From"
-                                            type="time"
-                                            InputLabelProps={{ shrink: true }}
-                                            InputProps={{
-                                              style: { color: 'black ' },
-                                            }}
-                                            className={classes.timepicker}
-                                          />
+                                          <form noValidate>
+                                            <TextField
+                                              onChange={(e) => {
+                                                changeListStartTime(e.currentTarget.value, index);
+                                                const obj = customTimeArray;
+                                                obj[index].startTime = e.currentTarget.value;
+                                                setStartVal(obj);
+                                                setStartVal1(e.currentTarget.value);
+                                              }}
+                                              value={
+                                                startVal[index].startTime === item.startTime
+                                                  ? item.startTime
+                                                  : startVal1
+                                              }
+                                              label="From"
+                                              type="time"
+                                              InputLabelProps={{ shrink: true }}
+                                              InputProps={{
+                                                style: { color: 'black ' },
+                                              }}
+                                              className={classes.timepicker}
+                                            />
+                                          </form>
                                         </Grid>
                                         <Grid
                                           item
@@ -1064,30 +1127,32 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                           -
                                         </Grid>
                                         <Grid item lg={5} sm={5} xs={5}>
-                                          <TextField
-                                            onChange={(e) => {
-                                              changeListEndTime(e.currentTarget.value, index);
-                                              const obj = customTimeArray;
-                                              obj[index].endTime = e.currentTarget.value;
-                                              setVal(obj);
-                                              setVal1(e.currentTarget.value);
-                                            }}
-                                            value={
-                                              val[index].endTime === item.endTime
-                                                ? item.endTime
-                                                : val1
-                                            }
-                                            label="To"
-                                            type="time"
-                                            InputLabelProps={{ shrink: true }}
-                                            InputProps={{
-                                              style: {
-                                                color: 'black',
-                                                width: '100%',
-                                              },
-                                            }}
-                                            className={classes.timepicker}
-                                          />
+                                          <form noValidate>
+                                            <TextField
+                                              onChange={(e) => {
+                                                changeListEndTime(e.currentTarget.value, index);
+                                                const obj = customTimeArray;
+                                                obj[index].endTime = e.currentTarget.value;
+                                                setVal(obj);
+                                                setVal1(e.currentTarget.value);
+                                              }}
+                                              value={
+                                                val[index].endTime === item.endTime
+                                                  ? item.endTime
+                                                  : val1
+                                              }
+                                              label="To"
+                                              type="time"
+                                              InputLabelProps={{ shrink: true }}
+                                              InputProps={{
+                                                style: {
+                                                  color: 'black',
+                                                  width: '100%',
+                                                },
+                                              }}
+                                              className={classes.timepicker}
+                                            />
+                                          </form>
                                         </Grid>
                                       </Grid>
                                     </ThemeProvider>
@@ -1099,35 +1164,39 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             <ThemeProvider theme={defaultMaterialTheme}>
                               <Grid container alignItems="flex-start" spacing={0}>
                                 <Grid item lg={5} sm={5} xs={5}>
-                                  <TextField
-                                    onChange={(e) => {
-                                      setStartTime(e.currentTarget.value);
-                                    }}
-                                    value={startTime}
-                                    label="From"
-                                    type="time"
-                                    InputLabelProps={{ shrink: true }}
-                                    InputProps={{ style: { color: 'black ' } }}
-                                    className={classes.timepicker}
-                                  />
+                                  <form noValidate>
+                                    <TextField
+                                      onChange={(e) => {
+                                        setStartTime(e.currentTarget.value);
+                                      }}
+                                      value={startTime}
+                                      label="From"
+                                      type="time"
+                                      InputLabelProps={{ shrink: true }}
+                                      InputProps={{ style: { color: 'black ' } }}
+                                      className={classes.timepicker}
+                                    />
+                                  </form>
                                 </Grid>
                                 <Grid item lg={2} sm={2} xs={2} className={classes.deviderLine}>
                                   -
                                 </Grid>
                                 <Grid item lg={5} sm={5} xs={5}>
-                                  <TextField
-                                    onChange={(e) => {
-                                      setEndTime(e.currentTarget.value);
-                                    }}
-                                    value={endTime}
-                                    label="To"
-                                    type="time"
-                                    InputLabelProps={{ shrink: true }}
-                                    InputProps={{
-                                      style: { color: 'black', width: '100%' },
-                                    }}
-                                    className={classes.timepicker}
-                                  />
+                                  <form noValidate>
+                                    <TextField
+                                      onChange={(e) => {
+                                        setEndTime(e.currentTarget.value);
+                                      }}
+                                      value={endTime}
+                                      label="To"
+                                      type="time"
+                                      InputLabelProps={{ shrink: true }}
+                                      InputProps={{
+                                        style: { color: 'black', width: '100%' },
+                                      }}
+                                      className={classes.timepicker}
+                                    />
+                                  </form>
                                 </Grid>
                               </Grid>
                             </ThemeProvider>
@@ -1248,7 +1317,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         <Button
                           type="submit"
                           disabled={
-                            loading || invalid || !isTimeValid || !isallreadyInArray || !isPastTime
+                            loading ||
+                            invalid ||
+                            !isTimeValid ||
+                            !isallreadyInArray ||
+                            !isPastTime ||
+                            new Date(start).getDate() > new Date(end).getDate()
                           }
                           variant="contained"
                           className={classes.blockCalBtn}
@@ -1333,24 +1407,79 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               };
                               updateBlockedCalendarItem(updateArgs).catch(handleError);
                             } else if (durationSelected && selectedBlockOption === 'consulthours') {
-                              const addMultiArgs = {
-                                refetchQueries: [
-                                  {
-                                    query: GET_BLOCKED_CALENDAR,
-                                    variables: { doctorId },
-                                  },
-                                ],
-                                awaitRefetchQueries: true,
-                                variables: {
-                                  blockCalendarInputs: {
-                                    doctorId,
-                                    reason: '',
-                                    itemDetails: startEndList,
-                                  },
-                                },
-                              };
+                              if (start === end) {
+                                const [startHours, startMins] = chackedSingleValue.startTime.split(
+                                  ':'
+                                );
+                                let localhours = Number(startHours) + 5;
+                                let localMinuts = Number(startMins) + 30;
 
-                              BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                                if (localMinuts > 59) {
+                                  localMinuts = Number(localMinuts) - 60;
+                                  localhours = Number(localhours) + 1;
+                                  if (localhours > 23) {
+                                    localhours = 0;
+                                  }
+                                }
+
+                                startDate.setHours(parseInt(localhours.toString(), 10));
+                                startDate.setMinutes(parseInt(localMinuts.toString(), 10));
+                                const [endHours, endMins] = chackedSingleValue.endTime.split(':');
+                                let localEndhours = Number(endHours) + 5;
+                                let localEndMinuts = Number(endMins) + 30;
+
+                                if (localEndMinuts > 59) {
+                                  localEndMinuts = Number(localEndMinuts) - 60;
+                                  localEndhours = Number(localEndhours) + 1;
+                                  if (localEndhours > 23) {
+                                    localEndhours = 0;
+                                  }
+                                }
+                                endDate.setHours(parseInt(localEndhours.toString(), 10));
+                                endDate.setMinutes(parseInt(localEndMinuts.toString(), 10));
+
+                                const addMultiArgs = {
+                                  refetchQueries: [
+                                    {
+                                      query: GET_BLOCKED_CALENDAR,
+                                      variables: { doctorId },
+                                    },
+                                  ],
+                                  awaitRefetchQueries: true,
+                                  variables: {
+                                    blockCalendarInputs: {
+                                      doctorId,
+                                      reason: '',
+                                      itemDetails: [
+                                        {
+                                          start: startDate.toISOString(),
+                                          end: endDate.toISOString(),
+                                          consultMode: chackedSingleValue.consultMode,
+                                        },
+                                      ],
+                                    },
+                                  },
+                                };
+                                BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                              } else {
+                                const addMultiArgs = {
+                                  refetchQueries: [
+                                    {
+                                      query: GET_BLOCKED_CALENDAR,
+                                      variables: { doctorId },
+                                    },
+                                  ],
+                                  awaitRefetchQueries: true,
+                                  variables: {
+                                    blockCalendarInputs: {
+                                      doctorId,
+                                      reason: '',
+                                      itemDetails: startEndList,
+                                    },
+                                  },
+                                };
+                                BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                              }
                             } else if (selectedBlockOption === 'consulthours') {
                               if (selectedBlockOption === 'consulthours' && chackedSingleValue) {
                                 const [startHours, startMins] = chackedSingleValue.startTime.split(

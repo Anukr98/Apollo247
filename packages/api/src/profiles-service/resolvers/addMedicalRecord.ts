@@ -19,6 +19,7 @@ export const addPatientMedicalRecordTypeDefs = gql`
     GM
     _PERCENT_
     GM_SLASH_DL
+    NONE
   }
 
   enum MedicalRecordType {

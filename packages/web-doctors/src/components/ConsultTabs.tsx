@@ -404,6 +404,13 @@ export const ConsultTabs: React.FC = () => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
+    restore: true,
+    keepAlive: true,
+    //autoNetworkDetection: true,
+    //listenToBrowserNetworkEvents: true,
+    presenceTimeout: 20,
+    heartbeatInterval: 20,
+    uuid: REQUEST_ROLES.DOCTOR,
   };
   useEffect(() => {
     if (startAppointment) {
@@ -420,7 +427,9 @@ export const ConsultTabs: React.FC = () => {
     });
     getHistory(0);
     pubnub.addListener({
-      status(statusEvent: any) {},
+      status(statusEvent: any) {
+        console.log('statusEvent', statusEvent);
+      },
       message(message: any) {
         console.log(message.message);
         insertText[insertText.length] = message.message;
@@ -428,8 +437,21 @@ export const ConsultTabs: React.FC = () => {
         setLastMsg(message);
       },
       presence(presenceEvent: any) {
-        setPresenceEventObject(presenceEvent);
+        //setPresenceEventObject(presenceEvent);
         console.log(presenceEvent);
+        //setPresenceEventObject(presenceEvent);
+        pubnub
+          .hereNow({
+            channels: [appointmentId],
+            includeUUIDs: true,
+          })
+          .then((response: any) => {
+            console.log('hereNowresponse', response);
+            setPresenceEventObject(response);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       },
     });
     return () => {
@@ -1055,7 +1077,9 @@ export const ConsultTabs: React.FC = () => {
       });
       // convert itemName to itemname
       diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
-        return { itemname: prescription.itemName };
+        return {
+          itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
+        };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {

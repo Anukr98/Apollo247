@@ -416,7 +416,8 @@ export const DiagnosticPrescription: React.FC = () => {
                       />
                     </div>
                   )
-                : item.itemname!.trim() !== '' && (
+                : item.itemname &&
+                  item.itemname!.trim() !== '' && (
                     <div className={classes.chipCol}>
                       <Chip
                         className={classes.chipItem}

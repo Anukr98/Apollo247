@@ -87,12 +87,14 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism auth token
   async getPrismAuthToken(mobileNumber: string) {
+    //setting mobile number to static value in non-production environments
+    mobileNumber = process.env.NODE_ENV === 'production' ? mobileNumber : '8019677178';
+
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    mobileNumber = '8019677178';
     const url = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
     const msg = `External_API_Call: ${url}`;
     const authTokenResult = await fetch(url, prismHeaders)
@@ -109,7 +111,9 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
-    mobileNumber = '8019677178';
+    //setting mobile number to static value in non-production environments
+    mobileNumber = process.env.NODE_ENV === 'production' ? mobileNumber : '8019677178';
+
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
@@ -167,12 +171,14 @@ export class PatientRepository extends Repository<Patient> {
       (patientData.uhid === null || patientData.uhid === '') &&
       patientData.firstName.trim() !== ''
     ) {
-      const createUhidResponse = await this.createNewUhid(patientData.id);
-      uhid = createUhidResponse;
+      uhid = await this.createNewUhid(patientData.id);
     } else {
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
-      uhid = matchedUser.length > 0 ? matchedUser[0].UHID : 'AHB.0000724284';
+      uhid = matchedUser.length > 0 ? matchedUser[0].UHID : null;
     }
+
+    //setting mobile number to static value in non-production environments
+    uhid = process.env.NODE_ENV === 'production' ? uhid : 'AHB.0000724284';
 
     return uhid;
   }
@@ -226,7 +232,7 @@ export class PatientRepository extends Repository<Patient> {
       headers: {
         Connection: 'keep-alive',
         'Accept-Encoding': 'gzip, deflate',
-        Host: 'blue.phrdemo.com',
+        Host: `${process.env.PRISM_HOST}`,
         Accept: '*/*',
       },
       formData: formData,
@@ -260,6 +266,8 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
+    const url = `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
     const labResults = await fetch(
       `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`,
       prismHeaders
@@ -268,8 +276,11 @@ export class PatientRepository extends Repository<Patient> {
         return res.json();
       })
       .catch((error) => {
+        this.createLog(msg, 'getPatientLabResults->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
+
+    this.createLog(msg, 'getPatientLabResults->response', JSON.stringify(labResults), '');
 
     return labResults.errorCode == '0' ? labResults.response : [];
   }
@@ -280,16 +291,18 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    const healthChecks = await fetch(
-      `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`,
-      prismHeaders
-    )
+    const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
+    const healthChecks = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
+        this.createLog(msg, 'getPatientHealthChecks->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
+
+    this.createLog(msg, 'getPatientHealthChecks->response', JSON.stringify(healthChecks), '');
 
     return healthChecks.errorCode == '0' ? healthChecks.response : [];
   }
@@ -300,16 +313,23 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    const hospitalizations = await fetch(
-      `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`,
-      prismHeaders
-    )
+    const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const msg = `External_API_Call: ${url}`;
+    const hospitalizations = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
+        this.createLog(msg, 'getPatientHospitalizations->catchBlock', '', JSON.stringify(error));
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
+
+    this.createLog(
+      msg,
+      'getPatientHospitalizations->response',
+      JSON.stringify(hospitalizations),
+      ''
+    );
 
     return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
   }
@@ -432,9 +452,7 @@ export class PatientRepository extends Repository<Patient> {
 
     const textProcessRes = await uhidCreateResp.text();
     this.createLog(msg, 'createNewUhid->response', textProcessRes, '');
-    console.log('textProcessRes', textProcessRes);
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
-    console.log(uhidResp, 'uhid resp');
     this.updateUhid(id, uhidResp.result.toString());
     return uhidResp.result;
   }

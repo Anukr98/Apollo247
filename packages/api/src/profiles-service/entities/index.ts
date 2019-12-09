@@ -119,6 +119,7 @@ export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
   GM_SLASH_DL = 'GM_SLASH_DL',
+  NONE = 'NONE',
 }
 
 export enum MedicalRecordType {
