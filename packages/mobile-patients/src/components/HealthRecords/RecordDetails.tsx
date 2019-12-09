@@ -126,10 +126,19 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [placeImage, setPlaceImage] = useState<any>();
   const client = useApolloClient();
   useEffect(() => {
-    if (data.prismFileIds) {
-      const prismFileds = data.prismFileIds.split(',');
-      const urls = data.prescriptionImageUrl.split(',');
-      console.log('prismFileIds', urls.join(','));
+    if (
+      data.prismFileIds ||
+      data.hospitalizationPrismFileIds ||
+      data.healthCheckPrismFileIds ||
+      data.testResultPrismFileIds
+    ) {
+      const prismFileds =
+        (data.prismFileIds && data.prismFileIds.split(',')) ||
+        (data.hospitalizationPrismFileIds && data.hospitalizationPrismFileIds) ||
+        (data.healthCheckPrismFileIds && data.healthCheckPrismFileIds) ||
+        (data.testResultPrismFileIds && data.testResultPrismFileIds);
+      const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
+      console.log('prismFileIds', urls && urls.join(','));
       setshowSpinner(true);
       client
         .query<downloadDocuments>({
@@ -146,7 +155,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           setshowSpinner(false);
           console.log(data, 'DOWNLOAD_DOCUMENT');
           const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
-            (item, index) => item || urls[index]
+            (item, index) => item || (urls && urls.length <= index ? urls[index] : '')
           );
           setPlaceImage(uploadUrlscheck);
           console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
@@ -211,11 +220,33 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>{data.testName}</Text>
+            <Text style={styles.doctorNameStyle}>
+              {(data.testName && data.testName) ||
+                (data.diagnosisNotes && data.diagnosisNotes) ||
+                (data.healthCheckName && data.healthCheckName) ||
+                (data.labTestName && data.labTestName)}
+            </Text>
             <Text style={styles.timeStyle}>
-              {`Check-up Date: ${moment(data.testDate).format('DD MMM YYYY')}\nSource: ${
-                !!data.sourceName ? data.sourceName : '-'
-              }\nReferring Doctor: Dr. ${!!data.referringDoctor ? data.referringDoctor : '-'}`}
+              {`Check-up Date: ${moment(
+                (data.testDate && data.testDate) ||
+                  (data.dateOfHospitalization && data.dateOfHospitalization) ||
+                  (data.appointmentDate && data.appointmentDate) ||
+                  (data.labTestDate && data.labTestDate)
+              ).format('DD MMM YYYY')}\nSource: ${
+                !!data.sourceName
+                  ? data.sourceName
+                  : !!data.source
+                  ? data.source
+                  : !!data.labTestSource
+                  ? data.labTestSource
+                  : '-'
+              }\nReferring Doctor: Dr. ${
+                !!data.referringDoctor
+                  ? data.referringDoctor
+                  : !!data.signingDocName
+                  ? data.signingDocName
+                  : '-'
+              }`}
             </Text>
           </View>
           <View style={styles.imageView}>
@@ -240,7 +271,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             <View>
-              <Text style={styles.descriptionStyle}>{data.observations}</Text>
+              <Text style={styles.descriptionStyle}>
+                {(data.observations && data.observations) ||
+                  (data.additionalNotes && data.additionalNotes) ||
+                  (data.healthCheckSummary && data.healthCheckSummary)}
+              </Text>
             </View>
           </View>
         </CollapseCard>
@@ -257,7 +292,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           onPress={() => setshowPrescription(!showPrescription)}
         >
           <View style={{ marginTop: 11, marginBottom: 20 }}>
-            {data.medicalRecordParameters.map((item: any) => {
+            {(
+              (data.medicalRecordParameters && data.medicalRecordParameters) ||
+              (data.labTestResultParameters && data.labTestResultParameters)
+            ).map((item: any) => {
+              const unit = MedicalTest.find((itm) => itm.key === item.unit);
               return (
                 <View style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4 }]}>
                   <View style={styles.labelViewStyle}>
@@ -270,9 +309,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     </View>
                     <View>
                       <Text style={styles.labelTextStyle}>Units</Text>
-                      <Text style={styles.valuesTextStyle}>
-                        {MedicalTest.find((itm) => itm.key === item.unit)!.value}
-                      </Text>
+                      <Text style={styles.valuesTextStyle}>{unit ? unit.value : item.unit}</Text>
                     </View>
                     <View>
                       <Text style={styles.labelTextStyle}>Normal Range</Text>
@@ -316,7 +353,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                       props.navigation.navigate(AppRoutes.RenderPdf, {
                         uri: item,
                         title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
-                        isPopup: true,
                       })
                     }
                   ></Button>
@@ -346,8 +382,10 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const renderData = () => {
     return (
       <View>
-        {!!data.observations && renderTopLineReport()}
-        {data.medicalRecordParameters && data.medicalRecordParameters.length
+        {(!!data.observations || !!data.additionalNotes || !!data.healthCheckSummary) &&
+          renderTopLineReport()}
+        {(data.medicalRecordParameters && data.medicalRecordParameters.length > 0) ||
+        (data.labTestResultParameters && data.labTestResultParameters.length > 0)
           ? renderDetailsFinding()
           : null}
         {placeImage && renderImage()}
