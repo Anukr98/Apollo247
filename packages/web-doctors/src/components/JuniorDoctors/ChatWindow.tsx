@@ -398,6 +398,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -500,7 +501,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== secondMessage &&
           message.message.message !== covertVideoMsg &&
           message.message.message !== covertAudioMsg &&
-          message.message.message !== cancelConsultInitiated
+          message.message.message !== cancelConsultInitiated &&
+          message.message.message !== callAbandonment
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -633,7 +635,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
-      rowData.message !== cancelConsultInitiated
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -723,7 +726,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
-      rowData.message !== cancelConsultInitiated
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent = 0;
       rightComponent++;

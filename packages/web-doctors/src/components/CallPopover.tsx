@@ -636,6 +636,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
 
@@ -706,7 +707,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
-      console.log(didPatientJoined, props.appointmentStatus, isAfter);
       if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
         console.log(timer, 'no_show');
@@ -740,6 +740,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
+          const text = {
+            id: props.doctorId,
+            message: callAbandonment,
+            isTyping: true,
+            messageDate: new Date(),
+          };
+          subscribeBrowserButtonsListener();
+          pubnub.publish(
+            {
+              message: text,
+              channel: channel,
+              storeInHistory: true,
+            },
+            (status: any, response: any) => {}
+          );
           unSubscribeBrowserButtonsListener();
           if (status === STATUS.NO_SHOW) {
             alert(
@@ -1172,7 +1187,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== secondMessage &&
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
-        lastMsg.message.message !== cancelConsultInitiated
+        lastMsg.message.message !== cancelConsultInitiated &&
+        lastMsg.message.message !== callAbandonment
       ) {
         setIsNewMsg(true);
       } else {
