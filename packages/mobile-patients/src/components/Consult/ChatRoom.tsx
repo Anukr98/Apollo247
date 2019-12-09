@@ -839,6 +839,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         thirtySecondCall();
       } else if (timer === 90) {
         minuteCaller();
+      } else if (timer > 100) {
+        stopJoinTimer();
       }
       if (timer == 0) {
         console.log('uptimer join', timer);
@@ -1324,7 +1326,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
-      requestToJrDoctor()
+      requestToJrDoctor();
       // startJoinTimer(0);
       // thirtySecondCall();
       // minuteCaller();
@@ -2035,15 +2037,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setLoading(true);
                     RNFetchBlob.config({
                       fileCache: true,
+                      path:
+                        Platform.OS === 'ios'
+                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                            '/' +
+                            (fileName || 'Apollo_Prescription.pdf')
+                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
                       addAndroidDownloads: {
                         title: fileName,
                         useDownloadManager: true,
-                        notification: false,
+                        notification: true,
                         mime: 'application/pdf',
-                        path:
-                          Platform.OS === 'ios'
-                            ? dirs.MainBundleDir
-                            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
                         description: 'File downloaded by download manager.',
                       },
                     })
@@ -2055,7 +2059,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         // the temp file path
                         console.log('The file saved to res ', res);
                         console.log('The file saved to ', res.path());
-                        saveimageIos(rowData.transferInfo.pdfUrl);
+                        // saveimageIos(rowData.transferInfo.pdfUrl);
                         // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                         // RNFetchBlob.ios.openDocument(res.path());
                         // if (Platform.OS === 'android') {
