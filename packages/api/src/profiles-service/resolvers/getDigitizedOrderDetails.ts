@@ -104,7 +104,7 @@ const getDigitizedPrescription: Resolver<
       orderDetails.orderAutoId
     );
     const pushNotificationInput = {
-      appointmentId: orderDetails.orderAutoId.toString(),
+      orderAutoId: orderDetails.orderAutoId,
       notificationType: NotificationType.MEDICINE_CART_READY,
     };
     const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
