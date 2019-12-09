@@ -161,12 +161,12 @@ export interface PlacesApiResponse {
 }
 
 // MedicineLandingPageAPi
-interface MedicinePageSection {
+export interface MedicinePageSection {
   category_id: string;
   title: string;
   image_url: string;
 }
-interface DealsOfTheDaySection {
+export interface DealsOfTheDaySection {
   category_id: string;
   image_url: string;
   position: number;
@@ -555,7 +555,6 @@ const config = process.env;
 //     }
 //   );
 // };
-
 
 // const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 

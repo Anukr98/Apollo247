@@ -11,14 +11,16 @@ import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import {  GetMedicineOrdersList, GetMedicineOrdersListVariables, GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList} from 'graphql/types/GetMedicineOrdersList';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
+} from 'graphql/types/GetMedicineOrdersList';
 import { useMutation } from 'react-apollo-hooks';
-import {GET_MEDICINE_ORDERS_LIST} from 'graphql/profiles';
+import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { ApolloError } from 'apollo-client';
-import {
-  MedicinePageAPiResponse,
-} from './../../helpers/MedicineApiCalls';
+import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -203,7 +205,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicineLanding: React.FC = (props) => {
-  const classes = useStyles({});
+  const classes = useStyles();
   const queryParams = new URLSearchParams(location.search);
   const mascotRef = useRef(null);
 
@@ -226,17 +228,20 @@ export const MedicineLanding: React.FC = (props) => {
   };
 
   const getMedicinePageProducts = async () => {
-    await axios.post(
-      apiDetails.url! ,
-      { },
-      {
-        headers: {
-          Authorization: apiDetails.authToken,
-          Accept: '*/*',
-        },
-      }).then((res:any) => {
+    await axios
+      .post(
+        apiDetails.url!,
+        {},
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+            Accept: '*/*',
+          },
+        }
+      )
+      .then((res: any) => {
         console.log(res);
-        // setData(res);
+        setData(res.data);
         setLoading(false);
       })
       .catch((e: ApolloError) => {
@@ -244,23 +249,22 @@ export const MedicineLanding: React.FC = (props) => {
         setError(e);
         setLoading(false);
       });
-  }
+  };
 
   useEffect(() => {
     // setProfile(currentPatient!);
-    if(apiDetails.url != null){
-      getMedicinePageProducts()
+    if (apiDetails.url != null) {
+      getMedicinePageProducts();
     }
-      
   }, []);
 
-//   const medicineData = useMutation<
-//   GetMedicineOrdersList,
-//   GetMedicineOrdersListVariables
-// >(GET_MEDICINE_ORDERS_LIST, {
-//   variables: { patientId: currentPatient && currentPatient.id },
-//   fetchPolicy: 'no-cache',
-// });
+  //   const medicineData = useMutation<
+  //   GetMedicineOrdersList,
+  //   GetMedicineOrdersListVariables
+  // >(GET_MEDICINE_ORDERS_LIST, {
+  //   variables: { patientId: currentPatient && currentPatient.id },
+  //   fetchPolicy: 'no-cache',
+  // });
 
   // useEffect(() => {
   //   medicineData().then((res) => {
@@ -274,6 +278,22 @@ export const MedicineLanding: React.FC = (props) => {
   //   })
   // });
 
+  const list = data && [
+    {
+      key: 'Shop by Health Areas',
+      value: <ShopByAreas data={data.healthareas} />,
+    },
+    {
+      key: 'Deals of the day',
+      value: <DayDeals data={data.deals_of_the_day} />,
+    },
+    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} /> },
+    {
+      key: 'Shop by Category',
+      value: <ShopByCategory data={data.shop_by_category} />,
+    },
+    { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
+  ];
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -287,7 +307,7 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.userName}>hi surj :)</div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
-                {/* <MedicineAutoSearch /> */}
+                <MedicineAutoSearch />
                 <div className={classes.productsBanner}>
                   <img src="https://via.placeholder.com/702x150" alt="" />
                 </div>
@@ -329,35 +349,28 @@ export const MedicineLanding: React.FC = (props) => {
               </div>
             </div>
           </div>
-          {!loading && data &&
-          <div className={classes.allProductsList}>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Shop by Health Areas</div>
-              <ShopByAreas />
+          {!loading && (
+            <div className={classes.allProductsList}>
+              {list &&
+                list.map((item) => (
+                  <div className={classes.sliderSection}>
+                    <div className={classes.sectionTitle}>
+                      {item.key === 'Shop by Brand' ? (
+                        <>
+                          <span>{item.key}</span>
+                          <div className={classes.viewAllLink}>
+                            <Link to={clientRoutes.yourOrders()}>View All</Link>
+                          </div>
+                        </>
+                      ) : (
+                        item.key
+                      )}
+                    </div>
+                    {item.value}
+                  </div>
+                ))}
             </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Deals of the day</div>
-              <DayDeals />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Hot Sellers</div>
-              <HotSellers />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Shop by Category</div>
-              <ShopByCategory />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                <span>Shop by Brand</span>
-                <div className={classes.viewAllLink}>
-                  <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
-                </div>
-              </div>
-              <ShopByBrand  data= {data}/>
-            </div>
-          </div>
-}
+          )}
         </div>
       </div>
     </div>
