@@ -84,6 +84,7 @@ export enum NotificationType {
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
+  MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
 }
 
@@ -489,8 +490,14 @@ export async function sendCartNotification(
   if (medicineOrderDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   const patientDetails = await patientRepo.getPatientDetails(medicineOrderDetails.patient.id);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-  notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
-  notificationTitle = ApiConstants.CART_READY_TITLE;
+  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_CART_READY) {
+    notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
+    notificationTitle = ApiConstants.CART_READY_TITLE;
+  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+    notificationBody = ApiConstants.ORDER_DELIVERY_BODY.replace('{0}', patientDetails.firstName);
+    notificationTitle = ApiConstants.ORDER_DELIVERY_TITLE;
+  }
+
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -508,9 +515,21 @@ export async function sendCartNotification(
     data: {
       type: 'Cart_Ready',
       orderId: pushNotificationInput.appointmentId,
+      orderAutoId: '',
+      deliveredDate: '',
       firstName: patientDetails.firstName,
     },
   };
+
+  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+    payload.data = {
+      type: 'Order_Delivered',
+      orderAutoId: pushNotificationInput.appointmentId,
+      orderId: medicineOrderDetails.id,
+      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      firstName: patientDetails.firstName,
+    };
+  }
 
   console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options

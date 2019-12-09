@@ -299,11 +299,7 @@ export const MedicineLanding: React.FC = (props) => {
                       <div className={classes.prescriptionGroup}>
                         <div>
                           <div className={classes.groupTitle}>Have a prescription ready?</div>
-                          <AphButton
-                            color="primary"
-                          >
-                            Upload Prescription
-                          </AphButton>
+                          <AphButton color="primary">Upload Prescription</AphButton>
                         </div>
                         <div className={classes.prescriptionIcon}>
                           <img src={require('images/ic_prescription_pad.svg')} alt="" />
@@ -336,36 +332,26 @@ export const MedicineLanding: React.FC = (props) => {
           {!loading && data &&
           <div className={classes.allProductsList}>
             <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                Shop by Health Areas
-              </div>
+              <div className={classes.sectionTitle}>Shop by Health Areas</div>
               <ShopByAreas />
             </div>
             <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                Deals of the day
-              </div>
+              <div className={classes.sectionTitle}>Deals of the day</div>
               <DayDeals />
             </div>
             <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                Hot Sellers
-              </div>
+              <div className={classes.sectionTitle}>Hot Sellers</div>
               <HotSellers />
             </div>
             <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                Shop by Category
-              </div>
+              <div className={classes.sectionTitle}>Shop by Category</div>
               <ShopByCategory />
             </div>
             <div className={classes.sliderSection}>
               <div className={classes.sectionTitle}>
                 <span>Shop by Brand</span>
                 <div className={classes.viewAllLink}>
-                  <Link to={clientRoutes.yourOrders()}>
-                    View All
-                  </Link>
+                  <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
                 </div>
               </div>
               <ShopByBrand  data= {data}/>

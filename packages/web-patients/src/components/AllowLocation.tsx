@@ -1,8 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
-import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
-import { BankDetails } from 'components/Orders/BankDetails';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

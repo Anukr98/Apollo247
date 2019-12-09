@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Button } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import {
   UpdateDoctorOnlineStatus,
@@ -92,24 +92,26 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
   >([]);
   const [jrdNoFillDialog, setJrdNoFillDialog] = useState(false);
   let activeConsults: any;
-  if (currentDoctor && currentDoctor.id) {
-    client
-      .query<GetConsultQueue, GetConsultQueueVariables>({
-        query: GET_CONSULT_QUEUE,
-        fetchPolicy: 'no-cache',
-        variables: { doctorId: currentDoctor.id },
-      })
-      .then((data) => {
-        setConsultQueue(data.data.getConsultQueue.consultQueue);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  useEffect(() => {
+    if (currentDoctor && currentDoctor.id) {
+      client
+        .query<GetConsultQueue, GetConsultQueueVariables>({
+          query: GET_CONSULT_QUEUE,
+          fetchPolicy: 'no-cache',
+          variables: { doctorId: currentDoctor.id },
+        })
+        .then((data) => {
+          setConsultQueue(data.data.getConsultQueue.consultQueue);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
-    if (consultQueue) {
-      activeConsults = consultQueue.filter((consult) => consult.isActive);
+      if (consultQueue) {
+        activeConsults = consultQueue.filter((consult) => consult.isActive);
+      }
     }
-  }
+  }, []);
 
   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
   if (loading || error || !data || !data.getDoctorDetails) return null;

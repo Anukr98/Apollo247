@@ -71,12 +71,17 @@ const uploadDocument: Resolver<
     return { status: false, fileId: '', filePath: blobUrl };
   }
 
+  //get authtoken for the logged in user mobile number
+  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
+
+  if (!prismUHIDAuthToken) return { status: false, fileId: '', filePath: blobUrl };
+
   //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
 
   const fileId = await patientsRepo.uploadDocumentToPrism(
     uhid,
-    prismAuthToken,
+    prismUHIDAuthToken,
     uploadDocumentInput
   );
 

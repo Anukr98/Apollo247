@@ -44,7 +44,6 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineName: String!
-    doctorId: ID
     id: ID!
   }
 

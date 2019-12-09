@@ -723,7 +723,7 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       const dosageCount =
         medicine.medicineTimings.length > 0
-          ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+          ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
           : medicine.medicineDosage;
       return (
         <div key={index} className={classes.medicineBox}>
@@ -1050,7 +1050,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Quantity (Per Dosage)
+                            Quantity (Per Dosage)*
                           </div>
                           <AphTextField
                             inputProps={{ maxLength: 6 }}
@@ -1071,7 +1071,7 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Units/Types
+                            Units/Types*
                           </div>
                           <div className={classes.unitsSelect}>
                             <AphSelect
@@ -1112,10 +1112,10 @@ export const MedicinePrescription: React.FC = () => {
                                 value="OINTMENT"
                                 classes={{ selected: classes.menuSelected }}
                               >
-                                OINTMENT
+                                ointment
                               </MenuItem>
                               <MenuItem value="OTHER" classes={{ selected: classes.menuSelected }}>
-                                OTHER
+                                other
                               </MenuItem>
                             </AphSelect>
                           </div>
@@ -1149,7 +1149,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Duration (In days)*
+                            Duration (in days)*
                           </div>
                           <AphTextField
                             placeholder=""
@@ -1188,7 +1188,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Time of the Day*</div>
+                      <div className={classes.sectionTitle}>Time of the Day</div>
                       <div className={classes.numberTablets}>{daySlotsHtml}</div>
                       {/* {errorState.daySlotErr && (
                         <FormHelperText
@@ -1206,7 +1206,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                       <div className={classes.numberTablets}>
                         <AphTextField
-                          placeholder="Eg. Root of Administration, Gaps in Dosage, etc."
+                          placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
                           value={medicineInstruction}
                           onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);

@@ -57,7 +57,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_diabetes.svg')} alt="" />
@@ -66,7 +66,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_arthritis.svg')} alt="" />
@@ -75,7 +75,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_immunity.svg')} alt="" />
@@ -84,7 +84,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_heart.svg')} alt="" />
@@ -93,7 +93,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_stomach.svg')} alt="" />
@@ -102,7 +102,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_lungs.svg')} alt="" />
@@ -111,7 +111,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_condom.svg')} alt="" />
@@ -120,7 +120,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_eyeear.svg')} alt="" />
@@ -129,7 +129,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_18.svg')} alt="" />
@@ -138,7 +138,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           </Link>
         </div>
         <div className={classes.card}>
-          <Link to={clientRoutes.yourOrders()}>
+          <Link to={clientRoutes.medicineSearchByBrand()}>
             <div className={classes.cardWrap}>
               <div className={classes.cardIcon}>
                 <img src={require('images/shopby/ic_beauty.svg')} alt="" />

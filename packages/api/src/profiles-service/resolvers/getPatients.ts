@@ -5,8 +5,6 @@ import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { AthsTokenResponse } from 'types/uhidCreateTypes';
-import { format } from 'date-fns';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -44,6 +42,7 @@ export const getPatientTypeDefs = gql`
   }
   extend type Query {
     getPatientById(patientId: String): PatientInfo
+    getAthsToken(patientId: String): PatientInfo
     getPatientByMobileNumber(mobileNumber: String): PatientList
     getPatients: GetPatientsResult
   }
@@ -132,39 +131,9 @@ const addNewProfile: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
   patientRepo.createNewUhid(savePatient.id);
+  patientRepo.createAthsToken(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  const athsTokenInput = {
-    AdminId: process.env.ATHS_TOKEN_ADMIN ? process.env.ATHS_TOKEN_ADMIN.toString() : '',
-    AdminPassword: process.env.ATHS_TOKEN_PWD ? process.env.ATHS_TOKEN_PWD.toString() : '',
-    FirstName: patientProfileInput.firstName,
-    LastName: patientProfileInput.lastName,
-    countryCode: '91',
-    PhoneNumber: patientProfileInput.mobileNumber,
-    DOB: format(patientProfileInput.dateOfBirth, 'dd/MM/yyyy'),
-    Gender: '1',
-    PartnerUserId: '1012',
-    SourceApp: process.env.ATHS_SOURCE_APP ? process.env.ATHS_SOURCE_APP.toString() : '',
-  };
-  const athsTokenUrl = process.env.ATHS_TOKEN_CREATE ? process.env.ATHS_TOKEN_CREATE : '';
-  const tokenResp = await fetch(athsTokenUrl, {
-    method: 'POST',
-    body: JSON.stringify(athsTokenInput),
-    headers: { 'Content-Type': 'application/json' },
-  });
-  //console.log(tokenResp, 'token resp');
-  const textRes = await tokenResp.text();
-  const tokenResult: AthsTokenResponse = JSON.parse(textRes);
-  if (tokenResult.Result && tokenResult.Result != '') {
-    patientRepo.updateToken(savePatient.id, JSON.parse(tokenResult.Result).Token);
-  }
-  console.log(
-    tokenResult,
-    'respp',
-    tokenResult.Result,
-    JSON.parse(tokenResult.Result),
-    JSON.parse(tokenResult.Result).Token
-  );
   return { patient };
 };
 
@@ -196,6 +165,27 @@ const deleteProfile: Resolver<
   return { status: true };
 };
 
+const getAthsToken: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  PatientInfo
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findById(args.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  if (patientDetails.athsToken == '' || patientDetails.athsToken == null) {
+    await patientRepo.createAthsToken(patientDetails.id);
+  }
+  const patient = await patientRepo.findById(args.patientId);
+  if (!patient) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  return { patient };
+};
+
 const getPatients = () => {
   return { patients: [] };
 };
@@ -205,6 +195,7 @@ export const getPatientResolvers = {
     getPatientById,
     getPatientByMobileNumber,
     getPatients,
+    getAthsToken,
   },
   Mutation: {
     deleteProfile,

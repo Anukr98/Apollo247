@@ -11,12 +11,14 @@ import {
   RescheduleAppointmentDetails,
   TRANSFER_STATUS,
   APPOINTMENT_STATE,
+  AppointmentNoShow,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -56,6 +58,7 @@ export const createAppointmentSessionTypeDefs = gql`
   input EndAppointmentSessionInput {
     appointmentId: ID!
     status: STATUS!
+    noShowBy: REQUEST_ROLES
   }
 
   extend type Mutation {
@@ -115,6 +118,7 @@ type endAppointmentSessionInputArgs = {
 type EndAppointmentSessionInput = {
   appointmentId: string;
   status: STATUS;
+  noShowBy: REQUEST_ROLES;
 };
 
 const createJuniorAppointmentSession: Resolver<
@@ -253,20 +257,21 @@ const createAppointmentSession: Resolver<
     ) {
       await apptRepo.updateAppointmentStatus(
         createAppointmentSessionInput.appointmentId,
-        STATUS.IN_PROGRESS
+        STATUS.IN_PROGRESS,
+        true
       );
     }
     // If appointment started with junior doctor
-    if (
-      createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR &&
-      apptDetails.status != STATUS.IN_PROGRESS &&
-      apptDetails.status != STATUS.JUNIOR_DOCTOR_STARTED
-    ) {
-      await apptRepo.updateAppointmentStatus(
-        createAppointmentSessionInput.appointmentId,
-        STATUS.JUNIOR_DOCTOR_STARTED
-      );
-    }
+    // if (
+    //   createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR &&
+    //   apptDetails.status != STATUS.IN_PROGRESS &&
+    //   apptDetails.status != STATUS.JUNIOR_DOCTOR_STARTED
+    // ) {
+    //   await apptRepo.updateAppointmentStatus(
+    //     createAppointmentSessionInput.appointmentId,
+    //     STATUS.JUNIOR_DOCTOR_STARTED
+    //   );
+    // }
     // send notification
     const pushNotificationInput = {
       appointmentId: createAppointmentSessionInput.appointmentId,
@@ -316,7 +321,8 @@ const createAppointmentSession: Resolver<
   ) {
     await apptRepo.updateAppointmentStatus(
       createAppointmentSessionInput.appointmentId,
-      STATUS.IN_PROGRESS
+      STATUS.IN_PROGRESS,
+      true
     );
   }
   await repo.saveAppointmentSession(appointmentSessionAttrs);
@@ -379,7 +385,8 @@ const endAppointmentSession: Resolver<
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   await apptRepo.updateAppointmentStatus(
     endAppointmentSessionInput.appointmentId,
-    endAppointmentSessionInput.status
+    endAppointmentSessionInput.status,
+    true
   );
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSession = await apptSessionRepo.getAppointmentSession(
@@ -389,16 +396,30 @@ const endAppointmentSession: Resolver<
     await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
   }
 
-  if (endAppointmentSessionInput.status == STATUS.NO_SHOW) {
+  if (
+    endAppointmentSessionInput.status == STATUS.NO_SHOW ||
+    endAppointmentSessionInput.status == STATUS.CALL_ABANDON
+  ) {
     const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+    const noShowRepo = consultsDb.getCustomRepository(AppointmentNoShowRepository);
+    const noShowAttrs: Partial<AppointmentNoShow> = {
+      noShowType: endAppointmentSessionInput.noShowBy,
+      appointment: apptDetails,
+      noShowStatus: endAppointmentSessionInput.status,
+    };
+    await noShowRepo.saveNoShow(noShowAttrs);
     const rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails> = {
-      rescheduleReason: '',
+      rescheduleReason: endAppointmentSessionInput.status.toString(),
       rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-      rescheduleInitiatedId: apptDetails.doctorId,
+      rescheduleInitiatedId: apptDetails.patientId,
       rescheduledDateTime: new Date(),
       rescheduleStatus: TRANSFER_STATUS.INITIATED,
       appointment: apptDetails,
     };
+    if (endAppointmentSessionInput.noShowBy == REQUEST_ROLES.DOCTOR) {
+      rescheduleAppointmentAttrs.rescheduleInitiatedBy = TRANSFER_INITIATED_TYPE.DOCTOR;
+      rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
+    }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
     await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
     // send notification

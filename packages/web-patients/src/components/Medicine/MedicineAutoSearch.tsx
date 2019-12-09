@@ -1,6 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Paper } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
@@ -49,11 +51,13 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         '& li': {
           listStyleType: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '12px 12px',
           borderBottom: '0.5px solid rgba(2,71,91,0.1)',
           cursor: 'pointer',
+          '& a': {
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px 12px',
+          },
           '&:last-child': {
             borderBottom: 0,
           },
@@ -97,10 +101,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.medicineSearchForm}>
-        <AphTextField
-          placeholder="Search meds, brands and more"
-          className={classes.searchInput}
-        />
+        <AphTextField placeholder="Search meds, brands and more" className={classes.searchInput} />
         <AphButton className={classes.searchBtn}>
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
@@ -110,40 +111,48 @@ export const MedicineAutoSearch: React.FC = (props) => {
           <div className={classes.searchList}>
             <ul>
               <li>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/img_product.png')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin Advance</div>
-                  <div className={classes.medicinePrice}>Rs. 14.95</div>
-                </div>
+                <Link to={clientRoutes.medicineDetails()}>
+                  <div className={classes.medicineImg}>
+                    <img src={require('images/img_product.png')} alt="" />
+                  </div>
+                  <div className={classes.medicineInfo}>
+                    <div className={classes.medicineName}>Crocin Advance</div>
+                    <div className={classes.medicinePrice}>Rs. 14.95</div>
+                  </div>
+                </Link>
               </li>
               <li className={classes.itemSelected}>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/img_product.png')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin Pain Releif</div>
-                  <div className={classes.medicinePrice}>Rs. 14.95</div>
-                </div>
+                <Link to={clientRoutes.medicineDetails()}>
+                  <div className={classes.medicineImg}>
+                    <img src={require('images/img_product.png')} alt="" />
+                  </div>
+                  <div className={classes.medicineInfo}>
+                    <div className={classes.medicineName}>Crocin Pain Releif</div>
+                    <div className={classes.medicinePrice}>Rs. 14.95</div>
+                  </div>
+                </Link>
               </li>
               <li>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/ic_tablets_rx.svg')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin Cold &amp; Flu</div>
-                  <div className={classes.noStock}>Out Of Stock</div>
-                </div>
+                <Link to={clientRoutes.medicineDetails()}>
+                  <div className={classes.medicineImg}>
+                    <img src={require('images/ic_tablets_rx.svg')} alt="" />
+                  </div>
+                  <div className={classes.medicineInfo}>
+                    <div className={classes.medicineName}>Crocin Cold &amp; Flu</div>
+                    <div className={classes.noStock}>Out Of Stock</div>
+                  </div>
+                </Link>
               </li>
               <li>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/ic_tablets.svg')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin 650mg</div>
-                  <div className={classes.medicinePrice}>Rs. 14.95</div>
-                </div>
+                <Link to={clientRoutes.medicineDetails()}>
+                  <div className={classes.medicineImg}>
+                    <img src={require('images/ic_tablets.svg')} alt="" />
+                  </div>
+                  <div className={classes.medicineInfo}>
+                    <div className={classes.medicineName}>Crocin 650mg</div>
+                    <div className={classes.medicinePrice}>Rs. 14.95</div>
+                  </div>
+                </Link>
               </li>
             </ul>
           </div>

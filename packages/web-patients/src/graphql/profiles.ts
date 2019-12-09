@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import gql from "graphql-tag";
 
 export const GET_PATIENTS = gql`
   query GetPatients {
@@ -79,18 +79,22 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDERS_LIST = gql`
-  query GetMedicineOrdersList($patientId: String) {
-    getMedicineOrdersList(patientId: $patientId) {
-      MedicineOrdersList {
+export const BOOK_APPOINTMENT_RESCHEDULE = gql`
+  mutation bookRescheduleAppointment(
+    $bookRescheduleAppointmentInput: BookRescheduleAppointmentInput!
+  ) {
+    bookRescheduleAppointment(
+      bookRescheduleAppointmentInput: $bookRescheduleAppointmentInput
+    ) {
+      appointmentDetails {
+        appointmentType
         id
-        orderAutoId
-        deliveryType
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-        }
+        doctorId
+        appointmentState
+        appointmentDateTime
+        status
+        patientId
+        rescheduleCount
       }
     }
   }

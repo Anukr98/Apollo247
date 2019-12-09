@@ -119,6 +119,7 @@ export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
   GM_SLASH_DL = 'GM_SLASH_DL',
+  NONE = 'NONE',
 }
 
 export enum MedicalRecordType {
@@ -358,6 +359,9 @@ export class MedicineOrdersStatus extends BaseEntity {
 
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
+
+  @Column({ nullable: true, default: true })
+  hideStatus: boolean;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;

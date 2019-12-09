@@ -1,4 +1,5 @@
-import { Button, CircularProgress } from '@material-ui/core';
+import { Button, CircularProgress, Theme } from '@material-ui/core';
+import { makeStyles, mergeClasses } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { GET_BLOCKED_CALENDAR, REMOVE_BLOCKED_CALENDAR_ITEM } from 'graphql/doctors';
 import {
@@ -9,6 +10,29 @@ import React from 'react';
 import { Mutation } from 'react-apollo';
 import { Item } from 'components/blocked-calendar/BlockedCalendar';
 
+const useStyles = makeStyles((theme: Theme) => ({
+  blockedCalendarBlock: {
+    borderRadius: 10,
+    backgroundColor: theme.palette.primary.contrastText,
+    position: 'relative',
+    flexGrow: 1,
+    boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
+    marginBottom: 15,
+    padding: '12px 24px',
+    color: '#02475b',
+    fontSize: 16,
+    fontWeight: 500,
+  },
+  blockBtn: {
+    position: 'absolute',
+    right: 24,
+    top: 6,
+    color: '#00b38e',
+    fontSize: 14,
+    fontWeight: 500,
+  },
+}));
+
 export interface BlockedCalendarItemProps {
   doctorId: string;
   item: Item;
@@ -16,23 +40,25 @@ export interface BlockedCalendarItemProps {
 }
 
 export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) => {
+  const classes = useStyles();
   const { item, doctorId, onEdit } = props;
   const sameDay =
     item.start.getDate() === item.end.getDate() && item.start.getMonth() === item.end.getMonth();
   var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
+  var otherOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
   const dateText = sameDay
     ? // ? format(item.start, 'iii, P')
       item.start.toLocaleDateString('en-AU', options)
     : // : `${format(item.start, 'P')} - ${format(item.end, 'P')}`;
-      `${item.start.toLocaleDateString('en-AU', options)} - ${item.end.toLocaleDateString(
+      `${item.start.toLocaleDateString('en-AU', otherOptions)} - ${item.end.toLocaleDateString(
         'en-AU',
-        options
+        otherOptions
       )}`;
   const timeText = sameDay ? `${format(item.start, 'p')} - ${format(item.end, 'p')}` : 'All slots';
   return (
-    <div style={{ color: 'black' }}>
-      <span style={{ width: '30%', display: 'inline-block' }}>{dateText}</span>
-      <span style={{ width: '30%', display: 'inline-block' }}>{timeText}</span>
+    <div className={classes.blockedCalendarBlock}>
+      <span style={{ width: '45%', display: 'inline-block' }}>{dateText}</span>
+      <span style={{ width: '25%', display: 'inline-block' }}>{timeText}</span>
       {/* <Button
         variant="text"
         style={{ color: 'black', width: '20%', display: 'inline-block' }}
@@ -47,7 +73,7 @@ export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) =
         {(removeBlockedCalendarItem, { loading }) => (
           <Button
             variant="text"
-            style={{ color: 'black' }}
+            className={classes.blockBtn}
             disabled={loading}
             onClick={() => {
               removeBlockedCalendarItem({
