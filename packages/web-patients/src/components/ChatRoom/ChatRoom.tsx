@@ -292,6 +292,8 @@ export const ChatRoom: React.FC = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
+  const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
+  const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -313,10 +315,12 @@ export const ChatRoom: React.FC = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log(data, 'data');
+        setIsPopoverOpen(false);
+        setIsRescheduleSuccess(true);
+        setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
       })
       .catch((e: string) => {
-        console.log(e, 'error');
+        alert(e);
       });
   };
 
@@ -344,7 +348,6 @@ export const ChatRoom: React.FC = (props) => {
             data.getDoctorNextAvailableSlot &&
             data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
           ) {
-            console.log(data);
             setNextSlotAvailable(
               data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
             );
@@ -452,6 +455,8 @@ export const ChatRoom: React.FC = (props) => {
               doctorDetails={data}
               onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
               isRescheduleConsult={true}
+              appointmentId={params.appointmentId}
+              rescheduleAPI={rescheduleAPI}
             />
           </Paper>
         </Modal>
@@ -499,10 +504,44 @@ export const ChatRoom: React.FC = (props) => {
                     rescheduledId: '',
                   };
                   rescheduleAPI(bookRescheduleInput);
-                  setIsPopoverOpen(false);
                 }}
               >
                 ACCEPT
+              </AphButton>
+            </div>
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={isRescheduleSuccess}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <p>Hi! :)</p>
+              <p>
+                Your appointment with Dr.
+                {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}
+                has been rescheduled for{' '}
+                {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
+                OK, GOT IT
               </AphButton>
             </div>
           </div>
