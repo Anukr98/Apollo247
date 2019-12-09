@@ -41,6 +41,7 @@ import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { useUIElements } from '../UIElementsProvider';
+import { RenderPdf } from '../ui/RenderPdf';
 
 const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -130,6 +131,8 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   // console.log('prismPrescriptionFileId', prismFile.split(','));
+  const [pdfUri, setPDFUri] = useState<string>('');
+  const [pdfView, setPDFView] = useState<boolean>(false);
 
   useEffect(() => {
     if (prismFile == null || prismFile == '') {
@@ -327,7 +330,21 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           }
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-
+        {pdfView && (
+          <RenderPdf
+            uri={pdfUri}
+            title={
+              pdfUri.indexOf('fileName=') > -1
+                ? pdfUri.split('fileName=').pop() || 'Document'
+                : 'Document'
+            }
+            isPopup={true}
+            setDisplayPdf={() => {
+              setPDFView(false);
+            }}
+            navigation={props.navigation}
+          ></RenderPdf>
+        )}
         <View style={{ backgroundColor: '#f7f8f5' }}>
           <View style={{ marginLeft: 20, marginBottom: 8, marginTop: 17 }}>
             <MedicineRxIcon />
@@ -363,11 +380,28 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                       'Open File' +
                       (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
                     }
-                    onPress={() =>
-                      props.navigation.navigate(AppRoutes.RenderPdf, {
-                        uri: item,
-                        title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
-                      })
+                    onPress={
+                      () => {
+                        setPDFUri(item);
+                        setPDFView(true);
+                      }
+                      // (
+                      //   <RenderPdf
+                      //     uri={item}
+                      //     title={
+                      //       item.indexOf('fileName=') > -1
+                      //         ? item.split('fileName=').pop() || 'Document'
+                      //         : 'Document'
+                      //     }
+                      //     isPopup={true}
+                      //     navigation={props.navigation}
+                      //   ></RenderPdf>
+                      // )
+                      // props.navigation.navigate(AppRoutes.RenderPdf, {
+                      //   uri: item,
+                      //   title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
+                      //   isPopup: true,
+                      // })
                     }
                   ></Button>
                 </View>

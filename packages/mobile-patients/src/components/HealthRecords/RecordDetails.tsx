@@ -316,6 +316,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                       props.navigation.navigate(AppRoutes.RenderPdf, {
                         uri: item,
                         title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
+                        isPopup: true,
                       })
                     }
                   ></Button>

@@ -601,7 +601,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          onPress={() => props.navigation.popToTop()}
+          // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
         >
           <ApolloLogo />
         </TouchableOpacity>
