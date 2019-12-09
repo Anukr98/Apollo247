@@ -9,6 +9,7 @@ import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT_RESULT } from 'graphql/medicines';
@@ -135,13 +136,14 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     count: {
-      marginLeft: 'auto',
+      paddingLeft: 10,
     },
     pastSearches: {
       paddingBottom: 10,
     },
     topHeader: {
       paddingTop: 0,
+      textTransform: 'uppercase',
     },
     addItemBtn: {
       padding: 0,
@@ -149,17 +151,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       fontWeight: 'bold',
       paddingLeft: 20,
-      marginLeft: 20,
-      position: 'relative',
-      '&:before': {
-        position: 'absolute',
-        content: '""',
-        left: 0,
-        right: 0,
-        width: 0.5,
-        height: 41,
-        backgroundColor: 'rgba(2,71,91,0.1)',
-      },
+      marginLeft: 'auto',
     },
     deliveryAddress: {
       backgroundColor: '#f7f8f5',
@@ -212,6 +204,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     priceCol: {
       marginLeft: 'auto',
+      fontWeight: 'bold',
     },
     totalPrice: {
       marginLeft: 'auto',
@@ -274,14 +267,61 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     uploadPrescription: {
-      paddingBottom: 10,
-      marginTop: -5,
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: theme.palette.common.white,
+      padding: '10px 15px',
+      marginBottom: 20,
     },
-    noPrescriptionUpload: {
+    prescriptionRow: {
+      display: 'flex',
+      alignItems: 'center',
       fontSize: 14,
       fontWeight: 500,
       color: '#0087ba',
-      paddingBottom: 10,
+      '& >span': {
+        paddingRight: 20,
+      },
+      '& button': {
+        marginLeft: 'auto',
+      },
+    },
+    consultDoctor: {
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      paddingTop: 10,
+      marginTop: 10,
+      '& >span': {
+        paddingRight: 20,
+      },
+    },
+    consultDoctoLink: {
+      marginLeft: 'auto',
+      fontSize: 13,
+      fontWeight: 'bold',
+      color: '#fc9916',
+      textTransform: 'uppercase',
+    },
+    uploadedPreList: {
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: theme.palette.common.white,
+      padding: 10,
+      marginBottom: 20,
+    },
+    uploadMore: {
+      textAlign: 'right',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        fontWeight: 'bold',
+        color: '#fc9916',
+        padding: 0,
+      },
     },
     presUploadBtn: {
       backgroundColor: 'transparent',
@@ -289,11 +329,14 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       fontWeight: 'bold',
       color: '#fc9916',
-      marginTop: 10,
+      minWidth: 155,
       padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
+    },
+    uppercase: {
+      textTransform: 'uppercase',
     },
   };
 });
@@ -307,7 +350,7 @@ export interface PrescriptionFormat {
   imageUrl: string | null;
 }
 
-export const Cart: React.FC = (props) => {
+export const MedicineCart: React.FC = (props) => {
   const classes = useStyles();
 
   const defPresObject = {
@@ -361,18 +404,18 @@ export const Cart: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-          return {
-            medicineSKU: cartItemDetails.sku,
-            medicineName: cartItemDetails.name,
-            price: cartItemDetails.price,
-            quantity: cartItemDetails.quantity,
-            mrp: cartItemDetails.price,
-            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            prescriptionImageUrl: '',
-            mou: parseInt(cartItemDetails.mou, 10),
-            isMedicine: cartItemDetails.is_prescription_required ? '1' : '0',
-          };
-        })
+        return {
+          medicineSKU: cartItemDetails.sku,
+          medicineName: cartItemDetails.name,
+          price: cartItemDetails.price,
+          quantity: cartItemDetails.quantity,
+          mrp: cartItemDetails.price,
+          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+          prescriptionImageUrl: '',
+          mou: parseInt(cartItemDetails.mou, 10),
+          isMedicine: cartItemDetails.is_prescription_required ? '1' : '0',
+        };
+      })
       : [];
 
   return (
@@ -381,9 +424,9 @@ export const Cart: React.FC = (props) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 148px)'}>
           <div className={classes.medicineListGroup}>
             <div className={classes.sectionHeader}>
-              <span>Items In Your Cart</span>
+              <span>Medicines In Your Cart</span>
               <span className={classes.count}>
-                {cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0}
+                ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
               </span>
               <AphButton
                 className={classes.addItemBtn}
@@ -400,43 +443,55 @@ export const Cart: React.FC = (props) => {
                 {uploadPrescriptionRequired >= 0 ? (
                   <>
                     <div className={classes.sectionHeader}>
-                      <span>Upload Prescription</span>
-                      <span className={classes.count}>
-                        <AphButton
-                          onClick={() => setIsUploadPreDialogOpen(true)}
-                          className={classes.presUploadBtn}
-                        >
-                          Upload
-                        </AphButton>
-                      </span>
+                      Upload Prescription
                     </div>
-                    <div className={classes.uploadPrescription}>
-                      {prescriptions.length > 0 ? (
-                        <>
-                          {prescriptions.map((prescriptionDetails, index) => {
-                            const fileName = prescriptionDetails.name;
-                            const imageUrl = prescriptionDetails.imageUrl;
-                            return (
-                              <PrescriptionCard
-                                fileName={fileName || ''}
-                                imageUrl={imageUrl || ''}
-                                removePrescription={(fileName: string) =>
-                                  removePrescription(fileName)
-                                }
-                                key={index}
-                              />
-                            );
-                          })}
-                        </>
-                      ) : (
-                        <div className={classes.noPrescriptionUpload}>
-                          Some of your medicines require prescription to make a purchase. Please
-                          upload the necessary prescriptions.
+                    {prescriptions.length > 0 ? (
+                      <div className={classes.uploadedPreList}>
+                        {prescriptions.map((prescriptionDetails, index) => {
+                          const fileName = prescriptionDetails.name;
+                          const imageUrl = prescriptionDetails.imageUrl;
+                          return (
+                            <PrescriptionCard
+                              fileName={fileName || ''}
+                              imageUrl={imageUrl || ''}
+                              removePrescription={(fileName: string) =>
+                                removePrescription(fileName)
+                              }
+                              key={index}
+                            />
+                          );
+                        })}
+                        <div className={classes.uploadMore}>
+                          <AphButton
+                            onClick={() => setIsUploadPreDialogOpen(true)}
+                          >
+                            Upload More
+                          </AphButton>
+                        </div>
+                      </div>
+                    ) : (
+                        <div className={classes.uploadPrescription}>
+                          <div className={classes.prescriptionRow}>
+                            <span>Items in your cart marked with ‘Rx’ need prescriptions to complete
+your purchase. Please upload the necessary prescriptions</span>
+                            <AphButton
+                              onClick={() => setIsUploadPreDialogOpen(true)}
+                              className={classes.presUploadBtn}
+                            >
+                              Upload Prescription
+                            </AphButton>
+                          </div>
+                          <div className={classes.consultDoctor}>
+                            <span>Don’t have a prescription? Don’t worry!</span>
+                            <Link
+                              to={clientRoutes.doctorsLanding()}
+                              className={classes.consultDoctoLink}
+                            >
+                              Consult A Doctor
+                        </Link>
+                          </div>
                         </div>
                       )}
-
-                      {/* <EPrescriptionCard /> */}
-                    </div>
                   </>
                 ) : null}
               </>
@@ -489,7 +544,7 @@ export const Cart: React.FC = (props) => {
                 )}
               </div>
             </div>
-            <div className={classes.sectionHeader}>
+            <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
               <span>Total Charges</span>
             </div>
             <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
@@ -507,13 +562,13 @@ export const Cart: React.FC = (props) => {
                   </span>
                 </div>
               ) : (
-                <div className={`${classes.serviceType} ${classes.textVCenter}`}>
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                  </span>
-                  <span className={classes.linkText}>Coupon Applied</span>
-                </div>
-              )}
+                  <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Coupon Applied</span>
+                  </div>
+                )}
             </div>
             <div className={`${classes.sectionGroup}`}>
               <div className={classes.priceSection}>

@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Header } from 'components/Header';
-import { Cart } from 'components/Cart/Cart';
+import { MedicineCart } from 'components/Cart/MedicineCart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -47,7 +47,7 @@ export const MedicineCartLanding: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.cartPage}>
-          <Cart />
+          <MedicineCart />
         </div>
       </div>
     </div>
