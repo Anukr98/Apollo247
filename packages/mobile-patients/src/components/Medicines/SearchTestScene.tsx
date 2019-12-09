@@ -441,7 +441,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         isTest={true}
         containerStyle={[productCardContainerStyle, {}]}
         onPress={() => {
-          // savePastSeacrh(product.id, product.itemName).catch((e) => {});
+          savePastSeacrh(product.id, product.itemName).catch((e) => {});
           props.navigation.navigate(AppRoutes.TestDetails, {
             testDetails: {
               Rate: price,
