@@ -145,7 +145,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       <div className={classes.orderSteps}>
         Order medicines in 2 simple steps —
         <div className={classes.stepsInfo}>
-          <div className={classes.steps}>Upload <br />your prescription</div>
+          <div className={classes.steps}>
+            Upload <br />
+            your prescription
+          </div>
           <div className={classes.stepsArrow}>
             <img src={require('images/ic_steps_arrow.svg')} alt="" />
           </div>
@@ -184,11 +187,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 {isUploading ? (
                   <CircularProgress />
                 ) : (
-                    <label htmlFor="icon-button-file">
-                      <img src={require('images/ic_gallery.svg')} alt="" />
-                      <p>Choose from gallery</p>
-                    </label>
-                  )}
+                  <label htmlFor="icon-button-file">
+                    <img src={require('images/ic_gallery.svg')} alt="" />
+                    <p>Choose from gallery</p>
+                  </label>
+                )}
               </div>
 
               <div className={classes.uploadCard}>
@@ -205,8 +208,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               </ol>
             </div>
             <div className={classes.bottomNotes}>
-              * Our pharmacist will dispense medicines only if the prescription is valid &amp; it meets
-              all government regulations.
+              * Our pharmacist will dispense medicines only if the prescription is valid &amp; it
+              meets all government regulations.
             </div>
           </div>
         </Scrollbars>
