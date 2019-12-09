@@ -16,7 +16,7 @@ import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
-import { CartLanding } from 'components/Cart/CartLanding';
+import { MedicineCartLanding } from 'components/Cart/MedicineCartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
@@ -61,7 +61,7 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.patients()} component={PatientsList} />
         <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
         <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
-        <AuthRouted exact path={clientRoutes.cartLanding()} component={CartLanding} />
+        <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
         <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
         <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
