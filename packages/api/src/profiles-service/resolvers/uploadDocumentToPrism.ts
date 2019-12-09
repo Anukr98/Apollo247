@@ -65,9 +65,7 @@ const uploadDocument: Resolver<
   console.log(prismUserList);
 
   //check if current user uhid matches with response uhids
-  let uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
-  //remove below line: static code to be removed
-  uhid = 'AHB.0000724284';
+  const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
 
   if (!uhid) {
     return { status: false, fileId: '', filePath: blobUrl };

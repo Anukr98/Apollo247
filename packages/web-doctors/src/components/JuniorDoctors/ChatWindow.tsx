@@ -516,7 +516,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     };
   }, []);
 
-  const getHistory = (timetoken: number) => {
+  const getHistory = (timetoken: number | undefined) => {
     pubnub.history(
       {
         channel: channel,
@@ -525,10 +525,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         stringifiedTimeToken: true,
         start: timetoken,
       },
-      (status, res) => {
+      (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
         console.log(newmessage);
-        res.messages.forEach((element, index) => {
+        res.messages.forEach((element: any, index: any) => {
           //newmessage[index] = element.entry;
           newmessage.push(element.entry);
         });
@@ -536,7 +536,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
         //}
-        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        const end: number | undefined = res.endTimeToken ? res.endTimeToken : 1;
         if (res.messages.length == 100) {
           getHistory(end);
         }

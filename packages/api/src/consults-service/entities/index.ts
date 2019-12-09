@@ -158,6 +158,9 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true, default: false })
   isConsultStarted: Boolean;
 
+  @Column({ nullable: true, default: false })
+  isSeniorConsultStarted: Boolean;
+
   @Column({ nullable: true })
   patientCancelReason: string;
 
