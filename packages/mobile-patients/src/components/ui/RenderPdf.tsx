@@ -54,7 +54,7 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
           marginTop: 6,
           marginHorizontal: isPopup ? 0 : 20,
           width: width - 40,
-          height: isPopup ? height - 150 : height - 100,
+          height: isPopup ? height - 160 : height - 100,
           backgroundColor: 'transparent',
         }}
       />
