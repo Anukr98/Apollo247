@@ -589,26 +589,26 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       });
   };
   return (
-    // <View>
-    <FeedbackPopup
-      title="We value your feedback! :)"
-      description="How was your overall experience with the following medicine delivery —"
-      info={{
-        title: medFeedback.title,
-        description: medFeedback.subtitle,
-        imageComponent: <MedicalIcon />,
-      }}
-      transactionId={medFeedback.transactionId}
-      type={FEEDBACKTYPE.CONSULT}
-      isVisible={medFeedback.visible}
-      onComplete={() => {
-        setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
-        showAphAlert!({
-          title: 'Thanks :)',
-          description: 'Your feedback has been submitted. Thanks for your time.',
-        });
-      }}
-    />
-    // </View>
+    <>
+      <FeedbackPopup
+        title="We value your feedback! :)"
+        description="How was your overall experience with the following medicine delivery —"
+        info={{
+          title: medFeedback.title,
+          description: medFeedback.subtitle,
+          imageComponent: <MedicalIcon />,
+        }}
+        transactionId={medFeedback.transactionId}
+        type={FEEDBACKTYPE.PHARMACY}
+        isVisible={medFeedback.visible}
+        onComplete={() => {
+          setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
+          showAphAlert!({
+            title: 'Thanks :)',
+            description: 'Your feedback has been submitted. Thanks for your time.',
+          });
+        }}
+      />
+    </>
   );
 };
