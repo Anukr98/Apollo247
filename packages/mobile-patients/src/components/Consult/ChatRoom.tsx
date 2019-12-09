@@ -142,6 +142,7 @@ const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
 let timerId: any;
+let joinTimerId: any;
 let diffInHours: number;
 let callAbandonmentTimer: any;
 let callAbandonmentStoppedTimer: number;
@@ -277,6 +278,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [consultStarted, setConsultStarted] = useState<boolean>(true);
   const [callTimer, setCallTimer] = useState<number>(0);
+  const [joinCounter, setJoinCounter] = useState<number>(0);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
   const [hideStatusBar, setHideStatusBar] = useState<boolean>(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -578,7 +580,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
       console.log(startConsultjrResult, 'startConsultjrResult');
       if (startConsultjrResult.length == 0) {
-        thirtySecondCall();
+        // thirtySecondCall();
         // minuteCaller();
       } else {
       }
@@ -605,11 +607,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     //   });
 
     //new code
-    userAnswers &&
+    if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
           console.log(data, 'data res, adding');
-
+          startJoinTimer(0);
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
             appointmentId: appointmentData.id,
@@ -620,6 +622,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         .catch((e: string) => {
           console.log('Error occured, adding ', e);
         });
+    } else {
+      addToConsultQueue(client, appointmentData.id)
+        .then(({ data }: any) => {
+          console.log(data, 'data res');
+          startJoinTimer(0);
+          const queueData = {
+            queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+            appointmentId: appointmentData.id,
+          };
+          console.log(queueData, 'queueData res');
+          AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+        })
+        .catch((e: string) => {
+          console.log('Error occured ', e);
+        });
+    }
+    // userAnswers &&
+    //   addToConsultQueueWithAutomatedQuestions(client, userAnswers)
+    //     .then(({ data }: any) => {
+    //       console.log(data, 'data res, adding');
+    //       startJoinTimer(0);
+    //       const queueData = {
+    //         queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+    //         appointmentId: appointmentData.id,
+    //       };
+    //       console.log(queueData, 'queueData res, adding');
+    //       AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+    //     })
+    //     .catch((e: string) => {
+    //       console.log('Error occured, adding ', e);
+    //     });
 
     // } else {
     //   console.log('requestToJrDoctor not called');
@@ -794,6 +827,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('stopTimer', timerId);
     setCallTimer(0);
     timerId && clearInterval(timerId);
+  };
+
+  const startJoinTimer = (timer: number) => {
+    joinTimerId = setInterval(() => {
+      timer = timer + 1;
+      stoppedTimer = timer;
+      setJoinCounter(timer);
+      console.log('uptimer join', timer);
+      if (timer === 30) {
+        thirtySecondCall();
+      } else if (timer === 90) {
+        minuteCaller();
+      }
+      if (timer == 0) {
+        console.log('uptimer join', timer);
+        setJoinCounter(0);
+        clearInterval(joinTimerId);
+      }
+    }, 1000);
+  };
+
+  const stopJoinTimer = () => {
+    console.log('stopTimer join', joinTimerId);
+    setJoinCounter(0);
+    joinTimerId && clearInterval(joinTimerId);
   };
 
   const stopInterval = () => {
@@ -1019,6 +1077,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       callAbandonmentTimer && clearInterval(callAbandonmentTimer);
       timerId && clearInterval(timerId);
       intervalId && clearInterval(intervalId);
+      stopJoinTimer();
     };
   }, []);
 
@@ -1265,8 +1324,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
-
-      thirtySecondCall();
+      requestToJrDoctor()
+      // startJoinTimer(0);
+      // thirtySecondCall();
       // minuteCaller();
     } else {
       setDisplayChatQuestions(true);
@@ -1274,142 +1334,138 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const thirtySecondCall = () => {
-    thirtySecondTimer = setTimeout(function() {
-      if (jrDoctorJoined == false) {
-        // console.log('Alert Shows After 30000 Seconds of Delay.');
+    if (jrDoctorJoined == false) {
+      // console.log('Alert Shows After 30000 Seconds of Delay.');
 
-        const result = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === firstMessage;
-        });
+      const result = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === firstMessage;
+      });
 
-        const startConsultResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultMsg;
-        });
+      const startConsultResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultMsg;
+      });
 
-        const startConsultjrResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultjr;
-        });
+      const startConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultjr;
+      });
 
-        const jdThankyouResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === jdThankyou;
-        });
+      const jdThankyouResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === jdThankyou;
+      });
 
-        const stopConsultjrResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === stopConsultJr;
-        });
+      const stopConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === stopConsultJr;
+      });
 
-        const languageQueueResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === languageQue;
-        });
+      const languageQueueResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === languageQue;
+      });
 
-        if (
-          result.length === 0 &&
-          startConsultResult.length === 0 &&
-          startConsultjrResult.length === 0 &&
-          jdThankyouResult.length === 0 &&
-          stopConsultjrResult.length === 0 &&
-          languageQueueResult.length === 0
-        ) {
-          // console.log('result.length ', result);
-          pubnub.publish(
-            {
-              channel: channel,
-              message: {
-                message: firstMessage,
-                automatedText: `Hi ${currentPatient &&
-                  currentPatient.firstName}, sorry to keep you waiting. ${
-                  appointmentData.doctorInfo.displayName
-                }’s team is with another patient right now. Your consultation prep will start soon.`,
-                id: doctorId,
-                isTyping: true,
-                messageDate: currentDateTime,
-              },
-              storeInHistory: true,
-              sendByPost: true,
+      if (
+        result.length === 0 &&
+        startConsultResult.length === 0 &&
+        startConsultjrResult.length === 0 &&
+        jdThankyouResult.length === 0 &&
+        stopConsultjrResult.length === 0 &&
+        languageQueueResult.length === 0
+      ) {
+        // console.log('result.length ', result);
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: firstMessage,
+              automatedText: `Hi ${currentPatient &&
+                currentPatient.firstName}, sorry to keep you waiting. ${
+                appointmentData.doctorInfo.displayName
+              }’s team is with another patient right now. Your consultation prep will start soon.`,
+              id: doctorId,
+              isTyping: true,
+              messageDate: currentDateTime,
             },
-            (status, response) => {}
-          );
-        } else {
-          thirtySecondTimer && clearTimeout(thirtySecondTimer);
-        }
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
       } else {
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
       }
-    }, 30000);
+    } else {
+      thirtySecondTimer && clearTimeout(thirtySecondTimer);
+    }
   };
 
   const minuteCaller = () => {
-    minuteTimer = setTimeout(function() {
-      if (jrDoctorJoined == false) {
-        // console.log('Alert Shows After 60000 Seconds of Delay.');
+    if (jrDoctorJoined == false) {
+      // console.log('Alert Shows After 60000 Seconds of Delay.');
 
-        const result = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === secondMessage;
-        });
+      const result = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === secondMessage;
+      });
 
-        const startConsultResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultMsg;
-        });
+      const startConsultResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultMsg;
+      });
 
-        const startConsultjrResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultjr;
-        });
+      const startConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultjr;
+      });
 
-        const jdThankyouResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === jdThankyou;
-        });
+      const jdThankyouResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === jdThankyou;
+      });
 
-        const stopConsultjrResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === stopConsultJr;
-        });
+      const stopConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === stopConsultJr;
+      });
 
-        const languageQueueResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === languageQue;
-        });
+      const languageQueueResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === languageQue;
+      });
 
-        if (
-          result.length === 0 &&
-          startConsultResult.length === 0 &&
-          startConsultjrResult.length === 0 &&
-          jdThankyouResult.length === 0 &&
-          stopConsultjrResult.length === 0 &&
-          languageQueueResult.length === 0
-        ) {
-          // console.log('result.length ', result);
-          pubnub.publish(
-            {
-              channel: channel,
-              message: {
-                message: secondMessage,
-                automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
-                id: doctorId,
-                isTyping: true,
-                messageDate: currentDateTime,
-              },
-              storeInHistory: true,
-              sendByPost: true,
+      if (
+        result.length === 0 &&
+        startConsultResult.length === 0 &&
+        startConsultjrResult.length === 0 &&
+        jdThankyouResult.length === 0 &&
+        stopConsultjrResult.length === 0 &&
+        languageQueueResult.length === 0
+      ) {
+        // console.log('result.length ', result);
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: secondMessage,
+              automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+              id: doctorId,
+              isTyping: true,
+              messageDate: currentDateTime,
             },
-            (status, response) => {}
-          );
-        } else {
-          minuteTimer && clearTimeout(minuteTimer);
-        }
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
       } else {
         minuteTimer && clearTimeout(minuteTimer);
       }
-    }, 90000);
+    } else {
+      minuteTimer && clearTimeout(minuteTimer);
+    }
   };
 
   const checkingAppointmentDates = () => {
@@ -1512,6 +1568,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setjrDoctorJoined(true);
         updateSessionAPI();
         checkingAppointmentDates();
+        stopJoinTimer();
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
         minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
