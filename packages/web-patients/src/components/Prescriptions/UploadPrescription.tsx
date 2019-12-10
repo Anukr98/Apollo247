@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       fontWeight: 600,
       color: theme.palette.common.white,
-      backgroundColor: 'rgba(2,71,91,0.6)',
+      backgroundColor: 'rgba(2,71,91,0.2)',
       borderRadius: 5,
       padding: '8px 12px',
       textAlign: 'center',
@@ -145,7 +145,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       <div className={classes.orderSteps}>
         Order medicines in 2 simple steps —
         <div className={classes.stepsInfo}>
-          <div className={classes.steps}>Upload your prescription</div>
+          <div className={classes.steps}>
+            Upload <br />
+            your prescription
+          </div>
           <div className={classes.stepsArrow}>
             <img src={require('images/ic_steps_arrow.svg')} alt="" />
           </div>
@@ -200,13 +203,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               <h6>Instructions For Uploading Prescriptions</h6>
               <ol>
                 <li>Take clear Picture of your entire prescription.</li>
-                <li>Doctor details & date of the prescription should be clearly visible.</li>
+                <li>Doctor details &amp; date of the prescription should be clearly visible.</li>
                 <li>Medicines will be dispensed as per prescription</li>
               </ol>
             </div>
             <div className={classes.bottomNotes}>
-              * Our pharmacist will dispense medicines only if the prescription is valid & it meets
-              all government regulations.
+              * Our pharmacist will dispense medicines only if the prescription is valid &amp; it
+              meets all government regulations.
             </div>
           </div>
         </Scrollbars>
