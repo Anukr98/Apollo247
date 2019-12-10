@@ -1614,7 +1614,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     </svg>
                     End Consult
                   </Button>
-                  {props.saving && <div><CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div></div>}
+                  {props.saving && (
+                    <div>
+                      <CircularProgress className={classes.loading} />{' '}
+                      <div className={classes.fadedBg}></div>
+                    </div>
+                  )}
                 </span>
               ) : (
                 <Button

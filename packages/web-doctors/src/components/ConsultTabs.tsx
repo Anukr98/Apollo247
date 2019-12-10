@@ -1249,9 +1249,11 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {!loaded && 
-      <div><CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div></div>
-    }
+      {!loaded && (
+        <div>
+          <CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div>
+        </div>
+      )}
 
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (

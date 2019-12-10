@@ -364,10 +364,16 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         fontWeight: 500,
         width: '100%',
         color: '#02475b',
-        marginBottom: 10,
+        marginBottom: 0,
+        paddingTop: 5,
       },
+
       fullRow: {
         width: '100%',
+      },
+      formContainer: {
+        width: '100% !important',
+        color: '#0087ba !important',
       },
     };
   });
@@ -1020,6 +1026,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             {consultHours && (
                               <FormGroup>
                                 <FormControlLabel
+                                  className={classes.formContainer}
                                   control={<Checkbox value="consultHours" />}
                                   label={`${convertFrom24To12Format(
                                     consultHours.startTime
@@ -1058,6 +1065,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
                                   <FormGroup>
                                     <FormControlLabel
+                                      className={classes.formContainer}
                                       control={<Checkbox value="checkedA" />}
                                       label={convertTocunsultBlockStartEndTime(item)}
                                       onChange={() => {
