@@ -156,6 +156,8 @@ const useStyles = makeStyles((theme: Theme) => {
     deliveryAddress: {
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
+      display: 'inline-block',
+      width: '100%',
     },
     tabsRoot: {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -337,6 +339,29 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     uppercase: {
       textTransform: 'uppercase',
+    },
+    deliveryTimeGroup: {
+      margin: 10,
+      marginTop: 0,
+      borderTop: '0.5px solid rgba(2,71,91,0.2)',
+      paddingTop: 10,
+    },
+    deliveryTimeGroupWrap: {
+      display: 'flex',
+      backgroundColor: theme.palette.common.white,
+      padding: 10,
+      borderRadius: 5,
+    },
+    deliveryTime: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#01475b',
+    },
+    deliveryDate: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: '#01475b',
+      marginLeft: 'auto',
     },
   };
 });
@@ -528,6 +553,12 @@ export const MedicineCart: React.FC = (props) => {
                         setDeliveryAddressId(deliveryAddressId)
                       }
                     />
+                    <div className={classes.deliveryTimeGroup}>
+                      <div className={classes.deliveryTimeGroupWrap}>
+                        <span className={classes.deliveryTime}>Delivery Time</span>
+                        <span className={classes.deliveryDate}>24 Oct 2019</span>
+                      </div>
+                    </div>
                   </TabContainer>
                 )}
                 {tabValue === 1 && (

@@ -187,11 +187,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 {isUploading ? (
                   <CircularProgress />
                 ) : (
-                    <label htmlFor="icon-button-file">
-                      <img src={require('images/ic_gallery.svg')} alt="" />
-                      <p>Choose from gallery</p>
-                    </label>
-                  )}
+                  <label htmlFor="icon-button-file">
+                    <img src={require('images/ic_gallery.svg')} alt="" />
+                    <p>Choose from gallery</p>
+                  </label>
+                )}
               </div>
 
               <div className={classes.uploadCard}>
