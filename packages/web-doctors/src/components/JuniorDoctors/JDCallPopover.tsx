@@ -1156,9 +1156,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         patientDetails!.firstName +
         ' ' +
         patientDetails!.lastName +
-        ', I have everything I need. I will share these details with ' +
+        '! ' +
         props.assignedDoctorDisplayName +
-        ', who will be here with you soon.',
+        ', will be with you at your booked consultation time.',
       messageDate: new Date(),
     };
     unSubscribeBrowserButtonsListener();
