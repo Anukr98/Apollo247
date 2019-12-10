@@ -129,7 +129,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
       ? false
-      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
       ? true
       : false;
 
@@ -208,9 +208,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           <TextInputComponent
             label={'Full Name'}
             placeholder={'First Name'}
-            onChangeText={(text: string) =>
-              _setFirstName(text.trim().length === 0 ? text.trim() : text)
-            }
+            onChangeText={(text: string) => _setFirstName(text)}
             value={firstName}
             textInputprops={{
               maxLength: 50,
@@ -218,9 +216,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           />
           <TextInputComponent
             placeholder={'Last Name'}
-            onChangeText={(text: string) =>
-              _setlastName(text.trim().length === 0 ? text.trim() : text)
-            }
+            onChangeText={(text: string) => _setlastName(text)}
             value={lastName}
             textInputprops={{
               maxLength: 50,
@@ -350,8 +346,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       const patientsDetails = {
                         id: currentPatient ? currentPatient.id : '',
                         mobileNumber: currentPatient ? currentPatient.mobileNumber : '',
-                        firstName: firstName,
-                        lastName: lastName,
+                        firstName: firstName.trim(),
+                        lastName: lastName.trim(),
                         relation: Relation.ME,
                         gender:
                           gender === 'Female'
@@ -361,7 +357,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                             : Gender['OTHER'], //gender.toUpperCase(),
                         uhid: '',
                         dateOfBirth: formatDate,
-                        emailAddress: email,
+                        emailAddress: email.trim(),
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({
