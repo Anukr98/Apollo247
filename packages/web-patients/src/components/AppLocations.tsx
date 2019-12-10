@@ -208,6 +208,16 @@ export const AppLocations: React.FC = (props) => {
     );
   };
 
+  const getAddressFromLocalStorage = () => {
+    const currentAddress = localStorage.getItem('currentAddress');
+    if (currentAddress) {
+      return currentAddress.includes(',')
+        ? currentAddress.substring(0, currentAddress.indexOf(','))
+        : currentAddress;
+    }
+    return 'No location';
+  };
+
   return (
     <div className={classes.userLocation}>
       <Helmet>
@@ -226,7 +236,7 @@ export const AppLocations: React.FC = (props) => {
             ? selectedAddress
             : !isPopoverOpen && currentLocation && currentLocation.length > 0
             ? currentLocation
-            : 'No location'}
+            : getAddressFromLocalStorage()}
         </span>
       </div>
       <Popover
