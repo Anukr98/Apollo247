@@ -10,6 +10,7 @@ import {
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
+  EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -19,7 +20,12 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_ADDRESS_LIST,
+  UPLOAD_FILE,
+  DOWNLOAD_DOCUMENT,
+  UPLOAD_DOCUMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -28,6 +34,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -41,9 +48,13 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { uploadDocument } from '../../graphql/types/uploadDocument';
+import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -112,6 +123,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     stores,
     setStores,
     ePrescriptions,
+    setEPrescriptions,
   } = useShoppingCart();
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
@@ -121,69 +133,102 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const client = useApolloClient();
   const { showAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
+  const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+  const { locationDetails } = useAppCommonData();
 
   useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
+    if (!(locationDetails && locationDetails.pincode)) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          getPlaceInfoByLatLng(latitude, longitude)
+            .then((obj) => {
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const _pincode = (
+                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                  ).long_name;
+                  fetchStorePickup(_pincode || '');
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+        },
+        (error) => {
+          console.log(error.code, error.message, 'getCurrentPosition error');
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+      console.log('pincode');
+    } else {
+      fetchStorePickup(locationDetails.pincode);
     }
-  }, [currentPatient]);
+  }, []);
 
   useEffect(() => {
-    setLoading!(true);
-    (currentPatient &&
-      // addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
-        .catch((e) => {
-          setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
+    if (deliveryAddressId && addresses) {
+      const selectedAddressIndex = addresses.findIndex(
+        (address) => address.id == deliveryAddressId
+      );
+      addresses &&
+        pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
+          .then(({ data: { Availability } }) => {
+            setCheckingServicability(false);
+            if (Availability) {
+              setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
+            } else {
+              setDeliveryAddressId && setDeliveryAddressId('');
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description:
+                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+              });
+            }
+          })
+          .catch((e) => {
+            aphConsole.log({ e });
+            setCheckingServicability(false);
+            handleGraphQlError(e);
           });
-        })) ||
-      setLoading!(false);
-  }, [currentPatient]);
+    }
+  }, []);
 
-  /*  useEffect(() => {
-    getCartInfo()
-      .then((cartInfo) => {
-        setcartDetails(cartInfo);
-        let cartStatus = {} as typeof medicineCardStatus;
-        cartInfo &&
-          cartInfo.items.forEach((item) => {
-            cartStatus[item.sku] = {
-              isAddedToCart: true,
-              isCardExpanded: true,
-              unit: item.qty,
-              price: item.price!,
-            };
-          });
-        setMedicineCardStatus({
-          ...medicineCardStatus,
-          ...cartStatus,
-        });
-        setMedicineList(cartInfo.items);
-        setshowSpinner(false);
-      })
-      .catch((e) => {
-        Alert.alert(JSON.stringify({ e }));
-        setshowSpinner(false);
-      });
-  }, []);*/
+  // useEffect(() => {
+  //   setLoading!(true);
+  //   (currentPatient &&
+  //     addresses.length == 0 &&
+  //     client
+  //       .query<getPatientAddressList, getPatientAddressListVariables>({
+  //         query: GET_PATIENT_ADDRESS_LIST,
+  //         variables: { patientId: currentPatientId },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then(({ data: { getPatientAddressList: { addressList } } }) => {
+  //         setLoading!(false);
+  //         setAddresses && setAddresses(addressList!);
+  //       })
+  //       .catch((e) => {
+  //         setLoading!(false);
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Something went wrong, unable to fetch addresses.`,
+  //         });
+  //       })) ||
+  //     setLoading!(false);
+  // }, [currentPatient]);
+
+  useEffect(() => {
+    onFinishUpload();
+  }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
     if (!(unit < 1)) {
@@ -203,7 +248,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'MEDICINE CART'}
+        title={'MEDICINES CART'}
         rightComponent={
           <View>
             <TouchableOpacity
@@ -295,6 +340,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               }}
               medicineName={medicine.name!}
               price={medicine.price!}
+              specialPrice={medicine.specialPrice}
               unit={medicine.quantity}
               imageUrl={imageUrl}
               onPressAdd={() => {}}
@@ -685,43 +731,53 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
     return Promise.all(
       prescriptions.map((item) =>
-        client.mutate<uploadFile, uploadFileVariables>({
-          mutation: UPLOAD_FILE,
+        client.mutate<uploadDocument>({
+          mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
           variables: {
-            fileType: item.fileType,
-            base64FileInput: item.base64,
+            UploadDocumentInput: {
+              base64FileInput: item.base64,
+              category: 'HealthChecks',
+              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
+              patientId: currentPatient && currentPatient!.id,
+            },
           },
         })
       )
     );
   };
 
-  const onPressProceedToPay = () => {
+  const physicalPrescriptionUpload = () => {
     const prescriptions = physicalPrescriptions;
-    if (prescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
-    } else {
-      setLoading!(true);
-      const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+
+    setLoading!(true);
+    const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+    console.log('unUploadedPres', unUploadedPres);
+    if (unUploadedPres.length > 0) {
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
-          setLoading!(false);
-          const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+          //For previous code refer build previous to DEV_10.0.62
+          const uploadUrls = data.map((item) =>
+            item.data!.uploadDocument.status
+              ? {
+                  fileId: item.data!.uploadDocument.fileId!,
+                  url: item.data!.uploadDocument.filePath!,
+                }
+              : null
+          );
+
           const newuploadedPrescriptions = unUploadedPres.map(
             (item, index) =>
               ({
                 ...item,
-                uploadedUrl: uploadUrls[index],
+                uploadedUrl: uploadUrls![index]!.url,
+                prismPrescriptionFileId: uploadUrls![index]!.fileId,
               } as PhysicalPrescription)
           );
-          setPhysicalPrescriptions &&
-            setPhysicalPrescriptions([
-              ...newuploadedPrescriptions,
-              ...prescriptions.filter((item) => item.uploadedUrl),
-            ]);
-          setLoading!(false);
-          props.navigation.navigate(AppRoutes.CheckoutScene);
+          console.log('precp:di', newuploadedPrescriptions);
+
+          setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+          setisPhysicalUploadComplete(true);
         })
         .catch((e) => {
           aphConsole.log({ e });
@@ -731,6 +787,65 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             description: 'Error occurred while uploading prescriptions.',
           });
         });
+    } else {
+      setisPhysicalUploadComplete(true);
+    }
+  };
+
+  const ePrescriptionUpload = () => {
+    setLoading!(true);
+    setisEPrescriptionUploadComplete(true);
+  };
+
+  const onFinishUpload = () => {
+    console.log(
+      physicalPrescriptions,
+      ePrescriptions,
+      isEPrescriptionUploadComplete,
+      isPhysicalUploadComplete,
+      'hhruso'
+    );
+
+    if (
+      physicalPrescriptions.length > 0 &&
+      ePrescriptions.length == 0 &&
+      isPhysicalUploadComplete
+    ) {
+      setLoading!(false);
+      setisPhysicalUploadComplete(false);
+      props.navigation.navigate(AppRoutes.CheckoutScene);
+    } else if (
+      physicalPrescriptions.length == 0 &&
+      ePrescriptions.length > 0 &&
+      isEPrescriptionUploadComplete
+    ) {
+      setLoading!(false);
+      setisEPrescriptionUploadComplete(false);
+      props.navigation.navigate(AppRoutes.CheckoutScene);
+    } else if (
+      physicalPrescriptions.length > 0 &&
+      ePrescriptions.length > 0 &&
+      isEPrescriptionUploadComplete &&
+      isPhysicalUploadComplete
+    ) {
+      setLoading!(false);
+      setisPhysicalUploadComplete(false);
+      setisEPrescriptionUploadComplete(false);
+      props.navigation.navigate(AppRoutes.CheckoutScene);
+    }
+  };
+
+  const onPressProceedToPay = () => {
+    const prescriptions = physicalPrescriptions;
+    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+      props.navigation.navigate(AppRoutes.CheckoutScene);
+    } else {
+      if (prescriptions.length > 0) {
+        physicalPrescriptionUpload();
+      }
+      if (ePrescriptions.length > 0) {
+        ePrescriptionUpload();
+      }
     }
   };
 

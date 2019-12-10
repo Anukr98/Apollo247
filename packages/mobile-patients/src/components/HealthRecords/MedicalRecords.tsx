@@ -25,6 +25,9 @@ const styles = StyleSheet.create({
 export interface MedicalRecordsProps extends NavigationScreenProps {
   //onTabCount: (count: number) => void;
   MedicalRecordData: any;
+  labTestsData?: any;
+  healthChecksData?: any;
+  hospitalizationsData?: any;
   renderDeleteMedicalOrder: (id: string) => void;
 }
 
@@ -32,7 +35,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-
+  const { labTestsData, healthChecksData, hospitalizationsData } = props;
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -59,7 +62,14 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const renderCards = () => {
     return (
       <View>
-        {props.MedicalRecordData && props.MedicalRecordData.length == 0 ? (
+        {props.MedicalRecordData &&
+        props.MedicalRecordData.length == 0 &&
+        labTestsData &&
+        labTestsData.length == 0 &&
+        healthChecksData &&
+        healthChecksData.length == 0 &&
+        hospitalizationsData &&
+        hospitalizationsData.length == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
             <View
               style={{
@@ -129,6 +139,120 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                     />
                   );
               })}
+            {labTestsData &&
+              labTestsData.map((item: any) => {
+                if (item)
+                  return (
+                    <HealthMedicineCard
+                      datalab={item}
+                      onClickCard={() => {
+                        props.navigation.navigate(AppRoutes.RecordDetails, {
+                          data: item,
+                          type: 'labTestsData',
+                        });
+                      }}
+                      disableDelete={true}
+                      onPressDelete={() => {
+                        CommonLogEvent('MEDICAL_RECORDS', 'Delete record'),
+                          Alert.alert(
+                            'Delete Record',
+                            '',
+                            [
+                              {
+                                text: 'Cancel',
+                                onPress: () => console.log('Cancel Pressed'),
+                                style: 'cancel',
+                              },
+                              {
+                                text: 'OK',
+                                onPress: () => (
+                                  CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order'),
+                                  props.renderDeleteMedicalOrder(item.id)
+                                ),
+                              },
+                            ],
+                            { cancelable: false }
+                          );
+                      }}
+                    />
+                  );
+              })}
+            {healthChecksData &&
+              healthChecksData.map((item: any) => {
+                if (item)
+                  return (
+                    <HealthMedicineCard
+                      datahealth={item}
+                      onClickCard={() => {
+                        props.navigation.navigate(AppRoutes.RecordDetails, {
+                          data: item,
+                          type: 'healthChecksData',
+                        });
+                      }}
+                      disableDelete={true}
+                      onPressDelete={() => {
+                        CommonLogEvent('MEDICAL_RECORDS', 'Delete record'),
+                          Alert.alert(
+                            'Delete Record',
+                            '',
+                            [
+                              {
+                                text: 'Cancel',
+                                onPress: () => console.log('Cancel Pressed'),
+                                style: 'cancel',
+                              },
+                              {
+                                text: 'OK',
+                                onPress: () => (
+                                  CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order'),
+                                  props.renderDeleteMedicalOrder(item.id)
+                                ),
+                              },
+                            ],
+                            { cancelable: false }
+                          );
+                      }}
+                    />
+                  );
+              })}
+            {hospitalizationsData &&
+              hospitalizationsData.map((item: any) => {
+                if (item)
+                  return (
+                    <HealthMedicineCard
+                      datahospitalization={item}
+                      onClickCard={() => {
+                        props.navigation.navigate(AppRoutes.RecordDetails, {
+                          data: item,
+                          type: 'hospitalizationsData',
+                        });
+                      }}
+                      disableDelete={false}
+                      onPressDelete={() => {
+                        CommonLogEvent('MEDICAL_RECORDS', 'Delete record'),
+                          Alert.alert(
+                            'Delete Record',
+                            '',
+                            [
+                              {
+                                text: 'Cancel',
+                                onPress: () => console.log('Cancel Pressed'),
+                                style: 'cancel',
+                              },
+                              {
+                                text: 'OK',
+                                onPress: () => (
+                                  CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order'),
+                                  props.renderDeleteMedicalOrder(item.id)
+                                ),
+                              },
+                            ],
+                            { cancelable: false }
+                          );
+                      }}
+                    />
+                  );
+              })}
           </View>
         )}
       </View>
@@ -136,7 +260,11 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   };
   return (
     <View>
-      {props.MedicalRecordData && props.MedicalRecordData.length > 0 && renderFilter()}
+      {((props.MedicalRecordData && props.MedicalRecordData.length > 0) ||
+        (labTestsData && labTestsData.length > 0) ||
+        (healthChecksData && healthChecksData.length > 0) ||
+        (hospitalizationsData && hospitalizationsData.length > 0)) &&
+        renderFilter()}
       {renderCards()}
     </View>
   );

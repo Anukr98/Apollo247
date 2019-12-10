@@ -31,7 +31,7 @@ import {
   ShoppingCartItem,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
@@ -127,6 +127,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   const { setCartItems, cartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
+  console.log(props.PastData, 'pastData');
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
     return (
@@ -147,21 +148,28 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     } else {
       if (Platform.OS === 'ios') {
         try {
-          Linking.openURL(AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)).catch(
-            (err) => console.error('An error occurred', err)
-          );
+          Linking.openURL(
+            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)
+          ).catch((err) => console.error('An error occurred', err));
         } catch {}
       }
       let dirs = RNFetchBlob.fs.dirs;
 
+      let fileName: string = item.blobName.substring(0, item.blobName.indexOf('.pdf')) + '.pdf';
       setLoading(true);
       RNFetchBlob.config({
         fileCache: true,
+        path:
+          Platform.OS === 'ios'
+            ? (dirs.DocumentDir || dirs.MainBundleDir) +
+              '/' +
+              (fileName || 'Apollo_Prescription.pdf')
+            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
         addAndroidDownloads: {
+          title: fileName,
           useDownloadManager: true,
-          notification: false,
+          notification: true,
           mime: 'application/pdf',
-          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
           description: 'File downloaded by download manager.',
         },
       })
@@ -206,12 +214,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       console.log('error', error);
     }
   };
-  if (
-    (props.PastData &&
-      props.PastData.medicineOrderLineItems &&
-      props.PastData.medicineOrderLineItems.length) ||
-    (props.PastData && props.PastData!.patientId!)
-  )
+  if (props.PastData || (props.PastData && props.PastData!.patientId!))
     return (
       <View style={styles.viewStyle}>
         <View style={styles.trackerViewStyle}>
@@ -400,6 +403,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                       mou: medicineDetails.mou,
                                       name: medicineDetails!.name,
                                       price: medicineDetails!.price,
+                                      specialPrice: medicineDetails.special_price
+                                        ? typeof medicineDetails.special_price == 'string'
+                                          ? parseInt(medicineDetails.special_price)
+                                          : medicineDetails.special_price
+                                        : undefined,
                                       quantity: qty,
                                       prescriptionRequired:
                                         medicineDetails.is_prescription_required == '1',
@@ -495,7 +503,68 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
           </View>
         ) : (
           <View style={{ flex: 1 }}>
-            {props.PastData! && props.PastData!.medicineOrderLineItems.length == 0 ? null : (
+            {props.PastData! && props.PastData!.medicineOrderLineItems.length == 0 ? (
+              <View>
+                {moment(new Date()).format('DD/MM/YYYY') ===
+                moment(props.PastData!.quoteDateTime!).format('DD/MM/YYYY') ? (
+                  <Text style={styles.labelTextStyle}>
+                    Today , {moment(props.PastData!.quoteDateTime!).format('DD MMM YYYY')}
+                  </Text>
+                ) : (
+                  <Text style={styles.labelTextStyle}>
+                    {moment(props.PastData!.quoteDateTime).format('DD MMM YYYY')}
+                  </Text>
+                )}
+                <View>
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={[styles.cardContainerStyle]}
+                    onPress={() => {
+                      CommonLogEvent('HEALTH_CONSULT_VIEW', 'Navigate to Medicine consult details'),
+                        console.log('MedicineConsultDetails', props.PastData);
+
+                      props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
+                        data: 'Prescription uploaded by Patient', //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
+                        medicineDate: moment(props.PastData!.quoteDateTime).format('DD MMM YYYY'),
+                        PrescriptionUrl: props.PastData!.prescriptionImageUrl,
+                        prismPrescriptionFileId: props.PastData!.prismPrescriptionFileId,
+                      });
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row' }}>
+                      <TouchableOpacity onPress={() => console.log('pharma', item)}>
+                        <View style={{ marginTop: 10 }}>
+                          <MedicineIcon />
+                        </View>
+                      </TouchableOpacity>
+
+                      <View style={{ marginLeft: 30 }}>
+                        <Text
+                          numberOfLines={1}
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(16),
+                            color: '#01475b',
+                            marginBottom: 7,
+                            marginRight: 20,
+                          }}
+                        >
+                          {'Prescription uploaded by Patient'}
+                        </Text>
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            color: '#02475b',
+                            opacity: 0.6,
+                          }}
+                        >
+                          {moment(props.PastData!.quoteDateTime!).format('MM/DD/YYYY')}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
               <View>
                 {moment(new Date()).format('DD/MM/YYYY') ===
                 moment(props.PastData!.quoteDateTime!).format('DD/MM/YYYY') ? (
@@ -519,13 +588,16 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             'HEALTH_CONSULT_VIEW',
                             'Navigate to Medicine consult details'
                           ),
-                            props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
-                              data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
-                              medicineDate: moment(props.PastData!.quoteDateTime).format(
-                                'DD MMM YYYY'
-                              ),
-                              PrescriptionUrl: props.PastData!.prescriptionImageUrl,
-                            });
+                            console.log('MedicineConsultDetails', props.PastData);
+
+                          props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
+                            data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
+                            medicineDate: moment(props.PastData!.quoteDateTime).format(
+                              'DD MMM YYYY'
+                            ),
+                            PrescriptionUrl: props.PastData!.prescriptionImageUrl,
+                            prismPrescriptionFileId: props.PastData!.prismPrescriptionFileId,
+                          });
                         }}
                       >
                         <View style={{ flexDirection: 'row' }}>

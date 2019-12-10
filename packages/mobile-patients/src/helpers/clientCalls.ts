@@ -4,9 +4,27 @@ import {
   NEXT_AVAILABLE_SLOT,
   ADD_TO_CONSULT_QUEUE,
   CHECK_IF_RESCHDULE,
+  AUTOMATED_QUESTIONS,
+  END_APPOINTMENT_SESSION,
+  GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
+import { addToConsultQueueWithAutomatedQuestionsVariables } from '../graphql/types/addToConsultQueueWithAutomatedQuestions';
+import {
+  ConsultQueueInput,
+  REQUEST_ROLES,
+  STATUS,
+  EndAppointmentSessionInput,
+} from '../graphql/types/globalTypes';
+import {
+  EndAppointmentSessionVariables,
+  EndAppointmentSession,
+} from '../graphql/types/EndAppointmentSession';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+} from '../graphql/types/getAppointmentData';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -62,6 +80,28 @@ export const addToConsultQueue = (client: ApolloClient<object>, appointmentId: s
   });
 };
 
+export const addToConsultQueueWithAutomatedQuestions = (
+  client: ApolloClient<object>,
+  consultQueueInput: ConsultQueueInput
+) => {
+  return new Promise((res, rej) => {
+    client
+      .mutate<addToConsultQueueWithAutomatedQuestionsVariables>({
+        mutation: AUTOMATED_QUESTIONS,
+        variables: {
+          ConsultQueueInput: consultQueueInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: string) => {
+        rej({ error: e });
+      });
+  });
+};
+
 export const checkIfRescheduleAppointment = (
   client: ApolloClient<object>,
   existAppointmentId: string,
@@ -74,6 +114,55 @@ export const checkIfRescheduleAppointment = (
         variables: {
           existAppointmentId: existAppointmentId,
           rescheduleDate: rescheduleDate,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: any) => {
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const endCallSessionAppointment = (
+  client: ApolloClient<object>,
+  existAppointmentId: string,
+  status: STATUS,
+  noShowBy: REQUEST_ROLES
+) => {
+  return new Promise((res, rej) => {
+    client
+      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+        mutation: END_APPOINTMENT_SESSION,
+        variables: {
+          endAppointmentSessionInput: {
+            appointmentId: existAppointmentId,
+            status: status,
+            noShowBy: noShowBy,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: any) => {
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const getAppointmentDataDetails = (client: ApolloClient<object>, appointmentId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId: appointmentId,
         },
         fetchPolicy: 'no-cache',
       })

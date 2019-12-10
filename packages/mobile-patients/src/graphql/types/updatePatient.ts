@@ -19,6 +19,7 @@ export interface updatePatient_updatePatient_patient {
   uhid: string | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
+  photoUrl: string | null;
 }
 
 export interface updatePatient_updatePatient {
