@@ -6,6 +6,7 @@ import {
   CHECK_IF_RESCHDULE,
   AUTOMATED_QUESTIONS,
   END_APPOINTMENT_SESSION,
+  GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
@@ -20,6 +21,10 @@ import {
   EndAppointmentSessionVariables,
   EndAppointmentSession,
 } from '../graphql/types/EndAppointmentSession';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+} from '../graphql/types/getAppointmentData';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -138,6 +143,26 @@ export const endCallSessionAppointment = (
             status: status,
             noShowBy: noShowBy,
           },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: any) => {
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const getAppointmentDataDetails = (client: ApolloClient<object>, appointmentId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId: appointmentId,
         },
         fetchPolicy: 'no-cache',
       })

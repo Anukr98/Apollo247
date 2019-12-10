@@ -636,6 +636,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
 
@@ -662,7 +663,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
-      console.log(timer, 'CallAbundant_time');
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -681,14 +681,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   // timer for ring called start
   const [ringingCallTime, setRingingCallTime] = useState<number>(45);
   const missedCallIntervalTimer = (timer: number) => {
-    console.log(timer);
     intervalMissCall = setInterval(() => {
       timer = timer - 1;
-      console.log(timer, 'ring_time');
       MissedcallStoppedTimerCall = timer;
       setRingingCallTime(timer);
       if (timer < 1) {
-        console.log('stop ringing');
         setRingingCallTime(0);
         missedCallCounter++;
         clearInterval(intervalMissCall);
@@ -706,10 +703,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
-      console.log(didPatientJoined, props.appointmentStatus, isAfter);
       if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
-        console.log(timer, 'no_show');
         stoppedTimerCall = timer;
         setRemainingCallTime(timer);
         if (timer < 1) {
@@ -726,33 +721,53 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const noShowAction = (status: STATUS) => {
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: props.appointmentId,
-            status: status,
-            noShowBy: REQUEST_ROLES.PATIENT,
+    if (window.location.pathname.indexOf('Consulttabs')) {
+      client
+        .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+          mutation: END_APPOINTMENT_SESSION,
+          variables: {
+            endAppointmentSessionInput: {
+              appointmentId: props.appointmentId,
+              status: status,
+              noShowBy: REQUEST_ROLES.PATIENT,
+            },
           },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        unSubscribeBrowserButtonsListener();
-        if (status === STATUS.NO_SHOW) {
-          alert(
-            'Since the patient is not responding from last 3 mins, we are rescheduling this appointment.'
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data) => {
+          const text = {
+            id: props.doctorId,
+            message: callAbandonment,
+            isTyping: true,
+            messageDate: new Date(),
+          };
+          subscribeBrowserButtonsListener();
+          pubnub.publish(
+            {
+              message: text,
+              channel: channel,
+              storeInHistory: true,
+            },
+            (status: any, response: any) => {}
           );
-        }
-        navigateToCalendar();
-      })
-      .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
-        alert(errorMessage);
-      });
+          unSubscribeBrowserButtonsListener();
+          if (status === STATUS.NO_SHOW) {
+            alert(
+              'Since the patient is not responding from last 3 mins, we are rescheduling this appointment.'
+            );
+          }
+          navigateToCalendar();
+        })
+        .catch((e) => {
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
+          alert(errorMessage);
+        });
+    } else {
+      clearInterval(intervalcallId);
+      clearInterval(intervalCallAbundant);
+    }
   };
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -1167,7 +1182,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== secondMessage &&
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
-        lastMsg.message.message !== cancelConsultInitiated
+        lastMsg.message.message !== cancelConsultInitiated &&
+        lastMsg.message.message !== callAbandonment
       ) {
         setIsNewMsg(true);
       } else {

@@ -1574,6 +1574,7 @@ export const GET_APPOINTMENT_DATA = gql`
         displayId
         rescheduleCount
         isJdQuestionsComplete
+        isSeniorConsultStarted
         doctorInfo {
           id
           salutation

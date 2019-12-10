@@ -678,7 +678,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               bounces={false}
               ListEmptyComponent={
                 discount.from ||
-                ((discount.to && discount.to != 100) || false) ||
+                (discount.to && discount.to != 100) || false ||
                 price.from ||
                 price.to ||
                 categoryIds.length ? (

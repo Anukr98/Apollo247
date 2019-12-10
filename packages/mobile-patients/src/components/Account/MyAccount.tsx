@@ -328,8 +328,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.popToTop()}
-            // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+            // onPress={() => props.navigation.popToTop()}
+            onPress={() => {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                })
+              );
+            }}
           >
             <ApolloLogo />
           </TouchableOpacity>

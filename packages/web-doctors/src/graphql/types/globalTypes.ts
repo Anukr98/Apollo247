@@ -260,6 +260,17 @@ export interface RescheduleAppointmentInput {
   autoSelectSlot?: number | null;
 }
 
+export interface SaveDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDurationInDays: number;
+  medicineDosage: string;
+  medicineUnit: string;
+  medicineInstructions?: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineName: string;
+}
+
 export interface SymptomInput {
   symptom?: string | null;
   since?: string | null;
@@ -275,6 +286,18 @@ export interface TransferAppointmentInput {
   transferNotes?: string | null;
   transferInitiatedBy?: TRANSFER_INITIATED_TYPE | null;
   transferInitiatedId: string;
+}
+
+export interface UpdateDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDurationInDays?: number | null;
+  medicineDosage?: string | null;
+  medicineUnit?: string | null;
+  medicineInstructions?: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineName: string;
+  id: string;
 }
 
 export interface UpdatePatientInput {

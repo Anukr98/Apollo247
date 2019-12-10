@@ -284,7 +284,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     patientId: props.patientId,
                     rescheduledId: '',
                   };
-                  console.log(appointmentInput, 'appointmentInput');
+                  console.log(appointmentInput, 'bookAppointmentReschedule');
                   mutate({
                     variables: {
                       bookRescheduleAppointmentInput: appointmentInput,

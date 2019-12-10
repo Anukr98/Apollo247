@@ -120,6 +120,7 @@ import {
   getNextAvailableSlots,
   addToConsultQueueWithAutomatedQuestions,
   endCallSessionAppointment,
+  getAppointmentDataDetails,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -201,9 +202,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ? props.navigation.state.params!.callType
     : '';
 
-  // console.log('appointmentData', appointmentData);
-
-  const dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
+  let dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -227,6 +226,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -336,6 +336,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const stopConsultJr = '^^#stopconsultJr';
+  const callAbandonment = '^^#callAbandonment';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -574,16 +575,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setUserAnswers(data);
     if (isSendAnswers.find((item) => item === false) === undefined) {
       requestToJrDoctor();
-      const startConsultjrResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
-        return obj.message === startConsultjr;
-      });
-      console.log(startConsultjrResult, 'startConsultjrResult');
-      if (startConsultjrResult.length == 0) {
-        // thirtySecondCall();
-        // minuteCaller();
-      } else {
-      }
     }
   };
 
@@ -834,7 +825,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       timer = timer + 1;
       stoppedTimer = timer;
       setJoinCounter(timer);
-      console.log('uptimer join', timer);
+      // console.log('uptimer join', timer);
       if (timer === 30) {
         thirtySecondCall();
       } else if (timer === 90) {
@@ -843,7 +834,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopJoinTimer();
       }
       if (timer == 0) {
-        console.log('uptimer join', timer);
+        // console.log('uptimer join', timer);
         setJoinCounter(0);
         clearInterval(joinTimerId);
       }
@@ -1028,6 +1019,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       presence: (presenceEvent) => {
         console.log('presenceEvent', presenceEvent);
+        dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
+
+        const diff = moment.duration(moment(appointmentData.appointmentDateTime).diff(new Date()));
+        let diffInMins = diff.asMinutes();
+        console.log('diffInMins', diffInMins);
 
         pubnub
           .hereNow({
@@ -1042,18 +1038,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const occupancyDoctor = data.filter((obj: any) => {
               return obj.uuid === REQUEST_ROLES.DOCTOR;
             });
-            console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
 
-            if (response.totalOccupancy >= 2) {
-              console.log('calljoined');
-              stopCallAbondmentTimer();
-              abondmentStarted = false;
-            } else {
-              if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-                if (abondmentStarted == false) {
-                  console.log('callAbondmentMethod', abondmentStarted);
-                  callAbondmentMethod();
-                  eventsAfterConnectionDestroyed();
+            const startConsultResult = insertText.filter((obj: any) => {
+              return obj.message === startConsultMsg;
+            });
+            console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
+            if (diffInMins < 15) {
+              if (response.totalOccupancy >= 2) {
+                // if (callAbundantCallTime < 180) {
+                //   console.log('calljoined');
+                //   APIForUpdateAppointmentData(true);
+                // }
+
+                // if (abondmentStarted == false) {
+                //   console.log('calljoined');
+                //   APIForUpdateAppointmentData(true);
+                // }
+              } else {
+                if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
+                   console.log('abondmentStarted -------> ', abondmentStarted);
+
+                  if (abondmentStarted == false) {
+                    console.log('callAbondmentMethod', abondmentStarted);
+                    if (startConsultResult.length > 0) {
+                      APIForUpdateAppointmentData(false);
+                      abondmentStarted = true;
+                    } else {
+                      callAbondmentMethod(false);
+                    }
+                    eventsAfterConnectionDestroyed();
+                  }
                 }
               }
             }
@@ -1086,15 +1100,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
-  const callAbondmentMethod = () => {
-    const startConsultResult = insertText.filter((obj: any) => {
-      return obj.message === startConsultMsg;
-    });
-
-    const stopConsultResult = insertText.filter((obj: any) => {
-      return obj.message === stopConsultMsg;
-    });
-
+  const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
     const startConsultJRResult = insertText.filter((obj: any) => {
       return obj.message === startConsultjr;
     });
@@ -1103,31 +1109,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return obj.message === stopConsultJr;
     });
 
-    if (startConsultResult.length > 0 && stopConsultResult.length == 0) {
+    if (isSeniorConsultStarted) {
       console.log('callAbondmentMethod scenario');
       if (appointmentData.status === STATUS.COMPLETED) return;
       abondmentStarted = true;
-
       startCallAbondmentTimer(200, true);
-    } else {
+    } 
+    else {
       console.log(
         'doctor no show scenario',
         startConsultJRResult.length,
         stopConsultJRResult.length,
         dateIsAfter,
-        startConsultResult.length > 0
+        isSeniorConsultStarted
       );
 
       if (
         startConsultJRResult.length > 0 &&
         stopConsultJRResult.length > 0 &&
         dateIsAfter &&
-        startConsultResult.length == 0
+        !isSeniorConsultStarted
       ) {
         if (appointmentData.status === STATUS.COMPLETED) return;
         abondmentStarted = true;
-
         startCallAbondmentTimer(200, false);
+      } else {
+      abondmentStarted = false;
+
       }
     }
   };
@@ -1151,7 +1159,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             NextAvailableSlot(appointmentData, 'Transfer', true);
           }
-          setCallAbundantCallTime(0);
+          setCallAbundantCallTime(180);
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
       }, 1000);
@@ -1163,6 +1171,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
     callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+    setCallAbundantCallTime(180);
+    abondmentStarted = false;
+  };
+
+  const APIForUpdateAppointmentData = (toStopTimer: boolean) => {
+    getAppointmentDataDetails(client, appointmentData.id)
+      .then(({ data }: any) => {
+        console.log(data, 'data APIForUpdateAppointmentData');
+        const appointmentSeniorDoctorStarted =
+          data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
+        console.log(
+          appointmentSeniorDoctorStarted,
+          'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+        );
+
+        // if (toStopTimer) {
+        //   if (appointmentSeniorDoctorStarted) {
+        //     stopCallAbondmentTimer();
+        //     abondmentStarted = false;
+        //   }
+        // } else {
+          callAbondmentMethod(appointmentSeniorDoctorStarted);
+        // }
+      })
+      .catch((e: string) => {
+        abondmentStarted = false;
+        console.log('Error APIForUpdateAppointmentData ', e);
+      });
   };
 
   const registerForPushNotification = () => {
@@ -1603,6 +1639,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('rescheduleConsultMsg');
         // checkForRescheduleMessage(message.message);
         addMessages(message);
+      } else if (message.message.message === callAbandonment) {
+        console.log('callAbandonment');
+        setShowCallAbandmentPopup(true);
       }
     } else {
       console.log('succss');
@@ -1612,7 +1651,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const addMessages = (message: Pubnub.MessageEvent) => {
     //console.log('addMessages', message, message.timetoken);
-    console.log('startConsultjr', message.message.message);
+    // console.log('startConsultjr', message.message.message);
 
     if (message.message.id !== patientId) {
       stopCallAbondmentTimer();
@@ -2054,7 +2093,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       .fetch('GET', rowData.transferInfo.pdfUrl, {
                         //some headers ..
                       })
-                      .then((res) => {
+                      .then((res: any) => {
                         setLoading(false);
                         // the temp file path
                         console.log('The file saved to res ', res);
@@ -2069,7 +2108,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           ? RNFetchBlob.ios.previewDocument(res.path())
                           : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                       })
-                      .catch((err) => {
+                      .catch((err: Error) => {
                         console.log('error ', err);
                         setLoading(false);
                         // ...
@@ -2251,7 +2290,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const reschduleLoadView = (rowData: any, index: number, type: string) => {
-    console.log('reschduleLoadView', appointmentData.doctorInfo.displayName);
+    // console.log('reschduleLoadView', appointmentData.doctorInfo.displayName);
     return (
       <>
         <View
@@ -3072,7 +3111,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === videoCallMsg ||
       rowData.message === acceptedCallMsg ||
       rowData.message === stopConsultMsg ||
-      rowData.message === cancelConsultInitiated
+      rowData.message === cancelConsultInitiated || 
+      rowData.message === callAbandonment
     ) {
       return null;
     }
@@ -5340,8 +5380,47 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       )}
       {showPopup && (
         <BottomPopUp
-          title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
+          title={`Hi ${userName}`}
           description={`we’re really sorry. ${appointmentData.doctorInfo.displayName} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified doctors`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottompopup(false);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.TabBar,
+                      }),
+                    ],
+                  })
+                );
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {showCallAbandmentPopup && (
+        <BottomPopUp
+          title={`Hi ${userName}`}
+          description={`we’re really sorry. ${appointmentData.doctorInfo.displayName} has to reschedule your call due to some technical issues. Please reschedule the appointment.`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
@@ -5460,7 +5539,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         type={FEEDBACKTYPE.CONSULT}
         isVisible={showFeedback}
       />
-
       {loading && <Spinner />}
     </View>
   );

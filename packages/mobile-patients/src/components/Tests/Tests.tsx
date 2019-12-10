@@ -81,7 +81,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
@@ -602,8 +602,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.popToTop()}
-          // onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          // onPress={() => props.navigation.popToTop()}
+          onPress={() => {
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            );
+          }}
         >
           <ApolloLogo />
         </TouchableOpacity>
