@@ -364,10 +364,19 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         fontWeight: 500,
         width: '100%',
         color: '#02475b',
-        marginBottom: 10,
+        marginBottom: 0,
+        paddingBottom: 5,
       },
+
       fullRow: {
         width: '100%',
+      },
+      formContainer: {
+        width: '100% !important',
+        color: '#0087ba !important',
+      },
+      consultHoursRange: {
+        marginBottom: 15,
       },
     };
   });
@@ -406,6 +415,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const TextFieldComponent = (props: any) => {
     return <TextField {...props} disabled={true} />;
   };
+  var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
   const [selectedDate, setSelectedDate] = React.useState(new Date('2019-10-17T21:11:54'));
   const [blockConsultHourDay, setBlockConsultHourDay] = useState(
     new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
@@ -561,9 +571,20 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       consultDurationDay && consultDurationDay.endTime ? consultDurationDay.endTime : ''
     );
     var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
-    return ` ${startTime} - ${endTime}  | ${
-      consultDurationDay && consultDurationDay.consultMode ? consultDurationDay.consultMode : ''
+    return ` ${startTime} - ${endTime}  |  ${
+      consultDurationDay && consultDurationDay.consultMode
+        ? convertConsultMode(consultDurationDay.consultMode)
+        : ''
     }`;
+  };
+  const convertConsultMode = (value: any) => {
+    if (value === 'PHYSICAL') {
+      return 'Physical';
+    } else if (value === 'ONLINE') {
+      return 'Online';
+    } else {
+      'Both';
+    }
   };
 
   const changeListEndTime = (value: any, index: any) => {
@@ -1012,7 +1033,10 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                   These are your active consult hours for the selected day. Select
                                   which ones you’d like to block:
                                 </p>
-                                {start ? start : getFormattedDate(new Date())} {blockConsultHourDay}
+                                {start
+                                  ? new Date(start).toLocaleDateString('en-AU', options)
+                                  : getFormattedDate(new Date())}
+                                {/* {blockConsultHourDay} */}
                               </div>
                             ) : (
                               <p>You don't have any active consult hours on the selected day</p>
@@ -1020,12 +1044,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             {consultHours && (
                               <FormGroup>
                                 <FormControlLabel
+                                  className={classes.formContainer}
                                   control={<Checkbox value="consultHours" />}
                                   label={`${convertFrom24To12Format(
                                     consultHours.startTime
-                                  )} - ${convertFrom24To12Format(consultHours.endTime)} | ${
-                                    consultHours.consultMode
-                                  }`}
+                                  )} - ${convertFrom24To12Format(
+                                    consultHours.endTime
+                                  )} | ${convertConsultMode(consultHours.consultMode)}`}
                                   onChange={() => {
                                     setChackedSingleValue(consultHours);
                                     setChecked(!checked);
@@ -1050,14 +1075,17 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             {dateRange &&
                               dateRange.length > 0 &&
                               dateRange.map((item: any) => (
-                                <div>
+                                <div className={classes.consultHoursRange}>
                                   <div className={classes.formDate}>
-                                    {item ? item : getFormattedDate(new Date())}{' '}
-                                    {convertIntoDay(item)}
+                                    {item
+                                      ? new Date(item).toLocaleDateString('en-AU', options)
+                                      : getFormattedDate(new Date())}{' '}
+                                    {/* {convertIntoDay(item)} */}
                                   </div>
 
                                   <FormGroup>
                                     <FormControlLabel
+                                      className={classes.formContainer}
                                       control={<Checkbox value="checkedA" />}
                                       label={convertTocunsultBlockStartEndTime(item)}
                                       onChange={() => {
