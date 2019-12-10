@@ -97,3 +97,20 @@ export const BOOK_APPOINTMENT_RESCHEDULE = gql`
     }
   }
 `;
+
+export const GET_MEDICINE_ORDERS_LIST = gql`
+  query GetMedicineOrdersList($patientId: String) {
+    getMedicineOrdersList(patientId: $patientId) {
+      MedicineOrdersList {
+        id
+        orderAutoId
+        deliveryType
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+        }
+      }
+    }
+  }
+`;

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
@@ -11,6 +11,17 @@ import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
+} from 'graphql/types/GetMedicineOrdersList';
+import { useMutation } from 'react-apollo-hooks';
+import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { ApolloError } from 'apollo-client';
+import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -205,6 +216,84 @@ export const MedicineLanding: React.FC = (props) => {
     localStorage.removeItem('cartItems');
     localStorage.removeItem('dp');
   }
+
+  const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
+  const { currentPatient } = useAllCurrentPatients();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<ApolloError | null>(null);
+
+  const apiDetails = {
+    url: process.env.PHARMACY_MED_SEARCH_BY_BRAND,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+
+  const getMedicinePageProducts = async () => {
+    await axios
+      .post(
+        apiDetails.url!,
+        {},
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+            Accept: '*/*',
+          },
+        }
+      )
+      .then((res: any) => {
+        console.log(res);
+        setData(res.data);
+        setLoading(false);
+      })
+      .catch((e: ApolloError) => {
+        console.log(e);
+        setError(e);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    // setProfile(currentPatient!);
+    if (apiDetails.url != null) {
+      getMedicinePageProducts();
+    }
+  }, []);
+
+  //   const medicineData = useMutation<
+  //   GetMedicineOrdersList,
+  //   GetMedicineOrdersListVariables
+  // >(GET_MEDICINE_ORDERS_LIST, {
+  //   variables: { patientId: currentPatient && currentPatient.id },
+  //   fetchPolicy: 'no-cache',
+  // });
+
+  // useEffect(() => {
+  //   medicineData().then((res) => {
+  //     console.log(res);
+  //     if(res && res.data && res.data.getMedicineOrdersList){
+  //       setData(res.data.getMedicineOrdersList.MedicineOrdersList);
+  //     }
+
+  //   }).catch((e: ApolloError) => {
+  //     alert(e);
+  //   })
+  // });
+
+  const list = data && [
+    {
+      key: 'Shop by Health Areas',
+      value: <ShopByAreas data={data.healthareas} />,
+    },
+    {
+      key: 'Deals of the day',
+      value: <DayDeals data={data.deals_of_the_day} />,
+    },
+    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} /> },
+    {
+      key: 'Shop by Category',
+      value: <ShopByCategory data={data.shop_by_category} />,
+    },
+    { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
+  ];
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -260,33 +349,28 @@ export const MedicineLanding: React.FC = (props) => {
               </div>
             </div>
           </div>
-          <div className={classes.allProductsList}>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Shop by Health Areas</div>
-              <ShopByAreas />
+          {!loading && (
+            <div className={classes.allProductsList}>
+              {list &&
+                list.map((item) => (
+                  <div className={classes.sliderSection}>
+                    <div className={classes.sectionTitle}>
+                      {item.key === 'Shop by Brand' ? (
+                        <>
+                          <span>{item.key}</span>
+                          <div className={classes.viewAllLink}>
+                            <Link to={clientRoutes.yourOrders()}>View All</Link>
+                          </div>
+                        </>
+                      ) : (
+                        item.key
+                      )}
+                    </div>
+                    {item.value}
+                  </div>
+                ))}
             </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Deals of the day</div>
-              <DayDeals />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Hot Sellers</div>
-              <HotSellers />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>Shop by Category</div>
-              <ShopByCategory />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                <span>Shop by Brand</span>
-                <div className={classes.viewAllLink}>
-                  <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
-                </div>
-              </div>
-              <ShopByBrand />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
