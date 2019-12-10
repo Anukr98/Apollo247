@@ -121,10 +121,7 @@ export const AddNewAddress: React.FC = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <div className={classes.formGroup}>
-                  <AphTextField
-                    label="Full Name"
-                    placeholder="Enter full name"
-                  />
+                  <AphTextField label="Full Name" placeholder="Enter full name" />
                 </div>
                 <div className={classes.formGroup}>
                   <label>Mobile Number</label>
@@ -177,10 +174,7 @@ export const AddNewAddress: React.FC = (props) => {
                   />
                 </div>
                 <div className={classes.formGroup}>
-                  <AphTextField
-                    label="Area / Locality"
-                    placeholder="Enter area / locality name"
-                  />
+                  <AphTextField label="Area / Locality" placeholder="Enter area / locality name" />
                 </div>
               </div>
             </div>
