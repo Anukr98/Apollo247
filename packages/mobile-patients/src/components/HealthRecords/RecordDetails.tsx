@@ -473,10 +473,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                           .catch((err) => {
                             console.log('error ', err);
                             setLoading && setLoading(false);
-                            showAphAlert!({
-                              title: 'Alert!',
-                              description: 'Download fail:' + fileName,
-                            });
                           });
                       });
                     }}

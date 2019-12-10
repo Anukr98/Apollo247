@@ -321,10 +321,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                             .catch((err) => {
                               console.log('error ', err);
                               setLoading && setLoading(false);
-                              showAphAlert!({
-                                title: 'Alert!',
-                                description: 'Download fail:' + fileName,
-                              });
                             });
                         });
                         console.log(fileDownloaded, 'files download');
