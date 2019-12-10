@@ -346,7 +346,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let stoppedTimer: number;
   let thirtySecondTimer: any;
   let minuteTimer: any;
-
+  let callhandelBack: boolean = true;
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -378,11 +378,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const backDataFunctionality = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    CommonLogEvent(AppRoutes.TabBar, 'Go back clicked');
-    props.navigation.replace(AppRoutes.TabBar);
-    return false;
+  const backDataFunctionality = () => {
+    console.log(callhandelBack, 'is back called');
+    if (callhandelBack) {
+      props.navigation.replace(AppRoutes.TabBar);
+      return false;
+    } else {
+      return true;
+    }
+    // BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
   };
   useEffect(() => {
     const userName =
@@ -408,12 +412,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('callType', callType);
     if (callType === 'VIDEO') {
       setOnSubscribe(true);
+      callhandelBack = false;
       setIsAudio(false);
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     } else if (callType === 'AUDIO') {
       setIsAudio(true);
       setOnSubscribe(true);
+      callhandelBack = false;
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     }
@@ -1541,6 +1547,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
         setOnSubscribe(true);
+        callhandelBack = false;
         stopCallAbondmentTimer();
         setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
@@ -1550,6 +1557,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // InCallManager.chooseAudioRoute('EARPIECE')
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
+        callhandelBack = false;
         setIsAudio(false);
         stopCallAbondmentTimer();
         setIsDoctorNoShow(false);
@@ -1584,6 +1592,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Video call ended'
       ) {
         setOnSubscribe(false);
+        callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
         InCallManager.stopRingtone();
@@ -4404,6 +4413,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           onPress={() => {
             setOnSubscribe(false);
+            callhandelBack = true;
             stopTimer();
             startTimer(0);
             setCallAccepted(true);
@@ -5004,14 +5014,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-              })
-            );
-            handleCallTheEdSessionAPI();
+            if (callhandelBack) {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                })
+              );
+              handleCallTheEdSessionAPI();
+            }
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
