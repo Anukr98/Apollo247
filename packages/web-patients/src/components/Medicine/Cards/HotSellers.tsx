@@ -121,7 +121,6 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                 </div>
                 <div className={classes.productIcon}>
                   <img
-                    // src={require("images/category/img_product.png")}
                     src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${hotSeller.small_image}`}
                     alt=""
                   />
@@ -129,7 +128,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                 <div className={classes.productTitle}>{hotSeller.name}</div>
                 <div className={classes.bottomSection}>
                   <div className={classes.priceGroup}>
-                    {/* {!!hotSeller.special_price && } */}
+                    {!!hotSeller.special_price && (
+                      <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                    )}
                     <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
                   </div>
                   <div className={classes.addToCart}>
@@ -139,100 +140,6 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
               </div>
             </div>
           ))}
-        {/* <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require("images/category/img_product.png")} alt="" />
-            </div>
-            <div className={classes.productTitle}>
-              Apollo Life 100% Natural Apple Cider Vinegar Juice
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 360)</span>
-                <span>Rs. 306</span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require("images/category/img_product.png")} alt="" />
-            </div>
-            <div className={classes.productTitle}>Tong Garden Party Snack</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span>Rs. 150</span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require("images/category/img_product.png")} alt="" />
-            </div>
-            <div className={classes.productTitle}>Sugar Free Natura 200gm</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span>Rs. 160</span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require("images/category/img_product.png")} alt="" />
-            </div>
-            <div className={classes.productTitle}>
-              Horlicks Chocolate Refill 500 gms
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span>Rs. 205</span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require("images/category/img_product.png")} alt="" />
-            </div>
-            <div className={classes.productTitle}>
-              Apollo Life Joint Health New Formula Tablets 30s
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 550)</span>
-                <span>Rs. 520</span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </Slider>
     </div>
   );

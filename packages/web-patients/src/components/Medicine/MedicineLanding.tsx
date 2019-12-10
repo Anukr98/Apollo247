@@ -240,19 +240,16 @@ export const MedicineLanding: React.FC = (props) => {
         }
       )
       .then((res: any) => {
-        console.log(res);
         setData(res.data);
         setLoading(false);
       })
       .catch((e: ApolloError) => {
-        console.log(e);
         setError(e);
         setLoading(false);
       });
   };
 
   useEffect(() => {
-    // setProfile(currentPatient!);
     if (apiDetails.url != null) {
       getMedicinePageProducts();
     }
