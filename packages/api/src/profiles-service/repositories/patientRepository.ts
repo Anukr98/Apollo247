@@ -503,4 +503,10 @@ export class PatientRepository extends Repository<Patient> {
       JSON.parse(tokenResult.Result).Token
     );
   }
+
+  getIdsByMobileNumber(mobileNumber: string) {
+    return this.find({
+      where: { mobileNumber, isActive: true },
+    });
+  }
 }
