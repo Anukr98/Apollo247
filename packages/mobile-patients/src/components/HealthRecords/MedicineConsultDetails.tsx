@@ -42,6 +42,7 @@ import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { useUIElements } from '../UIElementsProvider';
 import { RenderPdf } from '../ui/RenderPdf';
+import { mimeType } from '../../helpers/mimeType';
 
 const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log('a', data);
@@ -220,6 +221,24 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
+
+  const showMultiAlert = (files: { path: string; name: string }[]) => {
+    if (files.length > 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Downloaded : ' + files[0].name,
+        onPressOk: () => {
+          hideAphAlert!();
+          console.log('this file is opened', files);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(files[0].path)
+            : RNFetchBlob.android.actionViewIntent(files[0].path, mimeType(files[0].path));
+          showMultiAlert(files.slice(1, files.length));
+        },
+      });
+    }
+  };
+
   const requestReadSmsPermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
@@ -266,60 +285,49 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                         Alert.alert('No Image');
                       } else {
                         console.log('download data', arr);
-
-                        for (var i = 0; i < arr.length; i++) {
-                          if (Platform.OS === 'ios') {
-                            Linking.openURL(arr[i]).catch((err) =>
-                              console.error('An error occurred', err)
-                            );
-                            // try {
-                            //   CameraRoll.saveToCameraRoll(arr[i]);
-                            //   Alert.alert('Download Completed');
-                            //   CommonLogEvent(
-                            //     'MEDICINE_CONSULT_DETAILS',
-                            //     'Download compelete for Prescription'
-                            //   );
-                            // } catch {}
-                          } else {
-                            Linking.openURL(arr[i]).catch((err) =>
-                              console.error('An error occurred', err)
-                            );
-                          }
-                          // let dirs = RNFetchBlob.fs.dirs;
-
-                          // setLoading(true);
-                          // RNFetchBlob.config({
-                          //   fileCache: true,
-                          //   addAndroidDownloads: {
-                          //     useDownloadManager: true,
-                          //     notification: false,
-                          //     mime: 'image/jpeg',
-                          //     path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                          //     description: 'File downloaded by download manager.',
-                          //   },
-                          // })
-                          //   .fetch('GET', arr[i], {
-                          //     //some headers ..
-                          //   })
-                          //   .then((res) => {
-                          //     setLoading(false);
-
-                          //     if (Platform.OS === 'android') {
-                          //       try {
-                          //         Alert.alert('Download Complete');
-                          //       } catch {}
-                          //     }
-
-                          //     Platform.OS === 'ios'
-                          //       ? RNFetchBlob.ios.previewDocument(res.path())
-                          //       : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                          //   })
-                          //   .catch((err) => {
-                          //     console.log('error ', err);
-                          //     setLoading(false);
-                          //     // ...
-                          //   });
-                        }
+                        let dirs = RNFetchBlob.fs.dirs;
+                        let fileDownloaded: { path: string; name: string }[] = [];
+                        arr.forEach((item) => {
+                          setLoading && setLoading(true);
+                          let fileName: string =
+                            item
+                              .split('/')
+                              .pop()!
+                              .split('=')
+                              .pop() || 'Document';
+                          RNFetchBlob.config({
+                            fileCache: true,
+                            path:
+                              Platform.OS === 'ios'
+                                ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
+                                : dirs.DownloadDir + '/' + fileName,
+                            addAndroidDownloads: {
+                              title: fileName,
+                              useDownloadManager: true,
+                              notification: true,
+                              description: 'File downloaded by download manager.',
+                            },
+                          })
+                            .fetch('GET', item, {
+                              //some headers ..
+                            })
+                            .then((res) => {
+                              setLoading && setLoading(false);
+                              fileDownloaded.push({ path: res.path(), name: fileName });
+                              if (fileDownloaded.length > 0) {
+                                showMultiAlert(fileDownloaded);
+                              }
+                            })
+                            .catch((err) => {
+                              console.log('error ', err);
+                              setLoading && setLoading(false);
+                              showAphAlert!({
+                                title: 'Alert!',
+                                description: 'Download fail:' + fileName,
+                              });
+                            });
+                        });
+                        console.log(fileDownloaded, 'files download');
                       }
                     } catch (error) {}
                   }}

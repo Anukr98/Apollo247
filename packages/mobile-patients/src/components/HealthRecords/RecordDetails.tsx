@@ -37,6 +37,8 @@ import { string } from '../../strings/string';
 import { MedicalTest } from './AddRecord';
 import { Button } from '../ui/Button';
 import { AppRoutes } from '../NavigatorContainer';
+import { useUIElements } from '../UIElementsProvider';
+import { mimeType } from '../../helpers/mimeType';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -125,6 +127,8 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [placeImage, setPlaceImage] = useState<any>();
   const client = useApolloClient();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+
   useEffect(() => {
     if (
       data.prismFileIds ||
@@ -196,6 +200,24 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
       console.log('error', error);
     }
   };
+
+  const showMultiAlert = (files: { path: string; name: string }[]) => {
+    if (files.length > 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Downloaded : ' + files[0].name,
+        onPressOk: () => {
+          hideAphAlert!();
+          console.log('this file is opened', files);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(files[0].path)
+            : RNFetchBlob.android.actionViewIntent(files[0].path, mimeType(files[0].path));
+          showMultiAlert(files.slice(1, files.length));
+        },
+      });
+    }
+  };
+
   const renderRecordDetails = () => {
     return (
       <View>
@@ -416,84 +438,47 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     activeOpacity={1}
                     onPress={() => {
                       placeImage.forEach((item: string) => {
-                        try {
-                          Linking.openURL(item).catch((err) =>
-                            console.error('An error occurred', err)
-                          );
-                          CommonLogEvent('RECORD_DETAILS', 'Download complete for prescription');
-                        } catch {}
+                        let dirs = RNFetchBlob.fs.dirs;
+                        let fileDownloaded: { path: string; name: string }[] = [];
+                        setLoading && setLoading(true);
+                        let fileName: string =
+                          item
+                            .split('/')
+                            .pop()!
+                            .split('=')
+                            .pop() || 'Document';
+                        RNFetchBlob.config({
+                          fileCache: true,
+                          path:
+                            Platform.OS === 'ios'
+                              ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
+                              : dirs.DownloadDir + '/' + fileName,
+                          addAndroidDownloads: {
+                            title: fileName,
+                            useDownloadManager: true,
+                            notification: true,
+                            description: 'File downloaded by download manager.',
+                          },
+                        })
+                          .fetch('GET', item, {
+                            //some headers ..
+                          })
+                          .then((res) => {
+                            setLoading && setLoading(false);
+                            fileDownloaded.push({ path: res.path(), name: fileName });
+                            if (fileDownloaded.length > 0) {
+                              showMultiAlert(fileDownloaded);
+                            }
+                          })
+                          .catch((err) => {
+                            console.log('error ', err);
+                            setLoading && setLoading(false);
+                            showAphAlert!({
+                              title: 'Alert!',
+                              description: 'Download fail:' + fileName,
+                            });
+                          });
                       });
-                      // for (var i = 0; i < placeImage.length; i++) {
-                      //   console.log('one', placeImage[i]);
-                      //   if (Platform.OS === 'ios') {
-                      //     try {
-                      //       Linking.openURL(placeImage[i]).catch((err) =>
-                      //         console.error('An error occurred', err)
-                      //       );
-                      //       // CameraRoll.saveToCameraRoll(placeImage[i]);
-                      //       // Alert.alert('Download Completed');
-                      //       CommonLogEvent('RECORD_DETAILS', 'Download complete for prescription');
-                      //     } catch {}
-                      //   } else {
-                      //     Linking.openURL(placeImage[i]).catch((err) =>
-                      //       console.error('An error occurred', err)
-                      //     );
-                      //   }
-                      // }
-                      // const urls = data.documentURLs.split(',');
-                      // console.log('test', urls);
-                      // if (!data.documentURLs || data.documentURLs === '[object Object]') {
-                      //   Alert.alert('No Image');
-                      //   CommonLogEvent('RECORD_DETAILS', 'No Image');
-                      // } else {
-                      //   for (var i = 0; i < urls.length; i++) {
-                      //     if (Platform.OS === 'ios') {
-                      //       try {
-                      //         CameraRoll.saveToCameraRoll(urls[i]);
-                      //         Alert.alert('Download Completed');
-                      //         CommonLogEvent(
-                      //           'RECORD_DETAILS',
-                      //           'Download complete for prescription'
-                      //         );
-                      //       } catch {}
-                      //     } else {
-                      //       Linking.openURL(urls[i]).catch((err) =>
-                      //         console.error('An error occurred', err)
-                      //       );
-                      //     }
-                      //     // let dirs = RNFetchBlob.fs.dirs;
-                      //     // setLoading(true);
-                      //     // RNFetchBlob.config({
-                      //     //   fileCache: true,
-                      //     //   addAndroidDownloads: {
-                      //     //     useDownloadManager: true,
-                      //     //     notification: false,
-                      //     //     mime: 'application/pdf',
-                      //     //     path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                      //     //     description: 'File downloaded by download manager.',
-                      //     //   },
-                      //     // })
-                      //     //   .fetch('GET', urls[i], {
-                      //     //     //some headers ..
-                      //     //   })
-                      //     //   .then((res) => {
-                      //     //     console.log(res, 'res');
-
-                      //     //     setLoading(false);
-                      //     //     if (Platform.OS === 'android') {
-                      //     //       Alert.alert('Download Complete');
-                      //     //     }
-                      //     //     Platform.OS === 'ios'
-                      //     //       ? RNFetchBlob.ios.previewDocument(res.path())
-                      //     //       : RNFetchBlob.android.actionViewIntent(res.path(), '/');
-                      //     //   })
-                      //     //   .catch((err) => {
-                      //     //     console.log('error ', err);
-                      //     //     setLoading(false);
-                      //     //     // ...
-                      //     //   });
-                      //   }
-                      // }
                     }}
                   >
                     <Download />
