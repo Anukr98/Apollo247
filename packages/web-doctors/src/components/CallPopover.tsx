@@ -663,7 +663,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
-      console.log(timer, 'CallAbundant_time');
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -682,14 +681,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   // timer for ring called start
   const [ringingCallTime, setRingingCallTime] = useState<number>(45);
   const missedCallIntervalTimer = (timer: number) => {
-    console.log(timer);
     intervalMissCall = setInterval(() => {
       timer = timer - 1;
-      console.log(timer, 'ring_time');
       MissedcallStoppedTimerCall = timer;
       setRingingCallTime(timer);
       if (timer < 1) {
-        console.log('stop ringing');
         setRingingCallTime(0);
         missedCallCounter++;
         clearInterval(intervalMissCall);
@@ -709,7 +705,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
       if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
-        console.log(timer, 'no_show');
         stoppedTimerCall = timer;
         setRemainingCallTime(timer);
         if (timer < 1) {
