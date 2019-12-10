@@ -4,6 +4,7 @@ import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
+import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -40,8 +41,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ShopByAreas: React.FC = (props) => {
-  const classes = useStyles();
+interface ShopByAreasProps {
+  data: MedicinePageSection[];
+}
+
+export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
+  const classes = useStyles({});
   const sliderSettings = {
     infinite: true,
     speed: 500,
@@ -54,106 +59,23 @@ export const ShopByAreas: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_diabetes.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Diabetes Care</div>
+        {props.data &&
+          props.data.map((healthArea) => (
+            <div className={classes.card}>
+              <Link to={clientRoutes.yourOrders()}>
+                <div className={classes.cardWrap}>
+                  <div className={classes.cardIcon}>
+                    <img
+                      // src={require("images/shopby/ic_diabetes.svg")}
+                      src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${healthArea.image_url}`}
+                      alt=""
+                    />
+                  </div>
+                  <div className={classes.cardTitle}>{healthArea.title}</div>
+                </div>
+              </Link>
             </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_arthritis.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Pain Relief</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_immunity.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Cold &amp; Immunity</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_heart.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Cardiac</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Stomach Care</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_lungs.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Respiratory</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_condom.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Sexual Health</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_eyeear.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Eye &amp; Ear Care</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_18.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Adult Care</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.searchByMedicine()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_beauty.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Skin &amp; Beauty</div>
-            </div>
-          </Link>
-        </div>
+          ))}
       </Slider>
     </div>
   );

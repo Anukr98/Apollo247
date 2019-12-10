@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
+import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -92,8 +93,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const HotSellers: React.FC = (props) => {
-  const classes = useStyles();
+interface HotSellerProps {
+  data?: { products: MedicineProduct[] };
+}
+
+export const HotSellers: React.FC<HotSellerProps> = (props) => {
+  const classes = useStyles({});
   const sliderSettings = {
     infinite: true,
     speed: 500,
@@ -106,29 +111,38 @@ export const HotSellers: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require('images/category/img_product.png')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Similac IQ+ Stage 1 400gm Tin</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span>Rs. 650 </span>
+        {props.data &&
+          props.data.products &&
+          props.data.products.map((hotSeller) => (
+            <div className={classes.card}>
+              <div className={classes.cardWrap}>
+                <div className={classes.offerPrice}>
+                  <span>-30%</span>
+                </div>
+                <div className={classes.productIcon}>
+                  <img
+                    // src={require("images/category/img_product.png")}
+                    src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${hotSeller.small_image}`}
+                    alt=""
+                  />
+                </div>
+                <div className={classes.productTitle}>{hotSeller.name}</div>
+                <div className={classes.bottomSection}>
+                  <div className={classes.priceGroup}>
+                    {/* {!!hotSeller.special_price && } */}
+                    <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
+                  </div>
+                  <div className={classes.addToCart}>
+                    <AphButton>Add To Cart</AphButton>
+                  </div>
+                </div>
               </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
             </div>
-          </div>
-        </div>
-        <div className={classes.card}>
+          ))}
+        {/* <div className={classes.card}>
           <div className={classes.cardWrap}>
             <div className={classes.productIcon}>
-              <img src={require('images/category/img_product.png')} alt="" />
+              <img src={require("images/category/img_product.png")} alt="" />
             </div>
             <div className={classes.productTitle}>
               Apollo Life 100% Natural Apple Cider Vinegar Juice
@@ -147,7 +161,7 @@ export const HotSellers: React.FC = (props) => {
         <div className={classes.card}>
           <div className={classes.cardWrap}>
             <div className={classes.productIcon}>
-              <img src={require('images/category/img_product.png')} alt="" />
+              <img src={require("images/category/img_product.png")} alt="" />
             </div>
             <div className={classes.productTitle}>Tong Garden Party Snack</div>
             <div className={classes.bottomSection}>
@@ -166,7 +180,7 @@ export const HotSellers: React.FC = (props) => {
               <span>-30%</span>
             </div>
             <div className={classes.productIcon}>
-              <img src={require('images/category/img_product.png')} alt="" />
+              <img src={require("images/category/img_product.png")} alt="" />
             </div>
             <div className={classes.productTitle}>Sugar Free Natura 200gm</div>
             <div className={classes.bottomSection}>
@@ -182,9 +196,11 @@ export const HotSellers: React.FC = (props) => {
         <div className={classes.card}>
           <div className={classes.cardWrap}>
             <div className={classes.productIcon}>
-              <img src={require('images/category/img_product.png')} alt="" />
+              <img src={require("images/category/img_product.png")} alt="" />
             </div>
-            <div className={classes.productTitle}>Horlicks Chocolate Refill 500 gms</div>
+            <div className={classes.productTitle}>
+              Horlicks Chocolate Refill 500 gms
+            </div>
             <div className={classes.bottomSection}>
               <div className={classes.priceGroup}>
                 <span>Rs. 205</span>
@@ -201,7 +217,7 @@ export const HotSellers: React.FC = (props) => {
               <span>-30%</span>
             </div>
             <div className={classes.productIcon}>
-              <img src={require('images/category/img_product.png')} alt="" />
+              <img src={require("images/category/img_product.png")} alt="" />
             </div>
             <div className={classes.productTitle}>
               Apollo Life Joint Health New Formula Tablets 30s
@@ -216,7 +232,7 @@ export const HotSellers: React.FC = (props) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </Slider>
     </div>
   );

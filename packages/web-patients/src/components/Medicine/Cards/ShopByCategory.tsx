@@ -4,6 +4,7 @@ import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
+import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -40,8 +41,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ShopByCategory: React.FC = (props) => {
-  const classes = useStyles();
+interface ShopByCategoryProps {
+  data: MedicinePageSection[];
+}
+
+export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
+  const classes = useStyles({});
   const sliderSettings = {
     infinite: true,
     speed: 500,
@@ -51,79 +56,27 @@ export const ShopByCategory: React.FC = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
   };
 
+  console.log(props.data);
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/category/ic_personalcare.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Personal Care</div>
+        {props.data &&
+          props.data.map((category) => (
+            <div className={classes.card}>
+              <Link to={clientRoutes.medicineSearchByBrand()}>
+                <div className={classes.cardWrap}>
+                  <div className={classes.cardIcon}>
+                    <img
+                      // src={require("images/category/ic_personalcare.svg")}
+                      src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${category.image_url}`}
+                      alt=""
+                    />
+                  </div>
+                  <div className={classes.cardTitle}>{category.title}</div>
+                </div>
+              </Link>
             </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/category/ic_mom_baby.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Mom &amp; Baby</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/category/ic_apple.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Nutrition</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/category/ic_healthcare.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Healthcare</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/category/ic_offer.svg')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Special Offers</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/category/ic_holland.png')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Holland &amp; Barrett</div>
-            </div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link to={clientRoutes.medicineSearchByBrand()}>
-            <div className={classes.cardWrap}>
-              <div className={classes.cardIcon}>
-                <img src={require('images/category/ic_apollo.png')} alt="" />
-              </div>
-              <div className={classes.cardTitle}>Apollo Products</div>
-            </div>
-          </Link>
-        </div>
+          ))}
       </Slider>
     </div>
   );
