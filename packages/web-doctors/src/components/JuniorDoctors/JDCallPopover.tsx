@@ -1335,7 +1335,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Submit Case Sheet
               </AphButton>
-              {props.saving && <CircularProgress className={classes.loading} />} }
+              {props.saving &&<div><CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div></div>} 
             </span>
           ) : (
             <AphButton

@@ -238,6 +238,15 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '-20%',
       top: 250,
     },
+    fadedBg: {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      opacity: 0,
+      zIndex: 999,
+    },
     audioVideoContainer: {
       maxWidth: 1064,
       margin: 'auto',
@@ -1605,21 +1614,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     </svg>
                     End Consult
                   </Button>
-                  {props.saving && <CircularProgress className={classes.loading} />}
+                  {props.saving && <div><CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div></div>}
                 </span>
               ) : (
                 <Button
                   className={classes.consultButton}
-                  disabled={
-                    currentUserType === LoggedInUserType.SECRETARY ||
-                    startAppointmentButton ||
-                    disableOnCancel ||
-                    (appointmentInfo!.appointmentState !== 'NEW' &&
-                      appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                      appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
+                  // disabled={
+                  //   currentUserType === LoggedInUserType.SECRETARY ||
+                  //   startAppointmentButton ||
+                  //   disableOnCancel ||
+                  //   (appointmentInfo!.appointmentState !== 'NEW' &&
+                  //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                  //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  //     appointmentInfo!.status !== STATUS.PENDING)
+                  // }
                   onClick={() => {
                     !props.startAppointment ? onStartConsult() : onStopConsult();
                     !props.startAppointment ? startInterval(900) : stopInterval();
