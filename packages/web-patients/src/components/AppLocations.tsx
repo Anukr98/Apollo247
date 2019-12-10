@@ -226,7 +226,7 @@ export const AppLocations: React.FC = (props) => {
             ? selectedAddress
             : !isPopoverOpen && currentLocation && currentLocation.length > 0
             ? currentLocation
-            : 'No location'}
+            : localStorage.getItem('currentAddress') || 'No location'}
         </span>
       </div>
       <Popover
