@@ -795,7 +795,6 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineTimings
         medicineToBeTaken
         medicineName
-        doctorId
         id
       }
     }
