@@ -776,7 +776,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1056,12 +1056,13 @@ export const MedicinePrescription: React.FC = () => {
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
                             }}
+                            error={errorState.dosageErr}
                           />
                           {errorState.dosageErr && (
                             <FormHelperText
                               className={classes.helpText}
                               component="div"
-                              error={errorState.durationErr}
+                              error={errorState.dosageErr}
                             >
                               Please Enter Dosage(Number only)
                             </FormHelperText>
