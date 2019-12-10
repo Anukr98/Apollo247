@@ -146,9 +146,10 @@ let timerId: any;
 let joinTimerId: any;
 let diffInHours: number;
 let callAbandonmentTimer: any;
-let callAbandonmentStoppedTimer: number;
+let callAbandonmentStoppedTimer: number = 200;
 let messageSent: string;
 let rescheduleInitiatedBy: string;
+let callhandelBack: boolean = true;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -378,12 +379,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const backDataFunctionality = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    CommonLogEvent(AppRoutes.TabBar, 'Go back clicked');
-    props.navigation.replace(AppRoutes.TabBar);
-    return false;
+  const backDataFunctionality = () => {
+    try {
+      console.log(callhandelBack, 'is back called');
+      if (callhandelBack) {
+        props.navigation.replace(AppRoutes.TabBar);
+        return false;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log(error, 'error');
+    }
   };
+
   useEffect(() => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
@@ -408,12 +417,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('callType', callType);
     if (callType === 'VIDEO') {
       setOnSubscribe(true);
+      callhandelBack = false;
       setIsAudio(false);
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     } else if (callType === 'AUDIO') {
       setIsAudio(true);
       setOnSubscribe(true);
+      callhandelBack = false;
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     }
@@ -940,8 +951,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     streamPropertyChanged: (event: string) => {
       console.log('session streamPropertyChanged destroyed!', event);
-      eventsAfterConnectionDestroyed();
-      // disconnectCallText();
     },
     otrnError: (error: string) => {
       console.log(
@@ -1045,14 +1054,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
             if (diffInMins < 15) {
               if (response.totalOccupancy >= 2) {
-                // if (callAbundantCallTime < 180) {
-                //   console.log('calljoined');
-                //   APIForUpdateAppointmentData(true);
-                // }
-                // if (abondmentStarted == false) {
-                //   console.log('calljoined');
-                //   APIForUpdateAppointmentData(true);
-                // }
+                if (callAbandonmentStoppedTimer == 200) return;
+                if (callAbandonmentStoppedTimer < 200) {
+                  console.log('calljoined');
+                  APIForUpdateAppointmentData(true);
+                }
               } else {
                 if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
                   console.log('abondmentStarted -------> ', abondmentStarted);
@@ -1093,10 +1099,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       timerId && clearInterval(timerId);
       intervalId && clearInterval(intervalId);
       stopJoinTimer();
+      try {
+        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+      } catch (error) {}
     };
   }, []);
 
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
@@ -1145,7 +1154,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callAbandonmentStoppedTimer = timer;
         setCallAbundantCallTime(timer);
 
-        console.log('callAbandonmentStoppedTimer', timer);
+        console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
 
         if (timer < 1) {
           console.log('call Abundant', appointmentData);
@@ -1156,7 +1165,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             NextAvailableSlot(appointmentData, 'Transfer', true);
           }
-          setCallAbundantCallTime(180);
+          setCallAbundantCallTime(200);
+          callAbandonmentStoppedTimer = 200;
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
       }, 1000);
@@ -1168,7 +1178,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
     callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-    setCallAbundantCallTime(180);
+    setCallAbundantCallTime(200);
+    callAbandonmentStoppedTimer = 200;
     abondmentStarted = false;
   };
 
@@ -1183,14 +1194,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
         );
 
-        // if (toStopTimer) {
-        //   if (appointmentSeniorDoctorStarted) {
-        //     stopCallAbondmentTimer();
-        //     abondmentStarted = false;
-        //   }
-        // } else {
-        callAbondmentMethod(appointmentSeniorDoctorStarted);
-        // }
+        if (toStopTimer) {
+          if (appointmentSeniorDoctorStarted) {
+            stopCallAbondmentTimer();
+            abondmentStarted = false;
+          }
+        } else {
+          callAbondmentMethod(appointmentSeniorDoctorStarted);
+        }
       })
       .catch((e: string) => {
         abondmentStarted = false;
@@ -1541,6 +1552,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
         setOnSubscribe(true);
+        callhandelBack = false;
         stopCallAbondmentTimer();
         setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
@@ -1550,6 +1562,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // InCallManager.chooseAudioRoute('EARPIECE')
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
+        callhandelBack = false;
         setIsAudio(false);
         stopCallAbondmentTimer();
         setIsDoctorNoShow(false);
@@ -1584,6 +1597,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Video call ended'
       ) {
         setOnSubscribe(false);
+        callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
         InCallManager.stopRingtone();
@@ -4404,6 +4418,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           onPress={() => {
             setOnSubscribe(false);
+            callhandelBack = true;
             stopTimer();
             startTimer(0);
             setCallAccepted(true);
