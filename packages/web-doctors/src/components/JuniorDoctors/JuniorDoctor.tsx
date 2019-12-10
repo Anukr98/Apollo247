@@ -9,10 +9,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import {
-  GetConsultQueueVariables,
-  GetConsultQueue
-} from 'graphql/types/GetConsultQueue';
+import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -28,22 +25,22 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       paddingTop: 65,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 65
-      }
+        paddingTop: 65,
+      },
     },
     headerSticky: {
       position: 'fixed',
       width: '100%',
       zIndex: 9999,
-      top: 0
+      top: 0,
     },
     container: {
       maxWidth: 1064,
-      margin: 'auto'
+      margin: 'auto',
     },
     pageContainer: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: '#f7f7f7'
+      backgroundColor: '#f7f7f7',
     },
     pageHeader: {
       boxShadow: '0 1px 5px 0 rgba(128, 128, 128, 0.3)',
@@ -54,28 +51,28 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         margin: 0,
         letterSpacing: 'normal',
-        color: '#02475b'
+        color: '#02475b',
       },
       '& p': {
         fontSize: 17,
         fontWeight: 500,
         color: '#0087ba',
         margin: 0,
-        paddingTop: 12
-      }
+        paddingTop: 12,
+      },
     },
     contentGroup: {
-      display: 'flex'
+      display: 'flex',
     },
     leftSection: {
       width: 'calc(50% - 1px)',
-      borderRight: '1px solid rgba(2,71,91,0.2)'
+      borderRight: '1px solid rgba(2,71,91,0.2)',
     },
     rightSection: {
-      width: '50%'
+      width: '50%',
     },
     blockGroup: {
-      width: '100%'
+      width: '100%',
     },
     blockHeader: {
       boxShadow: '0 2px 10px 0 rgba(128, 128, 128, 0.2)',
@@ -84,27 +81,27 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 500,
       textAlign: 'center',
-      color: '#02475b'
+      color: '#02475b',
     },
     blockBody: {
       padding: '30px 20px',
-      position: 'relative'
+      position: 'relative',
     },
     customScroll: {
-      padding: '0 20px'
+      padding: '0 20px',
     },
     boxGroup: {
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.common.white,
       borderRadius: 10,
       padding: '30px 30px 10px 30px',
-      marginBottom: 10
+      marginBottom: 10,
     },
     cardLoader: {
       position: 'absolute',
       left: 0,
       top: 0,
-      width: '100%'
+      width: '100%',
     },
     noData: {
       fontSize: 16,
@@ -112,44 +109,41 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       padding: 10,
       textAlign: 'center',
-      opacity: 0.6
-    }
+      opacity: 0.6,
+    },
   };
 });
 
-export const JuniorDoctor: React.FC = props => {
+export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
   const { isSigningIn } = useAuth();
 
-  const { data, loading, error, stopPolling } = useQuery<
-    GetConsultQueue,
-    GetConsultQueueVariables
-  >(GET_CONSULT_QUEUE, {
-    skip: !currentDoctor,
-    variables: {
-      doctorId: currentDoctor!.id
-    },
-    pollInterval: 10 * 1000,
-    notifyOnNetworkStatusChange: true
-  });
+  const { data, loading, error, stopPolling } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
+    GET_CONSULT_QUEUE,
+    {
+      skip: !currentDoctor,
+      variables: {
+        doctorId: currentDoctor!.id,
+      },
+      pollInterval: 10 * 1000,
+      notifyOnNetworkStatusChange: true,
+    }
+  );
 
   useEffect(() => {
     if (data && data.getConsultQueue) {
       const { consultQueue } = data && data.getConsultQueue;
-      const allConsults = consultQueue.map(consult => ({
+      const allConsults = consultQueue.map((consult) => ({
         ...consult,
         appointment: {
           ...consult.appointment,
-          appointmentDateTime: new Date(consult.appointment.appointmentDateTime)
-        }
+          appointmentDateTime: new Date(consult.appointment.appointmentDateTime),
+        },
       }));
-      const activeConsults = allConsults.filter(consult => consult.isActive);
+      const activeConsults = allConsults.filter((consult) => consult.isActive);
 
-      localStorage.setItem(
-        'activeConsultQueueCount',
-        activeConsults.length.toString()
-      );
+      localStorage.setItem('activeConsultQueueCount', activeConsults.length.toString());
     } else {
       localStorage.setItem('activeConsultQueueCount', '1');
     }
@@ -158,7 +152,7 @@ export const JuniorDoctor: React.FC = props => {
   const {
     data: doctorDetailsData,
     error: doctorDetailsError,
-    loading: doctorDetailsLoading
+    loading: doctorDetailsLoading,
   } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
 
   const currentStatus =
@@ -180,64 +174,51 @@ export const JuniorDoctor: React.FC = props => {
   )
     return null;
 
-  if (error)
-    content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
-  if (loading && _isEmpty(data))
-    content = [<AphLinearProgress />, <AphLinearProgress />];
+  if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
+  if (loading && _isEmpty(data)) content = [<AphLinearProgress />, <AphLinearProgress />];
   if (data && data.getConsultQueue) {
     const { consultQueue } = data.getConsultQueue;
-    const allConsults = consultQueue.map(consult => ({
+    const allConsults = consultQueue.map((consult) => ({
       ...consult,
       appointment: {
         ...consult.appointment,
-        appointmentDateTime: new Date(consult.appointment.appointmentDateTime)
-      }
+        appointmentDateTime: new Date(consult.appointment.appointmentDateTime),
+      },
     }));
-    const activeConsults = allConsults.filter(consult => consult.isActive);
+    const activeConsults = allConsults.filter((consult) => consult.isActive);
 
     const pastConsults = allConsults.filter(
-      consult =>
-        !consult.isActive && consult.appointment.status !== STATUS.CANCELLED
+      (consult) => !consult.isActive && consult.appointment.status !== STATUS.CANCELLED
     );
 
     content = [
-      <Scrollbars
-        autoHide={true}
-        autoHeight
-        autoHeightMax={'calc(100vh - 320px'}
-      >
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {activeConsults.map(
-              ({ id, patient, appointment, isActive }, index) => {
-                isActiveConsultsAvailable = true;
-                return (
-                  <Link
-                    key={id}
-                    to={clientRoutes.JDConsultRoom({
-                      appointmentId: appointment.id,
-                      patientId: patient.id,
-                      queueId: String(id),
-                      isActive: isActive ? 'active' : 'done'
-                    })}
-                  >
-                    <ActiveConsultCard
-                      id={id}
-                      patient={{ ...patient, queueNumber: index + 1 }}
-                      appointment={appointment}
-                    />
-                  </Link>
-                );
-              }
-            )}
+            {activeConsults.map(({ id, patient, appointment, isActive }, index) => {
+              isActiveConsultsAvailable = true;
+              return (
+                <Link
+                  key={id}
+                  to={clientRoutes.JDConsultRoom({
+                    appointmentId: appointment.id,
+                    patientId: patient.id,
+                    queueId: String(id),
+                    isActive: isActive ? 'active' : 'done',
+                  })}
+                >
+                  <ActiveConsultCard
+                    id={id}
+                    patient={{ ...patient, queueNumber: index + 1 }}
+                    appointment={appointment}
+                  />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </Scrollbars>,
-      <Scrollbars
-        autoHide={true}
-        autoHeight
-        autoHeightMax={'calc(100vh - 320px'}
-      >
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
             {pastConsults.map(({ id, patient, appointment, isActive }) => {
@@ -250,21 +231,16 @@ export const JuniorDoctor: React.FC = props => {
                     appointmentId: appointment.id,
                     patientId: patient.id,
                     queueId: String(id),
-                    isActive: isActive ? 'active' : 'done'
+                    isActive: isActive ? 'active' : 'done',
                   })}
                 >
-                  <PastConsultCard
-                    id={id}
-                    key={id}
-                    patient={patient}
-                    appointment={appointment}
-                  />
+                  <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
                 </Link>
               );
             })}
           </div>
         </div>
-      </Scrollbars>
+      </Scrollbars>,
     ];
   }
 
@@ -286,17 +262,13 @@ export const JuniorDoctor: React.FC = props => {
               <div className={classes.blockGroup}>
                 <div className={classes.blockHeader}>Active Patients</div>
                 <div className={classes.blockBody}>
-                  {loading && data && (
-                    <AphLinearProgress className={classes.cardLoader} />
-                  )}
+                  {loading && data && <AphLinearProgress className={classes.cardLoader} />}
                   {isActiveConsultsAvailable ? (
                     content[0]
                   ) : (
                     <>
                       {!loading ? (
-                        <div className={classes.noData}>
-                          No Patients in your queue.
-                        </div>
+                        <div className={classes.noData}>No Patients in your queue.</div>
                       ) : null}
                     </>
                   )}
@@ -307,16 +279,12 @@ export const JuniorDoctor: React.FC = props => {
               <div className={classes.blockGroup}>
                 <div className={classes.blockHeader}>Past Consults</div>
                 <div className={classes.blockBody}>
-                  {loading && data && (
-                    <AphLinearProgress className={classes.cardLoader} />
-                  )}
+                  {loading && data && <AphLinearProgress className={classes.cardLoader} />}
                   {isPastConsultsAvailable ? (
                     content[1]
                   ) : (
                     <>
-                      {!loading ? (
-                        <div className={classes.noData}>No data available.</div>
-                      ) : null}
+                      {!loading ? <div className={classes.noData}>No data available.</div> : null}
                     </>
                   )}
                 </div>
