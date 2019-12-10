@@ -23,6 +23,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { ScrollView } from 'react-navigation';
+import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -74,7 +75,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     },
     fetchPolicy: 'no-cache',
   });
-  aphConsole.log({ data, loading, error });
+  // aphConsole.log({ data, loading, error });
 
   const getMedicines = (
     medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
@@ -145,7 +146,28 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           .getTime()
     );
 
-  const renderEPrescription = (item: EPrescription, i: number, arrayLength: number) => {
+  const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
+
+  const prescriptionOlderThan6months = formattedEPrescriptions.filter((item) => {
+    const prescrTime = moment(item.date, DATE_FORMAT);
+    const currTime = moment(new Date());
+    const diff = currTime.diff(prescrTime, 'days');
+    return diff > PRESCRIPTION_VALIDITY_IN_DAYS ? true : false;
+  });
+
+  const prescriptionUpto6months = formattedEPrescriptions.filter((item) => {
+    const prescrTime = moment(item.date, DATE_FORMAT);
+    const currTime = moment(new Date());
+    const diff = currTime.diff(prescrTime, 'days');
+    return diff <= PRESCRIPTION_VALIDITY_IN_DAYS ? true : false;
+  });
+
+  const renderEPrescription = (
+    item: EPrescription,
+    i: number,
+    arrayLength: number,
+    disabled?: boolean
+  ) => {
     return (
       <EPrescriptionCard
         key={i}
@@ -155,6 +177,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         doctorName={item.doctorName}
         forPatient={item.forPatient}
         medicines={item.medicines}
+        isDisabled={disabled}
         style={{
           marginTop: i === 0 ? 20 : 4,
           marginBottom: arrayLength === i + 1 ? 16 : 4,
@@ -211,8 +234,17 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           />
           <ScrollView bounces={false}>
             {renderNoPrescriptions()}
-            {formattedEPrescriptions.map((item, index, array) => {
+            {prescriptionUpto6months.map((item, index, array) => {
               return renderEPrescription(item, index, array.length);
+            })}
+            {!!prescriptionOlderThan6months.length && (
+              <SectionHeader
+                style={{ marginTop: 14 }}
+                leftText="PRESCRIPTIOINS OLDER THAN 6 MONTHS"
+              />
+            )}
+            {prescriptionOlderThan6months.map((item, index, array) => {
+              return renderEPrescription(item, index, array.length, true);
             })}
           </ScrollView>
           <View style={{ justifyContent: 'center', alignItems: 'center', marginHorizontal: 60 }}>
@@ -225,7 +257,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
               onPress={() => {
                 CommonLogEvent('SELECT_PRESCRIPTION_MODAL', 'Formatted e prescription');
                 props.onSubmit(
-                  formattedEPrescriptions.filter((item) => selectedPrescription[item!.id])
+                  prescriptionUpto6months.filter((item) => selectedPrescription[item!.id])
                 );
               }}
               style={{ marginHorizontal: 60, marginVertical: 20 }}

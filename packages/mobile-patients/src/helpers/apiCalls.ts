@@ -4,6 +4,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 export interface MedicineProduct {
   description: string;
   id: number;
+  category_id: string;
   image: string | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1'; //1 for required
@@ -125,10 +126,6 @@ export type GooglePlacesType =
   | 'administrative_area_level_2'
   | 'administrative_area_level_1'
   | 'country';
-
-export enum ProductCategory {
-  HOT_SELLERS = '1174',
-}
 
 export interface PlaceByIdApiResponse {
   result: PlacesApiResponse['results'][0];

@@ -22,6 +22,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   streetLine2: string | null;
   streetLine3: string | null;
   city: string | null;
+  facilityType: string;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital {
