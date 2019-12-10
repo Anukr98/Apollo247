@@ -662,6 +662,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -746,6 +747,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       isTyping: true,
       messageDate: new Date(),
     };
+    setDisableOnCancel(false);
     pubnub.publish(
       {
         channel: channel,
@@ -836,6 +838,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       messageDate: new Date(),
     };
     props.isAudioVideoCallEnded(false);
+    setDisableOnCancel(false);
     pubnub.publish(
       {
         channel: channel,
@@ -1077,7 +1080,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== secondMessage &&
           message.message.message !== covertVideoMsg &&
           message.message.message !== covertAudioMsg &&
-          message.message.message !== cancelConsultInitiated
+          message.message.message !== cancelConsultInitiated &&
+          message.message.message !== callAbandonment
         ) {
           setIsNewMsg(true);
         } else {
@@ -1363,7 +1367,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
             aria-describedby={id}
             disabled={
               disableOnCancel ||
-              appointmentInfo!.appointmentState !== 'NEW' ||
+              (appointmentInfo!.appointmentState !== 'NEW' &&
+                appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
               (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 appointmentInfo!.status !== STATUS.PENDING)
             }
@@ -1377,7 +1382,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
             disabled={
               // startAppointmentButton ||
               disableOnCancel ||
-              appointmentInfo!.appointmentState !== 'NEW' ||
+              (appointmentInfo!.appointmentState !== 'NEW' &&
+                appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
               (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 appointmentInfo!.status !== STATUS.PENDING)
             }
@@ -1415,6 +1421,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 handleClose();
                 props.isAudioVideoCallEnded(true);
                 props.setStartConsultAction(false);
+                setDisableOnCancel(true);
                 autoSend(audioCallMsg);
                 setIsVideoCall(false);
               }}
@@ -1430,6 +1437,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 handleClose();
                 props.isAudioVideoCallEnded(true);
                 props.setStartConsultAction(true);
+                setDisableOnCancel(true);
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
               }}

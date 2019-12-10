@@ -26,4 +26,13 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
   deleteDeviceToken(id: string) {
     return this.delete(id);
   }
+
+  getTokensByMobileNumber(mobileNumber: string) {
+    return this.createQueryBuilder('patient')
+      .leftJoinAndSelect('patient.patient_device_tokens', 'patient_device_tokens')
+      .addSelect('COUNT(*) AS deviceCount')
+      .where('patient.mobileNumber = :mobileNumber', { mobileNumber })
+      .andWhere('patient.isActive = true')
+      .getMany();
+  }
 }

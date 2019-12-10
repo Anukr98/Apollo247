@@ -1077,7 +1077,9 @@ export const ConsultTabs: React.FC = () => {
       });
       // convert itemName to itemname
       diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
-        return { itemname: prescription.itemName };
+        return {
+          itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
+        };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
@@ -1380,13 +1382,13 @@ export const ConsultTabs: React.FC = () => {
                         />
                       </Tabs>
                     </div>
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 0 ? classes.none : classes.block}>
                         {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                       </div>
-                    </TabContainer>
+                    </div>
 
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 1 ? classes.none : classes.block}>
                         <div className={classes.chatContainer}>
                           <ConsultRoom
@@ -1402,7 +1404,7 @@ export const ConsultTabs: React.FC = () => {
                           />
                         </div>
                       </div>
-                    </TabContainer>
+                    </div>
                   </div>
                 ) : (
                   <div>
