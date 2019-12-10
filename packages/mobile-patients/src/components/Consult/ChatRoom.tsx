@@ -612,7 +612,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         .catch((e: string) => {
           console.log('Error occured, adding ', e);
         })
-        .then(() => startJoinTimer(0));
+        .finally(() => startJoinTimer(0));
     } else {
       addToConsultQueue(client, appointmentData.id)
         .then(({ data }: any) => {
@@ -627,7 +627,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         .catch((e: string) => {
           console.log('Error occured ', e);
         })
-        .then(() => startJoinTimer(0));
+        .finally(() => startJoinTimer(0));
     }
     // userAnswers &&
     //   addToConsultQueueWithAutomatedQuestions(client, userAnswers)
