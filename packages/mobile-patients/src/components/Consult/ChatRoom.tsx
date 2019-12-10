@@ -347,7 +347,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let stoppedTimer: number;
   let thirtySecondTimer: any;
   let minuteTimer: any;
-
+  let callhandelBack: boolean = true;
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -4420,6 +4420,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           onPress={() => {
             setOnSubscribe(false);
+            callhandelBack = true;
             stopTimer();
             startTimer(0);
             setCallAccepted(true);
@@ -5020,14 +5021,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-              })
-            );
-            handleCallTheEdSessionAPI();
+            if (callhandelBack) {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                })
+              );
+              handleCallTheEdSessionAPI();
+            }
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
