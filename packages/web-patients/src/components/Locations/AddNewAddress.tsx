@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, InputAdornment } from '@material-ui/core';
 import React, { useState } from 'react';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField, AphButton, AphInput } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Mutation } from 'react-apollo';
@@ -23,7 +23,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       backgroundColor: '#f7f8f5',
       padding: 10,
-      paddingTop: 0,
       paddingBottom: 5,
       marginBottom: 10,
     },
@@ -32,6 +31,19 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       color: '#01475b',
       fontWeight: 500,
+      '& label': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#01475b',
+      },
+      '& textarea': {
+        padding: 0,
+        border: 'none',
+        borderBottom: '2px solid #00b38e',
+        borderRadius: 0,
+        paddingTop: 9,
+        paddingBottom: 5,
+      },
     },
     menuPopover: {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
@@ -75,6 +87,13 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    inputAdorment: {
+      '& p': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+      },
+    },
   };
 });
 
@@ -101,40 +120,16 @@ export const AddNewAddress: React.FC = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                {/* <div className={classes.formGroup}>
-                  <AphSelect
-                    value={name}
-                    MenuProps={{
-                      classes: { paper: classes.menuPopover },
-                      anchorOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                      },
-                      transformOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                      },
-                    }}
-                  >
-                    {allCurrentPatients &&
-                      allCurrentPatients.map((patientDetails, i) => (
-                        <MenuItem
-                          value={1}
-                          classes={
-                            patientDetails.id === currentPatientId
-                              ? { selected: classes.menuSelected }
-                              : {}
-                          }
-                          key={patientDetails.id}
-                        >
-                          {patientDetails.firstName}
-                        </MenuItem>
-                      ))}
-                  </AphSelect>
-                </div> */}
-                {/* <div className={classes.formGroup}>
+                <div className={classes.formGroup}>
                   <AphTextField
-                    placeholder="Mobile Number"
+                    label="Full Name"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div className={classes.formGroup}>
+                  <label>Mobile Number</label>
+                  <AphInput
+                    placeholder="Enter mobile number"
                     defaultValue={
                       currentPatient && currentPatient.mobileNumber
                         ? currentPatient.mobileNumber.substr(3, 10)
@@ -146,11 +141,18 @@ export const AddNewAddress: React.FC = (props) => {
                     onKeyPress={(e) => {
                       if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                     }}
+                    startAdornment={
+                      <InputAdornment className={classes.inputAdorment} position="start">
+                        +91
+                      </InputAdornment>
+                    }
                   />
-                </div> */}
+                </div>
                 <div className={classes.formGroup}>
                   <AphTextField
-                    placeholder="Address Line 1"
+                    multiline
+                    label="Address"
+                    placeholder="Flat / Door / Plot Number, Building"
                     onChange={(e) => {
                       setAddress1(e.target.value);
                     }}
@@ -161,7 +163,8 @@ export const AddNewAddress: React.FC = (props) => {
                 </div>
                 <div className={classes.formGroup}>
                   <AphTextField
-                    placeholder="Pincode"
+                    label="Pin Code"
+                    placeholder="Enter pin code"
                     onChange={(e) => {
                       setPincode(e.target.value);
                     }}
@@ -173,7 +176,12 @@ export const AddNewAddress: React.FC = (props) => {
                     }}
                   />
                 </div>
-                <div className={classes.formGroup}>&nbsp;</div>
+                <div className={classes.formGroup}>
+                  <AphTextField
+                    label="Area / Locality"
+                    placeholder="Enter area / locality name"
+                  />
+                </div>
               </div>
             </div>
           </div>
