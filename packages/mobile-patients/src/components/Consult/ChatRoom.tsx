@@ -602,7 +602,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
           console.log(data, 'data res, adding');
-          startJoinTimer(0);
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
             appointmentId: appointmentData.id,
@@ -612,12 +611,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         })
         .catch((e: string) => {
           console.log('Error occured, adding ', e);
-        });
+        })
+        .finally(() => startJoinTimer(0));
     } else {
       addToConsultQueue(client, appointmentData.id)
         .then(({ data }: any) => {
           console.log(data, 'data res');
-          startJoinTimer(0);
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
             appointmentId: appointmentData.id,
@@ -627,7 +626,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         })
         .catch((e: string) => {
           console.log('Error occured ', e);
-        });
+        })
+        .finally(() => startJoinTimer(0));
     }
     // userAnswers &&
     //   addToConsultQueueWithAutomatedQuestions(client, userAnswers)
@@ -1049,14 +1049,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 //   console.log('calljoined');
                 //   APIForUpdateAppointmentData(true);
                 // }
-
                 // if (abondmentStarted == false) {
                 //   console.log('calljoined');
                 //   APIForUpdateAppointmentData(true);
                 // }
               } else {
                 if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-                   console.log('abondmentStarted -------> ', abondmentStarted);
+                  console.log('abondmentStarted -------> ', abondmentStarted);
 
                   if (abondmentStarted == false) {
                     console.log('callAbondmentMethod', abondmentStarted);
@@ -1114,8 +1113,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.COMPLETED) return;
       abondmentStarted = true;
       startCallAbondmentTimer(200, true);
-    } 
-    else {
+    } else {
       console.log(
         'doctor no show scenario',
         startConsultJRResult.length,
@@ -1134,8 +1132,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         abondmentStarted = true;
         startCallAbondmentTimer(200, false);
       } else {
-      abondmentStarted = false;
-
+        abondmentStarted = false;
       }
     }
   };
@@ -1192,7 +1189,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         //     abondmentStarted = false;
         //   }
         // } else {
-          callAbondmentMethod(appointmentSeniorDoctorStarted);
+        callAbondmentMethod(appointmentSeniorDoctorStarted);
         // }
       })
       .catch((e: string) => {
@@ -3111,7 +3108,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === videoCallMsg ||
       rowData.message === acceptedCallMsg ||
       rowData.message === stopConsultMsg ||
-      rowData.message === cancelConsultInitiated || 
+      rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment
     ) {
       return null;
@@ -3860,6 +3857,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             changeAudioStyles();
+            setHideStatusBar(true);
           }}
         >
           <View
@@ -3943,6 +3941,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              setHideStatusBar(false);
               setChatReceived(false);
               setSubscriberStyles({
                 width: 155,
@@ -5050,7 +5049,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
-          <KeyboardAvoidingView behavior="padding" enabled>
+          <KeyboardAvoidingView behavior="padding" enabled keyboardVerticalOffset={16}>
             <View
               style={{
                 width: width,
