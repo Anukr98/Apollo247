@@ -14,6 +14,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   SAVE_ORDER_CANCEL_STATUS,
+  GET_DIAGNOSTIC_ORDER_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrderDetails,
@@ -51,6 +52,10 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+} from '../../graphql/types/getDiagnosticOrdersList';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -98,15 +103,23 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
-
+  const setOrders = props.navigation.getParam('setOrders');
   const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
 
+  const refetchOrders =
+    props.navigation.getParam('refetch') ||
+    useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
+      variables: {
+        patientId: currentPatient && currentPatient.id,
+      },
+      fetchPolicy: 'cache-first',
+    }).refetch;
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
   const [isCancelVisible, setCancelVisible] = useState(false);
 
-  const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
@@ -140,6 +153,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         })
       );
     } else {
+      refetchOrders().then((data: any) => {
+        const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrders(_orders);
+      });
       props.navigation.goBack();
     }
     return false;
@@ -471,6 +488,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             .catch(() => {
               setInitialSate();
             });
+          refetchOrders().then((data: any) => {
+            const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+            setOrders(_orders);
+          });
         } else {
           Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
         }

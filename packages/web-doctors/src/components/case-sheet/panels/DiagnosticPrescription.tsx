@@ -254,6 +254,7 @@ export const DiagnosticPrescription: React.FC = () => {
     diagnosticPrescription: selectedValues,
     setDiagnosticPrescription: setSelectedValues,
   } = useContext(CaseSheetContext);
+  console.log(selectedValues);
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
   const { caseSheetEdit, patientDetails } = useContext(CaseSheetContext);
@@ -263,12 +264,13 @@ export const DiagnosticPrescription: React.FC = () => {
       .query<SearchDiagnostics, any>({
         query: SEARCH_DIAGNOSTICS,
         variables: {
-          city:
-            patientDetails &&
-            patientDetails.patientAddress &&
-            patientDetails.patientAddress.length > 0
-              ? patientDetails.patientAddress[0]!.city
-              : '',
+          // city:
+          //   patientDetails &&
+          //   patientDetails.patientAddress &&
+          //   patientDetails.patientAddress.length > 0
+          //     ? patientDetails.patientAddress[0]!.city
+          //     : '',
+          city: '',
           patientId: patientDetails && patientDetails.id ? patientDetails.id : '',
           searchText: value,
         },
@@ -475,7 +477,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 onClick={() => {
                   if (otherDiagnostic.trim() !== '') {
                     selectedValues!.splice(idx, 0, {
-                      itemname: otherDiagnostic,
+                      itemName: otherDiagnostic,
                       __typename: 'DiagnosticPrescription',
                     });
                     setSelectedValues(selectedValues);

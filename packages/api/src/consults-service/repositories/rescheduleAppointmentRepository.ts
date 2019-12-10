@@ -123,6 +123,15 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
     });
   }
 
+  getRescheduleDetails(appointment: string) {
+    return this.findOne({
+      where: {
+        appointment,
+        rescheduleStatus: TRANSFER_STATUS.INITIATED,
+      },
+    });
+  }
+
   getDoctorRescheduleDetailsByAppointment(appointment: string) {
     return this.find({
       where: {

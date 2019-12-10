@@ -39,7 +39,7 @@ import {
   BlockMultipleCalendarItems,
   BlockMultipleCalendarItemsVariables,
 } from 'graphql/types/BlockMultipleCalendarItems';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mutation } from 'react-apollo';
 import { format, parse } from 'date-fns';
 import { Item } from 'components/blocked-calendar/BlockedCalendar';
@@ -401,7 +401,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     },
   });
   const classes = useStyles();
-
+  const fromDatePickerRef = useRef(null);
+  const toDatePickerRef = useRef(null);
   const TextFieldComponent = (props: any) => {
     return <TextField {...props} disabled={true} />;
   };
@@ -852,15 +853,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
             <div>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <ThemeProvider theme={defaultMaterialTheme}>
-                  <div>
+                  <div ref={fromDatePickerRef}>
                     <KeyboardDatePicker
                       className={classes.KeyboardDatePicker}
                       disableToolbar
                       variant="inline"
-                      // format="MM/dd/yyyy"
                       format="iii, dd/MM/yyyy"
                       margin="normal"
-                      id="date-picker-inline"
                       label={
                         daySelected
                           ? 'Which day would you like to block your calendar for?'
@@ -882,20 +881,29 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       KeyboardButtonProps={{
                         'aria-label': 'change date',
                       }}
+                      PopoverProps={{
+                        anchorEl: fromDatePickerRef.current,
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'center',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'center',
+                        },
+                      }}
                       autoOk
                       TextFieldComponent={TextFieldComponent}
                     />
                   </div>
                   {!daySelected && (
-                    <div>
+                    <div ref={toDatePickerRef}>
                       <KeyboardDatePicker
                         className={classes.KeyboardDatePicker}
                         disableToolbar
                         variant="inline"
-                        // format="MM/dd/yyyy"
                         format="iii, dd/MM/yyy"
                         margin="normal"
-                        id="date-picker-inline"
                         label="To"
                         disabled={!start}
                         minDate={new Date(start)}
@@ -906,6 +914,17 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         }}
                         KeyboardButtonProps={{
                           'aria-label': 'change date',
+                        }}
+                        PopoverProps={{
+                          anchorEl: toDatePickerRef.current,
+                          anchorOrigin: {
+                            vertical: 'bottom',
+                            horizontal: 'center',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'center',
+                          },
                         }}
                         autoOk
                         TextFieldComponent={TextFieldComponent}
@@ -1298,7 +1317,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         <Button
                           type="submit"
                           disabled={
-                            loading || invalid || !isTimeValid || !isallreadyInArray || !isPastTime
+                            loading ||
+                            invalid ||
+                            !isTimeValid ||
+                            !isallreadyInArray ||
+                            !isPastTime ||
+                            new Date(start).getDate() > new Date(end).getDate()
                           }
                           variant="contained"
                           className={classes.blockCalBtn}

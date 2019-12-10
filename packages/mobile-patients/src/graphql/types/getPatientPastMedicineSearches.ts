@@ -22,4 +22,5 @@ export interface getPatientPastMedicineSearches {
 
 export interface getPatientPastMedicineSearchesVariables {
   patientId: string;
+  type?: SEARCH_TYPE | null;
 }

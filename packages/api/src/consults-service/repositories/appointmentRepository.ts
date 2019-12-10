@@ -23,7 +23,7 @@ import {
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-fns';
+import { format, addMinutes, differenceInMinutes, addDays, subDays, subMinutes } from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
@@ -50,7 +50,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   checkPatientCancelledHistory(patientId: string, doctorId: string) {
-    const newStartDate = new Date(format(addDays(new Date(), -8), 'yyyy-MM-dd') + 'T18:30');
+    const newStartDate = new Date(format(addDays(new Date(), -9), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30');
     const whereClause = {
       patientId,
@@ -72,13 +72,24 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   checkIfAppointmentExist(doctorId: string, appointmentDateTime: Date) {
-    return this.count({
+    /*return this.count({
       where: {
         doctorId,
         appointmentDateTime,
         status: Not([STATUS.CANCELLED, STATUS.PAYMENT_PENDING]),
       },
-    });
+    });*/
+
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime = :fromDate', {
+        fromDate: appointmentDateTime,
+      })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
+      .getCount();
   }
 
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
@@ -369,6 +380,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
       })
+      .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
 
     //get past appointments till one week
@@ -391,6 +403,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
       })
+      .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
 
     const consultRoomAppts = upcomingAppts.concat(weekPastAppts);
@@ -727,8 +740,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     else return 0;
   }
 
-  updateAppointmentStatus(id: string, status: STATUS) {
-    this.update(id, { status }).catch((createErrors) => {
+  updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean) {
+    this.update(id, { status, isSeniorConsultStarted }).catch((createErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
   }
@@ -782,7 +795,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
-    this.update(id, { appointmentState });
+    this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -819,6 +832,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       appointmentDateTime,
       rescheduleCountByDoctor,
       appointmentState,
+      status: STATUS.PENDING,
     });
   }
 
@@ -894,9 +908,18 @@ export class AppointmentRepository extends Repository<Appointment> {
       const duration = Math.floor(60 / timeSlot[0].consultDuration);
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
+          let firstSlot = true;
+          const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
+          const addMin = Math.abs(
+            (startMin % timeSlot[0].consultDuration) - timeSlot[0].consultDuration
+          );
+          let slot = blockedSlot.start;
+          if (addMin != timeSlot[0].consultDuration) {
+            slot = addMinutes(blockedSlot.start, addMin);
+          }
+          console.log(startMin, addMin, slot, 'start min');
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
-          let slot = blockedSlot.start;
           if (!Number.isInteger(blockedSlotsCount)) {
             blockedSlotsCount = Math.ceil(blockedSlotsCount);
           }
@@ -911,8 +934,23 @@ export class AppointmentRepository extends Repository<Appointment> {
               const genBlockSlot =
                 format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'HH:mm') + ':00.000Z';
               doctorBblockedSlots.push(genBlockSlot);
+              if (firstSlot) {
+                firstSlot = false;
+                const prevSlot = subMinutes(slot, 5); //addMinutes(slot, -5);
+                if (
+                  Math.abs(differenceInMinutes(prevSlot, blockedSlot.start)) <
+                  timeSlot[0].consultDuration
+                ) {
+                  const genBlockSlot =
+                    format(prevSlot, 'yyyy-MM-dd') + 'T' + format(prevSlot, 'HH:mm') + ':00.000Z';
+                  doctorBblockedSlots.push(genBlockSlot);
+                }
+              }
               slot = addMinutes(slot, timeSlot[0].consultDuration);
             });
+          if (new Date(doctorBblockedSlots[blockedSlotsCount - 1]) >= blockedSlot.end) {
+            doctorBblockedSlots[blockedSlotsCount - 1] = '';
+          }
         });
         console.log(doctorBblockedSlots, 'doctor slots');
       }
@@ -984,5 +1022,9 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   updateConsultStarted(id: string, status: Boolean) {
     return this.update(id, { isConsultStarted: status });
+  }
+
+  updateSeniorConsultStarted(id: string, status: Boolean) {
+    return this.update(id, { isSeniorConsultStarted: status });
   }
 }

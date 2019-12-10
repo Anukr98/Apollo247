@@ -64,6 +64,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/deletePatientAddress';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
@@ -176,91 +177,110 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
-  const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
+  const addOnly: boolean = props.navigation.state.params
+    ? props.navigation.state.params.addOnly
+    : false;
 
+  const addressData = props.navigation.getParam('DataAddress');
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const { addAddress: addA, setDeliveryAddressId: setD } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const { locationDetails } = useAppCommonData();
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
 
+  const isChanged =
+    addressData &&
+    city === addressData.city &&
+    state === addressData.state &&
+    pincode === addressData.zipcode &&
+    addressLine1 === addressData.addressLine1 &&
+    addressType === addressData.addressType &&
+    optionalAddress === addressData.otherAddressType;
+
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update') {
-      console.log('DataAddress', props.navigation.getParam('DataAddress'));
-      setcity(props.navigation.getParam('DataAddress').city);
-      setstate(props.navigation.getParam('DataAddress').state);
-      setpincode(props.navigation.getParam('DataAddress').zipcode);
-      setaddressLine1(props.navigation.getParam('DataAddress').addressLine1);
-      setAddressType(props.navigation.getParam('DataAddress').addressType);
-      setOptionalAddress(props.navigation.getParam('DataAddress').otherAddressType);
+      console.log('DataAddress', addressData);
+      setcity(addressData.city);
+      setstate(addressData.state);
+      setpincode(addressData.zipcode);
+      setaddressLine1(addressData.addressLine1);
+      setAddressType(addressData.addressType);
+      setOptionalAddress(addressData.otherAddressType);
     } else {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log(position, 'position');
-          const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
-          //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-          Axios.get(url)
-            .then((obj) => {
-              console.log(obj, 'geocode obj');
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const city = (
-                    addrComponents.find(
-                      (item: any) =>
-                        item.types.indexOf('locality') > -1 ||
-                        item.types.indexOf('administrative_area_level_2') > -1
-                    ) || {}
-                  ).long_name;
-                  const state = (
-                    addrComponents.find(
-                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
-                    ) || {}
-                  ).long_name;
-                  setstate(state || '');
-                  const pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
+      if (!(locationDetails && locationDetails.pincode)) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log(position, 'position');
+            const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
+            //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+            Axios.get(url)
+              .then((obj) => {
+                console.log(obj, 'geocode obj');
+                try {
+                  if (
+                    obj.data.results.length > 0 &&
+                    obj.data.results[0].address_components.length > 0
+                  ) {
+                    const address = obj.data.results[0].address_components[0].short_name;
+                    console.log(address, 'address obj');
+                    const addrComponents = obj.data.results[0].address_components || [];
+                    const city = (
+                      addrComponents.find(
+                        (item: any) =>
+                          item.types.indexOf('locality') > -1 ||
+                          item.types.indexOf('administrative_area_level_2') > -1
+                      ) || {}
+                    ).long_name;
+                    const state = (
+                      addrComponents.find(
+                        (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                      ) || {}
+                    ).long_name;
+                    setstate(state || '');
+                    const pincode = (
+                      addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
+                      {}
+                    ).long_name;
 
-                  setpincode(pincode || '');
+                    setpincode(pincode || '');
 
-                  let val = city.concat(', ').concat(state);
+                    let val = city.concat(', ').concat(state);
 
-                  setpincode(pincode || '');
-                  //setcity(obj.data.results[0].formatted_address || '');
-                  setcity(val);
-                  console.log(obj.data.results[0].formatted_address, 'val obj');
-                  //setcurrentLocation(address.toUpperCase());
-                  // AsyncStorage.setItem(
-                  //   'location',
-                  //   JSON.stringify({
-                  //     latlong: obj.data.results[0].geometry.location,
-                  //     name: address.toUpperCase(),
-                  //   })
-                  // );
-                }
-              } catch {}
-            })
-            .catch((error) => {
-              console.log(error, 'geocode error');
-            });
-        },
-        (error) => {
-          console.log(error.code, error.message, 'getCurrentPosition error');
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-      );
+                    setpincode(pincode || '');
+                    //setcity(obj.data.results[0].formatted_address || '');
+                    setcity(val);
+                    console.log(obj.data.results[0].formatted_address, 'val obj');
+                    //setcurrentLocation(address.toUpperCase());
+                    // AsyncStorage.setItem(
+                    //   'location',
+                    //   JSON.stringify({
+                    //     latlong: obj.data.results[0].geometry.location,
+                    //     name: address.toUpperCase(),
+                    //   })
+                    // );
+                  }
+                } catch {}
+              })
+              .catch((error) => {
+                console.log(error, 'geocode error');
+              });
+          },
+          (error) => {
+            console.log(error.code, error.message, 'getCurrentPosition error');
+          },
+          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+        );
+      } else {
+        validateAndSetPincode(locationDetails.pincode);
+      }
     }
   }, []);
   const client = useApolloClient();
@@ -272,7 +292,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressLine1 &&
     // addressLine1.length > 1 &&
     pincode &&
-    pincode.length == 6 &&
+    pincode.length === 6 &&
     city &&
     city.length > 1 &&
     state &&
@@ -291,38 +311,43 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     setshowSpinner(true);
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update') {
-      const updateaddressInput = {
-        id: props.navigation.getParam('DataAddress').id,
-        addressLine1: addressLine1,
-        addressLine2: '',
-        city: city,
-        state: state,
-        zipcode: pincode,
-        landmark: landMark,
-        mobileNumber: phoneNumber,
-        addressType: addressType,
-        otherAddressType: optionalAddress,
-      };
-      console.log(updateaddressInput, 'updateaddressInput');
-      setshowSpinner(true);
-      client
-        .mutate<updatePatientAddress, updatePatientAddressVariables>({
-          mutation: UPDATE_PATIENT_ADDRESS,
-          variables: { UpdatePatientAddressInput: updateaddressInput },
-        })
-        .then((_data: any) => {
-          try {
+      if (!isChanged) {
+        const updateaddressInput = {
+          id: addressData.id,
+          addressLine1: addressLine1,
+          addressLine2: '',
+          city: city,
+          state: state,
+          zipcode: pincode,
+          landmark: landMark,
+          mobileNumber: phoneNumber,
+          addressType: addressType,
+          otherAddressType: optionalAddress,
+        };
+        console.log(updateaddressInput, 'updateaddressInput');
+        setshowSpinner(true);
+        client
+          .mutate<updatePatientAddress, updatePatientAddressVariables>({
+            mutation: UPDATE_PATIENT_ADDRESS,
+            variables: { UpdatePatientAddressInput: updateaddressInput },
+          })
+          .then((_data: any) => {
+            try {
+              setshowSpinner(false);
+              console.log('updateapicalled', _data);
+              props.navigation.pop(2, { immediate: true });
+              props.navigation.push(AppRoutes.AddressBook);
+            } catch (error) {}
+          })
+          .catch((e: any) => {
             setshowSpinner(false);
-            console.log('updateapicalled', _data);
-            props.navigation.push(AppRoutes.AddressBook);
-          } catch (error) {}
-        })
-        .catch((e: any) => {
-          setshowSpinner(false);
-          const error = JSON.parse(JSON.stringify(e));
-          console.log('Error occured while updateapicalled', error);
-        });
-      //props.navigation.goBack();
+            const error = JSON.parse(JSON.stringify(e));
+            console.log('Error occured while updateapicalled', error);
+          });
+        //props.navigation.goBack();
+      } else {
+        props.navigation.goBack();
+      }
     } else {
       const addressInput = {
         patientId: userId,
@@ -340,7 +365,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       try {
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
           saveAddress(addressInput),
-          pinCodeServiceabilityApi(pincode),
+          addOnly ? null : pinCodeServiceabilityApi(pincode),
         ]);
 
         setshowSpinner(false);
@@ -349,7 +374,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         addAddress && addAddress(address);
         addA!(address);
 
-        if (pinAvailabilityResult.data.Availability || addOnly) {
+        if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
           setDeliveryAddressId && setDeliveryAddressId(address.id || '');
           setD!(address.id || '');
           props.navigation.goBack();
@@ -398,7 +423,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
               onPress={() => {
-                console.log(props.navigation.getParam('DataAddress').id, !displayoverlay);
+                console.log(addressData.id, !displayoverlay);
                 // setdisplayoverlay(true);
                 setDeleteProfile(true);
               }}
@@ -651,14 +676,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           }
           placeholder={'Enter pin code'}
           maxLength={6}
-          textInputprops={{
-            onSubmitEditing: () => {
-              if (isAddressValid) {
-                onSavePress();
-              }
-            },
-            returnKeyType: 'done',
-          }}
+          // textInputprops={{
+          //   onSubmitEditing: () => {
+          //     if (isAddressValid) {
+          //       onSavePress();
+          //     }
+          //   },
+          //   returnKeyType: 'done',
+          // }}
         />
         {/* <TextInputComponent
           value={landMark}
@@ -750,7 +775,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                 client
                   .mutate<deletePatientAddress, deletePatientAddressVariables>({
                     mutation: DELETE_PATIENT_ADDRESS,
-                    variables: { id: props.navigation.getParam('DataAddress').id },
+                    variables: { id: addressData.id },
                     fetchPolicy: 'no-cache',
                   })
                   .then((_data: any) => {
@@ -842,7 +867,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             }}
           >
             <Button
-              title={props.navigation.getParam('KeyName') == 'Update' ? 'SAVE' : 'SAVE & USE'}
+              title={
+                props.navigation.getParam('KeyName') == 'Update' || addOnly ? 'SAVE' : 'SAVE & USE'
+              }
               style={{ marginHorizontal: 40, width: '70%' }}
               onPress={onSavePress}
               disabled={!isAddressValid}
