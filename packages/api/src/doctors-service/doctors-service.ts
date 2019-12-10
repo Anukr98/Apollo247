@@ -62,6 +62,7 @@ import {
   doctorFavouriteTestTypeDefs,
   doctorFavouriteTestResolvers,
 } from 'doctors-service/resolvers/doctorFavouriteTest';
+import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
 
 (async () => {
   await connect();
@@ -174,6 +175,10 @@ import {
       {
         typeDefs: doctorFavouriteTestTypeDefs,
         resolvers: doctorFavouriteTestResolvers,
+      },
+      {
+        typeDefs: AdminTypeDefs,
+        resolvers: AdminResolvers,
       },
     ]),
     plugins: [

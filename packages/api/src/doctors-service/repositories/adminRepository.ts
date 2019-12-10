@@ -22,6 +22,7 @@ export class AdminDoctor extends Repository<Doctor> {
       ],
       skip: offset,
       take: limit,
+      order: { firstName: 'ASC' },
     });
   }
 
