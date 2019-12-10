@@ -17,7 +17,7 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 
 export const AdminTypeDefs = gql`
-  input doctorInput {
+  input DoctorInput {
     awards: String
     dateOfBirth: Date
     doctorType: DoctorType!
@@ -49,7 +49,7 @@ export const AdminTypeDefs = gql`
   }
 
   extend type Mutation {
-    createDoctor(doctorInputdata: doctorInput): DoctorDetails
+    createDoctor(doctorInputdata: DoctorInput): DoctorDetails
   }
 `;
 const adminGetDoctorsList: Resolver<
@@ -59,9 +59,9 @@ const adminGetDoctorsList: Resolver<
   Doctor[]
 > = async (parent, args, { doctorsDb, currentUser, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(AdminDoctor);
-  const AdminUserRepo = doctorsDb.getCustomRepository(AdminUser);
+  const adminUserRepo = doctorsDb.getCustomRepository(AdminUser);
 
-  const accessDetails = await AdminUserRepo.checkValidAccess(mobileNumber, true);
+  const accessDetails = await adminUserRepo.checkValidAccess(mobileNumber, true);
   if (accessDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const doctorsData = await doctorRepository.getAllDoctors(args.offset, args.limit);
@@ -69,7 +69,7 @@ const adminGetDoctorsList: Resolver<
   return doctorsData;
 };
 
-type doctorInput = {
+type DoctorInput = {
   awards: string;
   dateOfBirth: Date;
   doctorType: DoctorType;
@@ -96,9 +96,9 @@ type doctorInput = {
   specialization: string;
 };
 
-type doctorInputArgs = { doctorInputdata: doctorInput };
+type DoctorInputArgs = { doctorInputdata: DoctorInput };
 
-const createDoctor: Resolver<null, doctorInputArgs, DoctorsServiceContext, Doctor> = async (
+const createDoctor: Resolver<null, DoctorInputArgs, DoctorsServiceContext, Doctor> = async (
   parent,
   { doctorInputdata },
   { doctorsDb, currentUser, mobileNumber }

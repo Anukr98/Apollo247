@@ -16305,7 +16305,7 @@
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",
-                  "name": "doctorInput",
+                  "name": "DoctorInput",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -21842,7 +21842,7 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "doctorInput",
+        "name": "DoctorInput",
         "description": null,
         "fields": null,
         "inputFields": [
