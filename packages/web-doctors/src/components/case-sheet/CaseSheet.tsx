@@ -230,16 +230,16 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   ];
 
   useEffect(() => {
-    setDiagnosis(props.startAppointment)
-    setSymptoms(props.startAppointment)
-    setLifestyle(props.startAppointment)
-    setHealthVault(props.startAppointment)
-    setNotes(props.startAppointment)
-    setMedicinePrescription(props.startAppointment)
-    setDiagnosticPrescription(props.startAppointment)
-    setFollowUpPanel(props.startAppointment)
-    setOtherInstructions(props.startAppointment)
-    setVitals(props.startAppointment)
+    setDiagnosis(props.startAppointment);
+    setSymptoms(props.startAppointment);
+    setLifestyle(props.startAppointment);
+    setHealthVault(props.startAppointment);
+    setNotes(props.startAppointment);
+    setMedicinePrescription(props.startAppointment);
+    setDiagnosticPrescription(props.startAppointment);
+    setFollowUpPanel(props.startAppointment);
+    setOtherInstructions(props.startAppointment);
+    setVitals(props.startAppointment);
   }, [props.startAppointment]);
   const { notes, setSRDNotes } = useContext(CaseSheetContext);
   const handlePanelExpansion = (expansionKey: string) => (
