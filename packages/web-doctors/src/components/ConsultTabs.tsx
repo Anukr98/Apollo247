@@ -361,7 +361,11 @@ export const ConsultTabs: React.FC = () => {
     GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
+  const [favouriteTests, setFavouriteTests] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
+  const [favouriteMedicines, setFavouriteMedicines] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
 
@@ -1271,8 +1275,12 @@ export const ConsultTabs: React.FC = () => {
             setOtherInstructions,
             diagnosticPrescription,
             setDiagnosticPrescription,
+            favouriteTests,
+            setFavouriteTests,
             medicinePrescription,
             setMedicinePrescription,
+            favouriteMedicines,
+            setFavouriteMedicines,
             consultType,
             setConsultType,
             caseSheetEdit,

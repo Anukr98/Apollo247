@@ -2,6 +2,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Button } from '@material-ui/core';
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
+import { FavouriteMedicines } from 'components/FavouriteMedicines';
+import { FavouriteAdvice } from 'components/FavouriteAdvice';
+import { Tests } from 'components/Tests';
 // import AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -9,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => {
     card: {
       background: '#fff',
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.2)',
-      padding: 16,
+      padding: '5px 0px',
       borderRadius: 10,
       '& ul': {
         padding: 0,
@@ -20,6 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: 10,
           fontSize: 14,
           fontWeight: 500,
+          position: 'relative',
           borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
           '&:last-child': {
             paddingBottom: 0,
@@ -101,62 +105,18 @@ export const MyAccountPrescription: React.FC = () => {
         <Grid container spacing={2}>
           <Grid sm={6} xs={12} key={5} item>
             <div className={classes.faverite}>Favorite Medicines</div>
-            <div className={classes.card}>
-              <ul>
-                <li>
-                  Acetaminophen 1.5% w/w
-                  <span className={classes.iconRight}>
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </span>
-                </li>
-                <li>ABC XYZ </li>
-                <li>
-                  <Button className={classes.addmedicine_btn}>
-                    <img src={require('images/ic_round-add.svg')} alt="" /> Add Medicine
-                  </Button>
-                </li>
-              </ul>
-            </div>
+            <FavouriteMedicines></FavouriteMedicines>
           </Grid>
           <Grid sm={6} xs={12} key={5} item>
             <div className={classes.faverite}>Favorite Tests</div>
             <div className={classes.card}>
-              <ul>
-                <li>
-                  Test ABC
-                  <span className={classes.iconRight}>
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </span>
-                </li>
-                <li>Test XYZ </li>
-                <li>
-                  <Button className={classes.addmedicine_btn}>
-                    <img src={require('images/ic_round-add.svg')} alt="" /> Add Tests
-                  </Button>
-                </li>
-              </ul>
+              <Tests></Tests>
             </div>
           </Grid>
           <Grid sm={6} xs={12} key={5} item>
             <div className={classes.faverite}>Favorite Advice</div>
             <div className={classes.card}>
-              <ul>
-                <li>
-                  Advise 01
-                  <span className={classes.iconRight}>
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </span>
-                </li>
-                <li>Diagnostic XYZ</li>
-                <li>
-                  <Button className={classes.addmedicine_btn}>
-                    <img src={require('images/ic_round-add.svg')} alt="" /> Add Advice
-                  </Button>
-                </li>
-              </ul>
+              <FavouriteAdvice></FavouriteAdvice>
             </div>
           </Grid>
         </Grid>
