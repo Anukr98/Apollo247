@@ -426,7 +426,7 @@ export const CasesheetView: React.FC = (props) => {
                   <div className={classes.complaintsInfoRow}>
                     <div className={classes.complaintsLabel}>{symptom.symptom}</div>
                     <div className={classes.labelContent}>
-                      {`Since: Last ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
+                      {`Since: ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
                     </div>
                   </div>
                 ))}

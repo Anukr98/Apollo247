@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { PrescriptionFormat } from 'components/Cart/Cart';
+import { PrescriptionFormat } from 'components/Cart/MedicineCart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -187,11 +187,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 {isUploading ? (
                   <CircularProgress />
                 ) : (
-                  <label htmlFor="icon-button-file">
-                    <img src={require('images/ic_gallery.svg')} alt="" />
-                    <p>Choose from gallery</p>
-                  </label>
-                )}
+                    <label htmlFor="icon-button-file">
+                      <img src={require('images/ic_gallery.svg')} alt="" />
+                      <p>Choose from gallery</p>
+                    </label>
+                  )}
               </div>
 
               <div className={classes.uploadCard}>
