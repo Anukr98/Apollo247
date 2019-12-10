@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Theme, Tabs, Tab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -6,6 +6,9 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
+import { useParams } from 'hooks/routerHooks';
+import axios from 'axios';
+import { MedicineProductDetails } from '../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -194,8 +197,37 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicineDetails: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
+  const params = useParams<{ sku: string }>();
+  const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails[]>([]);
+
+  const apiDetails = {
+    url: process.env.PHARMACY_MED_SEARCH_URL,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+
+  const getMedicineDetails = async (sku: string) => {
+    await axios
+      .post(
+        apiDetails.url,
+        { params: sku },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        setMedicineDetails(data.productdp);
+        console.log(data);
+      })
+      .catch((e) => console.log(e));
+  };
+
+  useEffect(() => {
+    getMedicineDetails(params.sku);
+  });
 
   return (
     <div className={classes.welcome}>
@@ -207,7 +239,7 @@ export const MedicineDetails: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.medicineDetailsPage}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.welcome())}>
+            <a onClick={() => (window.location.href = clientRoutes.medicines())}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
