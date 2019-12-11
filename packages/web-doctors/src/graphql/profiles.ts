@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import gql from 'graphql-tag';
 
 export const GET_PATIENTS = gql`
   query GetPatients {
@@ -1179,16 +1179,6 @@ export const GET_SECRETARY_LIST = gql`
   }
 `;
 
-export const GET_DOCTOR_FAVOURITE_ADVICE_LIST = gql`
-  query GetDoctorFavouriteAdviceList {
-    getDoctorFavouriteAdviceList {
-      adviceList {
-        id
-        instruction
-      }
-    }
-  }
-`;
 export const ADD_SECRETARY = gql`
   mutation AddSecretary($secretaryId: ID!) {
     addSecretary(secretaryId: $secretaryId) {
