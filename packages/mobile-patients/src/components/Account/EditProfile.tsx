@@ -318,11 +318,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       setLastName(profileData.lastName || '');
       setDate(new Date(profileData.dateOfBirth!));
       setGender(profileData!.gender!);
-      relationArray.map((relation) => {
-        if (relation.key === profileData.relation) {
-          setRelation(relation);
-        }
-      });
+      setRelation(relationArray.find((relation) => relation.key === profileData.relation));
       setEmail(profileData.emailAddress || '');
       setPhotoUrl(profileData.photoUrl || '');
     }
@@ -422,12 +418,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             editProfileInput: {
               id: profileData.id,
               photoUrl: photoUrl,
-              firstName: firstName,
-              lastName: lastName,
+              firstName: firstName.trim(),
+              lastName: lastName.trim(),
               relation: (relation && relation.key!) || Relation.ME,
               gender: gender ? gender : Gender.OTHER,
               dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-              emailAddress: email,
+              emailAddress: email.trim(),
             },
           },
         })
@@ -469,12 +465,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         mutation: ADD_NEW_PROFILE,
         variables: {
           PatientProfileInput: {
-            firstName: firstName,
-            lastName: lastName,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             gender: gender ? gender : Gender.OTHER,
             relation: (relation && relation!.key) || Relation.ME,
-            emailAddress: email,
+            emailAddress: email.trim(),
             photoUrl: photoUrl,
             mobileNumber: props.navigation.getParam('mobileNumber'),
           },
@@ -524,7 +520,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         }}
         onResponse={(type, response) => {
           console.log('profile data', type, response);
-          response.map((item) =>
+          response.forEach((item) =>
             client
               .mutate<uploadFile, uploadFileVariables>({
                 mutation: UPLOAD_FILE,
@@ -808,9 +804,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 // );
 
                 let validationMessage = '';
-                if (!(firstName && isSatisfyingNameRegex(firstName))) {
+                if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
                   validationMessage = 'Enter valid first name';
-                } else if (!(lastName && isSatisfyingNameRegex(lastName))) {
+                } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
                   validationMessage = 'Enter valid last name';
                 } else if (!date) {
                   validationMessage = 'Enter valid date of birth';
@@ -818,7 +814,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   validationMessage = 'Select a gender';
                 } else if (!relation) {
                   validationMessage = 'Select a valid relation';
-                } else if (!(email === '' || (email && isSatisfyingEmailRegex(email)))) {
+                } else if (!(email === '' || (email && isSatisfyingEmailRegex(email.trim())))) {
                   validationMessage = 'Enter valid email';
                 }
                 if (validationMessage) {
