@@ -672,6 +672,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
+      console.log('call Abandonment', timer);
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -714,6 +715,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
       if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
+        console.log('patient no-show', timer);
         stoppedTimerCall = timer;
         setRemainingCallTime(timer);
         if (timer < 1) {
