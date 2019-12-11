@@ -1661,7 +1661,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    //console.log('addMessages', message, message.timetoken);
+    console.log('addMessages', message);
     // console.log('startConsultjr', message.message.message);
 
     if (message.message.id !== patientId) {
