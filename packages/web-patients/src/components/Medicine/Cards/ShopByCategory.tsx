@@ -56,7 +56,6 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
   };
 
-  console.log(props.data);
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -67,7 +66,6 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>
                     <img
-                      // src={require("images/category/ic_personalcare.svg")}
                       src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${category.image_url}`}
                       alt=""
                     />
