@@ -1087,7 +1087,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
     return function cleanup() {
-      console.log('didmount clean up');
+      console.log('didmount clean up chatroom');
       pubnub.unsubscribe({ channels: [channel] });
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -1095,10 +1095,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
       minuteTimer && clearTimeout(minuteTimer);
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
-      callAbandonmentTimer && clearInterval(callAbandonmentTimer);
       timerId && clearInterval(timerId);
       intervalId && clearInterval(intervalId);
       stopJoinTimer();
+      stopCallAbondmentTimer();
       try {
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       } catch (error) {}
