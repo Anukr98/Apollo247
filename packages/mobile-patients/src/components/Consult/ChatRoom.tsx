@@ -146,9 +146,10 @@ let timerId: any;
 let joinTimerId: any;
 let diffInHours: number;
 let callAbandonmentTimer: any;
-let callAbandonmentStoppedTimer: number;
+let callAbandonmentStoppedTimer: number = 200;
 let messageSent: string;
 let rescheduleInitiatedBy: string;
+let callhandelBack: boolean = true;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -378,12 +379,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const backDataFunctionality = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    CommonLogEvent(AppRoutes.TabBar, 'Go back clicked');
-    props.navigation.replace(AppRoutes.TabBar);
-    return false;
+  const backDataFunctionality = () => {
+    try {
+      console.log(callhandelBack, 'is back called');
+      if (callhandelBack) {
+        props.navigation.replace(AppRoutes.TabBar);
+        return true;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log(error, 'error');
+    }
   };
+
   useEffect(() => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
@@ -408,12 +417,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('callType', callType);
     if (callType === 'VIDEO') {
       setOnSubscribe(true);
+      callhandelBack = false;
       setIsAudio(false);
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     } else if (callType === 'AUDIO') {
       setIsAudio(true);
       setOnSubscribe(true);
+      callhandelBack = false;
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     }
@@ -449,7 +460,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Height:\n' + data.height,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
@@ -462,7 +473,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Weight:\n' + data.weight,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[1] && sendAnswerMessage(text);
@@ -475,7 +486,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Medicine Allergy:\n' + data.drugAllergies,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[2] && sendAnswerMessage(text);
@@ -488,7 +499,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Food Allergy:\n' + data.dietAllergies,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[3] && sendAnswerMessage(text);
@@ -501,7 +512,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Temperature:\n' + data.temperature,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[4] && sendAnswerMessage(text);
@@ -514,7 +525,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Blood Pressure:\n' + data.bp,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[5] && sendAnswerMessage(text);
@@ -529,7 +540,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               message:
                 'Family members suffering suffer from — COPD, Cancer, Hypertension or Diabetes:\n' +
                 data.familyHistory,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[6] && sendAnswerMessage(text);
@@ -546,7 +557,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Smoke:\n' + (item.v[0] || 'No'),
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[7] && sendAnswerMessage(text);
@@ -563,7 +574,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const text = {
               id: patientId,
               message: 'Drink: \n' + (item.v[0] || 'No'),
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             };
             setMessageText('');
             !isSendAnswers[8] && sendAnswerMessage(text);
@@ -940,8 +951,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     streamPropertyChanged: (event: string) => {
       console.log('session streamPropertyChanged destroyed!', event);
-      eventsAfterConnectionDestroyed();
-      // disconnectCallText();
     },
     otrnError: (error: string) => {
       console.log(
@@ -1045,14 +1054,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
             if (diffInMins < 15) {
               if (response.totalOccupancy >= 2) {
-                // if (callAbundantCallTime < 180) {
-                //   console.log('calljoined');
-                //   APIForUpdateAppointmentData(true);
-                // }
-                // if (abondmentStarted == false) {
-                //   console.log('calljoined');
-                //   APIForUpdateAppointmentData(true);
-                // }
+                if (callAbandonmentStoppedTimer == 200) return;
+                if (callAbandonmentStoppedTimer < 200) {
+                  console.log('calljoined');
+                  APIForUpdateAppointmentData(true);
+                }
               } else {
                 if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
                   console.log('abondmentStarted -------> ', abondmentStarted);
@@ -1093,10 +1099,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       timerId && clearInterval(timerId);
       intervalId && clearInterval(intervalId);
       stopJoinTimer();
+      try {
+        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+      } catch (error) {}
     };
   }, []);
 
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(180);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
@@ -1145,7 +1154,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callAbandonmentStoppedTimer = timer;
         setCallAbundantCallTime(timer);
 
-        console.log('callAbandonmentStoppedTimer', timer);
+        console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
 
         if (timer < 1) {
           console.log('call Abundant', appointmentData);
@@ -1156,7 +1165,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             NextAvailableSlot(appointmentData, 'Transfer', true);
           }
-          setCallAbundantCallTime(180);
+          setCallAbundantCallTime(200);
+          callAbandonmentStoppedTimer = 200;
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
       }, 1000);
@@ -1168,7 +1178,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
     callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-    setCallAbundantCallTime(180);
+    setCallAbundantCallTime(200);
+    callAbandonmentStoppedTimer = 200;
     abondmentStarted = false;
   };
 
@@ -1183,14 +1194,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
         );
 
-        // if (toStopTimer) {
-        //   if (appointmentSeniorDoctorStarted) {
-        //     stopCallAbondmentTimer();
-        //     abondmentStarted = false;
-        //   }
-        // } else {
-        callAbondmentMethod(appointmentSeniorDoctorStarted);
-        // }
+        if (toStopTimer) {
+          if (appointmentSeniorDoctorStarted) {
+            stopCallAbondmentTimer();
+            abondmentStarted = false;
+          }
+        } else {
+          callAbondmentMethod(appointmentSeniorDoctorStarted);
+        }
       })
       .catch((e: string) => {
         abondmentStarted = false;
@@ -1347,7 +1358,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           automatedText: successSteps,
           id: doctorId,
           isTyping: true,
-          messageDate: currentDateTime,
+          messageDate: new Date(),
         },
         storeInHistory: true,
         sendByPost: true,
@@ -1422,7 +1433,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }’s team is with another patient right now. Your consultation prep will start soon.`,
               id: doctorId,
               isTyping: true,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             },
             storeInHistory: true,
             sendByPost: true,
@@ -1488,7 +1499,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
               id: doctorId,
               isTyping: true,
-              messageDate: currentDateTime,
+              messageDate: new Date(),
             },
             storeInHistory: true,
             sendByPost: true,
@@ -1541,6 +1552,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
         setOnSubscribe(true);
+        callhandelBack = false;
         stopCallAbondmentTimer();
         setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
@@ -1550,6 +1562,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // InCallManager.chooseAudioRoute('EARPIECE')
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
+        callhandelBack = false;
         setIsAudio(false);
         stopCallAbondmentTimer();
         setIsDoctorNoShow(false);
@@ -1584,6 +1597,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Video call ended'
       ) {
         setOnSubscribe(false);
+        callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
         InCallManager.stopRingtone();
@@ -1714,7 +1728,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const text = {
         id: patientId,
         message: textMessage,
-        messageDate: currentDateTime,
+        messageDate: new Date(),
       };
 
       setMessageText('');
@@ -4033,7 +4047,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Audio call ended',
                     duration: callTimerStarted,
                     id: patientId,
-                    messageDate: currentDateTime,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -4047,7 +4061,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
-                    messageDate: currentDateTime,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -4079,6 +4093,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             changeVideoStyles();
+            setHideStatusBar(true);
           }}
         >
           <FullScreenIcon style={{ width: 40, height: 40 }} />
@@ -4100,7 +4115,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   message: 'Video call ended',
                   duration: callTimerStarted,
                   id: patientId,
-                  messageDate: currentDateTime,
+                  messageDate: new Date(),
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -4114,7 +4129,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   isTyping: true,
                   message: endCallMsg,
                   id: patientId,
-                  messageDate: currentDateTime,
+                  messageDate: new Date(),
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -4219,6 +4234,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
             setPipView(true);
             setChatReceived(false);
+            setHideStatusBar(false);
           }}
         >
           {chatReceived ? (
@@ -4304,7 +4320,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Video call ended',
                     duration: callTimerStarted,
                     id: patientId,
-                    messageDate: currentDateTime,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -4318,7 +4334,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
-                    messageDate: currentDateTime,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -4472,7 +4488,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message: {
           isTyping: true,
           message: acceptedCallMsg,
-          messageDate: currentDateTime,
+          messageDate: new Date(),
         },
         channel: channel,
         storeInHistory: false,
@@ -4494,7 +4510,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           message: isAudio ? 'Audio call ended' : 'Video call ended',
           duration: callTimerStarted,
           id: patientId,
-          messageDate: currentDateTime,
+          messageDate: new Date(),
         },
         channel: channel,
         storeInHistory: true,
@@ -4508,7 +4524,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isTyping: true,
           message: endCallMsg,
           id: patientId,
-          messageDate: currentDateTime,
+          messageDate: new Date(),
         },
         channel: channel,
         storeInHistory: true,
@@ -4582,7 +4598,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: imageconsult,
                     fileType: 'image',
                     url: uploadUrlscheck![0],
-                    messageDate: currentDateTime,
+                    messageDate: new Date(),
                   };
 
                   pubnub.publish(
@@ -4809,7 +4825,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         message: imageconsult,
                         fileType: 'image',
                         url: item,
-                        messageDate: currentDateTime,
+                        messageDate: new Date(),
                       };
 
                       pubnub.publish(

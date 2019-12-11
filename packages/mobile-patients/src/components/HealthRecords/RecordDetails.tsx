@@ -493,7 +493,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         </SafeAreaView>
         {showPopUp && (
           <BottomPopUp
-            title={`Hi ,${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}`}
+            title={`Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`}
             description={'You do not have any images'}
           >
             <View style={{ height: 60, alignItems: 'flex-end' }}>
