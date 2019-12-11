@@ -107,6 +107,7 @@ const getCurrentPatients: Resolver<
     headers: { Host: prismHost },
     timeOut: ApiConstants.PRISM_TIMEOUT,
   };
+
   const prismAuthToken = await fetch(
     `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`,
     prismHeaders
