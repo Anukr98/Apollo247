@@ -8,6 +8,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
   CommonLogEvent,
+  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -224,10 +225,14 @@ export const Login: React.FC<LoginProps> = (props) => {
               phoneNumber: phoneNumber,
             });
           } else {
+            CommonSetUserBugsnag(phoneNumber);
+
             sendOtp(phoneNumber)
               .then((confirmResult) => {
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
                 console.log('confirmResult login', confirmResult);
+                AsyncStorage.setItem('phoneNumber', phoneNumber);
+
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
                   phoneNumber: phoneNumber,
