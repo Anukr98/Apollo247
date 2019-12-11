@@ -238,6 +238,15 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '-20%',
       top: 250,
     },
+    fadedBg: {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      opacity: 0,
+      zIndex: 999,
+    },
     audioVideoContainer: {
       maxWidth: 1064,
       margin: 'auto',
@@ -663,6 +672,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
+      console.log('call Abandonment', timer);
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -705,6 +715,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
       if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
+        console.log('patient no-show', timer);
         stoppedTimerCall = timer;
         setRemainingCallTime(timer);
         if (timer < 1) {
@@ -719,9 +730,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
-
   const noShowAction = (status: STATUS) => {
-    if (window.location.pathname.indexOf('Consulttabs')) {
+    if (window.location.pathname.indexOf('consulttabs') > -1) {
       client
         .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
           mutation: END_APPOINTMENT_SESSION,
@@ -1605,7 +1615,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     </svg>
                     End Consult
                   </Button>
-                  {props.saving && <CircularProgress className={classes.loading} />}
+                  {props.saving && (
+                    <span>
+                      <CircularProgress className={classes.loading} />
+                      <div className={classes.fadedBg}></div>
+                    </span>
+                  )}
                 </span>
               ) : (
                 <Button

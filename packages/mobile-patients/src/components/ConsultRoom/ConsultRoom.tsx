@@ -241,14 +241,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     }
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    getNetStatus().then((item) => {
-      console.log(item, 'getNetStatus');
-    });
     callDeviceTokenAPI();
-  });
+  }, []);
 
   useEffect(() => {
     try {
@@ -283,8 +277,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .messaging()
       .getToken()
       .then((token) => {
-        console.log('token', token);
-        console.log('DeviceInfo', DeviceInfo);
+        // console.log('token', token);
+        // console.log('DeviceInfo', DeviceInfo);
         if (token !== deviceToken2.deviceToken) {
           const input = {
             deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,

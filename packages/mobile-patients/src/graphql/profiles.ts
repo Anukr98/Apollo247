@@ -1573,6 +1573,7 @@ export const GET_APPOINTMENT_DATA = gql`
         isFollowUp
         displayId
         rescheduleCount
+        appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
         doctorInfo {
@@ -1590,7 +1591,18 @@ export const GET_APPOINTMENT_DATA = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
+          doctorHospital {
+            facility {
+              id
+              name
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+            }
+          }
         }
       }
     }
