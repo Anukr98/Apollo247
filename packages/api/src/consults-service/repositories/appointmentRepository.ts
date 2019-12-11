@@ -795,7 +795,8 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
-    this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
+    //this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
+    this.update(id, { appointmentState, isSeniorConsultStarted: false });
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
