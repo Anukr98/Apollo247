@@ -112,14 +112,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+  const { currentPatient } = useAllCurrentPatients();
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
+    currentPatient!
+  );
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [ordersFetched, setOrdersFetched] = useState<
     (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
   >([]);
 
-  const { showAphAlert } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients();
+  const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
   const max_time_to_use_local_medicine_data = 60; // in minutes
   type LocalMedicineData = {
@@ -128,17 +130,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    setProfile(currentPatient!);
-    ordersRefetch().then(({ data }) => {
-      const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
-        (item) =>
-          !(
-            (item!.medicineOrdersStatus || []).length == 1 &&
-            (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-          )
-      );
-      ordersData.length > 0 && setOrdersFetched(ordersData);
-    });
+    if (profile !== currentPatient) {
+      globalLoading!(true);
+      setProfile(currentPatient!);
+      ordersRefetch().then(({ data }) => {
+        const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+          (item) =>
+            !(
+              (item!.medicineOrdersStatus || []).length == 1 &&
+              (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+            )
+        );
+        globalLoading!(false);
+        setOrdersFetched(ordersData);
+      });
+    }
   }, [currentPatient]);
 
   useEffect(() => {
@@ -455,22 +461,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     console.log('rendereef', ordersFetched);
 
     return (
-      (ordersFetched.length > 0 && (
-        <ListCard
-          onPress={() =>
-            props.navigation.navigate(AppRoutes.YourOrdersScene, {
-              orders: ordersFetched,
-              refetch: ordersRefetch,
-              error: ordersError,
-              loading: ordersLoading,
-            })
-          }
-          container={{ marginBottom: 24 }}
-          title={'Your Orders'}
-          leftIcon={<MedicineIcon />}
-        />
-      )) ||
-      null
+      // (ordersFetched.length > 0 && (
+      <ListCard
+        onPress={() => {
+          globalLoading!(true);
+          props.navigation.navigate(AppRoutes.YourOrdersScene, {
+            orders: ordersFetched,
+            refetch: ordersRefetch,
+            error: ordersError,
+            loading: ordersLoading,
+          });
+        }}
+        container={{ marginBottom: 24 }}
+        title={'Your Orders'}
+        leftIcon={<MedicineIcon />}
+      />
+      // )) ||
+      // null
     );
   };
 
@@ -1272,7 +1279,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 </View>
               }
-              selectedProfile={profile}
+              // selectedProfile={profile}
               setDisplayAddProfile={() => {}}
             ></ProfileList>
           </View>

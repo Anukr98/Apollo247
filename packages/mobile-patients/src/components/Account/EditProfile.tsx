@@ -318,11 +318,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       setLastName(profileData.lastName || '');
       setDate(new Date(profileData.dateOfBirth!));
       setGender(profileData!.gender!);
-      relationArray.map((relation) => {
-        if (relation.key === profileData.relation) {
-          setRelation(relation);
-        }
-      });
+      setRelation(relationArray.find((relation) => relation.key === profileData.relation));
       setEmail(profileData.emailAddress || '');
       setPhotoUrl(profileData.photoUrl || '');
     }
@@ -524,7 +520,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         }}
         onResponse={(type, response) => {
           console.log('profile data', type, response);
-          response.map((item) =>
+          response.forEach((item) =>
             client
               .mutate<uploadFile, uploadFileVariables>({
                 mutation: UPLOAD_FILE,

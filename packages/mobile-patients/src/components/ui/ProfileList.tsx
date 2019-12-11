@@ -116,7 +116,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         storeVallue &&
           ((currentPatient && currentPatient!.id !== storeVallue) ||
             currentPatient === null ||
-            (shopCart.addresses!.length === 0 || diagCart.addresses!.length === 0)) &&
+            shopCart.addresses!.length === 0 ||
+            diagCart.addresses!.length === 0) &&
           setAddressList(storeVallue);
       } else if (currentPatient) {
         AsyncStorage.setItem('selectUserId', currentPatient!.id);
@@ -155,14 +156,20 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           variables: { patientId: key },
           fetchPolicy: 'no-cache',
         })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          console.log(addressList, 'addresslidt');
+        .then(
+          ({
+            data: {
+              getPatientAddressList: { addressList },
+            },
+          }) => {
+            console.log(addressList, 'addresslidt');
 
-          shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
-          diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
-          shopCart.setAddresses && shopCart.setAddresses(addressList!);
-          diagCart.setAddresses && diagCart.setAddresses(addressList!);
-        })
+            shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
+            diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
+            shopCart.setAddresses && shopCart.setAddresses(addressList!);
+            diagCart.setAddresses && diagCart.setAddresses(addressList!);
+          }
+        )
         .catch((e) => {})
         .finally(() => {
           unsetloaderDisplay ? null : setLoading && setLoading(false);
@@ -203,6 +210,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         dateOfBirth: addString,
         emailAddress: addString,
         photoUrl: addString,
+        patientMedicalHistory: null,
       });
     }
     return pArray;
@@ -250,12 +258,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             });
             setDisplayAddProfile(true);
           } else {
-            profileArray &&
-              profileArray!.map((i) => {
-                if (selectedUser.key === i.id) {
-                  setProfile(i);
-                }
-              });
+            profileArray && setProfile(profileArray!.find((i) => selectedUser.key === i.id));
           }
           saveUserChange &&
             selectedUser.key !== addString &&
