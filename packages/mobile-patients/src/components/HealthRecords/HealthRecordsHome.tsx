@@ -544,39 +544,41 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const renderEmptyConsult = () => {
-    return (
-      <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
-        {renderFilter()}
-        <View
-          style={{
-            marginTop: 38,
-            height: 60,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <NoData />
+    if (!loading) {
+      return (
+        <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
+          {renderFilter()}
+          <View
+            style={{
+              marginTop: 38,
+              height: 60,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <NoData />
+          </View>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#02475b',
+              marginBottom: 25,
+              alignItems: 'center',
+              textAlign: 'center',
+            }}
+          >
+            You don’t have any records with us right now. {'\n'}Add a record to keep everything
+            handy in one place!
+          </Text>
+          <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
+            <Button
+              title="ADD RECORD"
+              onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+            />
+          </View>
         </View>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(12),
-            color: '#02475b',
-            marginBottom: 25,
-            alignItems: 'center',
-            textAlign: 'center',
-          }}
-        >
-          You don’t have any records with us right now. {'\n'}Add a record to keep everything handy
-          in one place!
-        </Text>
-        <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
-          <Button
-            title="ADD RECORD"
-            onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
-          />
-        </View>
-      </View>
-    );
+      );
+    }
   };
 
   const renderConsults = () => {
