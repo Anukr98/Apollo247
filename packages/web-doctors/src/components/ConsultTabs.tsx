@@ -427,8 +427,8 @@ export const ConsultTabs: React.FC = () => {
   };
   useEffect(() => {
     if (startAppointment) {
-      followUp[0] = startAppointment;
-      setFollowUp(followUp);
+      //followUp[0] = startAppointment;
+      //setFollowUp(followUp);
     }
   }, [startAppointment]);
   const pubnub = new Pubnub(config);
@@ -498,6 +498,7 @@ export const ConsultTabs: React.FC = () => {
           newmessage.push(element.entry);
         });
         insertText = newmessage;
+        console.log(newmessage);
         //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
         //}

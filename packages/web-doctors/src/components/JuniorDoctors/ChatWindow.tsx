@@ -327,6 +327,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: -7,
       marginBottom: -5,
       paddingTop: 5,
+      color: '#02475b',
     },
   };
 });

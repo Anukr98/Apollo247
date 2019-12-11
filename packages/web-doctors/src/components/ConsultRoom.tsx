@@ -303,7 +303,7 @@ const useStyles = makeStyles((theme: Theme) => {
     timeStamp: {
       fontSize: 10,
       fontWeight: 500,
-      textAlign: 'right',
+      textAlign: 'left',
       marginRight: -7,
       marginBottom: -5,
       paddingTop: 5,
