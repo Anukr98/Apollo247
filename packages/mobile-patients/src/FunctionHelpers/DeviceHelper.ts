@@ -51,7 +51,6 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
 };
 
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
-  // if (isReleaseOn) {
   try {
     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
     bugsnag.notify(errorValue, function(report) {
@@ -69,15 +68,12 @@ export const CommonBugFender = async (stringName: string, errorValue: Error) => 
   } catch (error) {
     aphConsole.log('CommonBugFender error', error);
   }
-  // }
 };
 
 export const CommonSetUserBugsnag = async (phoneNumber: string) => {
-  // if (isReleaseOn) {
   try {
     bugsnag.setUser(phoneNumber, phoneNumber);
   } catch (error) {
-    aphConsole.log('CommonBugFender error', error);
+    aphConsole.log('CommonSetUserBugsnag error', error);
   }
-  // }
 };
