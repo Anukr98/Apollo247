@@ -701,24 +701,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       Alert.alert('No Image');
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
-                      if (Platform.OS === 'ios') {
-                        try {
-                          CommonLogEvent('CONSULT_DETAILS', 'Link to open URL');
-                          Linking.openURL(
-                            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
-                              props.navigation.state.params!.BlobName
-                            )
-                          ).catch(
-                            (err) => (
-                              CommonLogEvent(
-                                'CONSULT_DETAILS',
-                                'Error occured while opening the URL link'
-                              ),
-                              console.error('An error occurred', err)
-                            )
-                          );
-                        } catch {}
-                      }
                       let dirs = RNFetchBlob.fs.dirs;
 
                       console.log('blollb', props.navigation.state.params!.BlobName);

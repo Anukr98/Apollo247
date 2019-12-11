@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { PrescriptionFormat } from 'components/Cart/Cart';
+import { PrescriptionFormat } from 'components/Cart/MedicineCart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

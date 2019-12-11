@@ -146,13 +146,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     if (item.blobName == null) {
       Alert.alert('No Image');
     } else {
-      if (Platform.OS === 'ios') {
-        try {
-          Linking.openURL(
-            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)
-          ).catch((err) => console.error('An error occurred', err));
-        } catch {}
-      }
       let dirs = RNFetchBlob.fs.dirs;
 
       let fileName: string = item.blobName.substring(0, item.blobName.indexOf('.pdf')) + '.pdf';

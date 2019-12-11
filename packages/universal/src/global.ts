@@ -52,8 +52,8 @@ declare namespace NodeJS {
     PROFILES_DB_USER: string;
     PROFILES_DB_PASSWORD: string;
 
-    GOOGLE_LOCATION_SERVICE_KEY: string;
     PLACE_API_KEY: string;
+    GOOGLE_API_KEY: string;
 
     PHARMACY_MED_SEARCH_URL: string;
     PHARMACY_MED_PRODUCT_INFO_URL: string;

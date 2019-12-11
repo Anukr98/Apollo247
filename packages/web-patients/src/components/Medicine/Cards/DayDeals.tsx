@@ -97,10 +97,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
                   </div>
                   <div className={classes.cardIcon}>
                     <img
-                      // src={require("images/category/img_offers.png")}
                       src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${deal.image_url}`}
-                      width="100"
-                      height="50"
                       alt=""
                     />
                   </div>
@@ -109,91 +106,6 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
               </Link>
             </div>
           ))}
-        {/* <div className={classes.card}>
-          <Link
-            className={classes.cardLink}
-            to={clientRoutes.medicineSearchByBrand()}
-          >
-            <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>
-                Baby
-                <br /> Care Products
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require("images/category/img_offers.png")} alt="" />
-              </div>
-            </div>
-            <div className={classes.offerDetails}>Upto 20% Off</div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link
-            className={classes.cardLink}
-            to={clientRoutes.medicineSearchByBrand()}
-          >
-            <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>
-                Home
-                <br /> Testing Kits
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require("images/category/img_offers.png")} alt="" />
-              </div>
-            </div>
-            <div className={classes.offerDetails}>Upto 25% Off</div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link
-            className={classes.cardLink}
-            to={clientRoutes.medicineSearchByBrand()}
-          >
-            <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>
-                Personal
-                <br /> Care Products
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require("images/category/img_offers.png")} alt="" />
-              </div>
-            </div>
-            <div className={classes.offerDetails}>Upto 50% Off</div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link
-            className={classes.cardLink}
-            to={clientRoutes.medicineSearchByBrand()}
-          >
-            <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>
-                Baby
-                <br /> Care Products
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require("images/category/img_offers.png")} alt="" />
-              </div>
-            </div>
-            <div className={classes.offerDetails}>Upto 50% Off</div>
-          </Link>
-        </div>
-        <div className={classes.card}>
-          <Link
-            className={classes.cardLink}
-            to={clientRoutes.medicineSearchByBrand()}
-          >
-            <div className={classes.cardWrap}>
-              <div className={classes.cardTitle}>
-                Home
-                <br /> Testing Kits
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require("images/category/img_offers.png")} alt="" />
-              </div>
-            </div>
-            <div className={classes.offerDetails}>Upto 30% Off</div>
-          </Link>
-        </div> */}
       </Slider>
     </div>
   );

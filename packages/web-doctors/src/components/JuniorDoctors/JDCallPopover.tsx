@@ -137,6 +137,15 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '50%',
       zIndex: 9999,
     },
+    fadedBg: {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      opacity: 0,
+      zIndex: 999,
+    },
     ResheduleCosultButton: {
       fontSize: 14,
       fontWeight: 600,
@@ -1156,9 +1165,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         patientDetails!.firstName +
         ' ' +
         patientDetails!.lastName +
-        ', I have everything I need. I will share these details with ' +
+        '! ' +
         props.assignedDoctorDisplayName +
-        ', who will be here with you soon.',
+        ', will be with you at your booked consultation time.',
       messageDate: new Date(),
     };
     unSubscribeBrowserButtonsListener();
@@ -1335,7 +1344,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Submit Case Sheet
               </AphButton>
-              {props.saving && <CircularProgress className={classes.loading} />} }
+              {props.saving && (
+                <div>
+                  <CircularProgress className={classes.loading} />{' '}
+                  <div className={classes.fadedBg}></div>
+                </div>
+              )}
             </span>
           ) : (
             <AphButton
