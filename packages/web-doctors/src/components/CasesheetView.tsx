@@ -290,7 +290,7 @@ export const CasesheetView: React.FC = (props) => {
             : 'times';
         const dosageCount =
           prescription!.medicineTimings!.length > 0 && prescription!.medicineDosage
-            ? parseInt(prescription!.medicineDosage) * prescription!.medicineTimings!.length
+            ? parseFloat(prescription!.medicineDosage) * prescription!.medicineTimings!.length
             : prescription!.medicineDosage;
         const duration = `for ${Number(prescription.medicineConsumptionDurationInDays)} days`;
         return (
@@ -418,7 +418,7 @@ export const CasesheetView: React.FC = (props) => {
               </div>
             ) : null}
           </div>
-          {symptoms && symptoms.length > 0 ? (
+          {!loader && symptoms && symptoms.length > 0 ? (
             <>
               <div className={classes.sectionHeader}>Chief Complaints</div>
               <div className={classes.chiefComplaints}>
@@ -433,7 +433,7 @@ export const CasesheetView: React.FC = (props) => {
               </div>
             </>
           ) : null}
-          {diagnosis && diagnosis.length > 0 ? (
+          {!loader && diagnosis && diagnosis.length > 0 ? (
             <>
               <div className={classes.sectionHeader}>Diagnosis</div>
               <div className={classes.diagnosis}>
