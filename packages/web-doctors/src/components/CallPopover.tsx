@@ -731,7 +731,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }, 1000);
   };
   const noShowAction = (status: STATUS) => {
-    if (window.location.pathname.indexOf('consulttabs') > -1) {
+    console.log(
+      window.location.pathname.indexOf('Consulttabs') ||
+        window.location.pathname.indexOf('consulttabs'),
+      'pagename'
+    );
+    if (
+      window.location.pathname.indexOf('Consulttabs') ||
+      window.location.pathname.indexOf('consulttabs')
+    ) {
+      console.log('noShowAction', 'call');
       client
         .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
           mutation: END_APPOINTMENT_SESSION,
