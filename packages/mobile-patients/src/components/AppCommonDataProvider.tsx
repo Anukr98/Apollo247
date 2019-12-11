@@ -45,7 +45,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
     AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
-      console.log('Failed to save location in local storage.');
+      // console.log('Failed to save location in local storage.');
     });
   };
 
@@ -80,7 +80,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         const location = locationFromStorage[0][1];
         _setLocationDetails(JSON.parse(location || 'null'));
       } catch (error) {
-        console.log('Failed to get cart items from local storage.');
+        // console.log('Failed to get cart items from local storage.');
       }
     };
     updateCartItemsFromStorage();
