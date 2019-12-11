@@ -150,8 +150,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
     if (!!props.selectedTimeSlot && timeArray) {
       timeArray &&
         timeArray.length > 0 &&
-        timeArray.map((value) => {
-          value.time.map((name: string) => {
+        timeArray.forEach((value) => {
+          value.time.forEach((name: string) => {
             console.log(name, props.selectedTimeSlot);
 
             if (name === props.selectedTimeSlot) {
@@ -161,11 +161,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         });
     } else if (!!props.selectedTimeSlot && dropArray) {
       if (dropArray.length > 0) {
-        dropArray.map((value) => {
-          if (value.time === props.selectedTimeSlot) {
-            setSelectedDrop(value);
-          }
-        });
+        setSelectedDrop(dropArray.find((value) => value.time === props.selectedTimeSlot));
       } else {
         getDropArrayData(date, props.selectedTimeSlot);
       }
@@ -209,11 +205,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         setDropArray(t);
         props.setDropArray && props.setDropArray(t);
         if (selectedTime) {
-          t.map((value) => {
-            if (value.time === selectedTime) {
-              setSelectedDrop(value);
-            }
-          });
+          setSelectedDrop(t.find((value) => value.time === selectedTime));
         } else {
           setSelectedDrop(t[0]);
         }

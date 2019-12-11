@@ -23,9 +23,10 @@ import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_LIST } from '../graphql/profiles';
+import { useUIElements } from './UIElementsProvider';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -48,6 +49,7 @@ export interface YourOrdersSceneProps extends NavigationScreenProps {
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
+  const { loading, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const isTest = props.navigation.getParam('isTest');
   const ordersFetched = props.navigation.getParam('orders');
@@ -61,8 +63,25 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       fetchPolicy: 'cache-first',
     }).refetch;
   const error = props.navigation.getParam('error');
-  const loading = props.navigation.getParam('loading');
+  // const loading = props.navigation.getParam('loading');
   const [isChanged, setisChanged] = useState<boolean>(false);
+  useEffect(() => {
+    setLoading!(true);
+    refetch &&
+      refetch().then(({ data }) => {
+        const _orders = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || []).filter(
+          (item) =>
+            !(
+              (item!.medicineOrdersStatus || []).length == 1 &&
+              (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+            )
+        );
+        setLoading!(false);
+        setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
+        setisChanged(!isChanged);
+      });
+  }, []);
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -79,15 +98,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     );
     setOrders(filteredOrders);
   }, [isChanged]);
-
-  useEffect(() => {
-    refetch &&
-      refetch().then(({ data }) => {
-        const _orders = g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || [];
-        setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
-        setisChanged(!isChanged);
-      });
-  }, []);
 
   // let { data, error, loading, refetch } = useQuery<
   //   GetMedicineOrdersList,
@@ -167,37 +177,50 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     return moment(time).format('D MMM YY, hh:mm a');
   };
 
+  const renderOrder = (
+    order: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
+    index: number
+  ) => {
+    return (
+      <OrderCard
+        isTest={isTest}
+        style={[
+          { marginHorizontal: 20 },
+          index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
+          index == 0 ? { marginTop: 20 } : {},
+        ]}
+        key={`${order!.orderAutoId}`}
+        orderId={`#${order!.orderAutoId}`}
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+            orderAutoId: order!.orderAutoId,
+            orderDetails: order!.medicineOrdersStatus,
+            setOrders: (
+              orders: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
+            ) => {
+              setOrders(orders);
+              setisChanged(!isChanged);
+            },
+            refetch: refetch,
+          });
+        }}
+        title={'Medicines'}
+        description={getDeliverType(order!.deliveryType)}
+        statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
+        status={getStatusType(g(order, 'medicineOrdersStatus')!)!}
+        dateTime={getFormattedTime(g(order!.medicineOrdersStatus![0]!, 'statusDate'))}
+      />
+    );
+  };
+
   const renderOrders = () => {
     return (
-      <View style={{ margin: 20 }}>
-        {orders.map((order, index, array) => {
-          return (
-            <OrderCard
-              isTest={isTest}
-              style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-              key={`${order!.orderAutoId}`}
-              orderId={`#${order!.orderAutoId}`}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-                  orderAutoId: order!.orderAutoId,
-                  orderDetails: order!.medicineOrdersStatus,
-                  setOrders: (
-                    orders: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
-                  ) => {
-                    setOrders(orders);
-                    setisChanged(!isChanged);
-                  },
-                  refetch: refetch,
-                });
-              }}
-              title={'Medicines'}
-              description={getDeliverType(order!.deliveryType)}
-              statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
-              status={getStatusType(g(order, 'medicineOrdersStatus')!)!}
-              dateTime={getFormattedTime(g(order!.medicineOrdersStatus![0]!, 'statusDate'))}
-            />
-          );
-        })}
+      <View>
+        <FlatList
+          bounces={false}
+          data={orders}
+          renderItem={({ item, index }) => renderOrder(item, index)}
+        />
       </View>
     );
   };
@@ -260,7 +283,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           {renderError()}
         </ScrollView>
       </SafeAreaView>
-      {loading && <Spinner />}
     </View>
   );
 };

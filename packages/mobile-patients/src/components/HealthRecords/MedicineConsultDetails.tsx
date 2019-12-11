@@ -6,6 +6,7 @@ import {
   MedicineRxIcon,
   PrescriptionThumbnail,
   ShareGreen,
+  MedicalIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -15,7 +16,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Image,
   Platform,
   Alert,
   Linking,
@@ -43,6 +43,7 @@ import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { useUIElements } from '../UIElementsProvider';
 import { RenderPdf } from '../ui/RenderPdf';
 import { mimeType } from '../../helpers/mimeType';
+import { Image } from 'react-native-elements';
 
 const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -415,6 +416,13 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
               return (
                 <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
                   <Image
+                    placeholderStyle={{
+                      height: 425,
+                      width: '100%',
+                      alignItems: 'center',
+                      backgroundColor: 'transparent',
+                    }}
+                    PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                     source={{ uri: item }}
                     style={{
                       width: '100%',

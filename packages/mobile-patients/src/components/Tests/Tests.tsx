@@ -146,7 +146,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
+    currentPatient!
+  );
+
   const [ordersFetched, setOrdersFetched] = useState<
     (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
   >([]);
@@ -176,11 +179,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
-    if (currentPatient) {
-      setProfile(currentPatient);
+    if (profile !== currentPatient) {
+      setLoadingContext!(true);
+      setProfile(currentPatient!);
       ordersRefetch().then((data: any) => {
         const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        orderData.length > 0 && setOrdersFetched(orderData);
+        setOrdersFetched(orderData);
+        setLoadingContext!(false);
       });
     }
   }, [currentPatient]);
@@ -608,7 +613,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
               StackActions.reset({
                 index: 0,
                 key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.ConsultRoom,
+                  }),
+                ],
               })
             );
           }}
@@ -634,27 +643,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderYourOrders = () => {
-    if (ordersLoading) return renderSectionLoader(70);
+    // if (ordersLoading) return renderSectionLoader(70);
     return (
-      (!ordersLoading && ordersFetched.length > 0 && (
-        <ListCard
-          onPress={() =>
-            props.navigation.navigate(AppRoutes.YourOrdersTest, {
-              orders: ordersFetched,
-              isTest: true,
-              refetch: ordersRefetch,
-              error: ordersError,
-              loading: ordersLoading,
-            })
-          }
-          container={{
-            marginBottom: 24,
-            marginTop: 20,
-          }}
-          title={'Your Orders'}
-          leftIcon={<TestsIcon />}
-        />
-      )) || <View style={{ height: 24 }} />
+      // (!ordersLoading && ordersFetched.length > 0 && (
+      <ListCard
+        onPress={() => {
+          setLoadingContext!(true);
+          props.navigation.navigate(AppRoutes.YourOrdersTest, {
+            orders: ordersFetched,
+            isTest: true,
+            refetch: ordersRefetch,
+            error: ordersError,
+            loading: ordersLoading,
+          });
+        }}
+        container={{
+          marginBottom: 24,
+          marginTop: 20,
+        }}
+        title={'Your Orders'}
+        leftIcon={<TestsIcon />}
+      />
+      // )) || <View style={{ height: 24 }} />
     );
   };
 
@@ -1485,7 +1495,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             marginHorizontal: 19.5,
           }}
         />
-        <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+          }}
+        >
           <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
             Most trusted diagnostics from the comfort of your home!
           </Text>
