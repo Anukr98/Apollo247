@@ -24,7 +24,7 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
   }
 
   deleteDeviceToken(deviceToken: string) {
-    return this.delete(deviceToken);
+    return this.delete({ deviceToken });
   }
 
   getTokensByMobileNumber(mobileNumber: string) {
