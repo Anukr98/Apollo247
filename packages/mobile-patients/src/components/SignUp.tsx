@@ -147,14 +147,14 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   };
 
   const _setFirstName = (value: string) => {
-    if (isSatisfyingNameRegex(value)) {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
       setFirstName(value);
     } else {
       return false;
     }
   };
   const _setlastName = (value: string) => {
-    if (isSatisfyingNameRegex(value)) {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
       setLastName(value);
     } else {
       return false;
@@ -322,9 +322,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   onPress={async () => {
                     CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
                     let validationMessage = '';
-                    if (!firstName) {
+                    if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
                       validationMessage = 'Enter valid first name';
-                    } else if (!lastName) {
+                    } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
                       validationMessage = 'Enter valid last name';
                     } else if (!date) {
                       validationMessage = 'Enter valid date of birth';
