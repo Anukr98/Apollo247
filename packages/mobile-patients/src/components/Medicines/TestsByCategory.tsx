@@ -115,7 +115,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       mutation: SAVE_SEARCH,
       variables: {
         saveSearchInput: {
-          type: SEARCH_TYPE.MEDICINE,
+          type: SEARCH_TYPE.TEST,
           typeId: sku,
           typeName: name,
           patient: currentPatient && currentPatient.id ? currentPatient.id : '',
@@ -402,9 +402,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');
-          // savePastSeacrh(`${medicine.itemId}`, medicine.itemName).catch((e) => {
-          //   // handleGraphQlError(e);
-          // });
+          savePastSeacrh(`${medicine.itemId}`, medicine.itemName).catch((e) => {
+            // handleGraphQlError(e);
+          });
           props.navigation.navigate(AppRoutes.TestDetails, {
             title: medicine.itemName,
             testDetails: {

@@ -18,6 +18,7 @@ export interface getAppointmentHistory_getAppointmentHistory_appointmentsHistory
   hospitalId: string | null;
   status: STATUS;
   bookingDate: any | null;
+  isSeniorConsultStarted: boolean | null;
 }
 
 export interface getAppointmentHistory_getAppointmentHistory {

@@ -66,7 +66,10 @@ function renderSuggestion(
         {parts.map((part) => (
           <span
             key={part.text}
-            style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+            style={{
+              fontWeight: part.highlight ? 500 : 400,
+              whiteSpace: 'pre',
+            }}
           >
             {part.text}
           </span>
@@ -453,7 +456,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(0);
+  const [tabletsCount, setTabletsCount] = React.useState<number>(0.5);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -521,7 +524,6 @@ export const MedicinePrescription: React.FC = () => {
         {
           headers: {
             Authorization: apiDetails.authToken,
-            Accept: '*/*',
           },
           cancelToken: new CancelToken(function executor(c) {
             // An executor function receives a cancel function as a parameter
@@ -757,7 +759,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -765,15 +767,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } /* else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    }*/ else if (
+    } else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
@@ -785,17 +779,23 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    }
-    //  else if (daySlotsSelected.length === 0) {
-    //   setErrorState({
-    //     ...errorState,
-    //     daySlotErr: true,
-    //     tobeTakenErr: false,
-    //     durationErr: false,
-    //     dosageErr: false,
-    //   });
-    // }
-    else {
+    } else if (isTobeTakenSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: true,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
+    } else if (daySlotsSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
+    } else {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1044,12 +1044,13 @@ export const MedicinePrescription: React.FC = () => {
                           onChange={(event: any) => {
                             setTabletsCount(event.target.value);
                           }}
+                          error={errorState.dosageErr}
                         />
                         {errorState.dosageErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
-                            error={errorState.durationErr}
+                            error={errorState.dosageErr}
                           >
                             Please Enter Dosage(Number only)
                           </FormHelperText>
@@ -1125,7 +1126,7 @@ export const MedicinePrescription: React.FC = () => {
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>To be taken</h6>
                         <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                        {/* {errorState.tobeTakenErr && (
+                        {errorState.tobeTakenErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
@@ -1133,12 +1134,12 @@ export const MedicinePrescription: React.FC = () => {
                           >
                             Please select to be taken.
                           </FormHelperText>
-                        )} */}
+                        )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
                         <h6>Time of the Day</h6>
                         <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                        {/* {errorState.daySlotErr && (
+                        {errorState.daySlotErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
@@ -1146,7 +1147,7 @@ export const MedicinePrescription: React.FC = () => {
                           >
                             Please select time of the day.
                           </FormHelperText>
-                        )} */}
+                        )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
                         <h6>Instructions (if any)</h6>

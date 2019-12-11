@@ -38,4 +38,12 @@ export class DoctorHospitalRepository extends Repository<DoctorAndHospital> {
       });
     });
   }
+
+  findById(id: string) {
+    return this.findOne({ where: { id } }).catch((getFacilityError) => {
+      throw new AphError(AphErrorMessages.GET_FACILITIES_ERROR, undefined, {
+        getFacilityError,
+      });
+    });
+  }
 }

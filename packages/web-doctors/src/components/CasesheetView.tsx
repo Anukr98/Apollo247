@@ -1,13 +1,23 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
 import { MEDICINE_TO_BE_TAKEN } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
-import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from 'graphql/types/GetCaseSheet';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_CASESHEET } from 'graphql/profiles';
+
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+} from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -165,22 +175,32 @@ export const CasesheetView: React.FC = (props) => {
     temperature,
     appointmentInfo,
     consultType,
-    symptoms,
-    diagnosis,
-    medicinePrescription,
-    diagnosticPrescription,
     createdDoctorProfile,
     followUp,
-    otherInstructions,
     followUpAfterInDays,
     followUpDate,
     followUpConsultType,
   } = useContext(CaseSheetContext);
 
+  const [loader, setLoader] = useState<boolean>(true);
   let doctorFacilityDetails = null;
   if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
     doctorFacilityDetails = createdDoctorProfile.doctorHospital[0].facility;
   }
+  const [symptoms, setSymptoms] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
+  >(null);
+  const [diagnosis, setDiagnosis] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
+  >(null);
+  const [otherInstructions, setOtherInstructions] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
+  >(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
+  const [medicinePrescription, setMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
+  const client = useApolloClient();
 
   const getAge = (date: string) => {
     if (date) {
@@ -189,6 +209,40 @@ export const CasesheetView: React.FC = (props) => {
       ).toString();
     }
   };
+
+  useEffect(() => {
+    client
+      .query<GetCaseSheet>({
+        query: GET_CASESHEET,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: appointmentInfo && appointmentInfo.id },
+      })
+      .then((_data) => {
+        _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
+          ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+              .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+          : setDiagnosis([]);
+        _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
+          ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
+              .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
+          : setSymptoms([]);
+        _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
+          ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+              .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
+          : setOtherInstructions([]);
+        _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
+          ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+              .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
+          : setDiagnosticPrescription([]);
+        _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
+          ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+              .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+          : setMedicinePrescription([]);
+      })
+      .finally(() => {
+        setLoader(false);
+      });
+  }, []);
 
   const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
@@ -223,41 +277,43 @@ export const CasesheetView: React.FC = (props) => {
     `;
   };
 
-  const medicineHtml = medicinePrescription!.map(
-    (
-      prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-      index: number
-    ) => {
-      const unitHtml =
-        prescription!.medicineUnit && prescription!.medicineUnit !== 'NA'
-          ? prescription.medicineUnit.toLowerCase()
-          : 'times';
-      const dosageCount =
-        prescription!.medicineTimings!.length > 0 && prescription!.medicineDosage
-          ? parseInt(prescription!.medicineDosage) * prescription!.medicineTimings!.length
-          : prescription!.medicineDosage;
-      const duration = `for ${Number(prescription.medicineConsumptionDurationInDays)} days`;
-      return (
-        <li>
-          {prescription.medicineName}
-          <br />
-          <span>
-            {`${dosageCount} ${unitHtml} a day ${
-              prescription.medicineTimings && prescription.medicineTimings.length > 0
-                ? `(${prescription.medicineTimings.map((timing: any) => timing)})`
-                : ''
-            } ${duration}${
-              prescription.medicineToBeTaken && prescription.medicineToBeTaken.length > 0
-                ? `; ${prescription.medicineToBeTaken.map((timing: any) =>
-                    convertMedicineTobeTaken(timing)
-                  )}`
-                : ''
-            }`}
-          </span>
-        </li>
-      );
-    }
-  );
+  const medicineHtml =
+    medicinePrescription &&
+    medicinePrescription!.map(
+      (
+        prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+        index: number
+      ) => {
+        const unitHtml =
+          prescription!.medicineUnit && prescription!.medicineUnit !== 'NA'
+            ? prescription.medicineUnit.toLowerCase()
+            : 'times';
+        const dosageCount =
+          prescription!.medicineTimings!.length > 0 && prescription!.medicineDosage
+            ? parseInt(prescription!.medicineDosage) * prescription!.medicineTimings!.length
+            : prescription!.medicineDosage;
+        const duration = `for ${Number(prescription.medicineConsumptionDurationInDays)} days`;
+        return (
+          <li>
+            {prescription.medicineName}
+            <br />
+            <span>
+              {`${dosageCount} ${unitHtml} a day ${
+                prescription.medicineTimings && prescription.medicineTimings.length > 0
+                  ? `(${prescription.medicineTimings.map((timing: any) => timing)})`
+                  : ''
+              } ${duration}${
+                prescription.medicineToBeTaken && prescription.medicineToBeTaken.length > 0
+                  ? `; ${prescription.medicineToBeTaken.map((timing: any) =>
+                      convertMedicineTobeTaken(timing)
+                    )}`
+                  : ''
+              }`}
+            </span>
+          </li>
+        );
+      }
+    );
   return (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
@@ -370,7 +426,7 @@ export const CasesheetView: React.FC = (props) => {
                   <div className={classes.complaintsInfoRow}>
                     <div className={classes.complaintsLabel}>{symptom.symptom}</div>
                     <div className={classes.labelContent}>
-                      {`Since: Last ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
+                      {`Since: ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
                     </div>
                   </div>
                 ))}
@@ -389,7 +445,7 @@ export const CasesheetView: React.FC = (props) => {
               </div>
             </>
           ) : null}
-          {medicinePrescription && medicinePrescription.length > 0 ? (
+          {!loader && medicinePrescription && medicinePrescription.length > 0 ? (
             <>
               <div className={classes.sectionHeader}>Medication Prescribed</div>
               <div className={classes.medicationList}>
@@ -397,26 +453,29 @@ export const CasesheetView: React.FC = (props) => {
               </div>
             </>
           ) : null}
-          {diagnosticPrescription && diagnosticPrescription.length > 0 ? (
+          {!loader && diagnosticPrescription && diagnosticPrescription.length > 0 ? (
             <>
               <div className={classes.sectionHeader}>Diagnostic Tests</div>
               <div className={classes.medicationList}>
                 <ol>
-                  {diagnosticPrescription.map((prescription) => (
-                    <li>{prescription.itemname}</li>
-                  ))}
+                  {diagnosticPrescription.map(
+                    (prescription) => prescription.itemname && <li>{prescription.itemname}</li>
+                  )}
                 </ol>
               </div>
             </>
           ) : null}
           {isPageContentFull() ? null : (
             <>
-              {otherInstructions && otherInstructions.length > 0 ? (
+              {!loader && otherInstructions && otherInstructions.length > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Advice Given</div>
                   <div className={classes.advice}>
-                    {otherInstructions.map((instruction) => (
-                      <span>{instruction.instruction}</span>
+                    {otherInstructions.map((instruction, index) => (
+                      <span>
+                        {`${instruction.instruction}`}
+                        {index < otherInstructions.length - 1 && ','}
+                      </span>
                     ))}
                   </div>
                 </>

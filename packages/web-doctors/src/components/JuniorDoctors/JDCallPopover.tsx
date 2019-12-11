@@ -137,6 +137,15 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '50%',
       zIndex: 9999,
     },
+    fadedBg: {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      opacity: 0,
+      zIndex: 999,
+    },
     ResheduleCosultButton: {
       fontSize: 14,
       fontWeight: 600,
@@ -662,6 +671,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -746,6 +756,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       isTyping: true,
       messageDate: new Date(),
     };
+    setDisableOnCancel(false);
     pubnub.publish(
       {
         channel: channel,
@@ -836,6 +847,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       messageDate: new Date(),
     };
     props.isAudioVideoCallEnded(false);
+    setDisableOnCancel(false);
     pubnub.publish(
       {
         channel: channel,
@@ -1077,7 +1089,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== secondMessage &&
           message.message.message !== covertVideoMsg &&
           message.message.message !== covertAudioMsg &&
-          message.message.message !== cancelConsultInitiated
+          message.message.message !== cancelConsultInitiated &&
+          message.message.message !== callAbandonment
         ) {
           setIsNewMsg(true);
         } else {
@@ -1152,9 +1165,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         patientDetails!.firstName +
         ' ' +
         patientDetails!.lastName +
-        ', I have everything I need. I will share these details with ' +
+        '! ' +
         props.assignedDoctorDisplayName +
-        ', who will be here with you soon.',
+        ', will be with you at your booked consultation time.',
       messageDate: new Date(),
     };
     unSubscribeBrowserButtonsListener();
@@ -1331,7 +1344,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Submit Case Sheet
               </AphButton>
-              {props.saving && <CircularProgress className={classes.loading} />} }
+              {props.saving && (
+                <div>
+                  <CircularProgress className={classes.loading} />{' '}
+                  <div className={classes.fadedBg}></div>
+                </div>
+              )}
             </span>
           ) : (
             <AphButton
@@ -1417,6 +1435,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 handleClose();
                 props.isAudioVideoCallEnded(true);
                 props.setStartConsultAction(false);
+                setDisableOnCancel(true);
                 autoSend(audioCallMsg);
                 setIsVideoCall(false);
               }}
@@ -1432,6 +1451,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 handleClose();
                 props.isAudioVideoCallEnded(true);
                 props.setStartConsultAction(true);
+                setDisableOnCancel(true);
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
               }}

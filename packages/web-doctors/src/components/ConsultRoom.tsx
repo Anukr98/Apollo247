@@ -382,6 +382,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -529,7 +530,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== secondMessage &&
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
-        lastMsg.message.message !== cancelConsultInitiated
+        lastMsg.message.message !== cancelConsultInitiated &&
+        lastMsg.message.message !== callAbandonment
       ) {
         setIsNewMsg(true);
       } else {
@@ -681,7 +683,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
-      rowData.message !== cancelConsultInitiated
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -780,7 +783,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
-      rowData.message !== cancelConsultInitiated
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -871,7 +875,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
-      rowData.message !== cancelConsultInitiated
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       jrDrComponent++;
       leftComponent = 0;
@@ -1210,7 +1215,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </Button>
                 )}
                 <AphTextField
-                autoFocus
+                  autoFocus
                   className={classes.inputWidth}
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."

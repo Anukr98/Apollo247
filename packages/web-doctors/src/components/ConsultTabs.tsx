@@ -208,6 +208,15 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '50%',
       top: '45%',
     },
+    fadedBg: {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      opacity: 0,
+      zIndex: 999,
+    },
     tabBody: {
       minHeight: 60,
       marginTop: '10px',
@@ -361,7 +370,11 @@ export const ConsultTabs: React.FC = () => {
     GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
+  const [favouriteTests, setFavouriteTests] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
+  const [favouriteMedicines, setFavouriteMedicines] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
 
@@ -1088,7 +1101,9 @@ export const ConsultTabs: React.FC = () => {
       });
       // convert itemName to itemname
       diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
-        return { itemname: prescription.itemName };
+        return {
+          itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
+        };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
@@ -1249,7 +1264,11 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {!loaded && <CircularProgress className={classes.loading} />}
+      {!loaded && (
+        <div>
+          <CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div>
+        </div>
+      )}
 
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
@@ -1280,8 +1299,12 @@ export const ConsultTabs: React.FC = () => {
             setOtherInstructions,
             diagnosticPrescription,
             setDiagnosticPrescription,
+            favouriteTests,
+            setFavouriteTests,
             medicinePrescription,
             setMedicinePrescription,
+            favouriteMedicines,
+            setFavouriteMedicines,
             consultType,
             setConsultType,
             caseSheetEdit,
@@ -1391,13 +1414,13 @@ export const ConsultTabs: React.FC = () => {
                         />
                       </Tabs>
                     </div>
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 0 ? classes.none : classes.block}>
                         {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                       </div>
-                    </TabContainer>
+                    </div>
 
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 1 ? classes.none : classes.block}>
                         <div className={classes.chatContainer}>
                           <ConsultRoom
@@ -1413,7 +1436,7 @@ export const ConsultTabs: React.FC = () => {
                           />
                         </div>
                       </div>
-                    </TabContainer>
+                    </div>
                   </div>
                 ) : (
                   <div>

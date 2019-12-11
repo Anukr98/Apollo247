@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Button } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import {
   UpdateDoctorOnlineStatus,
@@ -12,16 +12,8 @@ import { Mutation } from 'react-apollo';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
-import { useApolloClient } from 'react-apollo-hooks';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { AphLinearProgress } from '@aph/web-ui-components';
-import {
-  GetConsultQueueVariables,
-  GetConsultQueue,
-  GetConsultQueue_getConsultQueue_consultQueue,
-} from 'graphql/types/GetConsultQueue';
-
-import { GET_CONSULT_QUEUE } from 'graphql/consults';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -86,33 +78,12 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
   const idleTimeValueInMinutes = 3;
 
   const currentDoctor = useCurrentPatient();
-  const client = useApolloClient();
-  const [consultQueue, setConsultQueue] = useState<
-    GetConsultQueue_getConsultQueue_consultQueue[] | []
-  >([]);
+
   const [jrdNoFillDialog, setJrdNoFillDialog] = useState(false);
-  let activeConsults: any;
-  useEffect(() => {
-    if (currentDoctor && currentDoctor.id) {
-      client
-        .query<GetConsultQueue, GetConsultQueueVariables>({
-          query: GET_CONSULT_QUEUE,
-          fetchPolicy: 'no-cache',
-          variables: { doctorId: currentDoctor.id },
-        })
-        .then((data) => {
-          setConsultQueue(data.data.getConsultQueue.consultQueue);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
 
-      if (consultQueue) {
-        activeConsults = consultQueue.filter((consult) => consult.isActive);
-      }
-    }
-  }, []);
-
+  const ActiveQueueConsultValues = Number(
+    localStorage && localStorage.getItem('activeConsultQueueCount')
+  );
   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
   if (loading || error || !data || !data.getDoctorDetails) return null;
   const { id, onlineStatus } = data.getDoctorDetails;
@@ -126,7 +97,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
       {(updateDoctorOnlineStatus, { loading }) => (
         <>
           {loading && <CircularProgress size={20} />}
-          {activeConsults && activeConsults.length === 0 ? (
+          {ActiveQueueConsultValues === 0 ? (
             <IdleTimer
               ref={idleTimerRef}
               element={document}
@@ -162,7 +133,10 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
                         updateDoctorOnlineStatus({
                           variables: {
                             doctorId: id,
-                            onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,
+                            onlineStatus:
+                              ActiveQueueConsultValues === 0
+                                ? DOCTOR_ONLINE_STATUS.AWAY
+                                : DOCTOR_ONLINE_STATUS.ONLINE,
                           },
                         });
                       }}

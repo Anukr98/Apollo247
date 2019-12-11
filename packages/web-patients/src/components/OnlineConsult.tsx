@@ -25,12 +25,27 @@ import {
   GetDoctorNextAvailableSlotVariables,
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { usePrevious } from 'hooks/reactCustomHooks';
+import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
       overflow: 'hidden',
+    },
+    viewButton: {
+      width: 'calc(50% - 5px)',
+      marginLeft: 5,
+      display: 'block',
+      fontSize: 13,
+      backgroundColor: '#fcb716',
+      padding: 10,
+      height: 40,
+      borderRadius: 10,
+      marginRight: 0,
+      '&:hover': {
+        backgroundColor: '#fcb716 !important',
+      },
     },
     consultGroup: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
@@ -105,13 +120,13 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
     },
     scheduleCalendar: {
-      display: 'none',
+      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
     },
     scheduleTimeSlots: {
-      display: 'none',
+      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
@@ -183,6 +198,8 @@ interface OnlineConsultProps {
   doctorDetails: DoctorDetails;
   onBookConsult: (popover: boolean) => void;
   isRescheduleConsult: boolean;
+  appointmentId?: string;
+  rescheduleAPI?: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
@@ -456,7 +473,30 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       </Scrollbars>
       {props.isRescheduleConsult ? (
         <div>
-          <AphButton>Reschedule</AphButton>
+          <AphButton
+            className={classes.viewButton}
+            onClick={() => {
+              const bookRescheduleInput = {
+                appointmentId: props.appointmentId || '',
+                doctorId: doctorId,
+                newDateTimeslot: new Date(
+                  `${apiDateFormat} ${
+                    timeSelected !== ''
+                      ? timeSelected.padStart(5, '0')
+                      : slotAvailableNext.padStart(5, '0')
+                  }:00`
+                ).toISOString(),
+                initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                initiatedId: currentPatient ? currentPatient.id : '',
+                patientId: currentPatient ? currentPatient.id : '',
+                rescheduledId: '',
+              };
+              props.rescheduleAPI && props.rescheduleAPI(bookRescheduleInput);
+              setIsPopoverOpen(false);
+            }}
+          >
+            Reschedule
+          </AphButton>
         </div>
       ) : (
         <div className={classes.bottomActions}>
