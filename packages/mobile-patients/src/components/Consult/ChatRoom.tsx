@@ -347,7 +347,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let stoppedTimer: number;
   let thirtySecondTimer: any;
   let minuteTimer: any;
-  let callhandelBack: boolean = true;
+
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -380,14 +380,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const backDataFunctionality = () => {
-    console.log(callhandelBack, 'is back called');
-    if (callhandelBack) {
-      props.navigation.replace(AppRoutes.TabBar);
-      return false;
-    } else {
-      return true;
+    try {
+      console.log(callhandelBack, 'is back called');
+      if (callhandelBack) {
+        props.navigation.replace(AppRoutes.TabBar);
+        return true;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log(error, 'error');
     }
-    // BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
   };
 
   useEffect(() => {
@@ -1096,7 +1099,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       intervalId && clearInterval(intervalId);
       stopJoinTimer();
       stopCallAbondmentTimer();
-      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+      try {
+        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+      } catch (error) {}
     };
   }, []);
 
@@ -4415,7 +4420,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           onPress={() => {
             setOnSubscribe(false);
-            callhandelBack = true;
             stopTimer();
             startTimer(0);
             setCallAccepted(true);
@@ -5016,16 +5020,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            if (callhandelBack) {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                })
-              );
-              handleCallTheEdSessionAPI();
-            }
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+              })
+            );
+            handleCallTheEdSessionAPI();
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
