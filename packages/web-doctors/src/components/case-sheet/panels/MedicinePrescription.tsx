@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Theme,
   makeStyles,
@@ -9,34 +9,29 @@ import {
   Button,
   MenuItem,
   createStyles,
-  CircularProgress
-} from "@material-ui/core";
-import {
-  AphTextField,
-  AphButton,
-  AphDialogTitle,
-  AphSelect
-} from "@aph/web-ui-components";
-import Autosuggest from "react-autosuggest";
-import match from "autosuggest-highlight/match";
-import parse from "autosuggest-highlight/parse";
-import { isEmpty, debounce, trim, deburr } from "lodash";
-import axios from "axios";
-import { CaseSheetContext } from "context/CaseSheetContext";
-import Scrollbars from "react-custom-scrollbars";
-import { useQuery } from "react-apollo-hooks";
-import { GET_DOCTOR_FAVOURITE_MEDICINE } from "graphql/doctors";
+  CircularProgress,
+} from '@material-ui/core';
+import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
+import Autosuggest from 'react-autosuggest';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
+import { isEmpty, debounce, trim, deburr } from 'lodash';
+import axios from 'axios';
+import { CaseSheetContext } from 'context/CaseSheetContext';
+import Scrollbars from 'react-custom-scrollbars';
+import { useQuery } from 'react-apollo-hooks';
+import { GET_DOCTOR_FAVOURITE_MEDICINE } from 'graphql/doctors';
 import {
   GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList,
   GetDoctorFavouriteMedicineList,
-  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
-} from "graphql/types/GetDoctorFavouriteMedicineList";
-import { useApolloClient } from "react-apollo-hooks";
-import { relative } from "path";
+  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
+} from 'graphql/types/GetDoctorFavouriteMedicineList';
+import { useApolloClient } from 'react-apollo-hooks';
+import { relative } from 'path';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
 };
 
 interface OptionType {
@@ -59,8 +54,8 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          root: classes.inputRoot
-        }
+          root: classes.inputRoot,
+        },
       }}
       {...other}
     />
@@ -77,7 +72,7 @@ function renderSuggestion(
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
-        {parts.map(part => (
+        {parts.map((part) => (
           <span
             key={part.text}
             style={{
@@ -96,375 +91,375 @@ function renderSuggestion(
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
-      position: "relative"
+      position: 'relative',
     },
     input: {
-      color: "black",
-      paddingTop: 0
+      color: 'black',
+      paddingTop: 0,
     },
     suggestionsContainerOpen: {
-      position: "absolute",
+      position: 'absolute',
       zIndex: 1,
       marginTop: theme.spacing(1),
       left: 0,
       right: 0,
-      color: "black",
-      boxShadow: "none"
+      color: 'black',
+      boxShadow: 'none',
     },
     suggestion: {
-      display: "block",
-      overflow: "hidden",
-      borderBottom: "1px solid rgba(2,71,91,0.1)",
-      "&:hover": {
-        "& div": {
-          backgroundColor: "#f0f4f5 !important"
-        }
-      }
+      display: 'block',
+      overflow: 'hidden',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:hover': {
+        '& div': {
+          backgroundColor: '#f0f4f5 !important',
+        },
+      },
     },
     suggestionsList: {
       margin: 0,
       padding: 0,
-      listStyleType: "none",
-      color: "#02475b",
+      listStyleType: 'none',
+      color: '#02475b',
       fontSize: 18,
-      fontWeight: 500
+      fontWeight: 500,
     },
     root: {
-      flexGrow: 1
+      flexGrow: 1,
     },
     mediceneContainer: {
-      backgroundColor: "rgba(0,0,0,0.02)",
-      border: "1px solid rgba(2,71,91,0.1)",
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      border: '1px solid rgba(2,71,91,0.1)',
       borderRadius: 5,
       padding: 5,
-      position: "relative",
-      "& img": {
-        border: "1px solid #00b38e",
-        borderRadius: "50%",
-        maxWidth: 24
-      }
+      position: 'relative',
+      '& img': {
+        border: '1px solid #00b38e',
+        borderRadius: '50%',
+        maxWidth: 24,
+      },
     },
     paper: {
-      textAlign: "left",
+      textAlign: 'left',
       color: theme.palette.text.secondary,
-      padding: "12px 25px 12px 5px",
+      padding: '12px 25px 12px 5px',
       borderRadius: 0,
-      maxWidth: "100%",
-      position: "relative",
-      boxShadow: "none",
-      backgroundColor: "transparent",
-      borderBottom: "1px solid rgba(2,71,91,0.1)",
-      "&:last-child": {
-        borderBottom: "none"
+      maxWidth: '100%',
+      position: 'relative',
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:last-child': {
+        borderBottom: 'none',
       },
-      "& h5": {
+      '& h5': {
         fontSize: 14,
-        color: "#02475b",
+        color: '#02475b',
         margin: 0,
-        fontWeight: 600
+        fontWeight: 600,
       },
-      "& h6": {
+      '& h6': {
         fontSize: 12,
-        color: "#02475b",
+        color: '#02475b',
         margin: 0,
-        fontWeight: "normal"
-      }
+        fontWeight: 'normal',
+      },
     },
     medicinePopup: {
       width: 480,
-      margin: "30px auto 0 auto",
-      boxShadow: "none"
+      margin: '30px auto 0 auto',
+      boxShadow: 'none',
     },
     activeCard: {
       // border: '1px solid #00b38e',
       // backgroundColor: '#fff',
     },
     checkImg: {
-      position: "absolute",
+      position: 'absolute',
       right: 16,
-      top: 16
+      top: 16,
     },
     btnAddDoctor: {
-      backgroundColor: "transparent",
-      boxShadow: "none",
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
       paddingLeft: 4,
-      "&:hover": {
-        backgroundColor: "transparent"
+      '&:hover': {
+        backgroundColor: 'transparent',
       },
-      "& img": {
-        marginRight: 8
-      }
+      '& img': {
+        marginRight: 8,
+      },
     },
     darkGreenaddBtn: {
-      backgroundColor: "transparent",
-      boxShadow: "none",
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      position: "absolute",
-      left: "414px",
-      top: "0px",
+      position: 'absolute',
+      left: '414px',
+      top: '0px',
       padding: 0,
       marginTop: 12,
-      "&:hover": {
-        backgroundColor: "transparent"
+      '&:hover': {
+        backgroundColor: 'transparent',
       },
-      "& img": {
-        marginRight: 8
-      }
+      '& img': {
+        marginRight: 8,
+      },
     },
     medicineHeading: {
       fontSize: 14,
       fontWeight: 500,
-      lineHeight: "normal",
-      color: "rgba(2, 71, 91, 0.6) !important",
-      marginBottom: 12
+      lineHeight: 'normal',
+      color: 'rgba(2, 71, 91, 0.6) !important',
+      marginBottom: 12,
     },
     favMedBg: {
-      backgroundColor: "transparent",
-      boxShadow: "none"
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     favmedicineHeading: {
       fontSize: 14,
       fontWeight: 500,
-      lineHeight: "normal",
-      color: "rgba(2, 71, 91, 0.6) !important",
-      marginBottom: 12
+      lineHeight: 'normal',
+      color: 'rgba(2, 71, 91, 0.6) !important',
+      marginBottom: 12,
     },
     backArrow: {
-      cursor: "pointer",
-      position: "absolute",
+      cursor: 'pointer',
+      position: 'absolute',
       left: 0,
       top: -2,
-      "& img": {
-        verticalAlign: "middle"
-      }
+      '& img': {
+        verticalAlign: 'middle',
+      },
     },
     cross: {
-      position: "absolute",
+      position: 'absolute',
       right: -10,
       top: -9,
       fontSize: 18,
-      color: "#02475b"
+      color: '#02475b',
     },
     dialogActions: {
       padding: 20,
       paddingTop: 10,
-      boxShadow: "0 -5px 20px 0 rgba(128, 128, 128, 0.2)",
-      position: "relative",
-      textAlign: "right",
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      position: 'relative',
+      textAlign: 'right',
       fontSize: 14,
       fontWeight: 600,
-      "& button": {
+      '& button': {
         borderRadius: 10,
         minwidth: 130,
-        padding: "8px 20px",
+        padding: '8px 20px',
         fontSize: 14,
-        fontWeight: 600
-      }
+        fontWeight: 600,
+      },
     },
     updateBtn: {
-      backgroundColor: "#fc9916 !important"
+      backgroundColor: '#fc9916 !important',
     },
     cancelBtn: {
       fontSize: 14,
       fontWeight: 600,
-      color: "#fc9916",
-      backgroundColor: "transparent",
-      boxShadow: "0 2px 5px 0 rgba(0,0,0,0.2)",
-      border: "none",
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
+      border: 'none',
       marginRight: 10,
-      "&:hover": {
-        backgroundColor: "transparent",
-        color: "#fc9916"
-      }
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
     },
     shadowHide: {
-      overflow: "hidden"
+      overflow: 'hidden',
     },
     dialogContent: {
       padding: 20,
       minHeight: 400,
-      position: "relative",
-      "& h6": {
+      position: 'relative',
+      '& h6': {
         fontSize: 14,
         fontWeight: 500,
-        color: "rgba(2, 71, 91, 0.6)",
+        color: 'rgba(2, 71, 91, 0.6)',
         marginBottom: 5,
         marginTop: 5,
-        lineHeight: "normal"
-      }
+        lineHeight: 'normal',
+      },
     },
     popupHeading: {
-      "& h6": {
+      '& h6': {
         fontSize: 13,
-        color: "#01475b",
+        color: '#01475b',
         fontWeight: 600,
-        textAlign: "left"
-      }
+        textAlign: 'left',
+      },
     },
     popupHeadingCenter: {
-      padding: "20px 10px",
-      "& h6": {
+      padding: '20px 10px',
+      '& h6': {
         fontSize: 13,
-        color: "#01475b",
+        color: '#01475b',
         fontWeight: 600,
-        textAlign: "center",
-        padding: "0 25px",
-        marginTop: 5
-      }
+        textAlign: 'center',
+        padding: '0 25px',
+        marginTop: 5,
+      },
     },
     numberTablets: {
       fontSize: 16,
-      color: "#02475b",
+      color: '#02475b',
       fontWeight: 500,
       marginBottom: 0,
-      "& button": {
-        border: "1px solid #00b38e",
-        padding: "5px 10px",
+      '& button': {
+        border: '1px solid #00b38e',
+        padding: '5px 10px',
         fontSize: 12,
-        fontWeight: "normal",
+        fontWeight: 'normal',
         borderRadius: 14,
         marginRight: 15,
-        color: "#00b38e",
-        backgroundColor: "#fff",
-        "&:focus": {
-          outline: "none"
-        }
-      }
+        color: '#00b38e',
+        backgroundColor: '#fff',
+        '&:focus': {
+          outline: 'none',
+        },
+      },
     },
     tabletcontent: {
-      margin: "0 10px",
-      position: "relative",
-      top: -5
+      margin: '0 10px',
+      position: 'relative',
+      top: -5,
     },
     activeBtn: {
-      backgroundColor: "#00b38e !important",
-      color: "#fff !important",
-      fontWeight: 600
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+      fontWeight: 600,
     },
     helpText: {
       paddingLeft: 0,
       paddingRight: 20,
-      paddingBottom: 10
+      paddingBottom: 10,
     },
     medicineDilog: {
-      "& .dialogBoxClose": {
-        display: "none !important"
-      }
+      '& .dialogBoxClose': {
+        display: 'none !important',
+      },
     },
     loader: {
-      left: "50%",
+      left: '50%',
       top: 41,
-      position: "relative"
+      position: 'relative',
     },
     updateSymptom: {
-      backgroundColor: "transparent",
-      boxShadow: "none",
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       top: 5,
       right: 2,
-      color: "#666666",
-      position: "absolute",
+      color: '#666666',
+      position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       minWidth: 30,
-      padding: "5px 0",
-      "&:hover": {
-        backgroundColor: "transparent"
-      }
+      padding: '5px 0',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
     },
     deleteSymptom: {
-      backgroundColor: "transparent",
-      boxShadow: "none",
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       top: 5,
       right: 0,
-      color: "#666666",
-      position: "absolute",
+      color: '#666666',
+      position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       minWidth: 30,
-      padding: "5px 10px",
-      "&:hover": {
-        backgroundColor: "transparent"
-      }
+      padding: '5px 10px',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
     },
     inputRoot: {
-      "&:before": {
-        borderBottom: "2px solid #00b38e"
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
       },
-      "&:after": {
-        borderBottom: "2px solid #00b38e"
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
       },
-      "& input": {
+      '& input': {
         fontSize: 15,
         fontWeight: 500,
-        color: "#02475b !important",
-        paddingTop: 0
+        color: '#02475b !important',
+        paddingTop: 0,
       },
-      "&:hover": {
-        "&:before": {
-          borderBottom: "2px solid #00b38e !important"
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
         },
-        "&:after": {
-          borderBottom: "2px solid #00b38e !important"
-        }
-      }
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
     },
     selectDropdown: {
-      paddingTop: 3
+      paddingTop: 3,
     },
     menuPaper: {
       width: 200,
       borderRadius: 10,
-      boxShadow: "0 5px 20px 0 rgba(128, 128, 128, 0.8)",
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
       marginTop: 34,
-      "& ul": {
+      '& ul': {
         padding: 0,
-        "& li": {
-          minHeight: "auto",
-          color: "#02475b",
+        '& li': {
+          minHeight: 'auto',
+          color: '#02475b',
           fontSize: 16,
           fontWeight: 500,
-          "&:hover": {
-            backgroundColor: "#fff"
-          }
-        }
-      }
+          '&:hover': {
+            backgroundColor: '#fff',
+          },
+        },
+      },
     },
     menuSelected: {
-      backgroundColor: "#f0f4f5 !important",
-      color: "#02475b !important",
-      fontWeight: "bold"
+      backgroundColor: '#f0f4f5 !important',
+      color: '#02475b !important',
+      fontWeight: 'bold',
     },
     unitsSelect: {
-      marginTop: -7
+      marginTop: -7,
     },
     medicineCard: {
-      color: "rgba(0, 0, 0, 0.54)",
-      border: "1px solid rgba(2,71,91,0.1)",
-      padding: "12px 40px 12px 12px",
-      position: "relative",
-      maxWidth: "100%",
-      boxShadow: "none",
-      textAlign: "left",
+      color: 'rgba(0, 0, 0, 0.54)',
+      border: '1px solid rgba(2,71,91,0.1)',
+      padding: '12px 40px 12px 12px',
+      position: 'relative',
+      maxWidth: '100%',
+      boxShadow: 'none',
+      textAlign: 'left',
       borderRadius: 5,
       marginBottom: 12,
-      backgroundColor: "rgba(0,0,0,0.02)",
-      "& h5": {
-        color: "#02475b",
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      '& h5': {
+        color: '#02475b',
         margin: 0,
         fontSize: 14,
-        fontWeight: 600
+        fontWeight: 600,
       },
-      "& h6": {
-        color: "#02475b",
+      '& h6': {
+        color: '#02475b',
         margin: 0,
-        fontSize: 12
-      }
-    }
+        fontSize: 12,
+      },
+    },
   })
 );
 
@@ -504,31 +499,26 @@ export const MedicinePrescription: React.FC = () => {
 
   const {
     medicinePrescription: selectedMedicinesArr,
-    setMedicinePrescription: setSelectedMedicinesArr
+    setMedicinePrescription: setSelectedMedicinesArr,
   } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
-  const [isEditFavMedicine, setIsEditFavMedicine] = React.useState<boolean>(
-    false
-  );
+  const [isEditFavMedicine, setIsEditFavMedicine] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
   const [isUpdate, setIsUpdate] = React.useState(false);
-  const [medicineInstruction, setMedicineInstruction] = React.useState<string>(
-    ""
-  );
+  const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [favouriteMedicine, setFavouriteMedicine] = React.useState<
-    | (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]
-    | null
+    (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
   >([]);
-  const [favMedicineName, setFavMedicineName] = React.useState<string>("");
+  const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const client = useApolloClient();
   useEffect(() => {
     client
       .query<GetDoctorFavouriteMedicineList>({
         query: GET_DOCTOR_FAVOURITE_MEDICINE,
-        fetchPolicy: "no-cache"
+        fetchPolicy: 'no-cache',
       })
-      .then(data => {
+      .then((data) => {
         setFavouriteMedicine(
           data &&
             data.data &&
@@ -536,7 +526,7 @@ export const MedicinePrescription: React.FC = () => {
             data.data.getDoctorFavouriteMedicineList.medicineList
         );
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
       });
   }, []);
@@ -545,7 +535,7 @@ export const MedicinePrescription: React.FC = () => {
     daySlotErr: false,
     tobeTakenErr: false,
     durationErr: false,
-    dosageErr: false
+    dosageErr: false,
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
@@ -553,47 +543,45 @@ export const MedicinePrescription: React.FC = () => {
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
-      id: "morning",
-      value: "Morning",
-      selected: false
+      id: 'morning',
+      value: 'Morning',
+      selected: false,
     },
     {
-      id: "noon",
-      value: "Noon",
-      selected: false
+      id: 'noon',
+      value: 'Noon',
+      selected: false,
     },
     {
-      id: "evening",
-      value: "Evening",
-      selected: false
+      id: 'evening',
+      value: 'Evening',
+      selected: false,
     },
     {
-      id: "night",
-      value: "Night",
-      selected: false
-    }
+      id: 'night',
+      value: 'Night',
+      selected: false,
+    },
   ]);
 
   const [loading, setLoading] = useState<boolean>(false);
 
   const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
     {
-      id: "afterfood",
-      value: "After Food",
-      selected: false
+      id: 'afterfood',
+      value: 'After Food',
+      selected: false,
     },
     {
-      id: "beforefood",
-      value: "Before Food",
-      selected: false
-    }
+      id: 'beforefood',
+      value: 'Before Food',
+      selected: false,
+    },
   ]);
-  const [selectedMedicines, setSelectedMedicines] = React.useState<
-    MedicineObject[]
-  >([]);
+  const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
-  const [medicine, setMedicine] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [medicine, setMedicine] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
     return suggestions;
   }
@@ -601,7 +589,7 @@ export const MedicinePrescription: React.FC = () => {
   const toBeTaken = (value: any) => {
     const arry: any = [];
     value.map((slot: any) => {
-      const x = slot.replace("_", " ").toLowerCase();
+      const x = slot.replace('_', ' ').toLowerCase();
       arry.push(x);
     });
     return arry;
@@ -619,18 +607,18 @@ export const MedicinePrescription: React.FC = () => {
         {
           headers: {
             Authorization: apiDetails.authToken,
-            Accept: "*/*"
+            Accept: '*/*',
           },
           cancelToken: new CancelToken(function executor(c) {
             // An executor function receives a cancel function as a parameter
             cancel = c;
-          })
+          }),
         }
       )
-      .then(result => {
+      .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
         medicines.forEach((res: any) => {
-          const data = { label: "", sku: "" };
+          const data = { label: '', sku: '' };
           data.label = res.name;
           data.sku = res.sku;
           FinalSearchdata.push(data);
@@ -643,8 +631,8 @@ export const MedicinePrescription: React.FC = () => {
           setLoading(false);
         }
       })
-      .catch(error => {
-        if (error.toString().includes("404")) {
+      .catch((error) => {
+        if (error.toString().includes('404')) {
           setIsSuggestionFetched(false);
           setLoading(false);
         }
@@ -662,7 +650,7 @@ export const MedicinePrescription: React.FC = () => {
   const updateMedicine = (idx: any) => {
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineToBeTaken!.map((selectedSlot: any) => {
-        const selectedValue = selectedSlot.replace("_", "");
+        const selectedValue = selectedSlot.replace('_', '');
         if (selectedValue.toLowerCase() === slot.id) {
           slot.selected = true;
         }
@@ -682,9 +670,7 @@ export const MedicinePrescription: React.FC = () => {
     setDaySlots(dayslots);
 
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
-    setConsumptionDuration(
-      selectedMedicinesArr![idx].medicineConsumptionDurationInDays!
-    );
+    setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
     setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
@@ -712,29 +698,28 @@ export const MedicinePrescription: React.FC = () => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
       selectedMedicinesArr!.forEach((res: any) => {
         const inputParamsArr: any = {
-          medicineConsumptionDurationInDays:
-            res.medicineConsumptionDurationInDays,
+          medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
           medicineDosage: String(res.medicineDosage),
           medicineInstructions: res.medicineInstructions,
           medicineTimings: res.medicineTimings,
           medicineToBeTaken: res.medicineToBeTaken,
           medicineName: res.medicineName,
           medicineUnit: res.medicineUnit,
-          id: res.id
+          id: res.id,
         };
         const inputParams: any = {
           id: res.medicineName.trim(),
           value: res.medicineName,
           name: res.medicineName,
           times: res.medicineTimings.length,
-          daySlots: res.medicineTimings.join(" , ").toLowerCase(),
-          duration: `${Number(
-            res.medicineConsumptionDurationInDays
-          )} days ${toBeTaken(res.medicineToBeTaken)
-            .join(",")
+          daySlots: res.medicineTimings.join(' , ').toLowerCase(),
+          duration: `${Number(res.medicineConsumptionDurationInDays)} days ${toBeTaken(
+            res.medicineToBeTaken
+          )
+            .join(',')
             .toLowerCase()}`,
           selected: true,
-          medicineUnit: res.medicineUnit
+          medicineUnit: res.medicineUnit,
         };
         // const xArr = selectedMedicinesArr;
         // xArr!.push(inputParamsArr);
@@ -771,28 +756,26 @@ export const MedicinePrescription: React.FC = () => {
     setToBeTakenSlots(slots);
   };
 
-  const daySlotsHtml = daySlots.map(
-    (_daySlotitem: SlotsObject | null, index: number) => {
-      const daySlotitem = _daySlotitem!;
-      return (
-        <button
-          key={daySlotitem.id}
-          className={daySlotitem.selected ? classes.activeBtn : ""}
-          onClick={() => {
-            daySlotsToggleAction(daySlotitem.id);
-          }}
-        >
-          {daySlotitem.value}
-        </button>
-      );
-    }
-  );
+  const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
+    const daySlotitem = _daySlotitem!;
+    return (
+      <button
+        key={daySlotitem.id}
+        className={daySlotitem.selected ? classes.activeBtn : ''}
+        onClick={() => {
+          daySlotsToggleAction(daySlotitem.id);
+        }}
+      >
+        {daySlotitem.value}
+      </button>
+    );
+  });
   const addUpdateMedicines = () => {
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
     const isTobeTakenSelected = toBeTakenSlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
-        toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(" ", "_"));
+        toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
@@ -808,7 +791,7 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         daySlotErr: false,
         durationErr: false,
-        dosageErr: true
+        dosageErr: true,
       });
     } else if (
       isEmpty(trim(consumptionDuration)) ||
@@ -825,7 +808,7 @@ export const MedicinePrescription: React.FC = () => {
     } else if (isTobeTakenSelected.length === 0) {
       setErrorState({
         ...errorState,
-        tobeTakenErr: true
+        tobeTakenErr: true,
         daySlotErr: false,
         durationErr: false,
         dosageErr: false,
@@ -844,7 +827,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         daySlotErr: false,
         tobeTakenErr: false,
-        dosageErr: false
+        dosageErr: false,
       });
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
@@ -854,7 +837,7 @@ export const MedicinePrescription: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         id: selectedId,
-        medicineUnit: medicineUnit
+        medicineUnit: medicineUnit,
       };
 
       const inputParams: any = {
@@ -862,12 +845,10 @@ export const MedicinePrescription: React.FC = () => {
         value: selectedValue,
         name: selectedValue,
         times: daySlotsSelected.length,
-        daySlots: `${daySlotsArr.join(",").toLowerCase()}`,
-        duration: `${consumptionDuration} day(s) ${toBeTaken(
-          toBeTakenSlotsArr
-        ).join(",")}`,
+        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
-        medicineUnit: medicineUnit
+        medicineUnit: medicineUnit,
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -899,39 +880,37 @@ export const MedicinePrescription: React.FC = () => {
       });
       setDaySlots(dayslots);
 
-      setMedicineInstruction("");
-      setConsumptionDuration("");
+      setMedicineInstruction('');
+      setConsumptionDuration('');
       setTabletsCount(1);
-      setMedicineUnit("TABLET");
-      setSelectedValue("");
-      setSelectedId("");
+      setMedicineUnit('TABLET');
+      setSelectedValue('');
+      setSelectedId('');
     }
   };
 
-  const tobeTakenHtml = toBeTakenSlots.map(
-    (_tobeTakenitem: SlotsObject | null, index: number) => {
-      const tobeTakenitem = _tobeTakenitem!;
-      return (
-        <button
-          key={tobeTakenitem.id}
-          className={tobeTakenitem.selected ? classes.activeBtn : ""}
-          onClick={() => {
-            toBeTakenSlotsToggleAction(tobeTakenitem.id);
-          }}
-        >
-          {tobeTakenitem.value}
-        </button>
-      );
-    }
-  );
+  const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
+    const tobeTakenitem = _tobeTakenitem!;
+    return (
+      <button
+        key={tobeTakenitem.id}
+        className={tobeTakenitem.selected ? classes.activeBtn : ''}
+        onClick={() => {
+          toBeTakenSlotsToggleAction(tobeTakenitem.id);
+        }}
+      >
+        {tobeTakenitem.value}
+      </button>
+    );
+  });
 
   const [state, setState] = React.useState({
-    single: "",
-    popper: ""
+    single: '',
+    popper: '',
   });
   const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
-  const [selectedValue, setSelectedValue] = useState<string>("");
-  const [selectedId, setSelectedId] = useState<string>("");
+  const [selectedValue, setSelectedValue] = useState<string>('');
+  const [selectedId, setSelectedId] = useState<string>('');
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
     setSuggestions(getSuggestions(value));
   };
@@ -951,7 +930,7 @@ export const MedicinePrescription: React.FC = () => {
     }
     setState({
       ...state,
-      [name]: newValue
+      [name]: newValue,
     });
   };
 
@@ -961,7 +940,7 @@ export const MedicinePrescription: React.FC = () => {
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
-    renderSuggestion
+    renderSuggestion,
   };
   return (
     <div className={classes.root}>
@@ -971,39 +950,36 @@ export const MedicinePrescription: React.FC = () => {
           {selectedMedicinesArr!.map((_medicine: any, index: number) => {
             const medicine = _medicine!;
 
-            const duration = `${Number(
-              medicine.medicineConsumptionDurationInDays
-            )} days`;
+            const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
             const whenString =
               medicine.medicineToBeTaken.length > 0
                 ? toBeTaken(medicine.medicineToBeTaken)
-                    .join(", ")
+                    .join(', ')
                     .toLowerCase()
-                : "";
+                : '';
             const unitHtml =
-              medicine!.medicineUnit && medicine!.medicineUnit !== "NA"
+              medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
                 ? medicine.medicineUnit.toLowerCase()
-                : "times";
+                : 'times';
             const timesString =
               medicine.medicineTimings.length > 0
-                ? "(" + medicine.medicineTimings.join(" , ").toLowerCase() + ")"
-                : "";
+                ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                : '';
             const dosageCount =
               medicine.medicineTimings.length > 0
-                ? parseInt(medicine.medicineDosage) *
-                  medicine.medicineTimings.length
+                ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
                 : medicine.medicineDosage;
             return (
-              <div style={{ position: "relative" }} key={index}>
+              <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
                               <h5>{medicine.medicineName}</h5>
                               
                   <h6>
                                                  {dosageCount} {unitHtml} a day
-                    {" "}
+                    {' '}
                                   {timesString.length > 0 && timesString} for 
                     {duration}
-                    {" "}
+                    {' '}
                                   {whenString.length > 0 && whenString}
                                 
                   </h6>
@@ -1017,12 +993,7 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => updateMedicine(index)}
                 >
                               
-                  <img
-                    src={
-                      caseSheetEdit && require("images/round_edit_24_px.svg")
-                    }
-                    alt=""
-                  />
+                  <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
                             
                 </AphButton>
                         
@@ -1036,8 +1007,7 @@ export const MedicinePrescription: React.FC = () => {
               classes={{ root: classes.btnAddDoctor }}
               onClick={() => setIsDialogOpen(true)}
             >
-              <img src={require("images/ic_dark_plus.svg")} alt="" /> ADD
-              Medicine
+              <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
             </AphButton>
           )}
         </Grid>
@@ -1054,43 +1024,40 @@ export const MedicinePrescription: React.FC = () => {
                   favMedicine.medicineToBeTaken &&
                   favMedicine.medicineToBeTaken.length > 0
                     ? toBeTaken(favMedicine && favMedicine.medicineToBeTaken)
-                        .join(", ")
+                        .join(', ')
                         .toLowerCase()
-                    : "";
+                    : '';
                 const favUnitHtml =
-                  favMedicine!.medicineUnit &&
-                  favMedicine!.medicineUnit !== "NA"
+                  favMedicine!.medicineUnit && favMedicine!.medicineUnit !== 'NA'
                     ? favMedicine &&
                       favMedicine.medicineUnit &&
                       favMedicine.medicineUnit.toLowerCase()
-                    : "times";
+                    : 'times';
                 const favTimesString =
                   favMedicine &&
                   favMedicine.medicineTimings &&
                   favMedicine.medicineTimings.length > 0
-                    ? "(" + favMedicine &&
+                    ? '(' + favMedicine &&
                       favMedicine.medicineTimings &&
-                      favMedicine.medicineTimings.join(" , ").toLowerCase() +
-                        ")"
-                    : "";
+                      favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                    : '';
                 const favDosageCount =
-                  favMedicine && favMedicine.medicineDosage === ""
+                  favMedicine && favMedicine.medicineDosage === ''
                     ? favMedicine &&
                       favMedicine.medicineTimings &&
                       favMedicine.medicineTimings.length > 0
                       ? parseInt(favMedicine && favMedicine.medicineDosage) *
                         favMedicine.medicineTimings.length
                       : favMedicine && favMedicine.medicineDosage
-                    : "";
+                    : '';
                 const favMedicineName = favMedicine && favMedicine.medicineName;
                 return (
                   <div className={classes.paper} key={id}>
                     <Paper className={classes.favMedBg}>
                       <h5>{favMedicineName}</h5>
                       <h6>
-                        {favDosageCount} {favUnitHtml} a day{" "}
-                        {favTimesString.length > 0 && favTimesString} for{" "}
-                        {favDuration}{" "}
+                        {favDosageCount} {favUnitHtml} a day{' '}
+                        {favTimesString.length > 0 && favTimesString} for {favDuration}{' '}
                         {favWhenString.length > 0 && favWhenString}
                       </h6>
                     </Paper>
@@ -1098,7 +1065,7 @@ export const MedicinePrescription: React.FC = () => {
                       variant="contained"
                       color="primary"
                       classes={{ root: classes.updateSymptom }}
-                      onClick={id => {
+                      onClick={(id) => {
                         setIsEditFavMedicine(true);
                         //  setSelectedMedicinesArr(favMedicine);
 
@@ -1106,10 +1073,7 @@ export const MedicinePrescription: React.FC = () => {
                       }}
                     >
                       <img
-                        src={
-                          favouriteMedicine &&
-                          require("images/add_doctor_white.svg")
-                        }
+                        src={favouriteMedicine && require('images/add_doctor_white.svg')}
                         alt=""
                       />
                     </AphButton>
@@ -1128,24 +1092,17 @@ export const MedicinePrescription: React.FC = () => {
         >
           <Paper className={classes.medicinePopup}>
             <AphDialogTitle
-              className={
-                !showDosage ? classes.popupHeading : classes.popupHeadingCenter
-              }
+              className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
             >
               {showDosage && (
-                <div
-                  className={classes.backArrow}
-                  onClick={() => setShowDosage(false)}
-                >
-                  <img src={require("images/ic_back.svg")} alt="" />
+                <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+                  <img src={require('images/ic_back.svg')} alt="" />
                 </div>
               )}
-              {showDosage
-                ? favMedicineName.toUpperCase()
-                : "ADD FAVOURITE MEDICINE"}
+              {showDosage ? favMedicineName.toUpperCase() : 'ADD FAVOURITE MEDICINE'}
               <Button className={classes.cross}>
                 <img
-                  src={require("images/ic_cross.svg")}
+                  src={require('images/ic_cross.svg')}
                   alt=""
                   onClick={() => {
                     setIsEditFavMedicine(false);
@@ -1185,49 +1142,34 @@ export const MedicinePrescription: React.FC = () => {
                           value={medicineUnit}
                           MenuProps={{
                             classes: {
-                              paper: classes.menuPaper
+                              paper: classes.menuPaper,
                             },
                             anchorOrigin: {
-                              vertical: "bottom",
-                              horizontal: "right"
+                              vertical: 'bottom',
+                              horizontal: 'right',
                             },
                             transformOrigin: {
-                              vertical: "top",
-                              horizontal: "right"
-                            }
+                              vertical: 'top',
+                              horizontal: 'right',
+                            },
                           }}
                           onChange={(e: any) => {
                             setMedicineUnit(e.target.value as string);
                           }}
                         >
-                          <MenuItem
-                            classes={{ selected: classes.menuSelected }}
-                            value="TABLET"
-                          >
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
                             tablet
                           </MenuItem>
-                          <MenuItem
-                            classes={{ selected: classes.menuSelected }}
-                            value="CAPSULE"
-                          >
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
                             capsule
                           </MenuItem>
-                          <MenuItem
-                            classes={{ selected: classes.menuSelected }}
-                            value="ML"
-                          >
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
                             ml
                           </MenuItem>
-                          <MenuItem
-                            classes={{ selected: classes.menuSelected }}
-                            value="DROPS"
-                          >
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
                             drops
                           </MenuItem>
-                          <MenuItem
-                            classes={{ selected: classes.menuSelected }}
-                            value="NA"
-                          >
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
                             NA
                           </MenuItem>
                         </AphSelect>
@@ -1258,9 +1200,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Grid>
                     <Grid item lg={6} md={6} xs={12}>
                       <h6>To be taken</h6>
-                      <div className={classes.numberTablets}>
-                        {tobeTakenHtml}
-                      </div>
+                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                       {errorState.tobeTakenErr && (
                         <FormHelperText
                           className={classes.helpText}
@@ -1273,9 +1213,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Grid>
                     <Grid item lg={12} xs={12}>
                       <h6>Time of the Day*</h6>
-                      <div className={classes.numberTablets}>
-                        {daySlotsHtml}
-                      </div>
+                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
                       {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
@@ -1345,22 +1283,17 @@ export const MedicinePrescription: React.FC = () => {
       >
         <Paper className={classes.medicinePopup}>
           <AphDialogTitle
-            className={
-              !showDosage ? classes.popupHeading : classes.popupHeadingCenter
-            }
+            className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
           >
             {showDosage && (
-              <div
-                className={classes.backArrow}
-                onClick={() => setShowDosage(false)}
-              >
-                <img src={require("images/ic_back.svg")} alt="" />
+              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+                <img src={require('images/ic_back.svg')} alt="" />
               </div>
             )}
-            {showDosage ? selectedValue.toUpperCase() : "ADD MEDICINE"}
+            {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
             <Button className={classes.cross}>
               <img
-                src={require("images/ic_cross.svg")}
+                src={require('images/ic_cross.svg')}
                 alt=""
                 onClick={() => {
                   setIsDialogOpen(false);
@@ -1376,37 +1309,33 @@ export const MedicinePrescription: React.FC = () => {
                   <Autosuggest
                     onSuggestionSelected={(e, { suggestion }) => {
                       setState({
-                        single: "",
-                        popper: ""
+                        single: '',
+                        popper: '',
                       });
                       setShowDosage(true);
                       setSelectedValue(suggestion.label);
                       setSelectedId(suggestion.sku);
                       setLoading(false);
-                      setMedicine("");
+                      setMedicine('');
                     }}
                     {...autosuggestProps}
                     inputProps={{
                       classes,
-                      color: "primary",
-                      id: "react-autosuggest-simple",
-                      placeholder: "Search",
+                      color: 'primary',
+                      id: 'react-autosuggest-simple',
+                      placeholder: 'Search',
                       value: state.single,
 
-                      onChange: handleChange("single")
+                      onChange: handleChange('single'),
                     }}
                     theme={{
                       container: classes.container,
-                      suggestionsContainerOpen:
-                        classes.suggestionsContainerOpen,
+                      suggestionsContainerOpen: classes.suggestionsContainerOpen,
                       suggestionsList: classes.suggestionsList,
-                      suggestion: classes.suggestion
+                      suggestion: classes.suggestion,
                     }}
-                    renderSuggestionsContainer={options => (
-                      <Scrollbars
-                        autoHide={true}
-                        style={{ height: "calc(45vh" }}
-                      >
+                    renderSuggestionsContainer={(options) => (
+                      <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
                         <Paper {...options.containerProps} square>
                           {options.children}
                         </Paper>
@@ -1422,27 +1351,22 @@ export const MedicinePrescription: React.FC = () => {
                           color="primary"
                           onClick={() => {
                             setState({
-                              single: "",
-                              popper: ""
+                              single: '',
+                              popper: '',
                             });
                             setShowDosage(true);
                             setSelectedValue(medicine);
-                            setSelectedId("IB01");
+                            setSelectedId('IB01');
                             setLoading(false);
-                            setMedicine("");
+                            setMedicine('');
                           }}
                         >
-                          <img
-                            src={require("images/ic_add_circle.svg")}
-                            alt=""
-                          />
+                          <img src={require('images/ic_add_circle.svg')} alt="" />
                         </AphButton>
                       </span>
                     </div>
                   )}
-                  {loading ? (
-                    <CircularProgress className={classes.loader} />
-                  ) : null}
+                  {loading ? <CircularProgress className={classes.loader} /> : null}
                 </div>
               </div>
             ) : (
@@ -1478,49 +1402,34 @@ export const MedicinePrescription: React.FC = () => {
                             value={medicineUnit}
                             MenuProps={{
                               classes: {
-                                paper: classes.menuPaper
+                                paper: classes.menuPaper,
                               },
                               anchorOrigin: {
-                                vertical: "bottom",
-                                horizontal: "right"
+                                vertical: 'bottom',
+                                horizontal: 'right',
                               },
                               transformOrigin: {
-                                vertical: "top",
-                                horizontal: "right"
-                              }
+                                vertical: 'top',
+                                horizontal: 'right',
+                              },
                             }}
                             onChange={(e: any) => {
                               setMedicineUnit(e.target.value as string);
                             }}
                           >
-                            <MenuItem
-                              classes={{ selected: classes.menuSelected }}
-                              value="TABLET"
-                            >
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
                               tablet
                             </MenuItem>
-                            <MenuItem
-                              classes={{ selected: classes.menuSelected }}
-                              value="CAPSULE"
-                            >
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
                               capsule
                             </MenuItem>
-                            <MenuItem
-                              classes={{ selected: classes.menuSelected }}
-                              value="ML"
-                            >
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
                               ml
                             </MenuItem>
-                            <MenuItem
-                              classes={{ selected: classes.menuSelected }}
-                              value="DROPS"
-                            >
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
                               drops
                             </MenuItem>
-                            <MenuItem
-                              classes={{ selected: classes.menuSelected }}
-                              value="NA"
-                            >
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
                               NA
                             </MenuItem>
                           </AphSelect>

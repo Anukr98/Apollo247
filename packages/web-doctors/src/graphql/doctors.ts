@@ -1,10 +1,7 @@
 import gql from 'graphql-tag';
 
 export const UPDATE_DOCTOR_ONLINE_STATUS = gql`
-  mutation UpdateDoctorOnlineStatus(
-    $doctorId: String!
-    $onlineStatus: DOCTOR_ONLINE_STATUS!
-  ) {
+  mutation UpdateDoctorOnlineStatus($doctorId: String!, $onlineStatus: DOCTOR_ONLINE_STATUS!) {
     updateDoctorOnlineStatus(doctorId: $doctorId, onlineStatus: $onlineStatus) {
       doctor {
         id
@@ -28,11 +25,7 @@ export const GET_BLOCKED_CALENDAR = gql`
 `;
 
 export const ADD_BLOCKED_CALENDAR_ITEM = gql`
-  mutation AddBlockedCalendarItem(
-    $doctorId: String!
-    $start: DateTime!
-    $end: DateTime!
-  ) {
+  mutation AddBlockedCalendarItem($doctorId: String!, $start: DateTime!, $end: DateTime!) {
     addBlockedCalendarItem(doctorId: $doctorId, start: $start, end: $end) {
       blockedCalendar {
         id
@@ -51,12 +44,7 @@ export const UPDATE_BLOCKED_CALENDAR_ITEM = gql`
     $start: DateTime!
     $end: DateTime!
   ) {
-    updateBlockedCalendarItem(
-      id: $id
-      doctorId: $doctorId
-      start: $start
-      end: $end
-    ) {
+    updateBlockedCalendarItem(id: $id, doctorId: $doctorId, start: $start, end: $end) {
       blockedCalendar {
         id
         doctorId
@@ -81,9 +69,7 @@ export const REMOVE_BLOCKED_CALENDAR_ITEM = gql`
 `;
 
 export const BLOCK_MULTIPLE_CALENDAR_ITEMS = gql`
-  mutation BlockMultipleCalendarItems(
-    $blockCalendarInputs: BlockMultipleItems!
-  ) {
+  mutation BlockMultipleCalendarItems($blockCalendarInputs: BlockMultipleItems!) {
     blockMultipleCalendarItems(blockCalendarInputs: $blockCalendarInputs) {
       blockedCalendar {
         id
@@ -180,18 +166,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
 `;
 
 export const GET_JD_DASHBOARD = gql`
-  query GetJuniorDoctorDashboard(
-    $fromDate: Date!
-    $toDate: Date!
-    $offset: Int!
-    $limit: Int!
-  ) {
-    getJuniorDoctorDashboard(
-      fromDate: $fromDate
-      toDate: $toDate
-      offset: $offset
-      limit: $limit
-    ) {
+  query GetJuniorDoctorDashboard($fromDate: Date!, $toDate: Date!, $offset: Int!, $limit: Int!) {
+    getJuniorDoctorDashboard(fromDate: $fromDate, toDate: $toDate, offset: $offset, limit: $limit) {
       consultsBookedButNotInQueue
       juniorDoctorDetails {
         firstName
