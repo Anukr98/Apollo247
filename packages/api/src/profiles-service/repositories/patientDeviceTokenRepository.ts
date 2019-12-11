@@ -23,8 +23,8 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
     return this.find({ select: ['deviceToken'], where: { patient } });
   }
 
-  deleteDeviceToken(id: string) {
-    return this.delete(id);
+  deleteDeviceToken(deviceToken: string) {
+    return this.delete(deviceToken);
   }
 
   getTokensByMobileNumber(mobileNumber: string) {

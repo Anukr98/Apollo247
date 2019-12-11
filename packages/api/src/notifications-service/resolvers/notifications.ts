@@ -233,7 +233,7 @@ export async function sendCallsNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
