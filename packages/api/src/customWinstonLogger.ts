@@ -1,9 +1,8 @@
-import winston from 'winston';
+import winston, { format as winstonFormat } from 'winston';
 import path from 'path';
-import { createLogger, format as winstonFormat, transports } from 'winston';
-const { combine, timestamp, label, printf } = winstonFormat;
 import { ApiConstants } from 'ApiConstants';
 
+const { combine, timestamp, label } = winstonFormat;
 const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
 const logsDir = path.resolve(logsDirPath);
 
