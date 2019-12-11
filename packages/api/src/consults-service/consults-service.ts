@@ -2,7 +2,6 @@ import '@aph/universal/dist/global';
 import { buildFederatedSchema } from '@apollo/federation';
 import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
-import winston from 'winston';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { connect } from 'consults-service/database/connect';
 import {
@@ -87,28 +86,12 @@ import {
   doctorCallNotificationResolvers,
 } from 'consults-service/resolvers/doctorCallNotification';
 import { format, differenceInMilliseconds } from 'date-fns';
-import path from 'path';
-import { ApiConstants } from 'ApiConstants';
+import winston from 'customWinstonLogger';
 
 (async () => {
   await connect();
 
-  //configure winston for consults service
-  const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
-  const logsDir = path.resolve(logsDirPath);
-  winston.configure({
-    transports: [
-      new winston.transports.File({
-        filename: logsDir + ApiConstants.CONSULTS_SERVICE_ACCESS_LOG_FILE,
-        level: 'info',
-      }),
-      new winston.transports.File({
-        filename: logsDir + ApiConstants.CONSULTS_SERVICE_ERROR_LOG_FILE,
-        level: 'error',
-      }),
-    ],
-    exitOnError: false, // do not exit on handled exceptions
-  });
+  const consultsLogger = winston.loggers.get('consultServiceLogger');
 
   const server = new ApolloServer({
     context: async ({ req }) => {
@@ -225,7 +208,7 @@ import { ApiConstants } from 'ApiConstants';
       /* This plugin is defined in-line. */
       {
         serverWillStart() {
-          winston.log('info', 'Server starting up!');
+          consultsLogger.log('info', 'Server starting up!');
         },
         requestDidStart({ operationName, request }) {
           /* Within this returned object, define functions that respond
@@ -234,7 +217,7 @@ import { ApiConstants } from 'ApiConstants';
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
           return {
             parsingDidStart(requestContext) {
-              winston.log({
+              consultsLogger.log({
                 message: 'Request Starting',
                 time: reqStartTimeFormatted,
                 operation: requestContext.request.query,
@@ -243,7 +226,11 @@ import { ApiConstants } from 'ApiConstants';
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+                consultsLogger.log(
+                  'error',
+                  `Encountered Error at ${reqStartTimeFormatted}: `,
+                  error
+                );
               });
             },
             willSendResponse({ response }) {
@@ -258,7 +245,7 @@ import { ApiConstants } from 'ApiConstants';
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              winston.log(responseLog);
+              consultsLogger.log(responseLog);
             },
           };
         },

@@ -88,7 +88,10 @@ export class PatientRepository extends Repository<Patient> {
   //utility method to get prism auth token
   async getPrismAuthToken(mobileNumber: string) {
     //setting mobile number to static value in non-production environments
-    mobileNumber = process.env.NODE_ENV === 'production' ? mobileNumber : '8019677178';
+    mobileNumber =
+      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+        ? mobileNumber
+        : '8019677178';
 
     const prismHeaders = {
       method: 'GET',
@@ -112,7 +115,10 @@ export class PatientRepository extends Repository<Patient> {
   //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
     //setting mobile number to static value in non-production environments
-    mobileNumber = process.env.NODE_ENV === 'production' ? mobileNumber : '8019677178';
+    mobileNumber =
+      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+        ? mobileNumber
+        : '8019677178';
 
     const prismHeaders = {
       method: 'GET',
@@ -160,7 +166,14 @@ export class PatientRepository extends Repository<Patient> {
         error,
       });
     });
+    this.createLog('Debug Log', 'validateAndGetUHID->patientData', JSON.stringify(patientData), '');
     if (!patientData) {
+      this.createLog(
+        'Debug Log',
+        'validateAndGetUHID->!patientData',
+        JSON.stringify(patientData),
+        ''
+      );
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
         error: 'Invalid PatientId',
       });
@@ -172,13 +185,23 @@ export class PatientRepository extends Repository<Patient> {
       patientData.firstName.trim() !== ''
     ) {
       uhid = await this.createNewUhid(patientData.id);
+      this.createLog('Debug Log', 'validateAndGetUHID->if->UHID', JSON.stringify(uhid), '');
     } else {
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
+      this.createLog(
+        'Debug Log',
+        'validateAndGetUHID->matchedUser',
+        JSON.stringify(matchedUser),
+        ''
+      );
       uhid = matchedUser.length > 0 ? matchedUser[0].UHID : null;
     }
 
     //setting mobile number to static value in non-production environments
-    uhid = process.env.NODE_ENV === 'production' ? uhid : 'AHB.0000724284';
+    uhid =
+      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+        ? uhid
+        : 'AHB.0000724284';
 
     return uhid;
   }
@@ -191,6 +214,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`;
+    this.createLog('Debug Log', 'getPrismUsersDetails->apiCall_URL', JSON.stringify(url), '');
     const msg = `External_API_Call: ${url}`;
     const detailsResult = await fetch(url, prismHeaders)
       .then((res) => {
@@ -207,6 +231,13 @@ export class PatientRepository extends Repository<Patient> {
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
     console.log('uhid:', uhid, 'authToken:', prismAuthToken);
+
+    this.createLog(
+      'Debug Log',
+      'uploadDocumentToPrism',
+      JSON.stringify({ prismAuthToken, uhid }),
+      ''
+    );
 
     const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
     const randomNumber = Math.floor(Math.random() * 10000);
