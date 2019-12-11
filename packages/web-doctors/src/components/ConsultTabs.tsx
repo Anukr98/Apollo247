@@ -208,6 +208,15 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '50%',
       top: '45%',
     },
+    fadedBg: {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      opacity: 0,
+      zIndex: 999,
+    },
     tabBody: {
       minHeight: 60,
       marginTop: '10px',
@@ -438,6 +447,17 @@ export const ConsultTabs: React.FC = () => {
         console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
+        if (
+          message.message.url &&
+          message.message.fileType &&
+          message.message.fileType === 'image'
+        ) {
+          const data = {
+            documentPath: message.message.url,
+          };
+          setDocumentArray(data);
+        }
+
         setLastMsg(message);
       },
       presence(presenceEvent: any) {
@@ -1244,7 +1264,11 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {!loaded && <CircularProgress className={classes.loading} />}
+      {!loaded && (
+        <div>
+          <CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div>
+        </div>
+      )}
 
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
