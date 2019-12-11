@@ -498,6 +498,7 @@ export const ConsultTabs: React.FC = () => {
           newmessage.push(element.entry);
         });
         insertText = newmessage;
+        console.log(newmessage);
         //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
         //}

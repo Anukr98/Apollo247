@@ -8,6 +8,7 @@ import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -218,11 +219,21 @@ export async function sendCallsNotification(
   };
   let notificationResponse;
   const registrationToken: string[] = [];
-
-  patientDetails.patientDeviceTokens.forEach((values) => {
+  const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const listOfIds: string[] = [];
+  allpatients.map((value) => listOfIds.push(value.id));
+  console.log(listOfIds, 'listOfIds');
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
+  if (devicetokensofFamily.length > 0) {
+    devicetokensofFamily.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+  }
+  /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
-  });
-
+  });*/
+  console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
