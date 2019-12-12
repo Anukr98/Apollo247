@@ -21,7 +21,7 @@ export enum ApiConstants {
   PATIENT_HELP_SUBJECT = 'Issue raised by customer : {0} - {1}, {2}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sushma.voleti@popcornapps.com,raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,raj@popcornapps.com',
 
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
@@ -34,6 +34,7 @@ export enum ApiConstants {
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
   BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
 
+  CANCEL_APPOINTMENT_SUBJECT = 'Appointment has been cancelled',
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 
   PRISM_TIMEOUT = 10000,
@@ -46,6 +47,9 @@ export enum ApiConstants {
 
   CART_READY_TITLE = 'Medicine order cart ready',
   CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
+
+  ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
+  ORDER_DELIVERY_BODY = 'Hi {0}, your medicine order is delivered',
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
@@ -70,8 +74,10 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
 
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
-  CANCEL_APPT_BODY = 'Hi {0}! :) Dr. {1} has cancelled your consultation.',
+  CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
+
+  COUNTRY_CODE = '91',
 }

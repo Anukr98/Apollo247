@@ -16,7 +16,12 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { ADD_MEDICAL_RECORD, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  ADD_MEDICAL_RECORD,
+  UPLOAD_FILE,
+  UPLOAD_DOCUMENT,
+  DOWNLOAD_DOCUMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   addPatientMedicalRecord,
   addPatientMedicalRecordVariables,
@@ -25,6 +30,7 @@ import {
   AddMedicalRecordParametersInput,
   MedicalRecordType,
   MedicalTestUnit,
+  UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -48,6 +54,14 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { uploadDocumentVariables, uploadDocument } from '../../graphql/types/uploadDocument';
+import {
+  downloadDocuments,
+  downloadDocumentsVariables,
+} from '../../graphql/types/downloadDocuments';
+import { BottomPopUp } from '../ui/BottomPopUp';
+import { string } from '../../strings/string';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -79,11 +93,19 @@ const styles = StyleSheet.create({
     width: '100%',
     borderBottomWidth: 2,
     paddingTop: 0,
-    paddingBottom: 3,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
   placeholderStyle: {
     color: theme.colors.placeholderTextColor,
+  },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
   },
 });
 
@@ -123,7 +145,7 @@ const replaceStringWithChar = (str: string) => {
   return ss.toLowerCase();
 };
 
-const MedicalTest: RecordTypeType[] = [
+export const MedicalTest: RecordTypeType[] = [
   { value: 'gm', key: MedicalTestUnit.GM },
   {
     value: 'gm/dl',
@@ -137,7 +159,7 @@ const MedicalTest: RecordTypeType[] = [
 
 const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
   parameterName: '',
-  unit: null,
+  unit: MedicalTestUnit._PERCENT_,
   result: 0,
   minimum: 0,
   maximum: 0,
@@ -165,11 +187,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [showRecordTypePopup, setshowRecordTypePopup] = useState<boolean>(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
 
-  const [showUnitPopup, setshowUnitPopup] = useState<boolean>(false);
-
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [selectedUnitIndex, setselectedUnitIndex] = useState<number>();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
-  const [Images, setImages] = useState<PickerImage[]>(
+  const [Images, setImages] = useState<PickerImage>(
     props.navigation.state.params ? props.navigation.state.params!.images : []
   );
   const { currentPatient } = useAllCurrentPatients();
@@ -183,30 +205,106 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const client = useApolloClient();
 
+  // const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
+  //   return Promise.all(
+  //     prescriptions.map((item) =>
+  //       client.mutate<uploadFile, uploadFileVariables>({
+  //         mutation: UPLOAD_FILE,
+  //         fetchPolicy: 'no-cache',
+  //         variables: {
+  //           fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
+  //           base64FileInput: item.data,
+  //         },
+  //       })
+  //     )
+  //   );
+  // };
+
   const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
     return Promise.all(
       prescriptions.map((item) =>
-        client.mutate<uploadFile, uploadFileVariables>({
-          mutation: UPLOAD_FILE,
+        client.mutate<uploadDocument>({
+          mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
           variables: {
-            fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
-            base64FileInput: item.data,
+            UploadDocumentInput: {
+              base64FileInput: item.data,
+              category: 'HealthChecks',
+              fileType:
+                item.path!.substring(item.path!.lastIndexOf('.') + 1) == 'jpg'
+                  ? 'JPEG'
+                  : item.path!.substring(item.path!.lastIndexOf('.') + 1).toUpperCase(),
+              patientId: currentPatient && currentPatient!.id,
+            },
           },
         })
       )
     );
   };
+
+  const isRecordParameterFilled = () => {
+    const medicalRecordsVaild = medicalRecordParameters
+      .map((item) => {
+        return item !== MedicalRecordInitialValues
+          ? {
+              ...item,
+              result: parseFloat(((item && item.result) || 0).toString()),
+              maximum: parseFloat(((item && item.maximum) || 0).toString()),
+              minimum: parseFloat(((item && item.minimum) || 0).toString()),
+            }
+          : undefined;
+      })
+      .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
+    console.log(medicalRecordsVaild);
+
+    if (medicalRecordsVaild.length > 0) {
+      setmedicalRecordParameters(medicalRecordsVaild);
+      return medicalRecordsVaild;
+    } else {
+      return [];
+    }
+  };
+
   const isValid = () => {
-    const valid = medicalRecordParameters.map((item) => {
-      return (
-        (item.maximum || item.minimum || item.result || item.parameterName) &&
-        item.maximum! > item.minimum! &&
-        item.result! <= item.maximum! &&
-        item.result! >= item.minimum!
-      );
+    const validRecordDetails = typeofRecord && testName && dateOfTest ? true : false;
+    const valid = isRecordParameterFilled().map((item) => {
+      return {
+        maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
+        changed:
+          // item.parameterName !== MedicalRecordInitialValues.parameterName
+          //   &&item.result !== MedicalRecordInitialValues.result?
+          true,
+        // : false,
+        notinitial:
+          item.parameterName === '' &&
+          item.result === 0 &&
+          item.maximum === 0 &&
+          item.minimum === 0,
+      };
     });
-    return valid.find((i) => i === false) !== undefined;
+
+    let message = typeofRecord
+      ? testName
+        ? dateOfTest
+          ? ''
+          : 'Enter Date Of Test'
+        : 'Enter Name Of Test'
+      : 'Select the Record Type';
+
+    message === '' &&
+      valid.forEach((item) => {
+        if (item.maxmin === false) {
+          message = 'Please enter valid Maximum and Minimum';
+        }
+      });
+
+    return {
+      isvalid: validRecordDetails,
+      isValidParameter:
+        valid.find((i) => i.maxmin === false || (i.changed === false && !i.notinitial)) !==
+        undefined,
+      message: message,
+    };
   };
 
   const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
@@ -219,27 +317,91 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const formatNumber = (value: string) => {
-    let number = value.indexOf('.') === value.length - 1 ? value : parseFloat(value);
-    return number;
+    let number =
+      value.indexOf('.') === value.length - 1 ||
+      value.indexOf('0', value.length - 1) === value.length - 1 ||
+      value.indexOf('-') === value.length - 1
+        ? value
+        : parseFloat(value);
+    return number || 0;
   };
-
   const onSavePress = () => {
-    setshowSpinner(true);
-    let uploadedUrls = [];
-    multiplePhysicalPrescriptionUpload(Images)
-      .then((data) => {
-        const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-        const uploadedPrescriptions = Images.map((item, index) => ({
-          ...item,
-          uploadedUrl: uploadUrls[index],
-        }));
-
-        uploadedUrls = uploadedPrescriptions.map((item) => item.uploadedUrl);
-
-        // setPhysicalPrescriptions && setPhysicalPrescriptions(uploadedPrescriptions);
-        // setshowSpinner(false);
-        // props.navigation.navigate(AppRoutes.CheckoutScene);
-
+    // console.log('images', Images);
+    const valid = isValid();
+    if (valid.isvalid && !valid.isValidParameter) {
+      setshowSpinner(true);
+      let uploadedUrls: any = [];
+      if (Images.length > 0) {
+        multiplePhysicalPrescriptionUpload(Images)
+          .then((data) => {
+            console.log('uploaddocument', data);
+            const uploadUrlscheck = data.map((item) =>
+              item.data!.uploadDocument.status ? item.data!.uploadDocument : null
+            );
+            console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+            var filtered = uploadUrlscheck.filter(function(el) {
+              return el != null;
+            });
+            console.log('filtered', filtered);
+            if (filtered.length > 0) {
+              const inputData = {
+                patientId: currentPatient ? currentPatient.id : '',
+                testName: testName,
+                testDate:
+                  dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+                recordType: typeofRecord,
+                referringDoctor: referringDoctor,
+                sourceName: '',
+                observations: observations,
+                additionalNotes: additionalNotes,
+                medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
+                documentURLs: filtered.map((item) => item!.filePath).join(','),
+                prismFileIds: filtered.map((item) => item!.fileId).join(','),
+              };
+              console.log('in', inputData);
+              if (uploadUrlscheck!.length > 0) {
+                client
+                  .mutate<addPatientMedicalRecord>({
+                    mutation: ADD_MEDICAL_RECORD,
+                    variables: {
+                      AddMedicalRecordInput: inputData,
+                    },
+                  })
+                  .then(({ data }) => {
+                    setshowSpinner(false);
+                    console.log('suceessfully added', data);
+                    const status = g(data, 'addPatientMedicalRecord', 'status');
+                    if (status) {
+                      props.navigation.goBack();
+                    }
+                  })
+                  .catch((e) => {
+                    setshowSpinner(false);
+                    console.log(JSON.stringify(e), 'eeeee');
+                    Alert.alert('Alert', 'Please fill all the details', [
+                      { text: 'OK', onPress: () => console.log('OK Pressed') },
+                    ]);
+                  });
+              } else {
+                Alert.alert('Download image url not getting');
+              }
+            } else {
+              setshowSpinner(false);
+              showAphAlert!({
+                title: `Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`,
+                description: 'Your upload images are failed ',
+              });
+            }
+          })
+          .catch((e) => {
+            showAphAlert!({
+              title: `Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`,
+              description: 'Your upload images are failed ',
+            });
+            setshowSpinner(false);
+            console.log({ e });
+          });
+      } else {
         const inputData = {
           patientId: currentPatient ? currentPatient.id : '',
           testName: testName,
@@ -249,40 +411,40 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           sourceName: '',
           observations: observations,
           additionalNotes: additionalNotes,
-          medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
-          documentURLs: uploadedUrls.join(','),
+          medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
+          documentURLs: '',
+          prismFileIds: '',
         };
         console.log('in', inputData);
-
-        if (currentPatient && currentPatient.id)
-          client
-            .mutate<addPatientMedicalRecord, addPatientMedicalRecordVariables>({
-              mutation: ADD_MEDICAL_RECORD,
-              variables: {
-                AddMedicalRecordInput: inputData,
-              },
-            })
-            .then(({ data }) => {
-              setshowSpinner(false);
-              const status = g(data, 'addPatientMedicalRecord', 'status');
-
-              if (status) {
-                props.navigation.goBack();
-              }
-            })
-            .catch((e) => {
-              setshowSpinner(false);
-              console.log(JSON.stringify(e), 'eeeee');
-              Alert.alert('Alert', 'Please fill all the details', [
-                { text: 'OK', onPress: () => console.log('OK Pressed') },
-              ]);
-            });
-      })
-      .catch((e) => {
-        setshowSpinner(false);
-        console.error({ e });
-        Alert.alert('Alert', 'Error occurred while uploading prescriptions.');
+        client
+          .mutate<addPatientMedicalRecord>({
+            mutation: ADD_MEDICAL_RECORD,
+            variables: {
+              AddMedicalRecordInput: inputData,
+            },
+          })
+          .then(({ data }) => {
+            setshowSpinner(false);
+            console.log('suceessfully added', data);
+            const status = g(data, 'addPatientMedicalRecord', 'status');
+            if (status) {
+              props.navigation.goBack();
+            }
+          })
+          .catch((e) => {
+            setshowSpinner(false);
+            console.log(JSON.stringify(e), 'eeeee');
+            Alert.alert('Alert', 'Please fill all the details', [
+              { text: 'OK', onPress: () => console.log('OK Pressed') },
+            ]);
+          });
+      }
+    } else {
+      showAphAlert!({
+        title: 'Alert!',
+        description: valid.message,
       });
+    }
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
@@ -568,6 +730,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                         placeholder={'Enter value'}
                         value={(item.result || '').toString()}
                         onChangeText={(value) => setParametersData('result', value, i, true)}
+                        keyboardType={'numbers-and-punctuation'}
                       />
                     </View>
                     <View style={{ flex: 1, marginLeft: 8 }}>
@@ -644,6 +807,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                         placeholder={'Enter value'}
                         value={(item.minimum || '').toString()}
                         onChangeText={(value) => setParametersData('minimum', value, i, true)}
+                        keyboardType={'numbers-and-punctuation'}
                       />
                     </View>
                     <View style={{ flex: 1, marginLeft: 8 }}>
@@ -652,6 +816,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                         placeholder={'Enter value'}
                         value={(item.maximum || '').toString()}
                         onChangeText={(value) => setParametersData('maximum', value, i, true)}
+                        keyboardType={'numbers-and-punctuation'}
                       />
                     </View>
                   </View>
@@ -729,7 +894,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           title="ADD RECORD"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={onSavePress}
-          disabled={isValid()}
         />
       </StickyBottomComponent>
     );
@@ -793,6 +957,24 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         />
       )} */}
       {showSpinner && <Spinner />}
+      {showPopUp && (
+        <BottomPopUp
+          title={`Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`}
+          description={'Please select images first'}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.gotItStyles}
+              onPress={() => {
+                setshowPopUp(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };

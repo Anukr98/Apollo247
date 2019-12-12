@@ -53,6 +53,7 @@ export const saveMedicineOrderTypeDefs = gql`
     patientAddressId: ID!
     devliveryCharges: Float
     prescriptionImageUrl: String
+    prismPrescriptionFileId: String
     items: [MedicineCartItem]
   }
 
@@ -64,6 +65,7 @@ export const saveMedicineOrderTypeDefs = gql`
     mrp: Float
     isPrescriptionNeeded: Int
     prescriptionImageUrl: String
+    prismPrescriptionFileId: String
     mou: Int
     isMedicine: String
   }
@@ -89,6 +91,7 @@ type MedicineCartInput = {
   patientAddressId: string;
   devliveryCharges: number;
   prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
   items: MedicineCartItem[];
 };
 
@@ -100,6 +103,7 @@ type MedicineCartItem = {
   mrp: number;
   isPrescriptionNeeded: number;
   prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
   mou: number;
   isMedicine: string;
 };
@@ -150,6 +154,7 @@ const SaveMedicineOrder: Resolver<
     deliveryType: MedicineCartInput.medicineDeliveryType,
     quoteId: MedicineCartInput.quoteId,
     prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
+    prismPrescriptionFileId: MedicineCartInput.prismPrescriptionFileId,
     currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
     patientAddressId: MedicineCartInput.patientAddressId,
   };
@@ -171,6 +176,7 @@ const SaveMedicineOrder: Resolver<
       medicineOrders: saveOrder,
       orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
       statusDate: new Date(),
+      hideStatus: false,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(
       medicineOrderStatusAttrs,

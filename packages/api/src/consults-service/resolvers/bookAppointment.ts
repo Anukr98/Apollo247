@@ -1,6 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  APPOINTMENT_TYPE,
+  APPOINTMENT_STATE,
+  BOOKINGSOURCE,
+  DEVICETYPE,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -28,11 +34,24 @@ export const bookAppointmentTypeDefs = gql`
     PENDING
     PAYMENT_PENDING
     NO_SHOW
+    JUNIOR_DOCTOR_STARTED
+    JUNIOR_DOCTOR_ENDED
+    CALL_ABANDON
   }
 
   enum APPOINTMENT_TYPE {
     ONLINE
     PHYSICAL
+    BOTH
+  }
+
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+  enum DEVICETYPE {
+    IOS
+    ANDROID
   }
 
   type AppointmentBooking {
@@ -41,7 +60,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
     status: STATUS!
     patientName: String!
     appointmentState: APPOINTMENT_STATE!
@@ -53,7 +72,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
     status: STATUS!
     patientName: String!
     appointmentState: APPOINTMENT_STATE!
@@ -65,7 +84,10 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
+    symptoms: String
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
   }
 
   type BookAppointmentResult {
@@ -86,7 +108,10 @@ type BookAppointmentInput = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
+  symptoms?: string;
+  bookingSource?: BOOKINGSOURCE;
+  deviceType?: DEVICETYPE;
 };
 
 type AppointmentBooking = {
@@ -95,7 +120,7 @@ type AppointmentBooking = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
@@ -107,7 +132,7 @@ type AppointmentBookingResult = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
@@ -115,6 +140,11 @@ type AppointmentBookingResult = {
 };
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
+enum CONSULTFLAG {
+  OUTOFCONSULTHOURS = 'OUTOFCONSULTHOURS',
+  OUTOFBUFFERTIME = 'OUTOFBUFFERTIME',
+  INCONSULTHOURS = 'INCONSULTHOURS',
+}
 
 const bookAppointment: Resolver<
   null,
@@ -149,7 +179,10 @@ const bookAppointment: Resolver<
   if (isJunior) {
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
-
+  // check if hospital id is linked to doctor
+  if (docDetails.doctorHospital[0].facility.id !== appointmentInput.hospitalId) {
+    throw new AphError(AphErrorMessages.INVALID_HOSPITAL_ID, undefined, {});
+  }
   //check if doctor and hospital are matched
   const facilityId = appointmentInput.hospitalId;
   if (facilityId) {
@@ -165,11 +198,15 @@ const bookAppointment: Resolver<
 
   //check if doctor slot is blocked
   const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const recCount = await blockRepo.checkIfSlotBlocked(
+  const slotDetails = await blockRepo.checkIfSlotBlocked(
     appointmentInput.appointmentDateTime,
     appointmentInput.doctorId
   );
-  if (recCount > 0) {
+  if (
+    slotDetails[0] &&
+    (slotDetails[0].consultMode === APPOINTMENT_TYPE.BOTH.toString() ||
+      slotDetails[0].consultMode === appointmentInput.appointmentType.toString())
+  ) {
     throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
@@ -202,13 +239,28 @@ const bookAppointment: Resolver<
     doctorsDb
   );
 
-  if (!checkHours) {
+  if (checkHours === CONSULTFLAG.OUTOFBUFFERTIME) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  }
+
+  if (checkHours === CONSULTFLAG.OUTOFCONSULTHOURS) {
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
+  }
+
+  // check if patient cancelled appointment for more than 3 times in a week
+
+  const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const cancelledCount = await apptsrepo.checkPatientCancelledHistory(
+    appointmentInput.patientId,
+    appointmentInput.doctorId
+  );
+  if (cancelledCount >= 3) {
+    throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
   }
 
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
-    status: STATUS.PENDING,
+    status: STATUS.PAYMENT_PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
     appointmentState: APPOINTMENT_STATE.NEW,
@@ -220,87 +272,7 @@ const bookAppointment: Resolver<
   //   doctorsDb,
   //   appointmentInput.appointmentType
   // );
-  let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
-    '{0}',
-    patientDetails.firstName
-  );
-  smsMessage = smsMessage.replace('{1}', appointment.displayId.toString());
-  smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
-  const istDateTime = addMilliseconds(appointmentInput.appointmentDateTime, 19800000);
-  const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-  smsMessage = smsMessage.replace('{3}', smsDate.toString());
-  smsMessage = smsMessage.replace('at {4}', '');
-  console.log(smsMessage, 'sms message');
-  sendSMS(smsMessage);
-  // send notification
-  const pushNotificationInput = {
-    appointmentId: appointment.id,
-    notificationType: NotificationType.BOOK_APPOINTMENT,
-  };
-  const notificationResult = sendNotification(
-    pushNotificationInput,
-    patientsDb,
-    consultsDb,
-    doctorsDb
-  );
-  console.log(notificationResult, 'book appt notification');
-  const hospitalCity = docDetails.doctorHospital[0].facility.city;
-  const apptDate = format(istDateTime, 'dd/MM/yyyy');
-  const apptTime = format(istDateTime, 'hh:mm');
-  const mailSubject =
-    'New Appointment for ' +
-    hospitalCity +
-    ' Hosp Doctor – ' +
-    apptDate +
-    ', ' +
-    apptTime +
-    'hrs, Dr. ' +
-    docDetails.firstName +
-    ' ' +
-    docDetails.lastName;
-  let mailContent =
-    'New Appointment has been booked on Apollo 247 app with the following details:-';
-  mailContent +=
-    'Appointment No :-' +
-    appointment.displayId.toString() +
-    '<br>Patient Name :-' +
-    patientDetails.firstName +
-    '<br>Patient Location (city) :-\nDoctor Name :-' +
-    docDetails.firstName +
-    ' ' +
-    docDetails.lastName +
-    '<br>Doctor Location (ATHS/Hyd Hosp/Chennai Hosp) :-' +
-    hospitalCity +
-    '<br>Appointment Date :-' +
-    format(istDateTime, 'dd/MM/yyyy') +
-    '<br>Appointment Slot :-' +
-    format(istDateTime, 'hh:mm') +
-    ' - ' +
-    format(addMinutes(istDateTime, 15), 'hh:mm') +
-    '<br>Mode of Consult :-' +
-    appointmentInput.appointmentType;
-  const toEmailId =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_EMAILID
-      : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;
 
-  const ccEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_CC_EMAILID
-      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
-  const emailContent: EmailMessage = {
-    ccEmail: ccEmailIds.toString(),
-    toEmail: toEmailId.toString(),
-    subject: mailSubject,
-    fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-    fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-    messageContent: mailContent,
-  };
-  sendMail(emailContent);
   //message queue starts
   /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;

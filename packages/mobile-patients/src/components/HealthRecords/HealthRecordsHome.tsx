@@ -22,6 +22,7 @@ import {
   GET_MEDICAL_RECORD,
   DELETE_PATIENT_MEDICAL_RECORD,
   CHECK_IF_FOLLOWUP_BOOKED,
+  GET_MEDICAL_PRISM_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -42,7 +43,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   getPatientMedicalRecords,
@@ -60,6 +61,13 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { useUIElements } from '../UIElementsProvider';
+import {
+  getPatientPrismMedicalRecords,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const { width, height } = Dimensions.get('window');
 
@@ -77,6 +85,9 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextContainerStyle: {
+    maxWidth: '65%',
   },
   nameTextStyle: {
     marginLeft: 5,
@@ -116,12 +127,29 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [medicalRecords, setmedicalRecords] = useState<
     (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
   >([]);
+  const [labTests, setlabTests] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[]
+    | null
+    | undefined
+  >([]);
+  const [healthChecks, sethealthChecks] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[]
+    | null
+    | undefined
+  >([]);
+  const [hospitalizations, sethospitalizations] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
+    | null
+    | undefined
+  >([]);
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [loading, setLoading && setLoading] = useState<boolean>(true);
+  const { loading, setLoading } = useUIElements();
+
   const [pastarrya, setPastarrya] = useState<[]>([]);
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
@@ -147,7 +175,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
 
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -200,10 +228,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setarrayValues(array);
         //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
 
-        setLoading(false);
+        setLoading && setLoading(false);
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
         //Alert.alert('Error', error);
@@ -212,7 +240,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const fetchData = useCallback(
     (loading: boolean = false) => {
-      loading && setLoading(true);
+      loading && setLoading && setLoading(true);
       client
         .query<getPatientMedicalRecords>({
           query: GET_MEDICAL_RECORD,
@@ -223,12 +251,42 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         })
         .then(({ data }) => {
           console.log('data', data);
-          loading && setLoading(false);
+          loading && setLoading && setLoading(false);
           const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
           setmedicalRecords(records);
         })
         .catch((error) => {
-          loading && setLoading(false);
+          loading && setLoading && setLoading(false);
+          console.log('Error occured', { error });
+          //Alert.alert('Error', error.message);
+        });
+    },
+    [currentPatient]
+  );
+
+  const fetchTestData = useCallback(
+    (loading: boolean = false) => {
+      loading && setLoading && setLoading(true);
+      client
+        .query<getPatientPrismMedicalRecords>({
+          query: GET_MEDICAL_PRISM_RECORD,
+          variables: {
+            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          console.log('data', data);
+          loading && setLoading && setLoading(false);
+          const labTestsData = g(data, 'getPatientPrismMedicalRecords', 'labTests');
+          const healthChecksData = g(data, 'getPatientPrismMedicalRecords', 'healthChecks');
+          const hospitalizationsData = g(data, 'getPatientPrismMedicalRecords', 'hospitalizations');
+          setlabTests(labTestsData);
+          sethealthChecks(healthChecksData);
+          sethospitalizations(hospitalizationsData);
+        })
+        .catch((error) => {
+          loading && setLoading && setLoading(false);
           console.log('Error occured', { error });
           //Alert.alert('Error', error.message);
         });
@@ -239,12 +297,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   useEffect(() => {
     fetchPastData();
     fetchData();
+    fetchTestData();
   }, [currentPatient]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchPastData();
       fetchData();
+      fetchTestData();
       setDisplayFilter(false);
     });
     return () => {
@@ -291,7 +351,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+            // onPress={() => props.navigation.popToTop()}
+            onPress={() => {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                })
+              );
+            }}
           >
             <ApolloLogo />
           </TouchableOpacity>
@@ -311,11 +380,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                   borderRightWidth: 0,
                   borderRightColor: 'rgba(2, 71, 91, 0.2)',
                   backgroundColor: theme.colors.WHITE,
+                  paddingBottom: 8,
                 }}
               >
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View>
-                  <Text style={styles.nameTextStyle}>
+                <View style={styles.nameTextContainerStyle}>
+                  <Text style={styles.nameTextStyle} numberOfLines={1}>
                     {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
@@ -327,6 +397,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             }
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            unsetloaderDisplay={true}
           ></ProfileList>
           {/* <MaterialMenu
             onPress={(item) => {
@@ -407,8 +478,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         </View> */}
         <TabsComponent
           style={{
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
             //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
             backgroundColor: theme.colors.CARD_BG,
+            shadowRadius: 2,
           }}
           height={44}
           data={tabs}
@@ -438,82 +512,87 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const renderConsult = (item: any, index: number) => {
+    let dataval =
+      item.caseSheet &&
+      item.caseSheet.find((obj: any) => {
+        return (
+          obj.doctorType === 'STAR_APOLLO' ||
+          obj.doctorType === 'APOLLO' ||
+          obj.doctorType === 'PAYROLL'
+        );
+      });
+
+    return (
+      <HealthConsultView
+        key={index}
+        onPressOrder={() => {
+          CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup'), setdisplayOrderPopup(true);
+        }}
+        onClickCard={() => {
+          props.navigation.navigate(AppRoutes.ConsultDetails, {
+            CaseSheet: item.id,
+            DoctorInfo: item.doctorInfo,
+            FollowUp: item.isFollowUp,
+            appointmentType: item.appointmentType,
+            DisplayId: item.displayId,
+            BlobName: g(dataval, 'blobName'),
+          });
+        }}
+        PastData={item}
+        navigation={props.navigation}
+        onFollowUpClick={() => onFollowUpClick(item)}
+      />
+    );
+  };
+
+  const renderEmptyConsult = () => {
+    if (!loading) {
+      return (
+        <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
+          {renderFilter()}
+          <View
+            style={{
+              marginTop: 38,
+              height: 60,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <NoData />
+          </View>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#02475b',
+              marginBottom: 25,
+              alignItems: 'center',
+              textAlign: 'center',
+            }}
+          >
+            You don’t have any records with us right now. {'\n'}Add a record to keep everything
+            handy in one place!
+          </Text>
+          <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
+            <Button
+              title="ADD RECORD"
+              onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+            />
+          </View>
+        </View>
+      );
+    }
+  };
+
   const renderConsults = () => {
     return (
       <View>
         {arrayValues && arrayValues.length !== 0 && renderFilter()}
-
-        {arrayValues == 0 ? (
-          <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
-            {renderFilter()}
-            <View
-              style={{
-                marginTop: 38,
-                height: 60,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <NoData />
-            </View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(12),
-                color: '#02475b',
-                marginBottom: 25,
-                alignItems: 'center',
-                textAlign: 'center',
-              }}
-            >
-              You don’t have any records with us right now. {'\n'}Add a record to keep everything
-              handy in one place!
-            </Text>
-            <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
-              <Button
-                title="ADD RECORD"
-                onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
-              />
-            </View>
-          </View>
-        ) : (
-          <View>
-            {arrayValues &&
-              arrayValues.map((item: any, i: number) => {
-                let dataval =
-                  item.caseSheet &&
-                  item.caseSheet.find((obj: any) => {
-                    return (
-                      obj.doctorType === 'STAR_APOLLO' ||
-                      obj.doctorType === 'APOLLO' ||
-                      obj.doctorType === 'PAYROLL'
-                    );
-                  });
-
-                return (
-                  <HealthConsultView
-                    key={i}
-                    onPressOrder={() => {
-                      CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup'),
-                        setdisplayOrderPopup(true);
-                    }}
-                    onClickCard={() => {
-                      props.navigation.navigate(AppRoutes.ConsultDetails, {
-                        CaseSheet: item.id,
-                        DoctorInfo: item.doctorInfo,
-                        FollowUp: item.isFollowUp,
-                        appointmentType: item.appointmentType,
-                        DisplayId: item.displayId,
-                        BlobName: g(dataval, 'blobName'),
-                      });
-                    }}
-                    PastData={item}
-                    navigation={props.navigation}
-                    onFollowUpClick={() => onFollowUpClick(item)}
-                  />
-                );
-              })}
-          </View>
-        )}
+        <FlatList
+          data={arrayValues}
+          renderItem={({ item, index }) => renderConsult(item, index)}
+          ListEmptyComponent={renderEmptyConsult()}
+        />
       </View>
     );
   };
@@ -570,6 +649,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               navigation={props.navigation}
               MedicalRecordData={medicalRecords}
               renderDeleteMedicalOrder={renderDeleteMedicalOrder}
+              labTestsData={labTests}
+              healthChecksData={healthChecks}
+              hospitalizationsData={hospitalizations}
             />
           )}
         </ScrollView>
@@ -587,7 +669,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           data={JSON.parse(JSON.stringify(FilterData))}
           filterLength={() => {
             setTimeout(() => {
-              setLoading(false);
+              setLoading && setLoading(false);
             }, 500);
           }}
         />
@@ -600,7 +682,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           getData={(data: (PickerImage | PickerImage[])[]) => {}}
         />
       )}
-      {loading && <Spinner />}
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}

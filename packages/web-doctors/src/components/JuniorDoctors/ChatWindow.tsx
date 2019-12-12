@@ -6,6 +6,7 @@ import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { ApolloError } from 'apollo-client';
+import moment from 'moment';
 
 // import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
 // import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
@@ -319,6 +320,15 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: '100%',
       },
     },
+    timeStamp: {
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'right',
+      marginRight: -7,
+      marginBottom: -5,
+      paddingTop: 5,
+      color: '#02475b',
+    },
   };
 });
 
@@ -329,6 +339,7 @@ interface MessagesObjectProps {
   automatedText: string;
   duration: string;
   url: string;
+  messageDate: string;
 }
 
 interface ConsultRoomProps {
@@ -377,6 +388,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const startConsult = '^^#startconsult';
   const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
+  const stopConsultJr = '^^#stopconsultJr';
   const documentUpload = '^^#DocumentUpload';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
@@ -386,6 +398,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const secondMessage = '^^#secondMessage';
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
+  const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -483,10 +497,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
+          message.message.message !== stopConsult &&
           message.message.message !== firstMessage &&
           message.message.message !== secondMessage &&
           message.message.message !== covertVideoMsg &&
-          message.message.message !== covertAudioMsg
+          message.message.message !== covertAudioMsg &&
+          message.message.message !== cancelConsultInitiated &&
+          message.message.message !== callAbandonment
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -502,7 +519,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     };
   }, []);
 
-  const getHistory = (timetoken: number) => {
+  const getHistory = (timetoken: number | undefined) => {
     pubnub.history(
       {
         channel: channel,
@@ -511,10 +528,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         stringifiedTimeToken: true,
         start: timetoken,
       },
-      (status, res) => {
+      (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
         console.log(newmessage);
-        res.messages.forEach((element, index) => {
+        res.messages.forEach((element: any, index: any) => {
           //newmessage[index] = element.entry;
           newmessage.push(element.entry);
         });
@@ -522,7 +539,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
         //}
-        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        const end: number | undefined = res.endTimeToken ? res.endTimeToken : 1;
         if (res.messages.length == 100) {
           getHistory(end);
         }
@@ -530,7 +547,27 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
-
+  const convertChatTime = (timeStamp: any) => {
+    let utcString;
+    if (timeStamp) {
+      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
+        moment(timeStamp).format('YYYY-MM-DD')
+      );
+      if (dateValidate == 0) {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format('h:mm A');
+      } else {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format('DD MMM, YYYY h:mm A');
+      }
+    }
+    console.log(timeStamp, utcString);
+    return utcString ? utcString : '--';
+  };
   const uploadfile = (url: string) => {
     // console.log('ram');
     apolloClient
@@ -554,6 +591,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     const text = {
       id: doctorId,
       message: messageText,
+      messageDate: new Date(),
     };
     setMessageText('');
     pubnub.publish(
@@ -573,7 +611,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult ||
+      rowData.message === stopConsultJr ||
       rowData.message === languageQue ||
       rowData.message === jdThankyou
     ) {
@@ -597,7 +635,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== firstMessage &&
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
-      rowData.message !== covertAudioMsg
+      rowData.message !== covertAudioMsg &&
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -622,7 +662,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <span>
                   <img src={require('images/ic_round_call.svg')} />
                 </span>
-                <span>{rowData.message}</span>
+                {rowData.messageDate && (
+                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                )}
               </div>
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
@@ -654,9 +696,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   }}
                 >
                   <img src={rowData.url} alt={rowData.url} />
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
                 </div>
               ) : (
-                <span>{getAutomatedMessage(rowData)}</span>
+                <>
+                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -676,7 +726,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== firstMessage &&
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
-      rowData.message !== covertAudioMsg
+      rowData.message !== covertAudioMsg &&
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -693,6 +745,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                     ? 'You missed a video call'
                     : 'You missed a voice call'}
                 </span>
+                {rowData.messageDate && (
+                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                )}
               </div>
             </div>
           ) : rowData.duration ? (
@@ -704,6 +759,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <span>{rowData.message}</span>
               </div>
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
+              {rowData.messageDate && (
+                <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+              )}
             </div>
           ) : (
             <div
@@ -733,9 +791,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   className={classes.imageUpload}
                 >
                   <img src={rowData.url} alt={rowData.url} />
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
                 </div>
               ) : (
-                <span>{getAutomatedMessage(rowData)}</span>
+                <>
+                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -789,6 +855,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       id: doctorId,
       message: stopcallMsg,
       isTyping: true,
+      messageDate: new Date(),
     };
     sendMsg(text, true);
     const stoptext = {
@@ -798,6 +865,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
+      messageDate: new Date(),
     };
     sendMsg(stoptext, true);
   };
@@ -812,6 +880,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       id: doctorId,
       message: stopcallMsg,
       isTyping: true,
+      messageDate: new Date(),
     };
     sendMsg(text, true);
   };
@@ -822,6 +891,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       const text = {
         isTyping: true,
         message: convertVideo ? covertVideoMsg : covertAudioMsg,
+        messageDate: new Date(),
       };
       sendMsg(text, false);
     }, 10);
@@ -921,6 +991,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                             message: `^^#DocumentUpload`,
                             url: url,
                             isTyping: true,
+                            messageDate: new Date(),
                           };
                           uploadfile(url);
                           sendMsg(uploadObject, true);
@@ -1063,6 +1134,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
 //           message: `^^#DocumentUpload`,
 //           url: response!.data!.uploadChatDocument!.filePath,
 //           isTyping: true,
+//messageDate: new Date(),
 //         };
 //         sendMsg(uploadObject, true);
 //         console.log(uploadObject);

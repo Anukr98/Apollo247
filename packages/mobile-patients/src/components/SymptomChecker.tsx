@@ -280,6 +280,8 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
             CommonLogEvent(AppRoutes.SymptomChecker, 'Go back clicked')
           )}
           titleStyle={{ marginLeft: 60 }}
+          titleTextProps={{ ellipsizeMode: 'middle' }}
+          titleTextViewStyle={{ maxWidth: '75%' }}
           rightComponent={
             <View>
               <ProfileList

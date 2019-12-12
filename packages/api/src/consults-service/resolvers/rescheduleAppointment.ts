@@ -11,11 +11,17 @@ import {
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
+import _ from 'lodash';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { format } from 'date-fns';
+import { sendMail } from 'notifications-service/resolvers/email';
+import { EmailMessage } from 'types/notificationMessageTypes';
+import { ApiConstants } from 'ApiConstants';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
-import { differenceInDays } from 'date-fns';
-import { ApiConstants } from 'ApiConstants';
+import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const rescheduleAppointmentTypeDefs = gql`
@@ -74,6 +80,7 @@ export const rescheduleAppointmentTypeDefs = gql`
     isPaid: Int!
     isCancel: Int!
     rescheduleCount: Int!
+    doctorRescheduleCount: Int!
     appointmentState: APPOINTMENT_STATE!
     isFollowUp: Int!
   }
@@ -156,6 +163,7 @@ const checkIfReschedule: Resolver<
   let isPaid = 0,
     isCancel = 0,
     rescheduleCount = 0,
+    doctorRescheduleCount = 0,
     isFollowUp: Boolean = false;
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -164,6 +172,7 @@ const checkIfReschedule: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
   rescheduleCount = apptDetails.rescheduleCount;
+  doctorRescheduleCount = apptDetails.rescheduleCountByDoctor;
   isFollowUp = apptDetails.isFollowUp;
   if (apptDetails && apptDetails.isFollowUp == false) {
     if (apptDetails.rescheduleCount >= 3) {
@@ -198,6 +207,7 @@ const checkIfReschedule: Resolver<
     isPaid,
     isCancel,
     rescheduleCount,
+    doctorRescheduleCount,
     appointmentState: apptDetails.appointmentState,
     isFollowUp,
   };
@@ -214,9 +224,12 @@ const initiateRescheduleAppointment: Resolver<
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-
-  if (appointment.status !== STATUS.PENDING && appointment.status !== STATUS.CONFIRMED) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  if (
+    appointment.status !== STATUS.PENDING &&
+    appointment.status !== STATUS.CONFIRMED &&
+    appointment.status !== STATUS.IN_PROGRESS
+  ) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_STATUS_TO_RESCHEDULE, undefined, {});
   }
 
   if (RescheduleAppointmentInput.rescheduledDateTime < new Date())
@@ -277,6 +290,25 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
+    bookRescheduleAppointmentInput.appointmentId
+  );
+
+  if (rescheduleDetails) {
+    bookRescheduleAppointmentInput.initiatedBy = rescheduleDetails.rescheduleInitiatedBy;
+  }
+
+  if (apptDetails.status == STATUS.COMPLETED || apptDetails.status == STATUS.CANCELLED) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+
+  // doctor details
+  const doctor = doctorsDb.getCustomRepository(DoctorRepository);
+  const docDetails = await doctor.findById(apptDetails.doctorId);
+  if (!docDetails) {
+    throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  }
+
   //check if given appointment datetime is greater than current date time
   if (bookRescheduleAppointmentInput.newDateTimeslot <= new Date()) {
     throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
@@ -284,11 +316,11 @@ const bookRescheduleAppointment: Resolver<
 
   //check if doctor slot is blocked
   const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const recCount = await blockRepo.checkIfSlotBlocked(
+  const slotDetails = await blockRepo.checkIfSlotBlocked(
     bookRescheduleAppointmentInput.newDateTimeslot,
     bookRescheduleAppointmentInput.doctorId
   );
-  if (recCount > 0) {
+  if (slotDetails[0]) {
     throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
@@ -306,6 +338,13 @@ const bookRescheduleAppointment: Resolver<
   );
   if (patientConsults) {
     throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  }
+
+  //check details
+  const patient = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patient.findById(bookRescheduleAppointmentInput.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
@@ -361,14 +400,79 @@ const bookRescheduleAppointment: Resolver<
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
-    const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetailsByAppointment(
-      bookRescheduleAppointmentInput.appointmentId
-    );
     if (rescheduleDetails) {
       rescheduleDetails.id;
       await rescheduleApptRepo.updateReschedule(rescheduleDetails.id, TRANSFER_STATUS.COMPLETED);
     }
   }
+  const mailContentTemplate = _.template(
+    `<html>
+    <body>
+    <p> Appointment has been rescheduled on Apollo 247 app with the following details:</p>
+    <ul>
+    <li>Appointment No  : <%- rescheduledapptNo %></li>
+    <li>Patient Name  : <%- PatientfirstName %></li>
+    <li>Mobile Number   : <%- PatientMobileNumber %></li>
+    <li>Doctor Name  : <%- docfirstName %></li>
+    <li>Doctor Location (ATHS/Hyd Hosp/Chennai Hosp) : <%- hospitalCity %></li>
+    <li>Appointment Date  : <%- apptDate %></li>
+    <li>Appointment Slot  : <%- apptTime %></li>
+    <li>Mode of Consult : <%-  rescheduledapptType %></li>
+    </ul>
+    </body> 
+    </html>
+    `
+  );
+
+  const rescheduledapptDetails = await appointmentRepo.findById(
+    bookRescheduleAppointmentInput.appointmentId
+  );
+  if (!rescheduledapptDetails) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+
+  const hospitalCity = docDetails.doctorHospital[0].facility.city;
+  const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
+  const apptDate = format(istDateTime, 'dd/MM/yyyy');
+  const apptTime = format(istDateTime, 'hh:mm');
+
+  const mailContent = mailContentTemplate({
+    hospitalCity: hospitalCity || 'N/A',
+    apptDate,
+    apptTime,
+    PatientfirstName: patientDetails.firstName || 'N/A',
+    PatientMobileNumber: patientDetails.mobileNumber || 'N/A',
+    rescheduledapptType: rescheduledapptDetails.appointmentType || 'N/A',
+    rescheduledapptNo: rescheduledapptDetails.displayId.toString() || 'N/A',
+    docfirstName: docDetails.firstName || 'N/A',
+  });
+
+  const emailsubject = _.template(`
+    Appointment rescheduled for ${hospitalCity},  Hosp Doctor – ${apptDate} ${apptTime}hrs, Dr. ${docDetails.firstName} ${docDetails.lastName}`);
+
+  const mailSubject = emailsubject({
+    docDetails,
+    apptDate,
+    apptTime,
+    hospitalCity,
+  });
+
+  const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
+  const ccEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_APPT_CC_EMAILID
+      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  const emailContent: EmailMessage = {
+    ccEmail: ccEmailIds.toString(),
+    toEmail: toEmailId.toString(),
+    subject: mailSubject,
+    fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
+    fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
+    messageContent: mailContent,
+  };
+  sendMail(emailContent);
 
   const appointmentDetails = await appointmentRepo.findById(finalAppointmentId);
   if (!appointmentDetails) {

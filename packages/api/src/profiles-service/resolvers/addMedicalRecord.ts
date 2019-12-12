@@ -19,6 +19,7 @@ export const addPatientMedicalRecordTypeDefs = gql`
     GM
     _PERCENT_
     GM_SLASH_DL
+    NONE
   }
 
   enum MedicalRecordType {
@@ -38,6 +39,7 @@ export const addPatientMedicalRecordTypeDefs = gql`
     observations: String
     additionalNotes: String
     documentURLs: String
+    prismFileIds: String
     medicalRecordParameters: [AddMedicalRecordParametersInput]
   }
 
@@ -68,6 +70,7 @@ type AddMedicalRecordInput = {
   observations: string;
   additionalNotes: string;
   documentURLs: string;
+  prismFileIds: string;
   medicalRecordParameters: [AddMedicalRecordParametersInput];
 };
 
@@ -107,6 +110,7 @@ const addPatientMedicalRecord: Resolver<
     observations: addMedicalRecordInput.observations,
     additionalNotes: addMedicalRecordInput.additionalNotes,
     documentURLs: addMedicalRecordInput.documentURLs,
+    prismFileIds: addMedicalRecordInput.prismFileIds,
   };
 
   const medicalRecordRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);

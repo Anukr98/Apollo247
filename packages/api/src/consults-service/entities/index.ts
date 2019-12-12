@@ -29,6 +29,7 @@ export enum patientLogType {
 export enum APPOINTMENT_TYPE {
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
+  BOTH = 'BOTH',
 }
 
 export enum STATUS {
@@ -39,6 +40,9 @@ export enum STATUS {
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
   NO_SHOW = 'NO_SHOW',
+  JUNIOR_DOCTOR_STARTED = 'JUNIOR_DOCTOR_STARTED',
+  JUNIOR_DOCTOR_ENDED = 'JUNIOR_DOCTOR_ENDED',
+  CALL_ABANDON = 'CALL_ABANDON',
 }
 
 export enum APPOINTMENT_STATE {
@@ -77,6 +81,16 @@ export enum CONSULTS_RX_SEARCH_FILTER {
   PRESCRIPTION = 'PRESCRIPTION',
 }
 
+export enum BOOKINGSOURCE {
+  MOBILE = 'MOBILE',
+  WEB = 'WEB',
+}
+
+export enum DEVICETYPE {
+  IOS = 'IOS',
+  ANDROID = 'ANDROID',
+}
+
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
@@ -95,6 +109,12 @@ export class Appointment extends BaseEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  cancelledDate: Date;
 
   @Column({ nullable: true })
   cancelledBy: REQUEST_ROLES;
@@ -130,10 +150,16 @@ export class Appointment extends BaseEntity {
   isFollowPaid: Boolean;
 
   @Column({ nullable: true, default: false })
+  isJdQuestionsComplete: Boolean;
+
+  @Column({ nullable: true, default: false })
   isTransfer: Boolean;
 
   @Column({ nullable: true, default: false })
   isConsultStarted: Boolean;
+
+  @Column({ nullable: true, default: false })
+  isSeniorConsultStarted: Boolean;
 
   @Column({ nullable: true })
   patientCancelReason: string;
@@ -162,6 +188,15 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
+  @Column({ nullable: true, type: 'text' })
+  symptoms: string;
+
+  @Column({ default: BOOKINGSOURCE.MOBILE })
+  bookingSource: BOOKINGSOURCE;
+
+  @Column({ nullable: true })
+  deviceType: DEVICETYPE;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -185,6 +220,9 @@ export class Appointment extends BaseEntity {
   )
   appointmentPayments: AppointmentPayments[];
 
+  @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
+  appointmentNoShow: AppointmentNoShow[];
+
   @OneToMany(
     (type) => AppointmentDocuments,
     (appointmentDocuments) => appointmentDocuments.appointment
@@ -205,6 +243,9 @@ export class AppointmentDocuments extends BaseEntity {
   @Column({ nullable: true })
   documentPath: string;
 
+  @Column({ nullable: true })
+  prismFileId: string;
+
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentDocuments)
   appointment: Appointment;
 }
@@ -224,6 +265,9 @@ export class AppointmentPayments extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  orderId: string;
 
   @Column({ nullable: true, type: 'timestamp' })
   paymentDateTime: Date;
@@ -310,6 +354,12 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column()
   callType: string;
 
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true })
+  doctorName: string;
+
   @Column()
   doctorType: string;
 
@@ -338,6 +388,7 @@ export class AppointmentCallDetails extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
+
 //Junior AppointmentSessions starts
 @Entity()
 export class JuniorAppointmentSessions extends BaseEntity {
@@ -434,6 +485,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   blobName: string;
+
+  @Column({ nullable: true, type: 'text' })
+  prismFileId: string;
 
   @Column()
   consultType: APPOINTMENT_TYPE;
@@ -656,6 +710,39 @@ export class DoctorNextAvaialbleSlots extends BaseEntity {
   }
 }
 //DoctorNextAvaialbleSlots ends
+
+//Appointment no show details start
+@Entity()
+export class AppointmentNoShow extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  noShowType: REQUEST_ROLES;
+
+  @Column({ default: STATUS.NO_SHOW })
+  noShowStatus: STATUS;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentNoShow)
+  appointment: Appointment;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Appointment no show details end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

@@ -2,7 +2,7 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -26,13 +26,24 @@ import {
   GET_DIAGNOSTIC_DATA,
   GET_DIAGNOSTIC_ORDER_LIST,
   SEARCH_DIAGNOSTICS,
+  SAVE_SEARCH,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   getDiagnosticsCites,
   getDiagnosticsCitesVariables,
   getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import {
   searchDiagnostics,
   searchDiagnosticsVariables,
@@ -52,7 +63,6 @@ import {
   getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
@@ -71,19 +81,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
-import {
-  getDiagnosticOrdersList,
-  getDiagnosticOrdersListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  getDiagnosticsData,
-  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
-  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
-import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -111,6 +110,9 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
+  nameTextContainerStyle: {
+    maxWidth: '65%',
+  },
   nameTextStyle: {
     marginLeft: 5,
     color: '#02475b',
@@ -119,8 +121,9 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    marginTop: 5,
+    //marginTop: 5,
     marginHorizontal: 5,
+    marginBottom: 6,
   },
   gotItStyles: {
     height: 60,
@@ -136,30 +139,31 @@ const styles = StyleSheet.create({
 export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   // const [data, setData] = useState<MedicinePageAPiResponse>();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
   );
 
-  const { data: diagnosticsData, error: hError, loading: hLoading } = useQuery<getDiagnosticsData>(
-    GET_DIAGNOSTIC_DATA,
-    {
-      variables: {},
-      fetchPolicy: 'no-cache',
-    }
-  );
-  const [errorPopUp, setErrorPopUp] = useState<boolean>(false);
+  const [ordersFetched, setOrdersFetched] = useState<
+    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
+  >([]);
+
+  const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
+    getDiagnosticsData
+  >(GET_DIAGNOSTIC_DATA, {
+    variables: {},
+    fetchPolicy: 'cache-first',
+  });
 
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const {
@@ -177,6 +181,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
+
+  useEffect(() => {
+    if (profile !== currentPatient) {
+      setLoadingContext!(true);
+      setProfile(currentPatient!);
+      ordersRefetch().then((data: any) => {
+        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrdersFetched(orderData);
+        setLoadingContext!(false);
+      });
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     if (locationDetails && locationDetails.city) {
@@ -228,7 +244,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 flex: 1,
                 marginRight: 16,
               }}
-              title={'ENTER MANUALY'}
+              title={'ENTER MANUALLY'}
               onPress={() => {
                 hideAphAlert!();
                 setshowLocationpopup(true);
@@ -269,18 +285,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       diagnosticsCities.length > 0 &&
       !diagnosticsCities.find((item) => item!.cityname === locationDetails!.city)
     ) {
-      setErrorPopUp(true);
+      renderLocationNotServingPopup();
     }
   }, [locationDetails && diagnosticsCities]);
 
-  useEffect(() => {
-    console.log(
-      'locationForDiagnosticslength',
-      locationForDiagnostics && locationForDiagnostics.cityId
-    );
+  const [n, sN] = useState(0);
 
+  useEffect(() => {
     if (locationForDiagnostics && locationForDiagnostics.cityId) {
-      setLoading(true);
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
           aphConsole.log('getTestsPackages\n', { data });
@@ -294,26 +306,43 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     } else {
       setTestPackages([]);
+      setLoading(false);
     }
   }, [locationForDiagnostics && locationForDiagnostics.cityId]);
 
-  const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
-    []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
+  const {
+    data: orders,
+    error: ordersError,
+    loading: ordersLoading,
+    refetch: ordersRefetch,
+  } = useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(
+    GET_DIAGNOSTIC_ORDER_LIST,
+    {
+      variables: {
+        patientId: currentPatient && currentPatient.id,
+      },
+      fetchPolicy: 'cache-first',
+    }
+  );
 
-  const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
-    []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
+  // let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
 
-  const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
-    getDiagnosticOrdersList,
-    getDiagnosticOrdersListVariables
-  >(GET_DIAGNOSTIC_ORDER_LIST, {
-    variables: {
-      patientId: currentPatient && currentPatient.id,
-    },
-    fetchPolicy: 'no-cache',
-  });
+  useEffect(() => {
+    if (!ordersLoading) {
+      const orderData = g(orders, 'getDiagnosticOrdersList', 'ordersList') || [];
+      orderData.length > 0 && setOrdersFetched(orderData);
+    }
+  }, [ordersLoading]);
 
-  const _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
+  useEffect(() => {
+    hRefetch();
+    if (ordersFetched.length == 0) {
+      ordersRefetch().then((data: any) => {
+        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        orderData.length > 0 && setOrdersFetched(orderData);
+      });
+    }
+  }, []);
 
   // Common Views
 
@@ -392,7 +421,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .then((response) => {
         const addrComponents = g(response, 'data', 'result', 'address_components') || [];
         const { lat, lng } = g(response, 'data', 'result', 'geometry', 'location')! || {};
-
+        const city =
+          findAddrComponents('locality', addrComponents) ||
+          findAddrComponents('administrative_area_level_2', addrComponents);
+        if (
+          city.toLowerCase() !=
+          ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
+        ) {
+          clearCartInfo && clearCartInfo();
+        }
         if (addrComponents.length > 0) {
           setLocationDetails!({
             displayName: item.name,
@@ -405,9 +442,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ]
               .filter((i) => i)
               .join(', '),
-            city:
-              findAddrComponents('locality', addrComponents) ||
-              findAddrComponents('administrative_area_level_2', addrComponents),
+            city,
             state: findAddrComponents('administrative_area_level_1', addrComponents),
             country: findAddrComponents('country', addrComponents),
             pincode: findAddrComponents('postal_code', addrComponents),
@@ -576,7 +611,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          // onPress={() => props.navigation.popToTop()}
+          onPress={() => {
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.ConsultRoom,
+                  }),
+                ],
+              })
+            );
+          }}
         >
           <ApolloLogo />
         </TouchableOpacity>
@@ -598,36 +646,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  // const [imgHeight, setImgHeight] = useState(120);
-  // const { width: winWidth } = Dimensions.get('window');
-  // const renderOfferBanner = () => {
-  //   if (offerBannerImage)
-  //     return (
-  //       <Image
-  //         placeholderStyle={styles.imagePlaceholderStyle}
-  //         onLoad={(value) => {
-  //           const { height, width } = value.nativeEvent.source;
-  //           setImgHeight(height * (winWidth / width));
-  //         }}
-  //         style={{ width: '100%', minHeight: imgHeight }}
-  //         source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
-  //       />
-  //     );
-  // };
-
   const renderYourOrders = () => {
+    // if (ordersLoading) return renderSectionLoader(70);
     return (
-      (!ordersLoading && _orders.length > 0 && (
-        <ListCard
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersTest, { isTest: true })}
-          container={{
-            marginBottom: 24,
-            marginTop: 20,
-          }}
-          title={'Your Orders'}
-          leftIcon={<TestsIcon />}
-        />
-      )) || <View style={{ height: 24 }} />
+      // (!ordersLoading && ordersFetched.length > 0 && (
+      <ListCard
+        onPress={() => {
+          setLoadingContext!(true);
+          props.navigation.navigate(AppRoutes.YourOrdersTest, {
+            orders: ordersFetched,
+            isTest: true,
+            refetch: ordersRefetch,
+            error: ordersError,
+            loading: ordersLoading,
+          });
+        }}
+        container={{
+          marginBottom: 24,
+          marginTop: 20,
+        }}
+        title={'Your Orders'}
+        leftIcon={<TestsIcon />}
+      />
+      // )) || <View style={{ height: 24 }} />
     );
   };
 
@@ -812,6 +853,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ItemID: `${diagnostics!.itemId}`,
             ItemName: packageName,
             collectionType: diagnostics!.collectionType,
+            FromAgeInDays: diagnostics!.fromAgeInDays,
+            ToAgeInDays: diagnostics!.toAgeInDays,
+            preparation: diagnostics!.testPreparationData,
           } as TestPackageForDetails,
         }),
       style: {
@@ -824,18 +868,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderHotSellers = () => {
-    if (hotSellers.length == 0) return null;
+    const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
+      []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
+
+    if (!hLoading && hotSellers.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'HOT SELLERS'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={hotSellers}
-          renderItem={renderHotSellerItem}
-        />
+        {hLoading ? (
+          renderSectionLoader(188)
+        ) : (
+          <FlatList
+            bounces={false}
+            keyExtractor={(_, index) => `${index}`}
+            showsHorizontalScrollIndicator={false}
+            horizontal
+            data={hotSellers}
+            renderItem={renderHotSellerItem}
+          />
+        )}
       </View>
     );
   };
@@ -995,11 +1046,56 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const errorAlert = () => {
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Unable to fetch pakage details.',
+    });
+  };
+
+  const fetchPackageDetails = (
+    name: string,
+    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+  ) => {
+    {
+      setLoadingContext!(true);
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: name,
+            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          aphConsole.log('searchDiagnostics\n', { data });
+          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          if (product) {
+            func && func(product);
+          } else {
+            errorAlert();
+          }
+        })
+        .catch((e) => {
+          aphConsole.log({ e });
+          errorAlert();
+        })
+        .finally(() => {
+          setLoadingContext!(false);
+        });
+    }
+  };
+
   const renderTestPackages = () => {
-    if (testPackages.length > 0) {
-      return (
-        <View>
-          <SectionHeader leftText={'BROWSE PACKAGES'} />
+    if (!loading && testPackages.length == 0) return null;
+    return (
+      <View>
+        <SectionHeader leftText={'BROWSE PACKAGES'} />
+        {loading ? (
+          renderSectionLoader(205)
+        ) : (
           <FlatList
             bounces={false}
             keyExtractor={(_, index) => `${index}`}
@@ -1027,23 +1123,36 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   ...(index == 0 ? { marginLeft: 20 } : {}),
                 },
                 !!cartItems.find((_item) => _item.id == item.ItemID),
-                () => props.navigation.navigate(AppRoutes.TestDetails, { testDetails: item }),
-                () =>
-                  addCartItem!({
-                    id: item.ItemID,
-                    name: item.ItemName,
-                    mou: item.PackageInClussion.length,
-                    price: item.Rate,
-                    thumbnail: '',
-                    specialPrice: undefined,
-                    collectionMethod: TEST_COLLECTION_TYPE.HC, // hardcoding here
-                  })
+                () => {
+                  fetchPackageDetails(item.ItemName, (product) => {
+                    props.navigation.navigate(AppRoutes.TestDetails, {
+                      testDetails: {
+                        ...item,
+                        collectionType: product.collectionType,
+                        preparation: product.testPreparationData,
+                      } as TestPackageForDetails,
+                    });
+                  });
+                },
+                () => {
+                  fetchPackageDetails(item.ItemName, (product) => {
+                    addCartItem!({
+                      id: item.ItemID,
+                      name: item.ItemName,
+                      mou: item.PackageInClussion.length,
+                      price: item.Rate,
+                      thumbnail: '',
+                      specialPrice: undefined,
+                      collectionMethod: product.collectionType!,
+                    });
+                  });
+                }
               );
             }}
           />
-        </View>
-      );
-    }
+        )}
+      </View>
+    );
   };
 
   const preventiveTestCard = (name: string, price: number, style: ViewStyle) => {
@@ -1096,37 +1205,41 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderTestsByOrgan = () => {
-    if (shopByOrgans.length == 0) return null;
+    const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
+      []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
+
+    if (!hLoading && shopByOrgans.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'BROWSE TESTS BY ORGANS'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={shopByOrgans}
-          renderItem={({ item, index }) => {
-            return renderCatalogCard(
-              item.organName!,
-              item.organImage!,
-              () =>
-                props.navigation.navigate(AppRoutes.TestsByCategory, {
-                  // category_id: item.category_id,
-                  title: `${item.organName || 'Products'}`.toUpperCase(),
-                  isTest: true,
-                  products: [item.diagnostics],
-                }),
-              {
-                // marginRight: 8,
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
-        />
+        {hLoading ? (
+          renderSectionLoader()
+        ) : (
+          <FlatList
+            bounces={false}
+            keyExtractor={(_, index) => `${index}`}
+            showsHorizontalScrollIndicator={false}
+            horizontal
+            data={shopByOrgans}
+            renderItem={({ item, index }) => {
+              return renderCatalogCard(
+                item.organName!,
+                item.organImage!,
+                () =>
+                  props.navigation.navigate(AppRoutes.TestsByCategory, {
+                    title: `${item.organName || 'Products'}`.toUpperCase(),
+                    products: [item.diagnostics],
+                  }),
+                {
+                  marginHorizontal: 4,
+                  marginTop: 16,
+                  marginBottom: 20,
+                  ...(index == 0 ? { marginLeft: 20 } : {}),
+                }
+              );
+            }}
+          />
+        )}
       </View>
     );
   };
@@ -1325,7 +1438,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           }}
           value={searchText}
-          // editable={!!locationDetails}
           autoCapitalize="none"
           spellCheck={false}
           onFocus={() => setSearchFocused(true)}
@@ -1387,7 +1499,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             marginHorizontal: 19.5,
           }}
         />
-        <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+          }}
+        >
           <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
             Most trusted diagnostics from the comfort of your home!
           </Text>
@@ -1396,14 +1513,37 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const savePastSeacrh = (sku: string, name: string) =>
+    client.mutate({
+      mutation: SAVE_SEARCH,
+      variables: {
+        saveSearchInput: {
+          type: SEARCH_TYPE.TEST,
+          typeId: sku,
+          typeName: name,
+          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      },
+    });
+
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const { rate, gender, itemId, itemName, collectionType } = item;
+    const {
+      rate,
+      gender,
+      itemId,
+      itemName,
+      collectionType,
+      fromAgeInDays,
+      toAgeInDays,
+      testPreparationData,
+    } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
+        savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: rate,
@@ -1411,6 +1551,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ItemID: `${itemId}`,
             ItemName: itemName,
             collectionType: collectionType,
+            FromAgeInDays: fromAgeInDays,
+            ToAgeInDays: toAgeInDays,
+            preparation: testPreparationData,
           } as TestPackageForDetails,
         });
       },
@@ -1453,7 +1596,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
               style={{
-                paddingTop: 10.5,
+                paddingTop: medicineList.length > 0 ? 10.5 : 0,
                 maxHeight: 266,
                 backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               }}
@@ -1504,30 +1647,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {/* {renderOfferBanner()} */}
+        {renderBanner()}
         {renderYourOrders()}
-        {(!!(locationForDiagnostics && locationForDiagnostics.cityId) && (
-          <>
-            {renderHotSellers()}
-            {/* {renderBrowseByCondition()} */}
-            {renderTestPackages()}
-            {renderTestsByOrgan()}
-            {/* {renderPreventiveTests()} */}
-          </>
-        )) || (
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 16, '#0087ba', 1, 24),
-              marginBottom: 20,
-              textAlign: 'center',
-            }}
-          >{`${currentPatient &&
-            currentPatient.firstName}, our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}</Text>
-        )}
-
+        <>
+          {renderHotSellers()}
+          {/* {renderBrowseByCondition()} */}
+          {renderTestPackages()}
+          {renderTestsByOrgan()}
+          {/* {renderPreventiveTests()} */}
+        </>
         {renderNeedHelp()}
       </TouchableOpacity>
     );
+  };
+
+  const renderLocationNotServingPopup = () => {
+    showAphAlert!({
+      title: `Hi ${currentPatient && currentPatient.firstName},`,
+      description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`,
+      onPressOk: () => {
+        hideAphAlert!();
+        setshowLocationpopup(true);
+      },
+    });
   };
 
   return (
@@ -1558,8 +1700,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }}
               >
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View>
-                  <Text style={styles.nameTextStyle}>
+                <View style={styles.nameTextContainerStyle}>
+                  <Text style={styles.nameTextStyle} numberOfLines={1}>
                     {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
@@ -1570,7 +1712,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
               </View>
             }
             selectedProfile={profile}
-            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            setDisplayAddProfile={() => {}}
+            unsetloaderDisplay={true}
           ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
@@ -1584,43 +1727,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderSearchBarAndSuggestions()}
           </View>
           <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
-            {renderBanner()}
             {renderSections()}
           </View>
         </ScrollView>
-        {errorPopUp && (
-          <BottomPopUp
-            title={`Hi ${currentPatient && currentPatient.firstName},`}
-            description={`Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}
-          >
-            <View
-              style={{
-                height: 60,
-                alignItems: 'flex-end',
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.gotItStyles}
-                onPress={() => {
-                  setErrorPopUp(false);
-                }}
-              >
-                <Text style={styles.gotItTextStyles}>Okay, got it</Text>
-              </TouchableOpacity>
-            </View>
-          </BottomPopUp>
-        )}
       </SafeAreaView>
       {renderPopup()}
-      {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )}
     </View>
   );
 };

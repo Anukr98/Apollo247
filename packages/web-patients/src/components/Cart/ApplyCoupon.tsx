@@ -44,10 +44,29 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 10,
     },
     pinSearch: {
-      paddingBottom: 20,
+      position: 'relative',
+      '& input': {
+        paddingRight: 30,
+      },
+    },
+    pinActions: {
+      position: 'absolute',
+      right: 0,
+      top: 6,
+    },
+    searchBtn: {
+      boxShadow: 'none',
+      padding: 0,
+      minWidth: 'auto',
+    },
+    tickMark: {
+      '& img': {
+        marginBottom: -5,
+      },
     },
     sectionHeader: {
       marginBottom: 20,
+      paddingTop: 20,
       paddingBottom: 4,
       fontSize: 14,
       fontWeight: 500,
@@ -83,6 +102,12 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: 1.33,
       },
     },
+    pinErrorMsg: {
+      color: '#890000',
+      fontSize: 12,
+      fontWeight: 'bold',
+      paddingTop: 10,
+    },
   };
 });
 
@@ -112,6 +137,17 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
               <div className={classes.addressGroup}>
                 <div className={classes.pinSearch}>
                   <AphTextField value="APMED10" placeholder="APMED10" />
+                  <div className={classes.pinActions}>
+                    <AphButton className={classes.searchBtn}>
+                      <img src={require('images/ic_send.svg')} alt="" />
+                    </AphButton>
+                    <div className={classes.tickMark}>
+                      <img src={require('images/ic_tickmark.svg')} alt="" />
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.pinErrorMsg}>
+                  Invalid Coupon Code
                 </div>
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>

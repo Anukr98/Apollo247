@@ -2,7 +2,8 @@ import React, { useEffect, useState, useContext } from 'react';
 import { Theme, Button, Avatar, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput, AphButton, AphTextField } from '@aph/web-ui-components';
-import Pubnub from 'pubnub';
+//import Pubnub from "pubnub";
+import moment from 'moment';
 import Scrollbars from 'react-custom-scrollbars';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { ApolloError } from 'apollo-client';
@@ -299,6 +300,20 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: '100%',
       },
     },
+    timeStamp: {
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'left',
+      marginRight: -7,
+      marginBottom: -5,
+      paddingTop: 5,
+    },
+    timeStampImg: {
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'right',
+      paddingTop: 5,
+    },
   };
 });
 
@@ -309,6 +324,7 @@ interface MessagesObjectProps {
   automatedText: string;
   duration: string;
   url: string;
+  messageDate: string;
 }
 
 interface ConsultRoomProps {
@@ -318,6 +334,9 @@ interface ConsultRoomProps {
   appointmentId: string;
   doctorId: string;
   patientId: string;
+  pubnub: any;
+  lastMsg: any;
+  messages: MessagesObjectProps[];
 }
 
 let timerIntervalId: any;
@@ -327,7 +346,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
-  const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
+  const [messages, setMessages] = useState<MessagesObjectProps[]>(props.messages);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
   // const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
@@ -352,6 +371,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const startConsult = '^^#startconsult';
   const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
+  const stopConsultJr = '^^#stopconsultJr';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
@@ -361,22 +381,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const secondMessage = '^^#secondMessage';
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
+  const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const callAbandonment = '^^#callAbandonment';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
-  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
-  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
-  const config: Pubnub.PubnubConfig = {
-    subscribeKey: subscribekey,
-    publishKey: publishkey,
-    ssl: true,
-  };
+  // const subscribekey: string = process.env.SUBSCRIBE_KEY
+  //   ? process.env.SUBSCRIBE_KEY
+  //   : "";
+  // const publishkey: string = process.env.PUBLISH_KEY
+  //   ? process.env.PUBLISH_KEY
+  //   : "";
+  // const config: Pubnub.PubnubConfig = {
+  //   subscribeKey: subscribekey,
+  //   publishKey: publishkey,
+  //   ssl: true
+  // };
   let leftComponent = 0;
   let rightComponent = 0;
   let jrDrComponent = 0;
-  const pubnub = new Pubnub(config);
-  let insertText: MessagesObjectProps[] = [];
+  //const pubnub = new Pubnub(config);
+  const pubnub = props.pubnub;
+  //let insertText: MessagesObjectProps[] = [];
 
   const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -393,17 +420,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
-  // const stopIntervalTimer = () => {
-  //   setStartingTime(0);
-  //   timerIntervalId && clearInterval(timerIntervalId);
-  // };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
   const srollToBottomAction = () => {
-    setTimeout(() => {
-      const scrollDiv = document.getElementById('scrollDiv');
-      if (scrollDiv) {
-        scrollDiv!.scrollIntoView();
-      }
-    }, 200);
+    console.log(1111111);
+    //setTimeout(() => {
+    const scrollDiv = document.getElementById('scrollDiv');
+    if (scrollDiv) {
+      scrollDiv!.scrollIntoView();
+    }
+    //}, 200);
   };
   const resetMessagesAction = () => {
     if (messageText === '') {
@@ -423,85 +451,128 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //   ); // fragment locator
   //   return pattern.test(str);
   // };
+  // useEffect(() => {
+  //   console.log(props.messages);
+  //   setMessages(props.messages);
+  // }, [props.messages]);
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  // useEffect(() => {
+  //   // pubnub.subscribe({
+  //   //   channels: [channel],
+  //   //   withPresence: true
+  //   // });
+  //   console.log(222222);
+  //   //getHistory(0);
+
+  //   // pubnub.addListener({
+  //   //   status(statusEvent: any) {},
+  //   //   message(message: any) {
+  //   //     insertText[insertText.length] = message.message;
+  //   //     console.log(message.message);
+  //   //     setMessages(() => [...insertText]);
+  //   //     if (
+  //   //       !showVideoChat &&
+  //   //       message.message.message !== videoCallMsg &&
+  //   //       message.message.message !== audioCallMsg &&
+  //   //       message.message.message !== stopcallMsg &&
+  //   //       message.message.message !== acceptcallMsg &&
+  //   //       message.message.message !== transferconsult &&
+  //   //       message.message.message !== rescheduleconsult &&
+  //   //       message.message.message !== followupconsult &&
+  //   //       message.message.message !== patientConsultStarted &&
+  //   //       message.message.message !== stopConsult &&
+  //   //       message.message.message !== firstMessage &&
+  //   //       message.message.message !== secondMessage &&
+  //   //       message.message.message !== covertVideoMsg &&
+  //   //       message.message.message !== covertAudioMsg &&
+  //   //       message.message.message !== cancelConsultInitiated
+  //   //     ) {
+  //   //       setIsNewMsg(true);
+  //   //     } else {
+  //   //       setIsNewMsg(false);
+  //   //     }
+  //   //     if (message.message && message.message.message === acceptcallMsg) {
+  //   //       setIsCallAccepted(true);
+  //   //     }
+  //   //     srollToBottomAction();
+  //   //     resetMessagesAction();
+  //   //     //getHistory(0);
+  //   //   }
+  //   // });
+  //   return function cleanup() {
+  //     clearInterval(timerIntervalId);
+  //     stopIntervalTimer();
+  //     //pubnub.unsubscribe({ channels: [channel] });
+  //   };
+  // }, [props.pubnub]);
   useEffect(() => {
-    pubnub.subscribe({
-      channels: [channel],
-      withPresence: true,
-    });
-
-    getHistory(0);
-
-    pubnub.addListener({
-      status: (statusEvent) => {},
-      message: (message) => {
-        insertText[insertText.length] = message.message;
-        console.log(message.message);
-        setMessages(() => [...insertText]);
-        if (
-          !showVideoChat &&
-          message.message.message !== videoCallMsg &&
-          message.message.message !== audioCallMsg &&
-          message.message.message !== stopcallMsg &&
-          message.message.message !== acceptcallMsg &&
-          message.message.message !== transferconsult &&
-          message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult &&
-          message.message.message !== patientConsultStarted &&
-          message.message.message !== firstMessage &&
-          message.message.message !== secondMessage &&
-          message.message.message !== covertVideoMsg &&
-          message.message.message !== covertAudioMsg
-        ) {
-          setIsNewMsg(true);
-        } else {
-          setIsNewMsg(false);
-        }
-        if (message.message && message.message.message === acceptcallMsg) {
-          setIsCallAccepted(true);
-        }
-        srollToBottomAction();
-        resetMessagesAction();
-        //getHistory(0);
-      },
-    });
-    return function cleanup() {
-      pubnub.unsubscribe({ channels: [channel] });
-    };
-  }, []);
-
-  const getHistory = (timetoken: number) => {
-    pubnub.history(
-      {
-        channel: channel,
-        reverse: true,
-        count: 1000,
-        stringifiedTimeToken: true,
-        start: timetoken,
-      },
-      (status, res) => {
-        const newmessage: MessagesObjectProps[] = messages;
-        res.messages.forEach((element, index) => {
-          //newmessage[index] = element.entry;
-          newmessage.push(element.entry);
-        });
-        insertText = newmessage;
-        //if (messages.length !== newmessage.length) {
-        setMessages(newmessage);
-        //}
-        const end: number = res.endTimeToken ? res.endTimeToken : 1;
-        if (res.messages.length == 100) {
-          getHistory(end);
-        }
-        resetMessagesAction();
-        srollToBottomAction();
+    const lastMsg = props.lastMsg;
+    if (lastMsg && lastMsg !== null) {
+      // insertText[insertText.length] = lastMsg.message;
+      // console.log(lastMsg.message);
+      // setMessages(() => [...insertText]);
+      if (
+        !showVideoChat &&
+        lastMsg.message.message !== videoCallMsg &&
+        lastMsg.message.message !== audioCallMsg &&
+        lastMsg.message.message !== stopcallMsg &&
+        lastMsg.message.message !== acceptcallMsg &&
+        lastMsg.message.message !== transferconsult &&
+        lastMsg.message.message !== rescheduleconsult &&
+        lastMsg.message.message !== followupconsult &&
+        lastMsg.message.message !== patientConsultStarted &&
+        lastMsg.message.message !== stopConsult &&
+        lastMsg.message.message !== firstMessage &&
+        lastMsg.message.message !== secondMessage &&
+        lastMsg.message.message !== covertVideoMsg &&
+        lastMsg.message.message !== covertAudioMsg &&
+        lastMsg.message.message !== cancelConsultInitiated &&
+        lastMsg.message.message !== callAbandonment
+      ) {
+        setIsNewMsg(true);
+      } else {
+        setIsNewMsg(false);
       }
-    );
-  };
+      if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
+        setIsCallAccepted(true);
+      }
+      srollToBottomAction();
+      resetMessagesAction();
+      //getHistory(0);
+    }
+  }, [props.lastMsg]);
+  // const getHistory = (timetoken: number) => {
+  //   pubnub.history(
+  //     {
+  //       channel: channel,
+  //       reverse: true,
+  //       count: 1000,
+  //       stringifiedTimeToken: true,
+  //       start: timetoken
+  //     },
+  //     (status: any, res: any) => {
+  //       const newmessage: MessagesObjectProps[] = messages;
+  //       res.messages.forEach((element: any, index: number) => {
+  //         //newmessage[index] = element.entry;
+  //         newmessage.push(element.entry);
+  //       });
+  //       insertText = newmessage;
+  //       //if (messages.length !== newmessage.length) {
+  //       setMessages(newmessage);
+  //       //}
+  //       const end: number = res.endTimeToken ? res.endTimeToken : 1;
+  //       if (res.messages.length == 100) {
+  //         getHistory(end);
+  //       }
+  //       resetMessagesAction();
+  //       //srollToBottomAction();
+  //     }
+  //   );
+  // };
 
   const sendMsg = (msgObject: any, isStoreInHistory: boolean) => {
     pubnub.publish(
@@ -511,7 +582,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         storeInHistory: isStoreInHistory,
         sendByPost: true,
       },
-      (status, response) => {
+      (status: any, response: any) => {
         setMessageText('');
         srollToBottomAction();
       }
@@ -536,11 +607,31 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         // console.log(error);
       });
   };
-
+  const convertChatTime = (timeStamp: any) => {
+    let utcString;
+    if (timeStamp) {
+      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
+        moment(timeStamp).format('YYYY-MM-DD')
+      );
+      if (dateValidate == 0) {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format('h:mm A');
+      } else {
+        utcString = moment
+          .utc(timeStamp)
+          .local()
+          .format('DD MMM, YYYY h:mm A');
+      }
+    }
+    return utcString ? utcString : '--';
+  };
   const send = () => {
     const text = {
       id: doctorId,
       message: messageText,
+      messageDate: new Date(),
     };
     setMessageText('');
     pubnub.publish(
@@ -550,9 +641,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status, response) => {
+      (status: any, response: any) => {
         resetMessagesAction();
-        srollToBottomAction();
+        //srollToBottomAction();
         // setTimeout(() => {
         //   setMessageText('');
         //   const scrollDiv = document.getElementById('scrollDiv');
@@ -567,7 +658,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult ||
+      rowData.message === stopConsultJr ||
       rowData.message === languageQue ||
       rowData.message === jdThankyou
     ) {
@@ -591,7 +682,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== firstMessage &&
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
-      rowData.message !== covertAudioMsg
+      rowData.message !== covertAudioMsg &&
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -601,17 +694,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.doctor}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === '00 : 00' ? (
-              <span className={classes.none}>
-                <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'video call ended'
-                  ? 'You missed a video call'
-                  : 'You missed a voice call'}
-              </span>
+              <>
+                <span className={classes.none}>
+                  <img src={require('images/ic_missedcall.svg')} />
+                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                    ? 'You missed a video call'
+                    : 'You missed a voice call'}
+                </span>
+                {/* {rowData.messageDate && (
+                  <span>{convertChatTime(rowData.messageDate)}</span>
+                )} */}
+              </>
             ) : rowData.duration ? (
               <div>
                 <img src={require('images/ic_round_call.svg')} />
                 <span>{rowData.message}</span>
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+                {rowData.messageDate && (
+                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                )}
               </div>
             ) : (
               // <div>
@@ -647,9 +748,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     className={classes.imageUpload}
                   >
                     <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <div className={classes.timeStampImg}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <div className={classes.timeStamp}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -669,7 +782,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== firstMessage &&
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
-      rowData.message !== covertAudioMsg
+      rowData.message !== covertAudioMsg &&
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -678,17 +793,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <div className={classes.patientChat}>
           <div className={rowData.duration ? classes.callMsg : ''}>
             {rowData.duration === '00 : 00' ? (
-              <span className={classes.missCall}>
-                <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'video call ended'
-                  ? 'You missed a video call'
-                  : 'You missed a voice call'}
-              </span>
+              <>
+                <span className={classes.missCall}>
+                  <img src={require('images/ic_missedcall.svg')} />
+                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                    ? 'You missed a video call'
+                    : 'You missed a voice call'}
+                </span>
+                {rowData!.messageDate && (
+                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                )}
+              </>
             ) : rowData.duration ? (
               <div>
                 <img src={require('images/ic_round_call.svg')} />
                 <span>{rowData.message}</span>
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+                {rowData!.messageDate && (
+                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                )}
               </div>
             ) : (
               <div
@@ -718,9 +841,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     className={classes.imageUpload}
                   >
                     <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <div className={classes.timeStampImg}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <div className={classes.timeStamp}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -739,7 +874,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== firstMessage &&
       rowData.message !== secondMessage &&
       rowData.message !== covertVideoMsg &&
-      rowData.message !== covertAudioMsg
+      rowData.message !== covertAudioMsg &&
+      rowData.message !== cancelConsultInitiated &&
+      rowData.message !== callAbandonment
     ) {
       jrDrComponent++;
       leftComponent = 0;
@@ -749,17 +886,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.doctor}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === '00 : 00' ? (
-              <span className={classes.none}>
-                <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'video call ended'
-                  ? 'You missed a video call'
-                  : 'You missed a voice call'}
-              </span>
+              <>
+                <span className={classes.none}>
+                  <img src={require('images/ic_missedcall.svg')} />
+                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                    ? 'You missed a video call'
+                    : 'You missed a voice call'}
+                </span>
+              </>
             ) : rowData.duration ? (
               <div>
                 <img src={require('images/ic_round_call.svg')} />
                 <span>{rowData.message}</span>
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+                {rowData.messageDate && (
+                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                )}
               </div>
             ) : (
               // <div>
@@ -804,9 +946,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     className={classes.imageUpload}
                   >
                     <img src={rowData.url} alt={rowData.url} />
+                    {rowData.messageDate && (
+                      <div className={classes.timeStampImg}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  <>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                    {rowData.messageDate && (
+                      <div className={classes.timeStamp}>
+                        {convertChatTime(rowData.messageDate)}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -842,6 +996,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //     id: doctorId,
   //     message: stopcallMsg,
   //     isTyping: true,
+  //messageDate: new Date(),
   //   };
   //   pubnub.publish(
   //     {
@@ -850,7 +1005,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //       storeInHistory: true,
   //       sendByPost: true,
   //     },
-  //     (status, response) => {
+  //     (status: any, response: any) => {
   //       setMessageText('');
   //     }
   //   );
@@ -861,6 +1016,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //       timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
   //     } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
   //     isTyping: true,
+  //messageDate: new Date(),
   //   };
   //   pubnub.publish(
   //     {
@@ -869,7 +1025,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //       storeInHistory: true,
   //       sendByPost: true,
   //     },
-  //     (status, response) => {
+  //     (status: any, response: any) => {
   //       setMessageText('');
   //     }
   //   );
@@ -886,6 +1042,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //     id: doctorId,
   //     message: stopcallMsg,
   //     isTyping: true,
+  //messageDate: new Date(),
   //   };
   //   pubnub.publish(
   //     {
@@ -894,7 +1051,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //       storeInHistory: true,
   //       sendByPost: true,
   //     },
-  //     (status, response) => {
+  //     (status: any, response: any) => {
   //       setMessageText('');
   //     }
   //   );
@@ -912,11 +1069,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //         message: {
   //           isTyping: true,
   //           message: convertVideo ? covertVideoMsg : covertAudioMsg,
+  //messageDate: new Date(),
   //         },
   //         channel: channel,
   //         storeInHistory: false,
   //       },
-  //       (status, response) => {}
+  //       (status: any, response: any) => {}
   //     );
   //   }, 10);
   // };
@@ -1038,6 +1196,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                               message: `^^#DocumentUpload`,
                               url: url,
                               isTyping: true,
+                              messageDate: new Date(),
                             };
                             console.log('aphBlob', aphBlob, url);
                             uploadfile(url);
@@ -1056,6 +1215,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </Button>
                 )}
                 <AphTextField
+                  autoFocus
                   className={classes.inputWidth}
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."

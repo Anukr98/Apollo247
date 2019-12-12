@@ -17,6 +17,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   subViewPopup: {
+    marginTop: 150,
     backgroundColor: 'white',
     width: '100%',
     borderTopLeftRadius: 10,

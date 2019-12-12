@@ -4,12 +4,14 @@ import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.react.ReactApplication;
-import com.bugfender.react.RNBugfenderPackage;
+import com.RNFetchBlob.RNFetchBlobPackage;
+import org.wonday.pdf.RCTPdfView;
+import com.bugsnag.BugsnagReactNative;
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import io.fabric.sdk.android.Fabric;
 import io.github.mr03web.softinputmode.SoftInputModePackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.corbt.keepawake.KCKeepAwakePackage;
-import com.RNFetchBlob.RNFetchBlobPackage;
 import com.imagepicker.ImagePickerPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
@@ -21,7 +23,6 @@ import io.invertase.firebase.RNFirebasePackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
 import io.invertase.firebase.auth.RNFirebaseAuthPackage; 
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -44,11 +45,13 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new RNBugfenderPackage(),
+            new RNFetchBlobPackage(),
+            new RCTPdfView(),
+            BugsnagReactNative.getPackage(),
+            new RNGestureHandlerPackage(),
             new SoftInputModePackage(),
             new PickerPackage(),
             new KCKeepAwakePackage(),
-            new RNFetchBlobPackage(),
             new ImagePickerPackage(),
             new AsyncStoragePackage(),
             new RNDeviceInfo(),
@@ -58,7 +61,6 @@ public class MainApplication extends Application implements ReactApplication {
             new SplashScreenReactPackage(),
             new RNFirebasePackage(),
             new VectorIconsPackage(),
-            new RNGestureHandlerPackage(),
             new RNFirebaseAnalyticsPackage(), // <-- Add this line
             new RNFirebaseAuthPackage(),
             new RNFirebaseMessagingPackage(),

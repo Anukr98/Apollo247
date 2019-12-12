@@ -30,6 +30,173 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
+app.get('/consulttransaction', (req, res) => {
+  console.log(req.query.CompleteResponse, req.query.ORDERID);
+  console.log(req.query.BANKTXNID);
+  console.log(req.query.STATUS);
+  console.log(req.query.TXNAMOUNT);
+  console.log(req.query.TXNDATE);
+  /*save response in apollo24x7*/
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  const date = new Date(new Date().toUTCString()).toISOString();
+  const txnId = req.query.CompleteResponse.replace('TXNID=', '');
+  // this needs to be altered later.
+  const requestJSON = {
+    query:
+      'mutation { makeAppointmentPayment(paymentInput: { appointmentId: "' +
+      req.session.appointmentId +
+      '", amountPaid: ' +
+      req.query.TXNAMOUNT +
+      ', paymentRefId: "' +
+      txnId +
+      '", paymentStatus: "' +
+      req.query.STATUS +
+      '", paymentDateTime: "' +
+      date +
+      '", responseCode: "' +
+      req.query.RESPCODE +
+      '", responseMessage: "' +
+      req.query.RESPMSG +
+      '", orderId: "' +
+      req.query.ORDERID +
+      '", bankTxnId: "' +
+      req.query.BANKTXNID +
+      '" }){appointment { id } }}',
+  };
+
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data.data.makeAppointmentPayment.appointment.id, 'response is....');
+      if (req.query.STATUS == 'TXN_SUCCESS') {
+        res.redirect(
+          `/consultpg-success?tk=${response.data.data.makeAppointmentPayment.appointment.id}&status=${req.query.STATUS}`
+        );
+      } else {
+        res.redirect(`/consultpg-error?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
+      }
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+
+  //res.send('payment response');
+});
+
+app.get('/consultpg-success', (req, res) => {
+  const payloadToken = req.query.tk;
+  if (payloadToken) {
+    res.statusCode = 200;
+    res.send({
+      status: 'success',
+      orderId: payloadToken,
+    });
+  } else {
+    res.statusCode = 401;
+    res.send({
+      status: 'failed',
+      reason: 'Unauthorized',
+      code: '800',
+    });
+  }
+});
+
+app.get('/consultpg-error', (req, res) => {
+  res.send({
+    status: 'failed',
+  });
+});
+
+app.get('/consultpayment', (req, res) => {
+  //res.send('consult payment');
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+
+  // validate the order and token.
+  axios({
+    url: process.env.API_URL,
+    method: 'post',
+    data: {
+      query: `
+          query {
+            getAthsToken(patientId:"${req.query.patientId}") {
+              patient {
+                id
+                emailAddress
+                athsToken
+                lastName
+                firstName
+                dateOfBirth
+                gender
+              }
+            }
+          }
+        `,
+    },
+  })
+    .then((response) => {
+      console.log(response, response.data, response.data.data.getAthsToken, 'get patient details');
+      if (
+        response &&
+        response.data &&
+        response.data.data &&
+        response.data.data.getAthsToken &&
+        response.data.data.getAthsToken.patient
+      ) {
+        const responsePatientId = response.data.data.getAthsToken.patient.id;
+        console.log(
+          responsePatientId,
+          'responsePatientId',
+          response.data.data.getAthsToken.patient.athsToken
+        );
+        if (responsePatientId == '') {
+          res.statusCode = 401;
+          res.send({
+            status: 'failed',
+            reason: 'Invalid parameters',
+            code: '10000',
+          });
+        } else {
+          axios
+            .post(
+              'http://rest.askapollo.com:9047/restservice.svc/GetMarchantIdAnonymousforSourceApp',
+              {
+                AdminId: 'AskApollo',
+                AdminPassword: 'AskApollo',
+                sourceApp: '7729FD68-C552-4C90-B31E-98AA6C84FEBF~web',
+              }
+            )
+            .then((resp) => {
+              console.log(resp.data, resp.data.Result);
+              req.session.appointmentId = req.query.appointmentId;
+              res.render('consults.ejs', {
+                athsToken: response.data.data.getAthsToken.patient.athsToken,
+                merchantId: resp.data.Result,
+                price: req.query.price,
+                patientId: req.query.patientId,
+                patientName: response.data.data.getAthsToken.patient.firstName,
+                mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
+                baseUrl: 'https://aph.dev.pmt.popcornapps.com',
+              });
+            })
+            .catch((err) => {
+              console.log(err);
+              res.send(err, 'merchant id error');
+            });
+        }
+      }
+    })
+    .catch((error) => {
+      // no need to explicitly saying details about error for clients.
+      // console.log(error);
+      res.statusCode = 401;
+      return res.send({
+        status: 'failed',
+        reason: 'Invalid parameters',
+        code: '10001',
+      });
+    });
+});
+
 app.get('/paymed', (req, res) => {
   const requestedSources = ['mobile', 'web'];
 

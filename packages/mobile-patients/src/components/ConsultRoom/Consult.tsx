@@ -38,7 +38,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
 import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
@@ -46,6 +46,7 @@ import { MaterialMenu } from '../ui/MaterialMenu';
 import { getDataFromTree } from 'react-apollo';
 import { AddProfile } from '../ui/AddProfile';
 import { ProfileList } from '../ui/ProfileList';
+import { useUIElements } from '../UIElementsProvider';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -60,6 +61,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
+  nameTextContainerStyle: {
+    maxWidth: '75%',
+  },
   nameTextStyle: {
     marginLeft: 5,
     color: '#02475b',
@@ -68,8 +72,9 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    marginTop: 5,
+    //marginTop: 5,
     marginHorizontal: 5,
+    marginBottom: 6,
   },
   hiTextStyle: {
     color: '#02475b',
@@ -193,7 +198,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [consultations, setconsultations] = useState<
     getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
   >([]);
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+
+  const { loading, setLoading } = useUIElements();
+
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
@@ -205,25 +212,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
-  useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      getPatientApiCall();
-      currentPatient && setProfile(currentPatient!);
-    }
-  }, [currentPatient]);
+
+  //Duplicate
+  // useEffect(() => {
+  //   if (!currentPatient) {
+  //     console.log('No current patients available');
+  //     getPatientApiCall();
+  //     currentPatient && setProfile(currentPatient!);
+  //   }
+  // }, [currentPatient]);
 
   const client = useApolloClient();
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      setshowSpinner(true);
+      setLoading && setLoading(true);
       setconsultations([]);
       getNetStatus().then((status) => {
         if (status) {
           fetchAppointments();
         } else {
-          setshowSpinner(false);
+          setLoading && setLoading(false);
           setshowOfflinePopup(true);
         }
       });
@@ -303,13 +312,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       if (status) {
         fetchAppointments();
       } else {
-        setshowSpinner(false);
+        setLoading && setLoading(false);
         setshowOfflinePopup(true);
       }
     });
   }, [currentPatient]);
 
-  console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
+  // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
   const inputData = {
     patientId: currentPatient ? currentPatient!.id : '',
     appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
@@ -317,6 +326,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   // console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
+    setLoading && setLoading(true);
     console.log('inputdata', inputData);
     client
       .query<getPatinetAppointments>({
@@ -343,7 +353,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         console.log('Error occured', e);
       })
       .finally(() => {
-        setshowSpinner(false);
+        setLoading && setLoading(false);
       });
   };
 
@@ -818,7 +828,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               paddingBottom: 16,
                             }}
                           >
-                            You can chat with the doctor for
+                            {'You can chat with the doctor for '}
                           </Text>
 
                           <Text
@@ -836,7 +846,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             {day1.diff(day2, 'days') == 0
                               ? 'Today'
                               : day1.diff(day2, 'days') +
-                                'more ' +
+                                ' more ' +
                                 (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
                           </Text>
                         </View>
@@ -870,7 +880,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           >
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+              // onPress={() => props.navigation.popToTop()}
+              onPress={() => {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                  })
+                );
+              }}
             >
               <ApolloLogo />
             </TouchableOpacity>
@@ -890,8 +909,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   }}
                 >
                   <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                  <View>
-                    <Text style={styles.nameTextStyle}>
+                  <View style={styles.nameTextContainerStyle}>
+                    <Text style={styles.nameTextStyle} numberOfLines={1}>
                       {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                     </Text>
                     <View style={styles.seperatorStyle} />
@@ -903,6 +922,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               }
               selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              unsetloaderDisplay={true}
             ></ProfileList>
             {/* <MaterialMenu
               onPress={(item) => {
@@ -1040,9 +1060,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           title={'Hi! :)'}
           description={`Your appointment with Dr. ${props.navigation.getParam(
             'DoctorName'
-          )} \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free ${
-            newRescheduleCount == 1 ? 'reschedule' : 'reschedules'
-          } left.`}
+          )} \nhas been rescheduled for — ${newAppointmentTime}\n\n${
+            newRescheduleCount == 0
+              ? 'You have reached the maximum number of reschedules for this appointment.'
+              : `You have ${newRescheduleCount} free ${
+                  newRescheduleCount == 1 ? 'reschedule' : 'reschedules'
+                } left.`
+          }
+          `}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
@@ -1233,7 +1258,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
-      {showSpinner && <Spinner />}
+      {/* {loading && <Spinner />} */}
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}

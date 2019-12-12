@@ -43,6 +43,7 @@ export const doctorCallNotificationTypeDefs = gql`
   enum APPT_CALL_TYPE {
     AUDIO
     VIDEO
+    CHAT
   }
 
   enum DOCTOR_CALL_TYPE {
@@ -59,6 +60,9 @@ export const doctorCallNotificationTypeDefs = gql`
       appointmentId: String
       callType: APPT_CALL_TYPE
       doctorType: DOCTOR_CALL_TYPE
+      sendNotification: Boolean
+      doctorId: String
+      doctorName: String
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
@@ -108,7 +112,14 @@ const getCallDetails: Resolver<
 
 const sendCallNotification: Resolver<
   null,
-  { appointmentId: string; callType: APPT_CALL_TYPE; doctorType: DOCTOR_CALL_TYPE },
+  {
+    appointmentId: string;
+    callType: APPT_CALL_TYPE;
+    doctorType: DOCTOR_CALL_TYPE;
+    sendNotification: Boolean;
+    doctorId: string;
+    doctorName: string;
+  },
   ConsultServiceContext,
   NotificationResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -121,29 +132,28 @@ const sendCallNotification: Resolver<
     callType: args.callType,
     doctorType: args.doctorType,
     startTime: new Date(),
+    doctorId: args.doctorId,
+    doctorName: args.doctorName,
   };
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
   );
-
-  if (!appointmentCallDetails) {
-    throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  if (args.sendNotification == true) {
+    const pushNotificationInput = {
+      appointmentId: args.appointmentId,
+      notificationType: NotificationType.CALL_APPOINTMENT,
+    };
+    const notificationResult = sendCallsNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb,
+      args.callType,
+      args.doctorType,
+      appointmentCallDetails.id
+    );
+    console.log(notificationResult, 'doctor call appt notification');
   }
-  const pushNotificationInput = {
-    appointmentId: args.appointmentId,
-    notificationType: NotificationType.CALL_APPOINTMENT,
-  };
-  const notificationResult = sendCallsNotification(
-    pushNotificationInput,
-    patientsDb,
-    consultsDb,
-    doctorsDb,
-    args.callType,
-    args.doctorType,
-    appointmentCallDetails.id
-  );
-  console.log(notificationResult, 'doctor call appt notification');
-
   return { status: true, callDetails: appointmentCallDetails };
 };
 

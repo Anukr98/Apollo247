@@ -5,6 +5,10 @@ import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import {
+  sendCartNotification,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {
@@ -71,7 +75,15 @@ const saveOrderDeliveryStatus: Resolver<
     MEDICINE_ORDER_STATUS.DELIVERED
   );
 
-  return { requestStatus: 'true', requestMessage: 'Delivery status updated succssfully' };
+  const pushNotificationInput = {
+    orderAutoId: orderDetails.orderAutoId,
+    notificationType: NotificationType.MEDICINE_ORDER_DELIVERED,
+  };
+  console.log(pushNotificationInput, 'pushNotificationInput');
+  const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
+  console.log(notificationResult, 'medicine order delivered notification');
+
+  return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
 };
 
 export const pharmaOrderDeliveryResolvers = {

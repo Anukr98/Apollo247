@@ -6,6 +6,11 @@ import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -90,10 +95,15 @@ export interface HealthMedicineCardProps {
   onPressDelete?: () => void;
   onPressOrder?: () => void;
   onClickCard?: () => void;
-  data: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords;
+  disableDelete?: boolean;
+  data?: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords;
+  datalab?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests;
+  datahealth?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks;
+  datahospitalization?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations;
 }
 
 export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => {
+  const { data, datahospitalization, datahealth, datalab, disableDelete } = props;
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
@@ -102,7 +112,12 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
       </View>
       <View style={styles.rightViewStyle}>
         <Text style={styles.labelTextStyle}>
-          {moment(props.data.testDate).format('DD MMM YYYY')}
+          {moment(
+            (data && data.testDate) ||
+              (datahospitalization && datahospitalization.dateOfHospitalization) ||
+              (datahealth && datahealth.appointmentDate) ||
+              (datalab && datalab.labTestDate)
+          ).format('DD MMM YYYY')}
         </Text>
         <TouchableOpacity
           activeOpacity={1}
@@ -115,13 +130,31 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.doctorNameStyles}>{props.data.testName}</Text>
-                <TouchableOpacity onPress={props.onPressDelete}>
-                  <More />
-                </TouchableOpacity>
+                <Text style={styles.doctorNameStyles}>
+                  {(data && data.testName) ||
+                    (datahospitalization && datahospitalization.diagnosisNotes) ||
+                    (datahealth && datahealth.healthCheckName) ||
+                    (datalab && datalab.labTestName)}
+                </Text>
+                {disableDelete ? null : (
+                  <TouchableOpacity onPress={props.onPressDelete}>
+                    <More />
+                  </TouchableOpacity>
+                )}
               </View>
-              {!!props.data.sourceName && (
-                <Text style={styles.descriptionTextStyles}>{props.data.sourceName}</Text>
+              {data && !!data.sourceName && (
+                <Text style={styles.descriptionTextStyles}>{data && data.sourceName}</Text>
+              )}
+              {datahealth && !!datahealth.source && (
+                <Text style={styles.descriptionTextStyles}>{datahealth && datahealth.source}</Text>
+              )}
+              {datalab && !!datalab.labTestSource && (
+                <Text style={styles.descriptionTextStyles}>{datalab && datalab.labTestSource}</Text>
+              )}
+              {datahospitalization && !!datahospitalization.source && (
+                <Text style={styles.descriptionTextStyles}>
+                  {datahospitalization && datahospitalization.source}
+                </Text>
               )}
             </View>
           </View>

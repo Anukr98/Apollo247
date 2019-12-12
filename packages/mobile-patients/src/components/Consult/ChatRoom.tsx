@@ -39,6 +39,9 @@ import {
   BOOK_APPOINTMENT_TRANSFER,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE,
+  UPLOAD_CHAT_FILE_PRISM,
+  DOWNLOAD_DOCUMENT,
+  CANCEL_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookTransferAppointment,
@@ -47,6 +50,11 @@ import {
 import {
   BookTransferAppointmentInput,
   TRANSFER_INITIATED_TYPE,
+  UPLOAD_FILE_TYPES,
+  STATUS,
+  ConsultQueueInput,
+  FEEDBACKTYPE,
+  REQUEST_ROLES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -56,7 +64,15 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import Pubnub from 'pubnub';
+import Pubnub, {
+  SignalEvent,
+  UserEvent,
+  SpaceEvent,
+  MembershipEvent,
+  MessageActionEvent,
+  FetchTimeResponse,
+  HereNowResponse,
+} from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -80,17 +96,16 @@ import {
   View,
   BackHandler,
   WebView,
+  StyleSheet,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
 import SoftInputMode from 'react-native-set-soft-input-mode';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-// import {
-//   addToConsultQueue,
-//   addToConsultQueueVariables,
-// } from '@aph/mobile-patients/src/graphql/types/addToConsultQueue';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
@@ -103,19 +118,38 @@ import {
   addToConsultQueue,
   checkIfRescheduleAppointment,
   getNextAvailableSlots,
+  addToConsultQueueWithAutomatedQuestions,
+  endCallSessionAppointment,
+  getAppointmentDataDetails,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
+import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { ChatQuestions } from './ChatQuestions';
+import { FeedbackPopup } from '../FeedbackPopup';
+import { g } from '../../helpers/helperFunctions';
+import { useUIElements } from '../UIElementsProvider';
+import {
+  cancelAppointment,
+  cancelAppointmentVariables,
+} from '../../graphql/types/cancelAppointment';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
-let timerId: NodeJS.Timeout;
+let timerId: any;
+let joinTimerId: any;
 let diffInHours: number;
+let callAbandonmentTimer: any;
+let callAbandonmentStoppedTimer: number = 200;
+let messageSent: string;
+let rescheduleInitiatedBy: string;
+let callhandelBack: boolean = true;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -125,33 +159,51 @@ type rescheduleType = {
   isPaid: number;
 };
 
+const styles = StyleSheet.create({
+  rescheduleTextStyles: {
+    ...theme.viewStyles.yellowTextStyle,
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  claimStyles: {
+    flex: 0.5,
+    marginLeft: 5,
+    marginRight: 8,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+  rescheduletyles: {
+    flex: 0.5,
+    marginRight: 5,
+    marginLeft: 8,
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+  gotItStyles: {
+    height: 60,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
+});
+
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  // useEffect(() => {
-  //   RNFetchBlob.config({
-  //     // add this option that makes response data to be stored as a file,
-  //     // this is much more performant.
-  //     fileCache: true,
-  //   })
-  //     .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
-  //       //some headers ..
-  //     })
-  //     .then((res) => {
-  //       // the temp file path
-  //       console.log('The file saved to res ', res);
-  //       console.log('The file saved to ', res.path());
-  //     });
-  // }, []);
   const appointmentData = props.navigation.state.params!.data;
+
   // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
 
-  // console.log('appointmentData', appointmentData);
+  let dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -175,6 +227,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -226,6 +279,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [consultStarted, setConsultStarted] = useState<boolean>(true);
   const [callTimer, setCallTimer] = useState<number>(0);
+  const [joinCounter, setJoinCounter] = useState<number>(0);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
   const [hideStatusBar, setHideStatusBar] = useState<boolean>(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -238,6 +292,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [transferAccept, setTransferAccept] = useState<boolean>(false);
   const [transferDcotorName, setTransferDcotorName] = useState<string>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
+  const [wrongFormat, setwrongFormat] = useState<boolean>(false);
   const [checkReschudule, setCheckReschudule] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<rescheduleType>();
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
@@ -246,6 +301,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
   const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
+  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
+  const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
+  const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  const [sucesspopup, setSucessPopup] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -266,12 +335,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const secondMessage = '^^#secondMessage';
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
+  const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const stopConsultJr = '^^#stopconsultJr';
+  const callAbandonment = '^^#callAbandonment';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
   const doctorId = appointmentData.doctorInfo.id;
 
-  let intervalId: NodeJS.Timeout;
+  let intervalId: any;
   let stoppedTimer: number;
   let thirtySecondTimer: any;
   let minuteTimer: any;
@@ -283,12 +355,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
 
+  let currentDateTime = new Date();
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
+
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
@@ -304,17 +379,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const backDataFunctionality = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    CommonLogEvent(AppRoutes.TabBar, 'Go back clicked');
-    props.navigation.replace(AppRoutes.TabBar);
-    return false;
+  const backDataFunctionality = () => {
+    try {
+      console.log(callhandelBack, 'is back called');
+      if (callhandelBack) {
+        props.navigation.replace(AppRoutes.TabBar);
+        return true;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log(error, 'error');
+    }
   };
+
   useEffect(() => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
-    requestToJrDoctor();
+    setUserAnswers({ appointmentId: channel });
+    // requestToJrDoctor();
     analytics.setAnalyticsCollectionEnabled(true);
     CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
 
@@ -326,18 +410,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     Platform.OS === 'android' && requestReadSmsPermission();
     Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_RESIZE);
     KeepAwake.activate();
+    AppState.addEventListener('change', _handleAppStateChange);
   }, []);
 
   useEffect(() => {
     console.log('callType', callType);
     if (callType === 'VIDEO') {
       setOnSubscribe(true);
+      callhandelBack = false;
       setIsAudio(false);
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     } else if (callType === 'AUDIO') {
       setIsAudio(true);
       setOnSubscribe(true);
+      callhandelBack = false;
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
     }
@@ -345,30 +432,300 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const client = useApolloClient();
 
+  const setSendAnswers = (val: number) => {
+    let s = isSendAnswers;
+    s[val] = true;
+    setisSendAnswers(s);
+  };
+
+  const sendAnswerMessage = (text: { id: string; message: string }) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {}
+    );
+  };
+  const setAnswerData = (value: { k: string; v: string[] }[]) => {
+    let data = userAnswers || ({} as ConsultQueueInput);
+    value.map((item) => {
+      switch (item.k) {
+        case 'height':
+          data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
+          console.log('data.height:', 'data.height:' + data.height);
+          try {
+            const text = {
+              id: patientId,
+              message: 'Height:\n' + data.height,
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[0] && sendAnswerMessage(text);
+            setSendAnswers(0);
+          } catch (error) {}
+          break;
+        case 'weight':
+          data.weight = item.v[0] || 'No Idea';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Weight:\n' + data.weight,
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[1] && sendAnswerMessage(text);
+            setSendAnswers(1);
+          } catch (error) {}
+          break;
+        case 'drugAllergies':
+          data.drugAllergies = item.v[0] || 'No';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Medicine Allergy:\n' + data.drugAllergies,
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[2] && sendAnswerMessage(text);
+            setSendAnswers(2);
+          } catch (error) {}
+          break;
+        case 'dietAllergies':
+          data.dietAllergies = item.v[0] || 'No';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Food Allergy:\n' + data.dietAllergies,
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[3] && sendAnswerMessage(text);
+            setSendAnswers(3);
+          } catch (error) {}
+          break;
+        case 'temperature':
+          data.temperature = item.v[0] || 'No Idea';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Temperature:\n' + data.temperature,
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[4] && sendAnswerMessage(text);
+            setSendAnswers(4);
+          } catch (error) {}
+          break;
+        case 'bp':
+          data.bp = item.v[0] || item.v[1] || 'No Idea';
+          try {
+            const text = {
+              id: patientId,
+              message: 'Blood Pressure:\n' + data.bp,
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[5] && sendAnswerMessage(text);
+            setSendAnswers(5);
+          } catch (error) {}
+          break;
+        case 'familyHistory':
+          data.familyHistory = item.v[0] || 'No';
+          try {
+            const text = {
+              id: patientId,
+              message:
+                'Family members suffering suffer from — COPD, Cancer, Hypertension or Diabetes:\n' +
+                data.familyHistory,
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[6] && sendAnswerMessage(text);
+            setSendAnswers(6);
+          } catch (error) {}
+          break;
+        case 'lifeStyleSmoke':
+          data.lifeStyle = data.lifeStyle
+            ? data.lifeStyle.includes('Smoke')
+              ? data.lifeStyle
+              : 'Smoke: ' + (item.v[0] || 'No') + '\n' + data.lifeStyle
+            : 'Smoke: ' + (item.v[0] || 'No');
+          try {
+            const text = {
+              id: patientId,
+              message: 'Smoke:\n' + (item.v[0] || 'No'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[7] && sendAnswerMessage(text);
+            setSendAnswers(7);
+          } catch (error) {}
+          break;
+        case 'lifeStyleDrink':
+          data.lifeStyle = data.lifeStyle
+            ? data.lifeStyle.includes('Drink')
+              ? data.lifeStyle
+              : data.lifeStyle + '\nDrink: ' + (item.v[0] || 'No')
+            : 'Drink: ' + (item.v[0] || 'No');
+          try {
+            const text = {
+              id: patientId,
+              message: 'Drink: \n' + (item.v[0] || 'No'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[8] && sendAnswerMessage(text);
+            setSendAnswers(8);
+          } catch (error) {}
+          break;
+      }
+    });
+    setUserAnswers(data);
+    if (isSendAnswers.find((item) => item === false) === undefined) {
+      requestToJrDoctor();
+    }
+  };
+
   const requestToJrDoctor = async () => {
     // let ConsultQueueData: any = await AsyncStorage.getItem('ConsultQueueData');
     // ConsultQueueData = JSON.parse(ConsultQueueData || 'null') || [];
     // console.log('ConsultQueueData', ConsultQueueData);
-
     // if (ConsultQueueData.appointmentId != appointmentData.id) {
+    // addToConsultQueue(client, appointmentData.id)
+    //   .then(({ data }: any) => {
+    //     console.log(data, 'data res');
+    //     const queueData = {
+    //       queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+    //       appointmentId: appointmentData.id,
+    //     };
+    //     console.log(queueData, 'queueData res');
+    //     AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+    //   })
+    //   .catch((e: string) => {
+    //     console.log('Error occured ', e);
+    //   });
 
-    addToConsultQueue(client, appointmentData.id)
-      .then(({ data }: any) => {
-        console.log(data, 'data res');
-        const queueData = {
-          queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-          appointmentId: appointmentData.id,
-        };
-        console.log(queueData, 'queueData res');
+    //new code
+    if (userAnswers) {
+      addToConsultQueueWithAutomatedQuestions(client, userAnswers)
+        .then(({ data }: any) => {
+          console.log(data, 'data res, adding');
+          const queueData = {
+            queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+            appointmentId: appointmentData.id,
+          };
+          console.log(queueData, 'queueData res, adding');
+          AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+        })
+        .catch((e: string) => {
+          console.log('Error occured, adding ', e);
+        })
+        .finally(() => startJoinTimer(0));
+    } else {
+      addToConsultQueue(client, appointmentData.id)
+        .then(({ data }: any) => {
+          console.log(data, 'data res');
+          const queueData = {
+            queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+            appointmentId: appointmentData.id,
+          };
+          console.log(queueData, 'queueData res');
+          AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+        })
+        .catch((e: string) => {
+          console.log('Error occured ', e);
+        })
+        .finally(() => startJoinTimer(0));
+    }
+    // userAnswers &&
+    //   addToConsultQueueWithAutomatedQuestions(client, userAnswers)
+    //     .then(({ data }: any) => {
+    //       console.log(data, 'data res, adding');
+    //       startJoinTimer(0);
+    //       const queueData = {
+    //         queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+    //         appointmentId: appointmentData.id,
+    //       };
+    //       console.log(queueData, 'queueData res, adding');
+    //       AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+    //     })
+    //     .catch((e: string) => {
+    //       console.log('Error occured, adding ', e);
+    //     });
 
-        AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
-      })
-      .catch((e: string) => {
-        console.log('Error occured ', e);
-      });
     // } else {
     //   console.log('requestToJrDoctor not called');
     // }
+  };
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (nextAppState === 'background' || nextAppState === 'inactive') {
+      console.log('nextAppState :' + nextAppState, abondmentStarted);
+      handleCallTheEdSessionAPI();
+    }
+  };
+
+  const handleCallTheEdSessionAPI = () => {
+    console.log('API not Called');
+
+    if (abondmentStarted == true) {
+      console.log('API Called');
+      endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
+    }
+  };
+
+  const endCallAppointmentSessionAPI = (status: STATUS) => {
+    console.log('endCallAppointmentSessionAPI called');
+
+    endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
+      .then(({ data }: any) => {
+        console.log(data, 'data endCallAppointmentSessionAPI');
+      })
+      .catch((e: string) => {
+        console.log('Error endCallAppointmentSessionAPI ', e);
+      });
+  };
+
+  const cancelAppointmentApi = () => {
+    setLoading(true);
+    const appointmentTransferInput = {
+      appointmentId: appointmentData.id,
+      cancelReason: '',
+      cancelledBy: REQUEST_ROLES.DOCTOR, //appointmentDate,
+      cancelledById: appointmentData.doctorId,
+    };
+    console.log(appointmentTransferInput, 'appointmentTransferInput');
+
+    client
+      .mutate<cancelAppointment, cancelAppointmentVariables>({
+        mutation: CANCEL_APPOINTMENT,
+        variables: {
+          cancelAppointmentInput: appointmentTransferInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        setLoading(false);
+        setSucessPopup(true);
+        console.log(data, 'datacancel');
+      })
+      .catch((e: any) => {
+        setLoading(false);
+        console.log('Error occured while adding Doctor', e);
+        const message = e.message ? e.message.split(':')[1].trim() : '';
+        if (
+          message == 'INVALID_APPOINTMENT_ID' ||
+          message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
+        ) {
+          showAphAlert!({
+            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+            description: 'Ongoing / Completed appointments cannot be cancelled.',
+          });
+        }
+      });
   };
 
   const requestReadSmsPermission = async () => {
@@ -474,6 +831,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     timerId && clearInterval(timerId);
   };
 
+  const startJoinTimer = (timer: number) => {
+    joinTimerId = setInterval(() => {
+      timer = timer + 1;
+      stoppedTimer = timer;
+      setJoinCounter(timer);
+      // console.log('uptimer join', timer);
+      if (timer === 30) {
+        thirtySecondCall();
+      } else if (timer === 90) {
+        minuteCaller();
+      } else if (timer > 100) {
+        stopJoinTimer();
+      }
+      if (timer == 0) {
+        // console.log('uptimer join', timer);
+        setJoinCounter(0);
+        clearInterval(joinTimerId);
+      }
+    }, 1000);
+  };
+
+  const stopJoinTimer = () => {
+    console.log('stopTimer join', joinTimerId);
+    setJoinCounter(0);
+    joinTimerId && clearInterval(joinTimerId);
+  };
+
   const stopInterval = () => {
     if (intervalId) {
       setConsultStarted(false);
@@ -491,11 +875,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
     },
+    error: (error: string) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+    },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const subscriberEventHandlers = {
     error: (error: string) => {
-      console.log(`There was an error with the subscriber: ${error}`);
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     connected: (event: string) => {
       console.log('Subscribe stream connected!', event);
@@ -503,32 +893,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisabled: (error: string) => {
+      // console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisableWarning: (error: string) => {
+      // console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    videoDisableWarningLifted: (error: string) => {
+      // console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    audioNetworkStats: (error: object) => {
+      // console.log(`audioNetworkStats subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const sessionEventHandlers = {
     error: (error: string) => {
-      console.log(`There was an error with the session: ${error}`);
+      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
-    connectionCreated: (event: string) => {},
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
+    },
     connectionDestroyed: (event: string) => {
-      setIsCall(false);
-      setIsAudioCall(false);
-      stopTimer();
-      setCallAccepted(false);
-      setHideStatusBar(true);
       console.log('session stream connectionDestroyed!', event);
-      setConvertVideo(false);
-      KeepAwake.activate();
-      setTimerStyles({
-        position: 'absolute',
-        marginHorizontal: 20,
-        marginTop: isIphoneX() ? 91 : 81,
-        width: width - 40,
-        color: 'white',
-        ...theme.fonts.IBMPlexSansSemiBold(12),
-        textAlign: 'center',
-        letterSpacing: 0.46,
-      });
+      eventsAfterConnectionDestroyed();
     },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
@@ -536,6 +927,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
+      eventsAfterConnectionDestroyed();
+      // disconnectCallText();
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
@@ -548,14 +941,63 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     signal: (event: string) => {
       console.log('session stream signal!', event);
     },
+    streamCreated: (event: string) => {
+      console.log('session streamCreated created!', event);
+    },
+    streamDestroyed: (event: string) => {
+      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
+      eventsAfterConnectionDestroyed();
+      // disconnectCallText();
+    },
+    streamPropertyChanged: (event: string) => {
+      console.log('session streamPropertyChanged destroyed!', event);
+    },
+    otrnError: (error: string) => {
+      console.log(
+        `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
+      );
+    },
+  };
+
+  const eventsAfterConnectionDestroyed = () => {
+    setIsCall(false);
+    setIsAudioCall(false);
+    stopTimer();
+    setCallAccepted(false);
+    setHideStatusBar(false);
+    setConvertVideo(false);
+    KeepAwake.activate();
+    setMute(true);
+    setShowVideo(true);
+    setCameraPosition('front');
+    setChatReceived(false);
+
+    setTimerStyles({
+      position: 'absolute',
+      marginHorizontal: 20,
+      marginTop: isIphoneX() ? 91 : 81,
+      width: width - 40,
+      color: 'white',
+      ...theme.fonts.IBMPlexSansSemiBold(12),
+      textAlign: 'center',
+      letterSpacing: 0.46,
+    });
   };
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
+    uuid: REQUEST_ROLES.PATIENT,
+    restore: true,
+    keepAlive: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
+    presenceTimeout: 20,
+    heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
+  let abondmentStarted = false;
 
   useEffect(() => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
@@ -581,12 +1023,63 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        console.log('messageevent', message);
+        // console.log('messageevent', message);
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
-        if (presenceEvent.occupancy >= 2) {
-        }
+        console.log('presenceEvent', presenceEvent);
+        dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
+
+        const diff = moment.duration(moment(appointmentData.appointmentDateTime).diff(new Date()));
+        let diffInMins = diff.asMinutes();
+        console.log('diffInMins', diffInMins);
+
+        pubnub
+          .hereNow({
+            channels: [channel],
+            includeUUIDs: true,
+          })
+          .then((response: HereNowResponse) => {
+            console.log('hereNowresponse', response);
+
+            const data: any = response.channels[appointmentData.id].occupants;
+
+            const occupancyDoctor = data.filter((obj: any) => {
+              return obj.uuid === REQUEST_ROLES.DOCTOR;
+            });
+
+            const startConsultResult = insertText.filter((obj: any) => {
+              return obj.message === startConsultMsg;
+            });
+            console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
+            if (diffInMins < 15) {
+              if (response.totalOccupancy >= 2) {
+                if (callAbandonmentStoppedTimer == 200) return;
+                if (callAbandonmentStoppedTimer < 200) {
+                  console.log('calljoined');
+                  APIForUpdateAppointmentData(true);
+                }
+              } else {
+                if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
+                  console.log('abondmentStarted -------> ', abondmentStarted);
+
+                  if (abondmentStarted == false) {
+                    console.log('callAbondmentMethod', abondmentStarted);
+                    if (startConsultResult.length > 0) {
+                      APIForUpdateAppointmentData(false);
+                      abondmentStarted = true;
+                    } else {
+                      callAbondmentMethod(false);
+                    }
+                    eventsAfterConnectionDestroyed();
+                  }
+                }
+              }
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       },
     });
 
@@ -594,7 +1087,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
     return function cleanup() {
-      console.log('didmount clean up');
+      console.log('didmount clean up chatroom');
       pubnub.unsubscribe({ channels: [channel] });
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -602,8 +1095,119 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
       minuteTimer && clearTimeout(minuteTimer);
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
+      timerId && clearInterval(timerId);
+      intervalId && clearInterval(intervalId);
+      stopJoinTimer();
+      stopCallAbondmentTimer();
+      try {
+        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+      } catch (error) {}
     };
   }, []);
+
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
+  const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
+
+  const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
+    const startConsultJRResult = insertText.filter((obj: any) => {
+      return obj.message === startConsultjr;
+    });
+
+    const stopConsultJRResult = insertText.filter((obj: any) => {
+      return obj.message === stopConsultJr;
+    });
+
+    if (isSeniorConsultStarted) {
+      console.log('callAbondmentMethod scenario');
+      if (appointmentData.status === STATUS.COMPLETED) return;
+      abondmentStarted = true;
+      startCallAbondmentTimer(200, true);
+    } else {
+      console.log(
+        'doctor no show scenario',
+        startConsultJRResult.length,
+        stopConsultJRResult.length,
+        dateIsAfter,
+        isSeniorConsultStarted
+      );
+
+      if (
+        startConsultJRResult.length > 0 &&
+        stopConsultJRResult.length > 0 &&
+        dateIsAfter &&
+        !isSeniorConsultStarted
+      ) {
+        if (appointmentData.status === STATUS.COMPLETED) return;
+        abondmentStarted = true;
+        startCallAbondmentTimer(200, false);
+      } else {
+        abondmentStarted = false;
+      }
+    }
+  };
+
+  const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
+    try {
+      setTransferData(appointmentData);
+      callAbandonmentTimer = setInterval(() => {
+        timer = timer - 1;
+        callAbandonmentStoppedTimer = timer;
+        setCallAbundantCallTime(timer);
+
+        console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+
+        if (timer < 1) {
+          console.log('call Abundant', appointmentData);
+          endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
+
+          if (isCallAbandment) {
+            setIsDoctorNoShow(true);
+          } else {
+            NextAvailableSlot(appointmentData, 'Transfer', true);
+          }
+          setCallAbundantCallTime(200);
+          callAbandonmentStoppedTimer = 200;
+          callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+        }
+      }, 1000);
+    } catch (error) {
+      console.log('error in call abandoment', error);
+    }
+  };
+
+  const stopCallAbondmentTimer = () => {
+    console.log('stopCallAbondmentTimer', callAbandonmentTimer);
+    callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+    setCallAbundantCallTime(200);
+    callAbandonmentStoppedTimer = 200;
+    abondmentStarted = false;
+  };
+
+  const APIForUpdateAppointmentData = (toStopTimer: boolean) => {
+    getAppointmentDataDetails(client, appointmentData.id)
+      .then(({ data }: any) => {
+        console.log(data, 'data APIForUpdateAppointmentData');
+        const appointmentSeniorDoctorStarted =
+          data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
+        console.log(
+          appointmentSeniorDoctorStarted,
+          'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+        );
+
+        if (toStopTimer) {
+          if (appointmentSeniorDoctorStarted) {
+            stopCallAbondmentTimer();
+            abondmentStarted = false;
+          }
+        } else {
+          callAbondmentMethod(appointmentSeniorDoctorStarted);
+        }
+      })
+      .catch((e: string) => {
+        abondmentStarted = false;
+        console.log('Error APIForUpdateAppointmentData ', e);
+      });
+  };
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
@@ -659,15 +1263,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, res) => {
         try {
-          const end: number = res.endTimeToken ? res.endTimeToken : 1;
+          const end: any = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
-          // console.log('msgs', msgs);
+          console.log('msgs', msgs);
 
           res.messages.forEach((element, index) => {
             newmessage[newmessage.length] = element.entry;
           });
-          // console.log('res', res);
+          // console.log('newmessage', newmessage);
           setLoading(false);
 
           if (messages.length !== newmessage.length) {
@@ -676,22 +1280,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               updateSessionAPI();
               checkingAppointmentDates();
             }
-
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
               setjrDoctorJoined(true);
               updateSessionAPI();
               checkingAppointmentDates();
             }
 
-            insertText = newmessage;
-            setMessages(newmessage as []);
-            console.log('newmessage', newmessage);
+            // console.log('newmessage', newmessage);
             if (msgs.length == 100) {
               console.log('hihihihihi');
               getHistory(end);
+              return;
             }
 
+            // setTimeout(() => {
+            console.log('inserting');
+
+            insertText = newmessage;
+            setMessages(newmessage as []);
             checkAutomatedPatientText();
+            checkForRescheduleMessage(newmessage);
+            // }, 100);
 
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
@@ -705,6 +1314,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }
     );
+  };
+
+  const checkForRescheduleMessage = (newmessage: any) => {
+    const result = newmessage.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === rescheduleConsultMsg;
+    });
+    if (result.length > 0) {
+      console.log('checkForRescheduleMessage ', result);
+      NextAvailableSlot(result[0], 'Transfer', false);
+    }
   };
 
   const checkAutomatedPatientText = () => {
@@ -738,6 +1358,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           automatedText: successSteps,
           id: doctorId,
           isTyping: true,
+          messageDate: new Date(),
         },
         storeInHistory: true,
         sendByPost: true,
@@ -747,105 +1368,151 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    thirtySecondTimer = setTimeout(function() {
-      if (jrDoctorJoined == false) {
-        // console.log('Alert Shows After 30000 Seconds of Delay.');
+    if (appointmentData.isJdQuestionsComplete) {
+      console.log({});
+      requestToJrDoctor();
+      // startJoinTimer(0);
+      // thirtySecondCall();
+      // minuteCaller();
+    } else {
+      setDisplayChatQuestions(true);
+    }
+  }, []);
 
-        const result = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === firstMessage;
-        });
+  const thirtySecondCall = () => {
+    if (jrDoctorJoined == false) {
+      // console.log('Alert Shows After 30000 Seconds of Delay.');
 
-        const startConsultResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultMsg;
-        });
+      const result = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === firstMessage;
+      });
 
-        const startConsultjrResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultjr;
-        });
+      const startConsultResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultMsg;
+      });
 
-        if (
-          result.length === 0 &&
-          startConsultResult.length === 0 &&
-          startConsultjrResult.length === 0
-        ) {
-          // console.log('result.length ', result);
-          pubnub.publish(
-            {
-              channel: channel,
-              message: {
-                message: firstMessage,
-                automatedText: `Hi ${currentPatient &&
-                  currentPatient.firstName}, sorry to keep you waiting. ${
-                  appointmentData.doctorInfo.displayName
-                }’s team is with another patient right now. Your consultation prep will start soon.`,
-                id: doctorId,
-                isTyping: true,
-              },
-              storeInHistory: true,
-              sendByPost: true,
+      const startConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultjr;
+      });
+
+      const jdThankyouResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === jdThankyou;
+      });
+
+      const stopConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === stopConsultJr;
+      });
+
+      const languageQueueResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === languageQue;
+      });
+
+      if (
+        result.length === 0 &&
+        startConsultResult.length === 0 &&
+        startConsultjrResult.length === 0 &&
+        jdThankyouResult.length === 0 &&
+        stopConsultjrResult.length === 0 &&
+        languageQueueResult.length === 0
+      ) {
+        // console.log('result.length ', result);
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: firstMessage,
+              automatedText: `Hi ${currentPatient &&
+                currentPatient.firstName}, sorry to keep you waiting. ${
+                appointmentData.doctorInfo.displayName
+              }’s team is with another patient right now. Your consultation prep will start soon.`,
+              id: doctorId,
+              isTyping: true,
+              messageDate: new Date(),
             },
-            (status, response) => {}
-          );
-        } else {
-          thirtySecondTimer && clearTimeout(thirtySecondTimer);
-        }
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
       } else {
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
       }
-    }, 30000);
-  }, []);
+    } else {
+      thirtySecondTimer && clearTimeout(thirtySecondTimer);
+    }
+  };
 
-  useEffect(() => {
-    minuteTimer = setTimeout(function() {
-      if (jrDoctorJoined == false) {
-        // console.log('Alert Shows After 60000 Seconds of Delay.');
+  const minuteCaller = () => {
+    if (jrDoctorJoined == false) {
+      // console.log('Alert Shows After 60000 Seconds of Delay.');
 
-        const result = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === secondMessage;
-        });
+      const result = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === secondMessage;
+      });
 
-        const startConsultResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultMsg;
-        });
+      const startConsultResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultMsg;
+      });
 
-        const startConsultjrResult = insertText.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
-          return obj.message === startConsultjr;
-        });
+      const startConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === startConsultjr;
+      });
 
-        if (
-          result.length === 0 &&
-          startConsultResult.length === 0 &&
-          startConsultjrResult.length === 0
-        ) {
-          // console.log('result.length ', result);
-          pubnub.publish(
-            {
-              channel: channel,
-              message: {
-                message: secondMessage,
-                automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
-                id: doctorId,
-                isTyping: true,
-              },
-              storeInHistory: true,
-              sendByPost: true,
+      const jdThankyouResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === jdThankyou;
+      });
+
+      const stopConsultjrResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === stopConsultJr;
+      });
+
+      const languageQueueResult = insertText.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === languageQue;
+      });
+
+      if (
+        result.length === 0 &&
+        startConsultResult.length === 0 &&
+        startConsultjrResult.length === 0 &&
+        jdThankyouResult.length === 0 &&
+        stopConsultjrResult.length === 0 &&
+        languageQueueResult.length === 0
+      ) {
+        // console.log('result.length ', result);
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: secondMessage,
+              automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+              id: doctorId,
+              isTyping: true,
+              messageDate: new Date(),
             },
-            (status, response) => {}
-          );
-        } else {
-          minuteTimer && clearTimeout(minuteTimer);
-        }
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
       } else {
         minuteTimer && clearTimeout(minuteTimer);
       }
-    }, 90000);
-  }, []);
+    } else {
+      minuteTimer && clearTimeout(minuteTimer);
+    }
+  };
 
   const checkingAppointmentDates = () => {
     try {
@@ -877,12 +1544,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } catch (error) {}
   };
 
+  const [showFeedback, setShowFeedback] = useState(false);
+  const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    console.log('pubNubMessages', message);
+    // console.log('pubNubMessages', message);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
         setOnSubscribe(true);
+        callhandelBack = false;
+        stopCallAbondmentTimer();
+        setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
         // console.log("AUDIO_CALL_STARTED");
@@ -890,7 +1562,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // InCallManager.chooseAudioRoute('EARPIECE')
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
+        callhandelBack = false;
         setIsAudio(false);
+        stopCallAbondmentTimer();
+        setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
       } else if (message.message.message === startConsultMsg) {
@@ -901,16 +1576,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
+      } else if (message.message.message === stopConsultJr) {
+        console.log('listener remainingTime', remainingTime);
+        stopInterval();
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
+        setConvertVideo(false);
+        addMessages(message);
+        //setShowFeedback(true);
+        // ************* SHOW FEEDBACK POUP ************* \\
       } else if (message.message.message === stopConsultMsg) {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
-        addMessages(message);
+        //addMessages(message);
+        setShowFeedback(true);
+        // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
         setOnSubscribe(false);
+        callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
         InCallManager.stopRingtone();
@@ -922,14 +1609,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === covertAudioMsg) {
         console.log('covertVideoMsg', covertAudioMsg);
         setConvertVideo(false);
+      } else if (message.message.message === consultPatientStartedMsg) {
+        console.log('consultPatientStartedMsg');
+        addMessages(message);
       } else if (message.message.message === startConsultjr) {
         console.log('succss1');
         setjrDoctorJoined(true);
         updateSessionAPI();
         checkingAppointmentDates();
+        stopJoinTimer();
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
+        addMessages(message);
+      } else if (message.message.message === imageconsult) {
+        console.log('imageconsult');
         addMessages(message);
       } else if (message.message.message === firstMessage) {
         console.log('firstMessage');
@@ -939,10 +1635,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === languageQue) {
         console.log('languageQue');
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === jdThankyou) {
         console.log('jdThankyou');
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
+      } else if (message.message.message === cancelConsultInitiated) {
+        console.log('cancelConsultInitiated');
+        setShowPopup(true);
+      } else if (message.message.message === rescheduleConsultMsg) {
+        console.log('rescheduleConsultMsg');
+        // checkForRescheduleMessage(message.message);
+        addMessages(message);
+      } else if (message.message.message === callAbandonment) {
+        console.log('callAbandonment');
+        setShowCallAbandmentPopup(true);
       }
     } else {
       console.log('succss');
@@ -951,14 +1661,39 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('addMessages', addMessages);
+    console.log('addMessages', message);
+    // console.log('startConsultjr', message.message.message);
+
+    if (message.message.id !== patientId) {
+      stopCallAbondmentTimer();
+      setIsDoctorNoShow(false);
+    }
+
+    // const timeStamp = parseInt(message.timetoken) / parseInt('10000000');
+    // console.log('timeStamp', timeStamp);
+
+    // let dateObj = new Date(timeStamp * 1000);
+    // let utcString = dateObj.toLocaleString();
+    // console.log('utcString', utcString);
+
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
     if (!isCall || !isAudioCall) {
       setChatReceived(true);
     }
+
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === rescheduleConsultMsg;
+    });
+
+    checkForRescheduleMessage(insertText);
+
     setTimeout(() => {
-      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: false });
+      flatListRef.current! &&
+        flatListRef.current!.scrollToEnd({
+          animated: false,
+        });
     }, 300);
   };
 
@@ -993,6 +1728,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const text = {
         id: patientId,
         message: textMessage,
+        messageDate: new Date(),
       };
 
       setMessageText('');
@@ -1019,7 +1755,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferReschedule = (rowData: any, index: number) => {
-    console.log('rowData', rowData);
+    // console.log('transferReschedule', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -1202,9 +1938,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule clicked');
 
                     try {
-                      checkIfReschduleApi(rowData, 'Transfer');
-                      NextAvailableSlot(rowData, 'Transfer');
-                      setCheckReschudule(true);
+                      NextAvailableSlot(rowData, 'Transfer', false);
                       setTransferData(rowData.transferInfo);
                       setTimeout(() => {
                         flatListRef.current! &&
@@ -1242,17 +1976,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {checkReschudule && reschduleLoadView(rowData, index, 'Transfer')}
           </View>
         ) : (
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              width: 282,
-              borderRadius: 10,
-              marginVertical: 2,
-              alignSelf: 'flex-start',
-            }}
-          >
-            {leftComponent === 1 && (
-              <View
+          <>
+            {rowData.message === rescheduleConsultMsg ? (
+              <View>{checkReschudule && reschduleLoadView(rowData, index, 'Reschedule')}</View>
+            ) : (
+              <View>{followUpView(rowData, index, 'Followup')}</View>
+            )}
+          </>
+        )}
+      </>
+    );
+  };
+
+  const followUpView = (rowData: any, index: number, type: string) => {
+    // console.log('followUpView', rowData);
+
+    return (
+      <>
+        <View
+          style={{
+            backgroundColor: 'transparent',
+            width: 282,
+            borderRadius: 10,
+            marginVertical: 2,
+            alignSelf: 'flex-start',
+          }}
+        >
+          {leftComponent === 1 && (
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
+              }}
+            >
+              <Mascot
                 style={{
                   width: 32,
                   height: 32,
@@ -1260,139 +2020,154 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   position: 'absolute',
                   left: 0,
                 }}
-              >
-                <Mascot
-                  style={{
-                    width: 32,
-                    height: 32,
-                    bottom: 0,
-                    position: 'absolute',
-                    left: 0,
-                  }}
-                />
-              </View>
-            )}
-            <View
+              />
+            </View>
+          )}
+          <View
+            style={{
+              width: 244,
+              height: 176,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              // marginTop: 16,
+              marginBottom: 4,
+            }}
+          >
+            <Text
               style={{
-                width: 244,
-                height: 176,
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-                // marginTop: 16,
-                marginBottom: 4,
+                marginHorizontal: 16,
+                marginTop: 12,
+                color: 'white',
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              <Text
+              {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
+            </Text>
+            <StickyBottomComponent
+              style={{
+                paddingHorizontal: 0,
+                backgroundColor: 'transparent',
+                shadowColor: 'transparent',
+              }}
+            >
+              <Button
+                title={'DOWNLOAD'}
                 style={{
-                  marginHorizontal: 16,
-                  marginTop: 12,
-                  color: 'white',
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansMedium(15),
+                  flex: 0.5,
+                  marginLeft: 16,
+                  marginRight: 5,
+                  backgroundColor: '#0087ba',
+                  borderWidth: 2,
+                  borderColor: '#fcb715',
                 }}
-              >
-                {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
-              </Text>
-              <StickyBottomComponent
-                style={{
-                  paddingHorizontal: 0,
-                  backgroundColor: 'transparent',
-                  shadowColor: 'transparent',
-                }}
-              >
-                <Button
-                  title={'DOWNLOAD'}
-                  style={{
-                    flex: 0.5,
-                    marginLeft: 16,
-                    marginRight: 5,
-                    backgroundColor: '#0087ba',
-                    borderWidth: 2,
-                    borderColor: '#fcb715',
-                  }}
-                  titleTextStyle={{ color: 'white' }}
-                  onPress={() => {
-                    try {
-                      CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
+                titleTextStyle={{ color: 'white' }}
+                onPress={() => {
+                  try {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
+                    console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
 
-                      console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
+                    let dirs = RNFetchBlob.fs.dirs;
+                    console.log('dirs', dirs);
+                    if (Platform.OS == 'ios') {
+                    }
+                    let fileName: string =
+                      rowData.transferInfo &&
+                      rowData.transferInfo.pdfUrl &&
+                      rowData.transferInfo.pdfUrl.split('/').pop();
+                    fileName = fileName.substring(0, fileName.indexOf('.pdf')) + '.pdf';
+                    console.log(
+                      'pdf downloadDest',
+                      rowData.transferInfo &&
+                        rowData.transferInfo.pdfUrl &&
+                        rowData.transferInfo.pdfUrl.split('/').pop()
+                    );
 
-                      let dirs = RNFetchBlob.fs.dirs;
-                      console.log('dirs', dirs);
-                      if (Platform.OS == 'ios') {
-                      }
-
-                      console.log(
-                        'pdf downloadDest',
-                        rowData.transferInfo &&
-                          rowData.transferInfo.pdfUrl &&
-                          rowData.transferInfo.pdfUrl.split('/').pop()
-                      );
-
-                      setLoading(true);
-                      RNFetchBlob.config({
-                        fileCache: true,
-                        addAndroidDownloads: {
-                          useDownloadManager: true,
-                          notification: false,
-                          mime: 'application/pdf',
-                          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                          description: 'File downloaded by download manager.',
-                        },
+                    setLoading(true);
+                    RNFetchBlob.config({
+                      fileCache: true,
+                      path:
+                        Platform.OS === 'ios'
+                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                            '/' +
+                            (fileName || 'Apollo_Prescription.pdf')
+                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
+                      addAndroidDownloads: {
+                        title: fileName,
+                        useDownloadManager: true,
+                        notification: true,
+                        mime: 'application/pdf',
+                        description: 'File downloaded by download manager.',
+                      },
+                    })
+                      .fetch('GET', rowData.transferInfo.pdfUrl, {
+                        //some headers ..
                       })
-                        .fetch('GET', rowData.transferInfo.pdfUrl, {
-                          //some headers ..
-                        })
-                        .then((res) => {
-                          setLoading(false);
-                          // the temp file path
-                          console.log('The file saved to res ', res);
-                          console.log('The file saved to ', res.path());
-                          saveimageIos(rowData.transferInfo.pdfUrl);
-                          // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                          // RNFetchBlob.ios.openDocument(res.path());
-                          if (Platform.OS === 'android') {
-                            Alert.alert('Download Complete');
-                          }
-                          Platform.OS === 'ios'
-                            ? RNFetchBlob.ios.previewDocument(res.path())
-                            : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                        })
-                        .catch((err) => {
-                          console.log('error ', err);
-                          setLoading(false);
-                          // ...
-                        });
-                    } catch (error) {}
-                  }}
-                />
-
-                <Button
-                  title={'VIEW'}
-                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
-                  onPress={() => {
-                    try {
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
-
-                      console.log('Followupdata', rowData.transferInfo.caseSheetId);
-                      console.log('rowdata', rowData);
-                      props.navigation.navigate(AppRoutes.ConsultDetails, {
-                        CaseSheet: rowData.transferInfo.appointmentId,
-                        DoctorInfo: rowData.transferInfo.doctorInfo,
-                        PatientId: appointmentData.patientId,
-                        appointmentType: appointmentData.appointmentType,
-                        DisplayId: '',
-                        BlobName:
-                          rowData.transferInfo &&
-                          rowData.transferInfo.pdfUrl &&
-                          rowData.transferInfo.pdfUrl.split('/').pop(),
+                      .then((res: any) => {
+                        setLoading(false);
+                        // the temp file path
+                        console.log('The file saved to res ', res);
+                        console.log('The file saved to ', res.path());
+                        // saveimageIos(rowData.transferInfo.pdfUrl);
+                        // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                        // RNFetchBlob.ios.openDocument(res.path());
+                        // if (Platform.OS === 'android') {
+                        //   Alert.alert('Download Complete');
+                        // }
+                        Platform.OS === 'ios'
+                          ? RNFetchBlob.ios.previewDocument(res.path())
+                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                      })
+                      .catch((err: Error) => {
+                        console.log('error ', err);
+                        setLoading(false);
+                        // ...
                       });
-                    } catch (error) {}
-                  }}
-                />
-              </StickyBottomComponent>
-            </View>
+                  } catch (error) {}
+                }}
+              />
+
+              <Button
+                title={'VIEW'}
+                style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                onPress={() => {
+                  try {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
+
+                    console.log('Followupdata', rowData.transferInfo.caseSheetId);
+                    console.log('rowdata', rowData);
+                    props.navigation.navigate(AppRoutes.ConsultDetails, {
+                      CaseSheet: rowData.transferInfo.appointmentId,
+                      DoctorInfo: rowData.transferInfo.doctorInfo,
+                      PatientId: appointmentData.patientId,
+                      appointmentType: appointmentData.appointmentType,
+                      DisplayId: '',
+                      BlobName:
+                        rowData.transferInfo &&
+                        rowData.transferInfo.pdfUrl &&
+                        rowData.transferInfo.pdfUrl.split('/').pop(),
+                    });
+                  } catch (error) {}
+                }}
+              />
+            </StickyBottomComponent>
+            <Text
+              style={{
+                color: '#ffffff',
+                marginLeft: 27,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+                lineHeight: 24,
+                letterSpacing: 0.04,
+                marginTop: 50,
+                marginRight: 16,
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+          </View>
+          {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
             <View
               style={{
                 width: 244,
@@ -1495,9 +2270,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
 
                     console.log('Button Clicked');
-                    checkIfReschduleApi(rowData, 'Followup');
-                    NextAvailableSlot(rowData, 'Followup');
-                    setCheckReschudule(true);
+                    NextAvailableSlot(rowData, 'Followup', false);
                     setTransferData(rowData.transferInfo);
                     setTimeout(() => {
                       flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
@@ -1505,22 +2278,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 />
               </StickyBottomComponent>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  marginLeft: 27,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  lineHeight: 24,
+                  letterSpacing: 0.04,
+                  marginTop: 50,
+                  marginRight: 16,
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
             </View>
-            {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
-          </View>
-        )}
+          )}
+          {/* {checkReschudule && reschduleLoadView(rowData, index, 'Followup')} */}
+        </View>
       </>
     );
   };
 
   const reschduleLoadView = (rowData: any, index: number, type: string) => {
-    console.log('reschduleLoadView', appointmentData.doctorInfo.displayName);
+    // console.log('reschduleLoadView', appointmentData.doctorInfo.displayName);
     return (
       <>
         <View
           style={{
             width: 244,
-            height: 116,
+            // height: 130,
             backgroundColor: '#0087ba',
             marginLeft: 38,
             borderRadius: 10,
@@ -1536,9 +2323,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               paddingTop: 12,
             }}
           >
-            {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
-              ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
-              : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`}
+            {
+              // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
+              //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
+              //   :
+              "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
+              // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
+            }
+          </Text>
+          <Text
+            style={{
+              color: '#ffffff',
+              marginLeft: 27,
+              textAlign: 'right',
+              ...theme.fonts.IBMPlexSansMedium(10),
+              lineHeight: 24,
+              letterSpacing: 0.04,
+              marginTop: 0,
+              marginRight: 16,
+            }}
+          >
+            {convertChatTime(rowData)}
           </Text>
         </View>
         <View
@@ -1562,7 +2367,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           >
             Next slot for {appointmentData.doctorInfo.displayName} is available on —
-            {/* Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on — */}
           </Text>
           <View
             style={{
@@ -1621,9 +2425,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               titleTextStyle={{ color: 'white' }}
               onPress={() => {
-                if (type === 'Followup') {
+                if (type === 'Followup' || type === 'Reschedule') {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
-
+                  rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
+                  setTransferData(rowData.transferInfo);
                   setdisplayoverlay(true);
                 } else {
                   // props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -1661,6 +2466,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     };
                     console.log('bookRescheduleInput', bookRescheduleInput);
                     rescheduleAPI(rowData, bookRescheduleInput);
+                  } else if (type === 'Reschedule') {
+                    const bookRescheduleInput = {
+                      appointmentId: rowData.transferInfo.appointmentId,
+                      doctorId: rowData.transferInfo.transferDateTime
+                        ? rowData.transferInfo.doctorInfo.id
+                        : rowData.transferInfo.doctorId,
+                      newDateTimeslot: nextSlotAvailable,
+                      initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+                      initiatedId: patientId,
+                      patientId: patientId,
+                      rescheduledId: rowData.transferInfo.reschduleId,
+                    };
+                    console.log('bookRescheduleInput', bookRescheduleInput);
+                    rescheduleAPI(rowData, bookRescheduleInput);
                   } else {
                     let datettimeval = nextSlotAvailable;
                     let transferdataid = rowData.transferInfo.transferId;
@@ -1680,6 +2499,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             />
           </StickyBottomComponent>
+          <Text
+            style={{
+              color: '#ffffff',
+              marginLeft: 27,
+              textAlign: 'right',
+              ...theme.fonts.IBMPlexSansMedium(10),
+              lineHeight: 24,
+              letterSpacing: 0.04,
+              marginTop: 53,
+              marginRight: 16,
+            }}
+          >
+            {convertChatTime(rowData)}
+          </Text>
         </View>
       </>
     );
@@ -1771,15 +2604,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('pdf', rowData.url);
-
-                    if ((Platform.OS = 'android')) {
-                      Linking.openURL(rowData.url).catch((err) =>
-                        console.error('An error occurred', err)
-                      );
-                    } else {
-                      setShowWeb(true);
-                      setUrl(rowData.url);
-                    }
+                    // setShowWeb(true);
+                    setPatientImageshow(true);
+                    setUrl(rowData.url);
+                    // if ((Platform.OS = 'android')) {
+                    //   setShowWeb(true);
+                    //   setUrl(rowData.url);
+                    //   // Linking.openURL(rowData.url).catch((err) =>
+                    //   //   console.error('An error occurred', err)
+                    //   // );
+                    // } else {
+                    //   setShowWeb(true);
+                    //   setUrl(rowData.url);
+                    // }
                   }}
                 >
                   <View
@@ -1794,14 +2631,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       marginLeft: 38,
                     }}
                   >
-                    <FileBig
+                    <Image
+                      source={{ uri: rowData.url }}
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 180,
+                        height: 180,
+                        borderRadius: 10,
+                      }}
+                    />
+                    {/* <FileBig
                       style={{
                         resizeMode: 'stretch',
                         width: 200,
                         height: 200,
                         borderRadius: 10,
                       }}
-                    />
+                    /> */}
                   </View>
                 </TouchableOpacity>
               )}
@@ -1815,17 +2661,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : rowData.message === '^^#startconsult' ? (
@@ -1837,20 +2698,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
-          ) : rowData.message === '^^#stopconsult' ? (
+          ) : rowData.message === stopConsultJr ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -1859,39 +2735,69 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {rowData.automatedText ? (
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.automatedText}
-                </Text>
+                <>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingTop: 8,
+                      paddingBottom: 4,
+                      paddingHorizontal: 16,
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.automatedText}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#ffffff',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                    }}
+                  >
+                    {convertChatTime(rowData)}
+                  </Text>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               ) : null}
             </View>
           ) : (
-            <View
-              style={{
-                backgroundColor: 'white',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              <Text
+            <>
+              <View
                 style={{
-                  color: '#0087ba',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  textAlign: 'left',
+                  backgroundColor: 'white',
+                  marginLeft: 38,
+                  borderRadius: 10,
                 }}
               >
-                {rowData.message}
-              </Text>
-            </View>
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    paddingHorizontal: 16,
+                    paddingTop: 8,
+                    paddingBottom: 3,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
+              </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+            </>
           )}
         </View>
       </View>
@@ -2008,6 +2914,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   </Text>
                 )}
               </View>
+              <Text
+                style={{
+                  color: '#890000',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+              <View style={{ backgroundColor: 'transparent', height: 5, width: 20 }} />
             </View>
           </View>
         ) : (
@@ -2081,14 +2999,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
-                    marginLeft: 0,
                     textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
                   Duration - {rowData.duration}
                 </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingLeft: 16,
+                    paddingVertical: 4,
+                    paddingRight: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
               </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
             </View>
           </View>
         )}
@@ -2107,17 +3037,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {rowData.automatedText ? (
-          <Text
-            style={{
-              color: '#ffffff',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-            }}
-          >
-            {rowData.automatedText}
-          </Text>
+          <>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingTop: 8,
+                paddingBottom: 4,
+                paddingHorizontal: 16,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+              }}
+            >
+              {rowData.automatedText}
+            </Text>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingHorizontal: 16,
+                paddingVertical: 4,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+          </>
         ) : null}
       </View>
     );
@@ -2135,17 +3080,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {rowData.automatedText ? (
-          <Text
-            style={{
-              color: '#ffffff',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-            }}
-          >
-            {rowData.automatedText}
-          </Text>
+          <>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingTop: 8,
+                paddingBottom: 4,
+                paddingHorizontal: 16,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+              }}
+            >
+              {rowData.automatedText}
+            </Text>
+            <Text
+              style={{
+                color: '#ffffff',
+                paddingHorizontal: 16,
+                paddingVertical: 4,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+          </>
         ) : null}
       </View>
     );
@@ -2160,7 +3120,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === endCallMsg ||
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
-      rowData.message === acceptedCallMsg
+      rowData.message === acceptedCallMsg ||
+      rowData.message === stopConsultMsg ||
+      rowData.message === cancelConsultInitiated ||
+      rowData.message === callAbandonment
     ) {
       return null;
     }
@@ -2191,13 +3154,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <>
                   {rowData.message === consultPatientStartedMsg ? (
                     <>{patientAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === firstMessage ? (
-                    <>{doctorAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === secondMessage ? (
-                    <>{doctorAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === languageQue ? (
-                    <>{doctorAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === jdThankyou ? (
+                  ) : rowData.message === firstMessage ||
+                    rowData.message === secondMessage ||
+                    rowData.message === languageQue ||
+                    rowData.message === jdThankyou ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
@@ -2247,13 +3207,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
+                    marginLeft: 14,
                     textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
                   Duration - {rowData.duration}
                 </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingLeft: 16,
+                    paddingVertical: 4,
+                    paddingRight: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
               </View>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
             </View>
           ) : (
             <View>
@@ -2330,33 +3304,68 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   )}
                 </View>
               ) : (
-                <View
-                  style={{
-                    backgroundColor: 'white',
-                    // width: 244,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-end',
-                  }}
-                >
-                  <Text
+                <>
+                  <View
                     style={{
-                      color: '#01475b',
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      textAlign: 'left',
-                      ...theme.fonts.IBMPlexSansMedium(16),
+                      backgroundColor: 'white',
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      alignSelf: 'flex-end',
                     }}
                   >
-                    {rowData.message}
-                  </Text>
-                </View>
+                    <Text
+                      style={{
+                        color: '#01475b',
+                        paddingTop: 8,
+                        paddingBottom: 3,
+                        paddingHorizontal: 16,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(16),
+                      }}
+                    >
+                      {rowData.message}
+                    </Text>
+                    <Text
+                      style={{
+                        color: 'rgba(2,71,91,0.6)',
+                        paddingHorizontal: 16,
+                        paddingVertical: 4,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(10),
+                      }}
+                    >
+                      {convertChatTime(rowData)}
+                    </Text>
+                  </View>
+                  <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+                </>
               )}
             </View>
           )}
         </View>
       );
     }
+  };
+
+  const convertChatTime = (timeStamp: any) => {
+    let utcString;
+    if (timeStamp.messageDate) {
+      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
+        moment(timeStamp.messageDate).format('YYYY-MM-DD')
+      );
+      if (dateValidate == 0) {
+        utcString = moment
+          .utc(timeStamp.messageDate)
+          .local()
+          .format('h:mm A');
+      } else {
+        utcString = moment
+          .utc(timeStamp.messageDate)
+          .local()
+          .format('DD MMM, YYYY h:mm A');
+      }
+    }
+    return utcString ? utcString : '--';
   };
 
   const transferAppointmentAPI = (
@@ -2408,15 +3417,44 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
   };
 
-  const checkIfReschduleApi = (rowData: any, Value: string) => {
+  const checkIfReschduleApi = (
+    rowData: any,
+    Value: string,
+    isAutomatic: boolean,
+    nextSlotAvailable: string
+  ) => {
+    let checkAppointmentId;
+    let checkAppointmentDate;
+    console.log(rowData, 'rowDatacheckIfReschduleApi');
+    console.log(Value, 'Value');
+
+    if (isAutomatic) {
+      checkAppointmentId = channel;
+
+      checkAppointmentDate = nextSlotAvailable;
+      console.log(
+        'checkIfReschedulesuccess',
+        checkAppointmentId,
+        checkAppointmentDate,
+        isAutomatic
+      );
+    } else {
+      checkAppointmentId = rowData.transferInfo.appointmentId;
+
+      checkAppointmentDate =
+        Value === 'Followup'
+          ? rowData.transferInfo.folloupDateTime
+          : rowData.transferInfo.transferDateTime;
+      console.log(
+        'checkIfReschedulesuccess',
+        checkAppointmentId,
+        checkAppointmentDate,
+        isAutomatic
+      );
+    }
+
     setLoading(true);
-    checkIfRescheduleAppointment(
-      client,
-      rowData.transferInfo.appointmentId,
-      Value === 'Followup'
-        ? rowData.transferInfo.folloupDateTime
-        : rowData.transferInfo.transferDateTime
-    )
+    checkIfRescheduleAppointment(client, checkAppointmentId, checkAppointmentDate)
       .then((_data: any) => {
         setLoading(false);
         try {
@@ -2430,31 +3468,56 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             isPaid: result.isPaid,
           };
           setNewRescheduleCount(data);
+          setCheckReschudule(true);
+          setTimeout(() => {
+            flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+          }, 500);
         } catch (error) {}
       })
       .catch((e: any) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
+        console.log('checkIfRescheduleerror', error);
+      })
+      .finally(() => {
+        console.log('checkIfReschedulesuccessfinally transferData', transferData);
+        if (isAutomatic) {
+          rescheduleInitiatedBy = REQUEST_ROLES.DOCTOR;
+          setdisplayoverlay(true);
+        } else {
+          rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
+        }
       });
   };
 
-  const NextAvailableSlot = (rowData: any, Value: string) => {
+  const NextAvailableSlot = (rowData: any, Value: string, isAutomatic: boolean) => {
     console.log('NextAvailableSlot', rowData);
     setLoading(true);
+    let todayDate;
+    let slotDoctorId;
 
-    const todayDate = moment
-      .utc(
-        Value === 'Followup'
-          ? rowData.transferInfo.folloupDateTime
-          : rowData.transferInfo.transferDateTime
-      )
-      .local()
-      .format('YYYY-MM-DD');
+    if (isAutomatic) {
+      todayDate = moment
+        .utc(appointmentData.appointmentDateTime)
+        .local()
+        .format('YYYY-MM-DD');
+      slotDoctorId = appointmentData.doctorId;
+    } else {
+      todayDate = moment
+        .utc(
+          Value === 'Followup'
+            ? rowData.transferInfo.folloupDateTime
+            : rowData.transferInfo.transferDateTime
+        )
+        .local()
+        .format('YYYY-MM-DD');
+      slotDoctorId =
+        Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+    }
+
     console.log('todayDate', todayDate);
-
-    const slotDoctorId =
-      Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
     console.log('slotDoctorId', slotDoctorId);
+
     setDoctorScheduleId(slotDoctorId);
 
     getNextAvailableSlots(client, slotDoctorId, todayDate)
@@ -2463,6 +3526,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         try {
           console.log(data, 'nextavailable res');
           setNextSlotAvailable(data[0].availableSlot);
+          checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
         } catch (error) {
           setNextSlotAvailable('');
         }
@@ -2470,7 +3534,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .catch((e: string) => {
         setLoading(false);
         console.log('Error occured ', e);
-      });
+      })
+      .finally(() => {});
   };
 
   const rescheduleAPI = (rowData: any, bookRescheduleInput: any) => {
@@ -2518,8 +3583,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     // console.log('renderChatView');
 
     return (
-      <View style={{ width: width, height: heightList, marginTop: 0 }}>
+      <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
+          style={{
+            // flexGrow: 1,
+            flex: 1,
+          }}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
@@ -2530,10 +3599,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           bounces={false}
           data={messages}
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.2}
           renderItem={({ item, index }) => renderChatRow(item, index)}
           keyExtractor={(_, index) => index.toString()}
           numColumns={1}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
         />
       </View>
     );
@@ -2569,11 +3640,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
                 resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
+                onPublishStart={(event: any) => {
+                  console.log('onPublishStart', event);
+                }}
+                onPublishStop={(event: any) => {
+                  console.log('onPublishStop', event);
+                }}
+                onPublishError={(event: any) => {
+                  console.log('onPublishError', event);
+                }}
               />
               <OTSubscriber
                 style={subscriberStyles}
                 subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
+                onSubscribeStart={(event: any) => {
+                  console.log('Watching started', event);
+                }}
+                onSubscribeStop={(event: any) => {
+                  console.log('onSubscribeStop', event);
+                }}
+                onSubscribeError={(event: any) => {
+                  console.log('onSubscribeError', event);
+                }}
                 properties={{
                   subscribeToAudio: true,
                   subscribeToVideo: true,
@@ -2701,6 +3790,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
             resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
+            onPublishStart={(event: any) => {
+              console.log('onPublishStart', event);
+            }}
+            onPublishStop={(event: any) => {
+              console.log('onPublishStop', event);
+            }}
+            onPublishError={(event: any) => {
+              console.log('onPublishError', event);
+            }}
           />
           <OTSubscriber
             style={
@@ -2713,6 +3811,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
             eventHandlers={subscriberEventHandlers}
             subscribeToSelf={true}
+            onSubscribeStart={(event: any) => {
+              console.log('Watching started', event);
+            }}
+            onSubscribeStop={(event: any) => {
+              console.log('onSubscribeStop', event);
+            }}
+            onSubscribeError={(event: any) => {
+              console.log('onSubscribeError', event);
+            }}
             properties={{
               subscribeToAudio: true,
               subscribeToVideo: convertVideo ? true : false,
@@ -2764,6 +3871,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             changeAudioStyles();
+            setHideStatusBar(true);
           }}
         >
           <View
@@ -2847,8 +3955,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              setHideStatusBar(false);
               setChatReceived(false);
-
               setSubscriberStyles({
                 width: 155,
                 height: 205,
@@ -2939,6 +4047,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Audio call ended',
                     duration: callTimerStarted,
                     id: patientId,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -2952,6 +4061,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -2983,6 +4093,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             changeVideoStyles();
+            setHideStatusBar(true);
           }}
         >
           <FullScreenIcon style={{ width: 40, height: 40 }} />
@@ -3004,6 +4115,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   message: 'Video call ended',
                   duration: callTimerStarted,
                   id: patientId,
+                  messageDate: new Date(),
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -3017,6 +4129,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   isTyping: true,
                   message: endCallMsg,
                   id: patientId,
+                  messageDate: new Date(),
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -3121,6 +4234,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
             setPipView(true);
             setChatReceived(false);
+            setHideStatusBar(false);
           }}
         >
           {chatReceived ? (
@@ -3206,6 +4320,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     message: 'Video call ended',
                     duration: callTimerStarted,
                     id: patientId,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3219,6 +4334,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: endCallMsg,
                     id: patientId,
+                    messageDate: new Date(),
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3316,9 +4432,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setConvertVideo(false);
             changeVideoStyles();
             setDropdownVisible(false);
-
-            // InCallManager.setSpeakerphoneOn(true)
-            // InCallManager.chooseAudioRoute('EARPIECE')
             if (token) {
               PublishAudioVideo();
             } else {
@@ -3375,6 +4488,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message: {
           isTyping: true,
           message: acceptedCallMsg,
+          messageDate: new Date(),
         },
         channel: channel,
         storeInHistory: false,
@@ -3386,6 +4500,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       setIsCall(true);
     }
+  };
+
+  const disconnectCallText = () => {
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: isAudio ? 'Audio call ended' : 'Video call ended',
+          duration: callTimerStarted,
+          id: patientId,
+          messageDate: new Date(),
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {}
+    );
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: endCallMsg,
+          id: patientId,
+          messageDate: new Date(),
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {}
+    );
   };
 
   const options = {
@@ -3400,52 +4545,154 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('upload base66', base66);
     console.log('upload fileType', type);
     console.log('chanel', channel);
+    console.log('resource', resource);
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
-
-    setLoading(true);
-    const textin = {
-      fileType: type,
-      base64FileInput: base66, //resource.data,
-      appointmentId: channel,
-    };
-    console.log('textin', textin);
-    client
-      .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-        mutation: UPLOAD_CHAT_FILE,
-        fetchPolicy: 'no-cache',
-        variables: {
-          fileType: type,
-          base64FileInput: base66, //resource.data,
+    resource.map((item: any) => {
+      if (
+        item.fileType == 'jpg' ||
+        item.fileType == 'jpeg' ||
+        item.fileType == 'pdf' ||
+        item.fileType == 'png'
+      ) {
+        console.log('item', item.base64);
+        setLoading(true);
+        const textin = {
+          fileType: type == 'jpg' ? 'JPEG' : type.toUpperCase(), //type,
+          base64FileInput: item.base64, //resource.data,
           appointmentId: channel,
-        },
-      })
-      .then((data) => {
-        console.log('upload data', data);
-        setLoading(false);
-
-        const text = {
-          id: patientId,
-          message: imageconsult,
-          fileType: 'image',
-          url: data.data && data.data.uploadChatDocument.filePath,
         };
+        console.log('textin', textin);
+        client
+          .mutate<uploadChatDocumentToPrism>({
+            mutation: UPLOAD_CHAT_FILE_PRISM,
+            fetchPolicy: 'no-cache',
+            variables: {
+              fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
+              base64FileInput: item.base64, //resource.data,
+              appointmentId: channel,
+              patientId: currentPatient && currentPatient.id,
+            },
+          })
+          .then((data) => {
+            console.log('upload data', data);
+            setLoading(false);
 
-        pubnub.publish(
-          {
-            channel: channel,
-            message: text,
-            storeInHistory: true,
-            sendByPost: true,
-          },
-          (status, response) => {}
-        );
-        KeepAwake.activate();
-      })
-      .catch((e) => {
-        setLoading(false);
-        KeepAwake.activate();
-        console.log('upload data error', e);
-      });
+            if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
+              client
+                .query<downloadDocuments>({
+                  query: DOWNLOAD_DOCUMENT,
+                  fetchPolicy: 'no-cache',
+                  variables: {
+                    downloadDocumentsInput: {
+                      patientId: currentPatient && currentPatient.id,
+                      fileIds: data.data!.uploadChatDocumentToPrism.fileId,
+                    },
+                  },
+                })
+                .then(({ data }) => {
+                  console.log(data, 'DOWNLOAD_DOCUMENT');
+                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+                  console.log(uploadUrlscheck![0], 'DOWNLOAD_DOCUMENTcmple');
+                  const text = {
+                    id: patientId,
+                    message: imageconsult,
+                    fileType: 'image',
+                    url: uploadUrlscheck![0],
+                    messageDate: new Date(),
+                  };
+
+                  pubnub.publish(
+                    {
+                      channel: channel,
+                      message: text,
+                      storeInHistory: true,
+                      sendByPost: true,
+                    },
+                    (status, response) => {}
+                  );
+                  KeepAwake.activate();
+                })
+                .catch((e: string) => {
+                  console.log('Error occured', e);
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
+            } else {
+              Alert.alert('Upload document failed');
+            }
+            // const text = {
+            //   id: patientId,
+            //   message: imageconsult,
+            //   fileType: 'image',
+            //   url: data.data && data.data.uploadChatDocument.filePath,
+            // };
+
+            // pubnub.publish(
+            //   {
+            //     channel: channel,
+            //     message: text,
+            //     storeInHistory: true,
+            //     sendByPost: true,
+            //   },
+            //   (status, response) => {}
+            // );
+            // KeepAwake.activate();
+          })
+          .catch((e) => {
+            setLoading(false);
+            KeepAwake.activate();
+            console.log('upload data error', e);
+          });
+      } else {
+        setwrongFormat(true);
+      }
+    });
+
+    // const textin = {
+    //   fileType: type,
+    //   base64FileInput: base66, //resource.data,
+    //   appointmentId: channel,
+    // };
+    // console.log('textin', textin);
+    // client
+    //   .mutate<uploadChatDocumentToPrism>({
+    //     mutation: UPLOAD_CHAT_FILE_PRISM,
+    //     fetchPolicy: 'no-cache',
+    //     variables: {
+    //       fileType: UPLOAD_FILE_TYPES.JPEG, //type.toUpperCase(),
+    //       base64FileInput: base66, //resource.data,
+    //       appointmentId: channel,
+    //       patientId: currentPatient && currentPatient.id,
+    //     },
+    //   })
+    //   .then((data) => {
+    //     console.log('upload data', data);
+    //     setLoading(false);
+
+    //     // const text = {
+    //     //   id: patientId,
+    //     //   message: imageconsult,
+    //     //   fileType: 'image',
+    //     //   url: data.data && data.data.uploadChatDocument.filePath,
+    //     // };
+
+    //     // pubnub.publish(
+    //     //   {
+    //     //     channel: channel,
+    //     //     message: text,
+    //     //     storeInHistory: true,
+    //     //     sendByPost: true,
+    //     //   },
+    //     //   (status, response) => {}
+    //     // );
+    //     // KeepAwake.activate();
+    //   })
+    //   .catch((e) => {
+    //     setLoading(false);
+    //     KeepAwake.activate();
+    //     console.log('upload data error', e);
+    //   });
     // try {
     //   const fileType = resource.uri!.substring(resource.uri!.lastIndexOf('.') + 1);
     //   console.log('upload fileType', fileType);
@@ -3519,6 +4766,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setDropdownVisible(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
+
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);
           } else {
@@ -3538,44 +4786,108 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             return;
           } else {
             console.log('sussess', 'ssss');
-            setLoading(true);
-            client
-              .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-                mutation: UPLOAD_CHAT_FILE,
-                fetchPolicy: 'no-cache',
-                variables: {
-                  fileType: 'pdf',
-                  base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
-                  appointmentId: channel,
-                },
-              })
-              .then((data) => {
-                setLoading(false);
-                console.log('upload selectedEPres data', data);
-
-                const text = {
-                  id: patientId,
-                  message: imageconsult,
-                  fileType: 'image',
-                  url: data.data && data.data.uploadChatDocument.filePath,
-                };
-
-                pubnub.publish(
-                  {
-                    channel: channel,
-                    message: text,
-                    storeInHistory: true,
-                    sendByPost: true,
+            const ePresUrls = selectedEPres.map((item) => item!.prismPrescriptionFileId);
+            console.log('ePresUrls', ePresUrls);
+            let ePresAndPhysicalPresUrls = [...ePresUrls];
+            console.log(
+              'ePresAndPhysicalPresUrls',
+              ePresAndPhysicalPresUrls
+                .join(',')
+                .split(',')
+                .map((item) => item.trim())
+                .filter((i) => i)
+            );
+            if (ePresAndPhysicalPresUrls.length > 0) {
+              client
+                .query<downloadDocuments>({
+                  query: DOWNLOAD_DOCUMENT,
+                  fetchPolicy: 'no-cache',
+                  variables: {
+                    downloadDocumentsInput: {
+                      patientId: currentPatient && currentPatient.id,
+                      fileIds: ePresAndPhysicalPresUrls
+                        .join(',')
+                        .split(',')
+                        .map((item) => item.trim())
+                        .filter((i) => i),
+                    },
                   },
-                  (status, response) => {}
-                );
-                KeepAwake.activate();
-              })
-              .catch((e) => {
-                setLoading(false);
-                KeepAwake.activate();
-                console.log('upload data error', e);
-              });
+                })
+                .then(({ data }) => {
+                  console.log(data, 'DOWNLOAD_DOCUMENT');
+                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+                  console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+                  if (uploadUrlscheck!.length > 0) {
+                    uploadUrlscheck!.map((item: any) => {
+                      //console.log(item, 'showitem');
+                      const text = {
+                        id: patientId,
+                        message: imageconsult,
+                        fileType: 'image',
+                        url: item,
+                        messageDate: new Date(),
+                      };
+
+                      pubnub.publish(
+                        {
+                          channel: channel,
+                          message: text,
+                          storeInHistory: true,
+                          sendByPost: true,
+                        },
+                        (status, response) => {}
+                      );
+                      KeepAwake.activate();
+                    });
+                  } else {
+                    Alert.alert('Images are not uploaded');
+                  }
+                })
+                .catch((e: string) => {
+                  console.log('Error occured', e);
+                })
+                .finally(() => {
+                  setLoading!(false);
+                });
+            }
+            // setLoading(true);
+            // client
+            //   .mutate<uploadChatDocument, uploadChatDocumentVariables>({
+            //     mutation: UPLOAD_CHAT_FILE,
+            //     fetchPolicy: 'no-cache',
+            //     variables: {
+            //       fileType: 'pdf',
+            //       base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
+            //       appointmentId: channel,
+            //     },
+            //   })
+            //   .then((data) => {
+            //     setLoading(false);
+            //     console.log('upload selectedEPres data', data);
+
+            //     const text = {
+            //       id: patientId,
+            //       message: imageconsult,
+            //       fileType: 'image',
+            //       url: data.data && data.data.uploadChatDocument.filePath,
+            //     };
+
+            //     pubnub.publish(
+            //       {
+            //         channel: channel,
+            //         message: text,
+            //         storeInHistory: true,
+            //         sendByPost: true,
+            //       },
+            //       (status, response) => {}
+            //     );
+            //     KeepAwake.activate();
+            //   })
+            //   .catch((e) => {
+            //     setLoading(false);
+            //     KeepAwake.activate();
+            //     console.log('upload data error', e);
+            //   });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
@@ -3634,7 +4946,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <Image
           style={{
             flex: 1,
-            resizeMode: 'stretch',
+            resizeMode: 'contain',
             marginTop: 20,
             marginHorizontal: 20,
             marginBottom: 20,
@@ -3698,7 +5010,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
       ) : null}
-
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,
@@ -3708,15 +5019,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
-          onPressLeftIcon={() =>
+          onPressLeftIcon={() => {
             props.navigation.dispatch(
               StackActions.reset({
                 index: 0,
                 key: null,
                 actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
               })
-            )
-          }
+            );
+            handleCallTheEdSessionAPI();
+          }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
 
@@ -3752,7 +5064,109 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         ) : null}
         {renderChatView()}
-        <KeyboardAvoidingView behavior="padding" enabled>
+        {Platform.OS == 'ios' ? (
+          <KeyboardAvoidingView behavior="padding" enabled keyboardVerticalOffset={16}>
+            <View
+              style={{
+                width: width,
+                height: 66,
+                backgroundColor: 'white',
+                bottom: isIphoneX() ? 36 : 0,
+              }}
+            >
+              <View style={{ flexDirection: 'row', width: width }}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginTop: 9,
+                    marginLeft: 5,
+                  }}
+                  onPress={async () => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                  }}
+                >
+                  <AddAttachmentIcon
+                    style={{ width: 24, height: 24, marginTop: 10, marginLeft: 14 }}
+                  />
+                </TouchableOpacity>
+                <View>
+                  <TextInput
+                    autoCorrect={false}
+                    placeholder="Type here…"
+                    multiline={true}
+                    style={{
+                      marginLeft: 16,
+                      marginTop: 5,
+                      height: 40,
+                      width: width - 120,
+                      ...theme.fonts.IBMPlexSansMedium(16),
+                    }}
+                    value={messageText}
+                    blurOnSubmit={false}
+                    // returnKeyType="send"
+                    onChangeText={(value) => {
+                      setMessageText(value);
+                      setDropdownVisible(false);
+                    }}
+                    onFocus={() => setDropdownVisible(false)}
+                    onSubmitEditing={() => {
+                      Keyboard.dismiss();
+                    }}
+                  />
+                  <View
+                    style={{
+                      marginLeft: 16,
+                      marginTop: 0,
+                      height: 2,
+                      width: width - 120,
+                      backgroundColor: '#00b38e',
+                    }}
+                  />
+                </View>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginTop: 10,
+                    marginLeft: 2,
+                  }}
+                  onPress={async () => {
+                    const textMessage = messageText.trim();
+                    console.log('ChatSend', textMessage);
+
+                    if (textMessage.length == 0) {
+                      Alert.alert('Apollo', 'Please write something to send message.');
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                      return;
+                    }
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                    send(textMessage);
+                  }}
+                >
+                  <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+                </TouchableOpacity>
+              </View>
+              {displayChatQuestions && Platform.OS === 'ios' && (
+                <ChatQuestions
+                  onItemDone={(value: { k: string; v: string[] }) => {
+                    console.log('and', value);
+                    setAnswerData([value]);
+                  }}
+                  onDonePress={(values: { k: string; v: string[] }[]) => {
+                    setAnswerData(values);
+                    setDisplayChatQuestions(false);
+                  }}
+                />
+              )}
+            </View>
+          </KeyboardAvoidingView>
+        ) : (
+          //  <KeyboardAvoidingView behavior="padding" enabled>
           <View
             style={{
               width: width,
@@ -3839,7 +5253,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
+        )
+        // </KeyboardAvoidingView>
+        }
+
+        {displayChatQuestions && Platform.OS === 'android' && (
+          <ChatQuestions
+            onItemDone={(value: { k: string; v: string[] }) => {
+              console.log('and', value);
+              setAnswerData([value]);
+            }}
+            onDonePress={(values: { k: string; v: string[] }[]) => {
+              setAnswerData(values);
+              setDisplayChatQuestions(false);
+            }}
+          />
+        )}
       </SafeAreaView>
       {onSubscribe && IncomingCallView()}
       {isCall && VideoCall()}
@@ -3900,82 +5329,231 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      {wrongFormat && (
+        <BottomPopUp
+          title={'Hi:)'}
+          description="Opps ! The selected jpg format is unsupport. Please choose a different one"
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setwrongFormat(false);
+                setDropdownVisible(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {isDoctorNoShow && (
+        <BottomPopUp
+          title={`Hi ${userName},`}
+          description={"Opps! seems like doctor hasn't joined. Please reschedule the appointment."}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <TouchableOpacity
+              style={styles.claimStyles}
+              onPress={() => {
+                setIsDoctorNoShow(false);
+                cancelAppointmentApi();
+              }}
+            >
+              <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.rescheduletyles}
+              onPress={() => {
+                NextAvailableSlot(appointmentData, 'Transfer', true);
+                setIsDoctorNoShow(false);
+              }}
+            >
+              <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'RESCHEDULE'}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {showPopup && (
+        <BottomPopUp
+          title={`Hi ${userName}`}
+          description={`we’re really sorry. ${appointmentData.doctorInfo.displayName} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified doctors`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottompopup(false);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.TabBar,
+                      }),
+                    ],
+                  })
+                );
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {showCallAbandmentPopup && (
+        <BottomPopUp
+          title={`Hi ${userName}`}
+          description={`we’re really sorry. ${appointmentData.doctorInfo.displayName} has to reschedule your call due to some technical issues. Please reschedule the appointment.`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottompopup(false);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.TabBar,
+                      }),
+                    ],
+                  })
+                );
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {sucesspopup && (
+        <BottomPopUp title={`Hi, ${userName} :)`} description={'Appointment sucessfully cancelled'}>
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <View style={{ height: 60 }}>
+              <TouchableOpacity
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setSucessPopup(false);
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                    })
+                  );
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BottomPopUp>
+      )}
       {displayoverlay && transferData && (
         <OverlayRescheduleView
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
-          doctor={transferData ? transferData.doctorInfo : null}
+          doctor={transferData ? transferData.doctorInfo : appointmentData.doctorInfo}
           patientId={currentPatient ? currentPatient.id : ''}
-          clinics={transferData ? transferData.doctorInfo.doctorHospital : []}
+          clinics={
+            transferData
+              ? transferData.doctorInfo.doctorHospital
+              : appointmentData.doctorInfo.doctorHospital
+          }
           doctorId={doctorScheduleId}
           renderTab={
             appointmentData.appointmentType === 'ONLINE' ? 'Consult Online' : 'Visit Clinic'
           }
-          rescheduleCount={newRescheduleCount!}
-          appointmentId={transferData.appointmentId}
-          data={transferData}
+          rescheduleCount={newRescheduleCount && newRescheduleCount}
+          appointmentId={
+            transferData
+              ? transferData.appointmentId
+                ? transferData.appointmentId
+                : transferData.id
+              : appointmentData.id
+          }
+          data={transferData ? transferData : appointmentData}
           bookFollowUp={false}
           KeyFollow={'RESCHEDULE'}
           isfollowupcount={0}
+          isInitiatedByDoctor={rescheduleInitiatedBy === REQUEST_ROLES.DOCTOR ? true : false}
         />
       )}
-      <View>
-        {/* {isDropdownVisible == true ? (
-          <View
-            style={{
-              width: 200,
-              bottom: dropDownBottomStyle,
-              position: 'absolute',
-              left: 15,
-              shadowColor: '#808080',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 20,
-              elevation: 25,
-              zIndex: 2,
-            }}
-          >
-            <DropDown
-              cardContainer={{
-                elevation: 25,
-              }}
-              options={[
-                {
-                  optionText: 'Camera',
-                  onPress: () => {
-                    try {
-                      setDropdownVisible(false);
-                      Keyboard.dismiss();
-                      ImagePicker.launchCamera(options, (response) => {
-                        uploadDocument(response);
-                      });
-                    } catch (error) {}
-                  },
-                },
-                {
-                  optionText: 'Gallery',
-                  onPress: () => {
-                    try {
-                      setDropdownVisible(false);
-                      Keyboard.dismiss();
-                      ImagePicker.launchImageLibrary(options, (response) => {
-                        console.log('response', response);
-                        uploadDocument(response);
-                      });
-                    } catch (error) {}
-                  },
-                },
-              ]}
-            />
-          </View>
-        ) : null} */}
-      </View>
-
       {uploadPrescriptionPopup()}
       {renderPrescriptionModal()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
-
+      <FeedbackPopup
+        onComplete={() => {
+          setShowFeedback(false);
+          showAphAlert!({
+            title: 'Thanks :)',
+            description: 'Your feedback has been submitted. Thanks for your time.',
+          });
+        }}
+        transactionId={channel}
+        title="We value your feedback! :)"
+        description="How was your overall experience with the following consultation —"
+        info={{
+          title: `Dr. ${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
+          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm a')}`,
+          photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
+        }}
+        type={FEEDBACKTYPE.CONSULT}
+        isVisible={showFeedback}
+      />
       {loading && <Spinner />}
     </View>
   );

@@ -7,12 +7,14 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
 }
 
 export enum APPT_CALL_TYPE {
   AUDIO = "AUDIO",
+  CHAT = "CHAT",
   VIDEO = "VIDEO",
 }
 
@@ -107,10 +109,13 @@ export enum Relation {
 }
 
 export enum STATUS {
+  CALL_ABANDON = "CALL_ABANDON",
   CANCELLED = "CANCELLED",
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+  JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
+  JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
@@ -156,6 +161,18 @@ export enum patientLogType {
   REGULAR = "REGULAR",
 }
 
+export interface BlockMultipleItems {
+  doctorId: string;
+  reason?: string | null;
+  itemDetails?: (CalendarItem | null)[] | null;
+}
+
+export interface CalendarItem {
+  start: any;
+  end: any;
+  consultMode?: ConsultMode | null;
+}
+
 export interface CancelAppointmentInput {
   appointmentId: string;
   cancelReason?: string | null;
@@ -179,6 +196,7 @@ export interface DiagnosticPrescriptionInput {
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
+  noShowBy?: REQUEST_ROLES | null;
 }
 
 export interface MedicinePrescriptionInput {
@@ -242,6 +260,17 @@ export interface RescheduleAppointmentInput {
   autoSelectSlot?: number | null;
 }
 
+export interface SaveDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDurationInDays: number;
+  medicineDosage: string;
+  medicineUnit: string;
+  medicineInstructions?: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineName: string;
+}
+
 export interface SymptomInput {
   symptom?: string | null;
   since?: string | null;
@@ -257,6 +286,18 @@ export interface TransferAppointmentInput {
   transferNotes?: string | null;
   transferInitiatedBy?: TRANSFER_INITIATED_TYPE | null;
   transferInitiatedId: string;
+}
+
+export interface UpdateDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDurationInDays?: number | null;
+  medicineDosage?: string | null;
+  medicineUnit?: string | null;
+  medicineInstructions?: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineName: string;
+  id: string;
 }
 
 export interface UpdatePatientInput {

@@ -510,6 +510,18 @@ export const OkaySelected: React.FC<IconProps> = (props) => (
     source={require('./icons/okay_selected.png')}
   />
 );
+
+export const Good: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 52, width: 52 }} {...props} source={require('./icons/good.png')} />
+);
+export const GoodSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 52, width: 52 }}
+    {...props}
+    source={require('./icons/good_selected.png')}
+  />
+);
+
 export const Great: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 52, width: 52 }} {...props} source={require('./icons/great.png')} />
 );
@@ -652,6 +664,7 @@ export const InjectionIcon: React.FC<IconProps> = (props) => (
 export const SearchSendIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_send.png')} />
 );
+
 export const ShieldIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
@@ -659,4 +672,28 @@ export const ShieldIcon: React.FC<IconProps> = (props) => (
     {...props}
     source={require('./icons/ic_shield.png')}
   />
+);
+
+export const TestsCartIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 56, width: 56, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/group.png')}
+  />
+);
+
+export const TestsCartMedicineIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 56, width: 56, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/ic_medicines.png')}
+  />
+);
+
+export const EditIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_edit.png')} />
+);
+
+export const EditProfilePlaceHolder: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_profile_placeholder.png')} />
 );

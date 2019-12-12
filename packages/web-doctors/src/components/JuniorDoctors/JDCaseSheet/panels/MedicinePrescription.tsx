@@ -490,7 +490,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [tabletsCount, setTabletsCount] = React.useState<number>(0.5);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -723,7 +723,7 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       const dosageCount =
         medicine.medicineTimings.length > 0
-          ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+          ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
           : medicine.medicineDosage;
       return (
         <div key={index} className={classes.medicineBox}>
@@ -776,7 +776,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -784,15 +784,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } /* else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    }*/ else if (
+    } else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
@@ -802,6 +794,14 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: true,
         daySlotErr: false,
         tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isTobeTakenSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: true,
+        daySlotErr: false,
+        durationErr: false,
         dosageErr: false,
       });
     } else if (daySlotsSelected.length === 0) {
@@ -1048,7 +1048,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Dosage*
+                            Quantity (Per Dosage)*
                           </div>
                           <AphTextField
                             inputProps={{ maxLength: 6 }}
@@ -1056,12 +1056,13 @@ export const MedicinePrescription: React.FC = () => {
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
                             }}
+                            error={errorState.dosageErr}
                           />
                           {errorState.dosageErr && (
                             <FormHelperText
                               className={classes.helpText}
                               component="div"
-                              error={errorState.durationErr}
+                              error={errorState.dosageErr}
                             >
                               Please Enter Dosage(Number only)
                             </FormHelperText>
@@ -1069,7 +1070,7 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Units*
+                            Units/Types*
                           </div>
                           <div className={classes.unitsSelect}>
                             <AphSelect
@@ -1106,8 +1107,14 @@ export const MedicinePrescription: React.FC = () => {
                               <MenuItem value="DROPS" classes={{ selected: classes.menuSelected }}>
                                 drops
                               </MenuItem>
-                              <MenuItem value="NA" classes={{ selected: classes.menuSelected }}>
-                                NA
+                              <MenuItem
+                                value="OINTMENT"
+                                classes={{ selected: classes.menuSelected }}
+                              >
+                                ointment
+                              </MenuItem>
+                              <MenuItem value="OTHER" classes={{ selected: classes.menuSelected }}>
+                                other
                               </MenuItem>
                             </AphSelect>
                           </div>
@@ -1141,7 +1148,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Duration of Consumption*
+                            Duration (in days)*
                           </div>
                           <AphTextField
                             placeholder=""
@@ -1180,7 +1187,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Time of the Day*</div>
+                      <div className={classes.sectionTitle}>Time of the Day</div>
                       <div className={classes.numberTablets}>{daySlotsHtml}</div>
                       {errorState.daySlotErr && (
                         <FormHelperText
@@ -1198,6 +1205,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                       <div className={classes.numberTablets}>
                         <AphTextField
+                          placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
                           value={medicineInstruction}
                           onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);

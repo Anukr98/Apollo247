@@ -35,7 +35,7 @@ export interface CalendarViewProps {
 export const CalendarView: React.FC<CalendarViewProps> = (props) => {
   const calendarRef = useRef<CalendarRefType | null>(null);
   const weekViewRef = useRef<{ getPreviousWeek: () => void; getNextWeek: () => void } | null>(null);
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+  const [calendarDate, setCalendarDate] = useState<Date>(props.date || new Date());
 
   const renderCalendarMothYearAndControls = () => {
     return (
@@ -274,8 +274,6 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       </View>
     );
   };
-
-  console.log(calendarDate, 'calendarDate');
 
   return (
     <View

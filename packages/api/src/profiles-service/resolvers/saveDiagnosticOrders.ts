@@ -81,7 +81,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     diagnosticBranchCode: String!
     totalPrice: Float!
     prescriptionUrl: String!
-    diagnosticDate: Date!
+    diagnosticDate: DateTime!
     centerName: String!
     centerCode: String!
     centerCity: String!
@@ -90,6 +90,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     orderStatus: DIAGNOSTIC_ORDER_STATUS!
     orderType: String!
     displayId: Int!
+    createdDate: DateTime!
     diagnosticOrderLineItems: [DiagnosticOrderLineItems]
   }
 

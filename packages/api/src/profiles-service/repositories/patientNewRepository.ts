@@ -1,6 +1,9 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Patient } from 'profiles-service/entities';
-import { format } from 'date-fns';
+import { format, differenceInMilliseconds } from 'date-fns';
+import winston from 'winston';
+import path from 'path';
+import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(Patient)
 export class PatientNewRepository extends Repository<Patient> {
@@ -32,12 +35,36 @@ export class PatientNewRepository extends Repository<Patient> {
 
   //method to insert patient
   async insertPatient(accessToken: string, mobilephone: string) {
+    const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
+    const logsDir = path.resolve(logsDirPath);
+
+    winston.configure({
+      transports: [
+        new winston.transports.File({
+          filename: logsDir + ApiConstants.PROFILES_SERVICE_ACCESS_LOG_FILE,
+          level: 'info',
+        }),
+        new winston.transports.File({
+          filename: logsDir + ApiConstants.PROFILES_SERVICE_ERROR_LOG_FILE,
+          level: 'error',
+        }),
+      ],
+      exitOnError: false, // do not exit on handled exceptions
+    });
+
     console.log(mobilephone, '000000000000000000000');
     const INSERT_URL = `https://healthcare.crm8.dynamics.com/api/data/v9.1/contacts  `;
     const patientData = {
       mobilephone,
     };
-
+    const reqStartTime = new Date();
+    const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    winston.log({
+      message: 'External apiRequest Starting',
+      time: reqStartTimeFormatted,
+      operation: INSERT_URL,
+      level: 'info',
+    });
     const insertResponse = await fetch(INSERT_URL, {
       method: 'POST',
       headers: {
@@ -47,6 +74,17 @@ export class PatientNewRepository extends Repository<Patient> {
       body: JSON.stringify(patientData),
     });
     const insertResult = await insertResponse.text();
+
+    const responseLog = {
+      message: 'Request Ended',
+      time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+      durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+      level: 'info',
+      response: insertResult,
+    };
+
+    winston.log(responseLog);
+
     console.log('patient insert result: ', insertResult);
 
     if (
@@ -65,8 +103,16 @@ export class PatientNewRepository extends Repository<Patient> {
     //get patient details from API by sending mobile number
     //const mobileNumber = updateAttrs.mobileNumber;
     const mobilephone = mobileNumber.replace('+', '');
-
     const GET_PATIENT_DETAILS_URL = `https://healthcare.crm8.dynamics.com/api/data/v9.1/contacts?$select=firstname,lastname,mobilephone,gendercode,new_uhid,emailaddress1,birthdate,new_relationtype,new_allergies,telephone1,address1_stateorprovince,address1_country,address1_line1,address1_line2,address1_city,address1_postalcode&$filter=contains(mobilephone,'${mobilephone}')`;
+
+    const reqStartTime = new Date();
+    const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    winston.log({
+      message: 'External apiRequest Starting',
+      time: reqStartTimeFormatted,
+      operation: GET_PATIENT_DETAILS_URL,
+      level: 'info',
+    });
     const getPatientDetails = await fetch(GET_PATIENT_DETAILS_URL, {
       method: 'GET',
       headers: {
@@ -75,6 +121,16 @@ export class PatientNewRepository extends Repository<Patient> {
       },
     });
     const getPatientResult = await getPatientDetails.json();
+
+    const responseLog = {
+      message: 'Request Ended',
+      time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+      durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+      level: 'info',
+      response: getPatientResult,
+    };
+
+    winston.log(responseLog);
 
     if (getPatientResult.value.length === 0) {
       throw new Error('Invalid Mobile Number');

@@ -3,12 +3,18 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { AddFileIcon, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '../../graphql/types/getPatientMedicalRecords';
+import {
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -24,7 +30,14 @@ const styles = StyleSheet.create({
 
 export interface MedicalRecordsProps extends NavigationScreenProps {
   //onTabCount: (count: number) => void;
-  MedicalRecordData: any;
+  MedicalRecordData: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords[] | undefined;
+  labTestsData?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests[] | undefined;
+  healthChecksData?:
+    | getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks[]
+    | undefined;
+  hospitalizationsData?:
+    | getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations[]
+    | undefined;
   renderDeleteMedicalOrder: (id: string) => void;
 }
 
@@ -32,6 +45,39 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { MedicalRecordData, labTestsData, healthChecksData, hospitalizationsData } = props;
+  const [combination, setCombination] = useState<{ type: string; data: any }[]>();
+
+  useEffect(() => {
+    let mergeArray: { type: string; data: any }[] = [];
+    console.log('combination before', mergeArray);
+    MedicalRecordData!.forEach((item) => {
+      mergeArray.push({ type: 'medical', data: item });
+    });
+    labTestsData!.forEach((item) => {
+      mergeArray.push({ type: 'lab', data: item });
+    });
+    healthChecksData!.forEach((item) => {
+      mergeArray.push({ type: 'health', data: item });
+    });
+    hospitalizationsData!.forEach((item) => {
+      mergeArray.push({ type: 'hospital', data: item });
+    });
+    console.log('combination after', mergeArray);
+    setCombination(sordByDate(mergeArray));
+  }, [MedicalRecordData || labTestsData || healthChecksData || hospitalizationsData]);
+
+  const sordByDate = (array: { type: string; data: any }[]) => {
+    return array.sort(({ data: data1 }, { data: data2 }) => {
+      let date1 = new Date(
+        data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
+      );
+      let date2 = new Date(
+        data2.testDate || data2.labTestDate || data2.appointmentDate || data2.dateOfHospitalization
+      );
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+    });
+  };
 
   useEffect(() => {
     if (!currentPatient) {
@@ -59,7 +105,14 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const renderCards = () => {
     return (
       <View>
-        {props.MedicalRecordData && props.MedicalRecordData.length == 0 ? (
+        {props.MedicalRecordData &&
+        props.MedicalRecordData.length == 0 &&
+        labTestsData &&
+        labTestsData.length == 0 &&
+        healthChecksData &&
+        healthChecksData.length == 0 &&
+        hospitalizationsData &&
+        hospitalizationsData.length == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
             <View
               style={{
@@ -93,42 +146,54 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
           </View>
         ) : (
           <View>
-            {props.MedicalRecordData &&
-              props.MedicalRecordData.map((item: any) => {
-                if (item)
-                  return (
-                    <HealthMedicineCard
-                      data={item}
-                      onClickCard={() => {
-                        props.navigation.navigate(AppRoutes.RecordDetails, {
-                          data: item,
-                        });
-                      }}
-                      onPressDelete={() => {
-                        CommonLogEvent('MEDICAL_RECORDS', 'Delete record'),
-                          Alert.alert(
-                            'Delete Record',
-                            '',
-                            [
-                              {
-                                text: 'Cancel',
-                                onPress: () => console.log('Cancel Pressed'),
-                                style: 'cancel',
-                              },
-                              {
-                                text: 'OK',
-                                onPress: () => (
-                                  CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order'),
-                                  props.renderDeleteMedicalOrder(item.id)
-                                ),
-                              },
-                            ],
-                            { cancelable: false }
-                          );
-                      }}
-                    />
-                  );
-              })}
+            <FlatList
+              data={combination || []}
+              removeClippedSubviews={false}
+              renderItem={({ item, index }) => {
+                let data;
+                if (item.type === 'medical') {
+                  data = { data: item.data };
+                } else if (item.type === 'lab') {
+                  data = { datalab: item.data, disableDelete: true };
+                } else if (item.type === 'hospital') {
+                  data = { datahospitalization: item.data, disableDelete: true };
+                } else if (item.type === 'health') {
+                  data = { datahealth: item.data, disableDelete: true };
+                }
+                return (
+                  <HealthMedicineCard
+                    {...data}
+                    onClickCard={() => {
+                      props.navigation.navigate(AppRoutes.RecordDetails, {
+                        data: item.data,
+                      });
+                    }}
+                    onPressDelete={() => {
+                      CommonLogEvent('MEDICAL_RECORDS', 'Delete record'),
+                        Alert.alert(
+                          'Delete Record',
+                          '',
+                          [
+                            {
+                              text: 'Cancel',
+                              onPress: () => console.log('Cancel Pressed'),
+                              style: 'cancel',
+                            },
+                            {
+                              text: 'OK',
+                              onPress: () => (
+                                CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order'),
+                                props.renderDeleteMedicalOrder(item.data.id)
+                              ),
+                            },
+                          ],
+                          { cancelable: false }
+                        );
+                    }}
+                  />
+                );
+              }}
+            />
           </View>
         )}
       </View>
@@ -136,7 +201,11 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   };
   return (
     <View>
-      {props.MedicalRecordData && props.MedicalRecordData.length > 0 && renderFilter()}
+      {((props.MedicalRecordData && props.MedicalRecordData.length > 0) ||
+        (labTestsData && labTestsData.length > 0) ||
+        (healthChecksData && healthChecksData.length > 0) ||
+        (hospitalizationsData && hospitalizationsData.length > 0)) &&
+        renderFilter()}
       {renderCards()}
     </View>
   );

@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, In } from 'typeorm';
 import { PatientDeviceTokens } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -23,7 +23,22 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
     return this.find({ select: ['deviceToken'], where: { patient } });
   }
 
-  deleteDeviceToken(id: string) {
-    return this.delete(id);
+  deleteDeviceToken(deviceToken: string) {
+    return this.delete({ deviceToken });
+  }
+
+  getTokensByMobileNumber(mobileNumber: string) {
+    return this.createQueryBuilder('patient')
+      .leftJoinAndSelect('patient.patient_device_tokens', 'patient_device_tokens')
+      .addSelect('COUNT(*) AS deviceCount')
+      .where('patient.mobileNumber = :mobileNumber', { mobileNumber })
+      .andWhere('patient.isActive = true')
+      .getMany();
+  }
+
+  deviceTokensOfAllIds(ids: string[]) {
+    return this.find({
+      patient: In(ids),
+    });
   }
 }

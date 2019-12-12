@@ -27,6 +27,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     patientAddressId: ID
     devliveryCharges: Float
     prescriptionImageUrl: String
+    prismPrescriptionFileId: String
     medicineOrderLineItems: [MedicineOrderLineItems]
     medicineOrdersStatus: [MedicineOrdersStatus]
     medicineOrderPayments: [MedicineOrderPayments]
@@ -52,6 +53,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     mrp: Float
     isPrescriptionNeeded: Int
     prescriptionImageUrl: String
+    prismPrescriptionFileId: String
     mou: Int
     isMedicine: String
   }
@@ -60,6 +62,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     id: ID!
     orderStatus: MEDICINE_ORDER_STATUS
     statusDate: DateTime
+    hideStatus: Boolean
   }
 
   type MedicineOrderPayments {

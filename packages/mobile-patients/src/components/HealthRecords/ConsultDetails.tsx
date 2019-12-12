@@ -25,7 +25,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   NavigationActions,
   NavigationScreenProps,
@@ -47,6 +47,8 @@ import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -101,6 +103,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
   },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
 });
 
 export interface ConsultDetailsProps extends NavigationScreenProps {
@@ -127,7 +138,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.state.params!.DoctorInfo;
   console.log('phr', data);
 
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [loading, setLoading && setLoading] = useState<boolean>(true);
+  const { loading, setLoading } = useUIElements();
+
   const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
@@ -146,6 +159,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
   const [testShow, setTestShow] = useState<boolean>(true);
+  const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -157,7 +171,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .query<getCaseSheet, getCaseSheetVariables>({
         query: GET_CASESHEET_DETAILS,
@@ -167,15 +181,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         },
       })
       .then((_data) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
-        setLoading(false);
-        const errorMessage = error && error.message;
-        console.log('Error occured while GET_CASESHEET_DETAILS error', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        setLoading && setLoading(false);
+        const errorMessage = error && error.message.split(':')[1].trim();
+        console.log(errorMessage, 'err');
+        if (errorMessage === 'NO_CASESHEET_EXIST') {
+          setshowNotExistAlert(true);
+        }
+        // Alert.alert('Error');
       });
   }, []);
 
@@ -243,11 +260,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         )}
         {caseSheetDetails && caseSheetDetails.followUp ? (
           <View>
-            <Text style={styles.descriptionStyle}>
+            {/* <Text style={styles.descriptionStyle}>
               This is a follow-up consult to the {props.navigation.state.params!.appointmentType}{' '}
               Visit on{' '}
               {caseSheetDetails && moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}
-            </Text>
+            </Text> */}
             <Text
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
               onPress={() => {
@@ -311,14 +328,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const { setCartItems, cartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
 
   const onAddToCart = () => {
-    setLoading(true);
+    setLoading && setLoading(true);
 
     const medPrescription = caseSheetDetails!.medicinePrescription || [];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const medicines = result
           .map(({ data: { productdp } }, index) => {
             const medicineDetails = (productdp && productdp[0]) || {};
@@ -338,6 +355,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               mou: medicineDetails.mou,
               name: medicineDetails!.name,
               price: medicineDetails!.price,
+              specialPrice: medicineDetails.special_price
+                ? typeof medicineDetails.special_price == 'string'
+                  ? parseInt(medicineDetails.special_price)
+                  : medicineDetails.special_price
+                : undefined,
               // quantity: parseInt(medPrescription[index]!.medicineDosage!),
               quantity: qty,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
@@ -379,7 +401,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log({ e });
         Alert.alert('Alert', 'Oops! Something went wrong.');
       });
@@ -408,7 +430,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
                         <Text style={styles.dataTextStyle}>
                           {item.medicineTimings!.length *
-                            parseInt(item!.medicineConsumptionDurationInDays!) +
+                            parseInt(item!.medicineConsumptionDurationInDays!) *
+                            item.medicineToBeTaken!.length +
                             ` ` +
                             item.medicineUnit}
                           {/* parseInt(item.medicineDosage || '1') > 1 */}
@@ -679,34 +702,28 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       Alert.alert('No Image');
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
-                      if (Platform.OS === 'ios') {
-                        try {
-                          CommonLogEvent('CONSULT_DETAILS', 'Link to open URL');
-                          Linking.openURL(
-                            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
-                              props.navigation.state.params!.BlobName
-                            )
-                          ).catch(
-                            (err) => (
-                              CommonLogEvent(
-                                'CONSULT_DETAILS',
-                                'Error occured while opening the URL link'
-                              ),
-                              console.error('An error occurred', err)
-                            )
-                          );
-                        } catch {}
-                      }
                       let dirs = RNFetchBlob.fs.dirs;
 
-                      setLoading(true);
+                      console.log('blollb', props.navigation.state.params!.BlobName);
+                      let fileName: string =
+                        props.navigation.state.params!.BlobName.substring(
+                          0,
+                          props.navigation.state.params!.BlobName.indexOf('.pdf')
+                        ) + '.pdf';
+                      setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
+                        path:
+                          Platform.OS === 'ios'
+                            ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                              '/' +
+                              (fileName || 'Apollo_Prescription.pdf')
+                            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
                         addAndroidDownloads: {
+                          title: fileName,
                           useDownloadManager: true,
-                          notification: false,
+                          notification: true,
                           mime: 'application/pdf',
-                          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
                           description: 'File downloaded by download manager.',
                         },
                       })
@@ -720,17 +737,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                           }
                         )
                         .then((res) => {
-                          setLoading(false);
-                          if (Platform.OS === 'android') {
-                            Alert.alert('Download Complete');
-                          }
+                          setLoading && setLoading(false);
+                          // if (Platform.OS === 'android') {
+                          //   Alert.alert('Download Complete');
+                          // }
                           Platform.OS === 'ios'
                             ? RNFetchBlob.ios.previewDocument(res.path())
                             : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                         })
                         .catch((err) => {
                           console.log('error ', err);
-                          setLoading(false);
+                          setLoading && setLoading(false);
                           // ...
                         });
                     }
@@ -774,10 +791,32 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               data={data}
               KeyFollow={'Followup'}
               isfollowupcount={isfollowcount}
+              isInitiatedByDoctor={false}
             />
           )}
         </SafeAreaView>
         {loading && <Spinner />}
+        {showNotExistAlert && (
+          <BottomPopUp
+            title={'Alert!'}
+            description={
+              'No consultation happened, hence there is no case sheet for this appointment'
+            }
+          >
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setshowNotExistAlert(false);
+                  props.navigation.goBack();
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>OK, GOT IT</Text>
+              </TouchableOpacity>
+            </View>
+          </BottomPopUp>
+        )}
       </View>
     );
   return null;

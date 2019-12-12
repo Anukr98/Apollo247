@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, DoctorType } from "./globalTypes";
+import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetPatientAppointments
@@ -41,6 +41,9 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   hospitalId: string | null;
   status: STATUS;
   bookingDate: any | null;
+  isConsultStarted: boolean | null;
+  appointmentState: APPOINTMENT_STATE | null;
+  isFollowUp: string;
   doctorInfo: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 

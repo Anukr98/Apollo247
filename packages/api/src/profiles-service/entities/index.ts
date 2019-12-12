@@ -41,6 +41,7 @@ export enum SEARCH_TYPE {
   DOCTOR = 'DOCTOR',
   SPECIALTY = 'SPECIALTY',
   MEDICINE = 'MEDICINE',
+  TEST = 'TEST',
 }
 
 export enum MEDICINE_ORDER_STATUS {
@@ -118,6 +119,7 @@ export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
   GM_SLASH_DL = 'GM_SLASH_DL',
+  NONE = 'NONE',
 }
 
 export enum MedicalRecordType {
@@ -131,6 +133,12 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = 'PICKUP_REQUESTED',
   PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
   ORDER_FAILED = 'ORDER_FAILED',
+}
+
+export enum FEEDBACKTYPE {
+  CONSULT = 'CONSULT',
+  PHARMACY = 'PHARMACY',
+  DIAGNOSTICS = 'DIAGNOSTICS',
 }
 
 //medicine orders starts
@@ -174,6 +182,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   prescriptionImageUrl: string;
+
+  @Column({ nullable: true })
+  prismPrescriptionFileId: string;
 
   @Column({ type: 'timestamp' })
   quoteDateTime: Date;
@@ -258,6 +269,9 @@ export class MedicineOrderLineItems extends BaseEntity {
 
   @Column({ nullable: true })
   prescriptionImageUrl: string;
+
+  @Column({ nullable: true })
+  prismPrescriptionFileId: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
@@ -345,6 +359,9 @@ export class MedicineOrdersStatus extends BaseEntity {
 
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
+
+  @Column({ nullable: true, default: true })
+  hideStatus: boolean;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -461,6 +478,9 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   allergies: string;
 
+  @Column({ nullable: true, type: 'text' })
+  athsToken: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -504,6 +524,9 @@ export class Patient extends BaseEntity {
 
   @OneToMany((type) => MedicalRecords, (medicalRecords) => medicalRecords.patient)
   medicalRecords: MedicalRecords[];
+
+  @OneToMany((type) => PatientFeedback, (patientfeedback) => patientfeedback.patient)
+  patientfeedback: PatientFeedback[];
 
   @Column()
   @Validate(MobileNumberValidator)
@@ -794,6 +817,9 @@ export class MedicalRecords extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   documentURLs: string;
 
+  @Column({ nullable: true, type: 'text' })
+  prismFileIds: string;
+
   @OneToMany(
     (type) => MedicalRecordParameters,
     (medicalRecordParameters) => medicalRecordParameters.medicalRecords
@@ -1051,6 +1077,9 @@ export class Diagnostics extends BaseEntity {
   @Column({ default: TEST_COLLECTION_TYPE.HC })
   collectionType: TEST_COLLECTION_TYPE;
 
+  @Column({ nullable: true })
+  testPreparationData: string;
+
   @OneToMany((type) => DiagnosticOrgans, (diagnosticOrgans) => diagnosticOrgans.diagnostics)
   diagnosticOrgans: DiagnosticOrgans[];
 
@@ -1114,6 +1143,9 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column({ nullable: true })
   prescriptionUrl: string;
+
+  @Column({ nullable: true })
+  prismPrescriptionFileId: string;
 
   @Column('decimal', { precision: 5, scale: 2, default: 0.0 })
   collectionCharges: number;
@@ -1276,4 +1308,31 @@ export class DiagnosticPincodeHubs extends BaseEntity {
 
   @Column({ nullable: true })
   areaName: string;
+}
+
+@Entity()
+export class PatientFeedback extends BaseEntity {
+  @ManyToOne((type) => Patient, (patient) => patient.id)
+  patient: Patient;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  rating: string;
+
+  @Column({ type: 'text' })
+  thankyouNote: string;
+
+  @Column()
+  reason: string;
+
+  @Column()
+  feedbackType: FEEDBACKTYPE;
+
+  @Column({ nullable: true })
+  transactionId: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
 }

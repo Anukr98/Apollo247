@@ -8,6 +8,19 @@ import { Relation, Gender } from "./globalTypes";
 // GraphQL query operation: GetCurrentPatients
 // ====================================================
 
+export interface GetCurrentPatients_getCurrentPatients_patients_patientMedicalHistory {
+  __typename: "MedicalHistory";
+  bp: string | null;
+  dietAllergies: string | null;
+  drugAllergies: string | null;
+  height: string | null;
+  menstrualHistory: string | null;
+  pastMedicalHistory: string | null;
+  pastSurgicalHistory: string | null;
+  temperature: string | null;
+  weight: string | null;
+}
+
 export interface GetCurrentPatients_getCurrentPatients_patients {
   __typename: "Patient";
   id: string;
@@ -19,6 +32,8 @@ export interface GetCurrentPatients_getCurrentPatients_patients {
   gender: Gender | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
+  photoUrl: string | null;
+  patientMedicalHistory: GetCurrentPatients_getCurrentPatients_patients_patientMedicalHistory | null;
 }
 
 export interface GetCurrentPatients_getCurrentPatients {

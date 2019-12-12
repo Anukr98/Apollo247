@@ -12,10 +12,6 @@ import {
   getCurrentPatientsTypeDefs,
 } from 'profiles-service/resolvers/getCurrentPatients';
 import {
-  getCurrentLoginPatientsResolvers,
-  getCurrentLoginPatientsTypeDefs,
-} from 'profiles-service/resolvers/getCurrentLoginPatients';
-import {
   getDigitizedOrderResolvers,
   getDigitizedOrderTypeDefs,
 } from 'profiles-service/resolvers/getDigitizedOrderDetails';
@@ -41,10 +37,6 @@ import {
   updatePatientResolvers,
   updatePatientTypeDefs,
 } from 'profiles-service/resolvers/updatePatient';
-import {
-  updateNewPatientResolvers,
-  updateNewPatientTypeDefs,
-} from 'profiles-service/resolvers/updateNewPatient';
 import {
   savePatientNotificationSettingsResolvers,
   savePatientNotificationSettingsTypeDefs,
@@ -82,6 +74,10 @@ import {
   addPatientMedicalRecordTypeDefs,
   addPatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/addMedicalRecord';
+import {
+  addPatientFeedbackTypeDefs,
+  addPatientFeedbackResolvers,
+} from 'profiles-service/resolvers/patientFeedback';
 import {
   deletePatientMedicalRecordTypeDefs,
   deletePatientMedicalRecordResolvers,
@@ -196,16 +192,8 @@ import { ApiConstants } from 'ApiConstants';
         resolvers: getCurrentPatientsResolvers,
       },
       {
-        typeDefs: getCurrentLoginPatientsTypeDefs,
-        resolvers: getCurrentLoginPatientsResolvers,
-      },
-      {
         typeDefs: updatePatientTypeDefs,
         resolvers: updatePatientResolvers,
-      },
-      {
-        typeDefs: updateNewPatientTypeDefs,
-        resolvers: updateNewPatientResolvers,
       },
       {
         typeDefs: getPatientTypeDefs,
@@ -274,6 +262,10 @@ import { ApiConstants } from 'ApiConstants';
       {
         typeDefs: addPatientMedicalRecordTypeDefs,
         resolvers: addPatientMedicalRecordResolvers,
+      },
+      {
+        typeDefs: addPatientFeedbackTypeDefs,
+        resolvers: addPatientFeedbackResolvers,
       },
       {
         typeDefs: deletePatientMedicalRecordTypeDefs,

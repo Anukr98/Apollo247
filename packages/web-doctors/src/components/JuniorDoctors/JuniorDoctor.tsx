@@ -1,13 +1,14 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
@@ -130,6 +131,24 @@ export const JuniorDoctor: React.FC = (props) => {
     }
   );
 
+  useEffect(() => {
+    if (data && data.getConsultQueue) {
+      const { consultQueue } = data && data.getConsultQueue;
+      const allConsults = consultQueue.map((consult) => ({
+        ...consult,
+        appointment: {
+          ...consult.appointment,
+          appointmentDateTime: new Date(consult.appointment.appointmentDateTime),
+        },
+      }));
+      const activeConsults = allConsults.filter((consult) => consult.isActive);
+
+      localStorage.setItem('activeConsultQueueCount', activeConsults.length.toString());
+    } else {
+      localStorage.setItem('activeConsultQueueCount', '1');
+    }
+  }, [data]);
+
   const {
     data: doctorDetailsData,
     error: doctorDetailsError,
@@ -167,6 +186,7 @@ export const JuniorDoctor: React.FC = (props) => {
       },
     }));
     const activeConsults = allConsults.filter((consult) => consult.isActive);
+
     const pastConsults = allConsults.filter(
       (consult) => !consult.isActive && consult.appointment.status !== STATUS.CANCELLED
     );

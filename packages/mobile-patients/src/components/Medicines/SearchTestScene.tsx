@@ -47,8 +47,8 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -152,8 +152,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useDiagnosticsCart();
-  const { showAphAlert } = useUIElements();
+  const { addCartItem, removeCartItem, cartItems } = useDiagnosticsCart();
+  const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -171,7 +171,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
         query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
         variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          patientId: g(currentPatient, 'id') || '',
+          type: SEARCH_TYPE.TEST,
         },
         fetchPolicy: 'no-cache',
       })
@@ -182,6 +183,48 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         aphConsole.log('Error occured', { error });
       });
   }, [currentPatient]);
+
+  const errorAlert = () => {
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Unable to fetch pakage details.',
+    });
+  };
+
+  const fetchPackageDetails = (
+    name: string,
+    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+  ) => {
+    {
+      setGlobalLoading!(true);
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: name,
+            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          aphConsole.log('searchDiagnostics\n', { data });
+          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          if (product) {
+            func && func(product);
+          } else {
+            errorAlert();
+          }
+        })
+        .catch((e) => {
+          aphConsole.log({ e });
+          errorAlert();
+        })
+        .finally(() => {
+          setGlobalLoading!(false);
+        });
+    }
+  };
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
@@ -227,7 +270,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       mutation: SAVE_SEARCH,
       variables: {
         saveSearchInput: {
-          type: 'TEST' as SEARCH_TYPE,
+          type: SEARCH_TYPE.TEST,
           typeId: sku,
           typeName: name,
           patient: currentPatient && currentPatient.id ? currentPatient.id : '',
@@ -338,9 +381,19 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         key={pastSeacrh.typeId!}
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-            sku: pastSeacrh.typeId,
-            title: pastSeacrh.name,
+          fetchPackageDetails(pastSeacrh.name!, (product) => {
+            props.navigation.navigate(AppRoutes.TestDetails, {
+              testDetails: {
+                Rate: product.rate,
+                Gender: product.gender,
+                ItemID: `${product.itemId}`,
+                ItemName: product.itemName,
+                FromAgeInDays: product.fromAgeInDays,
+                ToAgeInDays: product.toAgeInDays,
+                collectionType: product.collectionType,
+                preparation: product.testPreparationData,
+              } as TestPackageForDetails,
+            });
           });
         }}
       >
@@ -388,14 +441,18 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         isTest={true}
         containerStyle={[productCardContainerStyle, {}]}
         onPress={() => {
-          // savePastSeacrh(product.id, product.itemName).catch((e) => {});
+          savePastSeacrh(product.id, product.itemName).catch((e) => {});
           props.navigation.navigate(AppRoutes.TestDetails, {
             testDetails: {
               Rate: price,
               Gender: product.gender,
               ItemID: `${product.itemId}`,
               ItemName: product.itemName,
-            } as TestPackage,
+              FromAgeInDays: product.fromAgeInDays,
+              ToAgeInDays: product.toAgeInDays,
+              collectionType: product.collectionType,
+              preparation: product.testPreparationData,
+            } as TestPackageForDetails,
           });
         }}
         medicineName={stripHtml(product.itemName)}

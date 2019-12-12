@@ -7,7 +7,7 @@ import { searchPickupStoresApi, Store } from '@aph/mobile-patients/src/helpers/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
@@ -59,6 +59,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
   const { storeId, setStoreId, pinCode, setStores, stores, setPinCode } = useShoppingCart();
+  const [selectedStore, setSelectedStore] = useState<string>(storeId || '');
   const fetchStorePickup = (pincode: string) => {
     if (isValidPinCode(pincode)) {
       setPinCode && setPinCode(pincode);
@@ -81,13 +82,16 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   };
 
   const renderBottomButton = () => {
-    const foundStoreIdIndex = stores.findIndex(({ storeid }) => storeid == storeId);
+    const foundStoreIdIndex = stores.findIndex(({ storeid }) => storeid == selectedStore);
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
           disabled={!(foundStoreIdIndex > -1)}
           title="DONE"
-          onPress={() => props.navigation.goBack()}
+          onPress={() => {
+            setStoreId && setStoreId(selectedStore);
+            props.navigation.goBack();
+          }}
         />
       </View>
     );
@@ -146,21 +150,27 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   };
 
   const renderRadioButtonList = () => {
-    return stores.map((store, index, array) => (
-      <RadioSelectionItem
-        key={store.storeid}
-        title={`${store.storename}\n${store.address}`}
-        isSelected={storeId === store.storeid}
-        onPress={() => {
-          CommonLogEvent('STORE_PICKUP_SCENE', `Selected store Id is ${store.storeid}`);
-          setStoreId && setStoreId(store.storeid);
-        }}
-        containerStyle={{
-          marginTop: 16,
-        }}
-        hideSeparator={index == array.length - 1}
+    return (
+      <FlatList
+        bounces={false}
+        data={stores || []}
+        renderItem={({ item, index }) => (
+          <RadioSelectionItem
+            key={item.storeid}
+            title={`${item.storename}\n${item.address}`}
+            isSelected={selectedStore === item.storeid}
+            onPress={() => {
+              CommonLogEvent('STORE_PICKUP_SCENE', `Selected store Id is ${item.storeid}`);
+              setSelectedStore(item.storeid);
+            }}
+            containerStyle={{
+              marginTop: 16,
+            }}
+            hideSeparator={index == stores.length - 1}
+          />
+        )}
       />
-    ));
+    );
   };
 
   const renderStorePickupCard = () => {

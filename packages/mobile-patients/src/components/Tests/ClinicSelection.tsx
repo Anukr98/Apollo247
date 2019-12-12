@@ -13,7 +13,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -74,6 +74,7 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
     setPinCode,
     setDiagnosticClinic,
   } = useDiagnosticsCart();
+  const [selectedClinic, setSelectedClinic] = useState<string>(clinicId || '');
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
 
   useEffect(() => {
@@ -140,13 +141,17 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
   };
 
   const renderBottomButton = () => {
-    const foundStoreIdIndex = clinics.findIndex(({ CentreCode }) => CentreCode == clinicId);
+    const foundStoreIdIndex = clinics.findIndex(({ CentreCode }) => CentreCode == selectedClinic);
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
           disabled={!(foundStoreIdIndex > -1)}
           title="DONE"
-          onPress={() => props.navigation.goBack()}
+          onPress={() => {
+            setDiagnosticClinic!({ ...clinics[foundStoreIdIndex], date: new Date().getTime() });
+            setClinicId && setClinicId(selectedClinic);
+            props.navigation.goBack();
+          }}
         />
       </View>
     );
@@ -205,19 +210,26 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
   };
 
   const renderRadioButtonList = () => {
-    return clinicDetails!.map((item, index) => (
-      <RadioSelectionItem
-        key={item.CentreCode}
-        title={`${item.CentreName}\n${item.Locality},${item.City},${item.State}`}
-        isSelected={clinicId === item.CentreCode}
-        onPress={() => {
-          setDiagnosticClinic!({ ...item, date: new Date().getTime() });
-          setClinicId && setClinicId(item.CentreCode);
-        }}
-        containerStyle={{ marginTop: 16 }}
-        hideSeparator={index == clinicDetails!.length - 1}
+    return (
+      <FlatList
+        bounces={false}
+        data={clinicDetails || []}
+        renderItem={({ item, index }) => (
+          <RadioSelectionItem
+            key={item.CentreCode}
+            title={`${item.CentreName}\n${item.Locality},${item.City},${item.State}`}
+            isSelected={selectedClinic === item.CentreCode}
+            onPress={() => {
+              setSelectedClinic(item.CentreCode);
+              // setDiagnosticClinic!({ ...item, date: new Date().getTime() });
+              // setClinicId && setClinicId(item.CentreCode);
+            }}
+            containerStyle={{ marginTop: 16 }}
+            hideSeparator={index == clinicDetails!.length - 1}
+          />
+        )}
       />
-    ));
+    );
   };
 
   const renderStorePickupCard = () => {
