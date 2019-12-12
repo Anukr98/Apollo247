@@ -14,6 +14,7 @@ import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { AsyncStorage } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import fetch from 'node-fetch';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -67,7 +68,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
-    console.log('-------error-------', error);
+    // console.log('-------error-------', error);
     const { graphQLErrors, operation, forward } = error;
     if (graphQLErrors) {
       const unauthenticatedError = graphQLErrors.some(
@@ -75,7 +76,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
       );
       if (unauthenticatedError) {
         handleUnauthenticated();
-        console.log('-------unauthenticatedError-------', unauthenticatedError);
+        // console.log('-------unauthenticatedError-------', unauthenticatedError);
       }
     }
     return forward(operation);
@@ -83,7 +84,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const authLink = setContext((_, { headers }) => ({
     headers: { ...headers, Authorization: authToken },
   }));
-  const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
+  const httpLink = createHttpLink({ uri: apiRoutes.graphql(), fetch: fetch });
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });
@@ -165,9 +166,9 @@ export const AuthProvider: React.FC = (props) => {
       AsyncStorage.removeItem('currentPatient');
       AsyncStorage.removeItem('deviceToken');
       AsyncStorage.removeItem('selectUserId');
-      console.log('authprovider signOut');
+      // console.log('authprovider signOut');
     } catch (error) {
-      console.log('signOut error', error);
+      // console.log('signOut error', error);
     }
   }, [auth]);
 
@@ -181,13 +182,13 @@ export const AuthProvider: React.FC = (props) => {
 
   const getFirebaseToken = () => {
     let authStateRegistered = false;
-    console.log('authprovider');
+    // console.log('authprovider');
 
     auth.onAuthStateChanged(async (user) => {
-      console.log('authprovider', authStateRegistered, user);
+      // console.log('authprovider', authStateRegistered, user);
 
       if (user && !authStateRegistered) {
-        console.log('authprovider login');
+        // console.log('authprovider login');
         setIsSigningIn(true);
         authStateRegistered = true;
 
@@ -196,11 +197,11 @@ export const AuthProvider: React.FC = (props) => {
           setSignInError(true);
           setAuthToken('');
           authStateRegistered = false;
-          console.log('authprovider error', error);
+          // console.log('authprovider error', error);
           throw error;
         });
 
-        console.log('authprovider jwt', jwt);
+        // console.log('authprovider jwt', jwt);
         setAuthToken(jwt);
 
         apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
@@ -222,7 +223,7 @@ export const AuthProvider: React.FC = (props) => {
       })
       .then((data) => {
         setSignInError(false);
-        console.log('getPatientApiCall', data);
+        // console.log('getPatientApiCall', data);
         AsyncStorage.setItem('currentPatient', JSON.stringify(data));
         setAllPatients(data);
       })
@@ -231,7 +232,7 @@ export const AuthProvider: React.FC = (props) => {
         const item = JSON.parse(retrievedItem);
         setAllPatients(item);
         setSignInError(true);
-        console.log('getPatientApiCallerror', error);
+        // console.log('getPatientApiCallerror', error);
       });
   };
 

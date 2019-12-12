@@ -67,7 +67,7 @@ export const UIElementsProvider: React.FC = (props) => {
   }, [isAlertVisible, loading]);
 
   const handleBack = async () => {
-    console.log('handleBack Called');
+    // console.log('handleBack Called');
     if (!alertParams.unDismissable) {
       // setLoading(false);
       hideAphAlert();
@@ -95,22 +95,20 @@ export const UIElementsProvider: React.FC = (props) => {
       </TouchableOpacity>
     );
 
-    return (
-      isAlertVisible && (
-        <BottomPopUp
-          title={alertParams.title}
-          description={alertParams.description}
-          style={alertParams.style}
-          onPressBack={() => {
-            if (!alertParams.unDismissable) {
-              hideAphAlert();
-            }
-          }}
-        >
-          {alertParams.children || renderOkButton}
-        </BottomPopUp>
-      )
-    );
+    return isAlertVisible ? (
+      <BottomPopUp
+        title={alertParams.title}
+        description={alertParams.description}
+        style={alertParams.style}
+        onPressBack={() => {
+          if (!alertParams.unDismissable) {
+            hideAphAlert();
+          }
+        }}
+      >
+        {alertParams.children || renderOkButton}
+      </BottomPopUp>
+    ) : null;
   };
 
   const showAphAlert = (params: AphAlertParams) => {

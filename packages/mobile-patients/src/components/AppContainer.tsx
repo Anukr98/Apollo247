@@ -3,12 +3,11 @@ import { NavigatorContainer } from '@aph/mobile-patients/src/components/Navigato
 import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React from 'react';
-import { Text, TextInput } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 import { DiagnosticsCartProvider } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppCommonDataProvider } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 // export const AppContainer: React.FC = () => {
-
 //   return (
 //     <AuthProvider>
 //       <ShoppingCartProvider>
