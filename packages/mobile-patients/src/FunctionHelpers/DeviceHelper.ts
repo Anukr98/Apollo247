@@ -50,9 +50,9 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
   }
 };
 
-export const CommonBugFender = (stringName: string, errorValue: Error) => {
-  // if (isReleaseOn) {
+export const CommonBugFender = async (stringName: string, errorValue: Error) => {
   try {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
     bugsnag.notify(errorValue, function(report) {
       report.metadata = {
         stringName: {
@@ -61,11 +61,19 @@ export const CommonBugFender = (stringName: string, errorValue: Error) => {
               ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
               : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
           errorValue: errorValue as any,
+          phoneNumber: storedPhoneNumber as any,
         },
       };
     });
   } catch (error) {
     aphConsole.log('CommonBugFender error', error);
   }
-  // }
+};
+
+export const CommonSetUserBugsnag = (phoneNumber: string) => {
+  try {
+    bugsnag.setUser(phoneNumber, phoneNumber);
+  } catch (error) {
+    aphConsole.log('CommonSetUserBugsnag error', error);
+  }
 };

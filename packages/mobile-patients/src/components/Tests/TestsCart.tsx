@@ -262,7 +262,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [deliveryAddressId, diagnosticSlot]);
 
   useEffect(() => {
-    fetchStorePickup();
+    clinics.length == 0 && fetchStorePickup();
     if (clinicId) {
       filterClinics(clinicId, true);
     }
@@ -737,7 +737,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
       aphConsole.log('iid filer=', data);
-      setPinCode && setPinCode(pinCode);
+      filterClinics(pinCode);
       setClinicDetails(data);
     } else {
       if (isValidPinCode(key)) {
@@ -825,7 +825,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View>
           {clinicDetails!.length > 2 && (
             <Text
-              style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
+              style={{ ...styles.yellowTextStyle, textAlign: 'right', paddingBottom: 0 }}
               onPress={() =>
                 props.navigation.navigate(AppRoutes.ClinicSelection, {
                   pincode: pinCode,

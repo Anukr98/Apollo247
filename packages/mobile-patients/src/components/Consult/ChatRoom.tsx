@@ -1087,7 +1087,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
     return function cleanup() {
-      console.log('didmount clean up');
+      console.log('didmount clean up chatroom');
       pubnub.unsubscribe({ channels: [channel] });
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -1095,10 +1095,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
       minuteTimer && clearTimeout(minuteTimer);
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
-      callAbandonmentTimer && clearInterval(callAbandonmentTimer);
       timerId && clearInterval(timerId);
       intervalId && clearInterval(intervalId);
       stopJoinTimer();
+      stopCallAbondmentTimer();
       try {
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       } catch (error) {}
@@ -1314,17 +1314,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }
     );
-  };
-
-  const checkForRescheduleMessage = (newmessage: any) => {
-    const result = newmessage.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
-      return obj.message === rescheduleConsultMsg;
-    });
-    if (result.length > 0) {
-      console.log('checkForRescheduleMessage ', result);
-      NextAvailableSlot(result[0], 'Transfer', false);
-    }
   };
 
   const checkAutomatedPatientText = () => {
@@ -1646,9 +1635,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
         setShowPopup(true);
+        setTimeout(() => {
+          stopCallAbondmentTimer();
+        }, 1000);
       } else if (message.message.message === rescheduleConsultMsg) {
-        console.log('rescheduleConsultMsg');
-        // checkForRescheduleMessage(message.message);
+        console.log('rescheduleConsultMsg', message.message);
+        checkForRescheduleMessage(message.message);
+        setTimeout(() => {
+          stopCallAbondmentTimer();
+        }, 1000);
         addMessages(message);
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
@@ -1661,7 +1656,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    //console.log('addMessages', message, message.timetoken);
+    console.log('addMessages', message);
     // console.log('startConsultjr', message.message.message);
 
     if (message.message.id !== patientId) {
@@ -1682,12 +1677,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(true);
     }
 
-    const result = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
-      return obj.message === rescheduleConsultMsg;
-    });
+    // const result = insertText.filter((obj: any) => {
+    //   // console.log('resultinsertText', obj.message);
+    //   return obj.message === rescheduleConsultMsg;
+    // });
 
-    checkForRescheduleMessage(insertText);
+    // checkForRescheduleMessage(insertText);
 
     setTimeout(() => {
       flatListRef.current! &&
@@ -1695,6 +1690,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           animated: false,
         });
     }, 300);
+  };
+
+  const checkForRescheduleMessage = (newmessage: any) => {
+    // console.log('newmessage ', newmessage, newmessage.length);
+    try {
+      let result;
+
+      if (newmessage.length > 1) {
+        result = newmessage.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === rescheduleConsultMsg;
+        });
+      } else {
+        result = newmessage;
+      }
+
+      if (result) {
+        console.log('checkForRescheduleMessage ', result);
+        NextAvailableSlot(result[0] ? result[0] : result, 'Transfer', false);
+      }
+    } catch (error) {
+      // console.log('checkForRescheduleMessageerror ', error);
+    }
   };
 
   const keyboardDidShow = (e: KeyboardEvent) => {
@@ -3423,119 +3441,127 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     isAutomatic: boolean,
     nextSlotAvailable: string
   ) => {
-    let checkAppointmentId;
-    let checkAppointmentDate;
-    console.log(rowData, 'rowDatacheckIfReschduleApi');
-    console.log(Value, 'Value');
+    try {
+      let checkAppointmentId;
+      let checkAppointmentDate;
+      console.log(rowData, 'rowDatacheckIfReschduleApi');
+      console.log(Value, 'Value');
 
-    if (isAutomatic) {
-      checkAppointmentId = channel;
+      if (isAutomatic) {
+        checkAppointmentId = channel;
 
-      checkAppointmentDate = nextSlotAvailable;
-      console.log(
-        'checkIfReschedulesuccess',
-        checkAppointmentId,
-        checkAppointmentDate,
-        isAutomatic
-      );
-    } else {
-      checkAppointmentId = rowData.transferInfo.appointmentId;
+        checkAppointmentDate = nextSlotAvailable;
+        console.log(
+          'checkIfReschedulesuccess',
+          checkAppointmentId,
+          checkAppointmentDate,
+          isAutomatic
+        );
+      } else {
+        checkAppointmentId = rowData.transferInfo.appointmentId;
 
-      checkAppointmentDate =
-        Value === 'Followup'
-          ? rowData.transferInfo.folloupDateTime
-          : rowData.transferInfo.transferDateTime;
-      console.log(
-        'checkIfReschedulesuccess',
-        checkAppointmentId,
-        checkAppointmentDate,
-        isAutomatic
-      );
+        checkAppointmentDate =
+          Value === 'Followup'
+            ? rowData.transferInfo.folloupDateTime
+            : rowData.transferInfo.transferDateTime;
+        console.log(
+          'checkIfReschedulesuccess',
+          checkAppointmentId,
+          checkAppointmentDate,
+          isAutomatic
+        );
+      }
+
+      setLoading(true);
+      checkIfRescheduleAppointment(client, checkAppointmentId, checkAppointmentDate)
+        .then((_data: any) => {
+          setLoading(false);
+          try {
+            const result = _data.data.data.checkIfReschedule;
+            console.log('checkIfReschedulesuccess', result);
+            const data: rescheduleType = {
+              rescheduleCount: result.rescheduleCount + 1,
+              appointmentState: result.appointmentState,
+              isCancel: result.isCancel,
+              isFollowUp: result.isFollowUp,
+              isPaid: result.isPaid,
+            };
+            setNewRescheduleCount(data);
+            setCheckReschudule(true);
+            setTimeout(() => {
+              flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+            }, 500);
+          } catch (error) {}
+        })
+        .catch((e: any) => {
+          setLoading(false);
+          const error = JSON.parse(JSON.stringify(e));
+          console.log('checkIfRescheduleerror', error);
+        })
+        .finally(() => {
+          console.log('checkIfReschedulesuccessfinally transferData', transferData);
+          if (isAutomatic) {
+            rescheduleInitiatedBy = REQUEST_ROLES.DOCTOR;
+            setdisplayoverlay(true);
+          } else {
+            rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
+          }
+        });
+    } catch (error) {
+      console.log('creash in checkIfReschduleApi', error);
     }
-
-    setLoading(true);
-    checkIfRescheduleAppointment(client, checkAppointmentId, checkAppointmentDate)
-      .then((_data: any) => {
-        setLoading(false);
-        try {
-          const result = _data.data.data.checkIfReschedule;
-          console.log('checkIfReschedulesuccess', result);
-          const data: rescheduleType = {
-            rescheduleCount: result.rescheduleCount + 1,
-            appointmentState: result.appointmentState,
-            isCancel: result.isCancel,
-            isFollowUp: result.isFollowUp,
-            isPaid: result.isPaid,
-          };
-          setNewRescheduleCount(data);
-          setCheckReschudule(true);
-          setTimeout(() => {
-            flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-          }, 500);
-        } catch (error) {}
-      })
-      .catch((e: any) => {
-        setLoading(false);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('checkIfRescheduleerror', error);
-      })
-      .finally(() => {
-        console.log('checkIfReschedulesuccessfinally transferData', transferData);
-        if (isAutomatic) {
-          rescheduleInitiatedBy = REQUEST_ROLES.DOCTOR;
-          setdisplayoverlay(true);
-        } else {
-          rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
-        }
-      });
   };
 
   const NextAvailableSlot = (rowData: any, Value: string, isAutomatic: boolean) => {
-    console.log('NextAvailableSlot', rowData);
-    setLoading(true);
-    let todayDate;
-    let slotDoctorId;
+    console.log('NextAvailableSlot', rowData, rowData.length);
+    try {
+      if (rowData.length > 0) setLoading(true);
+      let todayDate;
+      let slotDoctorId;
 
-    if (isAutomatic) {
-      todayDate = moment
-        .utc(appointmentData.appointmentDateTime)
-        .local()
-        .format('YYYY-MM-DD');
-      slotDoctorId = appointmentData.doctorId;
-    } else {
-      todayDate = moment
-        .utc(
-          Value === 'Followup'
-            ? rowData.transferInfo.folloupDateTime
-            : rowData.transferInfo.transferDateTime
-        )
-        .local()
-        .format('YYYY-MM-DD');
-      slotDoctorId =
-        Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+      if (isAutomatic) {
+        todayDate = moment
+          .utc(appointmentData.appointmentDateTime)
+          .local()
+          .format('YYYY-MM-DD');
+        slotDoctorId = appointmentData.doctorId;
+      } else {
+        todayDate = moment
+          .utc(
+            Value === 'Followup'
+              ? rowData.transferInfo.folloupDateTime
+              : rowData.transferInfo.transferDateTime
+          )
+          .local()
+          .format('YYYY-MM-DD');
+        slotDoctorId =
+          Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+      }
+
+      console.log('todayDate', todayDate);
+      console.log('slotDoctorId', slotDoctorId);
+
+      setDoctorScheduleId(slotDoctorId);
+
+      getNextAvailableSlots(client, slotDoctorId, todayDate)
+        .then(({ data }: any) => {
+          setLoading(false);
+          try {
+            console.log(data, 'nextavailable res');
+            setNextSlotAvailable(data[0].availableSlot);
+            checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
+          } catch (error) {
+            setNextSlotAvailable('');
+          }
+        })
+        .catch((e: string) => {
+          setLoading(false);
+          console.log('Error occured ', e);
+        })
+        .finally(() => {});
+    } catch (error) {
+      console.log('crash in NextAvailableSlot', error);
     }
-
-    console.log('todayDate', todayDate);
-    console.log('slotDoctorId', slotDoctorId);
-
-    setDoctorScheduleId(slotDoctorId);
-
-    getNextAvailableSlots(client, slotDoctorId, todayDate)
-      .then(({ data }: any) => {
-        setLoading(false);
-        try {
-          console.log(data, 'nextavailable res');
-          setNextSlotAvailable(data[0].availableSlot);
-          checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
-        } catch (error) {
-          setNextSlotAvailable('');
-        }
-      })
-      .catch((e: string) => {
-        setLoading(false);
-        console.log('Error occured ', e);
-      })
-      .finally(() => {});
   };
 
   const rescheduleAPI = (rowData: any, bookRescheduleInput: any) => {
