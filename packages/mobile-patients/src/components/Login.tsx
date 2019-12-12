@@ -91,7 +91,7 @@ let otpString = '';
 let didBlurSubscription: NavigationEventSubscription;
 
 export const Login: React.FC<LoginProps> = (props) => {
-  const [phoneNumber, setPhoneNumber] = useState<string>(props.phoneNumber || '');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { analytics, sendOtp, isSendingOtp, signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
@@ -99,10 +99,10 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     firebase.analytics().setAnalyticsCollectionEnabled(true);
-    analytics && analytics.setCurrentScreen(AppRoutes.Login, AppRoutes.Login);
+    analytics.setCurrentScreen(AppRoutes.Login, AppRoutes.Login);
     fireBaseFCM();
-    signOut && signOut();
-  }, [analytics, signOut]);
+    signOut();
+  }, [, analytics, signOut]);
 
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();
@@ -283,7 +283,6 @@ export const Login: React.FC<LoginProps> = (props) => {
           >
             <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
-              testID="phoneNumber"
               autoFocus
               style={styles.inputStyle}
               keyboardType="numeric"

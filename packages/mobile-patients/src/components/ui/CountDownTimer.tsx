@@ -42,7 +42,6 @@ export class CountDownTimer extends React.Component<CountDownTimerTypes, CountDo
         startTime: nextProps.timer,
       };
     }
-    return null;
   }
 
   componentWillUnmount() {

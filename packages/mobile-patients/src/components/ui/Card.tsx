@@ -60,7 +60,6 @@ export const Card: React.FC<CardProps> = (props) => {
       <Text style={[styles.headingText, props.headingTextStyle]}>{props.heading}</Text>
       <Text style={[styles.descriptionText, props.descriptionTextStyle]}>{props.description}</Text>
       <TouchableOpacity
-        testID="okButton"
         activeOpacity={1}
         style={styles.buttonStyle}
         onPress={props.disableButton ? () => {} : props.onClickButton}

@@ -55,18 +55,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
       ]}
       onPress={props.disabled ? () => {} : props.onPress}
     >
-      <Text testID="Button" style={[styles.titleTextStyle, props.titleTextStyle]}>
-        {props.title || 'title'}
-      </Text>
+      <Text style={[styles.titleTextStyle, props.titleTextStyle]}>{props.title}</Text>
     </TouchableOpacity>
   );
-};
-
-Button.defaultProps = {
-  style: {},
-  titleTextStyle: {},
-  title: '',
-  onPress: () => {},
-  disabled: false,
-  disabledStyle: {},
 };

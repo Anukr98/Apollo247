@@ -19,7 +19,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       <Button
         title="LOGOUT"
         onPress={() => {
-          signOut && signOut();
+          signOut();
           AsyncStorage.setItem('userLoggedIn', 'false');
           AsyncStorage.setItem('multiSignUp', 'false');
           AsyncStorage.setItem('signUp', 'false');
