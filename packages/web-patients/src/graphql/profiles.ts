@@ -53,6 +53,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const CANCEL_APPOINTMENT = gql`
+  mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
+    cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
+      status
+    }
+  }
+`;
+
 export const GET_PATIENT_ADDRESS_LIST = gql`
   query GetPatientAddressList($patientId: String) {
     getPatientAddressList(patientId: $patientId) {
@@ -66,6 +74,42 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         landmark
         createdDate
         updatedDate
+      }
+    }
+  }
+`;
+
+export const BOOK_APPOINTMENT_RESCHEDULE = gql`
+  mutation bookRescheduleAppointment(
+    $bookRescheduleAppointmentInput: BookRescheduleAppointmentInput!
+  ) {
+    bookRescheduleAppointment(bookRescheduleAppointmentInput: $bookRescheduleAppointmentInput) {
+      appointmentDetails {
+        appointmentType
+        id
+        doctorId
+        appointmentState
+        appointmentDateTime
+        status
+        patientId
+        rescheduleCount
+      }
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDERS_LIST = gql`
+  query GetMedicineOrdersList($patientId: String) {
+    getMedicineOrdersList(patientId: $patientId) {
+      MedicineOrdersList {
+        id
+        orderAutoId
+        deliveryType
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+        }
       }
     }
   }

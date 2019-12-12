@@ -16,6 +16,17 @@ export const GET_CURRENT_PATIENTS = gql`
         gender
         dateOfBirth
         photoUrl
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
       }
     }
   }
@@ -34,6 +45,7 @@ export const UPDATE_PATIENT = gql`
         uhid
         dateOfBirth
         emailAddress
+        photoUrl
       }
     }
   }
@@ -247,6 +259,7 @@ export const GET_APPOINTMENT_HISTORY = gql`
         hospitalId
         status
         bookingDate
+        isSeniorConsultStarted
       }
     }
   }
@@ -277,6 +290,8 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         displayId
         appointmentState
         isConsultStarted
+        isJdQuestionsComplete
+        isSeniorConsultStarted
         doctorInfo {
           id
           salutation
@@ -339,6 +354,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
             streetLine2
             streetLine3
             city
+            facilityType
           }
         }
       }
@@ -869,17 +885,15 @@ export const SAVE_DEVICE_TOKEN = gql`
   }
 `;
 
-// export const END_APPOINTMENT_SESSION = gql`
-//   mutation endAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput!) {
-//     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput) {
-//       status
-//     }
-//   }
-// `;
+export const END_APPOINTMENT_SESSION = gql`
+  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
+    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
+  }
+`;
 
 export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
-  query getPatientPastMedicineSearches($patientId: ID!) {
-    getPatientPastMedicineSearches(patientId: $patientId) {
+  query getPatientPastMedicineSearches($patientId: ID!, $type: SEARCH_TYPE) {
+    getPatientPastMedicineSearches(patientId: $patientId, type: $type) {
       searchType
       typeId
       name
@@ -921,6 +935,7 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
           id
           orderStatus
           statusDate
+          hideStatus
         }
       }
     }
@@ -1102,6 +1117,7 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           id
           orderStatus
           statusDate
+          hideStatus
         }
         medicineOrderLineItems {
           medicineSKU
@@ -1292,6 +1308,7 @@ export const GET_MEDICAL_RECORD = gql`
         additionalNotes
         sourceName
         documentURLs
+        prismFileIds
         medicalRecordParameters {
           id
           parameterName
@@ -1300,6 +1317,49 @@ export const GET_MEDICAL_RECORD = gql`
           minimum
           maximum
         }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICAL_PRISM_RECORD = gql`
+  query getPatientPrismMedicalRecords($patientId: ID!) {
+    getPatientPrismMedicalRecords(patientId: $patientId) {
+      labTests {
+        id
+        labTestName
+        labTestSource
+        labTestDate
+        labTestReferredBy
+        additionalNotes
+        testResultPrismFileIds
+        labTestResultParameters {
+          parameterName
+          unit
+          result
+          range
+        }
+        departmentName
+        signingDocName
+      }
+      healthChecks {
+        id
+        healthCheckName
+        healthCheckDate
+        healthCheckPrismFileIds
+        healthCheckSummary
+        source
+        appointmentDate
+        followupDate
+      }
+      hospitalizations {
+        id
+        diagnosisNotes
+        dateOfDischarge
+        dateOfHospitalization
+        dateOfNextVisit
+        hospitalizationPrismFileIds
+        source
       }
     }
   }
@@ -1412,6 +1472,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         estimatedAmount
         prescriptionImageUrl
         shopId
+        prismPrescriptionFileId
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1512,6 +1573,9 @@ export const GET_APPOINTMENT_DATA = gql`
         isFollowUp
         displayId
         rescheduleCount
+        appointmentState
+        isJdQuestionsComplete
+        isSeniorConsultStarted
         doctorInfo {
           id
           salutation
@@ -1527,7 +1591,18 @@ export const GET_APPOINTMENT_DATA = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
+          doctorHospital {
+            facility {
+              id
+              name
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+            }
+          }
         }
       }
     }
@@ -1595,7 +1670,7 @@ export const DELETE_DEVICE_TOKEN = gql`
 `;
 
 export const SEARCH_DIAGNOSTICS = gql`
-  query searchDiagnostics($city: String, $patientId: String, $searchText: String) {
+  query searchDiagnostics($city: String, $patientId: String, $searchText: String!) {
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
       diagnostics {
         id
@@ -1637,6 +1712,66 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
       errorMessage
       orderId
       displayId
+    }
+  }
+`;
+
+export const UPLOAD_DOCUMENT = gql`
+  mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
+    uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
+      status
+      fileId
+      filePath
+    }
+  }
+`;
+
+export const DOWNLOAD_DOCUMENT = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
+    }
+  }
+`;
+export const UPLOAD_CHAT_FILE_PRISM = gql`
+  mutation uploadChatDocumentToPrism(
+    $fileType: UPLOAD_FILE_TYPES!
+    $base64FileInput: String!
+    $appointmentId: String
+    $patientId: String!
+  ) {
+    uploadChatDocumentToPrism(
+      fileType: $fileType
+      base64FileInput: $base64FileInput
+      appointmentId: $appointmentId
+      patientId: $patientId
+    ) {
+      status
+      fileId
+    }
+  }
+`;
+
+export const ADD_PATIENT_FEEDBACK = gql`
+  mutation addPatientFeedback($patientFeedbackInput: PatientFeedbackInput) {
+    addPatientFeedback(patientFeedbackInput: $patientFeedbackInput) {
+      status
+    }
+  }
+`;
+
+export const AUTOMATED_QUESTIONS = gql`
+  mutation addToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
+    addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
+      id
+      doctorId
+      totalJuniorDoctorsOnline
+      juniorDoctorsList {
+        juniorDoctorId
+        doctorName
+        queueCount
+      }
+      totalJuniorDoctors
     }
   }
 `;

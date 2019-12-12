@@ -32,7 +32,7 @@ export const LocationProvider: React.FC = (props) => {
       } else {
         setCurrentLocation(currentAddress);
       }
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${process.env.GOOGLE_LOCATION_SERVICE_KEY}`;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${process.env.GOOGLE_API_KEY}`;
       axios.get(url).then((res) => {
         if (res && res.data && res.data.results[0]) {
           const { lat, lng } = res.data.results[0].geometry.location;
@@ -47,9 +47,13 @@ export const LocationProvider: React.FC = (props) => {
           setCurrentLong(longitude.toString());
           axios
             .get(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_LOCATION_SERVICE_KEY}`
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
             )
             .then((res) => {
+              localStorage.setItem(
+                'currentAddress',
+                res.data.results[0].address_components[2].short_name
+              );
               setCurrentLocation(res.data.results[0].address_components[2].short_name);
             });
         },

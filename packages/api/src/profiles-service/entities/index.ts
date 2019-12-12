@@ -119,6 +119,7 @@ export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
   GM_SLASH_DL = 'GM_SLASH_DL',
+  NONE = 'NONE',
 }
 
 export enum MedicalRecordType {
@@ -132,6 +133,12 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = 'PICKUP_REQUESTED',
   PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
   ORDER_FAILED = 'ORDER_FAILED',
+}
+
+export enum FEEDBACKTYPE {
+  CONSULT = 'CONSULT',
+  PHARMACY = 'PHARMACY',
+  DIAGNOSTICS = 'DIAGNOSTICS',
 }
 
 //medicine orders starts
@@ -353,6 +360,9 @@ export class MedicineOrdersStatus extends BaseEntity {
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
 
+  @Column({ nullable: true, default: true })
+  hideStatus: boolean;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -468,6 +478,9 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   allergies: string;
 
+  @Column({ nullable: true, type: 'text' })
+  athsToken: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -511,6 +524,9 @@ export class Patient extends BaseEntity {
 
   @OneToMany((type) => MedicalRecords, (medicalRecords) => medicalRecords.patient)
   medicalRecords: MedicalRecords[];
+
+  @OneToMany((type) => PatientFeedback, (patientfeedback) => patientfeedback.patient)
+  patientfeedback: PatientFeedback[];
 
   @Column()
   @Validate(MobileNumberValidator)
@@ -1292,4 +1308,31 @@ export class DiagnosticPincodeHubs extends BaseEntity {
 
   @Column({ nullable: true })
   areaName: string;
+}
+
+@Entity()
+export class PatientFeedback extends BaseEntity {
+  @ManyToOne((type) => Patient, (patient) => patient.id)
+  patient: Patient;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  rating: string;
+
+  @Column({ type: 'text' })
+  thankyouNote: string;
+
+  @Column()
+  reason: string;
+
+  @Column()
+  feedbackType: FEEDBACKTYPE;
+
+  @Column({ nullable: true })
+  transactionId: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
 }

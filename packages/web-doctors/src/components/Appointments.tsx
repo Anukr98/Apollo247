@@ -83,6 +83,14 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: theme.spacing(0, 2),
       color: '#0087ba',
       fontSize: 12,
+
+      '& span': {
+        maxWidth: 300,
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        display: 'block',
+      },
       [theme.breakpoints.down('xs')]: {
         position: 'absolute',
         bottom: 10,

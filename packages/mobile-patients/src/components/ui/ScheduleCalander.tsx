@@ -99,6 +99,7 @@ export interface ScheduleCalanderProps {
   isDropDown?: boolean;
   dropdownArray?: TimeOptionArray[];
   CALENDAR_TYPE: CALENDAR_TYPE;
+  setDropArray?: (args0: TimeOptionArray[]) => void;
 }
 
 export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
@@ -144,78 +145,96 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
   useEffect(() => {
     if (!!props.selectedTimeSlot && timeArray) {
       timeArray &&
         timeArray.length > 0 &&
         timeArray.map((value) => {
           value.time.map((name: string) => {
+            console.log(name, props.selectedTimeSlot);
+
             if (name === props.selectedTimeSlot) {
               setselectedtiming(value.label);
             }
           });
         });
     } else if (!!props.selectedTimeSlot && dropArray) {
-      dropArray.length > 0 &&
+      if (dropArray.length > 0) {
         dropArray.map((value) => {
           if (value.time === props.selectedTimeSlot) {
             setSelectedDrop(value);
           }
         });
+      } else {
+        getDropArrayData(date, props.selectedTimeSlot);
+      }
     }
-  }, [props.selectedTimeSlot]);
+  }, []);
+
+  const getDropArrayData = (selectedDate: Date, selectedTime?: string) => {
+    setshowSpinner(true);
+    const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
+    client
+      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+        query: GET_DIAGNOSTIC_SLOTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: currentPatient!.id,
+          hubCode: 'HYD_HUB1',
+          selectedDate: moment(selectedDate).format('YYYY-MM-DD'),
+          zipCode: parseInt(selectedAddress!.zipcode!),
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+        setDiagnosticSlot &&
+          setDiagnosticSlot({
+            diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
+            employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+            diagnosticEmployeeCode: finalaray!.employeeCode || '',
+            slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
+            slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+            city: selectedAddress!.city || '',
+            date: date.getTime(),
+          });
+
+        var t = finalaray!.slotInfo!.map((item) => {
+          return {
+            label: (item!.slot || '').toString(),
+            time: `${item!.startTime} - ${item!.endTime}`,
+          };
+        });
+        setDropArray(t);
+        props.setDropArray && props.setDropArray(t);
+        if (selectedTime) {
+          t.map((value) => {
+            if (value.time === selectedTime) {
+              setSelectedDrop(value);
+            }
+          });
+        } else {
+          setSelectedDrop(t[0]);
+        }
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+      })
+      .finally(() => {
+        setshowSpinner(false);
+      });
+  };
 
   const renderCalendarView = () => {
     return (
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
-          console.log(moment(selectedDate).format('YYYY-MM-DD'), 'selectedDate');
           setDate(selectedDate);
           setshowSpinner(true);
           setDropArray([]);
-          const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
-          client
-            .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-              query: GET_DIAGNOSTIC_SLOTS,
-              fetchPolicy: 'no-cache',
-              variables: {
-                patientId: currentPatient!.id,
-                hubCode: 'HYD_HUB1',
-                selectedDate: moment(selectedDate).format('YYYY-MM-DD'),
-                zipCode: parseInt(selectedAddress!.zipcode!),
-              },
-            })
-            .then(({ data }) => {
-              console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
-              setshowSpinner(false);
-              var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-              setDiagnosticSlot &&
-                setDiagnosticSlot({
-                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
-                  employeeSlotId: finalaray!.slotInfo![0]!.slot!,
-                  diagnosticEmployeeCode: finalaray!.employeeCode || '',
-                  slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
-                  slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
-                  city: selectedAddress!.city || '',
-                  date: date.getTime(),
-                });
-
-              var t = finalaray!.slotInfo!.map((item) => {
-                return {
-                  label: (item!.slot || '').toString(),
-                  time: `${item!.startTime} - ${item!.endTime}`,
-                };
-              });
-              console.log(t, 'finalaray');
-              setDropArray(t);
-              setSelectedDrop(t[0]);
-            })
-            .catch((e: string) => {
-              setshowSpinner(false);
-              console.log('Error occured', e);
-            })
-            .finally(() => {});
+          getDropArrayData(selectedDate);
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
@@ -357,8 +376,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             setDiagnosticSlot &&
               setDiagnosticSlot({
                 ...diagnosticSlot!,
-                slotStartTime: selectedDrop!.time.split('-')[0],
-                slotEndTime: selectedDrop!.time.split('-')[1],
+                slotStartTime: selectedDrop!.time.split('-')[0].trim(),
+                slotEndTime: selectedDrop!.time.split('-')[1].trim(),
                 date: date.getTime(),
               });
             props.setDate(date);
@@ -394,7 +413,10 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.setdisplayoverlay(false)}
+            onPress={() => {
+              props.setdisplayoverlay(false);
+              selectedDrop && props.setselectedTimeSlot(selectedDrop!.time);
+            }}
             style={{
               marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
               backgroundColor: 'white',

@@ -1,22 +1,23 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
-import React, { useEffect } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import firebase from 'react-native-firebase';
-import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
-import InCallManager from 'react-native-incall-manager';
-import { NavigationScreenProps } from 'react-navigation';
 import {
   GET_APPOINTMENT_DATA,
-  GET_MEDICINE_ORDER_DETAILS,
   GET_CALL_DETAILS,
+  GET_MEDICINE_ORDER_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import {
+  getCallDetails,
+  getCallDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetailsVariables,
@@ -24,16 +25,18 @@ import {
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  EPrescription,
-  ShoppingCartItem,
-  useShoppingCart,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import {
-  getCallDetails,
-  getCallDetailsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getCallDetails';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import firebase from 'react-native-firebase';
+import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
+import InCallManager from 'react-native-incall-manager';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { FEEDBACKTYPE } from '../graphql/types/globalTypes';
+import { FeedbackPopup } from './FeedbackPopup';
+import { MedicalIcon } from './ui/Icons';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -63,7 +66,8 @@ type CustomNotificationType =
   | 'Reschedule_Appointment'
   | 'Cart_Ready'
   | 'call_started'
-  | 'chat_room';
+  | 'chat_room'
+  | 'Order_Delivered';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -73,6 +77,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
+  const [medFeedback, setmedFeedback] = useState({
+    visible: false,
+    title: '',
+    subtitle: '',
+    transactionId: '',
+  });
 
   const processNotification = async (notification: Notification) => {
     const { title, body, data } = notification;
@@ -143,6 +153,17 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           });
         }
         break;
+      case 'Order_Delivered':
+        {
+          const orderAutoId: string = data.orderAutoId;
+          const orderId: string = data.orderId;
+          const title: string = `Medicines — #${orderAutoId}`;
+          const subtitle: string = `Delivered On: ${moment(data.deliveredDate).format(
+            'D MMM YYYY'
+          )}`;
+          setmedFeedback({ title, subtitle, transactionId: orderId, visible: true });
+        }
+        break;
 
       case 'Cart_Ready':
         {
@@ -177,6 +198,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                         mou: medicineDetails.mou,
                         name: medicineDetails!.name,
                         price: medicineDetails!.price,
+                        specialPrice: medicineDetails.special_price
+                          ? typeof medicineDetails.special_price == 'string'
+                            ? parseInt(medicineDetails.special_price)
+                            : medicineDetails.special_price
+                          : undefined,
                         quantity: items[index].qty || 1,
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
@@ -358,23 +384,27 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     firebase
       .notifications()
       .getInitialNotification()
-      .then((_notificationOpen: NotificationOpen) => {
+      .then(async (_notificationOpen: NotificationOpen) => {
         if (_notificationOpen) {
           aphConsole.log('_notificationOpen');
+          const notification = _notificationOpen.notification;
+          const lastNotification = await AsyncStorage.getItem('lastNotification');
+          if (lastNotification !== notification.notificationId) {
+            await AsyncStorage.setItem('lastNotification', notification.notificationId);
+            // App was opened by a notification
+            // Get the action triggered by the notification being opened
+            // const action = _notificationOpen.action;
+            processNotification(_notificationOpen.notification);
 
-          // App was opened by a notification
-          // Get the action triggered by the notification being opened
-          // const action = _notificationOpen.action;
-          processNotification(_notificationOpen.notification);
+            try {
+              aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
 
-          try {
-            aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
-
-            firebase
-              .notifications()
-              .removeDeliveredNotification(_notificationOpen.notification.notificationId);
-          } catch (error) {
-            aphConsole.log('notificationOpen error', error);
+              firebase
+                .notifications()
+                .removeDeliveredNotification(_notificationOpen.notification.notificationId);
+            } catch (error) {
+              aphConsole.log('notificationOpen error', error);
+            }
           }
         }
       })
@@ -515,7 +545,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const appointmentData = _data.data.getAppointmentData.appointmentsHistory;
           if (appointmentData) {
             switch (notificationType) {
-              case 'Reschedule-Appointment':
+              case 'Reschedule_Appointment':
                 {
                   appointmentData[0].appointmentType === 'ONLINE'
                     ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
@@ -562,5 +592,27 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         setLoading && setLoading(false);
       });
   };
-  return null;
+  return (
+    <>
+      <FeedbackPopup
+        title="We value your feedback! :)"
+        description="How was your overall experience with the following medicine delivery —"
+        info={{
+          title: medFeedback.title,
+          description: medFeedback.subtitle,
+          imageComponent: <MedicalIcon />,
+        }}
+        transactionId={medFeedback.transactionId}
+        type={FEEDBACKTYPE.PHARMACY}
+        isVisible={medFeedback.visible}
+        onComplete={() => {
+          setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
+          showAphAlert!({
+            title: 'Thanks :)',
+            description: 'Your feedback has been submitted. Thanks for your time.',
+          });
+        }}
+      />
+    </>
+  );
 };

@@ -16,9 +16,11 @@ import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
-import { CartLanding } from 'components/Cart/CartLanding';
+import { MedicineCartLanding } from 'components/Cart/MedicineCartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
-import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
+import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
+import { SearchByBrand } from 'components/Medicine/SearchByBrand';
+import { Appointments } from 'components/ConsultRoom/Appointments';
 import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
@@ -30,6 +32,8 @@ import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { TrackOrderLanding } from 'components/Orders/TrackOrderLanding';
 import { StoragePoc } from 'components/StoragePoc';
 import { TrackJS } from 'trackjs';
+import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
+import { MedicineDetails } from 'components/Medicine/MedicineDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -45,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const App: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { signInError } = useAuth();
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
@@ -57,16 +61,20 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.patients()} component={PatientsList} />
         <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
         <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
-        <AuthRouted exact path={clientRoutes.cartLanding()} component={CartLanding} />
+        <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
         <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-        <AuthRouted exact path={clientRoutes.testsAndMedicine()} component={MedicineLanding} />
+        <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
+        <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
+        <AuthRouted exact path={clientRoutes.medicineSearchByBrand()} component={SearchByBrand} />
+        <AuthRouted exact path={clientRoutes.searchByMedicine()} component={SearchByMedicine} />
+        <AuthRouted exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
         <AuthRouted
           exact
           path={clientRoutes.prescriptionsLanding()}
           component={PrescriptionsLanding}
         />
-        <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
+        <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
         <AuthRouted
           exact
           path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}

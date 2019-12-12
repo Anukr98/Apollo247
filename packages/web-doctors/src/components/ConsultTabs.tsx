@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import { CallPopover } from 'components/CallPopover';
+import Pubnub from 'pubnub';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -207,6 +208,15 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '50%',
       top: '45%',
     },
+    fadedBg: {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      opacity: 0,
+      zIndex: 999,
+    },
     tabBody: {
       minHeight: 60,
       marginTop: '10px',
@@ -285,7 +295,17 @@ const storageClient = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
-
+interface MessagesObjectProps {
+  id: string;
+  message: string;
+  username: string;
+  automatedText: string;
+  duration: string;
+  url: string;
+  messageDate: string;
+}
+//let messages: MessagesObjectProps[] = [];
+let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
   const params = useParams<Params>();
@@ -350,7 +370,11 @@ export const ConsultTabs: React.FC = () => {
     GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
+  const [favouriteTests, setFavouriteTests] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
+  const [favouriteMedicines, setFavouriteMedicines] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
 
@@ -383,14 +407,110 @@ export const ConsultTabs: React.FC = () => {
   const [jrdName, setJrdName] = useState<string>('');
   const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
   const isSecretary = currentUserType === LoggedInUserType.SECRETARY;
+  const [lastMsg, setLastMsg] = useState<any>(null);
+  const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
+  const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
 
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
+    ssl: true,
+    restore: true,
+    keepAlive: true,
+    //autoNetworkDetection: true,
+    //listenToBrowserNetworkEvents: true,
+    presenceTimeout: 20,
+    heartbeatInterval: 20,
+    uuid: REQUEST_ROLES.DOCTOR,
+  };
   useEffect(() => {
     if (startAppointment) {
       followUp[0] = startAppointment;
       setFollowUp(followUp);
     }
   }, [startAppointment]);
+  const pubnub = new Pubnub(config);
 
+  useEffect(() => {
+    pubnub.subscribe({
+      channels: [appointmentId],
+      withPresence: true,
+    });
+    getHistory(0);
+    pubnub.addListener({
+      status(statusEvent: any) {
+        console.log('statusEvent', statusEvent);
+      },
+      message(message: any) {
+        console.log(message.message);
+        insertText[insertText.length] = message.message;
+        setMessages(() => [...insertText]);
+        if (
+          message.message.url &&
+          message.message.fileType &&
+          message.message.fileType === 'image'
+        ) {
+          const data = {
+            documentPath: message.message.url,
+          };
+          setDocumentArray(data);
+        }
+
+        setLastMsg(message);
+      },
+      presence(presenceEvent: any) {
+        //setPresenceEventObject(presenceEvent);
+        console.log(presenceEvent);
+        //setPresenceEventObject(presenceEvent);
+        pubnub
+          .hereNow({
+            channels: [appointmentId],
+            includeUUIDs: true,
+          })
+          .then((response: any) => {
+            console.log('hereNowresponse', response);
+            setPresenceEventObject(response);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+    });
+    return () => {
+      pubnub.unsubscribe({ channels: [appointmentId] });
+    };
+  }, []);
+  const getHistory = (timetoken: number) => {
+    pubnub.history(
+      {
+        channel: appointmentId,
+        reverse: true,
+        count: 1000,
+        stringifiedTimeToken: true,
+        start: timetoken,
+      },
+      (status: any, res: any) => {
+        const newmessage: MessagesObjectProps[] = messages;
+        res.messages.forEach((element: any, index: number) => {
+          //newmessage[index] = element.entry;
+          newmessage.push(element.entry);
+        });
+        insertText = newmessage;
+        console.log(newmessage);
+        //if (messages.length !== newmessage.length) {
+        setMessages(newmessage);
+        //}
+        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        if (res.messages.length == 100) {
+          getHistory(end);
+        }
+        //resetMessagesAction();
+        //srollToBottomAction();
+      }
+    );
+  };
   /* case sheet data*/
 
   /* need to be worked later */
@@ -901,12 +1021,15 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data) => {
+        console.log(_data);
         if (
           _data &&
           _data.data &&
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
+          const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
+          document.cookie = cookieStr + ';path=/;';
           setcallId(_data.data.sendCallNotification.callDetails.id);
         }
       })
@@ -979,7 +1102,9 @@ export const ConsultTabs: React.FC = () => {
       });
       // convert itemName to itemname
       diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
-        return { itemname: prescription.itemName };
+        return {
+          itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
+        };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
@@ -1140,7 +1265,11 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {!loaded && <CircularProgress className={classes.loading} />}
+      {!loaded && (
+        <div>
+          <CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div>
+        </div>
+      )}
 
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
@@ -1171,8 +1300,12 @@ export const ConsultTabs: React.FC = () => {
             setOtherInstructions,
             diagnosticPrescription,
             setDiagnosticPrescription,
+            favouriteTests,
+            setFavouriteTests,
             medicinePrescription,
             setMedicinePrescription,
+            favouriteMedicines,
+            setFavouriteMedicines,
             consultType,
             setConsultType,
             caseSheetEdit,
@@ -1247,6 +1380,9 @@ export const ConsultTabs: React.FC = () => {
                 //sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
                 callId={callId}
+                pubnub={pubnub}
+                lastMsg={lastMsg}
+                presenceEventObject={presenceEventObject}
               />
               <div>
                 {!isPdfPageOpen || isSecretary ? (
@@ -1279,13 +1415,13 @@ export const ConsultTabs: React.FC = () => {
                         />
                       </Tabs>
                     </div>
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 0 ? classes.none : classes.block}>
                         {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                       </div>
-                    </TabContainer>
+                    </div>
 
-                    <TabContainer>
+                    <div>
                       <div className={tabValue !== 1 ? classes.none : classes.block}>
                         <div className={classes.chatContainer}>
                           <ConsultRoom
@@ -1295,10 +1431,13 @@ export const ConsultTabs: React.FC = () => {
                             appointmentId={paramId}
                             doctorId={doctorId}
                             patientId={patientId}
+                            pubnub={pubnub}
+                            lastMsg={lastMsg}
+                            messages={messages}
                           />
                         </div>
                       </div>
-                    </TabContainer>
+                    </div>
                   </div>
                 ) : (
                   <div>

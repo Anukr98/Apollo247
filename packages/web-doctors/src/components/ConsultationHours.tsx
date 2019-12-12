@@ -201,7 +201,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'capitalize',
     },
     primaryHeading: {
-      fontSize: theme.typography.pxToRem(20),
+      fontSize: 16,
       color: theme.palette.secondary.dark,
       fontWeight: theme.typography.fontWeightMedium,
     },

@@ -16,8 +16,14 @@ export enum APPOINTMENT_STATE {
 }
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
+}
+
+export enum BOOKINGSOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
 }
 
 export enum CONSULTS_RX_SEARCH_FILTER {
@@ -30,6 +36,11 @@ export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
+}
+
+export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  IOS = "IOS",
 }
 
 export enum DEVICE_TYPE {
@@ -58,6 +69,12 @@ export enum DoctorType {
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   STAR_APOLLO = "STAR_APOLLO",
+}
+
+export enum FEEDBACKTYPE {
+  CONSULT = "CONSULT",
+  DIAGNOSTICS = "DIAGNOSTICS",
+  PHARMACY = "PHARMACY",
 }
 
 export enum Gender {
@@ -130,6 +147,7 @@ export enum MedicalRecordType {
 export enum MedicalTestUnit {
   GM = "GM",
   GM_SLASH_DL = "GM_SLASH_DL",
+  NONE = "NONE",
   _PERCENT_ = "_PERCENT_",
 }
 
@@ -137,6 +155,11 @@ export enum PATIENT_ADDRESS_TYPE {
   HOME = "HOME",
   OFFICE = "OFFICE",
   OTHER = "OTHER",
+}
+
+export enum PRISM_DOCUMENT_CATEGORY {
+  HealthChecks = "HealthChecks",
+  OpSummary = "OpSummary",
 }
 
 export enum REQUEST_ROLES {
@@ -165,10 +188,13 @@ export enum SEARCH_TYPE {
 }
 
 export enum STATUS {
+  CALL_ABANDON = "CALL_ABANDON",
   CANCELLED = "CANCELLED",
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+  JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
+  JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
@@ -193,6 +219,13 @@ export enum TEST_COLLECTION_TYPE {
 export enum TRANSFER_INITIATED_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+}
+
+export enum UPLOAD_FILE_TYPES {
+  JPEG = "JPEG",
+  JPG = "JPG",
+  PDF = "PDF",
+  PNG = "PNG",
 }
 
 export enum WeekDay {
@@ -237,7 +270,10 @@ export interface BookAppointmentInput {
   doctorId: string;
   appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string | null;
+  hospitalId: string;
+  symptoms?: string | null;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -277,6 +313,18 @@ export interface CancelAppointmentInput {
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
+}
+
+export interface ConsultQueueInput {
+  appointmentId: string;
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
+  lifeStyle?: string | null;
+  familyHistory?: string | null;
+  dietAllergies?: string | null;
+  drugAllergies?: string | null;
 }
 
 export interface DiagnosticLineItem {
@@ -323,6 +371,11 @@ export interface DoctorPhysicalAvailabilityInput {
   facilityId: string;
 }
 
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
+}
+
 export interface EditProfileInput {
   firstName: string;
   lastName: string;
@@ -332,6 +385,12 @@ export interface EditProfileInput {
   emailAddress: string;
   photoUrl: string;
   id: string;
+}
+
+export interface EndAppointmentSessionInput {
+  appointmentId: string;
+  status: STATUS;
+  noShowBy?: REQUEST_ROLES | null;
 }
 
 export interface FilterDoctorInput {
@@ -430,6 +489,15 @@ export interface PatientConsultsAndOrdersInput {
   limit?: number | null;
 }
 
+export interface PatientFeedbackInput {
+  patientId: string;
+  rating?: string | null;
+  thankyouNote?: string | null;
+  reason?: string | null;
+  feedbackType?: FEEDBACKTYPE | null;
+  transactionId: string;
+}
+
 export interface PatientProfileInput {
   firstName: string;
   lastName: string;
@@ -519,6 +587,13 @@ export interface UpdatePatientInput {
   dateOfBirth?: any | null;
   relation?: Relation | null;
   photoUrl?: string | null;
+}
+
+export interface UploadDocumentInput {
+  fileType: UPLOAD_FILE_TYPES;
+  base64FileInput: string;
+  patientId: string;
+  category: PRISM_DOCUMENT_CATEGORY;
 }
 
 //==============================================================

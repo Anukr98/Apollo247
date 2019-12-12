@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -97,6 +97,9 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="40001b65375e3b0193fe0fb56ac6706df22e3eed" />
+
+        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="7839e425f4acbd8e6ff3f907281addca"/>
+
     </application>
 
 </manifest>

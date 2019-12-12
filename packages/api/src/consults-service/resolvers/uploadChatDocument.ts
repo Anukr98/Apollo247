@@ -8,13 +8,33 @@ import path from 'path';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { AppointmentDocuments } from 'consults-service/entities';
+import { Appointment, AppointmentDocuments } from 'consults-service/entities';
+import { UPLOAD_FILE_TYPES, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { Connection } from 'typeorm';
 
 export const uploadChatDocumentTypeDefs = gql`
+  enum PRISM_DOCUMENT_CATEGORY {
+    HealthChecks
+    OpSummary
+  }
+
+  enum UPLOAD_FILE_TYPES {
+    JPG
+    PNG
+    JPEG
+    PDF
+  }
+
   type UploadChatDocumentResult {
     filePath: String
+  }
+
+  type UploadPrismChatDocumentResult {
+    status: Boolean!
+    fileId: String
   }
 
   type UploadedDocumentDetails {
@@ -34,6 +54,13 @@ export const uploadChatDocumentTypeDefs = gql`
       base64FileInput: String
     ): UploadChatDocumentResult!
 
+    uploadChatDocumentToPrism(
+      appointmentId: String
+      patientId: String!
+      fileType: UPLOAD_FILE_TYPES!
+      base64FileInput: String!
+    ): UploadPrismChatDocumentResult!
+
     addChatDocument(
       appointmentId: ID!
       documentPath: String
@@ -44,6 +71,11 @@ export const uploadChatDocumentTypeDefs = gql`
 `;
 type UploadChatDocumentResult = {
   filePath: string;
+};
+
+type UploadPrismChatDocumentResult = {
+  status: Boolean;
+  fileId: string;
 };
 
 const uploadChatDocument: Resolver<
@@ -117,6 +149,115 @@ const uploadChatDocument: Resolver<
   return { filePath: client.getBlobUrl(readmeBlob.name) };
 };
 
+const uploadChatDocumentToPrism: Resolver<
+  null,
+  {
+    appointmentId: string;
+    patientId: string;
+    fileType: UPLOAD_FILE_TYPES;
+    base64FileInput: string;
+  },
+  ConsultServiceContext,
+  UploadPrismChatDocumentResult
+> = async (parent, args, { mobileNumber, consultsDb, patientsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentDetails = await appointmentRepo.findById(args.appointmentId);
+  if (appointmentDetails == null)
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+
+  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  //get authtoken for the logged in user mobile number
+  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+  if (!prismAuthToken) return { status: false, fileId: '' };
+
+  //get users list for the mobile number
+  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+
+  //check if current user uhid matches with response uhids
+  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+
+  if (!uhid) {
+    return { status: false, fileId: '' };
+  }
+
+  //just call get prism user details with the corresponding uhid
+  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+
+  const uploadDocInput = {
+    ...args,
+    category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+  };
+
+  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismAuthToken, uploadDocInput);
+
+  //upload file to blob storage & save to appointment documents
+  uploadFileToBlobStorage(args.fileType, args.base64FileInput, appointmentDetails, consultsDb);
+
+  return fileId ? { status: true, fileId } : { status: false, fileId: '' };
+};
+
+const uploadFileToBlobStorage = async (
+  fileType: UPLOAD_FILE_TYPES,
+  base64FileInput: string,
+  appointmentDetails: Appointment,
+  consultsDb: Connection
+) => {
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  const randomNumber = Math.floor(Math.random() * 10000);
+  const fileName =
+    format(new Date(), 'ddmmyyyy-HHmmss') + '_' + randomNumber + '.' + fileType.toLowerCase();
+  const uploadPath = assetsDir + '/' + fileName;
+  fs.writeFile(uploadPath, base64FileInput, { encoding: 'base64' }, (err) => {
+    console.log(err);
+  });
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+    process.env.AZURE_STORAGE_CONTAINER_NAME
+  );
+
+  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
+    await client
+      .deleteContainer()
+      .then((res) => console.log(res))
+      .catch((error) => console.log('error deleting', error));
+
+    await client
+      .setServiceProperties()
+      .then((res) => console.log(res))
+      .catch((error) => console.log('error setting service properties', error));
+
+    await client
+      .createContainer()
+      .then((res) => console.log(res))
+      .catch((error) => console.log('error creating', error));
+  }
+
+  await client
+    .testStorageConnection()
+    .then((res) => console.log(res))
+    .catch((error) => console.log('error testing', error));
+
+  const localFilePath = assetsDir + '/' + fileName;
+  const readmeBlob = await client
+    .uploadFile({ name: fileName, filePath: localFilePath })
+    .catch((error) => {
+      throw error;
+    });
+  fs.unlinkSync(localFilePath);
+
+  const documentAttrs: Partial<AppointmentDocuments> = {
+    documentPath: client.getBlobUrl(readmeBlob.name),
+    appointment: appointmentDetails,
+  };
+  const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+  appointmentDocumentRepo.saveDocument(documentAttrs);
+
+  //return client.getBlobUrl(readmeBlob.name);
+};
+
 type UploadedDocumentDetails = {
   id: string;
   documentPath: string;
@@ -139,7 +280,7 @@ const addChatDocument: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  if (args.prismFileId.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
+  //if (args.prismFileId.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
 
   const documentAttrs: Partial<AppointmentDocuments> = {
     documentPath: args.documentPath,
@@ -183,6 +324,7 @@ const removeChatDocument: Resolver<
 export const uploadChatDocumentResolvers = {
   Mutation: {
     uploadChatDocument,
+    uploadChatDocumentToPrism,
     addChatDocument,
     removeChatDocument,
   },

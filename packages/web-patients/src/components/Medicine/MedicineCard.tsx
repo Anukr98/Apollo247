@@ -1,6 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid } from '@material-ui/core';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -8,24 +9,45 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       borderRadius: 5,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      padding: 10,
-      fontSize: 14,
+      padding: 15,
+      fontSize: 16,
       fontWeight: 500,
-      marginTop: 5,
-      color: '#02475b',
+      color: '#01475b',
       textAlign: 'center',
-      cursor: 'pointer',
     },
     bigAvatar: {
-      width: 48,
-      height: 48,
-      lineHeight: '60px',
+      width: 85,
+      height: 85,
       textAlign: 'center',
-      backgroundColor: '#dcdfcf',
       margin: 'auto',
-      marginTop: -20,
-      marginBottom: 5,
-      borderRadius: '50%',
+      marginBottom: 15,
+      marginTop: 5,
+      '& img': {
+        verticalAlign: 'middle',
+        maxWidth: '100%',
+      },
+    },
+    priceGroup: {
+      fontSize: 12,
+      color: '#01475b',
+      fontWeight: 500,
+      textAlign: 'center',
+      paddingTop: 5,
+      opacity: 0.6,
+    },
+    regularPrice: {
+      paddingLeft: 10,
+      textDecoration: 'line-through',
+    },
+    addToCartBtn: {
+      color: '#fc9916',
+      fontWeight: 'bold',
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      minWidth: 'auto',
+      textAlign: 'center',
+      padding: 0,
+      marginTop: 10,
     },
   };
 });
@@ -35,36 +57,76 @@ export const MedicineCard: React.FC = (props) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={6} sm={6} md={4} lg={3}>
+      <Grid item xs={6} sm={6} md={4} lg={4}>
         <div className={classes.root}>
           <div className={classes.bigAvatar}>
-            <img src={require('images/ic_tablets.svg')} alt="" />
+            <img src={require('images/category/img_product.png')} alt="" />
           </div>
-          Metformin
+          Holland &amp; Barrett Rhodiola Stress Relief
+          <div className={classes.priceGroup}>
+            Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
+          </div>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
-      <Grid item xs={6} sm={6} md={4} lg={3}>
+      <Grid item xs={6} sm={6} md={4} lg={4}>
         <div className={classes.root}>
           <div className={classes.bigAvatar}>
-            <img src={require('images/ic_tablets.svg')} alt="" />
+            <img src={require('images/category/img_product.png')} alt="" />
           </div>
-          Sulfonylureas
+          Holland &amp; Barrett Rhodiola Stress Relief
+          <div className={classes.priceGroup}>
+            Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
+          </div>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
-      <Grid item xs={6} sm={6} md={4} lg={3}>
+      <Grid item xs={6} sm={6} md={4} lg={4}>
         <div className={classes.root}>
           <div className={classes.bigAvatar}>
-            <img src={require('images/ic_tablets.svg')} alt="" />
+            <img src={require('images/category/img_product.png')} alt="" />
           </div>
-          Crocin
+          Holland &amp; Barrett Rhodiola Stress Relief
+          <div className={classes.priceGroup}>
+            Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
+          </div>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
-      <Grid item xs={6} sm={6} md={4} lg={3}>
+      <Grid item xs={6} sm={6} md={4} lg={4}>
         <div className={classes.root}>
           <div className={classes.bigAvatar}>
-            <img src={require('images/ic_tablets.svg')} alt="" />
+            <img src={require('images/category/img_product.png')} alt="" />
           </div>
-          DPP-4 Inhibitors
+          Holland &amp; Barrett Rhodiola Stress Relief
+          <div className={classes.priceGroup}>
+            Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
+          </div>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
+        </div>
+      </Grid>
+      <Grid item xs={6} sm={6} md={4} lg={4}>
+        <div className={classes.root}>
+          <div className={classes.bigAvatar}>
+            <img src={require('images/category/img_product.png')} alt="" />
+          </div>
+          Holland &amp; Barrett Rhodiola Stress Relief
+          <div className={classes.priceGroup}>
+            Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
+          </div>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
+        </div>
+      </Grid>
+      <Grid item xs={6} sm={6} md={4} lg={4}>
+        <div className={classes.root}>
+          <div className={classes.bigAvatar}>
+            <img src={require('images/category/img_product.png')} alt="" />
+          </div>
+          Holland &amp; Barrett Rhodiola Stress Relief
+          <div className={classes.priceGroup}>
+            Rs. 999 <span className={classes.regularPrice}>(Rs. 1399)</span>
+          </div>
+          <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
         </div>
       </Grid>
     </Grid>

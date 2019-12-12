@@ -2,7 +2,6 @@ import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface LocationData {
   displayName: string;
@@ -72,11 +71,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
       ) || {}
     ).stateid || '') as string,
   };
-
-  const { clearCartInfo } = useDiagnosticsCart();
-  useEffect(() => {
-    clearCartInfo && clearCartInfo();
-  }, [locationDetails && locationDetails.city]);
 
   useEffect(() => {
     // update location from async storage the very first time app opened

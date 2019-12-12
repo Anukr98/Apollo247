@@ -6,9 +6,24 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  AWAITING_RESCHEDULE = "AWAITING_RESCHEDULE",
+  AWAITING_TRANSFER = "AWAITING_TRANSFER",
+  NEW = "NEW",
+  RESCHEDULE = "RESCHEDULE",
+  TRANSFER = "TRANSFER",
+  TRANSFERRED = "TRANSFERRED",
+}
+
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
+}
+
+export enum BOOKINGSOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
 }
 
 export enum ConsultMode {
@@ -20,6 +35,11 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = "FIXED",
   PREFERRED = "PREFERRED",
+}
+
+export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  IOS = "IOS",
 }
 
 export enum DoctorType {
@@ -70,6 +90,12 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
+  PATIENT = "PATIENT",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -86,13 +112,17 @@ export enum SEARCH_TYPE {
   DOCTOR = "DOCTOR",
   MEDICINE = "MEDICINE",
   SPECIALTY = "SPECIALTY",
+  TEST = "TEST",
 }
 
 export enum STATUS {
+  CALL_ABANDON = "CALL_ABANDON",
   CANCELLED = "CANCELLED",
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+  JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
+  JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
@@ -107,6 +137,11 @@ export enum Salutation {
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
+}
+
+export enum TRANSFER_INITIATED_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
 }
 
 export enum WeekDay {
@@ -129,7 +164,27 @@ export interface BookAppointmentInput {
   doctorId: string;
   appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string | null;
+  hospitalId: string;
+  symptoms?: string | null;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+}
+
+export interface BookRescheduleAppointmentInput {
+  appointmentId: string;
+  doctorId: string;
+  newDateTimeslot: any;
+  initiatedBy: TRANSFER_INITIATED_TYPE;
+  initiatedId: string;
+  patientId: string;
+  rescheduledId?: string | null;
+}
+
+export interface CancelAppointmentInput {
+  appointmentId: string;
+  cancelReason?: string | null;
+  cancelledBy: REQUEST_ROLES;
+  cancelledById: string;
 }
 
 export interface DoctorAvailabilityInput {
@@ -178,6 +233,7 @@ export interface MedicineCartInput {
   patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -189,6 +245,7 @@ export interface MedicineCartItem {
   mrp?: number | null;
   isPrescriptionNeeded?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   mou?: number | null;
   isMedicine?: string | null;
 }

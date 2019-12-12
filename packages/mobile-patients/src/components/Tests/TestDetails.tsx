@@ -92,7 +92,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 10,
     backgroundColor: theme.colors.WHITE,
-    height: height === 812 || height === 896 ? 120 : 110,
+    // height: height === 812 || height === 896 ? 120 : 110,
+    height: 'auto',
     paddingHorizontal: 20,
     shadowColor: theme.colors.WHITE,
     shadowOffset: { width: 0, height: -5 },
@@ -185,7 +186,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
           rightComponent={
-            <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}>
+            <TouchableOpacity
+              onPress={() =>
+                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+              }
+            >
               <CartIcon style={{}} />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>

@@ -404,7 +404,9 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
             <div className={classes.tabHeading}>
               <Typography variant="h1">
                 <span>
-                  {currentPatient && `hello dr. ${currentPatient.lastName.toLowerCase()} :)`}
+                  {`hello  ${currentPatient &&
+                    currentPatient!.displayName &&
+                    currentPatient!.displayName.toLowerCase()} :)`}
                 </span>
               </Typography>
               <p>here are all your patients</p>

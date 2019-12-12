@@ -42,6 +42,7 @@ export const getPatientTypeDefs = gql`
   }
   extend type Query {
     getPatientById(patientId: String): PatientInfo
+    getAthsToken(patientId: String): PatientInfo
     getPatientByMobileNumber(mobileNumber: String): PatientList
     getPatients: GetPatientsResult
   }
@@ -129,7 +130,8 @@ const addNewProfile: Resolver<
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
-  await patientRepo.createNewUhid(savePatient.id);
+  patientRepo.createNewUhid(savePatient.id);
+  patientRepo.createAthsToken(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   return { patient };
@@ -163,6 +165,27 @@ const deleteProfile: Resolver<
   return { status: true };
 };
 
+const getAthsToken: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  PatientInfo
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findById(args.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  if (patientDetails.athsToken == '' || patientDetails.athsToken == null) {
+    await patientRepo.createAthsToken(patientDetails.id);
+  }
+  const patient = await patientRepo.findById(args.patientId);
+  if (!patient) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  return { patient };
+};
+
 const getPatients = () => {
   return { patients: [] };
 };
@@ -172,6 +195,7 @@ export const getPatientResolvers = {
     getPatientById,
     getPatientByMobileNumber,
     getPatients,
+    getAthsToken,
   },
   Mutation: {
     deleteProfile,

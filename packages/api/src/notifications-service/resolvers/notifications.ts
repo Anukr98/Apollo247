@@ -42,6 +42,7 @@ export const getNotificationsTypeDefs = gql`
   enum APPT_CALL_TYPE {
     AUDIO
     VIDEO
+    CHAT
   }
 
   enum DOCTOR_CALL_TYPE {
@@ -52,6 +53,11 @@ export const getNotificationsTypeDefs = gql`
   input PushNotificationInput {
     notificationType: NotificationType
     appointmentId: String
+  }
+
+  input CartPushNotificationInput {
+    notificationType: NotificationType
+    orderAutoId: Int
   }
 
   extend type Query {
@@ -83,12 +89,14 @@ export enum NotificationType {
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
+  MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
 }
 
 export enum APPT_CALL_TYPE {
   AUDIO = 'AUDIO',
   VIDEO = 'VIDEO',
+  CHAT = 'CHAT',
 }
 
 export enum DOCTOR_CALL_TYPE {
@@ -104,6 +112,11 @@ export enum NotificationPriority {
 type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
+};
+
+type CartPushNotificationInput = {
+  notificationType: NotificationType;
+  orderAutoId: number;
 };
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
@@ -472,7 +485,7 @@ export async function sendNotification(
 }
 
 export async function sendCartNotification(
-  pushNotificationInput: PushNotificationInput,
+  pushNotificationInput: CartPushNotificationInput,
   patientsDb: Connection
 ) {
   let notificationTitle: string = '';
@@ -481,14 +494,22 @@ export async function sendCartNotification(
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const medicineRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+  console.log(pushNotificationInput.orderAutoId, 'order auto id input');
   const medicineOrderDetails = await medicineRepo.getMedicineOrderWithId(
-    parseInt(pushNotificationInput.appointmentId, 2)
+    pushNotificationInput.orderAutoId
   );
+  console.log(pushNotificationInput.orderAutoId, 'order auto id input222');
   if (medicineOrderDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   const patientDetails = await patientRepo.getPatientDetails(medicineOrderDetails.patient.id);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-  notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
-  notificationTitle = ApiConstants.CART_READY_TITLE;
+  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_CART_READY) {
+    notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
+    notificationTitle = ApiConstants.CART_READY_TITLE;
+  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+    notificationBody = ApiConstants.ORDER_DELIVERY_BODY.replace('{0}', patientDetails.firstName);
+    notificationTitle = ApiConstants.ORDER_DELIVERY_TITLE;
+  }
+
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -505,10 +526,22 @@ export async function sendCartNotification(
     },
     data: {
       type: 'Cart_Ready',
-      orderId: pushNotificationInput.appointmentId,
+      orderId: pushNotificationInput.orderAutoId.toString(),
+      orderAutoId: '',
+      deliveredDate: '',
       firstName: patientDetails.firstName,
     },
   };
+
+  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+    payload.data = {
+      type: 'Order_Delivered',
+      orderAutoId: pushNotificationInput.orderAutoId.toString(),
+      orderId: medicineOrderDetails.id,
+      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      firstName: patientDetails.firstName,
+    };
+  }
 
   console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
@@ -538,7 +571,7 @@ export async function sendCartNotification(
         let content =
           format(new Date(), 'yyyy-MM-dd hh:mm') +
           '\n apptid: ' +
-          pushNotificationInput.appointmentId +
+          pushNotificationInput.orderAutoId.toString() +
           '\n multicastId: ';
         content +=
           response.multicastId.toString() +

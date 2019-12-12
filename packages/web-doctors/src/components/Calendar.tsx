@@ -190,9 +190,12 @@ const dataAdapter = (
       const startTime = getTime(new Date(appointmentDateTime));
       const consultDurationDay: any =
         filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
-      const timeDuration = consultDurationDay.consultDuration
-        ? consultDurationDay.consultDuration
-        : 15;
+      const timeDuration =
+        consultDurationDay &&
+        Object.keys(consultDurationDay).length !== 0 &&
+        consultDurationDay.consultDuration
+          ? consultDurationDay.consultDuration
+          : 15;
       const endTime = getTime(addMinutes(startTime, timeDuration));
       let symptoms = null;
       if (
@@ -312,6 +315,7 @@ export const Calendar: React.FC = () => {
     pollInterval: pageRefreshTimeInSeconds * 1000,
     notifyOnNetworkStatusChange: true,
   });
+  // console.log('currentPatient', currentPatient!.displayName);
 
   return (
     <div className={classes.welcome}>
@@ -322,7 +326,7 @@ export const Calendar: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.tabHeading}>
             <Typography variant="h1">{`hello  ${(
-              (currentPatient && currentPatient!.lastName) ||
+              (currentPatient && currentPatient!.displayName) ||
               ''
             ).toLowerCase()} :)`}</Typography>
             {viewSelection === 'day' ? (

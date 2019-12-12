@@ -19,6 +19,8 @@ export const getPatinetAppointmentsTypeDefs = gql`
     appointmentState: APPOINTMENT_STATE
     displayId: Int
     isConsultStarted: Boolean
+    isSeniorConsultStarted: Boolean
+    isJdQuestionsComplete: Boolean
     doctorInfo: DoctorDetails @provides(fields: "id")
   }
 
@@ -64,7 +66,9 @@ type PatinetAppointments = {
   isFollowUp: Boolean;
   displayId: number;
   isConsultStarted: Boolean;
+  isSeniorConsultStarted: Boolean;
   appointmentState: APPOINTMENT_STATE;
+  isJdQuestionsComplete: Boolean;
 };
 
 type Doctor = {

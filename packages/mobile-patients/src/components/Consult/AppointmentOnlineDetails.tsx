@@ -4,27 +4,41 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More, DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DoctorPlaceholderImage, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  CANCEL_APPOINTMENT,
-  NEXT_AVAILABLE_SLOT,
   BOOK_APPOINTMENT_RESCHEDULE,
+  CANCEL_APPOINTMENT,
   CHECK_IF_RESCHDULE,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelAppointment';
 import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+  checkIfReschedule,
+  checkIfRescheduleVariables,
+} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
+import {
+  APPOINTMENT_STATE,
+  REQUEST_ROLES,
+  TRANSFER_INITIATED_TYPE,
+  STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
@@ -34,32 +48,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import {
-  TRANSFER_INITIATED_TYPE,
-  APPOINTMENT_STATE,
-  REQUEST_ROLES,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  bookRescheduleAppointment,
-  bookRescheduleAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getDoctorAvailableSlots_getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
-import {
-  checkIfReschedule,
-  checkIfRescheduleVariables,
-} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
-import { StackActions } from 'react-navigation';
-import { NavigationActions } from 'react-navigation';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -150,7 +141,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 45,
     marginLeft: width - 120,
-    marginTop: 64,
+    marginTop: 40,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -192,13 +183,15 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<any>();
-  const [nextSlotAvailable, setNextSlotAvailable] = useState<any>('');
+  const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { showAphAlert } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -210,10 +203,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       NextAvailableSlotAPI();
     }
   }, [currentPatient]);
-
-  // useEffect(() => {
-  //   console.log('consultStarted', consultStarted);
-  // }, []);
 
   const client = useApolloClient();
 
@@ -256,25 +245,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   const fetchNextDoctorAvailableData = () => {
     setshowSpinner(true);
-    client
-      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
-        query: NEXT_AVAILABLE_SLOT,
-        variables: {
-          DoctorNextAvailableSlotInput: {
-            doctorIds: doctorDetails ? [doctorDetails.id] : [],
-            availableDate: todayDate,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data: any) => {
+    getNextAvailableSlots(client, doctorDetails ? [doctorDetails.id] : [], todayDate)
+      .then(({ data }: any) => {
+        setshowSpinner(false);
         try {
-          setshowSpinner(false);
-          console.log('GetDoctorNextAvailableSlot', _data);
-          setNextSlotAvailable(_data);
-        } catch (error) {}
+          data[0] && setNextSlotAvailable(data[0].availableSlot);
+        } catch (error) {
+          setNextSlotAvailable('');
+        }
       })
-      .catch((e: any) => {
+      .catch((e: string) => {
         setshowSpinner(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
@@ -285,6 +265,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   };
 
   const cancelAppointmentApi = () => {
+    setshowSpinner(true);
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
@@ -292,45 +273,50 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       cancelledById: data.patientId,
     };
     // console.log(appointmentTransferInput, 'appointmentTransferInput');
-    if (!deviceTokenApICalled) {
-      setDeviceTokenApICalled(true);
-      client
-        .mutate<cancelAppointment, cancelAppointmentVariables>({
-          mutation: CANCEL_APPOINTMENT,
-          variables: {
-            cancelAppointmentInput: appointmentTransferInput,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data: any) => {
-          setshowSpinner(false);
-          setSucessPopup(true);
-          console.log(data, 'datacancel');
-          // props.navigation.dispatch(
-          //   StackActions.reset({
-          //     index: 0,
-          //     key: null,
-          //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          //   })
-          // );
-        })
-        .catch((e: string) => {
-          setshowSpinner(false);
-          console.log('Error occured while adding Doctor', e);
-        });
-    }
+    //if (!deviceTokenApICalled) {
+    // setDeviceTokenApICalled(true);
+    client
+      .mutate<cancelAppointment, cancelAppointmentVariables>({
+        mutation: CANCEL_APPOINTMENT,
+        variables: {
+          cancelAppointmentInput: appointmentTransferInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        setshowSpinner(false);
+        setSucessPopup(true);
+        console.log(data, 'datacancel');
+        // props.navigation.dispatch(
+        //   StackActions.reset({
+        //     index: 0,
+        //     key: null,
+        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+        //   })
+        // );
+      })
+      .catch((e: any) => {
+        setshowSpinner(false);
+        console.log('Error occured while adding Doctor', e);
+        const message = e.message ? e.message.split(':')[1].trim() : '';
+        if (
+          message == 'INVALID_APPOINTMENT_ID' ||
+          message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
+        ) {
+          showAphAlert!({
+            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+            description: 'Ongoing / Completed appointments cannot be cancelled.',
+          });
+        }
+      });
+    // }
   };
 
   const rescheduleAPI = (availability: any) => {
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
-      newDateTimeslot:
-        availability &&
-        availability.data! &&
-        availability.data!.getDoctorNextAvailableSlot! &&
-        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0] &&
-        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0].availableSlot,
+      newDateTimeslot: availability,
       initiatedBy:
         data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
           ? TRANSFER_INITIATED_TYPE.DOCTOR
@@ -455,7 +441,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
 
-  if (data.doctorInfo)
+  if (data.doctorInfo) {
+    const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -463,7 +451,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             title="UPCOMING ONLINE VISIT"
             leftIcon="backArrow"
             rightComponent={
-              dateIsAfter ? (
+              showCancel ? (
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
@@ -521,20 +509,31 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             <Button
               title={'RESCHEDULE'}
               style={[
-                data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                isAwaitingReschedule
                   ? styles.reschduleWaitButtonStyle
                   : styles.reschduleButtonStyle,
               ]}
-              titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
+              titleTextStyle={{
+                color: '#fc9916',
+                opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
+              }}
               onPress={() => {
-                CommonLogEvent(
-                  AppRoutes.AppointmentOnlineDetails,
-                  'Reschdule_Appointment_Online_Details_Clicked'
-                );
+                console.log(data.status, 'statis');
 
-                try {
-                  dateIsAfter ? NextAvailableSlotAPI() : null;
-                } catch (error) {}
+                if (data.status == STATUS.COMPLETED) {
+                  showAphAlert!({
+                    title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+                    description: 'Opps ! Already the appointment is completed',
+                  });
+                } else {
+                  CommonLogEvent(
+                    AppRoutes.AppointmentOnlineDetails,
+                    'Reschdule_Appointment_Online_Details_Clicked'
+                  );
+                  try {
+                    isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
+                  } catch (error) {}
+                }
               }}
             />
             {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
@@ -582,6 +581,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             </View>
           </BottomPopUp>
         )}
+
         {cancelAppointment && (
           <View
             style={{
@@ -589,7 +589,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               height: height,
               width: width,
               flex: 1,
-              top: 0,
+              top: statusBarHeight(),
               left: 0,
               right: 0,
               bottom: 0,
@@ -653,7 +653,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);
-                    setshowSpinner(true);
                     cancelAppointmentApi();
                   }}
                 >
@@ -721,6 +720,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             bookFollowUp={false}
             KeyFollow={'RESCHEDULE'}
             isfollowupcount={0}
+            isInitiatedByDoctor={false}
           />
         )}
 
@@ -736,13 +736,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             setdisplayoverlay={() => reshedulePopUpMethod()}
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
-            reschduleDateTime={nextSlotAvailable.data}
+            reschduleDateTime={nextSlotAvailable}
             rescheduleCount={newRescheduleCount ? newRescheduleCount.rescheduleCount : 1}
             data={data}
+            cancelAppointmentApi={cancelAppointmentApi}
           />
         )}
+
         {showSpinner && <Spinner />}
       </View>
     );
+  }
   return null;
 };

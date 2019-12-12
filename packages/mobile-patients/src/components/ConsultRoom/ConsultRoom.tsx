@@ -164,12 +164,12 @@ const arrayTest: ArrayTest[] = [
     descripiton: 'SEARCH MEDICINE',
     image: require('@aph/mobile-patients/src/images/home/medicine.png'),
   },
-  // {
-  //   id: 3,
-  //   title: 'Do you want to get some tests done?',
-  //   descripiton: 'BOOK A TEST',
-  //   image: require('@aph/mobile-patients/src/images/home/test.png'),
-  // },
+  {
+    id: 3,
+    title: 'Do you want to get some tests done?',
+    descripiton: 'BOOK A TEST',
+    image: require('@aph/mobile-patients/src/images/home/test.png'),
+  },
 ];
 
 type TabBarOptions = {
@@ -215,7 +215,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -224,9 +223,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     currentPatient && setshowSpinner(false);
-    currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
-      console.log('No current patients available');
+      console.log('No current patients available', allCurrentPatients);
       getPatientApiCall();
     }
 
@@ -243,14 +241,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     }
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    getNetStatus().then((item) => {
-      console.log(item, 'getNetStatus');
-    });
     callDeviceTokenAPI();
-  });
+  }, []);
 
   useEffect(() => {
     try {
@@ -285,12 +277,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .messaging()
       .getToken()
       .then((token) => {
-        console.log('token', token);
+        // console.log('token', token);
+        // console.log('DeviceInfo', DeviceInfo);
         if (token !== deviceToken2.deviceToken) {
           const input = {
             deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
             deviceToken: token,
-            deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
+            deviceOS: '',
+            // deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
             patientId: currentPatient ? currentPatient.id : '',
           };
           console.log('input', input);
@@ -687,8 +681,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         </View>
                       </View>
                     }
-                    selectedProfile={profile}
                     setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                    unsetloaderDisplay={true}
                   ></ProfileList>
                   {/* <Text style={styles.hiTextStyle}>
                     {string.home.hi} {userName}!
@@ -721,8 +715,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
                       props.navigation.navigate(AppRoutes.DoctorSearch);
                     } else if (i == 1) {
-                      CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchMedicineScene_clicked');
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                    } else if (i == 2) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchTestScene_clicked');
+                      props.navigation.navigate(AppRoutes.SearchTestScene);
                     }
                   }}
                 >

@@ -19,7 +19,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { g, timeDiffFromNow, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  timeDiffFromNow,
+  getNetStatus,
+  statusBarHeight,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -428,7 +433,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.onlineConsultLabel}>Online Consult</Text>
                   <Text style={styles.onlineConsultAmount}>
-                    Rs. {doctorDetails.onlineConsultationFees}
+                    {/* Rs. {doctorDetails.onlineConsultationFees} */}
+                    <Text
+                      style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}
+                    >
+                      (Rs. 999)
+                    </Text>{' '}
+                    Rs. 1
                   </Text>
                   <AvailabilityCapsule availableTime={availableTime} />
                 </View>
@@ -823,7 +834,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           position: 'absolute',
           height: 160,
           width: '100%',
-          top: Platform.OS === 'ios' ? 24 : 0,
+          top: statusBarHeight(),
           backgroundColor: headColor,
           justifyContent: 'flex-end',
           flexDirection: 'column',
@@ -857,7 +868,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         container={{
           zIndex: 3,
           position: 'absolute',
-          top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
+          top: statusBarHeight(),
           left: 0,
           right: 0,
           height: 56,

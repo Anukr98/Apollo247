@@ -41,6 +41,10 @@ import {
   doctorOnlineStatusTypeDefs,
   doctorOnlineStatusResolvers,
 } from 'doctors-service/resolvers/doctorOnlineStatus';
+import {
+  saveDoctorFavouriteMedicineTypeDefs,
+  saveDoctorFavouriteMedicineResolver,
+} from 'doctors-service/resolvers/doctorsFavouriteMedicines';
 import { doctorDataTypeDefs, doctorDataResolvers } from 'doctors-service/resolvers/doctorData';
 import {
   blockedCalendarTypeDefs,
@@ -50,6 +54,15 @@ import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
 import { format, differenceInMilliseconds } from 'date-fns';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
+import {
+  doctorFavouriteAdviceTypeDefs,
+  doctorFavouriteAdviceResolvers,
+} from 'doctors-service/resolvers/doctorFavouriteAdvice';
+import {
+  doctorFavouriteTestTypeDefs,
+  doctorFavouriteTestResolvers,
+} from 'doctors-service/resolvers/doctorFavouriteTest';
+import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
 
 (async () => {
   await connect();
@@ -136,6 +149,10 @@ import { ApiConstants } from 'ApiConstants';
         resolvers: saveDoctorDeviceTokenResolvers,
       },
       {
+        typeDefs: saveDoctorFavouriteMedicineTypeDefs,
+        resolvers: saveDoctorFavouriteMedicineResolver,
+      },
+      {
         typeDefs: doctorOnlineStatusTypeDefs,
         resolvers: doctorOnlineStatusResolvers,
       },
@@ -150,6 +167,18 @@ import { ApiConstants } from 'ApiConstants';
       {
         typeDefs: JDTypeDefs,
         resolvers: JDResolvers,
+      },
+      {
+        typeDefs: doctorFavouriteAdviceTypeDefs,
+        resolvers: doctorFavouriteAdviceResolvers,
+      },
+      {
+        typeDefs: doctorFavouriteTestTypeDefs,
+        resolvers: doctorFavouriteTestResolvers,
+      },
+      {
+        typeDefs: AdminTypeDefs,
+        resolvers: AdminResolvers,
       },
     ]),
     plugins: [
