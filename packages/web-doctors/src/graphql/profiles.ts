@@ -1016,21 +1016,24 @@ export const END_APPOINTMENT_SESSION = gql`
 export const GET_PATIENT_LOG = gql`
   query GetPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
     getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
-      patientid
-      consultscount
-      appointmentids
-      appointmentdatetime
-      patientInfo {
-        firstName
-        lastName
-        dateOfBirth
-        id
-        emailAddress
-        mobileNumber
-        gender
-        uhid
-        photoUrl
+      patientLog {
+        patientid
+        consultscount
+        appointmentids
+        appointmentdatetime
+        patientInfo {
+          firstName
+          lastName
+          dateOfBirth
+          id
+          emailAddress
+          mobileNumber
+          gender
+          uhid
+          photoUrl
+        }
       }
+      totalResultCount
     }
   }
 `;
