@@ -102,7 +102,11 @@ export class AdminDoctorAndHospital extends Repository<DoctorAndHospital> {
 @EntityRepository(Secretary)
 export class AdminSecretaryRepository extends Repository<Secretary> {
   getSecretaryById(id: string) {
-    return this.findOne({ where: { id } });
+    return this.findOne({ where: { id } }).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.GET_SECRETARY_ERROR, undefined, {
+        getErrors,
+      });
+    });
   }
 }
 
