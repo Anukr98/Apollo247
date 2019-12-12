@@ -6,7 +6,6 @@ import {
   DoctorType,
   Salutation,
   Gender,
-  DoctorSpecialty,
   DoctorAndHospital,
   DoctorSecretary,
 } from 'doctors-service/entities';
@@ -22,8 +21,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { isMobileNumberValid, isNameValid, trimObjects } from '@aph/universal/dist/aphValidators';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
-import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import _ from 'lodash';
 
 export const AdminTypeDefs = gql`
   input DoctorInput {
