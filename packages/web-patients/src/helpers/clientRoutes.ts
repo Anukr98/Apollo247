@@ -21,7 +21,6 @@ export const clientRoutes = {
   notificationSettings: () => '/settings',
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
-  trackOrders: () => '/track-orders',
   medicineAllBrands: () => '/view-all-brands',
   medicineSearchByBrand: () => '/search-by-brand',
   searchByMedicine: () => '/search-medicine',

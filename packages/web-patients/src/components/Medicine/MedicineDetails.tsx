@@ -8,7 +8,9 @@ import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
-import { MedicineProductDetails } from '../../helpers/MedicineApiCalls';
+import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -196,14 +198,21 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type MedicineOverViewDetails = {
+  Caption: string;
+  CaptionDesc: string;
+};
+
+type MedicineOverView = MedicineOverViewDetails[] | string;
+
 export const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string }>();
-  const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails[]>([]);
+  const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
 
   const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
+    url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
 
@@ -219,15 +228,162 @@ export const MedicineDetails: React.FC = (props) => {
         }
       )
       .then(({ data }) => {
-        setMedicineDetails(data.productdp);
-        console.log(data);
+        setMedicineDetails(data.productdp[0]);
       })
       .catch((e) => console.log(e));
   };
 
   useEffect(() => {
-    getMedicineDetails(params.sku);
-  });
+    if (!medicineDetails) {
+      getMedicineDetails(params.sku);
+    }
+  }, [medicineDetails]);
+
+  let medicinePharmacyDetails: PharmaOverview[] | null = null;
+
+  if (medicineDetails && medicineDetails.PharmaOverview) {
+    medicinePharmacyDetails = medicineDetails.PharmaOverview;
+  }
+
+  const getLabel = (label: string) => {
+    switch (label) {
+      case 'USES':
+        return 'Overview';
+      case 'HOW TO USE':
+        return 'Usage';
+      case 'DRUGS WARNINGS':
+        return 'Drug Warnings';
+      default:
+        return _startCase(_toLower(label));
+    }
+  };
+
+  const getData = (overView: MedicineOverView) => {
+    if (typeof overView !== 'string') {
+      const modifiedData = [
+        { key: 'Overview', value: '' },
+        { key: 'Side Effects', value: '' },
+        { key: 'Usage', value: '' },
+        { key: 'Precautions', value: '' },
+        { key: 'Drug Warnings', value: '' },
+        { key: 'Storage', value: '' },
+      ];
+      overView.forEach((v) => {
+        if (v.Caption === 'USES') {
+          modifiedData.forEach((x) => {
+            if (x.key === 'OverView') {
+              x.value.concat(v.CaptionDesc);
+            }
+          });
+        } else if (v.Caption === 'HOW TO USE' || v.Caption === 'HOW IT WORKS') {
+          modifiedData.forEach((x) => {
+            if (x.key === 'Usage') {
+              x.value.concat(v.CaptionDesc);
+            }
+          });
+        } else if (
+          v.Caption === 'DRUG ALCOHOL INTERACTION' ||
+          v.Caption === 'DRUG PREGNANCY INTERACTION' ||
+          v.Caption === 'DRUG MACHINERY INTERACTION (DRIVING)' ||
+          v.Caption === 'KIDNEY' ||
+          v.Caption === 'LIVER'
+        ) {
+          modifiedData.forEach((x) => {
+            if (x.key === 'Precautions') {
+              x.value.concat(v.CaptionDesc);
+            }
+          });
+        } else if (v.Caption === 'DRUGS WARNINGS') {
+          modifiedData.forEach((x) => {
+            if (x.key === 'Drug Warnings') {
+              x.value.concat(v.CaptionDesc);
+            }
+          });
+        } else if (v.Caption === 'STORAGE') {
+          modifiedData.forEach((x) => {
+            if (x.key === 'Storage') {
+              x.value.concat(v.CaptionDesc);
+            }
+          });
+        }
+      });
+      return modifiedData;
+    }
+    return [];
+  };
+
+  const getRequiredOverViewFields = (overView: MedicineOverView, type: string) => {
+    const tabLabel = [
+      'USES',
+      'HOW TO USE',
+      'SIDE EFFECTS',
+      'PRECAUTIONS',
+      'DRUGS WARNINGS',
+      'STORAGE',
+    ];
+
+    const addTabDesc = [
+      'HOW IT WORKS',
+      'DRUG ALCOHOL INTERACTION',
+      'DRUG PREGNANCY INTERACTION',
+      'DRUG MACHINERY INTERACTION (DRIVING)',
+      'KIDNEY',
+      'LIVER',
+    ];
+    if (typeof overView !== 'string') {
+      switch (type) {
+        case 'label':
+          return overView.filter((item: MedicineOverViewDetails) =>
+            tabLabel.includes(item.Caption)
+          );
+        case 'desc':
+          const data = overView.filter(
+            (item: MedicineOverViewDetails) =>
+              tabLabel.includes(item.Caption) || addTabDesc.includes(item.Caption)
+          );
+          return overView.filter(
+            (item: MedicineOverViewDetails) =>
+              tabLabel.includes(item.Caption) || addTabDesc.includes(item.Caption)
+          );
+      }
+    }
+    return [];
+  };
+
+  const renderOverviewTabDesc = (overView: MedicineOverView) => {
+    const data = getRequiredOverViewFields(overView, 'label');
+    // const data = getData(overView);
+    return (
+      data.length > 0 &&
+      data.map(
+        (item, index) =>
+          tabValue === index && (
+            <div className={classes.tabContainer}>
+              <p>{item.CaptionDesc}</p>
+              {/* <p>{item.value}</p> */}
+            </div>
+          )
+      )
+    );
+  };
+
+  const renderOverviewTabs = (overView: MedicineOverView) => {
+    const data = getRequiredOverViewFields(overView, 'label');
+    // const data = getData(overView);
+    return (
+      data.length > 0 &&
+      data.map((item) => (
+        <Tab
+          classes={{
+            root: classes.tabRoot,
+            selected: classes.tabSelected,
+          }}
+          label={getLabel(item.Caption)}
+          // label={item.key}
+        />
+      ))
+    );
+  };
 
   return (
     <div className={classes.welcome}>
@@ -247,123 +403,62 @@ export const MedicineDetails: React.FC = (props) => {
             </a>
             Product Detail
           </div>
-          <div className={classes.medicineDetailsGroup}>
-            <div className={classes.searchSection}>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
-                <div className={classes.customScroll}>
-                  <div className={classes.productInformation}>
-                    <MedicineImageGallery />
-                    <div className={classes.productDetails}>
-                      <h2>Crocin Advance Tab</h2>
-                      <div className={classes.textInfo}>
-                        <label>Manufacturer</label>
-                        GSK-GSK Consumer Healthcare
-                      </div>
-                      <div className={classes.textInfo}>
-                        <label>Composition</label>
-                        Paracetamol-500MG
-                      </div>
-                      <div className={classes.textInfo}>
-                        <label>Pack Of</label>
-                        15 Tablets
-                      </div>
-                      <div className={classes.prescriptionBox}>
-                        <span>This medicine requires doctor’s prescription</span>
-                        <span className={classes.preImg}>
-                          <img src={require('images/ic_tablets.svg')} alt="" />
-                        </span>
-                      </div>
-                      <Tabs
-                        value={tabValue}
-                        variant="fullWidth"
-                        classes={{
-                          root: classes.tabsRoot,
-                          indicator: classes.tabsIndicator,
-                        }}
-                        onChange={(e, newValue) => {
-                          setTabValue(newValue);
-                        }}
-                      >
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Overview"
-                        />
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Side Effects"
-                        />
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Usage"
-                        />
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Drug Warnings"
-                        />
-                      </Tabs>
-                      {tabValue === 0 && (
-                        <div className={classes.tabContainer}>
-                          <p>
-                            Paracetamol belongs to a group of medicines called pain-killers or
-                            analgesics and it is used for mild to moderate pain including headache,
-                            migraine, nerve pain, toothache, sore throat, period pains and general
-                            aches and pains. It is also used to relieve the symptoms of cold and flu
-                            It is also used to help reduce a fever (high temperature).
-                          </p>
+          {medicineDetails && medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+            <div className={classes.medicineDetailsGroup}>
+              <div className={classes.searchSection}>
+                <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+                  <div className={classes.customScroll}>
+                    <div className={classes.productInformation}>
+                      <MedicineImageGallery />
+                      <div className={classes.productDetails}>
+                        <h2>{medicineDetails.name}</h2>
+                        <div className={classes.textInfo}>
+                          <label>Manufacturer</label>
+                          {medicineDetails.manufacturer}
                         </div>
-                      )}
-                      {tabValue === 1 && (
-                        <div className={classes.tabContainer}>
-                          <p>
-                            Paracetamol belongs to a group of medicines called pain-killers or
-                            analgesics and it is used for mild to moderate pain including headache,
-                            migraine, nerve pain, toothache, sore throat, period pains and general
-                            aches and pains. It is also used to relieve the symptoms of cold and flu
-                            It is also used to help reduce a fever (high temperature).
-                          </p>
+                        <div className={classes.textInfo}>
+                          <label>Composition</label>
+                          {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
                         </div>
-                      )}
-                      {tabValue === 2 && (
-                        <div className={classes.tabContainer}>
-                          <p>
-                            Paracetamol belongs to a group of medicines called pain-killers or
-                            analgesics and it is used for mild to moderate pain including headache,
-                            migraine, nerve pain, toothache, sore throat, period pains and general
-                            aches and pains. It is also used to relieve the symptoms of cold and flu
-                            It is also used to help reduce a fever (high temperature).
-                          </p>
+                        <div className={classes.textInfo}>
+                          <label>Pack Of</label>
+                          {`${medicineDetails.mou} ${medicinePharmacyDetails[0].Doseform}`}
                         </div>
-                      )}
-                      {tabValue === 3 && (
-                        <div className={classes.tabContainer}>
-                          <p>
-                            Paracetamol belongs to a group of medicines called pain-killers or
-                            analgesics and it is used for mild to moderate pain including headache,
-                            migraine, nerve pain, toothache, sore throat, period pains and general
-                            aches and pains. It is also used to relieve the symptoms of cold and flu
-                            It is also used to help reduce a fever (high temperature).
-                          </p>
-                        </div>
-                      )}
+                        {medicineDetails.is_prescription_required !== '0' && (
+                          <div className={classes.prescriptionBox}>
+                            <span>This medicine requires doctor’s prescription</span>
+                            <span className={classes.preImg}>
+                              <img src={require('images/ic_tablets.svg')} alt="" />
+                            </span>
+                          </div>
+                        )}
+                        {medicinePharmacyDetails[0].Overview &&
+                          medicinePharmacyDetails[0].Overview.length > 0 && (
+                            <>
+                              <Tabs
+                                value={tabValue}
+                                variant="fullWidth"
+                                classes={{
+                                  root: classes.tabsRoot,
+                                  indicator: classes.tabsIndicator,
+                                }}
+                                onChange={(e, newValue) => {
+                                  setTabValue(newValue);
+                                }}
+                              >
+                                {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                              </Tabs>
+                              {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                            </>
+                          )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Scrollbars>
+                </Scrollbars>
+              </div>
+              <MedicineInformation />
             </div>
-            <MedicineInformation />
-          </div>
+          )}
         </div>
       </div>
     </div>

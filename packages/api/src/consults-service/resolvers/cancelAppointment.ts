@@ -1,11 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import {
-  STATUS,
-  REQUEST_ROLES,
-  TRANSFER_STATUS,
-  APPOINTMENT_STATE,
-} from 'consults-service/entities';
+import { STATUS, REQUEST_ROLES, APPOINTMENT_STATE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';

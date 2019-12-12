@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     textVCenter: {
       alignItems: 'center',
-      minHeight: 54,
+      minHeight: 44,
       paddingbottom: 10,
     },
     serviceImg: {
@@ -588,6 +588,7 @@ export const MedicineCart: React.FC = (props) => {
                   <span className={classes.linkText}>Apply Coupon</span>
                   <span className={classes.rightArrow}>
                     <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    <img src={require('images/ic_tickmark.svg')} alt="" />
                   </span>
                 </div>
               ) : (
