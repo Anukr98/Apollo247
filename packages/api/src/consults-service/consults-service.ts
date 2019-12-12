@@ -86,12 +86,12 @@ import {
   doctorCallNotificationResolvers,
 } from 'consults-service/resolvers/doctorCallNotification';
 import { format, differenceInMilliseconds } from 'date-fns';
-import winston from 'customWinstonLogger';
+import { winstonLogger } from 'customWinstonLogger';
 
 (async () => {
   await connect();
 
-  const consultsLogger = winston.loggers.get('consultServiceLogger');
+  const consultsLogger = winstonLogger.loggers.get('consultServiceLogger');
 
   const server = new ApolloServer({
     context: async ({ req }) => {

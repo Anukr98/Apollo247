@@ -131,11 +131,11 @@ import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
 import { format, differenceInMilliseconds } from 'date-fns';
-import winston from 'customWinstonLogger';
+import { winstonLogger } from 'customWinstonLogger';
 
 (async () => {
   await connect();
-  const profilesLogger = winston.loggers.get('profileServiceLogger');
+  const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;

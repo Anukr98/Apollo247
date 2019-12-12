@@ -17,13 +17,13 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { connect } from 'notifications-service/database/connect';
 import { emailTypeDefs, emailResolvers } from 'notifications-service/resolvers/email';
 import { format, differenceInMilliseconds } from 'date-fns';
-import winston from 'customWinstonLogger';
+import { winstonLogger } from 'customWinstonLogger';
 //import fetch from 'node-fetch';
 
 (async () => {
   await connect();
 
-  const notificationLogger = winston.loggers.get('notificationServiceLogger');
+  const notificationLogger = winstonLogger.loggers.get('notificationServiceLogger');
 
   const server = new ApolloServer({
     context: async ({ req }) => {

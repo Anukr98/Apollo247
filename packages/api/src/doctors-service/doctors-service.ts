@@ -61,12 +61,12 @@ import {
   doctorFavouriteTestResolvers,
 } from 'doctors-service/resolvers/doctorFavouriteTest';
 import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
-import winston from 'customWinstonLogger';
+import { winstonLogger } from 'customWinstonLogger';
 
 (async () => {
   await connect();
 
-  const doctorsLogger = winston.loggers.get('doctorServiceLogger');
+  const doctorsLogger = winstonLogger.loggers.get('doctorServiceLogger');
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
