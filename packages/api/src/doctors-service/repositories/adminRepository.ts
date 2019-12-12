@@ -119,10 +119,18 @@ export class AdminDoctorSecretaryRepository extends Repository<DoctorSecretary> 
   }
 
   findRecord(doctor: string, secretary: string) {
-    return this.findOne({ where: { doctor, secretary } });
+    return this.findOne({ where: { doctor, secretary } }).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.GET_SECRETARY_ERROR, undefined, {
+        getErrors,
+      });
+    });
   }
 
   removeFromDoctorSecretary(id: string) {
-    return this.delete(id);
+    return this.delete(id).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.DELETE_SECRETARY_ERROR, undefined, {
+        getErrors,
+      });
+    });
   }
 }
