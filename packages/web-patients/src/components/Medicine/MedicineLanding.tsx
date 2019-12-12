@@ -223,8 +223,9 @@ export const MedicineLanding: React.FC = (props) => {
   const [error, setError] = useState<ApolloError | null>(null);
 
   const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_BY_BRAND,
+    url: `${process.env.PHARMACY_MED_UAT_URL}/apollo_24x7_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    imageUrl: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
 
   const getMedicinePageProducts = async () => {
@@ -291,6 +292,7 @@ export const MedicineLanding: React.FC = (props) => {
     },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
+
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -305,9 +307,11 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
                 <MedicineAutoSearch />
-                <div className={classes.productsBanner}>
-                  <img src="https://via.placeholder.com/702x150" alt="" />
-                </div>
+                {data && data.mainbanners && (
+                  <div className={classes.productsBanner}>
+                    <img src={`${apiDetails.imageUrl}${data.mainbanners[0].image}`} alt="" />
+                  </div>
+                )}
               </div>
               <div className={classes.rightSection}>
                 <div className={classes.medicineSection}>
