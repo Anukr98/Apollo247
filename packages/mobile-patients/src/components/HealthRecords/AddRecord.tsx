@@ -388,14 +388,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             } else {
               setshowSpinner(false);
               showAphAlert!({
-                title: `Hi ,${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}`,
+                title: `Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`,
                 description: 'Your upload images are failed ',
               });
             }
           })
           .catch((e) => {
             showAphAlert!({
-              title: `Hi ,${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}`,
+              title: `Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`,
               description: 'Your upload images are failed ',
             });
             setshowSpinner(false);
@@ -959,7 +959,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       {showSpinner && <Spinner />}
       {showPopUp && (
         <BottomPopUp
-          title={`Hi ,${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}`}
+          title={`Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`}
           description={'Please select images first'}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>

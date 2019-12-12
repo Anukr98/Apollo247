@@ -242,13 +242,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log('data', data);
+        console.log('deleteDeviceTokendata', data);
         setshowSpinner(false);
         onPressLogout();
       })
       .catch((e: string) => {
         try {
-          console.log('delete device token', e);
+          console.log('deleteDeviceTokenerror', e);
           setshowSpinner(false);
           onPressLogout();
         } catch {}

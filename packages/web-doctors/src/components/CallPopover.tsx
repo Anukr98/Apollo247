@@ -672,6 +672,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       timer = timer - 1;
+      console.log('call Abandonment', timer);
       stoppedTimerCall = timer;
       setCallAbundantCallTime(timer);
       if (timer < 1) {
@@ -714,6 +715,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
       if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
+        console.log('patient no-show', timer);
         stoppedTimerCall = timer;
         setRemainingCallTime(timer);
         if (timer < 1) {
@@ -728,9 +730,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
-
   const noShowAction = (status: STATUS) => {
-    if (window.location.pathname.indexOf('Consulttabs')) {
+    console.log(
+      window.location.pathname.indexOf('Consulttabs') ||
+        window.location.pathname.indexOf('consulttabs'),
+      'pagename'
+    );
+    if (
+      window.location.pathname.indexOf('Consulttabs') ||
+      window.location.pathname.indexOf('consulttabs')
+    ) {
+      console.log('noShowAction', 'call');
       client
         .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
           mutation: END_APPOINTMENT_SESSION,
@@ -1615,10 +1625,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     End Consult
                   </Button>
                   {props.saving && (
-                    <div>
-                      <CircularProgress className={classes.loading} />{' '}
+                    <span>
+                      <CircularProgress className={classes.loading} />
                       <div className={classes.fadedBg}></div>
-                    </div>
+                    </span>
                   )}
                 </span>
               ) : (

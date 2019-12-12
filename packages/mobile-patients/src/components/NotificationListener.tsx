@@ -384,23 +384,27 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     firebase
       .notifications()
       .getInitialNotification()
-      .then((_notificationOpen: NotificationOpen) => {
+      .then(async (_notificationOpen: NotificationOpen) => {
         if (_notificationOpen) {
           aphConsole.log('_notificationOpen');
+          const notification = _notificationOpen.notification;
+          const lastNotification = await AsyncStorage.getItem('lastNotification');
+          if (lastNotification !== notification.notificationId) {
+            await AsyncStorage.setItem('lastNotification', notification.notificationId);
+            // App was opened by a notification
+            // Get the action triggered by the notification being opened
+            // const action = _notificationOpen.action;
+            processNotification(_notificationOpen.notification);
 
-          // App was opened by a notification
-          // Get the action triggered by the notification being opened
-          // const action = _notificationOpen.action;
-          processNotification(_notificationOpen.notification);
+            try {
+              aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
 
-          try {
-            aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
-
-            firebase
-              .notifications()
-              .removeDeliveredNotification(_notificationOpen.notification.notificationId);
-          } catch (error) {
-            aphConsole.log('notificationOpen error', error);
+              firebase
+                .notifications()
+                .removeDeliveredNotification(_notificationOpen.notification.notificationId);
+            } catch (error) {
+              aphConsole.log('notificationOpen error', error);
+            }
           }
         }
       })
