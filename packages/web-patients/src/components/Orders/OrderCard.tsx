@@ -19,6 +19,33 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       marginBottom: 10,
+      cursor: 'pointer',
+      border: 'solid 1px transparent',
+      position: 'relative',
+    },
+    cardSelected: {
+      border: 'solid 1px #00b38e',
+      '&:before, &:after': {
+        left: '100%',
+        top: '50%',
+        border: 'solid transparent',
+        content: '""',
+        height: 0,
+        width: 0,
+        position: 'absolute',
+      },
+      '&:after': {
+        borderColor: 'rgba(255, 255, 255, 0)',
+        borderLeftColor: '#fff',
+        borderWidth: 7,
+        marginTop: -7,
+      },
+      '&:before': {
+        borderColor: 'rgba(0, 179, 142, 0)',
+        borderLeftColor: '#00b38e',
+        borderWidth: 8,
+        marginTop: -8,
+      },
     },
     orderListing: {
       paddingLeft: 10,
@@ -26,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     orderedItem: {
       display: 'flex',
       alignItems: 'center',
-      width: '35%',
+      width: '40%',
     },
     itemImg: {
       paddingRight: 20,
@@ -71,11 +98,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 600,
       color: '#02475b',
+      lineHeight: '20px',
     },
     statusInfo: {
       fontSize: 12,
       fontWeight: 500,
       color: '#02475b',
+      lineHeight: '20px',
     },
     orderTrackSlider: {
       paddingLeft: 20,
@@ -100,7 +129,7 @@ export const OrderCard: React.FC = (props) => {
 
   return (
     <div className={classes.orderListing}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 258px)'}>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
         <div className={classes.customScroll}>
           <div className={classes.root}>
             <div className={classes.orderedItem}>
@@ -130,7 +159,7 @@ export const OrderCard: React.FC = (props) => {
               <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
             </div>
           </div>
-          <div className={classes.root}>
+          <div className={`${classes.root} ${classes.cardSelected}`}>
             <div className={classes.orderedItem}>
               <div className={classes.itemImg}>
                 <img src={require('images/ic_tablets.svg')} alt="" />
