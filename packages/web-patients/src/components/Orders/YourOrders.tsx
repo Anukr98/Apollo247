@@ -20,7 +20,6 @@ const useStyles = makeStyles((theme: Theme) => {
     rightSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
-      padding: '15px 5px',
       borderRadius: 5,
     },
     sectionHeader: {
@@ -85,9 +84,7 @@ export const YourOrders: React.FC = (props) => {
         <OrderCard />
       </div>
       <div className={classes.rightSection}>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 237px)'}>
-          <TrackOrders />
-        </Scrollbars>
+        <TrackOrders />
       </div>
       <Popover
         open={isPopoverOpen}
