@@ -47,6 +47,7 @@ export const isDateValid = (ddmmyyyy: string) => {
   return isValidJsDate && isValidCalendarDate;
 };
 
-export const trimObjects = (obj: object) => {
-  return JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+export const trimObjects = (JsonObject: object) => {
+  if (Object.keys.length === 0) return JsonObject;
+  return JSON.parse(JSON.stringify(JsonObject).replace(/"\s+|\s+"/g, '"'));
 };

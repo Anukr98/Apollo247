@@ -21,6 +21,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { isMobileNumberValid, isNameValid, trimObjects } from '@aph/universal/dist/aphValidators';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
+import { ApiConstants } from 'ApiConstants';
 
 export const AdminTypeDefs = gql`
   input DoctorInput {
@@ -170,14 +171,13 @@ const createDoctor: Resolver<null, DoctorInputArgs, DoctorsServiceContext, Docto
   }
 
   //placeholder image check
-  if (doctorInputdata.photoUrl && doctorInputdata.photoUrl.trim().length == 0) {
-    doctorDetails.photoUrl = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png';
+  if (doctorInputdata.photoUrl) {
+    doctorDetails.photoUrl = ApiConstants.DOCTOR_DEFAULT_PHOTO_URL;
   }
 
   //placeholder image check
-  if (doctorInputdata.thumbnailUrl && doctorInputdata.thumbnailUrl.trim().length == 0) {
-    doctorDetails.thumbnailUrl =
-      'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png';
+  if (doctorInputdata.thumbnailUrl) {
+    doctorDetails.thumbnailUrl = ApiConstants.DOCTOR_DEFAULT_PHOTO_URL;
   }
 
   //insert in to doctor table
