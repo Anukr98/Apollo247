@@ -8,24 +8,35 @@ import {
   Gender,
   DoctorSpecialty,
   DoctorAndHospital,
+  DoctorSecretary,
 } from 'doctors-service/entities';
-import { AdminDoctor, AdminUser } from 'doctors-service/repositories/adminRepository';
+import {
+  AdminDoctor,
+  AdminUser,
+  AdminFacility,
+  AdminDoctorAndHospital,
+  AdminDoctorSecretaryRepository,
+  AdminSecretaryRepository,
+} from 'doctors-service/repositories/adminRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { isMobileNumberValid, isNameValid } from '@aph/universal/dist/aphValidators';
+import { isMobileNumberValid, isNameValid, trimObjects } from '@aph/universal/dist/aphValidators';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
+import _ from 'lodash';
 
 export const AdminTypeDefs = gql`
   input DoctorInput {
     awards: String
+    city: String
+    consultBuffer: Int!
+    consultDuration: Int!
+    country: String
     dateOfBirth: Date
     doctorType: DoctorType!
-    delegateName: String
-    delegateNumber: String
     displayName: String!
     emailAddress: String
-    facilityId: String
+    facilityId: String!
     fullName: String!
     experience: Int
     firstName: String!
@@ -40,8 +51,15 @@ export const AdminTypeDefs = gql`
     qualification: String
     registrationNumber: String
     salutation: Salutation
+    secretaryId: String
     specialtyId: String
     specialization: String
+    state: String
+    streetLine1: String
+    streetLine2: String
+    streetLine3: String
+    thumbnailUrl: String
+    zip: String
   }
 
   extend type Query {
@@ -71,10 +89,12 @@ const adminGetDoctorsList: Resolver<
 
 type DoctorInput = {
   awards: string;
+  city: string;
+  consultBuffer: number;
+  consultDuration: number;
+  country: string;
   dateOfBirth: Date;
   doctorType: DoctorType;
-  delegateName: string;
-  delegateNumber: string;
   displayName: string;
   emailAddress: string;
   facilityId: DoctorAndHospital;
@@ -92,8 +112,15 @@ type DoctorInput = {
   qualification: string;
   registrationNumber: string;
   salutation: Salutation;
-  specialty: DoctorSpecialty;
+  secretaryId: string;
+  specialtyId: string;
   specialization: string;
+  state: string;
+  streetLine1: string;
+  streetLine2: string;
+  streetLine3: string;
+  thumbnailUrl: string;
+  zip: string;
 };
 
 type DoctorInputArgs = { doctorInputdata: DoctorInput };
@@ -103,6 +130,8 @@ const createDoctor: Resolver<null, DoctorInputArgs, DoctorsServiceContext, Docto
   { doctorInputdata },
   { doctorsDb, currentUser, mobileNumber }
 ) => {
+  doctorInputdata = trimObjects(doctorInputdata);
+
   //input validations starts
   if (!isNameValid(doctorInputdata.firstName))
     throw new AphError(AphErrorMessages.INVALID_FIRST_NAME);
@@ -116,22 +145,79 @@ const createDoctor: Resolver<null, DoctorInputArgs, DoctorsServiceContext, Docto
     throw new AphError(AphErrorMessages.INVALID_MOBILE_NUMBER);
   //input validation ends
 
+  const doctorDetails: Partial<Doctor> = {
+    ...doctorInputdata,
+  };
+
   //specilaty check
   const specialtyRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-  const specialty = await specialtyRepo.findById(doctorInputdata.specialty.toString());
+  const specialty = await specialtyRepo.findById(doctorInputdata.specialtyId.toString());
   if (specialty == null) throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR);
+  if (specialty) doctorDetails.specialty = specialty;
 
   //facility Id check
-  const facilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+  const facilityRepo = doctorsDb.getCustomRepository(AdminFacility);
   const facility = await facilityRepo.findById(doctorInputdata.facilityId.toString());
   if (facility == null) throw new AphError(AphErrorMessages.GET_FACILITIES_ERROR);
 
   const doctorRepository = doctorsDb.getCustomRepository(AdminDoctor);
   const isDoctorExist = await doctorRepository.searchByMobileNumber(doctorInputdata.mobileNumber);
-  if (isDoctorExist) throw new AphError(AphErrorMessages.DOCTOR_ALREADY_EXISTS);
+  //if doctor is active throw error
+  if (isDoctorExist && isDoctorExist.isActive)
+    throw new AphError(AphErrorMessages.DOCTOR_ALREADY_EXISTS);
 
-  doctorInputdata.specialty = specialty;
-  const newDoctorDetails = await doctorRepository.createDoctor(doctorInputdata);
+  //if doctor is in active, make them active & update the details
+  if (isDoctorExist && !isDoctorExist.isActive) {
+    doctorDetails.id = isDoctorExist.id;
+    doctorDetails.isActive = true;
+  }
+
+  //placeholder image check
+  if (doctorInputdata.photoUrl && doctorInputdata.photoUrl.trim().length == 0) {
+    doctorDetails.photoUrl = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png';
+  }
+
+  //placeholder image check
+  if (doctorInputdata.thumbnailUrl && doctorInputdata.thumbnailUrl.trim().length == 0) {
+    doctorDetails.thumbnailUrl =
+      'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png';
+  }
+
+  //insert in to doctor table
+  const newDoctorDetails = await doctorRepository.createDoctor(doctorDetails);
+
+  //insert in to doctorHospital
+  const doctorAndHospital = {
+    doctor: newDoctorDetails,
+    facility: facility,
+  };
+  const doctorAndHospitalRepo = doctorsDb.getCustomRepository(AdminDoctorAndHospital);
+  await doctorAndHospitalRepo.createDoctorAndHospital(doctorAndHospital);
+
+  if (doctorInputdata.secretaryId) {
+    //check if secretary id is valid
+    const secretaryRepo = doctorsDb.getCustomRepository(AdminSecretaryRepository);
+    const secretaryDetails = await secretaryRepo.getSecretaryById(doctorInputdata.secretaryId);
+    if (secretaryDetails == null) throw new AphError(AphErrorMessages.INVALID_SECRETARY_ID);
+
+    //check for doctor secretary
+    const doctorSecretaryRepo = doctorsDb.getCustomRepository(AdminDoctorSecretaryRepository);
+    const doctorSecretaryRecord = await doctorSecretaryRepo.findRecord(
+      newDoctorDetails.id,
+      doctorInputdata.secretaryId
+    );
+    if (doctorSecretaryRecord)
+      throw new AphError(AphErrorMessages.SECRETARY_DOCTOR_COMBINATION_EXIST);
+
+    //insert DoctorSecretary record
+    const doctorSecretaryDetails: Partial<DoctorSecretary> = {
+      secretary: secretaryDetails,
+      doctor: newDoctorDetails,
+    };
+    await doctorSecretaryRepo.saveDoctorSecretary(doctorSecretaryDetails);
+  }
+
+  //insert in to consult hours
   return newDoctorDetails;
 };
 
