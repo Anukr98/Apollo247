@@ -1316,17 +1316,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const checkForRescheduleMessage = (newmessage: any) => {
-    const result = newmessage.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
-      return obj.message === rescheduleConsultMsg;
-    });
-    if (result.length > 0) {
-      console.log('checkForRescheduleMessage ', result);
-      NextAvailableSlot(result[0], 'Transfer', false);
-    }
-  };
-
   const checkAutomatedPatientText = () => {
     const result = insertText.filter((obj: any) => {
       // console.log('resultinsertText', obj.message);
@@ -1646,9 +1635,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
         setShowPopup(true);
+         setTimeout(() => {
+           stopCallAbondmentTimer();
+         }, 1000);
       } else if (message.message.message === rescheduleConsultMsg) {
-        console.log('rescheduleConsultMsg');
-        // checkForRescheduleMessage(message.message);
+        console.log('rescheduleConsultMsg', message.message);
+        checkForRescheduleMessage(message.message);
+        setTimeout(() => {
+          stopCallAbondmentTimer()
+        }, 1000);
         addMessages(message);
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
@@ -1682,12 +1677,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(true);
     }
 
-    const result = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
-      return obj.message === rescheduleConsultMsg;
-    });
+    // const result = insertText.filter((obj: any) => {
+    //   // console.log('resultinsertText', obj.message);
+    //   return obj.message === rescheduleConsultMsg;
+    // });
 
-    checkForRescheduleMessage(insertText);
+    // checkForRescheduleMessage(insertText);
 
     setTimeout(() => {
       flatListRef.current! &&
@@ -1695,6 +1690,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           animated: false,
         });
     }, 300);
+  };
+
+  const checkForRescheduleMessage = (newmessage: any) => {
+    // console.log('newmessage ', newmessage, newmessage.length);
+    try {
+       let result;
+
+    if (newmessage.length > 1) {
+      result = newmessage.filter((obj: any) => {
+        // console.log('resultinsertText', obj.message);
+        return obj.message === rescheduleConsultMsg;
+      });
+    } else {
+      result = newmessage;
+    }
+
+    if (result) {
+      console.log('checkForRescheduleMessage ', result);
+      NextAvailableSlot(result[0] ? result[0] : result, 'Transfer', false);
+    }
+    } catch (error) {
+      
+    }
   };
 
   const keyboardDidShow = (e: KeyboardEvent) => {
