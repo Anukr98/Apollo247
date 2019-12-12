@@ -76,6 +76,10 @@ export const getAppointmentHistoryTypeDefs = gql`
     appointmentids: [String]
     appointmentdatetime: DateTime
     patientInfo: Patient @provides(fields: "id")
+  }
+
+  type PatientLogData {
+    patientLog: [PatientLog]
     totalResultCount: Int
   }
 
@@ -89,7 +93,7 @@ export const getAppointmentHistoryTypeDefs = gql`
       sortBy: patientLogSort
       type: patientLogType
       doctorId: ID
-    ): [PatientLog]
+    ): PatientLogData
   }
 `;
 
@@ -199,6 +203,10 @@ type PatientLog = {
   consultscount: string;
   appointmentids: string[];
   appointmentdatetime: Date;
+};
+
+type PatientLogData = {
+  patientLog: PatientLog[] | null;
   totalResultCount: number;
 };
 
@@ -212,7 +220,7 @@ const getPatientLog: Resolver<
     doctorId: string;
   },
   ConsultServiceContext,
-  PatientLog[] | null
+  PatientLogData
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   let doctordata;
@@ -234,10 +242,7 @@ const getPatientLog: Resolver<
     args.limit
   );
 
-  if (totalResultCount.length > 0)
-    appointmentsHistory.push({ totalResultCount: totalResultCount.length });
-
-  return appointmentsHistory;
+  return { patientLog: appointmentsHistory, totalResultCount: totalResultCount.length };
 };
 
 export const getAppointmentHistoryResolvers = {
