@@ -911,7 +911,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       const consultStartTime = new Date(
         format(new Date(), 'yyyy-MM-dd') + ' ' + timeSlot[0].startTime.toString()
       );
-      console.log(consultStartTime, 'consultStartTime', format(new Date(), 'yyyy-MM-dd'));
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
           let firstSlot = true;
