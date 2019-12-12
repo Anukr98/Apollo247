@@ -70,7 +70,7 @@ export const CommonBugFender = async (stringName: string, errorValue: Error) => 
   }
 };
 
-export const CommonSetUserBugsnag = async (phoneNumber: string) => {
+export const CommonSetUserBugsnag = (phoneNumber: string) => {
   try {
     bugsnag.setUser(phoneNumber, phoneNumber);
   } catch (error) {
