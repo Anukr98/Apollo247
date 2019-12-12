@@ -795,7 +795,8 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
-    this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
+    //this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
+    this.update(id, { appointmentState, isSeniorConsultStarted: false });
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -910,9 +911,14 @@ export class AppointmentRepository extends Repository<Appointment> {
         blockedSlots.map((blockedSlot) => {
           let firstSlot = true;
           const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
-          const addMin = Math.abs(
+          let addMin = Math.abs(
             (startMin % timeSlot[0].consultDuration) - timeSlot[0].consultDuration
           );
+
+          if (timeSlot[0].consultDuration % 2 == 0) {
+            addMin = addMin + 1;
+          }
+
           let slot = blockedSlot.start;
           if (addMin != timeSlot[0].consultDuration) {
             slot = addMinutes(blockedSlot.start, addMin);

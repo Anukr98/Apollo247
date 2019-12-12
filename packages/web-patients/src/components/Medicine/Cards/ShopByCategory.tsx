@@ -56,6 +56,10 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
   };
 
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+  };
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -65,10 +69,7 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
               <Link to={clientRoutes.medicineSearchByBrand()}>
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>
-                    <img
-                      src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${category.image_url}`}
-                      alt=""
-                    />
+                    <img src={`${apiDetails.url}${category.image_url}`} alt="" />
                   </div>
                   <div className={classes.cardTitle}>{category.title}</div>
                 </div>

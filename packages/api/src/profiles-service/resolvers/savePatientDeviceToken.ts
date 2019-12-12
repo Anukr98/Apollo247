@@ -102,7 +102,7 @@ const deleteDeviceToken: Resolver<
   const tokenDetails = await deviceTokenRepo.findDeviceToken(args.patientId, args.deviceToken);
   if (tokenDetails == null)
     throw new AphError(AphErrorMessages.NO_DEVICE_TOKEN_EXIST, undefined, {});
-  await deviceTokenRepo.deleteDeviceToken(tokenDetails.id);
+  await deviceTokenRepo.deleteDeviceToken(tokenDetails.deviceToken);
   return { status: true };
 };
 

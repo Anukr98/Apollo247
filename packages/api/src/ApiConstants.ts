@@ -80,4 +80,7 @@ export enum ApiConstants {
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
 
   COUNTRY_CODE = '91',
+
+  //doctor no-photo url
+  DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 }

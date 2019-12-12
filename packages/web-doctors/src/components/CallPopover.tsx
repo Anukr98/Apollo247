@@ -731,7 +731,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }, 1000);
   };
   const noShowAction = (status: STATUS) => {
-    if (window.location.pathname.indexOf('consulttabs') > -1) {
+    console.log(
+      window.location.pathname.indexOf('Consulttabs') ||
+        window.location.pathname.indexOf('consulttabs'),
+      'pagename'
+    );
+    if (
+      window.location.pathname.indexOf('Consulttabs') ||
+      window.location.pathname.indexOf('consulttabs')
+    ) {
+      console.log('noShowAction', 'call');
       client
         .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
           mutation: END_APPOINTMENT_SESSION,
@@ -751,7 +760,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             isTyping: true,
             messageDate: new Date(),
           };
-          subscribeBrowserButtonsListener();
           pubnub.publish(
             {
               message: text,
@@ -1433,6 +1441,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           doctorInfo: currentPatient,
           reschduleId: reschduleId,
         };
+        setIsPopoverOpen(false);
+        setDisableOnCancel(true);
         pubnub.publish(
           {
             message: {
@@ -1445,12 +1455,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             channel: channel, //chanel
             storeInHistory: true,
           },
-          (status: any, response: any) => {}
+          (status: any, response: any) => {
+            navigateToCalendar();
+          }
         );
-
-        setIsPopoverOpen(false);
-        setDisableOnCancel(true);
-        navigateToCalendar();
       })
       .catch((e) => {
         //setIsLoading(false);
@@ -2066,9 +2074,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           channel: channel,
                           storeInHistory: true,
                         },
-                        (status: any, response: any) => {}
+                        (status: any, response: any) => {
+                          navigateToCalendar();
+                        }
                       );
-                      navigateToCalendar();
                     })
                     .catch((e: ApolloError) => {
                       setCancelError(e.graphQLErrors[0].message);
@@ -2161,9 +2170,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         channel: channel,
                         storeInHistory: true,
                       },
-                      (status: any, response: any) => {}
+                      (status: any, response: any) => {
+                        navigateToCalendar();
+                      }
                     );
-                    navigateToCalendar();
                   })
                   .catch((e: ApolloError) => {
                     setCancelError(e.graphQLErrors[0].message);

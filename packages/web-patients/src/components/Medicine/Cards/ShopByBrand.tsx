@@ -53,6 +53,10 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
   };
 
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+  };
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -64,11 +68,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
                       <img
-                        src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL &&
-                          process.env.PHARMACY_MED_IMAGES_BASE_URL.replace(
-                            '/catalog/product',
-                            ''
-                          )}${
+                        src={`${apiDetails.url && apiDetails.url.replace('/catalog/product', '')}${
                           brand.image_url.startsWith('/') ? brand.image_url : `/${brand.image_url}`
                         }`}
                         alt=""
