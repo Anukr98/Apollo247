@@ -21,7 +21,7 @@ export interface MedicineProduct {
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
 
-interface PharmaOverview {
+export interface PharmaOverview {
   generic: string;
   Doseform: Doseform;
   Unit: string;

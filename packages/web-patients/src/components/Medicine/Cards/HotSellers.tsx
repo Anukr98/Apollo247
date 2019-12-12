@@ -108,6 +108,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
   };
 
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+  };
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -120,10 +124,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                   <span>-30%</span>
                 </div>
                 <div className={classes.productIcon}>
-                  <img
-                    src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${hotSeller.small_image}`}
-                    alt=""
-                  />
+                  <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
                 </div>
                 <div className={classes.productTitle}>{hotSeller.name}</div>
                 <div className={classes.bottomSection}>
