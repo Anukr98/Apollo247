@@ -83,6 +83,10 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
   };
 
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+  };
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -96,10 +100,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
                     <br /> Care Products
                   </div>
                   <div className={classes.cardIcon}>
-                    <img
-                      src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${deal.image_url}`}
-                      alt=""
-                    />
+                    <img src={`${apiDetails.url}${deal.image_url}`} alt="" />
                   </div>
                 </div>
                 <div className={classes.offerDetails}>Upto 30% Off</div>

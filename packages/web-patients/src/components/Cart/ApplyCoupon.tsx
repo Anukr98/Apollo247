@@ -146,9 +146,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                     </div>
                   </div>
                 </div>
-                <div className={classes.pinErrorMsg}>
-                  Invalid Coupon Code
-                </div>
+                <div className={classes.pinErrorMsg}>Invalid Coupon Code</div>
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
                   {availableCoupons.map((couponDetails, index) => {

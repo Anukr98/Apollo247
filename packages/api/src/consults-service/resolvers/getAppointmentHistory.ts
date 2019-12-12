@@ -78,6 +78,11 @@ export const getAppointmentHistoryTypeDefs = gql`
     patientInfo: Patient @provides(fields: "id")
   }
 
+  type PatientLogData {
+    patientLog: [PatientLog]
+    totalResultCount: Int
+  }
+
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
     getDoctorAppointments(startDate: Date, endDate: Date, doctorId: String): DoctorAppointmentResult
@@ -88,7 +93,7 @@ export const getAppointmentHistoryTypeDefs = gql`
       sortBy: patientLogSort
       type: patientLogType
       doctorId: ID
-    ): [PatientLog]
+    ): PatientLogData
   }
 `;
 
@@ -200,6 +205,11 @@ type PatientLog = {
   appointmentdatetime: Date;
 };
 
+type PatientLogData = {
+  patientLog: PatientLog[] | null;
+  totalResultCount: number;
+};
+
 const getPatientLog: Resolver<
   null,
   {
@@ -210,11 +220,10 @@ const getPatientLog: Resolver<
     doctorId: string;
   },
   ConsultServiceContext,
-  PatientLog[] | null
+  PatientLogData
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   let doctordata;
-
   if (args.doctorId === undefined || args.doctorId == null) {
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   } else {
@@ -224,6 +233,7 @@ const getPatientLog: Resolver<
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const totalResultCount = await appointmentRepo.patientLog(doctordata.id, args.sortBy, args.type);
   const appointmentsHistory = await appointmentRepo.patientLog(
     doctordata.id,
     args.sortBy,
@@ -231,7 +241,8 @@ const getPatientLog: Resolver<
     args.offset,
     args.limit
   );
-  return appointmentsHistory;
+
+  return { patientLog: appointmentsHistory, totalResultCount: totalResultCount.length };
 };
 
 export const getAppointmentHistoryResolvers = {

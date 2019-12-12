@@ -453,9 +453,20 @@ export async function sendNotification(
   let notificationResponse;
   const registrationToken: string[] = [];
 
-  patientDetails.patientDeviceTokens.forEach((values) => {
+  const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const listOfIds: string[] = [];
+  allpatients.map((value) => listOfIds.push(value.id));
+  console.log(listOfIds, 'listOfIds');
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
+  if (devicetokensofFamily.length > 0) {
+    devicetokensofFamily.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+  }
+  /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
-  });
+  });*/
 
   admin
     .messaging()
@@ -563,9 +574,20 @@ export async function sendCartNotification(
   let notificationResponse;
   const registrationToken: string[] = [];
 
-  patientDetails.patientDeviceTokens.forEach((values) => {
+  const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const listOfIds: string[] = [];
+  allpatients.map((value) => listOfIds.push(value.id));
+  console.log(listOfIds, 'listOfIds');
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
+  if (devicetokensofFamily.length > 0) {
+    devicetokensofFamily.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+  }
+  /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
-  });
+  });*/
 
   admin
     .messaging()

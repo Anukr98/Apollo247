@@ -33,39 +33,12 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 20,
       },
     },
-    tabsRoot: {
-      marginLeft: 20,
-      marginRight: 20,
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-    },
-    tabRoot: {
-      fontSize: 13,
-      fontWeight: 600,
-      textAlign: 'center',
-      padding: '11px 10px',
-      color: '#02475b',
-      opacity: 1,
-    },
-    tabSelected: {
-      color: theme.palette.secondary.dark,
-    },
-    tabsIndicator: {
-      backgroundColor: '#00b38e',
-      height: 5,
-    },
-    rootTabContainer: {
-      padding: 0,
-    },
   };
 });
 
-const TabContainer: React.FC = (props) => {
-  return <Typography component="div">{props.children}</Typography>;
-};
-
 export const OrdersLanding: React.FC = (props) => {
   const classes = useStyles();
-  const [tabValue, setTabValue] = useState<number>(0);
+
   return (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
@@ -75,29 +48,7 @@ export const OrdersLanding: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.orderListingPage}>
-          <Tabs
-            value={tabValue}
-            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-            onChange={(e, newValue) => {
-              setTabValue(newValue);
-            }}
-          >
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label="Medicines"
-            />
-            <Tab
-              disabled
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label="Tests"
-            />
-          </Tabs>
-          {tabValue === 0 && (
-            <TabContainer>
-              <YourOrders />
-            </TabContainer>
-          )}
-          {tabValue === 1 && <TabContainer>Test</TabContainer>}
+          <YourOrders />
         </div>
       </div>
     </div>
