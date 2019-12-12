@@ -276,6 +276,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
   const [patientList, setPatientList] = React.useState([]);
   const [offset, setOffset] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [totalCount, setTotalCount] = React.useState(0);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -284,8 +285,10 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
 
   const scrollFunction = (e: any) => {
     if (e.target.scrollTop + e.target.clientHeight === e.target.scrollHeight) {
-      setOffset(offset + 1);
-      dataLoading();
+      setOffset(offset + limit);
+      if (totalCount !== patientList.length) {
+        dataLoading();
+      }
     }
   };
   const dataLoading = () => {
@@ -308,10 +311,13 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
         obj = patientList;
         _data &&
           _data.data &&
-          _data.data.getPatientLog.forEach((value: any, key: any) => {
+          _data.data.getPatientLog &&
+          _data.data.getPatientLog.patientLog.forEach((value: any, key: any) => {
             obj.push(value);
           });
-
+        if (_data && _data.data && _data.data.getPatientLog) {
+          setTotalCount(_data.data.getPatientLog.totalResultCount);
+        }
         var arrayOfObjAfter = _.map(
           _.uniq(
             _.map(obj, function(obj) {
@@ -357,10 +363,16 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
         })
         .then((_data: any) => {
           setPatientList(
-            _data!.data!.getPatientLog && _data!.data!.getPatientLog !== null
-              ? _data!.data!.getPatientLog
+            _data!.data!.getPatientLog &&
+              _data!.data!.getPatientLog !== null &&
+              _data!.data!.getPatientLog!.patientLog &&
+              _data!.data!.getPatientLog!.patientLog !== null
+              ? _data!.data!.getPatientLog!.patientLog
               : []
           );
+          if (_data && _data.data && _data.data.getPatientLog) {
+            setTotalCount(_data.data.getPatientLog.totalResultCount);
+          }
           setLoading(false);
         })
         .catch((e: any) => {
