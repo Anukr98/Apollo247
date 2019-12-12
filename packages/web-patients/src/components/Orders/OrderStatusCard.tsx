@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     statusCard: {
       backgroundColor: '#eff0eb',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       fontSize: 16,
       fontWeight: 500,
@@ -103,7 +103,7 @@ export const OrderStatusCard: React.FC = (props) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item sm={6}>
+      <Grid item sm={12}>
         <div className={classes.orderStatusGroup}>
           <div className={classes.cardGroup}>
             <div
