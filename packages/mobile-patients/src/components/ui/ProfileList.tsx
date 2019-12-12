@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     color: theme.colors.placeholderTextColor,
   },
   placeholderTextStyle: {
+    maxWidth: '95%',
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
   },
@@ -156,20 +157,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           variables: { patientId: key },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            console.log(addressList, 'addresslidt');
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          console.log(addressList, 'addresslidt');
 
-            shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
-            diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
-            shopCart.setAddresses && shopCart.setAddresses(addressList!);
-            diagCart.setAddresses && diagCart.setAddresses(addressList!);
-          }
-        )
+          shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
+          diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
+          shopCart.setAddresses && shopCart.setAddresses(addressList!);
+          diagCart.setAddresses && diagCart.setAddresses(addressList!);
+        })
         .catch((e) => {})
         .finally(() => {
           unsetloaderDisplay ? null : setLoading && setLoading(false);
@@ -279,6 +274,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
                   ,
                   profile !== undefined ? null : styles.placeholderStyle,
                 ]}
+                numberOfLines={1}
               >
                 {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
               </Text>

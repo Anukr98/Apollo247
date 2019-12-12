@@ -4946,7 +4946,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <Image
           style={{
             flex: 1,
-            resizeMode: 'stretch',
+            resizeMode: 'contain',
             marginTop: 20,
             marginHorizontal: 20,
             marginBottom: 20,
