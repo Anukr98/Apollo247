@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient } from 'profiles-service/entities';
 import fetch from 'node-fetch';
-
 import {
   PrismGetAuthTokenResponse,
   PrismGetAuthTokenError,
@@ -15,6 +14,7 @@ import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { log } from 'customWinstonLogger';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -108,33 +108,75 @@ const getCurrentPatients: Resolver<
     timeOut: ApiConstants.PRISM_TIMEOUT,
   };
 
-  const prismAuthToken = await fetch(
-    `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`,
-    prismHeaders
-  )
+  const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+    'getCurrentPatients()->API_CALL_STARTING',
+    '',
+    ''
+  );
+
+  const prismAuthToken = await fetch(apiUrl, prismHeaders)
     .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
     .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
+      log(
+        'profileServiceLogger',
+        'API_CALL_ERROR',
+        'getCurrentPatients()->CATCH_BLOCK',
+        '',
+        JSON.stringify(prismGetAuthTokenError)
+      );
       // throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
       //   prismGetAuthTokenError,
       // });
       isPrismWorking = 0;
     });
-  let uhids;
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'getCurrentPatients()->API_CALL_RESPONSE',
+    JSON.stringify(prismAuthToken),
+    ''
+  );
   console.log(prismAuthToken, 'prismAuthToken');
+
+  let uhids;
   if (prismAuthToken != null) {
-    console.log('url2', prismBaseUrl, '/getusers?authToken=', prismAuthToken.response);
-    uhids = await fetch(
-      `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`,
-      prismHeaders
-    )
+    const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${getUserApiUrl}`,
+      'getCurrentPatients()->prismGetUsersApiCall->API_CALL_STARTING',
+      '',
+      ''
+    );
+
+    uhids = await fetch(getUserApiUrl, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetUsersResponse>)
       .catch((prismGetUsersError: PrismGetUsersError) => {
+        log(
+          'profileServiceLogger',
+          'API_CALL_ERROR',
+          'getCurrentPatients()->prismGetUsersApiCall->CATCH_BLOCK',
+          '',
+          JSON.stringify(prismGetUsersError)
+        );
         // throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
         //   prismGetUsersError,
         // });
         isPrismWorking = 0;
       });
   }
+
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
+    JSON.stringify(uhids),
+    ''
+  );
+
   console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const findOrCreatePatient = (

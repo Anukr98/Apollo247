@@ -17,12 +17,6 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 //import { AppointmentPayload } from 'types/appointmentTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
-import { sendSMS } from 'notifications-service/resolvers/notifications';
-import { sendMail } from 'notifications-service/resolvers/email';
-import { EmailMessage } from 'types/notificationMessageTypes';
-import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addMinutes } from 'date-fns';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const bookAppointmentTypeDefs = gql`

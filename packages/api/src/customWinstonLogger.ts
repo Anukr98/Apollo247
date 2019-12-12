@@ -1,6 +1,7 @@
 import winston, { format as winstonFormat } from 'winston';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
+import { format } from 'date-fns';
 
 const { combine, timestamp, label } = winstonFormat;
 const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
@@ -66,4 +67,23 @@ winston.loggers.add('notificationServiceLogger', {
   ],
 });
 
-export default winston;
+export const winstonLogger = winston;
+
+export const log = (
+  loggerName: string,
+  message: string,
+  path: string,
+  response: string,
+  error: string
+) => {
+  const logger = winstonLogger.loggers.get(loggerName);
+  const logMessage = {
+    level: error === '' ? 'info' : 'error',
+    message,
+    path,
+    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+    response: response,
+    error: error,
+  };
+  logger.log(logMessage);
+};
