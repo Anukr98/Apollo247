@@ -120,14 +120,6 @@ const getDoctorAvailableSlots: Resolver<
         .getUTCMinutes()
         .toString()
         .padStart(2, '0')}:00.000Z`;
-      //console.log(sl, 'slot');
-      //console.log(availableSlots.indexOf(sl), 'index of');
-      // console.log(
-      //   appt.appointmentDateTime.toDateString(),
-      //   appt.appointmentDateTime,
-      //   availableSlots.indexOf(sl),
-      //   'check index with date'
-      // );
       if (availableSlots.indexOf(sl) >= 0) {
         availableSlots.splice(availableSlots.indexOf(sl), 1);
       }
