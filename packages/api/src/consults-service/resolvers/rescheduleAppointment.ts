@@ -286,6 +286,7 @@ const bookRescheduleAppointment: Resolver<
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const apptDetails = await appointmentRepo.findById(bookRescheduleAppointmentInput.appointmentId);
   const finalAppointmentId = bookRescheduleAppointmentInput.appointmentId;
+  let patientRecordExist = 0;
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -296,6 +297,9 @@ const bookRescheduleAppointment: Resolver<
 
   if (rescheduleDetails) {
     bookRescheduleAppointmentInput.initiatedBy = rescheduleDetails.rescheduleInitiatedBy;
+    if (rescheduleDetails.rescheduleInitiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
+      patientRecordExist = 1;
+    }
   }
 
   if (apptDetails.status == STATUS.COMPLETED || apptDetails.status == STATUS.CANCELLED) {
@@ -387,7 +391,7 @@ const bookRescheduleAppointment: Resolver<
     }
   }
 
-  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
+  if (patientRecordExist == 0) {
     const rescheduleAppointmentAttrs: Omit<RescheduleAppointment, 'id'> = {
       rescheduledDateTime: bookRescheduleAppointmentInput.newDateTimeslot,
       rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
