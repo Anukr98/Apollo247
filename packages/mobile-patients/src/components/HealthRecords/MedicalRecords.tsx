@@ -147,6 +147,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
         ) : (
           <View>
             <FlatList
+              bounces={false}
               data={combination || []}
               removeClippedSubviews={false}
               renderItem={({ item, index }) => {
