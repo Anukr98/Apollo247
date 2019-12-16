@@ -39,6 +39,8 @@ export enum ApiConstants {
 
   PRISM_TIMEOUT = 10000,
   PRISM_UPLOAD_DOCUMENT_PROGRAME = 'prog2',
+  PRISM_STATIC_UHID = 'AHB.0000724284',
+  PRISM_STATIC_MOBILE_NUMBER = '8019677178',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
 
@@ -54,14 +56,14 @@ export enum ApiConstants {
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
   //All services log files
-  PROFILES_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/profiles-service.log',
-  PROFILES_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/profiles-service.log',
-  DOCTORS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/doctors-service.log',
-  DOCTORS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/doctors-service.log',
-  CONSULTS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/consults-service.log',
-  CONSULTS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/consults-service.log',
-  NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/notifications-service.log',
-  NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/notifications-service.log',
+  PROFILES_SERVICE_ACCESS_LOG_FILE = '/access-logs/profiles-service.log',
+  PROFILES_SERVICE_ERROR_LOG_FILE = '/error-logs/profiles-service.log',
+  DOCTORS_SERVICE_ACCESS_LOG_FILE = '/access-logs/doctors-service.log',
+  DOCTORS_SERVICE_ERROR_LOG_FILE = '/error-logs/doctors-service.log',
+  CONSULTS_SERVICE_ACCESS_LOG_FILE = '/access-logs/consults-service.log',
+  CONSULTS_SERVICE_ERROR_LOG_FILE = '/error-logs/consults-service.log',
+  NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
+  NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',

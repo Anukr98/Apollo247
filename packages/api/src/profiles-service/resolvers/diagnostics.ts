@@ -13,6 +13,7 @@ import fetch from 'node-fetch';
 import { format } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { log } from 'customWinstonLogger';
 
 export const diagnosticsTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {
@@ -201,14 +202,33 @@ const getDiagnosticSlots: Resolver<
   if (hubDetails == null) throw new AphError(AphErrorMessages.INVALID_ZIPCODE, undefined, {});
   const selDate = format(args.selectedDate, 'yyyy-MM-dd');
   const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
-  const diagnosticSlot = await fetch(
-    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${hubDetails.pincodeAreaname}&transactionDate=${selDate}`
-  )
+  const apiUrl = `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${hubDetails.pincodeAreaname}&transactionDate=${selDate}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_DIAGNOSTICS: ${apiUrl}`,
+    'getDiagnosticSlots()->API_CALL_STARTING',
+    '',
+    ''
+  );
+  const diagnosticSlot = await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
+      log(
+        'profileServiceLogger',
+        'API_CALL_ERROR',
+        'getDiagnosticSlots()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, {});
-      console.log('diagnostic slot error', error);
     });
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'getDiagnosticSlots()->API_CALL_RESPONSE',
+    JSON.stringify(diagnosticSlot),
+    ''
+  );
   console.log(diagnosticSlot, 'diagnosticSlot');
   return { diagnosticBranchCode: hubDetails.route, diagnosticSlot };
 };

@@ -347,6 +347,7 @@ export const FavouriteAdvice: React.FC = () => {
                         onClick={() => {
                           setShowUpdatePopup(true);
                           setUpdateAdviceId(item.id);
+                          setAdvice(item.instruction);
                           setShowAddInputText(true);
                         }}
                         alt=""
@@ -364,7 +365,13 @@ export const FavouriteAdvice: React.FC = () => {
           )}
 
           <li>
-            <Button className={classes.addmedicine_btn} onClick={() => setShowAddInputText(true)}>
+            <Button
+              className={classes.addmedicine_btn}
+              onClick={() => {
+                setShowAddInputText(true);
+                setShowUpdatePopup(false);
+              }}
+            >
               <img src={require('images/ic_round-add.svg')} alt="" /> Add Advice
             </Button>
           </li>
