@@ -44,14 +44,12 @@ export const CancelOrderNotification: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">Hi! :)</Typography>
-        <p>Your cancelation request has been submitted. Someone from our team will call you soon.</p>
+        <p>
+          Your cancelation request has been submitted. Someone from our team will call you soon.
+        </p>
       </div>
       <div className={classes.actions}>
-        <AphButton
-          type="submit"
-          color="primary"
-          classes={{ root: classes.button }}
-        >
+        <AphButton type="submit" color="primary" classes={{ root: classes.button }}>
           Ok, Got It
         </AphButton>
       </div>

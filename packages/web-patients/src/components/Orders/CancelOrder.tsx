@@ -150,7 +150,9 @@ export const CancelOrder: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.dialogActions}>
-        <AphButton onClick={() => setIsPopoverOpen(true)} color="primary">Submit Request</AphButton>
+        <AphButton onClick={() => setIsPopoverOpen(true)} color="primary">
+          Submit Request
+        </AphButton>
       </div>
       <Popover
         open={isPopoverOpen}
