@@ -192,6 +192,7 @@ export const OtherInstructions: React.FC = () => {
                 selectedValues.length > 0 &&
                 selectedValues!.map(
                   (item, idx) =>
+                    item &&
                     item.instruction!.trim() !== '' && (
                       <Chip
                         className={classes.othersBtn}
@@ -264,7 +265,8 @@ export const OtherInstructions: React.FC = () => {
                   adviceList.length > 0 &&
                   adviceList!.map(
                     (item, idx) =>
-                      item!.instruction!.trim() !== '' && (
+                      item &&
+                      item.instruction!.trim() !== '' && (
                         <div className={classes.othersBtnfav}>
                           <Chip className={classes.chip} key={idx} label={item!.instruction} />
                           <img
