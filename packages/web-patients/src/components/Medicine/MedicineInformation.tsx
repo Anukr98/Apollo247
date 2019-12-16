@@ -6,6 +6,9 @@ import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
+import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
+import { useParams } from 'hooks/routerHooks';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -226,8 +229,12 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const MedicineInformation: React.FC = (props) => {
-  const classes = useStyles();
+type MedicineInformationProps = {
+  data: MedicineProductDetails;
+};
+
+export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
+  const classes = useStyles({});
   const [medicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
@@ -235,6 +242,40 @@ export const MedicineInformation: React.FC = (props) => {
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isAddCartPopoverOpen, setIsAddCartPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
+  const [substitute, setSubstitute] = React.useState<MedicineProduct | null>(null);
+  const { data } = props;
+  const params = useParams<{ sku: string }>();
+
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprdsubt_api.php`,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+
+  const fetchSubstitutes = async () => {
+    await axios
+      .post(
+        apiDetails.url,
+        { params: params.sku },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        try {
+          if (data) {
+            if (data.products && typeof data.products === 'object') {
+              setSubstitutes(data.products);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })
+      .catch((err) => console.log({ err }));
+  };
 
   return (
     <div className={classes.root}>
@@ -244,70 +285,94 @@ export const MedicineInformation: React.FC = (props) => {
             <div className={classes.sectionTitle}>Substitute Drugs</div>
             <div
               className={classes.substitutes}
-              onClick={() => setIsSubDrugsPopoverOpen(true)}
+              onClick={() => {
+                fetchSubstitutes();
+                setIsSubDrugsPopoverOpen(true);
+              }}
               ref={subDrugsRef}
             >
-              <span>Pick from 9 available substitutes</span>
-              <div className={classes.selectedDrugs}>
-                <div>Doliprane 500mg Tab</div>
-                <div className={classes.price}>Rs. 65.5</div>
-              </div>
-              <div className={classes.dropDownArrow}>
-                <img src={require('images/ic_dropdown_green.svg')} alt="" />
-              </div>
+              {!substitute ? (
+                <span>Pick from 9 available substitutes</span>
+              ) : (
+                <>
+                  <div className={classes.selectedDrugs}>
+                    <div>{substitute.name}</div>
+                    <div className={classes.price}>{`Rs. ${substitute.price}`}</div>
+                  </div>
+                  <div className={classes.dropDownArrow}>
+                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                  </div>
+                </>
+              )}
             </div>
-            <div className={classes.sectionTitle}>Check Delivery Time</div>
-            <div className={classes.deliveryInfo}>
-              <div className={classes.deliveryTimeGroup}>
-                <AphTextField placeholder="Enter Pin Code" />
-                <AphButton
-                  disabled
-                  classes={{
-                    root: classes.checkBtn,
-                    disabled: classes.checkBtnDisabled,
-                  }}
-                >
-                  Check
-                </AphButton>
-              </div>
-              <div className={classes.deliveryTimeInfo}>
-                <span>Delivery Time</span>
-                <span>By 9th Oct 2019</span>
-              </div>
-            </div>
+            {data.is_in_stock ? (
+              <>
+                <div className={classes.sectionTitle}>Check Delivery Time</div>
+                <div className={classes.deliveryInfo}>
+                  <div className={classes.deliveryTimeGroup}>
+                    <AphTextField placeholder="Enter Pin Code" />
+                    <AphButton
+                      disabled
+                      classes={{
+                        root: classes.checkBtn,
+                        disabled: classes.checkBtnDisabled,
+                      }}
+                    >
+                      Check
+                    </AphButton>
+                  </div>
+                  <div className={classes.deliveryTimeInfo}>
+                    <span>Delivery Time</span>
+                    <span>By 9th Oct 2019</span>
+                  </div>
+                </div>
+              </>
+            ) : null}
           </div>
         </Scrollbars>
       </div>
       <div className={classes.priceGroup}>
         <div className={classes.priceWrap}>
           <div className={classes.leftGroup}>
-            <div className={classes.medicinePack}>
-              QTY :
-              <AphCustomDropdown
-                classes={{ selectMenu: classes.selectMenuItem }}
-                value={medicineQty}
-              >
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={1}
+            {data.is_in_stock ? (
+              <div className={classes.medicinePack}>
+                QTY :
+                <AphCustomDropdown
+                  classes={{ selectMenu: classes.selectMenuItem }}
+                  value={medicineQty}
                 >
-                  1
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={2}
-                >
-                  2
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={3}
-                >
-                  3
-                </MenuItem>
-              </AphCustomDropdown>
-            </div>
-            <div className={classes.medicineNoStock}>Out Of Stock</div>
+                  <MenuItem
+                    classes={{
+                      root: classes.menuRoot,
+                      selected: classes.menuSelected,
+                    }}
+                    value={1}
+                  >
+                    1
+                  </MenuItem>
+                  <MenuItem
+                    classes={{
+                      root: classes.menuRoot,
+                      selected: classes.menuSelected,
+                    }}
+                    value={2}
+                  >
+                    2
+                  </MenuItem>
+                  <MenuItem
+                    classes={{
+                      root: classes.menuRoot,
+                      selected: classes.menuSelected,
+                    }}
+                    value={3}
+                  >
+                    3
+                  </MenuItem>
+                </AphCustomDropdown>
+              </div>
+            ) : (
+              <div className={classes.medicineNoStock}>Out Of Stock</div>
+            )}
           </div>
           <div className={classes.medicinePrice}>
             <span className={classes.regularPrice}>(Rs. 999)</span>
@@ -316,11 +381,16 @@ export const MedicineInformation: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.bottomActions}>
-        <AphButton onClick={() => setIsAddCartPopoverOpen(true)}>Add To Cart</AphButton>
-        <AphButton color="primary">Buy Now</AphButton>
-        <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
-          Notify when in stock
-        </AphButton>
+        {data.is_in_stock ? (
+          <>
+            <AphButton onClick={() => setIsAddCartPopoverOpen(true)}>Add To Cart</AphButton>
+            <AphButton color="primary">Buy Now</AphButton>
+          </>
+        ) : (
+          <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
+            Notify when in stock
+          </AphButton>
+        )}
       </div>
       <Popover
         open={isPopoverOpen}
@@ -380,7 +450,11 @@ export const MedicineInformation: React.FC = (props) => {
           horizontal: 'left',
         }}
       >
-        <SubstituteDrugsList />
+        <SubstituteDrugsList
+          data={substitutes}
+          setSubstitute={setSubstitute}
+          setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
+        />
       </Popover>
     </div>
   );
