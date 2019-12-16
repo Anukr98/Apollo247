@@ -185,7 +185,8 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      paddingLeft: 4,
+      padding: '2px 4px 8px 5px',
+
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -1225,7 +1226,6 @@ export const FavouriteMedicines: React.FC = () => {
       <div className={classes.root}>
         <Grid container spacing={2}>
           <Grid sm={12} xs={12} key={5} item>
-            <div className={classes.card}>
               <ul>
                 {medicineLoader ? (
                   <CircularProgress className={classes.loader} />
@@ -1264,7 +1264,7 @@ export const FavouriteMedicines: React.FC = () => {
                   </AphButton>
                 </li>
               </ul>
-            </div>
+           
           </Grid>
         </Grid>
         <Modal

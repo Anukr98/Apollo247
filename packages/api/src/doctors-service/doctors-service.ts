@@ -2,7 +2,6 @@ import '@aph/universal/dist/global';
 import { buildFederatedSchema } from '@apollo/federation';
 import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
-import winston from 'winston';
 import { connect } from 'doctors-service/database/connect';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities';
@@ -52,8 +51,7 @@ import {
 } from 'doctors-service/resolvers/blockedCalendar';
 import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
 import { format, differenceInMilliseconds } from 'date-fns';
-import path from 'path';
-import { ApiConstants } from 'ApiConstants';
+
 import {
   doctorFavouriteAdviceTypeDefs,
   doctorFavouriteAdviceResolvers,
@@ -63,27 +61,12 @@ import {
   doctorFavouriteTestResolvers,
 } from 'doctors-service/resolvers/doctorFavouriteTest';
 import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
+import { winstonLogger } from 'customWinstonLogger';
 
 (async () => {
   await connect();
 
-  //configure winston for doctors service
-  const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
-  const logsDir = path.resolve(logsDirPath);
-  winston.configure({
-    transports: [
-      new winston.transports.File({
-        filename: logsDir + ApiConstants.DOCTORS_SERVICE_ACCESS_LOG_FILE,
-        level: 'info',
-      }),
-      new winston.transports.File({
-        filename: logsDir + ApiConstants.DOCTORS_SERVICE_ERROR_LOG_FILE,
-        level: 'error',
-      }),
-    ],
-    exitOnError: false, // do not exit on handled exceptions
-  });
-
+  const doctorsLogger = winstonLogger.loggers.get('doctorServiceLogger');
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
@@ -185,7 +168,7 @@ import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
       /* This plugin is defined in-line. */
       {
         serverWillStart() {
-          winston.log('info', 'Server starting up!');
+          doctorsLogger.log('info', 'Server starting up!');
         },
         requestDidStart({ operationName, request }) {
           /* Within this returned object, define functions that respond
@@ -194,7 +177,7 @@ import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
           return {
             parsingDidStart(requestContext) {
-              winston.log({
+              doctorsLogger.log({
                 message: 'Request Starting',
                 time: reqStartTimeFormatted,
                 operation: requestContext.request.query,
@@ -203,7 +186,11 @@ import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+                doctorsLogger.log(
+                  'error',
+                  `Encountered Error at ${reqStartTimeFormatted}: `,
+                  error
+                );
               });
             },
             willSendResponse({ response }) {
@@ -218,7 +205,7 @@ import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              winston.log(responseLog);
+              doctorsLogger.log(responseLog);
             },
           };
         },

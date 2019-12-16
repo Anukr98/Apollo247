@@ -2,6 +2,7 @@ import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import ImageGallery from 'react-image-gallery';
+import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -56,32 +57,34 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineImageGallery: React.FC = (props) => {
-  const classes = useStyles();
+type MedicineInformationProps = {
+  data: MedicineProductDetails;
+};
+
+export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) => {
+  const classes = useStyles({});
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+  };
+
   const images = [
     {
-      original: 'https://picsum.photos/id/1018/1000/600/',
-      thumbnail: 'https://picsum.photos/id/1018/250/150/',
-    },
-    {
-      original: 'https://picsum.photos/id/1015/1000/600/',
-      thumbnail: 'https://picsum.photos/id/1015/250/150/',
-    },
-    {
-      original: 'https://picsum.photos/id/1019/1000/600/',
-      thumbnail: 'https://picsum.photos/id/1019/250/150/',
+      original: `${apiDetails.url}${props.data.image}`,
+      thumbnail: `${apiDetails.url}${props.data.thumbnail}`,
     },
   ];
 
   return (
-    <div className={classes.root}>
-      <ImageGallery
-        items={images}
-        showFullscreenButton={false}
-        showPlayButton={false}
-        showNav={false}
-        showBullets={true}
-      />
-    </div>
+    images && (
+      <div className={classes.root}>
+        <ImageGallery
+          items={images}
+          showFullscreenButton={false}
+          showPlayButton={false}
+          showNav={false}
+          showBullets={true}
+        />
+      </div>
+    )
   );
 };

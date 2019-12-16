@@ -905,23 +905,36 @@ export class AppointmentRepository extends Repository<Appointment> {
     const timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
+
     if (timeSlot.length > 0) {
       const duration = Math.floor(60 / timeSlot[0].consultDuration);
+      const consultStartTime = new Date(
+        format(new Date(), 'yyyy-MM-dd') + ' ' + timeSlot[0].startTime.toString()
+      );
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
           let firstSlot = true;
           const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
+          const consultStartMin = parseInt(format(consultStartTime, 'mm'), 0);
+
           let addMin = Math.abs(
             (startMin % timeSlot[0].consultDuration) - timeSlot[0].consultDuration
           );
 
-          if (timeSlot[0].consultDuration % 2 == 0) {
+          if (startMin % timeSlot[0].consultDuration != 0 && timeSlot[0].consultDuration % 2 == 0) {
             addMin = addMin + 1;
           }
 
           let slot = blockedSlot.start;
           if (addMin != timeSlot[0].consultDuration) {
             slot = addMinutes(blockedSlot.start, addMin);
+          }
+
+          if (
+            consultStartMin % timeSlot[0].consultDuration ==
+            startMin % timeSlot[0].consultDuration
+          ) {
+            slot = blockedSlot.start;
           }
           console.log(startMin, addMin, slot, 'start min');
           let blockedSlotsCount =
@@ -942,7 +955,7 @@ export class AppointmentRepository extends Repository<Appointment> {
               doctorBblockedSlots.push(genBlockSlot);
               if (firstSlot) {
                 firstSlot = false;
-                const prevSlot = subMinutes(slot, 5); //addMinutes(slot, -5);
+                const prevSlot = subMinutes(slot, timeSlot[0].consultDuration); //addMinutes(slot, -5);
                 if (
                   Math.abs(differenceInMinutes(prevSlot, blockedSlot.start)) <
                   timeSlot[0].consultDuration

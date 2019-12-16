@@ -109,15 +109,16 @@ export const LifeStyle: React.FC = () => {
     lifeStyle,
     menstrualHistory,
     familyHistory,
+    caseSheetEdit,
   } = useContext(CaseSheetContext);
 
-  const [disablePastMedicalHistory, setDisablePastMedicalHistory] = useState<boolean>(true);
-  const [disablePastSurgicalHistory, setDisablePastSurgicalHistory] = useState<boolean>(true);
-  const [disableDrugAllergies, setDisableDrugAllergies] = useState<boolean>(true);
-  const [disableDietAllergies, setDisableDietAllergies] = useState<boolean>(true);
-  const [disableLifeStyle, setDisableLifeStyle] = useState<boolean>(true);
-  const [disableFamilyHistory, setDisableFamilyHistory] = useState<boolean>(true);
-  const [disableMenstrualHistory, setDisableMenstrualHistory] = useState<boolean>(true);
+  // const [disablePastMedicalHistory, setDisablePastMedicalHistory] = useState<boolean>(true);
+  // const [disablePastSurgicalHistory, setDisablePastSurgicalHistory] = useState<boolean>(true);
+  // const [disableDrugAllergies, setDisableDrugAllergies] = useState<boolean>(true);
+  // const [disableDietAllergies, setDisableDietAllergies] = useState<boolean>(true);
+  // const [disableLifeStyle, setDisableLifeStyle] = useState<boolean>(true);
+  // const [disableFamilyHistory, setDisableFamilyHistory] = useState<boolean>(true);
+  // const [disableMenstrualHistory, setDisableMenstrualHistory] = useState<boolean>(true);
 
   // const pastMedicalHistory =
   //   patientDetails &&
@@ -227,17 +228,17 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
-              disabled={disablePastMedicalHistory}
+              disabled={!caseSheetEdit}
               fullWidth
               multiline
               defaultValue={pastMedicalHistory}
               onBlur={(e) => {
                 setPastMedicalHistory(e.target.value);
-                setDisablePastMedicalHistory(true);
+                //setDisablePastMedicalHistory(true);
               }}
-              inputRef={pastMedicalRef}
+              //inputRef={pastMedicalRef}
             />
-            <div className={classes.boxActions}>
+            {/* <div className={classes.boxActions}>
               <AphButton
                 onClick={() => {
                   setDisablePastMedicalHistory(false);
@@ -253,7 +254,7 @@ export const LifeStyle: React.FC = () => {
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
-            </div>
+            </div> */}
           </Typography>
         </Typography>
 
@@ -263,17 +264,17 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
-              disabled={disablePastSurgicalHistory}
+              disabled={!caseSheetEdit}
               fullWidth
               multiline
               defaultValue={pastSurgicalHistory}
               onBlur={(e) => {
                 setPastSurgicalHistory(e.target.value);
-                setDisablePastSurgicalHistory(true);
+                //setDisablePastSurgicalHistory(true);
               }}
-              inputRef={pastSurgicalRef}
+              //inputRef={pastSurgicalRef}
             />
-            <div className={classes.boxActions}>
+            {/* <div className={classes.boxActions}>
               <AphButton
                 onClick={() => {
                   setDisablePastSurgicalHistory(false);
@@ -289,7 +290,7 @@ export const LifeStyle: React.FC = () => {
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
-            </div>
+            </div> */}
           </Typography>
         </Typography>
 
@@ -299,17 +300,17 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
-              disabled={disableDrugAllergies}
+              disabled={!caseSheetEdit}
               fullWidth
               multiline
               defaultValue={drugAllergies}
               onBlur={(e) => {
                 setDrugAllergies(e.target.value);
-                setDisableDrugAllergies(true);
+                //setDisableDrugAllergies(true);
               }}
-              inputRef={drugAllergiesRef}
+              //inputRef={drugAllergiesRef}
             />
-            <div className={classes.boxActions}>
+            {/* <div className={classes.boxActions}>
               <AphButton
                 onClick={(e) => {
                   setDisableDrugAllergies(false);
@@ -325,7 +326,7 @@ export const LifeStyle: React.FC = () => {
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
-            </div>
+            </div> */}
           </Typography>
         </Typography>
 
@@ -335,17 +336,17 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
-              disabled={disableDietAllergies}
+              disabled={!caseSheetEdit}
               fullWidth
               multiline
               defaultValue={dietAllergies}
               onBlur={(e) => {
                 setDietAllergies(e.target.value);
-                setDisableDietAllergies(true);
+                //setDisableDietAllergies(true);
               }}
-              inputRef={dietAllergiesRef}
+              //inputRef={dietAllergiesRef}
             />
-            <div className={classes.boxActions}>
+            {/* <div className={classes.boxActions}>
               <AphButton
                 onClick={() => {
                   setDisableDietAllergies(false);
@@ -361,7 +362,7 @@ export const LifeStyle: React.FC = () => {
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
-            </div>
+            </div> */}
           </Typography>
         </Typography>
 
@@ -371,17 +372,17 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
-              disabled={disableLifeStyle}
+              disabled={!caseSheetEdit}
               fullWidth
               multiline
               defaultValue={lifeStyle}
               onBlur={(e) => {
                 setLifeStyle(e.target.value);
-                setDisableLifeStyle(true);
+                //setDisableLifeStyle(true);
               }}
-              inputRef={lifeStyleRef}
+              //inputRef={lifeStyleRef}
             />
-            <div className={classes.boxActions}>
+            {/* <div className={classes.boxActions}>
               <AphButton
                 onClick={() => {
                   setDisableLifeStyle(false);
@@ -397,7 +398,7 @@ export const LifeStyle: React.FC = () => {
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
-            </div>
+            </div> */}
           </Typography>
         </Typography>
 
@@ -408,17 +409,17 @@ export const LifeStyle: React.FC = () => {
             </Typography>
             <Typography component="div" className={classes.content}>
               <AphTextField
-                disabled={disableMenstrualHistory}
+                disabled={!caseSheetEdit}
                 fullWidth
                 multiline
                 defaultValue={menstrualHistory}
                 onBlur={(e) => {
                   setMenstrualHistory(e.target.value);
-                  setDisableMenstrualHistory(true);
+                  //setDisableMenstrualHistory(true);
                 }}
-                inputRef={menstrualRef}
+                //inputRef={menstrualRef}
               />
-              <div className={classes.boxActions}>
+              {/* <div className={classes.boxActions}>
                 <AphButton
                   onClick={() => {
                     setDisableMenstrualHistory(false);
@@ -434,7 +435,7 @@ export const LifeStyle: React.FC = () => {
                 >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
-              </div>
+              </div> */}
             </Typography>
           </Typography>
         )}
@@ -445,17 +446,17 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
-              disabled={disableFamilyHistory}
+              disabled={!caseSheetEdit}
               fullWidth
               multiline
               defaultValue={familyHistory}
               onBlur={(e) => {
                 setFamilyHistory(e.target.value);
-                setDisableFamilyHistory(true);
+                //setDisableFamilyHistory(true);
               }}
-              inputRef={familyHistoryRef}
+              //inputRef={familyHistoryRef}
             />
-            <div className={classes.boxActions}>
+            {/* <div className={classes.boxActions}>
               <AphButton
                 onClick={() => {
                   setDisableFamilyHistory(false);
@@ -471,7 +472,7 @@ export const LifeStyle: React.FC = () => {
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
-            </div>
+            </div> */}
           </Typography>
         </Typography>
       </div>

@@ -211,17 +211,8 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setPastMedicalHistory(e.target.value);
             }}
           />
-          {caseSheetEdit && pastMedicalHistory !== '' && (
+          {/* {caseSheetEdit && pastMedicalHistory !== '' && (
             <div className={classes.boxActions}>
-              {/* <AphButton
-                onClick={() => {
-                  setDisablePastMedicalHistoryFocus(false);
-                  if (pastMedicalHistoryElement && pastMedicalHistoryElement.current)
-                    console.log(pastMedicalHistoryElement && pastMedicalHistoryElement.current);
-                }}
-              >
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton> */}
               <AphButton
                 onClick={() => {
                   setPastMedicalHistory('');
@@ -230,7 +221,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
-          )}
+          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -248,11 +239,9 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             }}
             // inputRef={pastSurgicalHistoryElement}
           />
-          {caseSheetEdit && pastSurgicalHistory !== '' && (
+          {/* {caseSheetEdit && pastSurgicalHistory !== '' && (
             <div className={classes.boxActions}>
-              {/* <AphButton onClick={() => setDisablePastSurgicalHistoryFocus(false)}>
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton> */}
+             
               <AphButton
                 onClick={(e) => {
                   setPastSurgicalHistory('');
@@ -261,7 +250,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
-          )}
+          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -279,11 +268,9 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             }}
             // inputRef={drugAllergiesElement}
           />
-          {caseSheetEdit && drugAllergies !== '' && (
+          {/* {caseSheetEdit && drugAllergies !== '' && (
             <div className={classes.boxActions}>
-              {/* <AphButton onClick={() => setDisableDrugAllergiesFocus(false)}>
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton> */}
+              
               <AphButton
                 onClick={(e) => {
                   setDrugAllergies('');
@@ -292,7 +279,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
-          )}
+          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -310,11 +297,8 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             }}
             // inputRef={dietAllergiesElement}
           />
-          {caseSheetEdit && dietAllergies !== '' && (
+          {/* {caseSheetEdit && dietAllergies !== '' && (
             <div className={classes.boxActions}>
-              {/* <AphButton onClick={() => setDisableDietAllergiesFocus(false)}>
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton> */}
               <AphButton
                 onClick={(e) => {
                   setDietAllergies('');
@@ -323,7 +307,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
-          )}
+          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -343,11 +327,8 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             }}
             // inputRef={lifeStyleElement}
           />
-          {caseSheetEdit && lifeStyle !== '' && (
+          {/* {caseSheetEdit && lifeStyle !== '' && (
             <div className={classes.boxActions}>
-              {/* <AphButton onClick={(e) => setDisableLifeStyleFocus(false)}>
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton> */}
               <AphButton
                 onClick={(e) => {
                   setLifeStyle('');
@@ -356,7 +337,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
-          )}
+          )} */}
         </div>
       </Grid>
       {gender === Gender.FEMALE && (
@@ -377,11 +358,8 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               }}
               // inputRef={menstrualElement}
             />
-            {caseSheetEdit && menstrualHistory !== '' && (
+            {/* {caseSheetEdit && menstrualHistory !== '' && (
               <div className={classes.boxActions}>
-                {/* <AphButton onClick={() => setDisableMenstrualHistoryFocus(false)}>
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton> */}
                 <AphButton
                   onClick={() => {
                     setMenstrualHistory('');
@@ -390,7 +368,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
               </div>
-            )}
+            )} */}
           </div>
         </Grid>
       )}
@@ -411,11 +389,8 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             }}
             // inputRef={familyHistoryElement}
           />
-          {caseSheetEdit && familyHistory !== '' && (
+          {/* {caseSheetEdit && familyHistory !== '' && (
             <div className={classes.boxActions}>
-              {/* <AphButton onClick={() => setDisableFamilyHistoryFocus(false)}>
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton> */}
               <AphButton
                 onClick={() => {
                   setFamilyHistory('');
@@ -424,7 +399,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
-          )}
+          )} */}
         </div>
       </Grid>
     </Grid>
