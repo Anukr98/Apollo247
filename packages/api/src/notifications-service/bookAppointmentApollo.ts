@@ -5,7 +5,6 @@ import { AppointmentPayload, AppointmentResp } from 'types/appointmentTypes';
 import { getConnection } from 'typeorm';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { STATUS } from 'consults-service/entities';
-import { format } from 'date-fns';
 import { log } from 'customWinstonLogger';
 
 type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
