@@ -15,6 +15,7 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 import { addMilliseconds, format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
+import { log } from 'customWinstonLogger';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -126,6 +127,14 @@ export async function sendSMS(message: string) {
   if (smsUrl == '') {
     throw new AphError(AphErrorMessages.INVALID_SMS_GATEWAY_URL, undefined, {});
   }
+
+  log(
+    'notificationServiceLogger',
+    `EXTERNAL_API_CALL_SMS: ${smsUrl}`,
+    'sendSMS()->API_CALL_STARTING',
+    JSON.stringify(smsUrl + '&To=9657585411&Text=' + message),
+    ''
+  );
   const smsResp = fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
 }
