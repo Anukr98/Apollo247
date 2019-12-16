@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const PharmaApiConfig = {
   dev: {
@@ -88,7 +88,7 @@ const ConfigurationDev = {
 // QA
 const ConfigurationQA = {
   LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'debug',
+  ANALYTICAL_ENIVRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',

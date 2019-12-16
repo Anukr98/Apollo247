@@ -201,22 +201,45 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       });
   };
 
-  const fetchLocation = useCallback(() => {
-    let searchstring = '';
+  const findDistance = (searchstring: string) => {
+    const key = AppConfig.Configuration.GOOGLE_API_KEY;
 
-    AsyncStorage.getItem('location').then((item) => {
+    const destination = selectedClinic
+      ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`
+      : '';
+    const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
+    console.log(distanceUrl, 'distanceUrl');
+
+    Axios.get(distanceUrl)
+      .then((obj) => {
+        console.log(obj, 'objobj');
+
+        if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
+          const value = obj.data.rows[0].elements[0].distance
+            ? obj.data.rows[0].elements[0].distance.value
+            : 0;
+          setdistance(`${(value / 1000).toFixed(1)} Kms`);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const fetchLocation = useCallback(() => {
+    AsyncStorage.getItem('location').then(async (item) => {
       const location = item ? JSON.parse(item) : null;
-      if (location.latlong) {
-        searchstring = `${location.latlong.lat}, ${location.latlong.lng}`;
+      console.log(location, 'location');
+
+      if (location && location.latlong) {
+        findDistance(`${location.latlong.lat}, ${location.latlong.lng}`);
       } else {
-        Permissions.request('location')
+        await Permissions.request('location')
           .then((response) => {
             if (response === 'authorized') {
               navigator.geolocation.getCurrentPosition(
                 (position) => {
-                  searchstring = position.coords.latitude + ', ' + position.coords.longitude;
-
-                  // }
+                  findDistance(position.coords.latitude + ',' + position.coords.longitude);
                 },
                 (error) => console.log(JSON.stringify(error)),
                 { enableHighAccuracy: false, timeout: 2000 }
@@ -227,25 +250,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             console.log(error, 'error permission');
           });
       }
-
-      const key = AppConfig.Configuration.GOOGLE_API_KEY;
-
-      const destination = selectedClinic
-        ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`
-        : '';
-      const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
-      Axios.get(distanceUrl)
-        .then((obj) => {
-          if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-            const value = obj.data.rows[0].elements[0].distance
-              ? obj.data.rows[0].elements[0].distance.value
-              : 0;
-            setdistance(`${(value / 1000).toFixed(1)} Kms`);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
     });
   }, [selectedClinic]);
 
