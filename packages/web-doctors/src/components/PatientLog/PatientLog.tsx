@@ -285,8 +285,8 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
 
   const scrollFunction = (e: any) => {
     if (e.target.scrollTop + e.target.clientHeight === e.target.scrollHeight) {
-      setOffset(offset + limit);
       if (totalCount !== patientList.length) {
+        setOffset(offset + limit);
         dataLoading();
       }
     }
@@ -345,7 +345,9 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
         setLoading(false);
       });
   };
-
+  // useEffect(() => {
+  //   dataLoading()
+  // },[sortBy])
   useEffect(() => {
     if (offset === 0) {
       setLoading(true);
@@ -452,6 +454,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     }}
                     onChange={(e) => {
                       setSortBy(e.target.value as string);
+                      setOffset(0);
                     }}
                   >
                     {sortByArray.map((item: any, index: number) => {
