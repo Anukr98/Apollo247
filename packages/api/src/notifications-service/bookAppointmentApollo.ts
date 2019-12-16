@@ -5,8 +5,8 @@ import { AppointmentPayload, AppointmentResp } from 'types/appointmentTypes';
 import { getConnection } from 'typeorm';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { STATUS } from 'consults-service/entities';
-import { format, differenceInMilliseconds } from 'date-fns';
-import winston from 'winston';
+import { format } from 'date-fns';
+import { log } from 'customWinstonLogger';
 
 type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
 
@@ -14,32 +14,30 @@ export const bookAppointmentApollo = {
   book: async function(message: TestMessage) {
     const reqStartTime = new Date();
     const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
-    winston.log({
-      message: 'External apiRequest Starting',
-      time: reqStartTimeFormatted,
-      operation:
-        'http://apollostage.quad1test.com/Stage_rest_services/api/eDocConsultation/BookConsultationAppointmentIneDoc/CF662D63-D1F5-47F0-9EAF-D305ED82727A',
-      level: 'info',
-    });
-    await fetch(
-      'http://apollostage.quad1test.com/Stage_rest_services/api/eDocConsultation/BookConsultationAppointmentIneDoc/CF662D63-D1F5-47F0-9EAF-D305ED82727A',
-      {
-        method: 'POST',
-        body: JSON.stringify(message.payload),
-        headers: { 'Content-Type': 'application/json' },
-      }
-    ).then((apolloResp) => {
-      const responseLog = {
-        message: 'Request Ended',
-        time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-        durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
-        level: 'info',
-        response: apolloResp,
-      };
 
-      winston.log(responseLog);
-
+    const bookUrl =
+      'http://apollostage.quad1test.com/Stage_rest_services/api/eDocConsultation/BookConsultationAppointmentIneDoc/CF662D63-D1F5-47F0-9EAF-D305ED82727A';
+    log(
+      'notificationServiceLogger',
+      `EXTERNAL_API_CALL_QUADTEST: ${bookUrl}`,
+      'bookAppointmentApollo->book()->API_CALL_STARTING',
+      JSON.stringify(message.payload),
+      ''
+    );
+    await fetch(bookUrl, {
+      method: 'POST',
+      body: JSON.stringify(message.payload),
+      headers: { 'Content-Type': 'application/json' },
+    }).then((apolloResp) => {
       apolloResp.text().then(async (textRes) => {
+        log(
+          'notificationServiceLogger',
+          'API_CALL_RESPONSE',
+          'bookAppointmentApollo->book()->API_CALL_RESPONSE',
+          textRes,
+          ''
+        );
+
         const apolloAppointmentResp: AppointmentResp = JSON.parse(textRes);
         console.log(apolloAppointmentResp, 'apollo appt resp');
         if (apolloAppointmentResp.appointmentId > 0) {
