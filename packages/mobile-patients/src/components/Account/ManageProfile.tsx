@@ -168,7 +168,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               padding: 16,
               backgroundColor: colors.WHITE,
               flexDirection: 'row',
-              height: 145,
+              minHeight: 145,
               //  marginTop: i === 0 ? 16 : 8,
             }}
             key={index}

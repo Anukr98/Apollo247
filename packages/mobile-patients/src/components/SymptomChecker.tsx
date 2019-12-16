@@ -45,9 +45,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   nameTextStyle: {
-    marginLeft: 5,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
+    paddingTop: 2,
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    letterSpacing: 0.5,
   },
   seperatorStyle: {
     height: 2,
@@ -76,6 +77,10 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(18),
     paddingVertical: 8,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  nameTextContainerStyle: {
+    maxWidth: '60%',
+    flexDirection: 'row',
   },
   textViewStyle: {
     borderBottomWidth: 1,
@@ -252,7 +257,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
 
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
-      ? { patientAge: Math.round(Moment().diff(currentPatient.dateOfBirth, 'years', true)) }
+      ? { patientAge: Math.round(Moment().diff(currentPatient.dateOfBirth, 'years', true)) || '0' }
       : {};
   const patientGender =
     currentPatient &&
@@ -267,7 +272,6 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header
-          title={`${userName.toUpperCase()}’S SYMPTOMS`}
           leftIcon="backArrow"
           onPressLeftIcon={() => (
             props.navigation.dispatch(
@@ -279,34 +283,39 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
             ),
             CommonLogEvent(AppRoutes.SymptomChecker, 'Go back clicked')
           )}
-          titleStyle={{ marginLeft: 60 }}
-          titleTextProps={{ ellipsizeMode: 'middle' }}
-          titleTextViewStyle={{ maxWidth: '75%' }}
-          rightComponent={
-            <View>
-              <ProfileList
-                saveUserChange={true}
-                listContainerStyle={{ marginLeft: 0 }}
-                childView={
-                  <View
-                    style={{
+          titleComponent={
+            <ProfileList
+              unsetloaderDisplay={true}
+              navigation={props.navigation}
+              listContainerStyle={{ marginLeft: 0 }}
+              saveUserChange={true}
+              childView={
+                <View
+                  style={[
+                    {
+                      flexGrow: 1,
                       flexDirection: 'row',
                       paddingRight: 8,
                       borderRightWidth: 0,
                       borderRightColor: 'rgba(2, 71, 91, 0.2)',
                       backgroundColor: theme.colors.WHITE,
-                    }}
-                  >
-                    <View style={{ marginRight: 60 }}>
-                      <DropdownGreen />
-                    </View>
-                  </View>
-                }
-                selectedProfile={profile}
-                setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-                navigation={props.navigation}
-              ></ProfileList>
-            </View>
+                      alignSelf: 'center',
+                      alignContent: 'center',
+                      justifyContent: 'center',
+                    },
+                    styles.nameTextContainerStyle,
+                  ]}
+                >
+                  <Text style={styles.nameTextStyle} numberOfLines={1}>
+                    {(currentPatient && currentPatient!.firstName!.toUpperCase()) || ''}
+                  </Text>
+                  <Text style={styles.nameTextStyle}>{`’S SYMPTOMS`}</Text>
+                  <DropdownGreen />
+                </View>
+              }
+              // selectedProfile={profile}
+              setDisplayAddProfile={() => {}}
+            ></ProfileList>
           }
         />
         <NavigatorSDK

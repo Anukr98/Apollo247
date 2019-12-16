@@ -346,7 +346,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
               medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
                 ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
-                  parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1')
+                  parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1') *
+                  (medPrescription[index]!.medicineToBeTaken!.length || 1) *
+                  parseFloat(medPrescription[index]!.medicineDosage! || '1')
                 : 1;
             const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
 
@@ -430,8 +432,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
                         <Text style={styles.dataTextStyle}>
                           {item.medicineTimings!.length *
-                            parseInt(item!.medicineConsumptionDurationInDays!) *
-                            item.medicineToBeTaken!.length +
+                            parseFloat(item!.medicineConsumptionDurationInDays!) *
+                            item.medicineToBeTaken!.length *
+                            parseFloat(item!.medicineDosage!) +
                             ` ` +
                             item.medicineUnit}
                           {/* parseInt(item.medicineDosage || '1') > 1 */}
