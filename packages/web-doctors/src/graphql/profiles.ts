@@ -1129,6 +1129,7 @@ export const GET_SECRETARY_LIST = gql`
     }
   }
 `;
+
 export const ADD_SECRETARY = gql`
   mutation AddSecretary($secretaryId: ID!) {
     addSecretary(secretaryId: $secretaryId) {
