@@ -257,7 +257,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
 
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
-      ? { patientAge: Math.round(Moment().diff(currentPatient.dateOfBirth, 'years', true)) }
+      ? { patientAge: Math.round(Moment().diff(currentPatient.dateOfBirth, 'years', true)) || '0' }
       : {};
   const patientGender =
     currentPatient &&
