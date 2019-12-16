@@ -1,8 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem } from '@material-ui/core';
-import React from 'react';
+import { Theme, MenuItem, Popover } from '@material-ui/core';
+import React, { useRef } from 'react';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,12 +72,45 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
 export const CancelOrder: React.FC = (props) => {
   const classes = useStyles();
   const [name] = React.useState(1);
+  const mascotRef = useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.shadowHide}>
@@ -116,8 +150,30 @@ export const CancelOrder: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.dialogActions}>
-        <AphButton color="primary">Submit Request</AphButton>
+        <AphButton onClick={() => setIsPopoverOpen(true)} color="primary">Submit Request</AphButton>
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <CancelOrderNotification />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };
