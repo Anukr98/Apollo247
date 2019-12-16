@@ -578,7 +578,7 @@ export const DiagnosticPrescription: React.FC = () => {
             )}
           </Typography>
         </Grid>
-        {!showAddCondition && caseSheetEdit && (
+        {!showAddCondition && caseSheetEdit && favTests && favTests.length > 0 && (
           <Grid item lg={6} xs={12}>
             {favTests && (
               <>
