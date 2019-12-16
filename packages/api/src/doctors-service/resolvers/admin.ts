@@ -28,7 +28,6 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { ApiConstants } from 'ApiConstants';
 import format from 'date-fns/format';
 import { areIntervalsOverlapping, isEqual, isAfter } from 'date-fns';
-import { setWeekWithOptions } from 'date-fns/esm/fp';
 import _ from 'lodash';
 
 export const AdminTypeDefs = gql`
@@ -302,8 +301,6 @@ export const checkOverlapsAndException = async (
           overlapCount++;
           resolve({ overlapCount, dateException });
         }
-
-        const consultMode = item.consultMode;
         currentIndex++;
         if (currentIndex == consultHoursData.length) resolve({ overlapCount, dateException });
       }
