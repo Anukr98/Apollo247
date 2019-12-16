@@ -235,7 +235,7 @@ type MedicineInformationProps = {
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
-  const [medicineQty] = React.useState(1);
+  const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
   const addToCartRef = useRef(null);
@@ -246,10 +246,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [substitute, setSubstitute] = React.useState<MedicineProduct | null>(null);
   const { data } = props;
   const params = useParams<{ sku: string }>();
+  const [pinCode, setPinCode] = React.useState<string>('');
+  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
 
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprdsubt_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
+    deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
   };
 
   const fetchSubstitutes = async () => {
@@ -276,6 +280,34 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       })
       .catch((err) => console.log({ err }));
   };
+
+  const fetchDeliveryTime = async () => {
+    await axios
+      .post(
+        apiDetails.deliveryUrl || '',
+        {
+          params: {
+            postalcode: pinCode,
+            ordertype: 'pharma',
+            lookup: [
+              {
+                sku: params.sku,
+                qty: 1,
+              },
+            ],
+          },
+        },
+        {
+          headers: {
+            Authentication: apiDetails.deliveryAuthToken,
+          },
+        }
+      )
+      .then((res: any) => setDeliveryTime(res.tat.deliveryDate))
+      .catch((error: any) => alert(error));
+  };
+
+  let options = Array.from(Array(20), (_, x) => x);
 
   return (
     <div className={classes.root}>
@@ -310,21 +342,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
                   <div className={classes.deliveryTimeGroup}>
-                    <AphTextField placeholder="Enter Pin Code" />
+                    <AphTextField
+                      placeholder="Enter Pin Code"
+                      onChange={(e) => setPinCode(e.target.value)}
+                    />
                     <AphButton
-                      disabled
+                      disabled={pinCode.length !== 6}
                       classes={{
                         root: classes.checkBtn,
                         disabled: classes.checkBtnDisabled,
                       }}
+                      onClick={() => fetchDeliveryTime()}
                     >
                       Check
                     </AphButton>
                   </div>
-                  <div className={classes.deliveryTimeInfo}>
-                    <span>Delivery Time</span>
-                    <span>By 9th Oct 2019</span>
-                  </div>
+                  {deliveryTime.length > 0 && (
+                    <div className={classes.deliveryTimeInfo}>
+                      <span>Delivery Time</span>
+                      <span>{deliveryTime}</span>
+                    </div>
+                  )}
                 </div>
               </>
             ) : null}
@@ -340,34 +378,21 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 <AphCustomDropdown
                   classes={{ selectMenu: classes.selectMenuItem }}
                   value={medicineQty}
+                  onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                    setMedicineQty(parseInt(e.target.value))
+                  }
                 >
-                  <MenuItem
-                    classes={{
-                      root: classes.menuRoot,
-                      selected: classes.menuSelected,
-                    }}
-                    value={1}
-                  >
-                    1
-                  </MenuItem>
-                  <MenuItem
-                    classes={{
-                      root: classes.menuRoot,
-                      selected: classes.menuSelected,
-                    }}
-                    value={2}
-                  >
-                    2
-                  </MenuItem>
-                  <MenuItem
-                    classes={{
-                      root: classes.menuRoot,
-                      selected: classes.menuSelected,
-                    }}
-                    value={3}
-                  >
-                    3
-                  </MenuItem>
+                  {options.map((option) => (
+                    <MenuItem
+                      classes={{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
+                      value={option}
+                    >
+                      {option}
+                    </MenuItem>
+                  ))}
                 </AphCustomDropdown>
               </div>
             ) : (
@@ -375,8 +400,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             )}
           </div>
           <div className={classes.medicinePrice}>
-            <span className={classes.regularPrice}>(Rs. 999)</span>
-            Rs. 120
+            {data.special_price && (
+              <span className={classes.regularPrice}> (Rs. {data.price}) </span>
+            )}
+            Rs. {data.special_price || data.price}
           </div>
         </div>
       </div>
