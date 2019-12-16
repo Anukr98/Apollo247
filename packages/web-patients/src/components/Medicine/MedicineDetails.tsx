@@ -9,8 +9,7 @@ import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/toLower';
+import stripHtml from 'string-strip-html';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -230,7 +229,7 @@ export const MedicineDetails: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
       })
-      .catch((e) => console.log(e));
+      .catch((e) => alert(e));
   };
 
   useEffect(() => {
@@ -245,40 +244,50 @@ export const MedicineDetails: React.FC = (props) => {
     medicinePharmacyDetails = medicineDetails.PharmaOverview;
   }
 
-  const getLabel = (label: string) => {
-    switch (label) {
-      case 'USES':
-        return 'Overview';
-      case 'HOW TO USE':
-        return 'Usage';
-      case 'DRUGS WARNINGS':
-        return 'Drug Warnings';
+  const getHeader = (caption: string) => {
+    switch (caption) {
+      case 'DRUG ALCOHOL INTERACTION':
+        return 'Alcohol';
+      case 'DRUG PREGNANCY INTERACTION':
+        return 'Pregnancy';
+      case 'DRUG MACHINERY INTERACTION (DRIVING)':
+        return 'Driving';
+      case 'KIDNEY':
+        return 'Kidney';
+      case 'LIVER':
+        return 'Liver';
       default:
-        return _startCase(_toLower(label));
+        return null;
     }
   };
 
   const getData = (overView: MedicineOverView) => {
+    const modifiedData = [
+      { key: 'Overview', value: '' },
+      { key: 'Side Effects', value: '' },
+      { key: 'Usage', value: '' },
+      { key: 'Precautions', value: '' },
+      { key: 'Drug Warnings', value: '' },
+      { key: 'Storage', value: '' },
+    ];
     if (typeof overView !== 'string') {
-      const modifiedData = [
-        { key: 'Overview', value: '' },
-        { key: 'Side Effects', value: '' },
-        { key: 'Usage', value: '' },
-        { key: 'Precautions', value: '' },
-        { key: 'Drug Warnings', value: '' },
-        { key: 'Storage', value: '' },
-      ];
       overView.forEach((v) => {
         if (v.Caption === 'USES') {
           modifiedData.forEach((x) => {
-            if (x.key === 'OverView') {
-              x.value.concat(v.CaptionDesc);
+            if (x.key === 'Overview') {
+              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+            }
+          });
+        } else if (v.Caption === 'SIDE EFFECTS') {
+          modifiedData.forEach((x) => {
+            if (x.key === 'Side Effects') {
+              x.value = x.value.concat(stripHtml(v.CaptionDesc));
             }
           });
         } else if (v.Caption === 'HOW TO USE' || v.Caption === 'HOW IT WORKS') {
           modifiedData.forEach((x) => {
             if (x.key === 'Usage') {
-              x.value.concat(v.CaptionDesc);
+              x.value = x.value.concat(stripHtml(v.CaptionDesc));
             }
           });
         } else if (
@@ -290,99 +299,56 @@ export const MedicineDetails: React.FC = (props) => {
         ) {
           modifiedData.forEach((x) => {
             if (x.key === 'Precautions') {
-              x.value.concat(v.CaptionDesc);
+              x.value = `${x.value}
+              ${getHeader(v.Caption)}: \n
+              ${stripHtml(v.CaptionDesc)} \n
+              `;
             }
           });
         } else if (v.Caption === 'DRUGS WARNINGS') {
           modifiedData.forEach((x) => {
             if (x.key === 'Drug Warnings') {
-              x.value.concat(v.CaptionDesc);
+              x.value = x.value.concat(stripHtml(v.CaptionDesc));
             }
           });
         } else if (v.Caption === 'STORAGE') {
           modifiedData.forEach((x) => {
             if (x.key === 'Storage') {
-              x.value.concat(v.CaptionDesc);
+              x.value = x.value.concat(stripHtml(v.CaptionDesc));
             }
           });
         }
       });
-      return modifiedData;
     }
-    return [];
-  };
-
-  const getRequiredOverViewFields = (overView: MedicineOverView, type: string) => {
-    const tabLabel = [
-      'USES',
-      'HOW TO USE',
-      'SIDE EFFECTS',
-      'PRECAUTIONS',
-      'DRUGS WARNINGS',
-      'STORAGE',
-    ];
-
-    const addTabDesc = [
-      'HOW IT WORKS',
-      'DRUG ALCOHOL INTERACTION',
-      'DRUG PREGNANCY INTERACTION',
-      'DRUG MACHINERY INTERACTION (DRIVING)',
-      'KIDNEY',
-      'LIVER',
-    ];
-    if (typeof overView !== 'string') {
-      switch (type) {
-        case 'label':
-          return overView.filter((item: MedicineOverViewDetails) =>
-            tabLabel.includes(item.Caption)
-          );
-        case 'desc':
-          const data = overView.filter(
-            (item: MedicineOverViewDetails) =>
-              tabLabel.includes(item.Caption) || addTabDesc.includes(item.Caption)
-          );
-          return overView.filter(
-            (item: MedicineOverViewDetails) =>
-              tabLabel.includes(item.Caption) || addTabDesc.includes(item.Caption)
-          );
-      }
-    }
-    return [];
+    return modifiedData;
   };
 
   const renderOverviewTabDesc = (overView: MedicineOverView) => {
-    const data = getRequiredOverViewFields(overView, 'label');
-    // const data = getData(overView);
-    return (
-      data.length > 0 &&
-      data.map(
+    const data = getData(overView);
+    if (typeof overView !== 'string') {
+      return data.map(
         (item, index) =>
           tabValue === index && (
             <div className={classes.tabContainer}>
-              <p>{item.CaptionDesc}</p>
-              {/* <p>{item.value}</p> */}
+              <p>{item.value}</p>
             </div>
           )
-      )
-    );
+      );
+    }
+    return [];
   };
 
   const renderOverviewTabs = (overView: MedicineOverView) => {
-    const data = getRequiredOverViewFields(overView, 'label');
-    // const data = getData(overView);
-    return (
-      data.length > 0 &&
-      data.map((item) => (
-        <Tab
-          classes={{
-            root: classes.tabRoot,
-            selected: classes.tabSelected,
-          }}
-          label={getLabel(item.Caption)}
-          // label={item.key}
-        />
-      ))
-    );
+    const data = getData(overView);
+    return data.map((item) => (
+      <Tab
+        classes={{
+          root: classes.tabRoot,
+          selected: classes.tabSelected,
+        }}
+        label={item.key}
+      />
+    ));
   };
 
   return (
@@ -456,7 +422,7 @@ export const MedicineDetails: React.FC = (props) => {
                   </div>
                 </Scrollbars>
               </div>
-              <MedicineInformation />
+              <MedicineInformation data={medicineDetails} />
             </div>
           )}
         </div>

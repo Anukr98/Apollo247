@@ -1,7 +1,9 @@
 import React from 'react';
+import { CircularProgress, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
+import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -45,55 +47,77 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SubstituteDrugsList: React.FC = (props) => {
-  const classes = useStyles({});
+type SubstituteDrugsListProps = {
+  data: MedicineProductDetails[] | null;
+  setSubstitute: (substitute: MedicineProduct) => void;
+  setIsSubDrugsPopoverOpen: (subDrugsPopoverOpen: boolean) => void;
+};
 
+export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) => {
+  const classes = useStyles({});
+  console.log(props.data);
   return (
     <div className={classes.root}>
+      {!props.data && <CircularProgress />}
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(40vh'}>
         <ul>
-          <li>
+          {props.data &&
+            props.data.map((substitute) => (
+              <li
+                onClick={() => {
+                  props.setSubstitute(substitute);
+                  props.setIsSubDrugsPopoverOpen(false);
+                }}
+              >
+                <div className={classes.name}>{substitute.name}</div>
+                <div className={classes.price}>Rs. {substitute.price}</div>
+                <div className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                </div>
+              </li>
+            ))}
+          {/* <li>
             <div className={classes.name}>Calpol 500mg Tab</div>
             <div className={classes.price}>Rs. 65.5</div>
             <div className={classes.rightArrow}>
-              <img src={require('images/ic_arrow_right.svg')} alt="" />
+              <img src={require("images/ic_arrow_right.svg")} alt="" />
             </div>
           </li>
           <li>
             <div className={classes.name}>Dolo 500mg Tab</div>
             <div className={classes.price}>Rs. 65.5</div>
             <div className={classes.rightArrow}>
-              <img src={require('images/ic_arrow_right.svg')} alt="" />
+              <img src={require("images/ic_arrow_right.svg")} alt="" />
             </div>
           </li>
           <li>
             <div className={classes.name}>Doliprane 500mg Tab</div>
             <div className={classes.price}>Rs. 65.5</div>
             <div className={classes.rightArrow}>
-              <img src={require('images/ic_arrow_right.svg')} alt="" />
+              <img src={require("images/ic_arrow_right.svg")} alt="" />
             </div>
           </li>
           <li>
             <div className={classes.name}>Cabimol 1% 50ml</div>
             <div className={classes.price}>Rs. 65.5</div>
             <div className={classes.rightArrow}>
-              <img src={require('images/ic_arrow_right.svg')} alt="" />
+              <img src={require("images/ic_arrow_right.svg")} alt="" />
             </div>
           </li>
           <li>
             <div className={classes.name}>Lupipara 500mg Tab</div>
             <div className={classes.price}>Rs. 65.5</div>
             <div className={classes.rightArrow}>
-              <img src={require('images/ic_arrow_right.svg')} alt="" />
+              <img src={require("images/ic_arrow_right.svg")} alt="" />
             </div>
           </li>
           <li>
             <div className={classes.name}>Macfast 500mg Tab</div>
             <div className={classes.price}>Rs. 65.5</div>
             <div className={classes.rightArrow}>
-              <img src={require('images/ic_arrow_right.svg')} alt="" />
+              <img src={require("images/ic_arrow_right.svg")} alt="" />
             </div>
-          </li>
+          </li> */}
         </ul>
       </Scrollbars>
     </div>
