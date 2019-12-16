@@ -12,9 +12,6 @@ type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPa
 
 export const bookAppointmentApollo = {
   book: async function(message: TestMessage) {
-    const reqStartTime = new Date();
-    const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
-
     const bookUrl =
       'http://apollostage.quad1test.com/Stage_rest_services/api/eDocConsultation/BookConsultationAppointmentIneDoc/CF662D63-D1F5-47F0-9EAF-D305ED82727A';
     log(
