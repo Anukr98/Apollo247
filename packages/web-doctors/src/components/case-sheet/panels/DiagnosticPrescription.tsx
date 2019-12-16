@@ -580,14 +580,13 @@ export const DiagnosticPrescription: React.FC = () => {
         </Grid>
         {!showAddCondition && caseSheetEdit && (
           <Grid item lg={6} xs={12}>
-            {favTests && favTests.length > 0 && (
+            {favTests && (
               <>
                 <Typography component="h5" variant="h5">
                   Favorite Tests
                 </Typography>
                 <div className={classes.favTestContainer}>
                   {favTests &&
-                    favTests.length > 0 &&
                     favTests.map((favTest: any, id: any) => {
                       return (
                         <Typography component="div" className={classes.listContainer} key={id}>
