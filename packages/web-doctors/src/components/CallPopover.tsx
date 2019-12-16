@@ -760,7 +760,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             isTyping: true,
             messageDate: new Date(),
           };
-          subscribeBrowserButtonsListener();
           pubnub.publish(
             {
               message: text,
@@ -1442,6 +1441,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           doctorInfo: currentPatient,
           reschduleId: reschduleId,
         };
+        setIsPopoverOpen(false);
+        setDisableOnCancel(true);
         pubnub.publish(
           {
             message: {
@@ -1454,12 +1455,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             channel: channel, //chanel
             storeInHistory: true,
           },
-          (status: any, response: any) => {}
+          (status: any, response: any) => {
+            navigateToCalendar();
+          }
         );
-
-        setIsPopoverOpen(false);
-        setDisableOnCancel(true);
-        navigateToCalendar();
       })
       .catch((e) => {
         //setIsLoading(false);
@@ -2075,9 +2074,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           channel: channel,
                           storeInHistory: true,
                         },
-                        (status: any, response: any) => {}
+                        (status: any, response: any) => {
+                          navigateToCalendar();
+                        }
                       );
-                      navigateToCalendar();
                     })
                     .catch((e: ApolloError) => {
                       setCancelError(e.graphQLErrors[0].message);
@@ -2170,9 +2170,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         channel: channel,
                         storeInHistory: true,
                       },
-                      (status: any, response: any) => {}
+                      (status: any, response: any) => {
+                        navigateToCalendar();
+                      }
                     );
-                    navigateToCalendar();
                   })
                   .catch((e: ApolloError) => {
                     setCancelError(e.graphQLErrors[0].message);

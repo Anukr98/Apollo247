@@ -148,7 +148,10 @@ export const MedicineAutoSearch: React.FC = (props) => {
             }
           }}
         />
-        <AphButton className={classes.searchBtn}>
+        <AphButton
+          className={classes.searchBtn}
+          onClick={() => (window.location.href = clientRoutes.searchByMedicine())}
+        >
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>

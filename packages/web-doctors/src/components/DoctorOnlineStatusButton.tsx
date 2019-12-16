@@ -97,7 +97,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
       {(updateDoctorOnlineStatus, { loading }) => (
         <>
           {loading && <CircularProgress size={20} />}
-          {ActiveQueueConsultValues === 0 ? (
+          {ActiveQueueConsultValues === 0 && onlineStatus === ONLINE ? (
             <IdleTimer
               ref={idleTimerRef}
               element={document}

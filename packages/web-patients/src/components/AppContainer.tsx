@@ -29,7 +29,6 @@ import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { PHRLanding } from 'components/HealthRecords/PHRLanding';
 import { AddRecords } from 'components/HealthRecords/AddRecords';
 import { OrdersLanding } from 'components/Orders/OrdersLanding';
-import { TrackOrderLanding } from 'components/Orders/TrackOrderLanding';
 import { StoragePoc } from 'components/StoragePoc';
 import { TrackJS } from 'trackjs';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
@@ -89,7 +88,6 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
         <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
         <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
-        <AuthRouted exact path={clientRoutes.trackOrders()} component={TrackOrderLanding} />
       </Switch>
     </div>
   );

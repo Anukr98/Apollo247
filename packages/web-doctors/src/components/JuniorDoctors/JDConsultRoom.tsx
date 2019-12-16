@@ -1309,7 +1309,7 @@ export const JDConsultRoom: React.FC = () => {
       </Dialog>
 
       <Dialog
-        open={jrdNoFillDialog}
+        open={!isDialogOpen && jrdNoFillDialog}
         onClose={() => setJrdNoFillDialog(false)}
         disableBackdropClick
         disableEscapeKeyDown
