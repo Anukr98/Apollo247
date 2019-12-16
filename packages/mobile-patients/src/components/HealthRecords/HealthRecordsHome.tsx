@@ -86,6 +86,9 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
+  nameTextContainerStyle: {
+    maxWidth: '65%',
+  },
   nameTextStyle: {
     marginLeft: 5,
     color: '#02475b',
@@ -381,8 +384,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 }}
               >
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View>
-                  <Text style={styles.nameTextStyle}>
+                <View style={styles.nameTextContainerStyle}>
+                  <Text style={styles.nameTextStyle} numberOfLines={1}>
                     {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />

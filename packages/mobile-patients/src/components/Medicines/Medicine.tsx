@@ -63,6 +63,7 @@ import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import moment from 'moment';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -90,6 +91,9 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
+  nameTextContainerStyle: {
+    maxWidth: '65%',
+  },
   nameTextStyle: {
     marginLeft: 5,
     color: '#02475b',
@@ -98,9 +102,9 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    marginTop: 2,
-    //marginHorizontal: 5,
-    marginBottom: 5,
+    //marginTop: 5,
+    marginHorizontal: 5,
+    marginBottom: 6,
   },
 });
 
@@ -111,7 +115,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
-  const cartItemsCount = cartItems.length;
+  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
@@ -174,10 +179,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(
-            MEDICINE_LANDING_PAGE_DATA,
-            JSON.stringify(localData)
-          ).catch(() => {});
+          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
+            () => {}
+          );
         setData(d.data);
         setLoading(false);
       })
@@ -1268,8 +1272,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   }}
                 >
                   <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                  <View>
-                    <Text style={styles.nameTextStyle}>
+                  <View style={styles.nameTextContainerStyle}>
+                    <Text style={styles.nameTextStyle} numberOfLines={1}>
                       {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                     </Text>
                     <View style={styles.seperatorStyle} />

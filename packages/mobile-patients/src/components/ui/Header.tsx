@@ -66,10 +66,12 @@ export interface HeaderProps {
   container?: StyleProp<ViewStyle>;
   onPress?: TouchableOpacityProps['onPress'];
   onPressLeftIcon?: TouchableOpacityProps['onPress'];
+  titleTextProps?: TextProps;
+  titleTextViewStyle?: ViewStyle;
 }
 
 export const Header: React.FC<HeaderProps> = (props) => {
-  const { rightText, title, leftIcon, rightIcon } = props;
+  const { rightText, title, leftIcon, rightIcon, titleTextProps, titleTextViewStyle } = props;
 
   return (
     <View style={[styles.container, props.container]}>
@@ -96,9 +98,13 @@ export const Header: React.FC<HeaderProps> = (props) => {
           </TouchableOpacity>
         )}
       </View>
-      <View style={{ flexGrow: 1 }}>
+      <View style={[{ flexGrow: 1 }, titleTextViewStyle]}>
         {title && (
-          <Text style={[styles.titleTextStyle, props.titleStyle]} numberOfLines={1}>
+          <Text
+            style={[styles.titleTextStyle, props.titleStyle]}
+            numberOfLines={1}
+            {...titleTextProps}
+          >
             {title}
           </Text>
         )}

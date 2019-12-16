@@ -430,7 +430,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
                         <Text style={styles.dataTextStyle}>
                           {item.medicineTimings!.length *
-                            parseInt(item!.medicineConsumptionDurationInDays!) +
+                            parseInt(item!.medicineConsumptionDurationInDays!) *
+                            item.medicineToBeTaken!.length +
                             ` ` +
                             item.medicineUnit}
                           {/* parseInt(item.medicineDosage || '1') > 1 */}
