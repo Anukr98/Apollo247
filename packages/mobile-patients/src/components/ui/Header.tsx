@@ -60,6 +60,7 @@ export interface HeaderProps {
   rightText?: rightText;
   title?: string;
   titleStyle?: StyleProp<TextStyle>;
+  titleComponent?: React.ReactNode;
   leftIcon?: 'backArrow' | 'close' | 'backArrowWhite';
   rightIcon?: string;
   rightComponent?: React.ReactNode;
@@ -71,7 +72,15 @@ export interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = (props) => {
-  const { rightText, title, leftIcon, rightIcon, titleTextProps, titleTextViewStyle } = props;
+  const {
+    titleComponent,
+    rightText,
+    title,
+    leftIcon,
+    rightIcon,
+    titleTextProps,
+    titleTextViewStyle,
+  } = props;
 
   return (
     <View style={[styles.container, props.container]}>
@@ -99,6 +108,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
         )}
       </View>
       <View style={[{ flexGrow: 1 }, titleTextViewStyle]}>
+        {titleComponent ? titleComponent : null}
         {title && (
           <Text
             style={[styles.titleTextStyle, props.titleStyle]}

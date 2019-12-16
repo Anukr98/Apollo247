@@ -2044,7 +2044,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               width: 244,
-              height: 176,
+              // height: 176,
               backgroundColor: '#0087ba',
               marginLeft: 38,
               borderRadius: 10,
