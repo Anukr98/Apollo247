@@ -180,15 +180,20 @@ const uploadChatDocumentToPrism: Resolver<
     return { status: false, fileId: '' };
   }
 
+  //get authtoken for the logged in user mobile number
+  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
+
+  if (!prismUHIDAuthToken) return { status: false, fileId: '' };
+
   //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
 
   const uploadDocInput = {
     ...args,
     category: PRISM_DOCUMENT_CATEGORY.OpSummary,
   };
 
-  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismAuthToken, uploadDocInput);
+  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);
 
   //upload file to blob storage & save to appointment documents
   uploadFileToBlobStorage(args.fileType, args.base64FileInput, appointmentDetails, consultsDb);
