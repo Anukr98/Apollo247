@@ -16,20 +16,15 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SAVE_PRESCRIPTION_MEDICINE_ORDER,
-  UPLOAD_FILE,
   UPLOAD_DOCUMENT,
-  DOWNLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   MEDICINE_DELIVERY_TYPE,
-  PrescriptionMedicineInput,
+  PRISM_DOCUMENT_CATEGORY,
+  UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  SavePrescriptionMedicineOrder,
-  SavePrescriptionMedicineOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
-import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { SavePrescriptionMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
+import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -43,11 +38,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { uploadDocument } from '../../graphql/types/uploadDocument';
-import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelectionView';
 
 const styles = StyleSheet.create({
@@ -115,37 +108,58 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const client = useApolloClient();
   const { deliveryAddressId, storeId } = useShoppingCart();
 
-  // const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
-  //   return Promise.all(
-  //     physicalPrescriptions.map((item) =>
-  //       client.mutate<uploadFile, uploadFileVariables>({
-  //         mutation: UPLOAD_FILE,
-  //         fetchPolicy: 'no-cache',
-  //         variables: {
-  //           fileType: item.fileType,
-  //           base64FileInput: item.base64,
-  //         },
-  //       })
-  //     )
-  //   );
-  // };
   const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
     return Promise.all(
-      physicalPrescriptions.map((item) =>
-        client.mutate<uploadDocument>({
+      physicalPrescriptions.map((item) => {
+        const variables = {
+          UploadDocumentInput: {
+            base64FileInput: item.base64,
+            category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
+            fileType:
+              item.fileType == 'jpg'
+                ? UPLOAD_FILE_TYPES.JPEG
+                : item.fileType == 'png'
+                ? UPLOAD_FILE_TYPES.PNG
+                : item.fileType == 'pdf'
+                ? UPLOAD_FILE_TYPES.PDF
+                : UPLOAD_FILE_TYPES.JPEG,
+            patientId: g(currentPatient, 'id')!,
+          },
+        };
+        console.log(JSON.stringify(variables));
+        return client.mutate<uploadDocument, uploadDocumentVariables>({
           mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
-          variables: {
-            UploadDocumentInput: {
-              base64FileInput: item.base64,
-              category: 'HealthChecks',
-              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
-              patientId: currentPatient && currentPatient!.id,
-            },
-          },
-        })
-      )
+          variables,
+        });
+      })
     );
+  };
+
+  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+    client
+      .mutate({
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+        variables,
+      })
+      .then(({ data }) => {
+        console.log({ data });
+        const { errorCode } = g(data, 'SavePrescriptionMedicineOrder')! || {};
+
+        if (errorCode) {
+          renderErrorAlert(`Something went wrong, unable to place order.`);
+          return;
+        }
+        props.navigation.goBack();
+        renderSuccessPopup();
+      })
+      .catch((e) => {
+        console.log({ e });
+        renderErrorAlert(`Something went wrong, please try later.`);
+      })
+      .finally(() => {
+        setLoading!(false);
+      });
   };
 
   const onPressSubmit = async () => {
@@ -154,140 +168,52 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       'Graph ql call for save prescription medicine order'
     );
     setLoading!(true);
-    if (EPrescriptions.length > 0) {
-      const prescriptionMedicineInput: PrescriptionMedicineInput = {
-        patientId: (currentPatient && currentPatient.id) || '',
-        medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
-        prescriptionImageUrl: EPrescriptions.map((item) => item.uploadedUrl).join(','),
-        shopId: storeId || '0',
-        appointmentId: '',
-        patinetAddressId: deliveryAddressId || '',
-        prismPrescriptionFileId: EPrescriptions.map((item) => item.prismPrescriptionFileId).join(
-          ','
-        ),
+
+    try {
+      // Physical Prescription Upload
+      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(PhysicalPrescriptions);
+      console.log('API call success');
+
+      const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
+        ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
+        : [];
+
+      const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
+      const phyPresPrismIds = PhysicalPrescriptions.map(
+        (item) => item.prismPrescriptionFileId
+      ).filter((i) => i);
+
+      const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl).filter((i) => i);
+      const ePresPrismIds = EPrescriptions.map((item) => item.prismPrescriptionFileId).filter(
+        (i) => i
+      );
+
+      const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
+        prescriptionMedicineInput: {
+          patientId: (currentPatient && currentPatient.id) || '',
+          medicineDeliveryType: deliveryAddressId
+            ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+            : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          shopId: storeId || '0',
+          appointmentId: '',
+          patinetAddressId: deliveryAddressId || '',
+          prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
+          prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+        },
       };
-      console.log('prescriptionMedicineInput', prescriptionMedicineInput);
-      client
-        .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
-          mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-          variables: { prescriptionMedicineInput },
-        })
-        .then((_data) => {
-          setLoading!(false);
-          const errorMessage = g(_data, 'data', 'SavePrescriptionMedicineOrder', 'errorMessage');
-          if (errorMessage) {
-            setLoading!(false);
-            renderUploadErrorPopup('Something went wrong.');
-          } else {
-            props.navigation.goBack();
-            renderSuccessPopup();
-          }
-        })
-        .catch((e) => {
-          renderUploadErrorPopup('Something went wrong.');
-          console.log('Error \n', { e });
-        })
-        .finally(() => {
-          setLoading!(false);
-        });
-    } else {
-      console.log('From Images');
-
-      try {
-        //if (PhysicalPrescriptions.length > 0) {
-        const uploadedFiles = await uploadMultipleFiles(PhysicalPrescriptions);
-        console.log('medicineuploadfiles', uploadedFiles);
-        const uploadUrlscheck = uploadedFiles.map((item) =>
-          item.data!.uploadDocument.status ? item.data!.uploadDocument : null
-        );
-        console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-        var filtered = uploadUrlscheck.filter((el) => el != null);
-        console.log('filtered', filtered);
-        if (filtered.length > 0) {
-          const prescriptionMedicineInput: PrescriptionMedicineInput = {
-            patientId: (currentPatient && currentPatient.id) || '',
-            medicineDeliveryType: deliveryAddressId
-              ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-              : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-            prescriptionImageUrl: filtered.map((item) => item!.filePath).join(','),
-            shopId: storeId || '0',
-            appointmentId: '',
-            patinetAddressId: deliveryAddressId || '',
-            prismPrescriptionFileId: filtered.map((item) => item!.fileId).join(','),
-          };
-          console.log('prescriptionMedicineInput', prescriptionMedicineInput);
-          client
-            .mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
-              mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-              variables: { prescriptionMedicineInput },
-            })
-            .then((_data) => {
-              setLoading!(false);
-              const errorMessage = g(
-                _data,
-                'data',
-                'SavePrescriptionMedicineOrder',
-                'errorMessage'
-              );
-              if (errorMessage) {
-                setLoading!(false);
-                renderUploadErrorPopup('Something went wrong.');
-              } else {
-                props.navigation.goBack();
-                renderSuccessPopup();
-              }
-            })
-            .catch((e) => {
-              console.log('Error \n', { e });
-              renderUploadErrorPopup('Something went wrong.');
-            });
-        } else {
-          setLoading!(false);
-          renderUploadErrorPopup('Uploaded images failed.');
-        }
-
-        // const uploadedUrls = uploadedFiles.map(({ data }) => g(data, 'uploadFile', 'filePath')!);
-        // ePresAndPhysicalPresUrls = [...ePresAndPhysicalPresUrls, ...uploadedUrls];
-        // }
-        // const prescriptionMedicineInput: PrescriptionMedicineInput = {
-        //   patientId: (currentPatient && currentPatient.id) || '',
-        //   medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
-        //   prescriptionImageUrl: ePresAndPhysicalPresUrls.join(', '),
-        //   shopId: '0',
-        //   appointmentId: '',
-        //   patinetAddressId: '',
-        // };
-
-        // const { data } = await client.mutate<
-        //   SavePrescriptionMedicineOrder,
-        //   SavePrescriptionMedicineOrderVariables
-        // >({
-        //   mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-        //   variables: { prescriptionMedicineInput },
-        // });
-        // setLoading!(false);
-        // const errorMessage = g(data, 'SavePrescriptionMedicineOrder', 'errorMessage');
-        // if (errorMessage) {
-        //   renderUploadErrorPopup(
-        //     (errorMessage && errorMessage.endsWith('.') ? errorMessage : `${errorMessage}.`) ||
-        //       'Something went wrong.'
-        //   );
-        // } else {
-        //   props.navigation.goBack();
-        //   renderSuccessPopup();
-        // }
-      } catch (error) {
-        console.log({ error });
-        setLoading!(false);
-        renderUploadErrorPopup('Error occurred while uploading prescription.');
-      }
+      aphConsole.log(JSON.stringify(prescriptionMedicineInput));
+      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+    } catch (error) {
+      console.log({ error });
+      setLoading!(false);
+      renderErrorAlert('Error occurred while uploading physical prescription(s).');
     }
   };
 
-  const renderUploadErrorPopup = (title: string) =>
+  const renderErrorAlert = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
-      description: `${title} Please try back later.`.trim(),
+      description: desc,
       unDismissable: true,
     });
 
@@ -434,6 +360,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        showConsultPrescriptionsOnly={true} // not showing e-prescriptions for non-cart flow
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {

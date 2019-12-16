@@ -1677,13 +1677,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(true);
     }
 
-    // const result = insertText.filter((obj: any) => {
-    //   // console.log('resultinsertText', obj.message);
-    //   return obj.message === rescheduleConsultMsg;
-    // });
-
-    // checkForRescheduleMessage(insertText);
-
     setTimeout(() => {
       flatListRef.current! &&
         flatListRef.current!.scrollToEnd({

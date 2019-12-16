@@ -226,12 +226,12 @@ export const Login: React.FC<LoginProps> = (props) => {
             });
           } else {
             CommonSetUserBugsnag(phoneNumber);
+            AsyncStorage.setItem('phoneNumber', phoneNumber);
 
             sendOtp(phoneNumber)
               .then((confirmResult) => {
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
                 console.log('confirmResult login', confirmResult);
-                AsyncStorage.setItem('phoneNumber', phoneNumber);
 
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
@@ -242,8 +242,8 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
 
-                CommonLogEvent(AppRoutes.Login, error.message);
-                CommonBugFender(AppRoutes.Login, error);
+                CommonLogEvent('OTP_SEND_FAIL', error.message);
+                CommonBugFender('OTP_SEND_FAIL', error);
                 Alert.alert(
                   'Error',
                   (error && error.message) || 'The interaction was cancelled by the user.'
