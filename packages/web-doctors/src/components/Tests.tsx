@@ -247,7 +247,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexWrap: 'wrap',
       width: '100%',
       position: 'relative',
-      padding: '5px 5px 10px 5px',
+      padding: '0px 5px 0px 10px',
       '& h5': {
         color: 'rgba(2, 71, 91, 0.6)',
         fontSize: 14,

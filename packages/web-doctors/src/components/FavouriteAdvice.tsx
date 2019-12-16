@@ -119,6 +119,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#fc9916',
       fontSize: 14,
       fontWeight: 600,
+      padding: '0 5px',
       '& img': {
         marginRight: 10,
       },
