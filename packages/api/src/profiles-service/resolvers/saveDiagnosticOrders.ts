@@ -19,6 +19,7 @@ import {
   AddProcessResult,
 } from 'types/diagnosticOrderTypes';
 import { format } from 'date-fns';
+import { log } from 'customWinstonLogger';
 
 export const saveDiagnosticOrderTypeDefs = gql`
   enum DIAGNOSTIC_ORDER_STATUS {
@@ -338,6 +339,15 @@ const SaveDiagnosticOrder: Resolver<
     const preBookingUrl = process.env.DIAGNOSTIC_PREBOOKING_URL
       ? process.env.DIAGNOSTIC_PREBOOKING_URL
       : '';
+
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_DIAGNOSTICS: ${preBookingUrl}`,
+      'SaveDiagnosticOrder()->preBookingApi()->API_CALL_STARTING',
+      JSON.stringify(preBookingInput),
+      ''
+    );
+
     const preBookingResp = await fetch(preBookingUrl, {
       method: 'POST',
       body: JSON.stringify(preBookingInput),
@@ -346,6 +356,14 @@ const SaveDiagnosticOrder: Resolver<
 
     //console.log(preBookingResp, 'pre booking resp');
     const textRes = await preBookingResp.text();
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'SaveDiagnosticOrder()->preBookingApi()->API_CALL_RESPONSE',
+      textRes,
+      ''
+    );
+
     const preBookResp: DiagnosticPreBookingResult = JSON.parse(textRes);
     console.log(preBookResp, preBookResp.PreBookingID, 'text response');
     const hubDetails = await diagnosticRepo.getHubDetails(
@@ -459,6 +477,14 @@ const SaveDiagnosticOrder: Resolver<
         ? process.env.DIAGNOSTIC_ADD_PROCESS_URL
         : '';
       console.log(addProcessInput, 'addProcessInput');
+      log(
+        'profileServiceLogger',
+        `EXTERNAL_API_CALL_DIAGNOSTICS: ${addProcessUrl}`,
+        'SaveDiagnosticOrder()->addProcessUrlApi->API_CALL_STARTING',
+        JSON.stringify(addProcessInput),
+        ''
+      );
+
       const addProcessResp = await fetch(addProcessUrl, {
         method: 'POST',
         body: JSON.stringify(addProcessInput),
@@ -467,6 +493,14 @@ const SaveDiagnosticOrder: Resolver<
 
       //console.log(addProcessResp, 'add process resp');
       const textProcessRes = await addProcessResp.text();
+      log(
+        'profileServiceLogger',
+        'API_CALL_RESPONSE',
+        'SaveDiagnosticOrder()->preBookingApi()->API_CALL_RESPONSE',
+        textProcessRes,
+        ''
+      );
+
       const addProceResp: AddProcessResult = JSON.parse(textProcessRes);
       if (addProceResp.failureList.length > 0) {
         errorCode = -1;

@@ -16,6 +16,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PharmaLineItem, PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import { differenceInYears } from 'date-fns';
+import { log } from 'customWinstonLogger';
 
 export const saveMedicineOrderPaymentTypeDefs = gql`
   enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -226,7 +227,13 @@ const SaveMedicineOrderPayment: Resolver<
   if (placeOrderUrl == '' || placeOrderToken == '') {
     throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
   }
-
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PHARMACY: ${placeOrderUrl}`,
+    'SaveMedicineOrderPayment()->API_CALL_STARTING',
+    JSON.stringify(medicineOrderPharma),
+    ''
+  );
   const pharmaResp = await fetch(placeOrderUrl, {
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
@@ -234,11 +241,26 @@ const SaveMedicineOrderPayment: Resolver<
   });
 
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'SaveMedicineOrderPayment()->API_CALL_RESPONSE',
+      JSON.stringify(pharmaResp),
+      ''
+    );
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
 
   console.log(pharmaResp, 'pharmaResp');
   const textRes = await pharmaResp.text();
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'SaveMedicineOrderPayment()->API_CALL_RESPONSE',
+    textRes,
+    ''
+  );
+
   const orderResp: PharmaResponse = JSON.parse(textRes);
   console.log(orderResp, 'respp', orderResp.ordersResult.Message);
   if (orderResp.ordersResult.Status === false) {
