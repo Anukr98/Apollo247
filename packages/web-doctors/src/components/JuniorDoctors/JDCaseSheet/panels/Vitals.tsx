@@ -130,15 +130,8 @@ export const Vitals: React.FC = () => {
                 }}
                 // inputRef={heightRef}
               />
-              {caseSheetEdit && height !== '' && (
+              {/* {caseSheetEdit && height !== '' && (
                 <div className={classes.boxActions}>
-                  {/* <AphButton
-                    onClick={() => {
-                      setDisableHeightFocus(false);
-                    }}
-                  >
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton> */}
                   <AphButton
                     onClick={() => {
                       setHeight('');
@@ -147,7 +140,7 @@ export const Vitals: React.FC = () => {
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </Grid>
@@ -165,11 +158,9 @@ export const Vitals: React.FC = () => {
                 }}
                 // inputRef={weightRef}
               />
-              {caseSheetEdit && weight !== '' && (
+              {/* {caseSheetEdit && weight !== '' && (
                 <div className={classes.boxActions}>
-                  {/* <AphButton onClick={() => setDisableWeightFocus(false)}>
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton> */}
+                  
                   <AphButton
                     onClick={() => {
                       setWeight('');
@@ -178,7 +169,7 @@ export const Vitals: React.FC = () => {
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </Grid>
@@ -196,11 +187,8 @@ export const Vitals: React.FC = () => {
                 }}
                 // inputRef={bpRef}
               />
-              {caseSheetEdit && bp !== '' && (
+              {/* {caseSheetEdit && bp !== '' && (
                 <div className={classes.boxActions}>
-                  {/* <AphButton onClick={() => setDisableBPFocus(false)}>
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton> */}
                   <AphButton
                     onClick={() => {
                       setBp('');
@@ -209,7 +197,7 @@ export const Vitals: React.FC = () => {
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </Grid>
@@ -227,11 +215,9 @@ export const Vitals: React.FC = () => {
                 }}
                 // inputRef={tempRef}
               />
-              {caseSheetEdit && temperature !== '' && (
+              {/* {caseSheetEdit && temperature !== '' && (
                 <div className={classes.boxActions}>
-                  {/* <AphButton onClick={() => setDisableTempFocus(false)}>
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton> */}
+                 
                   <AphButton
                     onClick={() => {
                       setTemperature('');
@@ -240,7 +226,7 @@ export const Vitals: React.FC = () => {
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </Grid>

@@ -254,42 +254,46 @@ export const OtherInstructions: React.FC = () => {
           )}
         </Grid>
         <Grid item lg={6} xs={12}>
-          <Typography component="h5" variant="h5">
-            Favourite Instructions
-          </Typography>
-          <Typography component="div" className={classes.listContainer}>
-            <div className={classes.othersBtnfavContainer}>
-              {adviceList !== null &&
-                adviceList.length > 0 &&
-                adviceList!.map(
-                  (item, idx) =>
-                    item!.instruction!.trim() !== '' && (
-                      <div className={classes.othersBtnfav}>
-                        <Chip className={classes.chip} key={idx} label={item!.instruction} />
-                        <img
-                          src={caseSheetEdit && require('images/add_doctor_white.svg')}
-                          onClick={() => {
-                            if (item!.instruction.trim() !== '') {
-                              selectedValues!.splice(idx, 0, {
-                                instruction: item!.instruction,
-                                __typename: 'OtherInstructions',
-                              });
-                              setSelectedValues(selectedValues);
-                              setIdx(selectedValues!.length + 1);
-                              setTimeout(() => {
-                                setOtherInstruct('');
-                              }, 10);
-                            } else {
-                              setOtherInstruct('');
-                            }
-                          }}
-                          alt=""
-                        />
-                      </div>
-                    )
-                )}
-            </div>
-          </Typography>
+          {adviceList !== null && adviceList.length > 0 && (
+            <>
+              <Typography component="h5" variant="h5">
+                Favourite Instructions
+              </Typography>
+              <Typography component="div" className={classes.listContainer}>
+                <div className={classes.othersBtnfavContainer}>
+                  {adviceList !== null &&
+                    adviceList.length > 0 &&
+                    adviceList!.map(
+                      (item, idx) =>
+                        item!.instruction!.trim() !== '' && (
+                          <div className={classes.othersBtnfav}>
+                            <Chip className={classes.chip} key={idx} label={item!.instruction} />
+                            <img
+                              src={caseSheetEdit && require('images/add_doctor_white.svg')}
+                              onClick={() => {
+                                if (item!.instruction.trim() !== '') {
+                                  selectedValues!.splice(idx, 0, {
+                                    instruction: item!.instruction,
+                                    __typename: 'OtherInstructions',
+                                  });
+                                  setSelectedValues(selectedValues);
+                                  setIdx(selectedValues!.length + 1);
+                                  setTimeout(() => {
+                                    setOtherInstruct('');
+                                  }, 10);
+                                } else {
+                                  setOtherInstruct('');
+                                }
+                              }}
+                              alt=""
+                            />
+                          </div>
+                        )
+                    )}
+                </div>
+              </Typography>
+            </>
+          )}
         </Grid>
       </Grid>
     </Typography>
