@@ -6,6 +6,7 @@ import { ApiConstants } from 'ApiConstants';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { log } from 'customWinstonLogger';
 
 @EntityRepository(Facility)
 export class FacilityRepository extends Repository<Facility> {
@@ -35,9 +36,25 @@ export class FacilityRepository extends Repository<Facility> {
     const userLatLong = `${userGeoLocation.latitude},${userGeoLocation.longitude}`;
 
     //get distances of facilities from user geolocation using google maps distance matrix api
-    const distancesPromise = await fetch(
-      `${ApiConstants.GOOGLE_MAPS_DISTANCE_MATRIX_URL}?origins=${userLatLong}&destinations=${pipedFacilityLatLongs}&mode=driving&language=pl-PL&sensor=true&key=${process.env.GOOGLE_MAPS_KEY}`
+    const mapsUrl = `${ApiConstants.GOOGLE_MAPS_DISTANCE_MATRIX_URL}?origins=${userLatLong}&destinations=${pipedFacilityLatLongs}&mode=driving&language=pl-PL&sensor=true&key=${process.env.GOOGLE_MAPS_KEY}`;
+    log(
+      'doctorServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${mapsUrl}`,
+      'getAllFacilityDistances()->googleDistanceMatrixApi->API_CALL_STARTING',
+      '',
+      ''
     );
+    const distancesPromise = await fetch(mapsUrl).catch((error) => {
+      log(
+        'doctorServiceLogger',
+        'API_CALL_ERROR',
+        'getAllFacilityDistances()->googleDistanceMatrixApi->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
+
+      throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+    });
 
     type GoogleMapsValue = { text: string; value: string };
     type GoogleMapsElement = {
@@ -47,6 +64,14 @@ export class FacilityRepository extends Repository<Facility> {
     };
 
     const distancesResult = await distancesPromise.json();
+    log(
+      'doctorServiceLogger',
+      'API_CALL_RESPONSE',
+      'getAllFacilityDistances()->googleDistanceMatrixApi->API_CALL_RESPONSE',
+      JSON.stringify(distancesResult),
+      ''
+    );
+
     if (distancesResult.status == 'OK' && distancesResult.rows.length > 0) {
       if (distancesResult.rows[0].elements.length > 0) {
         distancesResult.rows[0].elements.forEach((element: GoogleMapsElement, index: number) => {

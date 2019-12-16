@@ -7,6 +7,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import fetch from 'node-fetch';
 import { PharmaCancelResponse } from 'types/medicineOrderTypes';
+import { log } from 'customWinstonLogger';
 
 export const medicineOrderCancelTypeDefs = gql`
   input MedicineOrderCancelInput {
@@ -62,17 +63,50 @@ const cancelMedicineOrder: Resolver<
   if (cancelOrderUrl == '' || placeOrderToken == '') {
     throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
   }
+
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PRISM: ${cancelOrderUrl}`,
+    'cancelMedicineOrder()->API_CALL_STARTING',
+    '',
+    ''
+  );
   const pharmaResp = await fetch(cancelOrderUrl, {
     method: 'POST',
     body: JSON.stringify(cancelOrderInput),
     headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+  }).catch((error) => {
+    log(
+      'profileServiceLogger',
+      'API_CALL_ERROR',
+      'cancelMedicineOrder()->CATCH_BLOCK',
+      '',
+      JSON.stringify(error)
+    );
+    throw new AphError(AphErrorMessages.CANCEL_MEDICINE_ORDER_ERROR);
   });
 
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'cancelMedicineOrder()->API_CALL_RESPONSE',
+      JSON.stringify(pharmaResp),
+      ''
+    );
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
 
   const textRes = await pharmaResp.text();
+
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'cancelMedicineOrder()->API_CALL_RESPONSE',
+    textRes,
+    ''
+  );
+
   const orderResp: PharmaCancelResponse = JSON.parse(textRes);
   console.log(orderResp, 'respp', orderResp.ordersCancelResult.Message);
 

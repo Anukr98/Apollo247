@@ -14,6 +14,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+//import { addMinutes, format, addMilliseconds } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const bookAppointmentTypeDefs = gql`
