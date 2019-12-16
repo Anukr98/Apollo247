@@ -970,7 +970,7 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const dosageCount =
               medicine.medicineTimings.length > 0
-                ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+                ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
                 : medicine.medicineDosage;
             return (
               <div style={{ position: 'relative' }} key={index}>
@@ -1014,7 +1014,7 @@ export const MedicinePrescription: React.FC = () => {
             </AphButton>
           )}
         </Grid>
-        {!showAddCondition && caseSheetEdit && (
+        {!showAddCondition && caseSheetEdit && favouriteMedicine && favouriteMedicine.length > 0 && (
           <Grid item lg={6} xs={12}>
             <div className={classes.favmedicineHeading}>Favourite Medicines</div>
             <div className={classes.mediceneContainer}>
@@ -1050,7 +1050,7 @@ export const MedicinePrescription: React.FC = () => {
                       ? favMedicine &&
                         favMedicine.medicineTimings &&
                         favMedicine.medicineTimings.length > 0
-                        ? parseInt(favMedicine && favMedicine.medicineDosage) *
+                        ? parseFloat(favMedicine && favMedicine.medicineDosage) *
                           favMedicine.medicineTimings.length
                         : favMedicine && favMedicine.medicineDosage
                       : '';
