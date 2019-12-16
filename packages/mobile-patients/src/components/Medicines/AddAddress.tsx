@@ -656,11 +656,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               addressLine1.startsWith(' ') ||
               addressLine1.startsWith('.') ||
               addressLine1.startsWith(',') ||
+              addressLine1.startsWith('/') ||
               addressLine1.startsWith('-')
             ) {
               return;
             }
-            if (/^([a-zA-Z0-9,.-\s])+$/.test(addressLine1)) {
+            if (/^([a-zA-Z0-9/,.-\s])+$/.test(addressLine1)) {
               setaddressLine1(addressLine1);
             }
           }}

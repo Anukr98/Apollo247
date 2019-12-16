@@ -444,7 +444,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              style={{ marginRight: 24 }}
+              style={{ marginRight: medicineList.length ? 24 : 0 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
@@ -453,9 +453,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
-              <Filter />
-            </TouchableOpacity>
+            {!!medicineList.length && (
+              <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
+                <Filter />
+              </TouchableOpacity>
+            )}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
