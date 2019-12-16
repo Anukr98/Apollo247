@@ -22,9 +22,7 @@ export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_m
 
 export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList {
   __typename: "FavouriteMedicineList";
-  medicineList:
-    | (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]
-    | null;
+  medicineList: (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null;
 }
 
 export interface GetDoctorFavouriteMedicineList {
