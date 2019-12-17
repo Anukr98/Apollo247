@@ -5011,6 +5011,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             borderRadius: 10,
           }}
           source={{ uri: url }}
+          useWebKit={true}
         />
       </View>
     );
