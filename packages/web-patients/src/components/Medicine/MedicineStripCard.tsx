@@ -478,22 +478,6 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                           ...previousValues,
                           ...existingSelectedPackedValues,
                         ]);
-                        // addCartItem({
-                        //   description: medicineDescription,
-                        //   id: medicineId,
-                        //   image: medicineImage,
-                        //   is_in_stock: isInStock,
-                        //   is_prescription_required: medicineDetails.is_prescription_required,
-                        //   name: medicineName,
-                        //   price: parseFloat(medicinePrice),
-                        //   sku: medicineSku,
-                        //   small_image: medicineSmallImage,
-                        //   status: status,
-                        //   thumbnail: thumbnail,
-                        //   type_id: typeId,
-                        //   quantity: selectedPackedQty[index],
-                        //   mou: mou,
-                        // });
                       }}
                     >
                       <img

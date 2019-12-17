@@ -50,7 +50,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type SubstituteDrugsListProps = {
   data: MedicineProductDetails[] | null;
-  setSubstitute: (substitute: MedicineProduct) => void;
   setIsSubDrugsPopoverOpen: (subDrugsPopoverOpen: boolean) => void;
 };
 
@@ -65,7 +64,6 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
             props.data.map((substitute) => (
               <li
                 onClick={() => {
-                  // props.setSubstitute(substitute);
                   props.setIsSubDrugsPopoverOpen(false);
                   window.location.href = clientRoutes.medicineDetails(substitute.sku);
                 }}

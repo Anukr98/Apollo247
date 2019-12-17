@@ -9,7 +9,7 @@ import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
-import { MedicinesCartContext, MedicineCartItem } from '../MedicinesCartProvider';
+import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -245,12 +245,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [isAddCartPopoverOpen, setIsAddCartPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
-  const [substitute, setSubstitute] = React.useState<MedicineProduct | null>(null);
   const { data } = props;
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
-  const { addCartItem } = React.useContext(MedicinesCartContext);
+  const { addCartItem } = useShoppingCart();
 
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprdsubt_api.php`,
@@ -278,7 +277,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             }
           }
         } catch (error) {
-          alert(error);
+          console.log(error);
         }
       })
       .catch((err) => alert({ err }));
@@ -314,7 +313,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     fetchSubstitutes();
   }, [substitutes]);
 
-  let options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x);
 
   return (
     <div className={classes.root}>
@@ -333,25 +332,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 >
                   <span>Pick from 9 available substitutes</span>
                 </div>
-                {/* {substitute && (
-                ? (
-                <span>Pick from 9 available substitutes</span>
-              ) : (
-                <>
-                  <div className={classes.selectedDrugs}>
-                    <div>{substitute.name}</div>
-                    <div
-                      className={classes.price}
-                    >{`Rs. ${substitute.price}`}</div>
-                  </div>
-                  <div className={classes.dropDownArrow}>
-                    <img src={require("images/ic_dropdown_green.svg")} alt="" />
-                  </div>
-                </>
-              )}  */}
               </>
             )}
-            {data.is_in_stock ? (
+            {data.is_in_stock && (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
@@ -379,7 +362,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   )}
                 </div>
               </>
-            ) : null}
+            )}
           </div>
         </Scrollbars>
       </div>
@@ -428,7 +411,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           <>
             <AphButton
               onClick={() => {
-                setIsAddCartPopoverOpen(true);
                 const cartItem: MedicineCartItem = {
                   description: data.description,
                   id: data.id,
@@ -447,6 +429,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   quantity: medicineQty,
                 };
                 addCartItem && addCartItem(cartItem);
+                setIsAddCartPopoverOpen(true);
               }}
             >
               Add To Cart
@@ -524,10 +507,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       >
         <SubstituteDrugsList
           data={substitutes}
-          setSubstitute={setSubstitute}
           setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
         />
       </Popover>
     </div>
   );
 };
+
+{
+  /* {substitute && (
+                ? (
+                <span>Pick from 9 available substitutes</span>
+              ) : (
+                <>
+                  <div className={classes.selectedDrugs}>
+                    <div>{substitute.name}</div>
+                    <div
+                      className={classes.price}
+                    >{`Rs. ${substitute.price}`}</div>
+                  </div>
+                  <div className={classes.dropDownArrow}>
+                    <img src={require("images/ic_dropdown_green.svg")} alt="" />
+                  </div>
+                </>
+              )}  */
+}
