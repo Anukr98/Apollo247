@@ -1042,7 +1042,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                               messageDate: new Date(),
                               sentBy: REQUEST_ROLES.DOCTOR,
                             };
-                            console.log('aphBlob', aphBlob, url);
                             uploadfile(url);
                             sendMsg(uploadObject, true);
                             setFileUploading(false);
