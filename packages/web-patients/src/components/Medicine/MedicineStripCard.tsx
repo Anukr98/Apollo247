@@ -443,7 +443,10 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                 >
                   {Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (itemIndex) => (
                     <MenuItem
-                      classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                      classes={{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
                       value={itemIndex}
                       key={_uniqueId('menuItem_')}
                     >
@@ -475,22 +478,22 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                           ...previousValues,
                           ...existingSelectedPackedValues,
                         ]);
-                        addCartItem({
-                          description: medicineDescription,
-                          id: medicineId,
-                          image: medicineImage,
-                          is_in_stock: isInStock,
-                          is_prescription_required: medicineDetails.is_prescription_required,
-                          name: medicineName,
-                          price: parseFloat(medicinePrice),
-                          sku: medicineSku,
-                          small_image: medicineSmallImage,
-                          status: status,
-                          thumbnail: thumbnail,
-                          type_id: typeId,
-                          quantity: selectedPackedQty[index],
-                          mou: mou,
-                        });
+                        // addCartItem({
+                        //   description: medicineDescription,
+                        //   id: medicineId,
+                        //   image: medicineImage,
+                        //   is_in_stock: isInStock,
+                        //   is_prescription_required: medicineDetails.is_prescription_required,
+                        //   name: medicineName,
+                        //   price: parseFloat(medicinePrice),
+                        //   sku: medicineSku,
+                        //   small_image: medicineSmallImage,
+                        //   status: status,
+                        //   thumbnail: thumbnail,
+                        //   type_id: typeId,
+                        //   quantity: selectedPackedQty[index],
+                        //   mou: mou,
+                        // });
                       }}
                     >
                       <img

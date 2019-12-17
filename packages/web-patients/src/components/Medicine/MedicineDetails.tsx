@@ -10,6 +10,7 @@ import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import stripHtml from 'string-strip-html';
+import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -422,7 +423,9 @@ export const MedicineDetails: React.FC = (props) => {
                   </div>
                 </Scrollbars>
               </div>
-              <MedicineInformation data={medicineDetails} />
+              <MedicinesCartProvider>
+                <MedicineInformation data={medicineDetails} />
+              </MedicinesCartProvider>
             </div>
           )}
         </div>

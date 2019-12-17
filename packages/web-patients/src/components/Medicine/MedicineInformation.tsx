@@ -9,6 +9,8 @@ import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
+import { MedicinesCartContext, MedicineCartItem } from '../MedicinesCartProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -248,6 +250,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
+  const { addCartItem } = React.useContext(MedicinesCartContext);
 
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprdsubt_api.php`,
@@ -408,23 +411,52 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   </AphCustomDropdown>
                 </div>
               </div>
-              <div className={classes.medicinePrice}>
-                {data.special_price && (
-                  <span className={classes.regularPrice}> (Rs. {data.price}) </span>
-                )}
-                Rs. {data.special_price || data.price}
-              </div>
             </>
           ) : (
             <div className={classes.medicineNoStock}>Out Of Stock</div>
           )}
+          <div className={classes.medicinePrice}>
+            {data.special_price && (
+              <span className={classes.regularPrice}> (Rs. {data.price}) </span>
+            )}
+            Rs. {data.special_price || data.price}
+          </div>
         </div>
       </div>
       <div className={classes.bottomActions}>
         {data.is_in_stock ? (
           <>
-            <AphButton onClick={() => setIsAddCartPopoverOpen(true)}>Add To Cart</AphButton>
-            <AphButton color="primary">Buy Now</AphButton>
+            <AphButton
+              onClick={() => {
+                setIsAddCartPopoverOpen(true);
+                const cartItem: MedicineCartItem = {
+                  description: data.description,
+                  id: data.id,
+                  image: data.image,
+                  is_in_stock: data.is_in_stock,
+                  is_prescription_required: data.is_prescription_required,
+                  name: data.name,
+                  price: data.price,
+                  sku: data.sku,
+                  special_price: data.special_price,
+                  small_image: data.small_image,
+                  status: data.status,
+                  thumbnail: data.thumbnail,
+                  type_id: data.type_id,
+                  mou: data.mou,
+                  quantity: medicineQty,
+                };
+                addCartItem && addCartItem(cartItem);
+              }}
+            >
+              Add To Cart
+            </AphButton>
+            <AphButton
+              color="primary"
+              onClick={() => (window.location.href = clientRoutes.medicinesCart())}
+            >
+              Buy Now
+            </AphButton>
           </>
         ) : (
           <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
