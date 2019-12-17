@@ -27,7 +27,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.537093214409-l1ffk0sjcbcf3jur708tvchlkd66gbp6</string>
+				<string>com.googleusercontent.apps.537093214409-ugo5mkevql98k75ebkvnmgi4jp4ugf7i</string>
 			</array>
 		</dict>
 		<dict>
@@ -40,9 +40,11 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>17</string>
+	<string>2</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
+	<key>ITunesAppleID</key>
+	<string>1491463275</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -58,14 +60,28 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Uses Music</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Uses Bluetooth</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Uses Bluetooth</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Uses Calendar</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Uses Camera</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Uses location always</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Uses Location</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Uses Microphone</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Uses Motion</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Uses Gallery</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Uses Speech</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialIcons-Regular.ttf</string>

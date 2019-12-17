@@ -101,20 +101,20 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-// const apolloPoints = [
-//   {
-//     value: 0,
-//     label: '0',
-//   },
-//   {
-//     value: 360,
-//     label: '360',
-//   },
-// ];
+const apolloPoints = [
+  {
+    value: 0,
+    label: '0',
+  },
+  {
+    value: 360,
+    label: '360',
+  },
+];
 
-// function valuetext(value: number) {
-//   return `${value}`;
-// }
+function valuetext(value: number) {
+  return `${value}`;
+}
 
 interface CheckOutProps {
   setPaymentMethod: (paymentMethod: string) => void;
@@ -127,7 +127,9 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.sectionHeader}>How would you prefer to pay?</div>
+      <div className={classes.sectionHeader}>
+        Would you like to use Apollo Health Credits for this payment?
+      </div>
       <div className={classes.checkoutType}>
         <ul>
           <li>
@@ -151,7 +153,7 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
                 </div>
               }
             />
-            {/* <div className={classes.slider}>
+            <div className={classes.slider}>
               <AphSlider
                 defaultValue={20}
                 getAriaValueText={valuetext}
@@ -166,12 +168,13 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
                 <span>Balance amount to pay</span>
                 <span className={classes.totalAmount}>Rs. 160</span>
               </div>
-            </div> */}
+            </div>
           </li>
         </ul>
       </div>
 
-      <div className={classes.paymentsDisabled}>
+      <div>
+        <div className={classes.sectionHeader}>Pick a payment mode</div>
         <div className={classes.checkoutType}>
           <ul>
             <li>

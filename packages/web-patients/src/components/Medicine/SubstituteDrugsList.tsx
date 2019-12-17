@@ -76,48 +76,6 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
                 </div>
               </li>
             ))}
-          {/* <li>
-            <div className={classes.name}>Calpol 500mg Tab</div>
-            <div className={classes.price}>Rs. 65.5</div>
-            <div className={classes.rightArrow}>
-              <img src={require("images/ic_arrow_right.svg")} alt="" />
-            </div>
-          </li>
-          <li>
-            <div className={classes.name}>Dolo 500mg Tab</div>
-            <div className={classes.price}>Rs. 65.5</div>
-            <div className={classes.rightArrow}>
-              <img src={require("images/ic_arrow_right.svg")} alt="" />
-            </div>
-          </li>
-          <li>
-            <div className={classes.name}>Doliprane 500mg Tab</div>
-            <div className={classes.price}>Rs. 65.5</div>
-            <div className={classes.rightArrow}>
-              <img src={require("images/ic_arrow_right.svg")} alt="" />
-            </div>
-          </li>
-          <li>
-            <div className={classes.name}>Cabimol 1% 50ml</div>
-            <div className={classes.price}>Rs. 65.5</div>
-            <div className={classes.rightArrow}>
-              <img src={require("images/ic_arrow_right.svg")} alt="" />
-            </div>
-          </li>
-          <li>
-            <div className={classes.name}>Lupipara 500mg Tab</div>
-            <div className={classes.price}>Rs. 65.5</div>
-            <div className={classes.rightArrow}>
-              <img src={require("images/ic_arrow_right.svg")} alt="" />
-            </div>
-          </li>
-          <li>
-            <div className={classes.name}>Macfast 500mg Tab</div>
-            <div className={classes.price}>Rs. 65.5</div>
-            <div className={classes.rightArrow}>
-              <img src={require("images/ic_arrow_right.svg")} alt="" />
-            </div>
-          </li> */}
         </ul>
       </Scrollbars>
     </div>

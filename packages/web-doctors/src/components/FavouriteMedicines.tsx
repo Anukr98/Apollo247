@@ -681,12 +681,9 @@ export const FavouriteMedicines: React.FC = () => {
         });
 
         setSelectedMedicinesArr(xArr);
-        console.log('api');
-        console.log('selectedMedicinesArr  dddd', selectedMedicinesArr);
         setMedicineLoader(false);
       })
       .catch((e) => {
-        console.log('Error occured while fetching Doctor Favourite Medicine List', e);
         setMedicineLoader(false);
       });
   }, []);
@@ -908,8 +905,6 @@ export const FavouriteMedicines: React.FC = () => {
   });
 
   const saveMedicines = () => {
-    console.log('in save methods');
-
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
     const isTobeTakenSelected = toBeTakenSlots.filter((slot: SlotsObject) => {
@@ -924,7 +919,6 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    console.log('in save methods1');
     if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
       setErrorState({
         ...errorState,
@@ -954,7 +948,6 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false,
       });
     } else {
-      console.log('in save methods3');
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -988,9 +981,6 @@ export const FavouriteMedicines: React.FC = () => {
       const x = selectedMedicines;
       x.push(inputParams);
       setSelectedMedicines(x);
-
-      console.log('inputParamsArr ', inputParamsArr);
-      console.log('inputParams ', inputParams);
 
       setIsDialogOpen(false);
       setIsUpdate(false);
@@ -1232,45 +1222,43 @@ export const FavouriteMedicines: React.FC = () => {
       <div className={classes.root}>
         <Grid container spacing={2}>
           <Grid sm={12} xs={12} key={5} item>
-              <ul>
-                {medicineLoader ? (
-                  <CircularProgress className={classes.loader} />
-                ) : (
-                  selectedMedicinesArr &&
-                  selectedMedicinesArr.length > 0 &&
-                  selectedMedicinesArr.map((medicine: any, index: number) => (
-                    <li key={index}>
-                      {console.log('medicine ', medicine)}
-                      {medicine!.medicineName}
-                      <span className={classes.iconRight}>
-                        <img
-                          width="16"
-                          onClick={() => updateMedicine(index)}
-                          src={require('images/round_edit_24_px.svg')}
-                          alt=""
-                        />
-                        <img
-                          width="16"
-                          onClick={() => deletemedicine(index)}
-                          src={require('images/ic_cancel_green.svg')}
-                          alt=""
-                        />
-                      </span>
-                    </li>
-                  ))
-                )}
-                <li>
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.btnAddDoctor }}
-                    onClick={() => setIsDialogOpen(true)}
-                  >
-                    <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
-                  </AphButton>
-                </li>
-              </ul>
-           
+            <ul>
+              {medicineLoader ? (
+                <CircularProgress className={classes.loader} />
+              ) : (
+                selectedMedicinesArr &&
+                selectedMedicinesArr.length > 0 &&
+                selectedMedicinesArr.map((medicine: any, index: number) => (
+                  <li key={index}>
+                    {medicine!.medicineName}
+                    <span className={classes.iconRight}>
+                      <img
+                        width="16"
+                        onClick={() => updateMedicine(index)}
+                        src={require('images/round_edit_24_px.svg')}
+                        alt=""
+                      />
+                      <img
+                        width="16"
+                        onClick={() => deletemedicine(index)}
+                        src={require('images/ic_cancel_green.svg')}
+                        alt=""
+                      />
+                    </span>
+                  </li>
+                ))
+              )}
+              <li>
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.btnAddDoctor }}
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
+                </AphButton>
+              </li>
+            </ul>
           </Grid>
         </Grid>
         <Modal
@@ -1296,6 +1284,44 @@ export const FavouriteMedicines: React.FC = () => {
                   onClick={() => {
                     setIsDialogOpen(false);
                     setShowDosage(false);
+                    setTabletsCount(1);
+                    setMedicineUnit('TABLET');
+                    setConsumptionDuration('');
+                    setMedicineInstruction('');
+                    setToBeTakenSlots([
+                      {
+                        id: 'afterfood',
+                        value: 'After Food',
+                        selected: false,
+                      },
+                      {
+                        id: 'beforefood',
+                        value: 'Before Food',
+                        selected: false,
+                      },
+                    ]);
+                    setDaySlots([
+                      {
+                        id: 'morning',
+                        value: 'Morning',
+                        selected: false,
+                      },
+                      {
+                        id: 'noon',
+                        value: 'Noon',
+                        selected: false,
+                      },
+                      {
+                        id: 'evening',
+                        value: 'Evening',
+                        selected: false,
+                      },
+                      {
+                        id: 'night',
+                        value: 'Night',
+                        selected: false,
+                      },
+                    ]);
                   }}
                 />
               </Button>
@@ -1527,6 +1553,44 @@ export const FavouriteMedicines: React.FC = () => {
                       onClick={() => {
                         setIsDialogOpen(false);
                         setShowDosage(false);
+                        setTabletsCount(1);
+                        setMedicineUnit('TABLET');
+                        setConsumptionDuration('');
+                        setMedicineInstruction('');
+                        setToBeTakenSlots([
+                          {
+                            id: 'afterfood',
+                            value: 'After Food',
+                            selected: false,
+                          },
+                          {
+                            id: 'beforefood',
+                            value: 'Before Food',
+                            selected: false,
+                          },
+                        ]);
+                        setDaySlots([
+                          {
+                            id: 'morning',
+                            value: 'Morning',
+                            selected: false,
+                          },
+                          {
+                            id: 'noon',
+                            value: 'Noon',
+                            selected: false,
+                          },
+                          {
+                            id: 'evening',
+                            value: 'Evening',
+                            selected: false,
+                          },
+                          {
+                            id: 'night',
+                            value: 'Night',
+                            selected: false,
+                          },
+                        ]);
                       }}
                     >
                       Cancel

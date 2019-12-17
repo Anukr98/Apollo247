@@ -375,7 +375,7 @@ export const MedicineDetails: React.FC = (props) => {
                 <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                   <div className={classes.customScroll}>
                     <div className={classes.productInformation}>
-                      <MedicineImageGallery />
+                      <MedicineImageGallery data={medicineDetails} />
                       <div className={classes.productDetails}>
                         <h2>{medicineDetails.name}</h2>
                         <div className={classes.textInfo}>
