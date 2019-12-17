@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
@@ -275,10 +275,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             }
           }
         } catch (error) {
-          console.log(error);
+          alert(error);
         }
       })
-      .catch((err) => console.log({ err }));
+      .catch((err) => alert({ err }));
   };
 
   const fetchDeliveryTime = async () => {
@@ -307,6 +307,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .catch((error: any) => alert(error));
   };
 
+  useEffect(() => {
+    fetchSubstitutes();
+  }, [substitutes]);
+
   let options = Array.from(Array(20), (_, x) => x);
 
   return (
@@ -314,29 +318,36 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={`${classes.medicineSection}`}>
         <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 350px' }}>
           <div className={classes.customScroll}>
-            <div className={classes.sectionTitle}>Substitute Drugs</div>
-            <div
-              className={classes.substitutes}
-              onClick={() => {
-                fetchSubstitutes();
-                setIsSubDrugsPopoverOpen(true);
-              }}
-              ref={subDrugsRef}
-            >
-              {!substitute ? (
+            {substitutes && (
+              <>
+                <div className={classes.sectionTitle}>Substitute Drugs</div>
+                <div
+                  className={classes.substitutes}
+                  onClick={() => {
+                    setIsSubDrugsPopoverOpen(true);
+                  }}
+                  ref={subDrugsRef}
+                >
+                  <span>Pick from 9 available substitutes</span>
+                </div>
+                {/* {substitute && (
+                ? (
                 <span>Pick from 9 available substitutes</span>
               ) : (
                 <>
                   <div className={classes.selectedDrugs}>
                     <div>{substitute.name}</div>
-                    <div className={classes.price}>{`Rs. ${substitute.price}`}</div>
+                    <div
+                      className={classes.price}
+                    >{`Rs. ${substitute.price}`}</div>
                   </div>
                   <div className={classes.dropDownArrow}>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                    <img src={require("images/ic_dropdown_green.svg")} alt="" />
                   </div>
                 </>
-              )}
-            </div>
+              )}  */}
+              </>
+            )}
             {data.is_in_stock ? (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
@@ -371,40 +382,42 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       </div>
       <div className={classes.priceGroup}>
         <div className={classes.priceWrap}>
-          <div className={classes.leftGroup}>
-            {data.is_in_stock ? (
-              <div className={classes.medicinePack}>
-                QTY :
-                <AphCustomDropdown
-                  classes={{ selectMenu: classes.selectMenuItem }}
-                  value={medicineQty}
-                  onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                    setMedicineQty(parseInt(e.target.value))
-                  }
-                >
-                  {options.map((option) => (
-                    <MenuItem
-                      classes={{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={option}
-                    >
-                      {option}
-                    </MenuItem>
-                  ))}
-                </AphCustomDropdown>
+          {data.is_in_stock ? (
+            <>
+              <div className={classes.leftGroup}>
+                <div className={classes.medicinePack}>
+                  QTY :
+                  <AphCustomDropdown
+                    classes={{ selectMenu: classes.selectMenuItem }}
+                    value={medicineQty}
+                    onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                      setMedicineQty(parseInt(e.target.value))
+                    }
+                  >
+                    {options.map((option) => (
+                      <MenuItem
+                        classes={{
+                          root: classes.menuRoot,
+                          selected: classes.menuSelected,
+                        }}
+                        value={option}
+                      >
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </AphCustomDropdown>
+                </div>
               </div>
-            ) : (
-              <div className={classes.medicineNoStock}>Out Of Stock</div>
-            )}
-          </div>
-          <div className={classes.medicinePrice}>
-            {data.special_price && (
-              <span className={classes.regularPrice}> (Rs. {data.price}) </span>
-            )}
-            Rs. {data.special_price || data.price}
-          </div>
+              <div className={classes.medicinePrice}>
+                {data.special_price && (
+                  <span className={classes.regularPrice}> (Rs. {data.price}) </span>
+                )}
+                Rs. {data.special_price || data.price}
+              </div>
+            </>
+          ) : (
+            <div className={classes.medicineNoStock}>Out Of Stock</div>
+          )}
         </div>
       </div>
       <div className={classes.bottomActions}>
@@ -437,7 +450,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            <MedicineNotifyPopover />
+            <MedicineNotifyPopover medicineName={data.name} setIsPopoverOpen={setIsPopoverOpen} />
           </div>
         </div>
       </Popover>

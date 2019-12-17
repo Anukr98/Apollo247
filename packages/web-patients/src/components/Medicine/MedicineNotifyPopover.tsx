@@ -2,6 +2,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
+import _startCase from 'lodash/startCase';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,17 +39,22 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineNotifyPopover: React.FC = (props) => {
+export const MedicineNotifyPopover: React.FC<{
+  medicineName: string;
+  setIsPopoverOpen: (isPopoverOpen: boolean) => void;
+}> = (props) => {
   const classes = useStyles({});
 
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">Okay! :)</Typography>
-        <p>You will be notified when Crocin Advance Tab is back in stock.</p>
+        <p>{`You will be notified when ${_startCase(
+          _lowerCase(props.medicineName)
+        )} is back in stock.`}</p>
       </div>
       <div className={classes.actions}>
-        <AphButton>Ok, Got it</AphButton>
+        <AphButton onClick={() => props.setIsPopoverOpen(false)}>Ok, Got it</AphButton>
       </div>
     </div>
   );

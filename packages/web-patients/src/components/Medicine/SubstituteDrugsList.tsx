@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -55,7 +56,6 @@ type SubstituteDrugsListProps = {
 
 export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) => {
   const classes = useStyles({});
-  console.log(props.data);
   return (
     <div className={classes.root}>
       {!props.data && <CircularProgress />}
@@ -65,8 +65,9 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
             props.data.map((substitute) => (
               <li
                 onClick={() => {
-                  props.setSubstitute(substitute);
+                  // props.setSubstitute(substitute);
                   props.setIsSubDrugsPopoverOpen(false);
+                  window.location.href = clientRoutes.medicineDetails(substitute.sku);
                 }}
               >
                 <div className={classes.name}>{substitute.name}</div>
