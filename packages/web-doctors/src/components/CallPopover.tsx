@@ -1489,7 +1489,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     return '';
   };
   const showCallMoreBtns =
-    props.appointmentStatus === 'COMPLETED' &&
+    props.appointmentStatus === STATUS.COMPLETED &&
     props.sentToPatient === false &&
     (isClickedOnPriview || props.sentToPatient === false) &&
     !isClickedOnEdit
@@ -1499,7 +1499,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
         <div>
-          {(props.appointmentStatus !== 'COMPLETED' || isClickedOnEdit) && (
+          {(props.appointmentStatus !== STATUS.COMPLETED || isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
           <Link to="/calendar">
@@ -1519,7 +1519,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </span>
         <div className={classes.consultButtonContainer}>
           <span>
-            {props.appointmentStatus === 'COMPLETED' &&
+            {props.appointmentStatus === STATUS.COMPLETED &&
             currentUserType !== LoggedInUserType.SECRETARY &&
             props.sentToPatient === true ? (
               <span className={classes.prescriptionSent}>
@@ -1527,7 +1527,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 {/* <Button className={classes.backButton}>PRESCRIPTION SENT</Button> */}
               </span>
             ) : (
-              props.appointmentStatus === 'COMPLETED' &&
+              props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === false && (
                 <span>
@@ -1580,7 +1580,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </span>
               )
             )}
-            {(props.appointmentStatus !== 'COMPLETED' ||
+            {(props.appointmentStatus !== STATUS.COMPLETED ||
               currentUserType === LoggedInUserType.SECRETARY) &&
               (props.startAppointment ? (
                 <span>
@@ -1671,7 +1671,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 variant="contained"
                 onClick={(e) => handleClick(e)}
                 disabled={
-                  props.appointmentStatus === 'COMPLETED' || props.appointmentStatus === 'CANCELLED'
+                  props.appointmentStatus === STATUS.COMPLETED ||
+                  props.appointmentStatus === STATUS.CANCELLED
                 }
               >
                 <img src={require('images/ic_call.svg')} />
@@ -1738,8 +1739,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
                 disabled={
-                  props.appointmentStatus === 'COMPLETED' ||
-                  props.appointmentStatus === 'CANCELLED' ||
+                  props.appointmentStatus === STATUS.COMPLETED ||
+                  props.appointmentStatus === STATUS.CANCELLED ||
                   props.isAppointmentEnded ||
                   disableOnCancel ||
                   (appointmentInfo!.appointmentState !== 'NEW' &&
