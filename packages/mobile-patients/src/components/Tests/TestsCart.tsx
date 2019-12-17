@@ -1,4 +1,4 @@
-import { aphConsole, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -278,16 +278,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setLoading!(false);
+          setAddresses && setAddresses(addressList!);
+        })
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -657,9 +651,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
-                item.landmark ? ',\n' : ''
-              }${item.city}, ${item.state} - ${item.zipcode}`}
+              title={formatAddress(item)}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');

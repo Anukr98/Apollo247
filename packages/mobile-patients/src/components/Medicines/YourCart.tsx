@@ -1,4 +1,8 @@
-import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  aphConsole,
+  handleGraphQlError,
+  formatAddress,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -405,9 +409,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
-                item.landmark ? ',\n' : ''
-              }${item.city}, ${item.state} - ${item.zipcode}`}
+              title={formatAddress(item)}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
