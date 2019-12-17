@@ -121,6 +121,7 @@ import {
   addToConsultQueueWithAutomatedQuestions,
   endCallSessionAppointment,
   getAppointmentDataDetails,
+  getPrismUrls,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -1269,7 +1270,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log('msgs', msgs);
 
           res.messages.forEach((element, index) => {
-            newmessage[newmessage.length] = element.entry;
+            let item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(client, patientId, item.prismId).then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              });
+            }
+            newmessage[newmessage.length] = item;
           });
           // console.log('newmessage', newmessage);
           setLoading(false);
@@ -2585,7 +2592,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
                     setPatientImageshow(true);
-                    setUrl(rowData.url);
+                    if (rowData.prismId) {
+                      getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
+                        setUrl((data && data.urls[0]) || rowData.url);
+                      });
+                    }
+                    // setUrl(rowData.url);
                   }}
                 >
                   <View
@@ -2616,14 +2628,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress={() => {
                     console.log('pdf', rowData.url);
                     // setShowWeb(true);
-                    setPatientImageshow(true);
-                    setUrl(rowData.url);
+                    // setPatientImageshow(true);
+                    if (rowData.prismId) {
+                      getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
+                        setUrl((data && data.urls[0]) || rowData.url);
+                      });
+                    }
+                    // setUrl(rowData.url);
                     // if ((Platform.OS = 'android')) {
                     //   setShowWeb(true);
                     //   setUrl(rowData.url);
-                    //   // Linking.openURL(rowData.url).catch((err) =>
-                    //   //   console.error('An error occurred', err)
-                    //   // );
+                    Linking.openURL(rowData.url).catch((err) =>
+                      console.error('An error occurred', err)
+                    );
                     // } else {
                     //   setShowWeb(true);
                     //   setUrl(rowData.url);
@@ -3123,7 +3140,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderChatRow = (
-    rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
+    rowData: {
+      id: string;
+      message: string;
+      duration: string;
+      transferInfo: any;
+      prismId: any;
+      url: any;
+    },
     index: number
   ) => {
     if (
@@ -3249,7 +3273,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       onPress={() => {
                         console.log('IMAGE', rowData.url);
                         setPatientImageshow(true);
-                        setUrl(rowData.url);
+                        if (rowData.prismId) {
+                          getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
+                            setUrl((data && data.urls[0]) || rowData.url);
+                          });
+                        }
+                        // setUrl(rowData.url);
                       }}
                     >
                       <View
@@ -3279,15 +3308,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     <TouchableOpacity
                       onPress={() => {
                         console.log('pdf', rowData.url);
-
-                        if ((Platform.OS = 'android')) {
-                          Linking.openURL(rowData.url).catch((err) =>
-                            console.error('An error occurred', err)
-                          );
-                        } else {
-                          setShowWeb(true);
-                          setUrl(rowData.url);
+                        if (rowData.prismId) {
+                          getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
+                            setUrl((data && data.urls[0]) || rowData.url);
+                          });
                         }
+                        // if ((Platform.OS = 'android')) {
+                        Linking.openURL(rowData.url).catch((err) =>
+                          console.error('An error occurred', err)
+                        );
+                        // } else {
+                        //   setShowWeb(true);
+                        //   setUrl(rowData.url);
+                        // }
                       }}
                     >
                       <View
@@ -4575,12 +4608,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ) {
         console.log('item', item.base64);
         setLoading(true);
-        const textin = {
-          fileType: type == 'jpg' ? 'JPEG' : type.toUpperCase(), //type,
-          base64FileInput: item.base64, //resource.data,
-          appointmentId: channel,
-        };
-        console.log('textin', textin);
         client
           .mutate<uploadChatDocumentToPrism>({
             mutation: UPLOAD_CHAT_FILE_PRISM,
@@ -4589,37 +4616,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
               base64FileInput: item.base64, //resource.data,
               appointmentId: channel,
-              patientId: currentPatient && currentPatient.id,
+              patientId: patientId,
             },
           })
           .then((data) => {
             console.log('upload data', data);
             setLoading(false);
-
             if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
-              client
-                .query<downloadDocuments>({
-                  query: DOWNLOAD_DOCUMENT,
-                  fetchPolicy: 'no-cache',
-                  variables: {
-                    downloadDocumentsInput: {
-                      patientId: currentPatient && currentPatient.id,
-                      fileIds: data.data!.uploadChatDocumentToPrism.fileId,
-                    },
-                  },
-                })
-                .then(({ data }) => {
-                  console.log(data, 'DOWNLOAD_DOCUMENT');
-                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                  console.log(uploadUrlscheck![0], 'DOWNLOAD_DOCUMENTcmple');
+              const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
+              getPrismUrls(client, patientId, [prismFeildId])
+                .then((urls: any) => {
+                  console.log('api call data', urls);
                   const text = {
                     id: patientId,
                     message: imageconsult,
                     fileType: 'image',
-                    url: uploadUrlscheck![0],
+                    prismId: prismFeildId,
+                    url: (urls && urls[0]) || '',
                     messageDate: new Date(),
                   };
-
                   pubnub.publish(
                     {
                       channel: channel,
@@ -4640,23 +4655,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             } else {
               Alert.alert('Upload document failed');
             }
-            // const text = {
-            //   id: patientId,
-            //   message: imageconsult,
-            //   fileType: 'image',
-            //   url: data.data && data.data.uploadChatDocument.filePath,
-            // };
-
-            // pubnub.publish(
-            //   {
-            //     channel: channel,
-            //     message: text,
-            //     storeInHistory: true,
-            //     sendByPost: true,
-            //   },
-            //   (status, response) => {}
-            // );
-            // KeepAwake.activate();
           })
           .catch((e) => {
             setLoading(false);
@@ -4804,109 +4802,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           } else {
-            console.log('sussess', 'ssss');
-            const ePresUrls = selectedEPres.map((item) => item!.prismPrescriptionFileId);
-            console.log('ePresUrls', ePresUrls);
-            let ePresAndPhysicalPresUrls = [...ePresUrls];
-            console.log(
-              'ePresAndPhysicalPresUrls',
-              ePresAndPhysicalPresUrls
-                .join(',')
-                .split(',')
-                .map((item) => item.trim())
-                .filter((i) => i)
-            );
-            if (ePresAndPhysicalPresUrls.length > 0) {
-              client
-                .query<downloadDocuments>({
-                  query: DOWNLOAD_DOCUMENT,
-                  fetchPolicy: 'no-cache',
-                  variables: {
-                    downloadDocumentsInput: {
-                      patientId: currentPatient && currentPatient.id,
-                      fileIds: ePresAndPhysicalPresUrls
-                        .join(',')
-                        .split(',')
-                        .map((item) => item.trim())
-                        .filter((i) => i),
+            selectedEPres.forEach((item) => {
+              const url = item.uploadedUrl && item.uploadedUrl.split(',');
+              const prism = item.prismPrescriptionFileId && item.prismPrescriptionFileId.split(',');
+              url &&
+                url.map((item, index) => {
+                  const text = {
+                    id: patientId,
+                    message: imageconsult,
+                    fileType: 'image',
+                    prismId: (prism && prism[index]) || '',
+                    url: item,
+                    messageDate: new Date(),
+                  };
+                  pubnub.publish(
+                    {
+                      channel: channel,
+                      message: text,
+                      storeInHistory: true,
+                      sendByPost: true,
                     },
-                  },
-                })
-                .then(({ data }) => {
-                  console.log(data, 'DOWNLOAD_DOCUMENT');
-                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                  console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-                  if (uploadUrlscheck!.length > 0) {
-                    uploadUrlscheck!.map((item: any) => {
-                      //console.log(item, 'showitem');
-                      const text = {
-                        id: patientId,
-                        message: imageconsult,
-                        fileType: 'image',
-                        url: item,
-                        messageDate: new Date(),
-                      };
-
-                      pubnub.publish(
-                        {
-                          channel: channel,
-                          message: text,
-                          storeInHistory: true,
-                          sendByPost: true,
-                        },
-                        (status, response) => {}
-                      );
-                      KeepAwake.activate();
-                    });
-                  } else {
-                    Alert.alert('Images are not uploaded');
-                  }
-                })
-                .catch((e: string) => {
-                  console.log('Error occured', e);
-                })
-                .finally(() => {
-                  setLoading!(false);
+                    (status, response) => {}
+                  );
+                  KeepAwake.activate();
                 });
-            }
-            // setLoading(true);
-            // client
-            //   .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-            //     mutation: UPLOAD_CHAT_FILE,
-            //     fetchPolicy: 'no-cache',
-            //     variables: {
-            //       fileType: 'pdf',
-            //       base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
-            //       appointmentId: channel,
-            //     },
-            //   })
-            //   .then((data) => {
-            //     setLoading(false);
-            //     console.log('upload selectedEPres data', data);
-
-            //     const text = {
-            //       id: patientId,
-            //       message: imageconsult,
-            //       fileType: 'image',
-            //       url: data.data && data.data.uploadChatDocument.filePath,
-            //     };
-
-            //     pubnub.publish(
-            //       {
-            //         channel: channel,
-            //         message: text,
-            //         storeInHistory: true,
-            //         sendByPost: true,
-            //       },
-            //       (status, response) => {}
-            //     );
-            //     KeepAwake.activate();
-            //   })
-            //   .catch((e) => {
-            //     setLoading(false);
-            //     KeepAwake.activate();
-            //     console.log('upload data error', e);
-            //   });
+            });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
