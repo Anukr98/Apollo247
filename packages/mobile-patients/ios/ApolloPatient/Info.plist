@@ -60,6 +60,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Uses Music</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Uses Bluetooth</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
@@ -131,7 +133,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>kTCCServiceMediaLibrary</key>
-	<string>Uses Music</string>
 </dict>
 </plist>
