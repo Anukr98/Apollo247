@@ -417,11 +417,8 @@ export const ConsultTabs: React.FC = () => {
     });
     getHistory(0);
     pubnub.addListener({
-      status(statusEvent: any) {
-        console.log('statusEvent', statusEvent);
-      },
+      status(statusEvent: any) {},
       message(message: any) {
-        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         if (
@@ -966,7 +963,6 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data) => {
-        console.log(_data);
         if (
           _data &&
           _data.data &&
