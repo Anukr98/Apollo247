@@ -314,7 +314,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   }, [substitutes]);
 
   const options = Array.from(Array(20), (_, x) => x);
-
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -334,7 +333,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             )}
-            {data.is_in_stock && (
+            {data.is_in_stock === 1 && (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
@@ -368,7 +367,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       </div>
       <div className={classes.priceGroup}>
         <div className={classes.priceWrap}>
-          {data.is_in_stock ? (
+          {data.is_in_stock === 1 ? (
             <>
               <div className={classes.leftGroup}>
                 <div className={classes.medicinePack}>
@@ -407,7 +406,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         </div>
       </div>
       <div className={classes.bottomActions}>
-        {parseBool(data.is_in_stock) ? (
+        {data.is_in_stock === 1 ? (
           <>
             <AphButton
               onClick={() => {
