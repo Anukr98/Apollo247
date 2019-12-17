@@ -16,7 +16,10 @@ import firebase, { RNFirebase } from 'react-native-firebase';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+  return (promise.then(
+    (data: R) => [data, null],
+    (err: E) => [null, err]
+  ) as any) as [R, E];
 }
 
 export interface AuthContextProps {

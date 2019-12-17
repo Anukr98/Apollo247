@@ -40,7 +40,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>17</string>
+	<string>2</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
 	<key>ITunesAppleID</key>
@@ -60,14 +60,28 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Uses Music</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Uses Bluetooth</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Uses Bluetooth</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Uses Calendar</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Uses Camera</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Uses location always</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Uses Location</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Uses Microphone</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Uses Motion</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Uses Gallery</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Uses Speech</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialIcons-Regular.ttf</string>

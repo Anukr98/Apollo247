@@ -13,7 +13,6 @@ import { ConsultRoom } from 'components/ConsultRoom';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
-import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { GET_CASESHEET_JRD } from 'graphql/profiles';
 import {
@@ -31,20 +30,11 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
-// import Dialog from '@material-ui/core/Dialog';
-// import DialogActions from '@material-ui/core/DialogActions';
-// import DialogContent from '@material-ui/core/DialogContent';
-// import DialogContentText from '@material-ui/core/DialogContentText';
-// import DialogTitle from '@material-ui/core/DialogTitle';
 import { CasesheetView } from 'components/CasesheetView';
 import { APPOINTMENT_TYPE } from '../graphql/types/globalTypes';
-
-//import { Document } from 'react-pdf';
 import _omit from 'lodash/omit';
-
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -57,27 +47,16 @@ import {
   UpdatePatientPrescriptionSentStatus,
   UpdatePatientPrescriptionSentStatusVariables,
 } from 'graphql/types/UpdatePatientPrescriptionSentStatus';
-
 import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET,
-  // UPDATE_CASESHEET,
   END_APPOINTMENT_SESSION,
   CREATE_CASESHEET_FOR_SRD,
-  // GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
-
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
-
-// import {
-//   GetJuniorDoctorCaseSheet,
-//   GetJuniorDoctorCaseSheetVariables,
-// } from 'graphql/types/GetJuniorDoctorCaseSheet';
-
 import { CircularProgress } from '@material-ui/core';
-
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -86,12 +65,10 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
-
 import {
   CreateSeniorDoctorCaseSheet,
   CreateSeniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
-
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -303,8 +280,8 @@ interface MessagesObjectProps {
   duration: string;
   url: string;
   messageDate: string;
+  sentBy: string;
 }
-//let messages: MessagesObjectProps[] = [];
 let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
@@ -440,11 +417,8 @@ export const ConsultTabs: React.FC = () => {
     });
     getHistory(0);
     pubnub.addListener({
-      status(statusEvent: any) {
-        console.log('statusEvent', statusEvent);
-      },
+      status(statusEvent: any) {},
       message(message: any) {
-        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         if (
@@ -461,16 +435,12 @@ export const ConsultTabs: React.FC = () => {
         setLastMsg(message);
       },
       presence(presenceEvent: any) {
-        //setPresenceEventObject(presenceEvent);
-        console.log(presenceEvent);
-        //setPresenceEventObject(presenceEvent);
         pubnub
           .hereNow({
             channels: [appointmentId],
             includeUUIDs: true,
           })
           .then((response: any) => {
-            console.log('hereNowresponse', response);
             setPresenceEventObject(response);
           })
           .catch((error) => {
@@ -494,30 +464,18 @@ export const ConsultTabs: React.FC = () => {
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
         res.messages.forEach((element: any, index: number) => {
-          //newmessage[index] = element.entry;
           newmessage.push(element.entry);
         });
         insertText = newmessage;
-        console.log(newmessage);
-        //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
-        //}
         const end: number = res.endTimeToken ? res.endTimeToken : 1;
         if (res.messages.length == 100) {
           getHistory(end);
         }
-        //resetMessagesAction();
-        //srollToBottomAction();
       }
     );
   };
   /* case sheet data*/
-
-  /* need to be worked later */
-  // let customNotes = '';
-  // const setCasesheetNotes = (notes: string) => {
-  //   customNotes = notes; // this will be used in saving case sheet.
-  // };
   useEffect(() => {
     if (isSignedIn) {
       client
@@ -619,7 +577,6 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails.appointment &&
             _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
           ) {
-            //setappointmentDateTime('2019-08-27T17:30:00.000Z');
             setappointmentDateTime(
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
@@ -714,19 +671,6 @@ export const ConsultTabs: React.FC = () => {
             jrdLastName =
               _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
           }
-
-          // if (
-          //   _data &&
-          //   _data.data &&
-          //   _data.data.getCaseSheet &&
-          //   _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
-          // ) {
-          //   jrdSalutation =
-          //     _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
-          // }
-
           setJrdName(`${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
@@ -736,7 +680,6 @@ export const ConsultTabs: React.FC = () => {
             .concat(networkErrorMessage ? networkErrorMessage : []);
           const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
           if (isCasesheetNotExists) {
-            console.log(error);
             setError('Creating Casesheet. Please wait....');
             mutationCreateSrdCaseSheet()
               .then((response) => {
@@ -856,7 +799,6 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
           ) {
-            //setappointmentDateTime('2019-08-27T17:30:00.000Z');
             setappointmentDateTime(
               _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
@@ -1021,7 +963,6 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data) => {
-        console.log(_data);
         if (
           _data &&
           _data.data &&
@@ -1061,25 +1002,6 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const saveCasesheetAction = (flag: boolean, sendToPatientFlag: boolean) => {
-    // followUp: followUp[0],
-    // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-    // followUpAfterInDays:
-    //   followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
-
-    // console.log(followUp, followUpAfterInDays, 'follow up......');
-
-    // console.log(
-    //   pastMedicalHistory,
-    //   pastSurgicalHistory,
-    //   familyHistory,
-    //   lifeStyle,
-    //   menstrualHistory,
-    //   drugAllergies,
-    //   dietAllergies
-    // );
-
-    // console.log('notes...', customNotes);
-
     // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
       diagnosisFinal = null,
@@ -1122,9 +1044,6 @@ export const ConsultTabs: React.FC = () => {
     // this needs to be fixed.
     const followupISODate = new Date(followUpDate[0]).toISOString();
     const followupDateArray = followupISODate.split('T');
-
-    // console.log(followupISODate, 'iso date......');
-
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
@@ -1169,7 +1088,6 @@ export const ConsultTabs: React.FC = () => {
           setSaving(false);
         }
         if (!flag) {
-          // setIsPopoverOpen(true);
           setIsConfirmDialogOpen(true);
         }
         if (sendToPatientFlag) {
@@ -1202,9 +1120,6 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        // setIsPopoverOpen(true);
-        //setIsPdfPopoverOpen(true);
-        //setIsEnded(true);
         setAppointmentStatus('COMPLETED');
         setIsPdfPageOpen(true);
       })
@@ -1232,7 +1147,6 @@ export const ConsultTabs: React.FC = () => {
         setAppointmentStatus(STATUS.IN_PROGRESS);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        //setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
         setSaving(false);
       })
@@ -1241,9 +1155,6 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured creating session', e);
         setSaving(false);
       });
-
-    // call this function to send notification.
-    //sendCallNotificationFn();
   };
 
   const setStartConsultAction = (flag: boolean) => {
@@ -1377,7 +1288,6 @@ export const ConsultTabs: React.FC = () => {
                 appointmentStatus={appointmentStatus}
                 sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
-                //sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
                 callId={callId}
                 pubnub={pubnub}
@@ -1466,27 +1376,9 @@ export const ConsultTabs: React.FC = () => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <h3>
-              Are you sure you want to end your consult?
-              {/* {casesheetInfo &&
-                casesheetInfo !== null &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
-                  <span>
-                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
-                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
-                    }.`}
-                  </span>
-                )} */}
-            </h3>
+            <h3>Are you sure you want to end your consult?</h3>
 
-            <Button
-              className={classes.cancelConsult}
-              //disabled={startAppointmentButton}
-              onClick={() => setIsConfirmDialogOpen(false)}
-            >
+            <Button className={classes.cancelConsult} onClick={() => setIsConfirmDialogOpen(false)}>
               No
             </Button>
             <Button
@@ -1494,9 +1386,6 @@ export const ConsultTabs: React.FC = () => {
               onClick={() => {
                 endConsultActionFinal();
                 setIsConfirmDialogOpen(false);
-                //setIsPopoverOpen(true);
-                //setAppointmentStatus('COMPLETED');
-                //console.log('appointmentStatus ', appointmentStatus);
               }}
             >
               Yes
@@ -1510,46 +1399,6 @@ export const ConsultTabs: React.FC = () => {
           </div>
         </Paper>
       </Modal>
-
-      {/* {isEnded && (
-        <div className={classes.tabPdfBody}>
-          <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
-        </div>
-      )} */}
-
-      {/* <Dialog
-        open={isConfirmDialogOpen}
-        onClose={() => setIsConfirmDialogOpen(false)}
-        className={classes.popupDialog}
-      >
-        <DialogTitle className={classes.headingTxt}>
-          Are you sure you want to end your consult?
-        </DialogTitle>
-        <DialogActions>
-          <Button color="primary" onClick={() => setIsConfirmDialogOpen(false)} autoFocus>
-            No
-          </Button>
-          <Button
-            color="primary"
-            onClick={() => {
-              endConsultActionFinal();
-              setIsConfirmDialogOpen(false);
-              //setIsPopoverOpen(true);
-              //setAppointmentStatus('COMPLETED');
-              //console.log('appointmentStatus ', appointmentStatus);
-            }}
-            autoFocus
-          >
-            Yes
-          </Button>
-          <DialogContent>
-            <DialogContentText>
-              After ending the consult you will get the option to preview/edit case sheet and send
-              prescription to the patient
-            </DialogContentText>
-          </DialogContent>
-        </DialogActions>
-      </Dialog> */}
     </div>
   );
 };

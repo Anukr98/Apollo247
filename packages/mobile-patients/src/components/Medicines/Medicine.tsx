@@ -135,7 +135,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    if (profile !== currentPatient) {
+    if (profile.id !== currentPatient!.id) {
       globalLoading!(true);
       setProfile(currentPatient!);
       ordersRefetch().then(({ data }) => {
@@ -1296,8 +1296,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
-      {renderEPrescriptionModal()}
-      {renderUploadPrescriprionPopup()}
+      {isSelectPrescriptionVisible && renderEPrescriptionModal()}
+      {ShowPopop && renderUploadPrescriprionPopup()}
     </View>
   );
 };
