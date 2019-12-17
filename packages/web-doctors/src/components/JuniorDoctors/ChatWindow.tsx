@@ -534,7 +534,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           .format('DD MMM, YYYY h:mm A');
       }
     }
-    console.log(timeStamp, utcString);
     return utcString ? utcString : '--';
   };
   const uploadfile = (url: string) => {
