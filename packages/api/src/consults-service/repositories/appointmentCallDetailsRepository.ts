@@ -22,6 +22,6 @@ export class AppointmentCallDetailsRepository extends Repository<AppointmentCall
   }
 
   findByAppointmentId(appointmentId: string) {
-    return this.findOne({ where: { appointmentId } });
+    return this.findOne({ where: { appointment: appointmentId } });
   }
 }

@@ -132,4 +132,8 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
       },
     });
   }
+
+  findByAppointmentId(appointmentId: string) {
+    return this.findOne({ where: { appointment: appointmentId } });
+  }
 }

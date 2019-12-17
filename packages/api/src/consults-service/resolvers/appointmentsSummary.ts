@@ -7,6 +7,7 @@ import { format, addMilliseconds } from 'date-fns';
 import path from 'path';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -42,6 +43,7 @@ const appointmentsSummary: Resolver<
   const appointmentCallDetailsRepo = consultsDb.getCustomRepository(
     AppointmentCallDetailsRepository
   );
+  const rescheduleDetailsRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const apptsList = await apptRepo.getAllAppointments(args.fromDate, args.toDate, args.limit);
@@ -52,6 +54,7 @@ const appointmentsSummary: Resolver<
       if (apptsList.length == 0) {
         resolve(row1);
       }
+      console.log(apptsList, serialNo);
       await apptsList.map(async (appt) => {
         const patientDetails = await patientRepo.findById(appt.patientId);
         if (!patientDetails) {
@@ -81,6 +84,10 @@ const appointmentsSummary: Resolver<
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
         console.log('callDetails==', callDetails);
+        const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(
+          'ab37ca8f-7fbe-4a3a-a4b2-785405a62045'
+        );
+        console.log('rescheduleDetails==:::::', rescheduleDetails);
         //end
         const istDateTime = format(
           addMilliseconds(appt.appointmentDateTime, 19800000),
@@ -105,102 +112,121 @@ const appointmentsSummary: Resolver<
         if (appt.status == STATUS.CANCELLED) {
           isCancelled = true;
         }
+        // console.log('appointment details==', appt);
+        // console.log('appointment id==', appt.id);
         row1 +=
           serialNo +
-            '\t' +
-            'NA' +
-            '\t' +
-            appt.id +
-            '\t' +
-            patientDetails.mobileNumber.toString() +
-            '\t' +
-            patientDetails.uhid +
-            '\t' +
-            patientDetails.firstName +
-            ' ' +
-            patientDetails.lastName +
-            '\t' +
-            istDateTime +
-            '\t' +
-            appt.appointmentType +
-            '\t' +
-            'NA' +
-            '\t' +
-            'NA' +
-            '\t' +
-            JDPhone.mobileNumber.toString() +
-            '\t' +
-            doctorDetails.mobileNumber.toString() +
-            '\t' +
-            doctorDetails.firstName +
-            ' ' +
-            doctorDetails.lastName +
-            '\t' +
-            doctorDetails.doctorType +
-            '\t' +
-            doctorDetails.specialty.name +
-            '\t' +
-            'NA' +
-            '\t' +
-            'NA' +
-            '\t' +
-            'NA' +
-            '\t' +
-            'NA' +
-            '\t' +
-            callDetails.doctorType ==
-            'SENIOR' && callDetails.callType == 'AUDIO'
+          '\t' +
+          'NA' +
+          '\t' +
+          appt.id +
+          '\t' +
+          patientDetails.mobileNumber +
+          '\t' +
+          patientDetails.uhid +
+          '\t' +
+          patientDetails.firstName +
+          ' ' +
+          patientDetails.lastName +
+          '\t' +
+          istDateTime +
+          '\t' +
+          appt.appointmentType +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          JDPhone.mobileNumber +
+          '\t' +
+          doctorDetails.mobileNumber +
+          '\t' +
+          doctorDetails.firstName +
+          ' ' +
+          doctorDetails.lastName +
+          '\t' +
+          doctorDetails.doctorType +
+          '\t' +
+          doctorDetails.specialty.name +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.startTime
-            : '' + '\t' + callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.endTime
-            : '' + '\t' + 'NA' + '\t' + callDetails.doctorType == 'SENIOR' &&
-              callDetails.callType == 'VIDEO'
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.startTime
-            : '' + '\t' + callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.endTime
-            : '' + '\t' + 'NA' + '\t' + 'NA' + '\t' + 'NA' + '\t' + callDetails.doctorType ==
-                'JUNIOR' && callDetails.callType == 'AUDIO'
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.startTime
-            : '' + '\t' + callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.endTime
-            : '' + '\t' + 'NA' + '\t' + callDetails.doctorType == 'JUNIOR' &&
-              callDetails.callType == 'VIDEO'
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.startTime
-            : '' + '\t' + callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.endTime
-            : '' +
-                '\t' +
-                'NA' +
-                '\t' +
-                appt.isFollowUp +
-                '\t' +
-                followUpBooked +
-                '\t' +
-                'NA' +
-                '\t' +
-                callDetails.callType ==
-              'AUDIO'
-            ? callDetails.id
-            : '' + '\t' + callDetails.callType == 'VIDEO'
-            ? callDetails.id
-            : '' +
-              '\t' +
-              'NA' +
-              '\t' +
-              caseSheetId +
-              '\t' +
-              prescriptionIssued +
-              '\t' +
-              'NA' +
-              '\t' +
-              'NA' +
-              '\t' +
-              isCancelled +
-              '\n';
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          appt.isFollowUp +
+          '\t' +
+          followUpBooked +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.callType == 'AUDIO' ? callDetails.id : '') +
+          '\t' +
+          (callDetails.callType == 'VIDEO' ? callDetails.id : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          caseSheetId +
+          '\t' +
+          prescriptionIssued +
+          '\t' +
+          (rescheduleDetails !== undefined ? 'TRUE' : 'FALSE') +
+          '\t' +
+          (rescheduleDetails !== undefined ? rescheduleDetails.rescheduleReason : '') +
+          '\t' +
+          isCancelled +
+          '\n';
         if (serialNo == apptsList.length) {
           resolve(row1);
         }
-        console.log(row1, 'ro11');
+        console.log(row1, 'row1');
         serialNo++;
       });
     });
