@@ -14,5 +14,6 @@ target 'ApolloPatient' do
  pod 'OpenTok', '~> 2.16.2'
  pod 'Firebase/Messaging', '~> 6.2.0'
  pod 'GoogleIDFASupport', '~> 3.14.0'
+ pod 'Firebase/RemoteConfig', '~> 6.2.0'
   
 end
