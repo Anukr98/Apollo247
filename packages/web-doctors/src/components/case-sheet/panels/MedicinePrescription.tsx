@@ -1084,7 +1084,6 @@ export const MedicinePrescription: React.FC = () => {
                 );
               })}
             </div>
-            )}
           </Grid>
         )}
       </Grid>
