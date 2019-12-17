@@ -13,16 +13,8 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-//import { AppointmentPayload } from 'types/appointmentTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
-import { sendSMS } from 'notifications-service/resolvers/notifications';
-import { sendMail } from 'notifications-service/resolvers/email';
-import { EmailMessage } from 'types/notificationMessageTypes';
-import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addMinutes } from 'date-fns';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const bookAppointmentTypeDefs = gql`
@@ -36,6 +28,7 @@ export const bookAppointmentTypeDefs = gql`
     NO_SHOW
     JUNIOR_DOCTOR_STARTED
     JUNIOR_DOCTOR_ENDED
+    CALL_ABANDON
   }
 
   enum APPOINTMENT_TYPE {
@@ -271,89 +264,7 @@ const bookAppointment: Resolver<
   //   doctorsDb,
   //   appointmentInput.appointmentType
   // );
-  let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
-    '{0}',
-    patientDetails.firstName
-  );
-  smsMessage = smsMessage.replace('{1}', appointment.displayId.toString());
-  smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
-  const istDateTime = addMilliseconds(appointmentInput.appointmentDateTime, 19800000);
-  const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-  smsMessage = smsMessage.replace('{3}', smsDate.toString());
-  smsMessage = smsMessage.replace('at {4}', '');
-  console.log(smsMessage, 'sms message');
-  sendSMS(smsMessage);
-  // send notification
-  const pushNotificationInput = {
-    appointmentId: appointment.id,
-    notificationType: NotificationType.BOOK_APPOINTMENT,
-  };
-  const notificationResult = sendNotification(
-    pushNotificationInput,
-    patientsDb,
-    consultsDb,
-    doctorsDb
-  );
-  console.log(notificationResult, 'book appt notification');
-  const hospitalCity = docDetails.doctorHospital[0].facility.city;
-  const apptDate = format(istDateTime, 'dd/MM/yyyy');
-  const apptTime = format(istDateTime, 'hh:mm');
-  const mailSubject =
-    'New Appointment for ' +
-    hospitalCity +
-    ' Hosp Doctor – ' +
-    apptDate +
-    ', ' +
-    apptTime +
-    'hrs, Dr. ' +
-    docDetails.firstName +
-    ' ' +
-    docDetails.lastName;
-  let mailContent =
-    'New Appointment has been booked on Apollo 247 app with the following details:-';
-  mailContent +=
-    'Appointment No :-' +
-    appointment.displayId.toString() +
-    '<br>Patient Name :-' +
-    patientDetails.firstName +
-    '<br>Mobile Number :-' +
-    patientDetails.mobileNumber +
-    '<br>Patient Location (city) :-\nDoctor Name :-' +
-    docDetails.firstName +
-    ' ' +
-    docDetails.lastName +
-    '<br>Doctor Location (ATHS/Hyd Hosp/Chennai Hosp) :-' +
-    hospitalCity +
-    '<br>Appointment Date :-' +
-    format(istDateTime, 'dd/MM/yyyy') +
-    '<br>Appointment Slot :-' +
-    format(istDateTime, 'hh:mm') +
-    ' - ' +
-    format(addMinutes(istDateTime, 15), 'hh:mm') +
-    '<br>Mode of Consult :-' +
-    appointmentInput.appointmentType;
-  /*const toEmailId =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_EMAILID
-      : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;*/
-  const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
-  const ccEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_CC_EMAILID
-      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
-  const emailContent: EmailMessage = {
-    ccEmail: ccEmailIds.toString(),
-    toEmail: toEmailId.toString(),
-    subject: mailSubject,
-    fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-    fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-    messageContent: mailContent,
-  };
-  sendMail(emailContent);
+
   //message queue starts
   /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;

@@ -42,6 +42,7 @@ export enum STATUS {
   NO_SHOW = 'NO_SHOW',
   JUNIOR_DOCTOR_STARTED = 'JUNIOR_DOCTOR_STARTED',
   JUNIOR_DOCTOR_ENDED = 'JUNIOR_DOCTOR_ENDED',
+  CALL_ABANDON = 'CALL_ABANDON',
 }
 
 export enum APPOINTMENT_STATE {
@@ -156,6 +157,9 @@ export class Appointment extends BaseEntity {
 
   @Column({ nullable: true, default: false })
   isConsultStarted: Boolean;
+
+  @Column({ nullable: true, default: false })
+  isSeniorConsultStarted: Boolean;
 
   @Column({ nullable: true })
   patientCancelReason: string;
@@ -715,6 +719,9 @@ export class AppointmentNoShow extends BaseEntity {
 
   @Column()
   noShowType: REQUEST_ROLES;
+
+  @Column({ default: STATUS.NO_SHOW })
+  noShowStatus: STATUS;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentNoShow)
   appointment: Appointment;

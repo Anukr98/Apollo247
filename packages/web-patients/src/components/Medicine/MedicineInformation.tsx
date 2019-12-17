@@ -4,6 +4,11 @@ import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
+import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
+import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
+import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
+import { useParams } from 'hooks/routerHooks';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -64,6 +69,15 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#01475b',
       marginBottom: 16,
+      cursor: 'pointer',
+      position: 'relative',
+      paddingRight: 40,
+    },
+    dropDownArrow: {
+      position: 'absolute',
+      right: 8,
+      top: '50%',
+      marginTop: -12,
     },
     deliveryInfo: {
       backgroundColor: '#f7f8f5',
@@ -192,14 +206,108 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 72,
       },
     },
+    substitutePopover: {
+      margin: 0,
+    },
+    selectedDrugs: {
+      width: '100%',
+    },
+    price: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      opacity: 0.6,
+    },
+    regularPrice: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#01475b',
+      opacity: 0.6,
+      textDecoration: 'line-through',
+      paddingRight: 5,
+    },
   });
 });
 
-export const MedicineInformation: React.FC = (props) => {
-  const classes = useStyles();
-  const [medicineQty] = React.useState(1);
-  const mascotRef = useRef(null);
+type MedicineInformationProps = {
+  data: MedicineProductDetails;
+};
+
+export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
+  const classes = useStyles({});
+  const [medicineQty, setMedicineQty] = React.useState(1);
+  const notifyPopRef = useRef(null);
+  const subDrugsRef = useRef(null);
+  const addToCartRef = useRef(null);
+  const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
+  const [isAddCartPopoverOpen, setIsAddCartPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
+  const [substitute, setSubstitute] = React.useState<MedicineProduct | null>(null);
+  const { data } = props;
+  const params = useParams<{ sku: string }>();
+  const [pinCode, setPinCode] = React.useState<string>('');
+  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
+
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprdsubt_api.php`,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
+    deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
+  };
+
+  const fetchSubstitutes = async () => {
+    await axios
+      .post(
+        apiDetails.url,
+        { params: params.sku },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        try {
+          if (data) {
+            if (data.products && typeof data.products === 'object') {
+              setSubstitutes(data.products);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })
+      .catch((err) => console.log({ err }));
+  };
+
+  const fetchDeliveryTime = async () => {
+    await axios
+      .post(
+        apiDetails.deliveryUrl || '',
+        {
+          params: {
+            postalcode: pinCode,
+            ordertype: 'pharma',
+            lookup: [
+              {
+                sku: params.sku,
+                qty: 1,
+              },
+            ],
+          },
+        },
+        {
+          headers: {
+            Authentication: apiDetails.deliveryAuthToken,
+          },
+        }
+      )
+      .then((res: any) => setDeliveryTime(res.tat.deliveryDate))
+      .catch((error: any) => alert(error));
+  };
+
+  let options = Array.from(Array(20), (_, x) => x);
 
   return (
     <div className={classes.root}>
@@ -207,73 +315,113 @@ export const MedicineInformation: React.FC = (props) => {
         <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 350px' }}>
           <div className={classes.customScroll}>
             <div className={classes.sectionTitle}>Substitute Drugs</div>
-            <div className={classes.substitutes}>Pick from 9 available substitutes</div>
-            <div className={classes.sectionTitle}>Check Delivery Time</div>
-            <div className={classes.deliveryInfo}>
-              <div className={classes.deliveryTimeGroup}>
-                <AphTextField placeholder="Enter Pin Code" />
-                <AphButton
-                  disabled
-                  classes={{
-                    root: classes.checkBtn,
-                    disabled: classes.checkBtnDisabled,
-                  }}
-                >
-                  Check
-                </AphButton>
-              </div>
-              <div className={classes.deliveryTimeInfo}>
-                <span>Delivery Time</span>
-                <span>By 9th Oct 2019</span>
-              </div>
+            <div
+              className={classes.substitutes}
+              onClick={() => {
+                fetchSubstitutes();
+                setIsSubDrugsPopoverOpen(true);
+              }}
+              ref={subDrugsRef}
+            >
+              {!substitute ? (
+                <span>Pick from 9 available substitutes</span>
+              ) : (
+                <>
+                  <div className={classes.selectedDrugs}>
+                    <div>{substitute.name}</div>
+                    <div className={classes.price}>{`Rs. ${substitute.price}`}</div>
+                  </div>
+                  <div className={classes.dropDownArrow}>
+                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                  </div>
+                </>
+              )}
             </div>
+            {data.is_in_stock ? (
+              <>
+                <div className={classes.sectionTitle}>Check Delivery Time</div>
+                <div className={classes.deliveryInfo}>
+                  <div className={classes.deliveryTimeGroup}>
+                    <AphTextField
+                      placeholder="Enter Pin Code"
+                      onChange={(e) => setPinCode(e.target.value)}
+                    />
+                    <AphButton
+                      disabled={pinCode.length !== 6}
+                      classes={{
+                        root: classes.checkBtn,
+                        disabled: classes.checkBtnDisabled,
+                      }}
+                      onClick={() => fetchDeliveryTime()}
+                    >
+                      Check
+                    </AphButton>
+                  </div>
+                  {deliveryTime.length > 0 && (
+                    <div className={classes.deliveryTimeInfo}>
+                      <span>Delivery Time</span>
+                      <span>{deliveryTime}</span>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : null}
           </div>
         </Scrollbars>
       </div>
       <div className={classes.priceGroup}>
         <div className={classes.priceWrap}>
           <div className={classes.leftGroup}>
-            <div className={classes.medicinePack}>
-              QTY :
-              <AphCustomDropdown
-                classes={{ selectMenu: classes.selectMenuItem }}
-                value={medicineQty}
-              >
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={1}
+            {data.is_in_stock ? (
+              <div className={classes.medicinePack}>
+                QTY :
+                <AphCustomDropdown
+                  classes={{ selectMenu: classes.selectMenuItem }}
+                  value={medicineQty}
+                  onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                    setMedicineQty(parseInt(e.target.value))
+                  }
                 >
-                  1
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={2}
-                >
-                  2
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={3}
-                >
-                  3
-                </MenuItem>
-              </AphCustomDropdown>
-            </div>
-            <div className={classes.medicineNoStock}>Out Of Stock</div>
+                  {options.map((option) => (
+                    <MenuItem
+                      classes={{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
+                      value={option}
+                    >
+                      {option}
+                    </MenuItem>
+                  ))}
+                </AphCustomDropdown>
+              </div>
+            ) : (
+              <div className={classes.medicineNoStock}>Out Of Stock</div>
+            )}
           </div>
-          <div className={classes.medicinePrice}>Rs. 120</div>
+          <div className={classes.medicinePrice}>
+            {data.special_price && (
+              <span className={classes.regularPrice}> (Rs. {data.price}) </span>
+            )}
+            Rs. {data.special_price || data.price}
+          </div>
         </div>
       </div>
       <div className={classes.bottomActions}>
-        <AphButton>Add To Cart</AphButton>
-        <AphButton color="primary">Buy Now</AphButton>
-        <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
-          Notify when in stock
-        </AphButton>
+        {data.is_in_stock ? (
+          <>
+            <AphButton onClick={() => setIsAddCartPopoverOpen(true)}>Add To Cart</AphButton>
+            <AphButton color="primary">Buy Now</AphButton>
+          </>
+        ) : (
+          <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
+            Notify when in stock
+          </AphButton>
+        )}
       </div>
       <Popover
         open={isPopoverOpen}
-        anchorEl={mascotRef.current}
+        anchorEl={notifyPopRef.current}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'right',
@@ -292,6 +440,48 @@ export const MedicineInformation: React.FC = (props) => {
             <MedicineNotifyPopover />
           </div>
         </div>
+      </Popover>
+      <Popover
+        open={isAddCartPopoverOpen}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <AddToCartPopover />
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={isSubDrugsPopoverOpen}
+        anchorEl={subDrugsRef.current}
+        onClose={() => setIsSubDrugsPopoverOpen(false)}
+        className={classes.substitutePopover}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        <SubstituteDrugsList
+          data={substitutes}
+          setSubstitute={setSubstitute}
+          setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
+        />
       </Popover>
     </div>
   );

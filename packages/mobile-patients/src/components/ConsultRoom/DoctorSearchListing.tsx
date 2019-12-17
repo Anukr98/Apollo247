@@ -303,26 +303,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
   }, []);
 
-  useEffect(() => {
-    //   // Code to delete location for test purpose
-    //   // setTimeout(() => {
-    //   //   setLocationDetails!(null);
-    //   // }, 1000);
-
-    if (locationDetails) {
-      setcurrentLocation(locationDetails.displayName);
-      const coordinates = {
-        lat: locationDetails.latitude || '',
-        lng: locationDetails.longitude || '',
-      };
-      latlng = coordinates;
-
-      console.log(latlng, 'latlng [locationDetails]');
-
-      fetchSpecialityFilterData(filterMode, FilterData, latlng);
-    }
-  }, [locationDetails]);
-
   // const fetchNextSlots = (doctorIds: (string | null)[]) => {
   //   const todayDate = new Date().toISOString().slice(0, 10);
 
@@ -581,12 +561,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     //       });
     //   }
     // });
-    console.log('placeId\n', { placeId: item.placeId });
+    console.log('savelatlngplaceId\n', { placeId: item.placeId });
     // update address to context here
     getPlaceInfoByPlaceId(item.placeId)
       .then((response) => {
         const addrComponents = g(response, 'data', 'result', 'address_components') || [];
         const coordinates = g(response, 'data', 'result', 'geometry', 'location')! || {};
+        console.log(coordinates, 'coordinates lllll');
+
         const city =
           findAddrComponents('locality', addrComponents) ||
           findAddrComponents('administrative_area_level_2', addrComponents);
@@ -599,8 +581,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);
           setshowSpinner(true);
-          fetchSpecialityFilterData(filterMode, FilterData, latlng);
-          latlng = latlng;
+          fetchSpecialityFilterData(filterMode, FilterData, {
+            lat: coordinates.lat,
+            lng: coordinates.lng,
+          });
+          latlng = {
+            lat: coordinates.lat,
+            lng: coordinates.lng,
+          };
           setLocationDetails!({
             displayName: item.name,
             latitude: coordinates.lat,

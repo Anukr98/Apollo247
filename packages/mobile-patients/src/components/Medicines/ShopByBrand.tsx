@@ -68,13 +68,19 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
     'Z',
   ];
   const tabs = alphabets.map((letter) => ({ title: letter }));
-
+  const allBrandData: Brand[] = props.navigation.getParam('allBrandData');
+  const setAllBrandData: (args0: Brand[]) => void = props.navigation.getParam('setAllBrandData');
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [allBrands, setallBrands] = useState<Brand[]>([]);
 
   useEffect(() => {
-    fetchAllBrands();
+    if (allBrandData.length > 0) {
+      setallBrands(allBrandData);
+      setshowSpinner(false);
+    } else {
+      fetchAllBrands();
+    }
   }, []);
 
   const fetchAllBrands = () => {
@@ -83,6 +89,7 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
         console.log(res, 'fetchAllBrands');
         if (res && res.data && res.data.brands) {
           setallBrands(res.data.brands);
+          setAllBrandData(res.data.brands);
         }
       })
       .catch((err) => {

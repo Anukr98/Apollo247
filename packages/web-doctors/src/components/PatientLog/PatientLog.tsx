@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import _ from 'lodash';
 import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
 import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
@@ -16,6 +17,8 @@ import { GET_PATIENT_LOG } from 'graphql/profiles';
 import { GetPatientLog } from 'graphql/types/GetPatientLog';
 import { patientLogSort, patientLogType } from 'graphql/types/globalTypes';
 import Scrollbars from 'react-custom-scrollbars';
+import { GetPatientLog_getPatientLog as patientLog } from 'graphql/types/GetPatientLog';
+import { createContext } from 'react';
 
 const tabsArray: any = [
   {
@@ -273,27 +276,65 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
   const [patientList, setPatientList] = React.useState([]);
   const [offset, setOffset] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [totalCount, setTotalCount] = React.useState(0);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
   const client = useApolloClient();
-  const limit = 50;
-  useEffect(() => {
+  const limit = 10;
+
+  const scrollFunction = (e: any) => {
+    if (e.target.scrollTop + e.target.clientHeight === e.target.scrollHeight) {
+      if (totalCount !== patientList.length) {
+        setOffset(offset + limit);
+        dataLoading();
+      }
+    }
+  };
+  const dataLoading = () => {
     setLoading(true);
+
     const selectedTab = tabsArray[selectedTabIndex];
     client
       .query<GetPatientLog>({
         query: GET_PATIENT_LOG,
         fetchPolicy: 'no-cache',
-        variables: { limit: limit, offset: offset, sortBy: sortBy, type: selectedTab.key },
+        variables: {
+          limit: limit,
+          offset: offset,
+          sortBy: sortBy,
+          type: selectedTab.key,
+        },
       })
       .then((_data: any) => {
-        setPatientList(
-          _data!.data!.getPatientLog && _data!.data!.getPatientLog !== null
-            ? _data!.data!.getPatientLog
-            : []
+        let obj: any;
+        obj = patientList;
+        _data &&
+          _data.data &&
+          _data.data.getPatientLog &&
+          _data.data.getPatientLog.patientLog.forEach((value: any, key: any) => {
+            obj.push(value);
+          });
+        if (_data && _data.data && _data.data.getPatientLog) {
+          setTotalCount(_data.data.getPatientLog.totalResultCount);
+        }
+        var arrayOfObjAfter = _.map(
+          _.uniq(
+            _.map(obj, function(obj) {
+              return JSON.stringify(obj);
+            })
+          ),
+          function(obj) {
+            return JSON.parse(obj);
+          }
         );
+        setPatientList(arrayOfObjAfter as any);
         setLoading(false);
+        document
+          .getElementById('messages')!
+          .scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // document.getElementById("messages")!.scrollIntoView(false);
       })
       .catch((e: any) => {
         //setError('Error occured in getcasesheet api');
@@ -303,6 +344,48 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       .finally(() => {
         setLoading(false);
       });
+  };
+  // useEffect(() => {
+  //   dataLoading()
+  // },[sortBy])
+  useEffect(() => {
+    if (offset === 0) {
+      setLoading(true);
+      const selectedTab = tabsArray[selectedTabIndex];
+      client
+        .query<GetPatientLog>({
+          query: GET_PATIENT_LOG,
+          fetchPolicy: 'no-cache',
+          variables: {
+            limit: limit,
+            offset: offset,
+            sortBy: sortBy,
+            type: selectedTab.key,
+          },
+        })
+        .then((_data: any) => {
+          setPatientList(
+            _data!.data!.getPatientLog &&
+              _data!.data!.getPatientLog !== null &&
+              _data!.data!.getPatientLog!.patientLog &&
+              _data!.data!.getPatientLog!.patientLog !== null
+              ? _data!.data!.getPatientLog!.patientLog
+              : []
+          );
+          if (_data && _data.data && _data.data.getPatientLog) {
+            setTotalCount(_data.data.getPatientLog.totalResultCount);
+          }
+          setLoading(false);
+        })
+        .catch((e: any) => {
+          //setError('Error occured in getcasesheet api');
+          console.log('Error occured creating session', e);
+          setLoading(false);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
   }, [selectedTabIndex, sortBy]);
 
   const tabsHtml = tabsArray.map((item: any, index: number) => {
@@ -313,6 +396,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
         label={item.value}
         onClick={(e) => {
           setselectedTabIndex(index);
+          setOffset(0);
         }}
       />
     );
@@ -322,7 +406,13 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+      <Scrollbars
+        autoHide={true}
+        style={{ height: 'calc(100vh - 65px)' }}
+        onScroll={(e) => {
+          scrollFunction(e);
+        }}
+      >
         <div className={classes.container}>
           <div>
             <div className={classes.tabHeading}>
@@ -364,6 +454,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     }}
                     onChange={(e) => {
                       setSortBy(e.target.value as string);
+                      setOffset(0);
                     }}
                   >
                     {sortByArray.map((item: any, index: number) => {
@@ -391,7 +482,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                 <CircularProgress className={classes.loading} />
               </Typography>
             ) : (
-              <div>
+              <div id="messages">
                 {selectedTabIndex === 0 && (
                   <TabContainer>
                     <AllPatient patientData={patientList} />

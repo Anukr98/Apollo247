@@ -275,8 +275,6 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
     );
   };
 
-  console.log(calendarDate, 'calendarDate');
-
   return (
     <View
       style={[

@@ -117,6 +117,7 @@ export const Vital: React.FC = () => {
     setBp,
     setTemperature,
     setHeight,
+    caseSheetEdit,
   } = useContext(CaseSheetContext);
 
   const [disableWeight, setDisableWeight] = useState<boolean>(true);
@@ -166,12 +167,12 @@ export const Vital: React.FC = () => {
                 defaultValue={height}
                 onBlur={(e) => {
                   setHeight(e.target.value);
-                  setDisableHeight(true);
+                  //setDisableHeight(true);
                 }}
-                disabled={disableHeight}
-                inputRef={heightRef}
+                disabled={!caseSheetEdit}
+                //inputRef={heightRef}
               />
-              <div className={classes.boxActions}>
+              {/* <div className={classes.boxActions}>
                 <AphButton
                   onClick={() => {
                     setDisableHeight(false);
@@ -187,7 +188,7 @@ export const Vital: React.FC = () => {
                 >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
-              </div>
+              </div> */}
             </Typography>
           </Typography>
           <Typography component="div" className={classes.vitalRight}>
@@ -201,12 +202,12 @@ export const Vital: React.FC = () => {
                 defaultValue={weight}
                 onBlur={(e) => {
                   setWeight(e.target.value);
-                  setDisableWeight(true);
+                  //setDisableWeight(true);
                 }}
-                disabled={disableWeight}
-                inputRef={weightRef}
+                disabled={!caseSheetEdit}
+                //inputRef={weightRef}
               />
-              <div className={classes.boxActions}>
+              {/* <div className={classes.boxActions}>
                 <AphButton
                   onClick={() => {
                     setDisableWeight(false);
@@ -222,7 +223,7 @@ export const Vital: React.FC = () => {
                 >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
-              </div>
+              </div> */}
             </Typography>
           </Typography>
           <div>
@@ -237,12 +238,12 @@ export const Vital: React.FC = () => {
                   defaultValue={bp}
                   onBlur={(e) => {
                     setBp(e.target.value);
-                    setDisableBp(true);
+                    //setDisableBp(true);
                   }}
-                  disabled={disableBp}
-                  inputRef={bpRef}
+                  disabled={!caseSheetEdit}
+                  //inputRef={bpRef}
                 />
-                <div className={classes.boxActions}>
+                {/* <div className={classes.boxActions}>
                   <AphButton
                     onClick={() => {
                       setDisableBp(false);
@@ -258,7 +259,7 @@ export const Vital: React.FC = () => {
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
-                </div>
+                </div> */}
               </Typography>
             </Typography>
             <Typography component="div" className={classes.vitalRight}>
@@ -272,12 +273,12 @@ export const Vital: React.FC = () => {
                   defaultValue={temperature}
                   onBlur={(e) => {
                     setTemperature(e.target.value);
-                    setDisableTemperature(true);
+                    //setDisableTemperature(true);
                   }}
-                  disabled={disableTemperature}
-                  inputRef={tempRef}
+                  disabled={!caseSheetEdit}
+                  //inputRef={tempRef}
                 />
-                <div className={classes.boxActions}>
+                {/* <div className={classes.boxActions}>
                   <AphButton
                     onClick={() => {
                       setDisableTemperature(false);
@@ -293,7 +294,7 @@ export const Vital: React.FC = () => {
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
-                </div>
+                </div> */}
               </Typography>
             </Typography>
           </div>

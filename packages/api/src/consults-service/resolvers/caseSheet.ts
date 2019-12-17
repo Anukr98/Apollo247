@@ -155,6 +155,7 @@ export const caseSheetTypeDefs = gql`
 
   type AppointmentDocuments {
     documentPath: String
+    prismFileId: String
   }
 
   type CaseSheetFullDetails {

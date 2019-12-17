@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
 export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   titleTextStyle?: StyleProp<TextStyle>;
-  title?: string;
+  title?: string | React.ReactNode;
   onPress?: TouchableOpacityProps['onPress'];
   disabled?: boolean;
   disabledStyle?: StyleProp<ViewStyle>;

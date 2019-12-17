@@ -8,6 +8,7 @@ import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -15,6 +16,7 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 import { addMilliseconds, format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
+import { log } from 'customWinstonLogger';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -53,6 +55,11 @@ export const getNotificationsTypeDefs = gql`
   input PushNotificationInput {
     notificationType: NotificationType
     appointmentId: String
+  }
+
+  input CartPushNotificationInput {
+    notificationType: NotificationType
+    orderAutoId: Int
   }
 
   extend type Query {
@@ -109,6 +116,11 @@ type PushNotificationInput = {
   appointmentId: string;
 };
 
+type CartPushNotificationInput = {
+  notificationType: NotificationType;
+  orderAutoId: number;
+};
+
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
 export async function sendSMS(message: string) {
@@ -116,6 +128,14 @@ export async function sendSMS(message: string) {
   if (smsUrl == '') {
     throw new AphError(AphErrorMessages.INVALID_SMS_GATEWAY_URL, undefined, {});
   }
+
+  log(
+    'notificationServiceLogger',
+    `EXTERNAL_API_CALL_SMS: ${smsUrl}`,
+    'sendSMS()->API_CALL_STARTING',
+    JSON.stringify(smsUrl + '&To=9657585411&Text=' + message),
+    ''
+  );
   const smsResp = fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
 }
@@ -208,11 +228,21 @@ export async function sendCallsNotification(
   };
   let notificationResponse;
   const registrationToken: string[] = [];
-
-  patientDetails.patientDeviceTokens.forEach((values) => {
+  const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const listOfIds: string[] = [];
+  allpatients.map((value) => listOfIds.push(value.id));
+  console.log(listOfIds, 'listOfIds');
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
+  if (devicetokensofFamily.length > 0) {
+    devicetokensofFamily.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+  }
+  /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
-  });
-
+  });*/
+  console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -432,9 +462,20 @@ export async function sendNotification(
   let notificationResponse;
   const registrationToken: string[] = [];
 
-  patientDetails.patientDeviceTokens.forEach((values) => {
+  const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const listOfIds: string[] = [];
+  allpatients.map((value) => listOfIds.push(value.id));
+  console.log(listOfIds, 'listOfIds');
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
+  if (devicetokensofFamily.length > 0) {
+    devicetokensofFamily.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+  }
+  /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
-  });
+  });*/
 
   admin
     .messaging()
@@ -475,7 +516,7 @@ export async function sendNotification(
 }
 
 export async function sendCartNotification(
-  pushNotificationInput: PushNotificationInput,
+  pushNotificationInput: CartPushNotificationInput,
   patientsDb: Connection
 ) {
   let notificationTitle: string = '';
@@ -484,9 +525,11 @@ export async function sendCartNotification(
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const medicineRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+  console.log(pushNotificationInput.orderAutoId, 'order auto id input');
   const medicineOrderDetails = await medicineRepo.getMedicineOrderWithId(
-    parseInt(pushNotificationInput.appointmentId, 2)
+    pushNotificationInput.orderAutoId
   );
+  console.log(pushNotificationInput.orderAutoId, 'order auto id input222');
   if (medicineOrderDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   const patientDetails = await patientRepo.getPatientDetails(medicineOrderDetails.patient.id);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
@@ -514,7 +557,7 @@ export async function sendCartNotification(
     },
     data: {
       type: 'Cart_Ready',
-      orderId: pushNotificationInput.appointmentId,
+      orderId: pushNotificationInput.orderAutoId.toString(),
       orderAutoId: '',
       deliveredDate: '',
       firstName: patientDetails.firstName,
@@ -524,7 +567,7 @@ export async function sendCartNotification(
   if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
     payload.data = {
       type: 'Order_Delivered',
-      orderAutoId: pushNotificationInput.appointmentId,
+      orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
       deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
@@ -540,9 +583,20 @@ export async function sendCartNotification(
   let notificationResponse;
   const registrationToken: string[] = [];
 
-  patientDetails.patientDeviceTokens.forEach((values) => {
+  const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const listOfIds: string[] = [];
+  allpatients.map((value) => listOfIds.push(value.id));
+  console.log(listOfIds, 'listOfIds');
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
+  if (devicetokensofFamily.length > 0) {
+    devicetokensofFamily.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+  }
+  /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
-  });
+  });*/
 
   admin
     .messaging()
@@ -559,7 +613,7 @@ export async function sendCartNotification(
         let content =
           format(new Date(), 'yyyy-MM-dd hh:mm') +
           '\n apptid: ' +
-          pushNotificationInput.appointmentId +
+          pushNotificationInput.orderAutoId.toString() +
           '\n multicastId: ';
         content +=
           response.multicastId.toString() +

@@ -37,6 +37,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -101,6 +102,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useDiagnosticsCart();
+  const { cartItems: shopCartItems } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
   const { locationForDiagnostics } = useAppCommonData();
 
@@ -115,7 +117,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       mutation: SAVE_SEARCH,
       variables: {
         saveSearchInput: {
-          type: SEARCH_TYPE.MEDICINE,
+          type: SEARCH_TYPE.TEST,
           typeId: sku,
           typeName: name,
           patient: currentPatient && currentPatient.id ? currentPatient.id : '',
@@ -152,7 +154,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length;
+    const cartItemsCount = cartItems.length + shopCartItems.length;
     return (
       <Header
         container={{ borderBottomWidth: 0 }}
@@ -402,9 +404,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');
-          // savePastSeacrh(`${medicine.itemId}`, medicine.itemName).catch((e) => {
-          //   // handleGraphQlError(e);
-          // });
+          savePastSeacrh(`${medicine.itemId}`, medicine.itemName).catch((e) => {
+            // handleGraphQlError(e);
+          });
           props.navigation.navigate(AppRoutes.TestDetails, {
             title: medicine.itemName,
             testDetails: {

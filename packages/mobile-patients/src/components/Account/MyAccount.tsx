@@ -22,7 +22,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { useApolloClient } from 'react-apollo-hooks';
 import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
@@ -31,6 +31,8 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import DeviceInfo from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
 
@@ -93,8 +95,27 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
 
+  const buildName = () => {
+    switch (apiRoutes.graphql()) {
+      case 'https://aph.dev.api.popcornapps.com//graphql':
+        return 'DEV';
+      case 'https://aph.staging.api.popcornapps.com//graphql':
+        return 'QA';
+      case 'https://aph.uat.api.popcornapps.com//graphql':
+        return 'UAT';
+      case 'https://aph.vapt.api.popcornapps.com//graphql':
+        return 'VAPT';
+      case 'https://api.apollo247.com//graphql':
+        return 'PROD';
+      case 'https://asapi.apollo247.com//graphql':
+        return 'PRF';
+      default:
+        return '';
+    }
+  };
+
   useEffect(() => {
-    if (!currentPatient) {
+    if (!currentPatient || !currentPatient.uhid) {
       getPatientApiCall();
     }
     currentPatient && setprofileDetails(currentPatient);
@@ -150,7 +171,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {profileDetails.gender ? profileDetails.gender : '-'} |{' '}
-                {Math.round(Moment().diff(profileDetails.dateOfBirth, 'years', true))}
+                {profileDetails.dateOfBirth
+                  ? Math.round(Moment().diff(profileDetails.dateOfBirth, 'years', true)) || '-'
+                  : '-'}
               </Text>
             </View>
             <View style={styles.separatorStyle} />
@@ -221,13 +244,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log('data', data);
+        console.log('deleteDeviceTokendata', data);
         setshowSpinner(false);
         onPressLogout();
       })
       .catch((e: string) => {
         try {
-          console.log('delete device token', e);
+          console.log('deleteDeviceTokenerror', e);
           setshowSpinner(false);
           onPressLogout();
         } catch {}
@@ -242,7 +265,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             position: 'absolute',
             height: 160,
             width: '100%',
-            top: Platform.OS === 'ios' ? 24 : 0,
+            top: statusBarHeight(),
             backgroundColor: headColor,
             justifyContent: 'flex-end',
             flexDirection: 'column',
@@ -281,7 +304,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           container={{
             zIndex: 3,
             position: 'absolute',
-            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
+            top: statusBarHeight(),
             left: 0,
             right: 0,
             height: 56,
@@ -290,15 +313,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
           rightComponent={
             <TouchableOpacity activeOpacity={1} onPress={deleteDeviceToken}>
-              <Text>Logout</Text>
+              <Text style={theme.viewStyles.text('M', 16, '#01475b')}>Logout</Text>
             </TouchableOpacity>
           }
         />
-        {/* <View
+        <View
           style={{
             zIndex: 3,
             position: 'absolute',
-            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 50 : 40) : 20,
+            top: statusBarHeight() + 16,
             left: 20,
             right: 0,
             width: 77,
@@ -307,11 +330,20 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+            // onPress={() => props.navigation.popToTop()}
+            onPress={() => {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                })
+              );
+            }}
           >
             <ApolloLogo />
           </TouchableOpacity>
-        </View> */}
+        </View>
       </>
     );
   };
@@ -379,10 +411,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 textAlign: 'center',
                 height: 92,
                 width: width,
-                paddingTop: 10,
+                paddingTop: 20,
               }}
             >
-              PRO V 1.0(15)
+              {`${buildName()} - v ${DeviceInfo.getVersion()}.${DeviceInfo.getBuildNumber()}`}
             </Text>
           </View>
         </Animated.ScrollView>

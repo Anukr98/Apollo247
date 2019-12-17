@@ -26,6 +26,7 @@ export interface PhysicalPrescription {
   // path: string;
   base64: string;
   uploadedUrl?: string;
+  prismPrescriptionFileId?: string;
 }
 
 export interface EPrescription {
@@ -50,7 +51,7 @@ export interface ShoppingCartContextProps {
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
     | null;
   cartTotal: number;
-  cartTotalOfPharmaProducts: number;
+  cartTotalOfRxProducts: number;
   couponDiscount: number;
   deliveryCharges: number;
   grandTotal: number;
@@ -102,7 +103,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
-  cartTotalOfPharmaProducts: 0,
+  cartTotalOfRxProducts: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
   grandTotal: 0,
@@ -229,11 +230,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const cartTotal: ShoppingCartContextProps['cartTotal'] = parseFloat(
     cartItems
-      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
+      .reduce(
+        (currTotal, currItem) =>
+          currTotal + currItem.quantity * (currItem.specialPrice || currItem.price),
+        0
+      )
       .toFixed(2)
   );
 
-  const cartTotalOfPharmaProducts: ShoppingCartContextProps['cartTotalOfPharmaProducts'] = parseFloat(
+  const cartTotalOfRxProducts: ShoppingCartContextProps['cartTotalOfRxProducts'] = parseFloat(
     cartItems
       .filter((currItem) => currItem.prescriptionRequired == true)
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
@@ -241,9 +246,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
       ? 0
-      : cartTotal > 0 && cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+      : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
+        cartTotal > 0 &&
+        cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
@@ -256,13 +263,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const setStoreId = (id: ShoppingCartContextProps['storeId']) => {
-    setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);
+    setDeliveryType(id ? MEDICINE_DELIVERY_TYPE.STORE_PICKUP : null);
     _setStoreId(id);
     _setDeliveryAddressId('');
   };
 
   const setDeliveryAddressId = (id: ShoppingCartContextProps['deliveryAddressId']) => {
-    setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
+    setDeliveryType(id ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY : null);
     _setDeliveryAddressId(id);
     _setStoreId('');
   };
@@ -331,29 +338,32 @@ export const ShoppingCartProvider: React.FC = (props) => {
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
     const minimumOrderAmount = coupon && coupon.minimumOrderAmount;
-    if (!coupon || (minimumOrderAmount && cartTotalOfPharmaProducts < minimumOrderAmount)) {
+    // if rx items total is less than coupon's min. order amount, remove coupon code
+    if (
+      !coupon ||
+      cartTotalOfRxProducts == 0 ||
+      (minimumOrderAmount && cartTotalOfRxProducts < minimumOrderAmount)
+    ) {
       setCoupon(null);
       setCouponDiscount(0);
     } else {
       let discountAmount = 0;
       if (coupon.discountType == DiscountType.PERCENT) {
-        discountAmount = parseFloat(
-          ((coupon.discount / 100) * cartTotalOfPharmaProducts).toFixed(2)
-        );
+        discountAmount = parseFloat(((coupon.discount / 100) * cartTotalOfRxProducts).toFixed(2));
       } else {
-        discountAmount = parseFloat((cartTotalOfPharmaProducts - coupon.discount).toFixed(2));
+        discountAmount = parseFloat((cartTotalOfRxProducts - coupon.discount).toFixed(2));
       }
       setCouponDiscount(discountAmount);
     }
-  }, [cartTotalOfPharmaProducts, coupon]);
+  }, [cartTotalOfRxProducts, coupon]);
 
   useEffect(() => {
     // updating prescription here on update in cart items
-    if (cartTotalOfPharmaProducts == 0) {
+    if (cartTotalOfRxProducts == 0) {
       physicalPrescriptions.length > 0 && setPhysicalPrescriptions([]);
       ePrescriptions.length > 0 && setEPrescriptions([]);
     }
-  }, [cartTotalOfPharmaProducts]);
+  }, [cartTotalOfRxProducts]);
 
   return (
     <ShoppingCartContext.Provider
@@ -364,7 +374,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
-        cartTotalOfPharmaProducts,
+        cartTotalOfRxProducts,
         grandTotal,
         couponDiscount,
         deliveryCharges,

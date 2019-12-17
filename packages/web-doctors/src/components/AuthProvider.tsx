@@ -175,13 +175,14 @@ export const AuthProvider: React.FC = (props) => {
           );
           setIsSendingOtp(false);
           if (phoneAuthError) {
-            TrackJS.track(phoneAuthError);
+            TrackJS.track(`phoneNumber: ${phoneNumber}`);
+            TrackJS.track(`phoneAuthError: ${phoneAuthError}`);
             setSendOtpError(true);
             reject();
             return;
           }
           TrackJS.track(`phoneNumber: ${phoneNumber}`);
-          TrackJS.track(phoneAuthResult);
+          TrackJS.track(`phoneAuthResult: ${phoneAuthResult}`);
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
           captcha.clear();

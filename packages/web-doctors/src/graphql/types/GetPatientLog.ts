@@ -8,7 +8,7 @@ import { patientLogSort, patientLogType, Gender } from "./globalTypes";
 // GraphQL query operation: GetPatientLog
 // ====================================================
 
-export interface GetPatientLog_getPatientLog_patientInfo {
+export interface GetPatientLog_getPatientLog_patientLog_patientInfo {
   __typename: "Patient";
   firstName: string | null;
   lastName: string | null;
@@ -21,17 +21,23 @@ export interface GetPatientLog_getPatientLog_patientInfo {
   photoUrl: string | null;
 }
 
-export interface GetPatientLog_getPatientLog {
+export interface GetPatientLog_getPatientLog_patientLog {
   __typename: "PatientLog";
   patientid: string | null;
   consultscount: string | null;
   appointmentids: (string | null)[] | null;
   appointmentdatetime: any | null;
-  patientInfo: GetPatientLog_getPatientLog_patientInfo | null;
+  patientInfo: GetPatientLog_getPatientLog_patientLog_patientInfo | null;
+}
+
+export interface GetPatientLog_getPatientLog {
+  __typename: "PatientLogData";
+  patientLog: (GetPatientLog_getPatientLog_patientLog | null)[] | null;
+  totalResultCount: number | null;
 }
 
 export interface GetPatientLog {
-  getPatientLog: (GetPatientLog_getPatientLog | null)[] | null;
+  getPatientLog: GetPatientLog_getPatientLog | null;
 }
 
 export interface GetPatientLogVariables {

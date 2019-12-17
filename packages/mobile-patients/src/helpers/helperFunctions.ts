@@ -2,7 +2,7 @@ import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/gl
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
 import moment from 'moment';
-import { Alert, NetInfo, AsyncStorage, Dimensions } from 'react-native';
+import { Alert, NetInfo, AsyncStorage, Dimensions, Platform } from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -435,3 +435,5 @@ export const getUserCurrentPosition = async () => {
 const { height } = Dimensions.get('window');
 
 export const isIphone5s = () => height === 568;
+export const statusBarHeight = () =>
+  Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;

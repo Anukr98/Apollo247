@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Paper } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import axios from 'axios';
+import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -49,11 +53,13 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         '& li': {
           listStyleType: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '12px 12px',
           borderBottom: '0.5px solid rgba(2,71,91,0.1)',
           cursor: 'pointer',
+          '& a': {
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px 12px',
+          },
           '&:last-child': {
             borderBottom: 0,
           },
@@ -92,60 +98,124 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicineAutoSearch: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const apiDetails = {
+    url: process.env.PHARMACY_MED_SEARCH_URL,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+  };
+
+  const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
+
+  let cancelSearchSuggestionsApi: any;
+
+  const onSearchMedicine = async (value: string) => {
+    await axios
+      .post(
+        apiDetails.url,
+        {
+          params: value,
+        },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+          // cancelToken: new CancelToken(function executor(c) {
+          //   // An executor function receives a cancel function as a parameter
+          //   cancelSearchSuggestionsApi = c;
+          // })
+        }
+      )
+      .then(({ data }) => {
+        setSearchMedicines(data.products);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.medicineSearchForm}>
-        <AphTextField placeholder="Search meds, brands and more" className={classes.searchInput} />
-        <AphButton className={classes.searchBtn}>
+        <AphTextField
+          placeholder="Search meds, brands and more"
+          className={classes.searchInput}
+          onChange={(e) => {
+            if (e.target.value.length > 2) {
+              onSearchMedicine(e.target.value);
+            } else {
+              setSearchMedicines([]);
+            }
+          }}
+        />
+        <AphButton
+          className={classes.searchBtn}
+          onClick={() => (window.location.href = clientRoutes.searchByMedicine())}
+        >
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>
-      <Paper className={classes.autoSearchPopover}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
-          <div className={classes.searchList}>
-            <ul>
-              <li>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/img_product.png')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin Advance</div>
-                  <div className={classes.medicinePrice}>Rs. 14.95</div>
-                </div>
-              </li>
-              <li className={classes.itemSelected}>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/img_product.png')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin Pain Releif</div>
-                  <div className={classes.medicinePrice}>Rs. 14.95</div>
-                </div>
-              </li>
-              <li>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/ic_tablets_rx.svg')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin Cold &amp; Flu</div>
-                  <div className={classes.noStock}>Out Of Stock</div>
-                </div>
-              </li>
-              <li>
-                <div className={classes.medicineImg}>
-                  <img src={require('images/ic_tablets.svg')} alt="" />
-                </div>
-                <div className={classes.medicineInfo}>
-                  <div className={classes.medicineName}>Crocin 650mg</div>
-                  <div className={classes.medicinePrice}>Rs. 14.95</div>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </Scrollbars>
-      </Paper>
+      {searchMedicines.length > 0 && (
+        <Paper className={classes.autoSearchPopover}>
+          <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+            <div className={classes.searchList}>
+              <ul>
+                {searchMedicines.map((medicine) => (
+                  <li>
+                    <Link to={clientRoutes.medicineDetails(medicine.sku)}>
+                      <div className={classes.medicineImg}>
+                        <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                      </div>
+                      <div className={classes.medicineInfo}>
+                        <div className={classes.medicineName}>{medicine.name}</div>
+                        <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+                {/* <li className={classes.itemSelected}>
+                  <Link to={clientRoutes.medicineDetails()}>
+                    <div className={classes.medicineImg}>
+                      <img src={require("images/img_product.png")} alt="" />
+                    </div>
+                    <div className={classes.medicineInfo}>
+                      <div className={classes.medicineName}>
+                        Crocin Pain Releif
+                      </div>
+                      <div className={classes.medicinePrice}>Rs. 14.95</div>
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link to={clientRoutes.medicineDetails()}>
+                    <div className={classes.medicineImg}>
+                      <img src={require("images/ic_tablets_rx.svg")} alt="" />
+                    </div>
+                    <div className={classes.medicineInfo}>
+                      <div className={classes.medicineName}>
+                        Crocin Cold &amp; Flu
+                      </div>
+                      <div className={classes.noStock}>Out Of Stock</div>
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link to={clientRoutes.medicineDetails()}>
+                    <div className={classes.medicineImg}>
+                      <img src={require("images/ic_tablets.svg")} alt="" />
+                    </div>
+                    <div className={classes.medicineInfo}>
+                      <div className={classes.medicineName}>Crocin 650mg</div>
+                      <div className={classes.medicinePrice}>Rs. 14.95</div>
+                    </div>
+                  </Link>
+                </li>
+               */}
+              </ul>
+            </div>
+          </Scrollbars>
+        </Paper>
+      )}
     </div>
   );
 };

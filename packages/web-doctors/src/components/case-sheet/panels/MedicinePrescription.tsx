@@ -19,6 +19,15 @@ import { isEmpty, debounce, trim, deburr } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
+import { useQuery } from 'react-apollo-hooks';
+import { GET_DOCTOR_FAVOURITE_MEDICINE } from 'graphql/doctors';
+import {
+  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList,
+  GetDoctorFavouriteMedicineList,
+  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
+} from 'graphql/types/GetDoctorFavouriteMedicineList';
+import { useApolloClient } from 'react-apollo-hooks';
+import { relative } from 'path';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -66,7 +75,10 @@ function renderSuggestion(
         {parts.map((part) => (
           <span
             key={part.text}
-            style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+            style={{
+              fontWeight: part.highlight ? 500 : 400,
+              whiteSpace: 'pre',
+            }}
           >
             {part.text}
           </span>
@@ -115,17 +127,31 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       flexGrow: 1,
     },
+    mediceneContainer: {
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      border: '1px solid rgba(2,71,91,0.1)',
+      borderRadius: 5,
+      padding: 5,
+      position: 'relative',
+      '& img': {
+        border: '1px solid #00b38e',
+        borderRadius: '50%',
+        maxWidth: 24,
+      },
+    },
     paper: {
       textAlign: 'left',
       color: theme.palette.text.secondary,
-      marginBottom: 12,
-      backgroundColor: 'rgba(0,0,0,0.02)',
-      border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 40px 12px 12px',
+      padding: '12px 25px 12px 5px',
+      borderRadius: 0,
       maxWidth: '100%',
-      borderRadius: 5,
       position: 'relative',
       boxShadow: 'none',
+      backgroundColor: 'transparent',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:last-child': {
+        borderBottom: 'none',
+      },
       '& h5': {
         fontSize: 14,
         color: '#02475b',
@@ -186,6 +212,17 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     medicineHeading: {
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: 'normal',
+      color: 'rgba(2, 71, 91, 0.6) !important',
+      marginBottom: 12,
+    },
+    favMedBg: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+    },
+    favmedicineHeading: {
       fontSize: 14,
       fontWeight: 500,
       lineHeight: 'normal',
@@ -323,13 +360,13 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       top: 5,
-      right: 40,
+      right: 2,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       minWidth: 30,
-      padding: '5px 10px',
+      padding: '5px 0',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -400,6 +437,29 @@ const useStyles = makeStyles((theme: Theme) =>
     unitsSelect: {
       marginTop: -7,
     },
+    medicineCard: {
+      color: 'rgba(0, 0, 0, 0.54)',
+      border: '1px solid rgba(2,71,91,0.1)',
+      padding: '12px 40px 12px 12px',
+      position: 'relative',
+      maxWidth: '100%',
+      boxShadow: 'none',
+      textAlign: 'left',
+      borderRadius: 5,
+      marginBottom: 12,
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      '& h5': {
+        color: '#02475b',
+        margin: 0,
+        fontSize: 14,
+        fontWeight: 600,
+      },
+      '& h6': {
+        color: '#02475b',
+        margin: 0,
+        fontSize: 12,
+      },
+    },
   })
 );
 
@@ -436,15 +496,44 @@ let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
+
   const {
     medicinePrescription: selectedMedicinesArr,
     setMedicinePrescription: setSelectedMedicinesArr,
   } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [isEditFavMedicine, setIsEditFavMedicine] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
   const [isUpdate, setIsUpdate] = React.useState(false);
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
+  const [favouriteMedicine, setFavouriteMedicine] = React.useState<
+    (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
+  >([]);
+  const [favMedicineName, setFavMedicineName] = React.useState<string>('');
+  const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
+  const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
+
+  const client = useApolloClient();
+  useEffect(() => {
+    client
+      .query<GetDoctorFavouriteMedicineList>({
+        query: GET_DOCTOR_FAVOURITE_MEDICINE,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        setFavouriteMedicine(
+          data &&
+            data.data &&
+            data.data.getDoctorFavouriteMedicineList &&
+            data.data.getDoctorFavouriteMedicineList.medicineList
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
     tobeTakenErr: false,
@@ -453,7 +542,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(0);
+  const [tabletsCount, setTabletsCount] = React.useState<number>(0.5);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -594,6 +683,11 @@ export const MedicinePrescription: React.FC = () => {
     setIsUpdate(true);
     setIdx(idx);
   };
+  const updateFavMedicine = (idx: any) => {
+    setSelectedValue(idx.medicineName);
+    setFavMedicineName(idx.medicineName);
+    setShowDosage(true);
+  };
   useEffect(() => {
     if (idx >= 0) {
       setSelectedMedicines(selectedMedicines);
@@ -665,69 +759,6 @@ export const MedicinePrescription: React.FC = () => {
     setToBeTakenSlots(slots);
   };
 
-  const selectedMedicinesHtml = selectedMedicinesArr!.map((_medicine: any, index: number) => {
-    const medicine = _medicine!;
-
-    const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
-    const whenString =
-      medicine.medicineToBeTaken.length > 0
-        ? toBeTaken(medicine.medicineToBeTaken)
-            .join(', ')
-            .toLowerCase()
-        : '';
-    const unitHtml =
-      medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
-        ? medicine.medicineUnit.toLowerCase()
-        : 'times';
-    const timesString =
-      medicine.medicineTimings.length > 0
-        ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
-        : '';
-    const dosageCount =
-      medicine.medicineTimings.length > 0
-        ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
-        : medicine.medicineDosage;
-    return (
-      <div key={index} style={{ position: 'relative' }}>
-        <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
-          <h5>{medicine.medicineName}</h5>
-          <h6>
-            {/*medicine.medicineTimings.length*/}
-            {dosageCount} {unitHtml} a day {timesString.length > 0 && timesString} for {duration}{' '}
-            {whenString.length > 0 && whenString}
-          </h6>
-          {/* <img
-    className={classes.checkImg}
-    src={
-    medicine.selected
-    ? require('images/ic_selected.svg')
-    : require('images/ic_unselected.svg')
-    }
-    alt="chkUncheck"
-    /> */}
-        </Paper>
-
-        <AphButton
-          variant="contained"
-          color="primary"
-          key={`del ${index}`}
-          classes={{ root: classes.updateSymptom }}
-          onClick={() => updateMedicine(index)}
-        >
-          <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-        </AphButton>
-        <AphButton
-          variant="contained"
-          color="primary"
-          key={`del ${index}`}
-          classes={{ root: classes.deleteSymptom }}
-          onClick={() => deletemedicine(index)}
-        >
-          <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
-        </AphButton>
-      </div>
-    );
-  });
   const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
     const daySlotitem = _daySlotitem!;
     return (
@@ -757,7 +788,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -765,15 +796,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } /* else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    }*/ else if (
+    } else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
@@ -785,17 +808,23 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    }
-    //  else if (daySlotsSelected.length === 0) {
-    //   setErrorState({
-    //     ...errorState,
-    //     daySlotErr: true,
-    //     tobeTakenErr: false,
-    //     durationErr: false,
-    //     dosageErr: false,
-    //   });
-    // }
-    else {
+    } else if (isTobeTakenSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: true,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
+    } else if (daySlotsSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
+    } else {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -885,7 +914,6 @@ export const MedicinePrescription: React.FC = () => {
   const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>('');
   const [selectedId, setSelectedId] = useState<string>('');
-
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
     setSuggestions(getSuggestions(value));
   };
@@ -917,13 +945,64 @@ export const MedicinePrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
-
   return (
     <div className={classes.root}>
-      <div className={classes.medicineHeading}>Medicines</div>
       <Grid container spacing={1}>
-        <Grid item md={12} xs={12}>
-          {selectedMedicinesHtml}
+        <Grid item lg={6} xs={12}>
+          <div className={classes.medicineHeading}>Medicines</div>
+          {selectedMedicinesArr!.map((_medicine: any, index: number) => {
+            const medicine = _medicine!;
+
+            const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
+            const whenString =
+              medicine.medicineToBeTaken.length > 0
+                ? toBeTaken(medicine.medicineToBeTaken)
+                    .join(', ')
+                    .toLowerCase()
+                : '';
+            const unitHtml =
+              medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
+                ? medicine.medicineUnit.toLowerCase()
+                : 'times';
+            const timesString =
+              medicine.medicineTimings.length > 0
+                ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                : '';
+            const dosageCount =
+              medicine.medicineTimings.length > 0
+                ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
+                : medicine.medicineDosage;
+            return (
+              <div style={{ position: 'relative' }} key={index}>
+                <Paper className={classes.medicineCard}>
+                              <h5>{medicine.medicineName}</h5>
+                              
+                  <h6>
+                                                 {dosageCount} {unitHtml} a day
+                    {' '}
+                                  {timesString.length > 0 && timesString} for 
+                    {duration}
+                    {' '}
+                                  {whenString.length > 0 && whenString}
+                                
+                  </h6>
+                            
+                </Paper>
+                          
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.updateSymptom }}
+                  onClick={() => updateMedicine(index)}
+                >
+                              
+                  <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
+                            
+                </AphButton>
+                        
+              </div>
+            );
+          })}
           {caseSheetEdit && (
             <AphButton
               variant="contained"
@@ -935,8 +1014,272 @@ export const MedicinePrescription: React.FC = () => {
             </AphButton>
           )}
         </Grid>
-        <Grid item xs={12}></Grid>
+        {!showAddCondition && caseSheetEdit && favouriteMedicine && favouriteMedicine.length > 0 && (
+          <Grid item lg={6} xs={12}>
+            <div className={classes.favmedicineHeading}>Favourite Medicines</div>
+            <div className={classes.mediceneContainer}>
+              {favouriteMedicine.map((favMedicine, id, index) => {
+                const favDuration = `${Number(
+                  favMedicine && favMedicine.medicineConsumptionDurationInDays
+                )} days`;
+                const favWhenString =
+                  favMedicine &&
+                  favMedicine.medicineToBeTaken &&
+                  favMedicine.medicineToBeTaken.length > 0
+                    ? toBeTaken(favMedicine && favMedicine.medicineToBeTaken)
+                        .join(', ')
+                        .toLowerCase()
+                    : '';
+                const favUnitHtml =
+                  favMedicine && favMedicine.medicineUnit && favMedicine.medicineUnit !== 'NA'
+                    ? favMedicine &&
+                      favMedicine.medicineUnit &&
+                      favMedicine.medicineUnit.toLowerCase()
+                    : 'times';
+                const favTimesString =
+                  favMedicine &&
+                  favMedicine.medicineTimings &&
+                  favMedicine.medicineTimings.length > 0
+                    ? '(' + favMedicine &&
+                      favMedicine.medicineTimings &&
+                      favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                    : '';
+                const favDosageCount =
+                  favMedicine && favMedicine.medicineDosage === ''
+                    ? favMedicine &&
+                      favMedicine.medicineTimings &&
+                      favMedicine.medicineTimings.length > 0
+                      ? parseFloat(favMedicine && favMedicine.medicineDosage) *
+                        favMedicine.medicineTimings.length
+                      : favMedicine && favMedicine.medicineDosage
+                    : '';
+                const favMedicineName = favMedicine && favMedicine.medicineName;
+                return (
+                  <div className={classes.paper} key={id}>
+                    <Paper className={classes.favMedBg}>
+                      <h5>{favMedicineName}</h5>
+                      <h6>
+                        {favDosageCount} {favUnitHtml} a day{' '}
+                        {favTimesString.length > 0 && favTimesString} for {favDuration}{' '}
+                        {favWhenString.length > 0 && favWhenString}
+                      </h6>
+                    </Paper>
+                    <AphButton
+                      variant="contained"
+                      color="primary"
+                      classes={{ root: classes.updateSymptom }}
+                      onClick={(id) => {
+                        setIsEditFavMedicine(true);
+                        //  setSelectedMedicinesArr(favMedicine);
+
+                        updateFavMedicine(favMedicine);
+                      }}
+                    >
+                      <img
+                        src={favouriteMedicine && require('images/add_doctor_white.svg')}
+                        alt=""
+                      />
+                    </AphButton>
+                  </div>
+                );
+              })}
+            </div>
+            )}
+          </Grid>
+        )}
       </Grid>
+      {isEditFavMedicine && (
+        <Modal
+          open={isEditFavMedicine}
+          onClose={() => setIsEditFavMedicine(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.medicinePopup}>
+            <AphDialogTitle
+              className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
+            >
+              {showDosage && (
+                <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+                  <img src={require('images/ic_back.svg')} alt="" />
+                </div>
+              )}
+              {showDosage ? favMedicineName.toUpperCase() : 'ADD FAVOURITE MEDICINE'}
+              <Button className={classes.cross}>
+                <img
+                  src={require('images/ic_cross.svg')}
+                  alt=""
+                  onClick={() => {
+                    setIsEditFavMedicine(false);
+                    setShowDosage(false);
+                  }}
+                />
+              </Button>
+            </AphDialogTitle>
+            <div>
+              <div>
+                <div className={classes.dialogContent}>
+                  <Grid container spacing={2}>
+                    <Grid item lg={6} md={6} xs={12}>
+                      <h6>Dosage*</h6>
+                      <AphTextField
+                        inputProps={{ maxLength: 6 }}
+                        value={tabletsCount}
+                        onChange={(event: any) => {
+                          setTabletsCount(event.target.value);
+                        }}
+                      />
+                      {errorState.dosageErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.durationErr}
+                        >
+                          Please Enter Dosage(Number only)
+                        </FormHelperText>
+                      )}
+                    </Grid>
+                    <Grid item lg={6} md={6} xs={12}>
+                      <h6>Units*</h6>
+                      <div className={classes.unitsSelect}>
+                        <AphSelect
+                          style={{ paddingTop: 3 }}
+                          value={medicineUnit}
+                          MenuProps={{
+                            classes: {
+                              paper: classes.menuPaper,
+                            },
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: 'right',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'right',
+                            },
+                          }}
+                          onChange={(e: any) => {
+                            setMedicineUnit(e.target.value as string);
+                          }}
+                        >
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
+                            tablet
+                          </MenuItem>
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
+                            capsule
+                          </MenuItem>
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
+                            ml
+                          </MenuItem>
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
+                            drops
+                          </MenuItem>
+                          <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
+                            NA
+                          </MenuItem>
+                        </AphSelect>
+                      </div>
+                    </Grid>
+                    <Grid item lg={6} md={6} xs={12}>
+                      <h6>Duration of Consumption*</h6>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          placeholder=""
+                          inputProps={{ maxLength: 6 }}
+                          value={consumptionDuration}
+                          onChange={(event: any) => {
+                            setConsumptionDuration(event.target.value);
+                          }}
+                          error={errorState.durationErr}
+                        />
+                        {errorState.durationErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.durationErr}
+                          >
+                            Please Enter Duration in days(Number only)
+                          </FormHelperText>
+                        )}
+                      </div>
+                    </Grid>
+                    <Grid item lg={6} md={6} xs={12}>
+                      <h6>To be taken</h6>
+                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                      {errorState.tobeTakenErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.tobeTakenErr}
+                        >
+                          Please select to be taken.
+                        </FormHelperText>
+                      )}
+                    </Grid>
+                    <Grid item lg={12} xs={12}>
+                      <h6>Time of the Day*</h6>
+                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      {errorState.daySlotErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.daySlotErr}
+                        >
+                          Please select time of the day.
+                        </FormHelperText>
+                      )}
+                    </Grid>
+                    <Grid item lg={12} xs={12}>
+                      <h6>Instructions (if any)</h6>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          value={medicineInstruction}
+                          onChange={(event: any) => {
+                            setMedicineInstruction(event.target.value);
+                          }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                </div>
+              </div>
+              <div className={classes.dialogActions}>
+                <AphButton
+                  className={classes.cancelBtn}
+                  color="primary"
+                  onClick={() => {
+                    setIsEditFavMedicine(false);
+                    setShowDosage(false);
+                  }}
+                >
+                  Cancel
+                </AphButton>
+                {isUpdate ? (
+                  <AphButton
+                    color="primary"
+                    onClick={() => {
+                      addUpdateMedicines();
+                    }}
+                  >
+                    Add Favourite Medicine
+                  </AphButton>
+                ) : (
+                  <AphButton
+                    color="primary"
+                    className={classes.updateBtn}
+                    onClick={() => {
+                      addUpdateMedicines();
+                      setIsEditFavMedicine(false);
+                    }}
+                  >
+                    Add Medicine
+                  </AphButton>
+                )}
+              </div>
+            </div>
+          </Paper>
+        </Modal>
+      )}
       <Modal
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
@@ -1044,12 +1387,13 @@ export const MedicinePrescription: React.FC = () => {
                           onChange={(event: any) => {
                             setTabletsCount(event.target.value);
                           }}
+                          error={errorState.dosageErr}
                         />
                         {errorState.dosageErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
-                            error={errorState.durationErr}
+                            error={errorState.dosageErr}
                           >
                             Please Enter Dosage(Number only)
                           </FormHelperText>
@@ -1090,11 +1434,8 @@ export const MedicinePrescription: React.FC = () => {
                             <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
                               drops
                             </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="OINTMENT">
-                              ointment
-                            </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="OTHER">
-                              other
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
+                              NA
                             </MenuItem>
                           </AphSelect>
                         </div>
@@ -1125,7 +1466,7 @@ export const MedicinePrescription: React.FC = () => {
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>To be taken</h6>
                         <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                        {/* {errorState.tobeTakenErr && (
+                        {errorState.tobeTakenErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
@@ -1133,12 +1474,12 @@ export const MedicinePrescription: React.FC = () => {
                           >
                             Please select to be taken.
                           </FormHelperText>
-                        )} */}
+                        )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
                         <h6>Time of the Day</h6>
                         <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                        {/* {errorState.daySlotErr && (
+                        {errorState.daySlotErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
@@ -1146,7 +1487,7 @@ export const MedicinePrescription: React.FC = () => {
                           >
                             Please select time of the day.
                           </FormHelperText>
-                        )} */}
+                        )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
                         <h6>Instructions (if any)</h6>

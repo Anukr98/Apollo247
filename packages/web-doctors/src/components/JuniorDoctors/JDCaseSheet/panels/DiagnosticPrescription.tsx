@@ -290,12 +290,12 @@ export const DiagnosticPrescription: React.FC = () => {
       .query<SearchDiagnostics, any>({
         query: SEARCH_DIAGNOSTICS,
         variables: {
-          city:
+          /* city:
             patientDetails &&
             patientDetails.patientAddress &&
             patientDetails.patientAddress.length > 0
               ? patientDetails.patientAddress[0]!.city
-              : '',
+              : '', */
           patientId: patientDetails && patientDetails.id ? patientDetails.id : '',
           searchText: value,
         },
@@ -416,7 +416,8 @@ export const DiagnosticPrescription: React.FC = () => {
                       />
                     </div>
                   )
-                : item.itemname!.trim() !== '' && (
+                : item.itemname &&
+                  item.itemname!.trim() !== '' && (
                     <div className={classes.chipCol}>
                       <Chip
                         className={classes.chipItem}

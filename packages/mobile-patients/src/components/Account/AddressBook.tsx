@@ -4,7 +4,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useQuery } from 'react-apollo-hooks';
 import {
@@ -19,6 +19,8 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Remove, AddIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PATIENT_ADDRESS_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 
 const styles = StyleSheet.create({
   addressContainer: {
@@ -48,6 +50,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   const { setAddresses, addresses } = useShoppingCart();
+  const { setAddresses: setAdd } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -75,6 +78,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       setaddressList(data.getPatientAddressList.addressList);
       setshowSpinner(false);
       setAddresses && setAddresses(data.getPatientAddressList.addressList);
+      setAdd && setAdd(data.getPatientAddressList.addressList);
     }
   }
 
@@ -93,18 +97,26 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     props.navigation.push(AppRoutes.AddAddress, { KeyName: dataname, DataAddress: address });
   };
   const deleteDataAddres = (address: any) => {};
-  const renderRadioButtonList = () => {
+
+  const renderAddress = (
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    index: number
+  ) => {
     return (
-      addresses &&
-      addresses.map((address, i) => (
-        <View style={styles.cardStyle} key={i}>
-          <TouchableOpacity onPress={() => updateDataAddres('Update', address)}>
-            <Text style={styles.textStyle}>{`${address.addressLine1}${
-              address.addressLine2 ? ' ' + address.addressLine2 : ''
-            } \n${address.landmark ? `${address.landmark}\n` : ''}${
-              address.city ? `${address.city}, ` : ''
-            }${address.state ? `${address.state}- ` : ''}${address.zipcode}`}</Text>
-          </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          index < addresses.length - 1 ? {} : { marginBottom: 80 },
+          index == 0 ? { marginTop: 20 } : {},
+        ]}
+        activeOpacity={1}
+        onPress={() => updateDataAddres('Update', address)}
+      >
+        <View style={styles.cardStyle} key={index}>
+          <Text style={styles.textStyle}>{`${address.addressLine1}${
+            address.addressLine2 ? ' ' + address.addressLine2 : ''
+          } \n${address.landmark ? `${address.landmark}\n` : ''}${
+            address.city ? `${address.city}, ` : ''
+          }${address.state ? `${address.state}- ` : ''}${address.zipcode}`}</Text>
           <CapsuleView
             title={
               address.addressType === PATIENT_ADDRESS_TYPE.OTHER
@@ -142,12 +154,21 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
             </TouchableOpacity> */}
           {/* </View> */}
         </View>
-      ))
+      </TouchableOpacity>
     );
   };
 
   const renderAddresses = () => {
-    return <View style={styles.addressContainer}>{renderRadioButtonList()}</View>;
+    return (
+      <View>
+        <FlatList
+          removeClippedSubviews={false}
+          bounces={false}
+          data={addresses}
+          renderItem={({ item, index }) => renderAddress(item, index)}
+        />
+      </View>
+    );
   };
 
   return (
@@ -162,10 +183,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
           }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView bounces={false}>
-          {renderAddresses()}
-          <View style={{ height: 80 }} />
-        </ScrollView>
+        <ScrollView bounces={false}>{renderAddresses()}</ScrollView>
         {renderBottomButtons()}
       </SafeAreaView>
       {showSpinner && <Spinner />}

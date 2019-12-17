@@ -21,7 +21,7 @@ export enum ApiConstants {
   PATIENT_HELP_SUBJECT = 'Issue raised by customer : {0} - {1}, {2}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sushma.voleti@popcornapps.com,raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,raj@popcornapps.com',
 
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
@@ -39,6 +39,8 @@ export enum ApiConstants {
 
   PRISM_TIMEOUT = 10000,
   PRISM_UPLOAD_DOCUMENT_PROGRAME = 'prog2',
+  PRISM_STATIC_UHID = 'AHB.0000724284',
+  PRISM_STATIC_MOBILE_NUMBER = '8019677178',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
 
@@ -54,14 +56,14 @@ export enum ApiConstants {
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
   //All services log files
-  PROFILES_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/profiles-service.log',
-  PROFILES_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/profiles-service.log',
-  DOCTORS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/doctors-service.log',
-  DOCTORS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/doctors-service.log',
-  CONSULTS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/consults-service.log',
-  CONSULTS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/consults-service.log',
-  NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/notifications-service.log',
-  NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/notifications-service.log',
+  PROFILES_SERVICE_ACCESS_LOG_FILE = '/access-logs/profiles-service.log',
+  PROFILES_SERVICE_ERROR_LOG_FILE = '/error-logs/profiles-service.log',
+  DOCTORS_SERVICE_ACCESS_LOG_FILE = '/access-logs/doctors-service.log',
+  DOCTORS_SERVICE_ERROR_LOG_FILE = '/error-logs/doctors-service.log',
+  CONSULTS_SERVICE_ACCESS_LOG_FILE = '/access-logs/consults-service.log',
+  CONSULTS_SERVICE_ERROR_LOG_FILE = '/error-logs/consults-service.log',
+  NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
+  NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -74,10 +76,13 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
 
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
-  CANCEL_APPT_BODY = 'Hi {0}! :) Dr. {1} has cancelled your consultation.',
+  CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
 
   COUNTRY_CODE = '91',
+
+  //doctor no-photo url
+  DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 }

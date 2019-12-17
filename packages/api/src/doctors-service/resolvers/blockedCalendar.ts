@@ -258,11 +258,11 @@ const blockMultipleCalendarItems: Resolver<
       blockCalendarInputs.itemDetails.forEach(async (item, index) => {
         const start = item.start;
         const end = item.end;
+        const itemsList = blockCalendarInputs.itemDetails.filter((currentObject, currentIndex) => {
+          return currentIndex != index;
+        });
 
-        const calendarItemsOverlap = doesCalendarItemOverlap(
-          item,
-          _.remove(blockCalendarInputs.itemDetails, index)
-        );
+        const calendarItemsOverlap = doesCalendarItemOverlap(item, itemsList);
         if (calendarItemsOverlap) overlapCount++;
 
         if (isEqual(new Date(start), new Date(end))) {

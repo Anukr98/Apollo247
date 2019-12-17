@@ -290,7 +290,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
-    cartItems.reduce((currTotal, currItem) => currTotal + currItem.price, 0).toFixed(2)
+    cartItems
+      .reduce((currTotal, currItem) => currTotal + (currItem.specialPrice || currItem.price), 0)
+      .toFixed(2)
   );
 
   const deliveryCharges =

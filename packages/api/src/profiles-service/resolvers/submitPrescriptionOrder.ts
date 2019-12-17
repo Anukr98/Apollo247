@@ -13,6 +13,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PharmaLineItem, PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import { differenceInYears } from 'date-fns';
+import { log } from 'customWinstonLogger';
 
 export const submitPrescriptionOrderTypeDefs = gql`
   input SubmitPrescriptionOrderInput {
@@ -185,6 +186,14 @@ const submitPrescriptionOrder: Resolver<
   if (placeOrderUrl == '' || placeOrderToken == '') {
     throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
   }
+
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PHARMACY: ${placeOrderUrl}`,
+    'submitPrescriptionOrder()->API_CALL_STARTING',
+    JSON.stringify(medicineOrderPharma),
+    ''
+  );
   const pharmaResp = await fetch(placeOrderUrl, {
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
@@ -192,9 +201,23 @@ const submitPrescriptionOrder: Resolver<
   });
 
   if (pharmaResp.status == 400) {
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'submitPrescriptionOrder()->API_CALL_RESPONSE',
+      JSON.stringify(pharmaResp),
+      ''
+    );
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
   const textRes = await pharmaResp.text();
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'submitPrescriptionOrder()->API_CALL_RESPONSE',
+    textRes,
+    ''
+  );
   const orderResp: PharmaResponse = JSON.parse(textRes);
   console.log(orderResp, 'respp', orderResp.ordersResult.Message);
   if (orderResp.ordersResult.Status === false) {

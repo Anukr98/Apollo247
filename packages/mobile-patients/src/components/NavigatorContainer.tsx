@@ -66,11 +66,14 @@ import {
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
+import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
+import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
+  ConsultPayment = 'ConsultPayment',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -125,6 +128,7 @@ export enum AppRoutes {
   YourOrdersTest = 'YourOrdersTest',
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
+  RenderPdf = 'RenderPdf',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -169,6 +173,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
+  },
+  [AppRoutes.ConsultPayment]: {
+    screen: ConsultPayment,
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
@@ -220,6 +227,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ChatRoom]: {
     screen: ChatRoom,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,
@@ -316,6 +326,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ClinicSelection]: {
     screen: ClinicSelection,
+  },
+  [AppRoutes.RenderPdf]: {
+    screen: RenderPdf,
   },
 };
 

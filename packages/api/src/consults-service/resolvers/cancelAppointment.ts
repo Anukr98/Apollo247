@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, REQUEST_ROLES } from 'consults-service/entities';
+import { STATUS, REQUEST_ROLES, APPOINTMENT_STATE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -58,8 +58,11 @@ const cancelAppointment: Resolver<
   }
 
   if (
-    appointment.status == STATUS.IN_PROGRESS &&
-    cancelAppointmentInput.cancelledBy !== REQUEST_ROLES.DOCTOR
+    (appointment.status == STATUS.IN_PROGRESS ||
+      appointment.status == STATUS.NO_SHOW ||
+      appointment.status == STATUS.CALL_ABANDON) &&
+    cancelAppointmentInput.cancelledBy !== REQUEST_ROLES.DOCTOR &&
+    appointment.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE
   )
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
@@ -85,7 +88,9 @@ const cancelAppointment: Resolver<
   if (
     appointment.status !== STATUS.PENDING &&
     appointment.status !== STATUS.CONFIRMED &&
-    appointment.status !== STATUS.IN_PROGRESS
+    appointment.status !== STATUS.IN_PROGRESS &&
+    appointment.status !== STATUS.NO_SHOW &&
+    appointment.status !== STATUS.CALL_ABANDON
   ) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }

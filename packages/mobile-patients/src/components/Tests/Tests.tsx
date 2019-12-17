@@ -3,7 +3,6 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -27,11 +26,13 @@ import {
   GET_DIAGNOSTIC_DATA,
   GET_DIAGNOSTIC_ORDER_LIST,
   SEARCH_DIAGNOSTICS,
+  SAVE_SEARCH,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   getDiagnosticsCites,
@@ -80,7 +81,9 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -108,6 +111,9 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
+  nameTextContainerStyle: {
+    maxWidth: '65%',
+  },
   nameTextStyle: {
     marginLeft: 5,
     color: '#02475b',
@@ -116,8 +122,9 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    marginTop: 5,
+    //marginTop: 5,
     marginHorizontal: 5,
+    marginBottom: 6,
   },
   gotItStyles: {
     height: 60,
@@ -134,7 +141,8 @@ export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
-  const cartItemsCount = cartItems.length;
+  const { cartItems: shopCartItems } = useShoppingCart();
+  const cartItemsCount = cartItems.length + shopCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   // const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -148,13 +156,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     currentPatient!
   );
 
-  const { data: diagnosticsData, error: hError, loading: hLoading } = useQuery<getDiagnosticsData>(
-    GET_DIAGNOSTIC_DATA,
-    {
-      variables: {},
-      fetchPolicy: 'no-cache',
-    }
-  );
+  const [ordersFetched, setOrdersFetched] = useState<
+    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
+  >([]);
+
+  const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
+    getDiagnosticsData
+  >(GET_DIAGNOSTIC_DATA, {
+    variables: {},
+    fetchPolicy: 'cache-first',
+  });
 
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const {
@@ -172,6 +183,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
+
+  useEffect(() => {
+    if (profile !== currentPatient) {
+      setLoadingContext!(true);
+      setProfile(currentPatient!);
+      ordersRefetch().then((data: any) => {
+        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrdersFetched(orderData);
+        setLoadingContext!(false);
+      });
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     if (locationDetails && locationDetails.city) {
@@ -289,17 +312,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [locationForDiagnostics && locationForDiagnostics.cityId]);
 
-  const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
-    getDiagnosticOrdersList,
-    getDiagnosticOrdersListVariables
-  >(GET_DIAGNOSTIC_ORDER_LIST, {
-    variables: {
-      patientId: currentPatient && currentPatient.id,
-    },
-    fetchPolicy: 'no-cache',
-  });
+  const {
+    data: orders,
+    error: ordersError,
+    loading: ordersLoading,
+    refetch: ordersRefetch,
+  } = useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(
+    GET_DIAGNOSTIC_ORDER_LIST,
+    {
+      variables: {
+        patientId: currentPatient && currentPatient.id,
+      },
+      fetchPolicy: 'cache-first',
+    }
+  );
 
-  const _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
+  // let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
+
+  useEffect(() => {
+    if (!ordersLoading) {
+      const orderData = g(orders, 'getDiagnosticOrdersList', 'ordersList') || [];
+      orderData.length > 0 && setOrdersFetched(orderData);
+    }
+  }, [ordersLoading]);
+
+  useEffect(() => {
+    hRefetch();
+    if (ordersFetched.length == 0) {
+      ordersRefetch().then((data: any) => {
+        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        orderData.length > 0 && setOrdersFetched(orderData);
+      });
+    }
+  }, []);
 
   // Common Views
 
@@ -387,7 +432,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ) {
           clearCartInfo && clearCartInfo();
         }
-
         if (addrComponents.length > 0) {
           setLocationDetails!({
             displayName: item.name,
@@ -569,7 +613,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          // onPress={() => props.navigation.popToTop()}
+          onPress={() => {
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.ConsultRoom,
+                  }),
+                ],
+              })
+            );
+          }}
         >
           <ApolloLogo />
         </TouchableOpacity>
@@ -592,19 +649,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderYourOrders = () => {
-    if (ordersLoading) return renderSectionLoader(70);
+    // if (ordersLoading) return renderSectionLoader(70);
     return (
-      (!ordersLoading && _orders.length > 0 && (
-        <ListCard
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersTest, { isTest: true })}
-          container={{
-            marginBottom: 24,
-            marginTop: 20,
-          }}
-          title={'Your Orders'}
-          leftIcon={<TestsIcon />}
-        />
-      )) || <View style={{ height: 24 }} />
+      // (!ordersLoading && ordersFetched.length > 0 && (
+      <ListCard
+        onPress={() => {
+          setLoadingContext!(true);
+          props.navigation.navigate(AppRoutes.YourOrdersTest, {
+            orders: ordersFetched,
+            isTest: true,
+            refetch: ordersRefetch,
+            error: ordersError,
+            loading: ordersLoading,
+          });
+        }}
+        container={{
+          marginBottom: 24,
+          marginTop: 20,
+        }}
+        title={'Your Orders'}
+        leftIcon={<TestsIcon />}
+      />
+      // )) || <View style={{ height: 24 }} />
     );
   };
 
@@ -1435,7 +1501,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             marginHorizontal: 19.5,
           }}
         />
-        <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+          }}
+        >
           <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
             Most trusted diagnostics from the comfort of your home!
           </Text>
@@ -1443,6 +1514,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+
+  const savePastSeacrh = (sku: string, name: string) =>
+    client.mutate({
+      mutation: SAVE_SEARCH,
+      variables: {
+        saveSearchInput: {
+          type: SEARCH_TYPE.TEST,
+          typeId: sku,
+          typeName: name,
+          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      },
+    });
 
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
@@ -1461,6 +1545,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
+        savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: rate,
@@ -1617,8 +1702,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }}
               >
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View>
-                  <Text style={styles.nameTextStyle}>
+                <View style={styles.nameTextContainerStyle}>
+                  <Text style={styles.nameTextStyle} numberOfLines={1}>
                     {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
@@ -1630,6 +1715,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
             selectedProfile={profile}
             setDisplayAddProfile={() => {}}
+            unsetloaderDisplay={true}
           ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>

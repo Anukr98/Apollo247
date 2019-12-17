@@ -6,6 +6,7 @@ import {
   MedicineRxIcon,
   PrescriptionThumbnail,
   ShareGreen,
+  MedicalIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -15,16 +16,16 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Image,
   Platform,
   Alert,
   Linking,
   CameraRoll,
   PermissionsAndroid,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   useShoppingCart,
@@ -35,7 +36,16 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useApolloClient } from 'react-apollo-hooks';
+import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
+import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
+import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { useUIElements } from '../UIElementsProvider';
+import { RenderPdf } from '../ui/RenderPdf';
+import { mimeType } from '../../helpers/mimeType';
+import { Image } from 'react-native-elements';
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   imageView: {
     ...theme.viewStyles.cardViewStyle,
@@ -105,25 +115,70 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log('a', data);
-
+  const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
-  const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
-  var arr = url.split(',');
+  const blobURL: string = props.navigation.state.params
+    ? props.navigation.state.params.PrescriptionUrl
+    : {};
+  var arr = url;
+
+  const prismFile = props.navigation.state.params
+    ? props.navigation.state.params.prismPrescriptionFileId
+    : {};
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  // console.log('prismPrescriptionFileId', prismFile.split(','));
+  const [pdfUri, setPDFUri] = useState<string>('');
+  const [pdfView, setPDFView] = useState<boolean>(false);
+
+  useEffect(() => {
+    // if (prismFile == null || prismFile == '') {
+    //   Alert.alert('There is no prism filed ');
+    // } else {
+    const blobUrls = blobURL && blobURL.split(',');
+    prismFile &&
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: currentPatient && currentPatient.id,
+              fileIds: prismFile && prismFile.split(','),
+            },
+          },
+        })
+        .then(({ data }) => {
+          console.log(data, 'DOWNLOAD_DOCUMENT');
+          let uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
+            (item, index) =>
+              item || (blobUrls && blobUrls.length <= index + 1 ? blobUrls[index] : '')
+          );
+          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+
+          uploadUrlscheck && setUrls(uploadUrlscheck);
+        })
+        .catch((e: string) => {
+          console.log('Error occured', e);
+        })
+        .finally(() => {});
+    // }
+  }, []);
 
   const addToCart = () => {
-    if (!data.medicineSKU) {
+    if (data && !data.medicineSKU) {
       Alert.alert('Alert', 'Item not available.');
       return;
     }
-    setLoading(true);
-    getMedicineDetailsApi(data.medicineSKU)
+    setLoading && setLoading(true);
+    getMedicineDetailsApi(data && data.medicineSKU)
       .then(({ data: { productdp } }) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const medicineDetails = (productdp && productdp[0]) || {};
         const isInStock = medicineDetails.is_in_stock;
         if (!isInStock) {
@@ -134,6 +189,11 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           id: medicineDetails.sku,
           mou: medicineDetails.mou,
           price: medicineDetails.price,
+          specialPrice: medicineDetails.special_price
+            ? typeof medicineDetails.special_price == 'string'
+              ? parseInt(medicineDetails.special_price)
+              : medicineDetails.special_price
+            : undefined,
           quantity: data.quantity,
           name: data.medicineName,
           prescriptionRequired: medicineDetails.is_prescription_required == '1',
@@ -146,13 +206,14 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: `${data.medicineName}`,
             uploadedUrl: arr[0],
+            prismPrescriptionFileId: prismFile,
           });
         }
 
         props.navigation.navigate(AppRoutes.YourCart);
       })
       .catch((err) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log(err, 'MedicineDetailsScene err');
         Alert.alert('Alert', 'No medicines found.');
       });
@@ -161,6 +222,24 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
+
+  const showMultiAlert = (files: { path: string; name: string }[]) => {
+    if (files.length > 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Downloaded : ' + files[0].name,
+        onPressOk: () => {
+          hideAphAlert!();
+          console.log('this file is opened', files);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(files[0].path)
+            : RNFetchBlob.android.actionViewIntent(files[0].path, mimeType(files[0].path));
+          showMultiAlert(files.slice(1, files.length));
+        },
+      });
+    }
+  };
+
   const requestReadSmsPermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
@@ -194,74 +273,84 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           title="RECORD DETAILS"
           leftIcon="backArrow"
           rightComponent={
-            <View style={{ flexDirection: 'row' }}>
-              {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
+            prismFile && (
+              <View style={{ flexDirection: 'row' }}>
+                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
                 <ShareGreen />
               </TouchableOpacity> */}
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  try {
-                    if (!url || url === '[object Object]') {
-                      Alert.alert('No Image');
-                    } else {
-                      for (var i = 0; i < arr.length; i++) {
-                        if (Platform.OS === 'ios') {
-                          try {
-                            CameraRoll.saveToCameraRoll(arr[i]);
-                            Alert.alert('Download Completed');
-                            CommonLogEvent(
-                              'MEDICINE_CONSULT_DETAILS',
-                              'Download compelete for Prescription'
-                            );
-                          } catch {}
-                        }
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    try {
+                      if (!url || url === '[object Object]') {
+                        Alert.alert('No Image');
+                      } else {
+                        console.log('download data', arr);
                         let dirs = RNFetchBlob.fs.dirs;
-
-                        setLoading(true);
-                        RNFetchBlob.config({
-                          fileCache: true,
-                          addAndroidDownloads: {
-                            useDownloadManager: true,
-                            notification: false,
-                            mime: 'application/pdf',
-                            path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                            description: 'File downloaded by download manager.',
-                          },
-                        })
-                          .fetch('GET', arr[i], {
-                            //some headers ..
+                        let fileDownloaded: { path: string; name: string }[] = [];
+                        arr.forEach((item) => {
+                          setLoading && setLoading(true);
+                          let fileName: string =
+                            item
+                              .split('/')
+                              .pop()!
+                              .split('=')
+                              .pop() || 'Document';
+                          RNFetchBlob.config({
+                            fileCache: true,
+                            path:
+                              Platform.OS === 'ios'
+                                ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
+                                : dirs.DownloadDir + '/' + fileName,
+                            addAndroidDownloads: {
+                              title: fileName,
+                              useDownloadManager: true,
+                              notification: true,
+                              description: 'File downloaded by download manager.',
+                            },
                           })
-                          .then((res) => {
-                            setLoading(false);
-
-                            if (Platform.OS === 'android') {
-                              try {
-                                Alert.alert('Download Complete');
-                              } catch {}
-                            }
-
-                            Platform.OS === 'ios'
-                              ? RNFetchBlob.ios.previewDocument(res.path())
-                              : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                          })
-                          .catch((err) => {
-                            console.log('error ', err);
-                            setLoading(false);
-                            // ...
-                          });
+                            .fetch('GET', item, {
+                              //some headers ..
+                            })
+                            .then((res) => {
+                              setLoading && setLoading(false);
+                              fileDownloaded.push({ path: res.path(), name: fileName });
+                              if (fileDownloaded.length > 0) {
+                                showMultiAlert(fileDownloaded);
+                              }
+                            })
+                            .catch((err) => {
+                              console.log('error ', err);
+                              setLoading && setLoading(false);
+                            });
+                        });
+                        console.log(fileDownloaded, 'files download');
                       }
-                    }
-                  } catch (error) {}
-                }}
-              >
-                <Download />
-              </TouchableOpacity>
-            </View>
+                    } catch (error) {}
+                  }}
+                >
+                  <Download />
+                </TouchableOpacity>
+              </View>
+            )
           }
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-
+        {pdfView && (
+          <RenderPdf
+            uri={pdfUri}
+            title={
+              pdfUri.indexOf('fileName=') > -1
+                ? pdfUri.split('fileName=').pop() || 'Document'
+                : 'Document'
+            }
+            isPopup={true}
+            setDisplayPdf={() => {
+              setPDFView(false);
+            }}
+            navigation={props.navigation}
+          ></RenderPdf>
+        )}
         <View style={{ backgroundColor: '#f7f8f5' }}>
           <View style={{ marginLeft: 20, marginBottom: 8, marginTop: 17 }}>
             <MedicineRxIcon />
@@ -271,7 +360,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             <Text
               style={{ ...theme.fonts.IBMPlexSansSemiBold(23), color: '#02475b', marginBottom: 4 }}
             >
-              {data.medicineName}
+              {data === 'Prescription uploaded by Patient'
+                ? 'Prescription uploaded by Patient'
+                : data && data.medicineName}
             </Text>
             <Text
               style={{
@@ -285,39 +376,86 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             </Text>
           </View>
         </View>
-        <ScrollView>
-          {arr.map((item: string) => (
-            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
-              <Image
-                source={{ uri: item }}
-                style={{
-                  width: '100%',
-                  height: 425,
-                }}
-                resizeMode="contain"
-              />
-            </View>
-          ))}
+        <ScrollView style={{ marginTop: 20 }}>
+          {arr.map((item: string) => {
+            if (item.indexOf('.pdf') > -1) {
+              return (
+                <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Button
+                    title={
+                      'Open File' +
+                      (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
+                    }
+                    onPress={
+                      () => {
+                        setPDFUri(item);
+                        setPDFView(true);
+                      }
+                      // (
+                      //   <RenderPdf
+                      //     uri={item}
+                      //     title={
+                      //       item.indexOf('fileName=') > -1
+                      //         ? item.split('fileName=').pop() || 'Document'
+                      //         : 'Document'
+                      //     }
+                      //     isPopup={true}
+                      //     navigation={props.navigation}
+                      //   ></RenderPdf>
+                      // )
+                      // props.navigation.navigate(AppRoutes.RenderPdf, {
+                      //   uri: item,
+                      //   title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
+                      //   isPopup: true,
+                      // })
+                    }
+                  ></Button>
+                </View>
+              );
+            } else {
+              return (
+                <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+                  <Image
+                    placeholderStyle={{
+                      height: 425,
+                      width: '100%',
+                      alignItems: 'center',
+                      backgroundColor: 'transparent',
+                    }}
+                    PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                    source={{ uri: item }}
+                    style={{
+                      width: '100%',
+                      height: 425,
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+              );
+            }
+          })}
+          <View style={{ height: 40 }}></View>
         </ScrollView>
-        <View
-          style={{
-            marginLeft: 20,
-            marginRight: 20,
-            flex: 1,
-            justifyContent: 'flex-end',
-            marginBottom: 36,
-          }}
-        >
-          <Button
-            title="RE-ORDER MEDICINES"
-            disabled={data.medicineSKU == null ? true : false}
-            onPress={() => {
-              addToCart();
-              CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
+        {data && (
+          <View
+            style={{
+              marginLeft: 20,
+              marginRight: 20,
+              flex: 1,
+              justifyContent: 'flex-end',
+              marginBottom: 36,
             }}
-          />
-        </View>
-        {loading && <Spinner />}
+          >
+            <Button
+              title="RE-ORDER MEDICINES"
+              disabled={data && data.medicineSKU == null ? true : false}
+              onPress={() => {
+                addToCart();
+                CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
+              }}
+            />
+          </View>
+        )}
       </SafeAreaView>
     </View>
   );

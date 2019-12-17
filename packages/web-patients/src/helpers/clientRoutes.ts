@@ -14,16 +14,17 @@ export const clientRoutes = {
   healthRecords: () => '/health-records',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
+  medicinesCart: () => '/medicines-cart',
+  testsCart: () => '/tests-cart',
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/profile',
   notificationSettings: () => '/settings',
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
-  trackOrders: () => '/track-orders',
   medicineAllBrands: () => '/view-all-brands',
   medicineSearchByBrand: () => '/search-by-brand',
   searchByMedicine: () => '/search-medicine',
-  medicineDetails: () => '/medicine-details',
+  medicineDetails: (sku: string) => `/medicine-details/${sku}`,
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
