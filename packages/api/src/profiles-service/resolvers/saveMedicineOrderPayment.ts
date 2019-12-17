@@ -238,7 +238,12 @@ const SaveMedicineOrderPayment: Resolver<
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
     headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+  }).catch((error) => {
+    console.log('pharma_payment_error', error);
+    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_PAYMENT_ERROR);
   });
+
+  console.log('pharmaResp===>', pharmaResp);
 
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {
     log(
