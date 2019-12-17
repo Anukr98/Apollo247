@@ -392,66 +392,209 @@ app.get('/mob-error', (req, res) => {
 });
 
 app.get('/processOrders', (req, res) => {
-  console.log('welcome 13223');
   let queueMessage = '';
   const serviceBusConnectionString =
     'Endpoint=sb://apollodevpopcorn.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zBbU2kCqxiBny22Zj7rCefaM930uJUYGKw3L/4AqNeQ=';
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
-  azureServiceBus.receiveSubscriptionMessage('orders', 'supplier1', (error4, result) => {
-    if (error4) {
-      console.log('read error', error4);
-    }
-    console.log('message from topic', result.body);
-    queueMessage = result.body;
-    const queueDetails = queueMessage.split(':');
-    const orderDetails = queueDetails[1].split('-');
-    axios({
-      url: process.env.API_URL,
-      method: 'post',
-      data: {
-        query: `
+  azureServiceBus.receiveSubscriptionMessage(
+    'orders',
+    'supplier1',
+    { isPeekLock: false },
+    (subscriptionError, result) => {
+      if (subscriptionError) {
+        console.log('read error', subscriptionError);
+        res.send({
+          status: 'failed',
+          reason: subscriptionError,
+          code: '10001',
+        });
+      } else {
+        console.log('message from topic', result.body);
+        queueMessage = result.body;
+        const queueDetails = queueMessage.split(':');
+        axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+        console.log(queueDetails, 'order details');
+        axios({
+          url: process.env.API_URL,
+          method: 'post',
+          data: {
+            query: `
             query {
-              getMedicineOrderDetails(patientId:"${orderDetails[1]}", orderAutoId:${orderDetails[0]}) {
+              getMedicineOrderDetails(patientId:"${queueDetails[2]}", orderAutoId:${queueDetails[1]}) {
                 MedicineOrderDetails {
                   id
+                  shopId
                   orderAutoId
                   estimatedAmount
+                  pharmaRequest
+                  devliveryCharges
+                  deliveryType
+                  patient{
+                    mobileNumber
+                    firstName
+                    lastName
+                    emailAddress
+                    dateOfBirth
+                  }
+                  medicineOrderLineItems{
+                    medicineSKU
+                    medicineName
+                    mrp
+                    mou
+                    price
+                    quantity        
+                  }
+                  medicineOrderPayments{
+                    id
+                    bankTxnId
+                    paymentType
+                    amountPaid
+                    paymentRefId
+                  }
                 }
               }
             }
           `,
-      },
-    })
-      .then((response) => {
-        if (
-          response &&
-          response.data &&
-          response.data.data &&
-          response.data.data.getMedicineOrderDetails &&
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-        ) {
-          const responseOrderId =
-            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
-          const responseAmount =
-            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.estimatedAmount;
-          res.send({
-            status: 'success',
-            reason: '',
-            code: responseOrderId + ', ' + responseAmount,
+          },
+        })
+          .then((response) => {
+            if (
+              response &&
+              response.data &&
+              response.data.data &&
+              response.data.data.getMedicineOrderDetails &&
+              response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+            ) {
+              const responseOrderId =
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
+              const responseAmount =
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.pharmaRequest;
+              const orderLineItems = [];
+              const orderPrescriptionUrl = [];
+              response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderLineItems.map(
+                (item) => {
+                  const lineItem = {
+                    ItemID: item.medicineSKU,
+                    ItemName: item.medicineName,
+                    Qty: item.quantity * item.mou,
+                    Pack: item.quantity,
+                    MOU: item.mou,
+                    Price: item.price,
+                    Status: true,
+                  };
+                  orderLineItems.push(lineItem);
+                }
+              );
+              let prescriptionImages = [];
+              if (
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                  .prescriptionImageUrl != '' &&
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                  .prescriptionImageUrl != null
+              ) {
+                prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
+                  ','
+                );
+              }
+              if (prescriptionImages.length > 0) {
+                prescriptionImages.map((imageUrl) => {
+                  const url = {
+                    url: imageUrl,
+                  };
+                  orderPrescriptionUrl.push(url);
+                });
+              }
+              //axios.defaults.headers.common['token'] = '9f15bdd0fcd5423190c2e877ba0228A24';
+              let patientAge = 30;
+              const phinput = {
+                tpdetails: {
+                  OrderId:
+                    response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId,
+                  ShopId: response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId,
+                  ShippingMethod:
+                    response.data.data.getMedicineOrderDetails.MedicineOrderDetails.deliveryType,
+                  RequestType: 'CART',
+                  PaymentMethod: 'CASHLESS',
+                  VendorName: '*****',
+                  DotorName: 'Apollo',
+                  OrderType: 'Pharma',
+                  StateCode: 'TS',
+                  TAT: null,
+                  CouponCode: 'MED10',
+                  OrderDate: new Date(),
+                  CustomerDetails: {
+                    MobileNo: response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient.mobileNumber.substr(
+                      3
+                    ),
+                    Comm_addr: 'Kakinada',
+                    Del_addr: 'Kakinada',
+                    FirstName:
+                      response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient
+                        .firstName,
+                    LastName:
+                      response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient
+                        .lastName,
+                    City: 'Kakinada',
+                    PostCode: 500045,
+                    MailId: '',
+                    Age: patientAge,
+                    CardNo: null,
+                    PatientName:
+                      response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient
+                        .firstName,
+                  },
+                  PaymentDetails: {
+                    TotalAmount:
+                      response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                        .medicineOrderPayments.amountPaid,
+                    PaymentSource: 'CASHLESS',
+                    PaymentStatus: 'Success',
+                    PaymentOrderId:
+                      response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                        .medicineOrderPayments.paymentRefId,
+                  },
+                  ItemDetails: orderLineItems,
+                  PrescUrl: orderPrescriptionUrl,
+                },
+              };
+              axios
+                .post(
+                  'https://online.apollopharmacy.org/POPCORN/OrderPlace.svc/PLACE_ORDERS',
+                  JSON.stringify(phinput),
+                  {
+                    headers: {
+                      token: '9f15bdd0fcd5423190c2e877ba0228A24',
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                )
+                .then((resp) => {
+                  console.log('pharma resp', resp);
+                })
+                .catch((pharmaerror) => {
+                  console.log('pharma error', pharmaerror);
+                });
+
+              res.send({
+                status: 'success',
+                reason: '',
+                code: responseOrderId + ', ' + responseAmount,
+              });
+            }
+          })
+          .catch((error) => {
+            // no need to explicitly saying details about error for clients.
+            console.log(error);
+            //res.statusCode = 401;
+            return res.send({
+              status: 'failed',
+              reason: 'Invalid parameters',
+              code: '10001',
+            });
           });
-        }
-      })
-      .catch((error) => {
-        // no need to explicitly saying details about error for clients.
-        console.log(error);
-        //res.statusCode = 401;
-        return res.send({
-          status: 'failed',
-          reason: 'Invalid parameters',
-          code: '10001',
-        });
-      });
-  });
+      }
+    }
+  );
 });
 
 app.listen(PORT, () => {

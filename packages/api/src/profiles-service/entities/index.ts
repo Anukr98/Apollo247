@@ -181,9 +181,6 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   patientAddressId: string;
 
-  @Column({ nullable: true, type: 'text' })
-  pharmaRequest: string;
-
   @Column({ nullable: true })
   prescriptionImageUrl: string;
 

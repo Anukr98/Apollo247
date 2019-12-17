@@ -121,7 +121,7 @@ const SaveMedicineOrderPayment: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  let deliveryCity = 'Kakinada',
+  /*let deliveryCity = 'Kakinada',
     deliveryZipcode = '500045',
     deliveryAddress = 'Kakinada';
   if (orderDetails.patientAddressId !== '' && orderDetails.patientAddressId !== null) {
@@ -146,6 +146,8 @@ const SaveMedicineOrderPayment: Resolver<
 
   const orderLineItems: PharmaLineItem[] = [];
   const orderPrescriptionUrl: PrescriptionUrl[] = [];
+  let orderLineItemsStr = '';
+  let orderPrescriptionUrlStr = '';
   orderDetails.medicineOrderLineItems.map((item) => {
     const lineItem = {
       ItemID: item.medicineSKU,
@@ -156,8 +158,23 @@ const SaveMedicineOrderPayment: Resolver<
       Price: item.price,
       Status: true,
     };
+    orderLineItemsStr +=
+      "{ItemID:\"" +
+      item.medicineSKU +
+      "',ItemName:\"" +
+      item.medicineName +
+      "\",Qty:" +
+      item.quantity * item.mou +
+      ',Pack:' +
+      item.quantity +
+      ',MOU:' +
+      item.mou +
+      ',Price:' +
+      item.price +
+      ',Status: true},';
     orderLineItems.push(lineItem);
   });
+  orderLineItemsStr = '[' + orderLineItemsStr.substring(0, orderLineItemsStr.length - 1) + ']';
   let prescriptionImages: string[] = [];
   if (orderDetails.prescriptionImageUrl != '' && orderDetails.prescriptionImageUrl != null) {
     prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
@@ -167,9 +184,12 @@ const SaveMedicineOrderPayment: Resolver<
       const url = {
         url: imageUrl,
       };
+      orderPrescriptionUrlStr += '{url:' + imageUrl + ',}';
       orderPrescriptionUrl.push(url);
     });
   }
+  orderPrescriptionUrlStr =
+    '[' + orderPrescriptionUrlStr.substring(0, orderPrescriptionUrlStr.length - 1) + ']';
   let selShopId = '15288';
   if (orderDetails.shopId != '' && orderDetails.shopId != null) {
     selShopId = orderDetails.shopId;
@@ -182,44 +202,53 @@ const SaveMedicineOrderPayment: Resolver<
   if (medicinePaymentInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     payStatus = '';
   }
-  const medicineOrderPharma = {
-    tpdetails: {
-      OrderId: orderDetails.orderAutoId,
-      ShopId: selShopId,
-      ShippingMethod: orderDetails.deliveryType.replace('_', ' '),
-      RequestType: PHARMA_CART_TYPE.CART,
-      PaymentMethod: medicinePaymentInput.paymentType,
-      VendorName: '*****',
-      DotorName: 'Apollo',
-      OrderType: 'Pharma',
-      StateCode: 'TS',
-      TAT: null,
-      CouponCode: 'MED10',
-      OrderDate: new Date(),
-      CustomerDetails: {
-        MobileNo: patientDetails.mobileNumber.substr(3),
-        Comm_addr: deliveryAddress,
-        Del_addr: deliveryAddress,
-        FirstName: patientDetails.firstName,
-        LastName: patientDetails.lastName,
-        City: deliveryCity,
-        PostCode: deliveryZipcode,
-        MailId: patientDetails.emailAddress,
-        Age: patientAge,
-        CardNo: null,
-        PatientName: patientDetails.firstName,
-      },
-      PaymentDetails: {
-        TotalAmount: medicinePaymentInput.amountPaid,
-        PaymentSource: medicinePaymentInput.paymentType,
-        PaymentStatus: payStatus,
-        PaymentOrderId: medicinePaymentInput.paymentRefId,
-      },
-      ItemDetails: orderLineItems,
-      PrescUrl: orderPrescriptionUrl,
-    },
-  };
 
+  const pharmaRequest =
+    '{tpdetails:{OrderId:' +
+    orderDetails.orderAutoId +
+    ',ShopId:' +
+    selShopId +
+    ",ShippingMethod:'" +
+    orderDetails.deliveryType.replace('_', '') +
+    "',RequestType:'" +
+    PHARMA_CART_TYPE.CART +
+    "',PaymentMethod:'" +
+    medicinePaymentInput.paymentType +
+    "',VendorName:'*****',DotorName:'Apollo',OrderType:'Pharma',StateCode:'TS',TAT:'',CouponCode:'MED10',OrderDate:'" +
+    new Date() +
+    "',CustomerDetails:{MobileNo:'" +
+    patientDetails.mobileNumber.substr(3) +
+    "',Comm_addr:'" +
+    deliveryAddress +
+    "',Del_addr:'" +
+    deliveryAddress +
+    "',FirstName:'" +
+    patientDetails.firstName +
+    "',LastName:'" +
+    patientDetails.lastName +
+    "',City:'" +
+    deliveryCity +
+    "',PostCode:'" +
+    deliveryZipcode +
+    "',MailId:'" +
+    patientDetails.emailAddress +
+    "',Age:" +
+    patientAge +
+    ",CardNo:null,PatientName:'" +
+    patientDetails.firstName +
+    "'},PaymentDetails:{TotalAmount:" +
+    medicinePaymentInput.amountPaid +
+    ",PaymentSource:'" +
+    medicinePaymentInput.paymentType +
+    "',PaymentStatus:'" +
+    payStatus +
+    "',PaymentOrderId:'" +
+    medicinePaymentInput.paymentRefId +
+    "'},ItemDetails:" +
+    orderLineItemsStr +
+    ',PrescUrl:' +
+    orderPrescriptionUrlStr +
+    '}}';*/
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS,
     medicineOrders: orderDetails,
@@ -232,11 +261,6 @@ const SaveMedicineOrderPayment: Resolver<
     orderDetails.orderAutoId,
     new Date(),
     MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
-  );
-  await medicineOrdersRepo.updatePharmaRequest(
-    medicineOrderPharma.toString(),
-    orderDetails.id,
-    orderDetails.orderAutoId
   );
   errorCode = 0;
   errorMessage = '';
@@ -252,7 +276,7 @@ const SaveMedicineOrderPayment: Resolver<
       console.log('topic create error', error);
     }
     console.log('connected to topic orders');
-    const message = 'MEDICINE_ORDER:' + orderDetails.orderAutoId + '-' + patientDetails.id;
+    const message = 'MEDICINE_ORDER:' + orderDetails.orderAutoId + ':' + patientDetails.id;
     azureServiceBus.sendTopicMessage('orders', message, (error1) => {
       if (error1) {
         console.log('send message error', error1);
