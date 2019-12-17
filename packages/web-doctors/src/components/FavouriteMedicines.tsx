@@ -678,7 +678,6 @@ export const FavouriteMedicines: React.FC = () => {
         setMedicineLoader(false);
       })
       .catch((e) => {
-        console.log('Error occured while fetching Doctor Favourite Medicine List', e);
         setMedicineLoader(false);
       });
   }, []);
@@ -900,8 +899,6 @@ export const FavouriteMedicines: React.FC = () => {
   });
 
   const saveMedicines = () => {
-    console.log('in save methods');
-
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
     const isTobeTakenSelected = toBeTakenSlots.filter((slot: SlotsObject) => {
@@ -945,7 +942,6 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false,
       });
     } else {
-      console.log('in save methods3');
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1228,7 +1224,6 @@ export const FavouriteMedicines: React.FC = () => {
                 selectedMedicinesArr.length > 0 &&
                 selectedMedicinesArr.map((medicine: any, index: number) => (
                   <li key={index}>
-                    {console.log('medicine ', medicine)}
                     {medicine!.medicineName}
                     <span className={classes.iconRight}>
                       <img
