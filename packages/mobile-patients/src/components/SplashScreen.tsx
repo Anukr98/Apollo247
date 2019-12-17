@@ -50,7 +50,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     async function fetchData() {
-      firebase.config().enableDeveloperMode();
+      if (__DEV__) {
+        firebase.config().enableDeveloperMode();
+      }
 
       firebase
         .config()
@@ -101,7 +103,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       //   .catch((error) => console.log(`Error processing config: ${error}`));
 
       firebase.analytics().setAnalyticsCollectionEnabled(true);
-      firebase.analytics().setCurrentScreen('SplashScreen', 'SplashScreen');
       const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');

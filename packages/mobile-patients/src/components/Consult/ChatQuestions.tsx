@@ -312,10 +312,6 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
     // appIntroSliderRef.current.goToSlide(6);
   }, []);
 
-  useEffect(() => {
-    firebase.analytics().setAnalyticsCollectionEnabled(true);
-    firebase.analytics().setCurrentScreen('ChatQuestions', 'ChatQuestions');
-  });
   const _renderNextButton = () => {
     return (
       <View>
