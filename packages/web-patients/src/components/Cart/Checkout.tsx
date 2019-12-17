@@ -127,7 +127,9 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.sectionHeader}>Would you like to use Apollo Health Credits for this payment?</div>
+      <div className={classes.sectionHeader}>
+        Would you like to use Apollo Health Credits for this payment?
+      </div>
       <div className={classes.checkoutType}>
         <ul>
           <li>
