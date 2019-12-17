@@ -272,7 +272,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then(({ data }) => {
         try {
           if (data) {
-            if (data.products && typeof data.products === 'object') {
+            if (data.products && data.products.length > 0) {
               setSubstitutes(data.products);
             }
           }
@@ -333,7 +333,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             )}
-            {data.is_in_stock === 1 && (
+            {data.is_in_stock && (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
@@ -367,7 +367,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       </div>
       <div className={classes.priceGroup}>
         <div className={classes.priceWrap}>
-          {data.is_in_stock === 1 ? (
+          {data.is_in_stock ? (
             <>
               <div className={classes.leftGroup}>
                 <div className={classes.medicinePack}>
@@ -398,15 +398,13 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <div className={classes.medicineNoStock}>Out Of Stock</div>
           )}
           <div className={classes.medicinePrice}>
-            {parseFloat(data.special_price) > 0 && (
-              <span className={classes.regularPrice}>(Rs. {parseFloat(data.price)})</span>
-            )}
-            Rs. {parseFloat(data.special_price) || parseFloat(data.price)}
+            {data.special_price && <span className={classes.regularPrice}>(Rs. {data.price})</span>}
+            Rs. {data.special_price || data.price}
           </div>
         </div>
       </div>
       <div className={classes.bottomActions}>
-        {data.is_in_stock === 1 ? (
+        {data.is_in_stock ? (
           <>
             <AphButton
               onClick={() => {
