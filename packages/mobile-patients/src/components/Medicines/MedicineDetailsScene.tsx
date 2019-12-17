@@ -844,6 +844,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   //               {description}
   //             </Text>
   //             {/* <WebView
+  //               useWebKit={true}
   //               source={{
   //                 html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description}</p>`,
   //               }}

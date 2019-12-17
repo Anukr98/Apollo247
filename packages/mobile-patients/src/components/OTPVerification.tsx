@@ -472,6 +472,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <WebView
             source={{ uri: 'https://www.apollo247.com/TnC.html' }}
             style={{ flex: 1, backgroundColor: 'white' }}
+            useWebKit={true}
             onLoadStart={() => {
               console.log('onLoadStart');
               setshowSpinner(true);
