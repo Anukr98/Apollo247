@@ -573,7 +573,6 @@ interface CallPopoverProps {
   appointmentStatus: String;
   sentToPatient: boolean;
   isAppointmentEnded: boolean;
-  //sendToPatientAction: (isSentToPatient: boolean) => void;
   setIsPdfPageOpen: (flag: boolean) => void;
   callId: string;
   pubnub: any;
@@ -582,19 +581,6 @@ interface CallPopoverProps {
 }
 let intervalId: any;
 let stoppedTimer: number;
-let transferObject: any = {
-  appointmentId: '',
-  transferDateTime: '',
-  photoUrl: '',
-  doctorId: '',
-  specialtyId: '',
-  doctorName: '',
-  experience: '5 Yrs',
-  specilty: '',
-  facilityId: '',
-  transferId: '',
-  doctorInfo: '',
-};
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
 let intervalcallId: any;
@@ -759,6 +745,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             message: callAbandonment,
             isTyping: true,
             messageDate: new Date(),
+            sentBy: REQUEST_ROLES.DOCTOR,
           };
           pubnub.publish(
             {
@@ -856,6 +843,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
       messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
     };
 
     pubnub.publish(
@@ -879,6 +867,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       //duration: `10:00`,
       isTyping: true,
       messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
     };
     pubnub.publish(
       {
@@ -931,6 +920,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       // props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
       isTyping: true,
       messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
     };
     pubnub.publish(
       {
@@ -961,6 +951,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
       messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
     };
     pubnub.publish(
       {
@@ -984,6 +975,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             isTyping: true,
             message: convertVideo ? covertVideoMsg : covertAudioMsg,
             messageDate: new Date(),
+            sentBy: REQUEST_ROLES.DOCTOR,
           },
           channel: channel,
           storeInHistory: false,
@@ -1252,6 +1244,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       isTyping: true,
       automatedText: currentPatient!.displayName + ' has joined your chat!',
       messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1269,6 +1262,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopConsult,
       isTyping: true,
       messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
     };
     unSubscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1316,6 +1310,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               message: followupconsult,
               transferInfo: followupObj,
               messageDate: new Date(),
+              sentBy: REQUEST_ROLES.DOCTOR,
             },
             channel: channel,
             storeInHistory: true,
@@ -1451,6 +1446,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               transferInfo: reschduleObject,
               messageDate: new Date(),
               isTyping: true,
+              sentBy: REQUEST_ROLES.DOCTOR,
             },
             channel: channel, //chanel
             storeInHistory: true,
@@ -2068,6 +2064,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         message: cancelConsultInitiated,
                         isTyping: true,
                         messageDate: new Date(),
+                        sentBy: REQUEST_ROLES.DOCTOR,
                       };
                       pubnub.publish(
                         {
@@ -2163,6 +2160,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       message: cancelConsultInitiated,
                       isTyping: true,
                       messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.DOCTOR,
                     };
                     unSubscribeBrowserButtonsListener();
                     pubnub.publish(

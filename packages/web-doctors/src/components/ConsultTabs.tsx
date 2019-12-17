@@ -303,8 +303,8 @@ interface MessagesObjectProps {
   duration: string;
   url: string;
   messageDate: string;
+  sentBy: string;
 }
-//let messages: MessagesObjectProps[] = [];
 let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
