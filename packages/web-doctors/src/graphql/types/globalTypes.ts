@@ -193,6 +193,11 @@ export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
 }
 
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
+}
+
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;

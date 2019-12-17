@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Paper } from '@material-ui/core';
+import { Theme, Paper, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
@@ -86,6 +86,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       opacity: 0.6,
     },
+
     noStock: {
       fontSize: 12,
       color: '#890000',
@@ -106,10 +107,12 @@ export const MedicineAutoSearch: React.FC = (props) => {
   };
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
+  const [searchText, setSearchText] = useState('');
 
   let cancelSearchSuggestionsApi: any;
-
+  const [loading, setLoading] = useState(false);
   const onSearchMedicine = async (value: string) => {
+    setLoading(true);
     await axios
       .post(
         apiDetails.url,
@@ -128,6 +131,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
       )
       .then(({ data }) => {
         setSearchMedicines(data.products);
+        setLoading(false);
       })
       .catch((e) => {
         console.log(e);
@@ -141,6 +145,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
           placeholder="Search meds, brands and more"
           className={classes.searchInput}
           onChange={(e) => {
+            setSearchText(e.target.value);
             if (e.target.value.length > 2) {
               onSearchMedicine(e.target.value);
             } else {
@@ -149,13 +154,15 @@ export const MedicineAutoSearch: React.FC = (props) => {
           }}
         />
         <AphButton
+          disabled={searchText.length < 3}
           className={classes.searchBtn}
           onClick={() => (window.location.href = clientRoutes.searchByMedicine())}
         >
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>
-      {searchMedicines.length > 0 && (
+      {loading && <CircularProgress size={40} />}
+      {searchMedicines && searchMedicines.length > 0 && (
         <Paper className={classes.autoSearchPopover}>
           <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
             <div className={classes.searchList}>
@@ -164,11 +171,19 @@ export const MedicineAutoSearch: React.FC = (props) => {
                   <li>
                     <Link to={clientRoutes.medicineDetails(medicine.sku)}>
                       <div className={classes.medicineImg}>
-                        <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                        {medicine.is_prescription_required ? (
+                          <img src={require('images/ic_tablets_rx.svg')} alt="" />
+                        ) : (
+                          <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                        )}
                       </div>
                       <div className={classes.medicineInfo}>
                         <div className={classes.medicineName}>{medicine.name}</div>
-                        <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
+                        {medicine.is_in_stock ? (
+                          <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
+                        ) : (
+                          <div className={classes.noStock}>Out Of Stock</div>
+                        )}
                       </div>
                     </Link>
                   </li>

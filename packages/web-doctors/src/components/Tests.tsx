@@ -367,6 +367,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 2,
     },
     inputRoot: {
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
