@@ -185,7 +185,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
-    if (profile !== currentPatient) {
+    if (profile.id !== currentPatient!.id) {
       setLoadingContext!(true);
       setProfile(currentPatient!);
       ordersRefetch().then((data: any) => {

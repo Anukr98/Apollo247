@@ -183,7 +183,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   const addressData = props.navigation.getParam('DataAddress');
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
-  const { addAddress: addA, setDeliveryAddressId: setD } = useDiagnosticsCart();
+  const {
+    addAddress: addDiagnosticAddress,
+    setDeliveryAddressId: setDiagnosticAddressId,
+  } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -371,16 +374,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setshowSpinner(false);
         // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
-        addAddress && addAddress(address);
-        addA!(address);
+        addAddress!(address);
+        addDiagnosticAddress!(address);
 
         if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
-          setDeliveryAddressId && setDeliveryAddressId(address.id || '');
-          setD!(address.id || '');
+          setDeliveryAddressId!(address.id || '');
+          setDiagnosticAddressId!(address.id || '');
           props.navigation.goBack();
         } else {
-          setDeliveryAddressId && setDeliveryAddressId('');
-          setD!(address.id || '');
+          setDeliveryAddressId!('');
+          setDiagnosticAddressId!(address.id || '');
 
           showAphAlert!({
             title: 'Uh oh.. :(',
@@ -772,6 +775,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 //deleteUserProfile();
+                setshowSpinner(true);
                 setDeleteProfile(false);
                 client
                   .mutate<deletePatientAddress, deletePatientAddressVariables>({
@@ -781,6 +785,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   })
                   .then((_data: any) => {
                     console.log(('dat', _data));
+                    setDeliveryAddressId!('');
+                    setDiagnosticAddressId!('');
+                    props.navigation.pop(2, { immediate: true });
                     props.navigation.push(AppRoutes.AddressBook);
                   })
                   .catch((e) => {
@@ -792,7 +799,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                       error
                     );
                     Alert.alert('Error', errorMessage);
-                  });
+                  })
+                  .finally(() => setshowSpinner(false));
               }}
             >
               <View

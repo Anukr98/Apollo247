@@ -308,7 +308,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     lastName === profileData.lastName &&
     Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD') === profileData.dateOfBirth &&
     gender === profileData.gender &&
-    relation!.key === profileData.relation &&
+    (relation && relation.key === profileData.relation) &&
     email === profileData.emailAddress &&
     photoUrl === profileData.photoUrl;
 
@@ -429,7 +429,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         })
         .then((data) => {
           setLoading && setLoading(false);
-          if (relation!.key === Relation.ME && profileData.relation !== Relation.ME) {
+          if (relation && relation.key === Relation.ME && profileData.relation !== Relation.ME) {
             setCurrentPatientId(profileData!.id);
             AsyncStorage.removeItem('selectUserId');
             // AsyncStorage.setItem('selectUserId', profileData!.id);
@@ -469,7 +469,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             lastName: lastName.trim(),
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             gender: gender ? gender : Gender.OTHER,
-            relation: (relation && relation!.key) || Relation.ME,
+            relation: (relation && relation.key) || Relation.ME,
             emailAddress: email.trim(),
             photoUrl: photoUrl,
             mobileNumber: props.navigation.getParam('mobileNumber'),
@@ -705,7 +705,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     return (
       <MaterialMenu
         options={relationsData}
-        selectedText={relation && relation!.key.toString()}
+        selectedText={relation && relation.key.toString()}
         menuContainerStyle={{ alignItems: 'flex-end', marginLeft: width / 2 - 95 }}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
