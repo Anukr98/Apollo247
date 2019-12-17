@@ -1017,7 +1017,7 @@ export const MedicinePrescription: React.FC = () => {
           <Grid item lg={6} xs={12}>
             <div className={classes.favmedicineHeading}>Favourite Medicines</div>
             <div className={classes.mediceneContainer}>
-              {favouriteMedicine.map((favMedicine, id, index) => {
+              {favouriteMedicine.map((favMedicine: any, id, index) => {
                 const favDuration = `${Number(
                   favMedicine && favMedicine.medicineConsumptionDurationInDays
                 )} days`;
@@ -1039,19 +1039,12 @@ export const MedicinePrescription: React.FC = () => {
                   favMedicine &&
                   favMedicine.medicineTimings &&
                   favMedicine.medicineTimings.length > 0
-                    ? '(' + favMedicine &&
-                      favMedicine.medicineTimings &&
-                      favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                    ? '(' + favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
                     : '';
                 const favDosageCount =
-                  favMedicine && favMedicine.medicineDosage === ''
-                    ? favMedicine &&
-                      favMedicine.medicineTimings &&
-                      favMedicine.medicineTimings.length > 0
-                      ? parseFloat(favMedicine && favMedicine.medicineDosage) *
-                        favMedicine.medicineTimings.length
-                      : favMedicine && favMedicine.medicineDosage
-                    : '';
+                  favMedicine.medicineTimings.length > 0
+                    ? parseFloat(favMedicine.medicineDosage) * favMedicine.medicineTimings.length
+                    : favMedicine.medicineDosage;
                 const favMedicineName = favMedicine && favMedicine.medicineName;
                 return (
                   <div className={classes.paper} key={id}>
@@ -1097,11 +1090,6 @@ export const MedicinePrescription: React.FC = () => {
             <AphDialogTitle
               className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
             >
-              {showDosage && (
-                <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
-                  <img src={require('images/ic_back.svg')} alt="" />
-                </div>
-              )}
               {showDosage ? favMedicineName.toUpperCase() : 'ADD FAVOURITE MEDICINE'}
               <Button className={classes.cross}>
                 <img

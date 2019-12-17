@@ -1276,7 +1276,9 @@ export const FavouriteMedicines: React.FC = () => {
                   <img src={require('images/ic_back.svg')} alt="" />
                 </div>
               )}
-             <span className={classes.headingName}>{showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}</span>
+              <span className={classes.headingName}>
+                {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
+              </span>
               <Button className={classes.cross}>
                 <img
                   src={require('images/ic_cross.svg')}
