@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& li': {
           color: '#02475b',
           listStyleType: 'none',
-          padding: 10,
+          padding: '10px 50px 10px 10px',
           fontSize: 14,
           fontWeight: 500,
           position: 'relative',

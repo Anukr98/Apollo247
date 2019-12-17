@@ -458,6 +458,7 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 8,
     },
     inputRoot: {
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -507,6 +508,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     unitsSelect: {
       marginTop: -7,
+    },
+    headingName: {
+      display: 'inline-block',
+      width: '90%',
+      wordBreak: 'break-word',
     },
   })
 );
@@ -1270,7 +1276,7 @@ export const FavouriteMedicines: React.FC = () => {
                   <img src={require('images/ic_back.svg')} alt="" />
                 </div>
               )}
-              {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
+             <span className={classes.headingName}>{showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}</span>
               <Button className={classes.cross}>
                 <img
                   src={require('images/ic_cross.svg')}
