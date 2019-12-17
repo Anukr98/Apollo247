@@ -118,7 +118,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     if (!currentPatient) {
       getPatientApiCall();
     }
-    currentPatient && AsyncStorage.setItem('phoneNumber', currentPatient.mobileNumber.substring(3));
+    // currentPatient && AsyncStorage.setItem('phoneNumber', currentPatient.mobileNumber.substring(3));
     currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
 
