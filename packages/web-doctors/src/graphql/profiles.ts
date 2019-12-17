@@ -467,6 +467,7 @@ export const GET_CASESHEET_JRD = gql`
           appointmentDateTime
           appointmentDocuments {
             documentPath
+            prismFileId
           }
           status
           appointmentState
@@ -665,6 +666,7 @@ export const GET_CASESHEET = gql`
           appointmentDateTime
           appointmentDocuments {
             documentPath
+            prismFileId
           }
           status
           appointmentState
@@ -808,6 +810,14 @@ export const GET_DOCTOR_FAVOURITE_TEST_LIST = gql`
         id
         itemname
       }
+    }
+  }
+`;
+
+export const DOWNLOAD_DOCUMENTS = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
     }
   }
 `;

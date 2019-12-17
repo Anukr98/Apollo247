@@ -1226,45 +1226,44 @@ export const FavouriteMedicines: React.FC = () => {
       <div className={classes.root}>
         <Grid container spacing={2}>
           <Grid sm={12} xs={12} key={5} item>
-              <ul>
-                {medicineLoader ? (
-                  <CircularProgress className={classes.loader} />
-                ) : (
-                  selectedMedicinesArr &&
-                  selectedMedicinesArr.length > 0 &&
-                  selectedMedicinesArr.map((medicine: any, index: number) => (
-                    <li key={index}>
-                      {console.log('medicine ', medicine)}
-                      {medicine!.medicineName}
-                      <span className={classes.iconRight}>
-                        <img
-                          width="16"
-                          onClick={() => updateMedicine(index)}
-                          src={require('images/round_edit_24_px.svg')}
-                          alt=""
-                        />
-                        <img
-                          width="16"
-                          onClick={() => deletemedicine(index)}
-                          src={require('images/ic_cancel_green.svg')}
-                          alt=""
-                        />
-                      </span>
-                    </li>
-                  ))
-                )}
-                <li>
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.btnAddDoctor }}
-                    onClick={() => setIsDialogOpen(true)}
-                  >
-                    <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
-                  </AphButton>
-                </li>
-              </ul>
-           
+            <ul>
+              {medicineLoader ? (
+                <CircularProgress className={classes.loader} />
+              ) : (
+                selectedMedicinesArr &&
+                selectedMedicinesArr.length > 0 &&
+                selectedMedicinesArr.map((medicine: any, index: number) => (
+                  <li key={index}>
+                    {console.log('medicine ', medicine)}
+                    {medicine!.medicineName}
+                    <span className={classes.iconRight}>
+                      <img
+                        width="16"
+                        onClick={() => updateMedicine(index)}
+                        src={require('images/round_edit_24_px.svg')}
+                        alt=""
+                      />
+                      <img
+                        width="16"
+                        onClick={() => deletemedicine(index)}
+                        src={require('images/ic_cancel_green.svg')}
+                        alt=""
+                      />
+                    </span>
+                  </li>
+                ))
+              )}
+              <li>
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.btnAddDoctor }}
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
+                </AphButton>
+              </li>
+            </ul>
           </Grid>
         </Grid>
         <Modal
