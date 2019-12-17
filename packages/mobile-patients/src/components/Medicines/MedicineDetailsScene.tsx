@@ -47,6 +47,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -337,11 +338,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   aphConsole.log('SKU\n', sku);
 
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
+  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
-  const cartItemsCount = cartItems.length;
+  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
 
   useEffect(() => {
     setLoading(true);
@@ -842,6 +844,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   //               {description}
   //             </Text>
   //             {/* <WebView
+  //               useWebKit={true}
   //               source={{
   //                 html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description}</p>`,
   //               }}

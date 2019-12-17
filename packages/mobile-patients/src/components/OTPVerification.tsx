@@ -329,13 +329,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         setTimeout(() => {
           verifyOtp(otp)
             .then(() => {
+              CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
               _removeFromStore();
               setOnOtpClick(true);
             })
             .catch((error) => {
               try {
                 console.log({ error });
-                CommonBugFender(AppRoutes.OTPVerification, error);
+                CommonBugFender('OTP_ENTERED_FAIL', error);
+                CommonLogEvent('OTP_ENTERED_FAIL', error);
                 setTimeout(() => {
                   if (isAuthChanged) {
                     _removeFromStore();
@@ -470,6 +472,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <WebView
             source={{ uri: 'https://www.apollo247.com/TnC.html' }}
             style={{ flex: 1, backgroundColor: 'white' }}
+            useWebKit={true}
             onLoadStart={() => {
               console.log('onLoadStart');
               setshowSpinner(true);

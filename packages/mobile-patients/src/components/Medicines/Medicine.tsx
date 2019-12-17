@@ -63,6 +63,7 @@ import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import moment from 'moment';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -90,6 +91,9 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
+  nameTextContainerStyle: {
+    maxWidth: '65%',
+  },
   nameTextStyle: {
     marginLeft: 5,
     color: '#02475b',
@@ -98,9 +102,9 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    marginTop: 2,
-    //marginHorizontal: 5,
-    marginBottom: 5,
+    //marginTop: 5,
+    marginHorizontal: 5,
+    marginBottom: 6,
   },
 });
 
@@ -111,15 +115,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
-  const cartItemsCount = cartItems.length;
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const { currentPatient } = useAllCurrentPatients();
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
+    currentPatient!
+  );
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [ordersFetched, setOrdersFetched] = useState<
     (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
   >([]);
 
-  const { showAphAlert } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients();
+  const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
   const max_time_to_use_local_medicine_data = 60; // in minutes
   type LocalMedicineData = {
@@ -128,17 +135,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    setProfile(currentPatient!);
-    ordersRefetch().then(({ data }) => {
-      const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
-        (item) =>
-          !(
-            (item!.medicineOrdersStatus || []).length == 1 &&
-            (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-          )
-      );
-      ordersData.length > 0 && setOrdersFetched(ordersData);
-    });
+    if (profile.id !== currentPatient!.id) {
+      globalLoading!(true);
+      setProfile(currentPatient!);
+      ordersRefetch().then(({ data }) => {
+        const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+          (item) =>
+            !(
+              (item!.medicineOrdersStatus || []).length == 1 &&
+              (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+            )
+        );
+        globalLoading!(false);
+        setOrdersFetched(ordersData);
+      });
+    }
   }, [currentPatient]);
 
   useEffect(() => {
@@ -168,10 +179,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(
-            MEDICINE_LANDING_PAGE_DATA,
-            JSON.stringify(localData)
-          ).catch(() => {});
+          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
+            () => {}
+          );
         setData(d.data);
         setLoading(false);
       })
@@ -455,22 +465,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     console.log('rendereef', ordersFetched);
 
     return (
-      (ordersFetched.length > 0 && (
-        <ListCard
-          onPress={() =>
-            props.navigation.navigate(AppRoutes.YourOrdersScene, {
-              orders: ordersFetched,
-              refetch: ordersRefetch,
-              error: ordersError,
-              loading: ordersLoading,
-            })
-          }
-          container={{ marginBottom: 24 }}
-          title={'Your Orders'}
-          leftIcon={<MedicineIcon />}
-        />
-      )) ||
-      null
+      // (ordersFetched.length > 0 && (
+      <ListCard
+        onPress={() => {
+          globalLoading!(true);
+          props.navigation.navigate(AppRoutes.YourOrdersScene, {
+            orders: ordersFetched,
+            refetch: ordersRefetch,
+            error: ordersError,
+            loading: ordersLoading,
+          });
+        }}
+        container={{ marginBottom: 24 }}
+        title={'Your Orders'}
+        leftIcon={<MedicineIcon />}
+      />
+      // )) ||
+      // null
     );
   };
 
@@ -1261,8 +1272,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   }}
                 >
                   <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                  <View>
-                    <Text style={styles.nameTextStyle}>
+                  <View style={styles.nameTextContainerStyle}>
+                    <Text style={styles.nameTextStyle} numberOfLines={1}>
                       {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                     </Text>
                     <View style={styles.seperatorStyle} />
@@ -1272,7 +1283,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 </View>
               }
-              selectedProfile={profile}
+              // selectedProfile={profile}
               setDisplayAddProfile={() => {}}
             ></ProfileList>
           </View>
@@ -1285,8 +1296,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
-      {renderEPrescriptionModal()}
-      {renderUploadPrescriprionPopup()}
+      {isSelectPrescriptionVisible && renderEPrescriptionModal()}
+      {ShowPopop && renderUploadPrescriprionPopup()}
     </View>
   );
 };

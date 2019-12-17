@@ -48,6 +48,7 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -111,6 +112,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -179,7 +181,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
   const onUpdateCartItem = ({ sku }: MedicineProduct, unit: number) => {
     if (!(unit < 1)) {
-      updateCartItem && updateCartItem({ id: sku, quantity: unit });
+      updateCartItem &&
+        updateCartItem({
+          id: sku,
+          quantity: unit,
+        });
     }
   };
 
@@ -192,17 +198,26 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length;
+    const cartItemsCount = cartItems.length + diagnosticCartItems.length;
     return (
       <Header
-        container={{ borderBottomWidth: 0 }}
+        container={{
+          borderBottomWidth: 0,
+        }}
         leftIcon={'backArrow'}
         title={pageTitle || 'SEARCH PRODUCTS'}
         rightComponent={
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
             <TouchableOpacity
               activeOpacity={1}
-              style={{ marginRight: 24 }}
+              style={{
+                marginRight: 24,
+              }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
@@ -226,7 +241,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const renderSorryMessage = isNoResultsFound ? (
     <Text style={styles.sorryTextStyle}>Sorry, we couldn’t find what you are looking for :(</Text>
   ) : (
-    <View style={{ paddingBottom: 19 }} />
+    <View
+      style={{
+        paddingBottom: 19,
+      }}
+    />
   );
 
   interface SuggestionType {
@@ -266,16 +285,26 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         <View style={localStyles.nameAndPriceViewStyle}>
           <Text
             numberOfLines={1}
-            style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
+            style={{
+              ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
+            }}
           >
             {data.name}
           </Text>
           {data.isOutOfStock ? (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04),
+              }}
+            >
               {'Out Of Stock'}
             </Text>
           ) : (
-            <View style={{ flexDirection: 'row' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+              }}
+            >
               <Text
                 style={{
                   ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
@@ -286,11 +315,18 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               {data.specialPrice ? (
                 <Text
                   style={[
-                    { ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04), marginLeft: 8 },
+                    {
+                      ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                      marginLeft: 8,
+                    },
                   ]}
                 >
                   {'('}
-                  <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${data.price}`}</Text>
+                  <Text
+                    style={{
+                      textDecorationLine: 'line-through',
+                    }}
+                  >{`Rs. ${data.price}`}</Text>
                   {')'}
                 </Text>
               ) : null}
@@ -307,8 +343,13 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             <Image
               // placeholderStyle={styles.imagePlaceholderStyle}
               // PlaceholderContent={<ImagePlaceholderView />}
-              source={{ uri: data.imgUri }}
-              style={{ height: 40, width: 40 }}
+              source={{
+                uri: data.imgUri,
+              }}
+              style={{
+                height: 40,
+                width: 40,
+              }}
               resizeMode="contain"
             />
           ) : data.type == 'SYRUP' ? (
@@ -329,7 +370,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         <View style={localStyles.containerStyle} key={data.name}>
           <View style={localStyles.iconAndDetailsContainerStyle}>
             {renderIconOrImage()}
-            <View style={{ width: 16 }} />
+            <View
+              style={{
+                width: 16,
+              }}
+            />
             {renderNamePriceAndInStockStatus()}
           </View>
           {data.showSeparator ? <Spearator /> : null}
@@ -415,7 +460,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
 
     return (
-      <View style={{ paddingHorizontal: 10, backgroundColor: theme.colors.WHITE }}>
+      <View
+        style={{
+          paddingHorizontal: 10,
+          backgroundColor: theme.colors.WHITE,
+        }}
+      >
         <Input
           value={searchText}
           onSubmitEditing={goToSearchPage}
@@ -445,7 +495,10 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     array: MedicineProduct[]
   ) => {
     const medicineCardContainerStyle = [
-      { marginBottom: 8, marginHorizontal: 20 },
+      {
+        marginBottom: 8,
+        marginHorizontal: 20,
+      },
       index == 0 ? { marginTop: 20 } : {},
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
@@ -505,13 +558,25 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
   const renderEmptyData = () => {
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+        }}
+      >
         <Card
-          cardContainer={{ marginTop: 0, elevation: 0 }}
+          cardContainer={{
+            marginTop: 0,
+            elevation: 0,
+          }}
           heading={'Uh oh! :('}
           description={'No data Found!'}
-          descriptionTextStyle={{ fontSize: 14 }}
-          headingTextStyle={{ fontSize: 14 }}
+          descriptionTextStyle={{
+            fontSize: 14,
+          }}
+          headingTextStyle={{
+            fontSize: 14,
+          }}
         />
       </View>
     );
@@ -644,7 +709,15 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const renderSectionLoader = (height: number = 100) => {
-    return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
+    return (
+      <Spinner
+        style={{
+          height,
+          position: 'relative',
+          backgroundColor: 'transparent',
+        }}
+      />
+    );
   };
 
   const onSearchMedicine = (_searchText: string) => {
@@ -673,7 +746,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     return (
       <>
         {searchSate == 'load' ? (
-          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+            }}
+          >
             {renderSectionLoader(266)}
           </View>
         ) : (
@@ -710,7 +787,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             {renderSearchInput()}
             {renderSearchResults()}
           </View>
-          <View style={{ flex: 1 }}>
+          <View
+            style={{
+              flex: 1,
+            }}
+          >
             {renderMatchingMedicines()}
             {renderOverlay()}
           </View>

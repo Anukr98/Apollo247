@@ -89,6 +89,12 @@ export enum MEDICINE_TO_BE_TAKEN {
   BEFORE_FOOD = 'BEFORE_FOOD',
 }
 
+export type ConsultHoursData = {
+  weekDay: WeekDay;
+  startTime: string;
+  endTime: string;
+  consultMode: ConsultMode;
+};
 ///////////////////////////////////////////////////////////
 // BlockedCalendarItem
 ///////////////////////////////////////////////////////////

@@ -196,7 +196,13 @@ const uploadChatDocumentToPrism: Resolver<
   const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);
 
   //upload file to blob storage & save to appointment documents
-  uploadFileToBlobStorage(args.fileType, args.base64FileInput, appointmentDetails, consultsDb);
+  uploadFileToBlobStorage(
+    args.fileType,
+    args.base64FileInput,
+    appointmentDetails,
+    fileId,
+    consultsDb
+  );
 
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };
@@ -205,6 +211,7 @@ const uploadFileToBlobStorage = async (
   fileType: UPLOAD_FILE_TYPES,
   base64FileInput: string,
   appointmentDetails: Appointment,
+  fileId: string | null,
   consultsDb: Connection
 ) => {
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
@@ -255,6 +262,7 @@ const uploadFileToBlobStorage = async (
 
   const documentAttrs: Partial<AppointmentDocuments> = {
     documentPath: client.getBlobUrl(readmeBlob.name),
+    prismFileId: fileId || '',
     appointment: appointmentDetails,
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);

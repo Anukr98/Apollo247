@@ -6,6 +6,7 @@ import {
   DoctorAndHospital,
   Secretary,
   DoctorSecretary,
+  ConsultHours,
 } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -134,6 +135,17 @@ export class AdminDoctorSecretaryRepository extends Repository<DoctorSecretary> 
     return this.delete(id).catch((getErrors) => {
       throw new AphError(AphErrorMessages.DELETE_SECRETARY_ERROR, undefined, {
         getErrors,
+      });
+    });
+  }
+}
+
+@EntityRepository(ConsultHours)
+export class AdminConsultHoursRepository extends Repository<ConsultHours> {
+  saveConsultHours(consultData: Partial<ConsultHours>) {
+    return this.save(consultData).catch((saveConsultHoursError) => {
+      throw new AphError(AphErrorMessages.SAVE_CONSULT_HOURS_ERROR, undefined, {
+        saveConsultHoursError,
       });
     });
   }

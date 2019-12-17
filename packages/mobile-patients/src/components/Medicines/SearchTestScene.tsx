@@ -49,6 +49,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -153,6 +154,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, cartItems } = useDiagnosticsCart();
+  const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
@@ -309,7 +311,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length;
+    const cartItemsCount = cartItems.length + shopCartItems.length;
     return (
       <Header
         container={{ borderBottomWidth: 0 }}
