@@ -7,6 +7,7 @@ import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -44,6 +45,20 @@ export const aphConsole: AphConsole = {
   table: (...data: any[]) => {
     isDebugOn && console.table(...data);
   },
+};
+
+export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  // to resolve state value getting twice
+  const addrLine2 = [address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {

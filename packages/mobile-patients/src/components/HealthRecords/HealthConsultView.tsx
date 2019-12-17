@@ -127,7 +127,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   const { setCartItems, cartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
-  console.log(props.PastData, 'pastData');
+  // console.log(props.PastData, 'pastData');
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
     return (

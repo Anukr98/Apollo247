@@ -21,7 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { GET_PATIENTS_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientByMobileNumber,
@@ -137,121 +137,135 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       </View>
     );
   };
+  const renderProfile = (
+    profile: getPatientByMobileNumber_getPatientByMobileNumber_patients | null,
+    index: number
+  ) => {
+    return (
+      <View
+        key={index}
+        style={[
+          { marginHorizontal: 20 },
+          profiles && index < profiles.length - 1 ? { marginBottom: 8 } : { marginBottom: 80 },
+          index == 0 ? { marginTop: 20 } : {},
+        ]}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          key={index}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.EditProfile, {
+              isEdit: true,
+              profileData: profile,
+              mobileNumber: currentPatient && currentPatient!.mobileNumber,
+            });
+          }}
+        >
+          <View
+            style={{
+              ...viewStyles.cardViewStyle,
+              ...viewStyles.shadowStyle,
+              padding: 16,
+              backgroundColor: colors.WHITE,
+              flexDirection: 'row',
+              minHeight: 145,
+              //  marginTop: i === 0 ? 16 : 8,
+            }}
+            key={index}
+          >
+            <View style={styles.imageView}>
+              {profile!.photoUrl &&
+              profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+                <Image
+                  style={styles.profileImageStyle}
+                  source={{
+                    uri: profile!.photoUrl,
+                  }}
+                  // resizeMode={'contain'}
+                />
+              ) : (
+                <PatientDefaultImage style={styles.profileImageStyle} />
+              )}
+              {/* {profile.photoUrl &&
+       profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
+              {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
+              {/* )} */}
+            </View>
 
+            <View style={{ flex: 1, justifyContent: 'space-between' }}>
+              <Text
+                style={{
+                  color: colors.LIGHT_BLUE,
+                  textAlign: 'left',
+                  ...fonts.IBMPlexSansSemiBold(18),
+                  top: 8,
+                  marginBottom: 8,
+                }}
+              >
+                {profile!.firstName + ' ' + profile!.lastName}
+              </Text>
+              <View style={styles.separatorStyle} />
+              <Text
+                style={{
+                  color: '#0087ba',
+                  textAlign: 'left',
+                  ...fonts.IBMPlexSansMedium(12),
+                }}
+              >
+                {profile!.relation === Relation.ME ? 'SELF' : profile!.relation}
+                {profile!.relation && ' | '}
+                {profile!.gender}
+                {profile!.gender && ' | '}
+                {profile!.dateOfBirth && moment().diff(profile!.dateOfBirth, 'years')}
+              </Text>
+              <View style={styles.separatorStyle} />
+              <Text
+                style={{
+                  color: '#02475b',
+                  textAlign: 'left',
+                  ...fonts.IBMPlexSansMedium(12),
+                }}
+              >
+                UHID : {profile!.uhid}
+              </Text>
+              <Text
+                style={{
+                  color: '#02475b',
+                  textAlign: 'left',
+                  ...fonts.IBMPlexSansMedium(12),
+                }}
+              >
+                DOB :{' '}
+                {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
   const renderProfilesDetails = () => {
     return (
       <View>
-        {profiles && profiles.length > 0 ? (
-          profiles.map((profile, i) => (
-            <View key={i} style={{}}>
-              <TouchableOpacity
-                activeOpacity={1}
-                key={i}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.EditProfile, {
-                    isEdit: true,
-                    profileData: profile,
-                    mobileNumber: currentPatient && currentPatient!.mobileNumber,
-                  });
+        <FlatList
+          data={profiles || []}
+          renderItem={({ item, index }) => renderProfile(item, index)}
+          bounces={false}
+          ListEmptyComponent={
+            <View>
+              <Text
+                style={{
+                  marginTop: 20,
+                  color: '#0087ba',
+                  textAlign: 'center',
+                  ...fonts.IBMPlexSansMedium(12),
                 }}
               >
-                <View
-                  style={{
-                    ...viewStyles.cardViewStyle,
-                    ...viewStyles.shadowStyle,
-                    padding: 16,
-                    marginHorizontal: 20,
-                    backgroundColor: colors.WHITE,
-                    flexDirection: 'row',
-                    height: 145,
-                    //  marginTop: i === 0 ? 16 : 8,
-                    marginBottom: 8,
-                  }}
-                  key={i}
-                >
-                  <View style={styles.imageView}>
-                    {profile!.photoUrl &&
-                    profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
-                      <Image
-                        style={styles.profileImageStyle}
-                        source={{
-                          uri: profile!.photoUrl,
-                        }}
-                        // resizeMode={'contain'}
-                      />
-                    ) : (
-                      <PatientDefaultImage style={styles.profileImageStyle} />
-                    )}
-                    {/* {profile.photoUrl &&
-       profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
-                    {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
-                    {/* )} */}
-                  </View>
-
-                  <View style={{ flex: 1, justifyContent: 'space-between' }}>
-                    <Text
-                      style={{
-                        color: colors.LIGHT_BLUE,
-                        textAlign: 'left',
-                        ...fonts.IBMPlexSansSemiBold(18),
-                        top: 8,
-                        marginBottom: 8,
-                      }}
-                    >
-                      {profile!.firstName + ' ' + profile!.lastName}
-                    </Text>
-                    <View style={styles.separatorStyle} />
-                    <Text
-                      style={{
-                        color: '#0087ba',
-                        textAlign: 'left',
-                        ...fonts.IBMPlexSansMedium(12),
-                      }}
-                    >
-                      {profile!.relation === Relation.ME ? 'SELF' : profile!.relation}
-                      {profile!.relation && ' | '}
-                      {profile!.gender}
-                      {profile!.gender && ' | '}
-                      {profile!.dateOfBirth && moment().diff(profile!.dateOfBirth, 'years')}
-                    </Text>
-                    <View style={styles.separatorStyle} />
-                    <Text
-                      style={{
-                        color: '#02475b',
-                        textAlign: 'left',
-                        ...fonts.IBMPlexSansMedium(12),
-                      }}
-                    >
-                      UHID : {profile!.uhid}
-                    </Text>
-                    <Text
-                      style={{
-                        color: '#02475b',
-                        textAlign: 'left',
-                        ...fonts.IBMPlexSansMedium(12),
-                      }}
-                    >
-                      DOB :{' '}
-                      {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
+                {loading ? '' : 'No Profiles avaliable'}
+              </Text>
             </View>
-          ))
-        ) : (
-          <View>
-            <Text
-              style={{
-                color: '#0087ba',
-                textAlign: 'center',
-                ...fonts.IBMPlexSansMedium(12),
-              }}
-            >
-              {loading ? '' : 'No Profiles avaliable'}
-            </Text>
-          </View>
-        )}
+          }
+        />
       </View>
     );
   };
@@ -280,10 +294,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       }}
     >
       {renderHeader()}
-      <ScrollView bounces={false} contentContainerStyle={{ paddingTop: 20 }}>
-        {renderProfilesDetails()}
-        <View style={{ padding: 40 }} />
-      </ScrollView>
+      <ScrollView bounces={false}>{renderProfilesDetails()}</ScrollView>
       {!loading && renderBottomStickyComponent()}
       {bottomPopUP && (
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>

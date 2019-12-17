@@ -227,6 +227,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ChatRoom]: {
     screen: ChatRoom,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,

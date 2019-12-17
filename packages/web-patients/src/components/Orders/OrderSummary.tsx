@@ -132,14 +132,15 @@ export const OrdersSummary: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <div className={classes.deliveryPromise}>
-        2  Hour Delivery Promise!
-      </div>
+      <div className={classes.deliveryPromise}>2 Hour Delivery Promise!</div>
       <div className={classes.totalPaid}>
         <span>Total Paid — Online</span>
         <span className={classes.totalPrice}>Rs. 316</span>
       </div>
-      <div className={classes.disclaimerText}>Disclaimer: Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo minus quod.</div>
+      <div className={classes.disclaimerText}>
+        Disclaimer: Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo
+        minus quod.
+      </div>
     </div>
   );
 };

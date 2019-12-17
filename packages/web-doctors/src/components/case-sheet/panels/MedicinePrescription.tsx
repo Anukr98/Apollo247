@@ -247,7 +247,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogActions: {
       padding: 20,
-      paddingTop: 10,
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
       textAlign: 'right',
@@ -1084,7 +1083,6 @@ export const MedicinePrescription: React.FC = () => {
                 );
               })}
             </div>
-            )}
           </Grid>
         )}
       </Grid>

@@ -9,7 +9,7 @@ import { RadioSelectionItem } from './RadioSelectionItem';
 import { AppRoutes } from '../NavigatorContainer';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
 import { useUIElements } from '../UIElementsProvider';
-import { aphConsole, handleGraphQlError } from '../../helpers/helperFunctions';
+import { aphConsole, handleGraphQlError, formatAddress } from '../../helpers/helperFunctions';
 import React, { useState } from 'react';
 
 const styles = StyleSheet.create({
@@ -184,9 +184,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
           return (
             <RadioSelectionItem
               key={item.id}
-              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
-                item.landmark ? ',\n' : ''
-              }${item.city}, ${item.state} - ${item.zipcode}`}
+              title={formatAddress(item)}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 checkServicability(item);

@@ -1,4 +1,4 @@
-import { aphConsole, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -262,7 +262,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [deliveryAddressId, diagnosticSlot]);
 
   useEffect(() => {
-    fetchStorePickup();
+    clinics.length == 0 && fetchStorePickup();
     if (clinicId) {
       filterClinics(clinicId, true);
     }
@@ -278,16 +278,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setLoading!(false);
+          setAddresses && setAddresses(addressList!);
+        })
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -657,9 +651,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
-                item.landmark ? ',\n' : ''
-              }${item.city}, ${item.state} - ${item.zipcode}`}
+              title={formatAddress(item)}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
@@ -737,7 +729,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
       aphConsole.log('iid filer=', data);
-      setPinCode && setPinCode(pinCode);
+      filterClinics(pinCode);
       setClinicDetails(data);
     } else {
       if (isValidPinCode(key)) {
@@ -825,7 +817,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View>
           {clinicDetails!.length > 2 && (
             <Text
-              style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
+              style={{ ...styles.yellowTextStyle, textAlign: 'right', paddingBottom: 0 }}
               onPress={() =>
                 props.navigation.navigate(AppRoutes.ClinicSelection, {
                   pincode: pinCode,

@@ -41,6 +41,7 @@ import {
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -146,6 +147,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
@@ -432,7 +434,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length;
+    const cartItemsCount = cartItems.length + diagnosticCartItems.length;
     return (
       <Header
         container={{ borderBottomWidth: 0 }}
@@ -442,7 +444,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              style={{ marginRight: 24 }}
+              style={{ marginRight: medicineList.length ? 24 : 0 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
@@ -451,9 +453,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
-              <Filter />
-            </TouchableOpacity>
+            {!!medicineList.length && (
+              <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
+                <Filter />
+              </TouchableOpacity>
+            )}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -678,7 +682,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               bounces={false}
               ListEmptyComponent={
                 discount.from ||
-                (discount.to && discount.to != 100) || false ||
+                (discount.to && discount.to != 100) ||
+                false ||
                 price.from ||
                 price.to ||
                 categoryIds.length ? (

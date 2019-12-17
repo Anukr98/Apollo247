@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     color: theme.colors.placeholderTextColor,
   },
   placeholderTextStyle: {
+    maxWidth: '95%',
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
   },
@@ -116,7 +117,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         storeVallue &&
           ((currentPatient && currentPatient!.id !== storeVallue) ||
             currentPatient === null ||
-            (shopCart.addresses!.length === 0 || diagCart.addresses!.length === 0)) &&
+            shopCart.addresses!.length === 0 ||
+            diagCart.addresses!.length === 0) &&
           setAddressList(storeVallue);
       } else if (currentPatient) {
         AsyncStorage.setItem('selectUserId', currentPatient!.id);
@@ -203,6 +205,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         dateOfBirth: addString,
         emailAddress: addString,
         photoUrl: addString,
+        patientMedicalHistory: null,
       });
     }
     return pArray;
@@ -250,12 +253,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             });
             setDisplayAddProfile(true);
           } else {
-            profileArray &&
-              profileArray!.map((i) => {
-                if (selectedUser.key === i.id) {
-                  setProfile(i);
-                }
-              });
+            profileArray && setProfile(profileArray!.find((i) => selectedUser.key === i.id));
           }
           saveUserChange &&
             selectedUser.key !== addString &&
@@ -276,6 +274,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
                   ,
                   profile !== undefined ? null : styles.placeholderStyle,
                 ]}
+                numberOfLines={1}
               >
                 {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
               </Text>

@@ -2,8 +2,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
-import _startCase from 'lodash/startCase';
-import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -19,42 +17,41 @@ const useStyles = makeStyles((theme: Theme) => {
     actions: {
       padding: '10px 20px 20px 20px',
       display: 'flex',
-      '& button': {
-        borderRadius: 10,
-        minWidth: 'auto',
-        boxShadow: 'none',
-        '&:first-child': {
-          color: '#fc9916',
-        },
-        '&:last-child': {
-          marginLeft: 'auto',
-        },
-      },
     },
     windowBody: {
       padding: 20,
       paddingTop: 0,
       paddingBottom: 0,
     },
+    button: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      marginLeft: 'auto',
+      fontWeight: 'bold',
+      color: '#fc9916',
+      padding: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   };
 });
 
-export const MedicineNotifyPopover: React.FC<{
-  medicineName: string;
-  setIsPopoverOpen: (isPopoverOpen: boolean) => void;
-}> = (props) => {
-  const classes = useStyles({});
+export const CancelOrderNotification: React.FC = (props) => {
+  const classes = useStyles();
 
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
-        <Typography variant="h2">Okay! :)</Typography>
-        <p>{`You will be notified when ${_startCase(
-          _lowerCase(props.medicineName)
-        )} is back in stock.`}</p>
+        <Typography variant="h2">Hi! :)</Typography>
+        <p>
+          Your cancelation request has been submitted. Someone from our team will call you soon.
+        </p>
       </div>
       <div className={classes.actions}>
-        <AphButton onClick={() => props.setIsPopoverOpen(false)}>Ok, Got it</AphButton>
+        <AphButton type="submit" color="primary" classes={{ root: classes.button }}>
+          Ok, Got It
+        </AphButton>
       </div>
     </div>
   );

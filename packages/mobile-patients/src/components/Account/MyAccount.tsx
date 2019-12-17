@@ -115,11 +115,23 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!currentPatient || !currentPatient.uhid) {
+    if (!currentPatient) {
       getPatientApiCall();
     }
+    // currentPatient && AsyncStorage.setItem('phoneNumber', currentPatient.mobileNumber.substring(3));
     currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
+
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      if (!currentPatient || !currentPatient.uhid) {
+        getPatientApiCall();
+      }
+    });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
+  }, [props.navigation]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -171,7 +183,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {profileDetails.gender ? profileDetails.gender : '-'} |{' '}
-                {Math.round(Moment().diff(profileDetails.dateOfBirth, 'years', true))}
+                {profileDetails.dateOfBirth
+                  ? Math.round(
+                      Moment().diff(profileDetails.dateOfBirth, 'years', true)
+                    ).toString() || '-'
+                  : '-'}
               </Text>
             </View>
             <View style={styles.separatorStyle} />

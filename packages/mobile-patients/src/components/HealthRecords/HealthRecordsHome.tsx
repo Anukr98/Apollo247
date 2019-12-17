@@ -43,7 +43,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   getPatientMedicalRecords,
@@ -85,6 +85,9 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextContainerStyle: {
+    maxWidth: '65%',
   },
   nameTextStyle: {
     marginLeft: 5,
@@ -381,8 +384,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 }}
               >
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View>
-                  <Text style={styles.nameTextStyle}>
+                <View style={styles.nameTextContainerStyle}>
+                  <Text style={styles.nameTextStyle} numberOfLines={1}>
                     {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
@@ -509,82 +512,87 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const renderConsult = (item: any, index: number) => {
+    let dataval =
+      item.caseSheet &&
+      item.caseSheet.find((obj: any) => {
+        return (
+          obj.doctorType === 'STAR_APOLLO' ||
+          obj.doctorType === 'APOLLO' ||
+          obj.doctorType === 'PAYROLL'
+        );
+      });
+
+    return (
+      <HealthConsultView
+        key={index}
+        onPressOrder={() => {
+          CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup'), setdisplayOrderPopup(true);
+        }}
+        onClickCard={() => {
+          props.navigation.navigate(AppRoutes.ConsultDetails, {
+            CaseSheet: item.id,
+            DoctorInfo: item.doctorInfo,
+            FollowUp: item.isFollowUp,
+            appointmentType: item.appointmentType,
+            DisplayId: item.displayId,
+            BlobName: g(dataval, 'blobName'),
+          });
+        }}
+        PastData={item}
+        navigation={props.navigation}
+        onFollowUpClick={() => onFollowUpClick(item)}
+      />
+    );
+  };
+
+  const renderEmptyConsult = () => {
+    if (!loading) {
+      return (
+        <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
+          {renderFilter()}
+          <View
+            style={{
+              marginTop: 38,
+              height: 60,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <NoData />
+          </View>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#02475b',
+              marginBottom: 25,
+              alignItems: 'center',
+              textAlign: 'center',
+            }}
+          >
+            You don’t have any records with us right now. {'\n'}Add a record to keep everything
+            handy in one place!
+          </Text>
+          <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
+            <Button
+              title="ADD RECORD"
+              onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+            />
+          </View>
+        </View>
+      );
+    }
+  };
+
   const renderConsults = () => {
     return (
       <View>
         {arrayValues && arrayValues.length !== 0 && renderFilter()}
-
-        {arrayValues == 0 ? (
-          <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
-            {renderFilter()}
-            <View
-              style={{
-                marginTop: 38,
-                height: 60,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <NoData />
-            </View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(12),
-                color: '#02475b',
-                marginBottom: 25,
-                alignItems: 'center',
-                textAlign: 'center',
-              }}
-            >
-              You don’t have any records with us right now. {'\n'}Add a record to keep everything
-              handy in one place!
-            </Text>
-            <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
-              <Button
-                title="ADD RECORD"
-                onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
-              />
-            </View>
-          </View>
-        ) : (
-          <View>
-            {arrayValues &&
-              arrayValues.map((item: any, i: number) => {
-                let dataval =
-                  item.caseSheet &&
-                  item.caseSheet.find((obj: any) => {
-                    return (
-                      obj.doctorType === 'STAR_APOLLO' ||
-                      obj.doctorType === 'APOLLO' ||
-                      obj.doctorType === 'PAYROLL'
-                    );
-                  });
-
-                return (
-                  <HealthConsultView
-                    key={i}
-                    onPressOrder={() => {
-                      CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup'),
-                        setdisplayOrderPopup(true);
-                    }}
-                    onClickCard={() => {
-                      props.navigation.navigate(AppRoutes.ConsultDetails, {
-                        CaseSheet: item.id,
-                        DoctorInfo: item.doctorInfo,
-                        FollowUp: item.isFollowUp,
-                        appointmentType: item.appointmentType,
-                        DisplayId: item.displayId,
-                        BlobName: g(dataval, 'blobName'),
-                      });
-                    }}
-                    PastData={item}
-                    navigation={props.navigation}
-                    onFollowUpClick={() => onFollowUpClick(item)}
-                  />
-                );
-              })}
-          </View>
-        )}
+        <FlatList
+          data={arrayValues}
+          renderItem={({ item, index }) => renderConsult(item, index)}
+          ListEmptyComponent={renderEmptyConsult()}
+        />
       </View>
     );
   };

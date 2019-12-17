@@ -24,6 +24,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -147,7 +148,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const TestDetailsDiscription = testInfo.PackageInClussion;
   const { cartItems, addCartItem } = useDiagnosticsCart();
-  const cartItemsCount = cartItems.length;
+  const { cartItems: shopCartItems } = useShoppingCart();
+  const cartItemsCount = cartItems.length + shopCartItems.length;
   const currentItemId = testInfo.ItemID;
   aphConsole.log('currentItemId : ' + currentItemId);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
