@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect } from 'react';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
 import {
   Typography,
   List,
@@ -13,6 +13,9 @@ import {
   CardContent,
   Modal,
 } from '@material-ui/core';
+import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
@@ -259,7 +262,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
               </Grid>
               {data &&
               data.caseSheet &&
-              (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
+              data.caseSheet.length > 1 &&
+              data.caseSheet[1]!.doctorType !== 'JUNIOR'
                 ? data &&
                   data.caseSheet &&
                   data.caseSheet.length > 0 &&
@@ -300,9 +304,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                   )}
               {data &&
               data.caseSheet &&
-              (data.caseSheet.length > 1 &&
-                data.caseSheet[1] &&
-                data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
+              data.caseSheet.length > 1 &&
+              data.caseSheet[1] &&
+              data.caseSheet[1]!.doctorType !== 'JUNIOR' ? (
                 <Grid lg={1} sm={1} xs={3} key={3} item>
                   <div>
                     <IconButton aria-label="Video call" className={classes.videoIcon}>
@@ -345,18 +349,42 @@ export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
+  const client = useApolloClient();
+  var prismIdList: any = [];
+  const [prismImageList, setPrismImageList] = useState<any>([]);
+
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
   const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
+  const [loading, setLoading] = React.useState(true);
+
   useEffect(() => {
     if (documentArray && documentArray.documentPath) {
       const data = {
         documentPath: documentArray.documentPath,
+        prismFileId: documentArray.prismFileId,
       };
       appointmentDocuments && appointmentDocuments.push(data as appointmentDocumentType);
       setDocumentArray((null as unknown) as appointmentDocumentType);
     }
   });
+  const downloadDocumentsInputVariable = {
+    fileIds: prismIdList,
+    patientId: pastAppointments && pastAppointments[0] && pastAppointments[0].patientId,
+  };
+  useEffect(() => {
+    client
+      .query<downloadDocuments>({
+        query: DOWNLOAD_DOCUMENTS,
+        variables: { downloadDocumentsInput: downloadDocumentsInputVariable },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        setPrismImageList(data.downloadDocuments.downloadPaths);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
@@ -382,11 +410,52 @@ export const HealthVault: React.FC = () => {
                       className={classes.bigAvatar}
                     />
                   </ListItemAvatar>
+                  <div hidden>
+                    {prismIdList && prismIdList.push(item && item.prismFileId && item.prismFileId)}{' '}
+                  </div>
                   <ListItemText
                     primary={
                       <Fragment>
                         <Typography component="h4" variant="h4" color="primary">
                           {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
+                        </Typography>
+                      </Fragment>
+                    }
+                    secondary={
+                      <Fragment>
+                        <Typography component="h6" variant="h6">
+                          {/* {'5MB'} | {'2019-01-01T11:30'} */}
+                        </Typography>
+                      </Fragment>
+                    }
+                  />
+                </ListItem>
+              ))
+            ) : (
+              <span className={classes.nodataFound}>No data Found</span>
+            )}
+            {!loading && prismImageList && prismImageList.length > 0 ? (
+              prismImageList.map((item: any, index: any) => (
+                <ListItem
+                  key={index}
+                  className={classes.listItem}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(item as string);
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      alt={item as string}
+                      src={item as string}
+                      className={classes.bigAvatar}
+                    />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Fragment>
+                        <Typography component="h4" variant="h4" color="primary">
+                          {item.substr(item.lastIndexOf('=') + 1)}
                         </Typography>
                       </Fragment>
                     }
