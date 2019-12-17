@@ -1668,6 +1668,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     if (document.getElementById('homeId')) {
                       document.getElementById('homeId')!.click();
                     }
+                    //window.location.href = clientRoutes.juniorDoctor();
                   })
                   .catch((e: ApolloError) => {
                     setCancelError(e.graphQLErrors[0].message);
