@@ -15,7 +15,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Image,
   Platform,
   Alert,
   Linking,
@@ -39,6 +38,7 @@ import { Button } from '../ui/Button';
 import { AppRoutes } from '../NavigatorContainer';
 import { useUIElements } from '../UIElementsProvider';
 import { mimeType } from '../../helpers/mimeType';
+import { Image } from 'react-native-elements';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -384,6 +384,13 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
               return (
                 <View key={i} style={{ marginHorizontal: 20, marginBottom: 15 }}>
                   <Image
+                    placeholderStyle={{
+                      height: 425,
+                      width: '100%',
+                      alignItems: 'center',
+                      backgroundColor: 'transparent',
+                    }}
+                    PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                     source={{ uri: item }}
                     style={{
                       // flex: 1,

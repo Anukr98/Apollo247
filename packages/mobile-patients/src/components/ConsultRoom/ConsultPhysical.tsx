@@ -23,6 +23,7 @@ import {
   divideSlots,
   getNetStatus,
   timeTo12HrFormat,
+  doRequestAndAccessLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
@@ -46,6 +47,8 @@ import {
   CommonScreenLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAppCommonData } from '../AppCommonDataProvider';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -153,6 +156,9 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
+  const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+
   const client = useApolloClient();
 
   const [timeArray, settimeArray] = useState<TimeArray>([
@@ -201,52 +207,73 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       });
   };
 
+  const findDistance = (searchstring: string) => {
+    const key = AppConfig.Configuration.GOOGLE_API_KEY;
+
+    const destination = selectedClinic
+      ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`
+      : '';
+    const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
+    console.log(distanceUrl, 'distanceUrl');
+
+    Axios.get(distanceUrl)
+      .then((obj) => {
+        console.log(obj, 'objobj');
+
+        if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
+          const value = obj.data.rows[0].elements[0].distance
+            ? obj.data.rows[0].elements[0].distance.value
+            : 0;
+          setdistance(`${(value / 1000).toFixed(1)} Kms`);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const fetchLocation = useCallback(() => {
-    let searchstring = '';
-
-    AsyncStorage.getItem('location').then((item) => {
-      const location = item ? JSON.parse(item) : null;
-      if (location.latlong) {
-        searchstring = `${location.latlong.lat}, ${location.latlong.lng}`;
-      } else {
-        Permissions.request('location')
-          .then((response) => {
-            if (response === 'authorized') {
-              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                  searchstring = position.coords.latitude + ', ' + position.coords.longitude;
-
-                  // }
-                },
-                (error) => console.log(JSON.stringify(error)),
-                { enableHighAccuracy: false, timeout: 2000 }
-              );
-            }
-          })
-          .catch((error) => {
-            console.log(error, 'error permission');
-          });
-      }
-
-      const key = AppConfig.Configuration.GOOGLE_API_KEY;
-
-      const destination = selectedClinic
-        ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`
-        : '';
-      const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
-      Axios.get(distanceUrl)
-        .then((obj) => {
-          if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-            const value = obj.data.rows[0].elements[0].distance
-              ? obj.data.rows[0].elements[0].distance.value
-              : 0;
-            setdistance(`${(value / 1000).toFixed(1)} Kms`);
-          }
+    if (!locationDetails) {
+      doRequestAndAccessLocation()
+        .then((response) => {
+          console.log('response', { response });
+          setLocationDetails!(response);
+          findDistance(`${response.latitude}, ${response.longitude}`);
         })
-        .catch((error) => {
-          console.log(error);
+        .catch((e) => {
+          showAphAlert!({
+            title: 'Uh oh! :(',
+            description: 'Unable to access location.',
+          });
         });
-    });
+    } else {
+      findDistance(`${locationDetails.latitude}, ${locationDetails.longitude}`);
+    }
+
+    // AsyncStorage.getItem('location').then(async (item) => {
+    //   const location = item ? JSON.parse(item) : null;
+    //   console.log(location, 'location');
+
+    //   if (location && location.latlong) {
+    //     findDistance(`${location.latlong.lat}, ${location.latlong.lng}`);
+    //   } else {
+    //     await Permissions.request('location')
+    //       .then((response) => {
+    //         if (response === 'authorized') {
+    //           navigator.geolocation.getCurrentPosition(
+    //             (position) => {
+    //               findDistance(position.coords.latitude + ',' + position.coords.longitude);
+    //             },
+    //             (error) => console.log(JSON.stringify(error)),
+    //             { enableHighAccuracy: false, timeout: 2000 }
+    //           );
+    //         }
+    //       })
+    //       .catch((error) => {
+    //         console.log(error, 'error permission');
+    //       });
+    //   }
+    // });
   }, [selectedClinic]);
 
   const requestLocationPermission = useCallback(async () => {

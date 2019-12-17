@@ -61,6 +61,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
+  nameTextContainerStyle: {
+    maxWidth: '75%',
+  },
   nameTextStyle: {
     marginLeft: 5,
     color: '#02475b',
@@ -69,8 +72,9 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    marginTop: 5,
+    //marginTop: 5,
     marginHorizontal: 5,
+    marginBottom: 6,
   },
   hiTextStyle: {
     color: '#02475b',
@@ -905,8 +909,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   }}
                 >
                   <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                  <View>
-                    <Text style={styles.nameTextStyle}>
+                  <View style={styles.nameTextContainerStyle}>
+                    <Text style={styles.nameTextStyle} numberOfLines={1}>
                       {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                     </Text>
                     <View style={styles.seperatorStyle} />

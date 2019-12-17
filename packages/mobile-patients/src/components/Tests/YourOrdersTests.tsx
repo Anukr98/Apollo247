@@ -19,7 +19,8 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -36,6 +37,7 @@ export interface YourOrdersTestProps extends NavigationScreenProps {}
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { loading, setLoading } = useUIElements();
   const isTest = props.navigation.getParam('isTest');
   const ordersFetched = props.navigation.getParam('orders');
   const [orders, setOrders] = useState<
@@ -50,7 +52,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       fetchPolicy: 'cache-first',
     }).refetch;
   const error = props.navigation.getParam('error');
-  const loading = props.navigation.getParam('loading');
+  // const loading = props.navigation.getParam('loading');
 
   useEffect(() => {
     console.log('fetched', ordersFetched);
@@ -60,9 +62,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    setLoading!(true);
     refetch().then((data: any) => {
       const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
       setOrders(_orders);
+      setLoading!(false);
     });
   }, []);
 
@@ -147,34 +151,46 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return moment(time).format('D MMM YY, hh:mm a');
   };
 
+  const renderOrder = (
+    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+    index: number
+  ) => {
+    const title =
+      g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
+    return (
+      <TestOrderCard
+        style={[
+          { marginHorizontal: 20 },
+          index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
+          index == 0 ? { marginTop: 20 } : {},
+        ]}
+        key={`${order!.id}`}
+        orderId={`#${order!.displayId}`}
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.TestOrderDetails, {
+            orderId: order!.id,
+            setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
+              setOrders(orders),
+            refetch: refetch,
+          });
+        }}
+        title={title}
+        description={getDeliverType(order!.orderType)}
+        statusDesc={order!.orderStatus!}
+        status={order!.orderStatus!}
+        dateTime={getFormattedTime(order!.createdDate)}
+      />
+    );
+  };
+
   const renderOrders = () => {
     return (
-      <View style={{ margin: 20 }}>
-        {orders.map((order, index, array) => {
-          const title =
-            g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
-          return (
-            <TestOrderCard
-              style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-              key={`${order!.id}`}
-              orderId={`#${order!.displayId}`}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.TestOrderDetails, {
-                  orderId: order!.id,
-                  setOrders: (
-                    orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]
-                  ) => setOrders(orders),
-                  refetch: refetch,
-                });
-              }}
-              title={title}
-              description={getDeliverType(order!.orderType)}
-              statusDesc={order!.orderStatus!}
-              status={order!.orderStatus!}
-              dateTime={getFormattedTime(order!.createdDate)}
-            />
-          );
-        })}
+      <View>
+        <FlatList
+          bounces={false}
+          data={orders}
+          renderItem={({ item, index }) => renderOrder(item, index)}
+        />
       </View>
     );
   };

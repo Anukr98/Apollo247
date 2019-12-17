@@ -27,7 +27,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.537093214409-l1ffk0sjcbcf3jur708tvchlkd66gbp6</string>
+				<string>com.googleusercontent.apps.537093214409-ugo5mkevql98k75ebkvnmgi4jp4ugf7i</string>
 			</array>
 		</dict>
 		<dict>
@@ -43,6 +43,8 @@
 	<string>17</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
+	<key>ITunesAppleID</key>
+	<string>1491463275</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
