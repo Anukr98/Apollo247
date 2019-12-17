@@ -27,5 +27,4 @@ export interface AddBlockedCalendarItemVariables {
   doctorId: string;
   start: any;
   end: any;
-  reason?: string | null;
 }
