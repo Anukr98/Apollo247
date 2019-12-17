@@ -46,6 +46,7 @@ export enum SEARCH_TYPE {
 
 export enum MEDICINE_ORDER_STATUS {
   QUOTE = 'QUOTE',
+  PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
   ORDER_PLACED = 'ORDER_PLACED',
   ORDER_VERIFIED = 'ORDER_VERIFIED',
   DELIVERED = 'DELIVERED',
@@ -179,6 +180,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   patientAddressId: string;
+
+  @Column({ nullable: true, type: 'text' })
+  pharmaRequest: string;
 
   @Column({ nullable: true })
   prescriptionImageUrl: string;

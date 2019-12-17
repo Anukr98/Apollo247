@@ -11,12 +11,13 @@ import {
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import fetch from 'node-fetch';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
-import { PharmaLineItem, PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
+import { PharmaLineItem, PrescriptionUrl } from 'types/medicineOrderTypes';
 import { differenceInYears } from 'date-fns';
-import { log } from 'customWinstonLogger';
+import { ServiceBusService, Azure } from 'azure-sb';
+/*import fetch from 'node-fetch';
+import { log } from 'customWinstonLogger';*/
 
 export const saveMedicineOrderPaymentTypeDefs = gql`
   enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -117,12 +118,12 @@ const SaveMedicineOrderPayment: Resolver<
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(orderDetails.patient.id);
-  let deliveryCity = 'Kakinada',
-    deliveryZipcode = '500045',
-    deliveryAddress = 'Kakinada';
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  let deliveryCity = 'Kakinada',
+    deliveryZipcode = '500045',
+    deliveryAddress = 'Kakinada';
   if (orderDetails.patientAddressId !== '' && orderDetails.patientAddressId !== null) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(orderDetails.patientAddressId);
@@ -219,7 +220,60 @@ const SaveMedicineOrderPayment: Resolver<
     },
   };
 
-  console.log('medicineOrderPharma', medicineOrderPharma);
+  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+    orderStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS,
+    medicineOrders: orderDetails,
+    statusDate: new Date(),
+    statusMessage: 'order payment done successfully',
+  };
+  await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+  await medicineOrdersRepo.updateMedicineOrderDetails(
+    orderDetails.id,
+    orderDetails.orderAutoId,
+    new Date(),
+    MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
+  );
+  await medicineOrdersRepo.updatePharmaRequest(
+    medicineOrderPharma.toString(),
+    orderDetails.id,
+    orderDetails.orderAutoId
+  );
+  errorCode = 0;
+  errorMessage = '';
+  paymentOrderId = savePaymentDetails.id;
+  orderStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
+
+  //medicine order in queue starts
+  const serviceBusConnectionString =
+    'Endpoint=sb://apollodevpopcorn.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zBbU2kCqxiBny22Zj7rCefaM930uJUYGKw3L/4AqNeQ=';
+  const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
+  azureServiceBus.createTopicIfNotExists('orders', (error) => {
+    if (error) {
+      console.log('topic create error', error);
+    }
+    console.log('connected to topic orders');
+    const message = 'MEDICINE_ORDER:' + orderDetails.orderAutoId + '-' + patientDetails.id;
+    azureServiceBus.sendTopicMessage('orders', message, (error1) => {
+      if (error1) {
+        console.log('send message error', error1);
+      }
+      console.log('message sent to topic');
+      /*azureServiceBus.createSubscription('orders', 'supplier1', (error3) => {
+        if (error3) {
+          console.log('subscription error', error3);
+        }
+        azureServiceBus.receiveSubscriptionMessage('orders', 'supplier1', (error4, result) => {
+          if (error4) {
+            console.log('read error', error4);
+          }
+          console.log('message from topic', result.body);
+        });
+      });*/
+    });
+  });
+  //medicine order in queue ends
+
+  /*console.log('medicineOrderPharma', medicineOrderPharma);
   const placeOrderUrl = process.env.PHARMACY_MED_PLACE_ORDERS
     ? process.env.PHARMACY_MED_PLACE_ORDERS
     : '';
@@ -286,7 +340,7 @@ const SaveMedicineOrderPayment: Resolver<
     errorMessage = orderResp.ordersResult.Message;
     paymentOrderId = savePaymentDetails.id;
     orderStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
-  }
+  }*/
 
   return {
     errorCode,

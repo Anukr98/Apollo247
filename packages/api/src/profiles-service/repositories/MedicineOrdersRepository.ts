@@ -109,6 +109,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getPaymentMedicineOrders() {
+    return this.find({
+      where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
   getMedicineOrderWithId(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
@@ -133,6 +146,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
     return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
+  }
+
+  updatePharmaRequest(pharmaRequest: string, id: string, orderAutoId: number) {
+    return this.update({ id, orderAutoId }, { pharmaRequest });
   }
 
   getMedicineOrdersListByCreateddate(patient: String, startDate: Date, endDate: Date) {

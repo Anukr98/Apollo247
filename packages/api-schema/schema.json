@@ -321,6 +321,22 @@
             "deprecationReason": null
           },
           {
+            "name": "getMedicinePaymentOrder",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "MedicineOrdersListResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "downloadDocuments",
             "description": null,
             "args": [
@@ -3202,6 +3218,18 @@
             "deprecationReason": null
           },
           {
+            "name": "pharmaRequest",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "medicineOrderLineItems",
             "description": null,
             "args": [],
@@ -3530,6 +3558,12 @@
         "enumValues": [
           {
             "name": "QUOTE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYMENT_SUCCESS",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

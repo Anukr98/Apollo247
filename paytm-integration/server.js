@@ -6,7 +6,7 @@ const ejs = require('ejs');
 const app = express();
 const session = require('express-session');
 const stripTags = require('striptags');
-
+const azure = require('azure-sb');
 require('dotenv').config();
 
 app.use(
@@ -389,6 +389,69 @@ app.get('/mob-error', (req, res) => {
       code: '800',
     });
   }
+});
+
+app.get('/processOrders', (req, res) => {
+  console.log('welcome 13223');
+  let queueMessage = '';
+  const serviceBusConnectionString =
+    'Endpoint=sb://apollodevpopcorn.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zBbU2kCqxiBny22Zj7rCefaM930uJUYGKw3L/4AqNeQ=';
+  const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
+  azureServiceBus.receiveSubscriptionMessage('orders', 'supplier1', (error4, result) => {
+    if (error4) {
+      console.log('read error', error4);
+    }
+    console.log('message from topic', result.body);
+    queueMessage = result.body;
+    const queueDetails = queueMessage.split(':');
+    const orderDetails = queueDetails[1].split('-');
+    axios({
+      url: process.env.API_URL,
+      method: 'post',
+      data: {
+        query: `
+            query {
+              getMedicineOrderDetails(patientId:"${orderDetails[1]}", orderAutoId:${orderDetails[0]}) {
+                MedicineOrderDetails {
+                  id
+                  orderAutoId
+                  estimatedAmount
+                }
+              }
+            }
+          `,
+      },
+    })
+      .then((response) => {
+        if (
+          response &&
+          response.data &&
+          response.data.data &&
+          response.data.data.getMedicineOrderDetails &&
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+        ) {
+          const responseOrderId =
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
+          const responseAmount =
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.estimatedAmount;
+          res.send({
+            status: 'success',
+            reason: '',
+            code: responseOrderId + ', ' + responseAmount,
+          });
+        }
+      })
+      .catch((error) => {
+        // no need to explicitly saying details about error for clients.
+        console.log(error);
+        //res.statusCode = 401;
+        return res.send({
+          status: 'failed',
+          reason: 'Invalid parameters',
+          code: '10001',
+        });
+      });
+  });
 });
 
 app.listen(PORT, () => {
