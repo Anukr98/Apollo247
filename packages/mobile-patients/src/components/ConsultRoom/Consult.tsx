@@ -41,7 +41,7 @@ import {
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { getDataFromTree } from 'react-apollo';
 import { AddProfile } from '../ui/AddProfile';
@@ -279,12 +279,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
     currentPatient && setProfile(currentPatient!);
-    analytics.setAnalyticsCollectionEnabled(true);
-    analytics.setCurrentScreen(AppRoutes.Consult, AppRoutes.Consult);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.Consult, AppRoutes.Consult);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();

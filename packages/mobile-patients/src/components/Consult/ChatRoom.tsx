@@ -31,7 +31,6 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   DeviceHelper,
-  CommonScreenLog,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -403,9 +402,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
     // requestToJrDoctor();
-    analytics.setAnalyticsCollectionEnabled(true);
-    CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
-
     // updateSessionAPI();
   }, []);
 
