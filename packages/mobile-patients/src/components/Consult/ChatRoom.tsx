@@ -2537,6 +2537,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const openPopUp = (rowData:any)=>{
+    setLoading(true);
+    if (rowData.url.match(/\.(pdf)$/)) {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch(() => setUrl(rowData.url))
+          .finally(() => {
+            setLoading(false);
+            setShowPDF(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setLoading(false);
+        setShowPDF(true);
+      }
+    } else {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch(() => setUrl(rowData.url))
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setLoading(false);
+        setPatientImageshow(true);
+      }
+    }
+  }
+
   const messageView = (rowData: any, index: number) => {
     // console.log('messageView', rowData.message);
     return (
@@ -2592,24 +2629,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
-                    setLoading(true);
-                    if (rowData.prismId) {
-                      getPrismUrls(client, patientId, rowData.prismId)
-                        .then((data: any) => {
-                          setUrl((data && data.urls[0]) || rowData.url);
-                        })
-                        .catch(() => {
-                          setUrl(rowData.url);
-                        })
-                        .finally(() => {
-                          setPatientImageshow(true);
-                          setLoading(false);
-                        });
-                    } else {
-                      setUrl(rowData.url);
-                      setPatientImageshow(true);
-                      setLoading(false);
-                    }
+                    openPopUp(rowData);
                   }}
                   activeOpacity={1}
                 >
@@ -2648,40 +2668,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   activeOpacity={1}
                   onPress={() => {
                     console.log('pdf', rowData.url);
-                    setLoading(true);
-                    if (rowData.url.match(/\.(pdf)$/) ){
-                      if (rowData.prismId) {
-                        getPrismUrls(client, patientId, rowData.prismId)
-                          .then((data: any) => {
-                            setUrl((data && data.urls[0]) || rowData.url);
-                          })
-                          .catch(() => setUrl(rowData.url))
-                          .finally(() => {
-                            setLoading(false);
-                            setShowPDF(true);
-                          });
-                      } else {
-                        setUrl(rowData.url);
-                        setLoading(false);
-                        setShowPDF(true);
-                      }
-                    }else{
-                      if (rowData.prismId) {
-                        getPrismUrls(client, patientId, rowData.prismId)
-                          .then((data: any) => {
-                            setUrl((data && data.urls[0]) || rowData.url);
-                          })
-                          .catch(() => setUrl(rowData.url))
-                          .finally(() => {
-                            setLoading(false);
-                            setPatientImageshow(true);
-                          });
-                      } else {
-                        setUrl(rowData.url);
-                        setLoading(false);
-                        setPatientImageshow(true);
-                      }
-                    }
+                    openPopUp(rowData);
                     // setShowWeb(true);
                     // setPatientImageshow(true);
                   }}
@@ -3319,24 +3306,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       activeOpacity={1}
                       onPress={() => {
                         console.log('IMAGE', rowData.url);
-                        setLoading(true);
-                        if (rowData.prismId) {
-                          getPrismUrls(client, patientId, rowData.prismId)
-                            .then((data: any) => {
-                              setUrl((data && data.urls[0]) || rowData.url);
-                            })
-                            .catch(() => {
-                              setUrl(rowData.url);
-                            })
-                            .finally(() => {
-                              setPatientImageshow(true);
-                              setLoading(false);
-                            });
-                        } else {
-                          setUrl(rowData.url);
-                          setPatientImageshow(true);
-                          setLoading(false);
-                        }
+                        openPopUp(rowData);
                       }}
                     >
                       <View
@@ -3376,40 +3346,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       activeOpacity={1}
                       onPress={() => {
                         console.log('pdf', rowData.url);
-                        setLoading(true);
-                        if (rowData.url.match(/\.(pdf)$/)) {
-                          if (rowData.prismId) {
-                            getPrismUrls(client, patientId, rowData.prismId)
-                              .then((data: any) => {
-                                setUrl((data && data.urls[0]) || rowData.url);
-                              })
-                              .catch(() => setUrl(rowData.url))
-                              .finally(() => {
-                                setLoading(false);
-                                setShowPDF(true);
-                              });
-                          } else {
-                            setUrl(rowData.url);
-                            setLoading(false);
-                            setShowPDF(true);
-                          }
-                        } else {
-                          if (rowData.prismId) {
-                            getPrismUrls(client, patientId, rowData.prismId)
-                              .then((data: any) => {
-                                setUrl((data && data.urls[0]) || rowData.url);
-                              })
-                              .catch(() => setUrl(rowData.url))
-                              .finally(() => {
-                                setLoading(false);
-                                setPatientImageshow(true);
-                              });
-                          } else {
-                            setUrl(rowData.url);
-                            setLoading(false);
-                            setPatientImageshow(true);
-                          }
-                        }
+                        openPopUp(rowData);
                       }}
                     >
                       <View
