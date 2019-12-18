@@ -535,6 +535,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       INCONSULTHOURS = 'INCONSULTHOURS',
     }
     let consultFlag;
+    let checkFlag = true;
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     let docConsultHrs: ConsultHours[];
     if (appointmentType == 'ONLINE') {
@@ -544,29 +545,31 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
     if (docConsultHrs && docConsultHrs.length > 0) {
       docConsultHrs.map((docConsultHr) => {
-        // if (consultFlag == CONSULTFLAG.OUTOFCONSULTHOURS) {
-        //get the slots of the day first
-        let st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-        const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
-        let consultStartTime = new Date(st);
-        const consultEndTime = new Date(ed);
-        const appointmentDateInfo = new Date(appointmentDate);
-        const currentDate = new Date();
-        let previousDate: Date = appointmentDate;
-        const currentBuffer = (appointmentDateInfo.getTime() - currentDate.getTime()) / (1000 * 60);
-        if (consultEndTime < consultStartTime) {
-          previousDate = addDays(previousDate, -1);
-          st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          consultStartTime = new Date(st);
+        if (checkFlag) {
+          //get the slots of the day first
+          let st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+          const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+          let consultStartTime = new Date(st);
+          const consultEndTime = new Date(ed);
+          const appointmentDateInfo = new Date(appointmentDate);
+          const currentDate = new Date();
+          let previousDate: Date = appointmentDate;
+          const currentBuffer =
+            (appointmentDateInfo.getTime() - currentDate.getTime()) / (1000 * 60);
+          if (consultEndTime < consultStartTime) {
+            previousDate = addDays(previousDate, -1);
+            st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+            consultStartTime = new Date(st);
+          }
+          if (currentBuffer < docConsultHr.consultBuffer) {
+            consultFlag = CONSULTFLAG.OUTOFBUFFERTIME;
+          } else if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
+            consultFlag = CONSULTFLAG.INCONSULTHOURS;
+            checkFlag = false;
+          } else {
+            consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
+          }
         }
-        if (currentBuffer < docConsultHr.consultBuffer) {
-          consultFlag = CONSULTFLAG.OUTOFBUFFERTIME;
-        } else if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
-          consultFlag = CONSULTFLAG.INCONSULTHOURS;
-        } else {
-          consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
-        }
-        // }
       });
     } else {
       consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;

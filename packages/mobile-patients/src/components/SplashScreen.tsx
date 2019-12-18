@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Linking } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
-import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
@@ -20,7 +19,6 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { signInError, signOut } = useAuth();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   useEffect(() => {
@@ -50,8 +48,59 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     async function fetchData() {
+      if (__DEV__) {
+        firebase.config().enableDeveloperMode();
+      }
+
+      firebase
+        .config()
+        .fetch(30 * 0) // 30 min
+        .then(() => {
+          return firebase.config().activateFetched();
+        })
+        .then(() => {
+          return firebase
+            .config()
+            .getValues([
+              'Android_mandatory',
+              'android_latest_version',
+              'ios_mandatory',
+              'ios_Latest_version',
+            ]);
+        })
+        .then((snapshot) => {
+          const myValye = snapshot;
+
+          for (const val in myValye) {
+            if (myValye.hasOwnProperty(val)) {
+              const element = myValye[val];
+              console.log('elementftech', element.val());
+            }
+          }
+        })
+        .catch((error) => console.log(`Error processing config: ${error}`));
+
+      // firebase
+      //   .config()
+      //   .getValues([
+      //     'Android_mandatory',
+      //     'android_latest_version',
+      //     'ios_mandatory',
+      //     'ios_Latest_version',
+      //   ])
+      //   .then((snapshot) => {
+      //     const myValye = snapshot;
+
+      //     for (const val in myValye) {
+      //       if (myValye.hasOwnProperty(val)) {
+      //         const element = myValye[val];
+      //         console.log('element', element.val());
+      //       }
+      //     }
+      //   })
+      //   .catch((error) => console.log(`Error processing config: ${error}`));
+
       firebase.analytics().setAnalyticsCollectionEnabled(true);
-      firebase.analytics().setCurrentScreen('SplashScreen', 'SplashScreen');
       const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');

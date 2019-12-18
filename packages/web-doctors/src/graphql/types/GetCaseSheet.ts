@@ -66,6 +66,7 @@ export interface GetCaseSheet_getCaseSheet_patientDetails {
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments {
   __typename: "AppointmentDocuments";
   documentPath: string | null;
+  prismFileId: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {

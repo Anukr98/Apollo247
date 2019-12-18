@@ -40,16 +40,13 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
-        },
-      },
+      border: '1px solid #00b38e',
+      borderRadius: 5,
+      padding: 16,
     },
     dialogContent: {
-      padding: 20,
-      minHeight: 400,
+      padding: 0,
+      minHeight: 300,
       position: 'relative',
       '& h6': {
         fontSize: 14,
@@ -77,6 +74,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontWeight: 500,
       marginBottom: 0,
+      padding: '30px 20px',
       '& button': {
         border: '1px solid #00b38e',
         padding: '5px 10px',
@@ -150,13 +148,12 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     popupHeadingCenter: {
-      padding: '20px 10px',
+      padding: 0,
       '& h6': {
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
-        padding: '0 25px',
         marginTop: 5,
       },
     },
@@ -226,6 +223,27 @@ const useStyles = makeStyles((theme: Theme) =>
       '& img': {
         marginRight: 8,
       },
+    },
+    popupHeading: {
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'left',
+      },
+    },
+    headingName: {
+      display: 'inline-block',
+      width: '90%',
+      wordBreak: 'break-word',
+      textAlign: 'center',
+    },
+    cross: {
+      position: 'absolute',
+      right: -10,
+      top: -9,
+      fontSize: 18,
+      color: '#02475b',
     },
   })
 );
@@ -389,19 +407,36 @@ export const FavouriteAdvice: React.FC = () => {
             <div>
               <div>
                 <div className={classes.dialogContent}>
-                  <Grid container spacing={2}>
-                    <Grid item lg={12} xs={12}>
-                      <h6>FAVOURITE ADVICE</h6>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          value={advice}
-                          onChange={(event: any) => {
-                            setAdvice(event.target.value);
-                          }}
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
+                  <div>
+                    <AphDialogTitle className={classes.popupHeading}>
+                      <span className={classes.headingName}>FAVOURITE ADVICE</span>
+                      <Button
+                        className={classes.cross}
+                        onClick={() => {
+                          setShowAddInputText(false);
+                        }}
+                      >
+                        <img src={require('images/ic_cross.svg')} alt="" />
+                      </Button>
+                    </AphDialogTitle>
+                    <div className={classes.numberTablets}>
+                      <AphTextField
+                        fullWidth
+                        placeholder="Type your favourite advice"
+                        className={classes.textFieldColor}
+                        value={advice}
+                        onChange={(event: any) => {
+                          setAdvice(event.target.value);
+                        }}
+                      />
+
+                      {/* <AphTextField
+                        fullWidth
+                        className={classes.textFieldColor}
+                        placeholder="What you enter here won't be shown to the patient.."                       
+                      /> */}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className={classes.dialogActions}>

@@ -136,11 +136,6 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
   const [currentIndex, setcurrentIndex] = useState<number>(0);
 
-  useEffect(() => {
-    firebase.analytics().setAnalyticsCollectionEnabled(true);
-    firebase.analytics().setCurrentScreen('Onboarding', 'Onboarding');
-  });
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainView}>

@@ -109,6 +109,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getPaymentMedicineOrders() {
+    return this.find({
+      where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
   getMedicineOrderWithId(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
