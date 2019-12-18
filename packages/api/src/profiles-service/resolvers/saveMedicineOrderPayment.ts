@@ -235,9 +235,10 @@ const SaveMedicineOrderPayment: Resolver<
     ''
   );
   const dummyUrl = 'http://dummy.restapiexample.com/api/v1/create';
-  const pharmaResp = await fetch(dummyUrl, {
-    method: 'POST',
-    body: JSON.stringify({ name: 'testName', salary: '12345', age: '23' }),
+  const dummyUrl2 = 'http://blue.phrdemo.com/ui/data/getauthtoken?mobile=8019677178';
+  const pharmaResp = await fetch(dummyUrl2, {
+    method: 'GET',
+    //body: JSON.stringify({ name: 'testName', salary: '12345', age: '23' }),
     //headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
   }).catch((error) => {
     console.log('pharma_payment_error', error);
