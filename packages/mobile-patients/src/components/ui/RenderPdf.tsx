@@ -6,7 +6,10 @@ import { Header } from './Header';
 import { theme } from '../../theme/theme';
 import { colors } from '../../theme/colors';
 import { DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
-import { CrossPopup } from './Icons';
+import { CrossPopup, Download } from './Icons';
+import RNFetchBlob from 'rn-fetch-blob';
+import { useUIElements } from '../UIElementsProvider';
+import { mimeType } from '../../helpers/mimeType';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,7 +24,52 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
   const uri = props.uri || props.navigation.getParam('uri');
   const title = props.title || props.navigation.getParam('title');
   const isPopup = props.isPopup || props.navigation.getParam('isPopup');
+  const setDisplayPdf = props.setDisplayPdf || props.navigation.getParam('setDisplayPdf');
   const { isIphoneX } = DeviceHelper();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+
+  const downloadPDF = () => {
+    let dirs = RNFetchBlob.fs.dirs;
+    console.log('avilable dir', dirs.DownloadDir + '/' + title, 'title', title);
+    const downloadPath =
+      Platform.OS === 'ios'
+        ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + title
+        : dirs.DownloadDir + '/' + title;
+    setLoading!(true);
+    RNFetchBlob.config({
+      fileCache: true,
+      path: downloadPath,
+      addAndroidDownloads: {
+        title: title,
+        mime: mimeType(downloadPath),
+        useDownloadManager: true,
+        notification: true,
+        description: 'File downloaded by download manager.',
+        path: downloadPath,
+      },
+    })
+      .fetch('GET', uri, {
+        //some headers ..
+      })
+      .then((res) => {
+        setLoading!(false);
+        showAphAlert!({
+          title: 'Alert!',
+          description: 'Downloaded : ' + title,
+          onPressOk: () => {
+            Platform.OS === 'ios'
+              ? RNFetchBlob.ios.previewDocument(res.path())
+              : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+            hideAphAlert!();
+            setDisplayPdf && setDisplayPdf();
+          },
+        });
+      })
+      .catch((err) => {
+        console.log('error ', err);
+        setLoading!(false);
+      });
+  };
 
   const renderHeader = () => {
     return (
@@ -36,6 +84,7 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
       />
     );
   };
+
   const PDFView = () => {
     return (
       <Pdf
@@ -60,6 +109,7 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
       />
     );
   };
+
   if (isPopup) {
     return (
       <View
@@ -82,23 +132,39 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
         >
           <View
             style={{
-              alignItems: 'flex-end',
+              flexDirection: 'row',
+              marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderRadius: 14,
             }}
           >
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => {
-                props.setDisplayPdf && props.setDisplayPdf();
-              }}
+              onPress={() => downloadPDF()}
               style={{
-                marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
                 backgroundColor: 'white',
                 height: 28,
                 width: 28,
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: 14,
-                marginRight: 0,
+              }}
+            >
+              <Download />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                setDisplayPdf && setDisplayPdf();
+              }}
+              style={{
+                backgroundColor: 'white',
+                height: 28,
+                width: 28,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 14,
               }}
             >
               <CrossPopup />

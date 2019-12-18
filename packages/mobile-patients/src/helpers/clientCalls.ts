@@ -7,6 +7,7 @@ import {
   AUTOMATED_QUESTIONS,
   END_APPOINTMENT_SESSION,
   GET_APPOINTMENT_DATA,
+  DOWNLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
@@ -25,6 +26,7 @@ import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '../graphql/types/getAppointmentData';
+import { downloadDocuments } from '../graphql/types/downloadDocuments';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -168,6 +170,33 @@ export const getAppointmentDataDetails = (client: ApolloClient<object>, appointm
       })
       .then((data: any) => {
         res({ data });
+      })
+      .catch((e: any) => {
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const getPrismUrls = (
+  client: ApolloClient<object>,
+  patientId: string,
+  fileIds: string[]
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<downloadDocuments>({
+        query: DOWNLOAD_DOCUMENT,
+        fetchPolicy: 'no-cache',
+        variables: {
+          downloadDocumentsInput: {
+            patientId: patientId,
+            fileIds: fileIds,
+          },
+        },
+      })
+      .then(({ data }) => {
+        res({ urls: data.downloadDocuments.downloadPaths });
       })
       .catch((e: any) => {
         const error = JSON.parse(JSON.stringify(e));

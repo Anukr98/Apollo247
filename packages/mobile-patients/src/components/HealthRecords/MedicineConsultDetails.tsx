@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log('a', data);
@@ -141,7 +141,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
     //   Alert.alert('There is no prism filed ');
     // } else {
     const blobUrls = blobURL && blobURL.split(',');
-    prismFile &&
+    if (prismFile) {
       client
         .query<downloadDocuments>({
           query: DOWNLOAD_DOCUMENT,
@@ -167,7 +167,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           console.log('Error occured', e);
         })
         .finally(() => {});
-    // }
+    } else if (blobUrls) {
+      setUrls(blobUrls);
+    }
   }, []);
 
   const addToCart = () => {
@@ -296,16 +298,19 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                               .pop()!
                               .split('=')
                               .pop() || 'Document';
+                          const downloadPath =
+                            Platform.OS === 'ios'
+                              ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
+                              : dirs.DownloadDir + '/' + fileName;
                           RNFetchBlob.config({
                             fileCache: true,
-                            path:
-                              Platform.OS === 'ios'
-                                ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
-                                : dirs.DownloadDir + '/' + fileName,
+                            path: downloadPath,
                             addAndroidDownloads: {
                               title: fileName,
                               useDownloadManager: true,
                               notification: true,
+                              path: downloadPath,
+                              mime: mimeType(downloadPath),
                               description: 'File downloaded by download manager.',
                             },
                           })
@@ -340,9 +345,11 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           <RenderPdf
             uri={pdfUri}
             title={
-              pdfUri.indexOf('fileName=') > -1
-                ? pdfUri.split('fileName=').pop() || 'Document'
-                : 'Document'
+              pdfUri
+                .split('/')
+                .pop()!
+                .split('=')
+                .pop() || 'Document'
             }
             isPopup={true}
             setDisplayPdf={() => {

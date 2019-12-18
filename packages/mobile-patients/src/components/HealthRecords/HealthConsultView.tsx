@@ -34,6 +34,7 @@ import {
 import RNFetchBlob from 'rn-fetch-blob';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { mimeType } from '../../helpers/mimeType';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -149,20 +150,20 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       let dirs = RNFetchBlob.fs.dirs;
 
       let fileName: string = item.blobName.substring(0, item.blobName.indexOf('.pdf')) + '.pdf';
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Prescription.pdf')
+          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
       setLoading(true);
       RNFetchBlob.config({
         fileCache: true,
-        path:
-          Platform.OS === 'ios'
-            ? (dirs.DocumentDir || dirs.MainBundleDir) +
-              '/' +
-              (fileName || 'Apollo_Prescription.pdf')
-            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
+        path: downloadPath,
         addAndroidDownloads: {
           title: fileName,
           useDownloadManager: true,
           notification: true,
-          mime: 'application/pdf',
+          path: downloadPath,
+          mime: mimeType(downloadPath),
           description: 'File downloaded by download manager.',
         },
       })
@@ -176,7 +177,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
           }
           Platform.OS === 'ios'
             ? RNFetchBlob.ios.previewDocument(res.path())
-            : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
         })
         .catch((err) => {
           console.log('error ', err);
@@ -233,7 +234,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
               style={[styles.cardContainerStyle]}
               onPress={() => {
                 CommonLogEvent('HEALTH_CONSULT_VIEW', 'On click card'),
-                  props.onClickCard ? props.onClickCard() : null;
+                  props.onClickCard && props.onClickCard();
               }}
             >
               <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
@@ -301,10 +302,10 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       <View>
                         {g(item, 'blobName') ? (
                           <TouchableOpacity
-                            onPress={() => (
+                            onPress={() => {
                               CommonLogEvent('HEALTH_CONSULT_VIEW', 'Download Prescription'),
-                              downloadPrescription()
-                            )}
+                                downloadPrescription();
+                            }}
                           >
                             <PrescriptionSkyBlue />
                           </TouchableOpacity>
@@ -327,7 +328,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       activeOpacity={1}
                       onPress={() => {
                         CommonLogEvent('HEALTH_CONSULT_VIEW', 'On follow up click'),
-                          props.onFollowUpClick ? props.onFollowUpClick(props.PastData) : null;
+                          props.onFollowUpClick && props.onFollowUpClick(props.PastData);
                       }}
                     >
                       <Text style={styles.yellowTextStyle}> BOOK FOLLOW-UP</Text>
