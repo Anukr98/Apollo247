@@ -9,6 +9,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_CASESHEET } from 'graphql/profiles';
+import { isEmpty, trim } from 'lodash';
 
 import {
   GetCaseSheet,
@@ -310,6 +311,13 @@ export const CasesheetView: React.FC = (props) => {
                   : ''
               }`}
             </span>
+            {prescription.medicineInstructions &&
+              !isEmpty(trim(prescription.medicineInstructions)) && (
+                <>
+                  <br />
+                  <span>{prescription.medicineInstructions}</span>
+                </>
+              )}
           </li>
         );
       }
