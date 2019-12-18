@@ -399,7 +399,7 @@ app.get('/processOrders', (req, res) => {
   azureServiceBus.receiveSubscriptionMessage(
     'orders',
     'supplier1',
-    { isPeekLock: false },
+    { isPeekLock: true },
     (subscriptionError, result) => {
       if (subscriptionError) {
         console.log('read error', subscriptionError);
@@ -569,17 +569,42 @@ app.get('/processOrders', (req, res) => {
                   }
                 )
                 .then((resp) => {
-                  console.log('pharma resp', resp);
+                  console.log('pharma resp', resp, resp.data.ordersResult);
+                  //const orderData = JSON.parse(resp.data);
+                  //console.log(orderData, 'order data');
+                  if (resp.data.ordersResult.Status == true) {
+                    const requestJSON = {
+                      query:
+                        'mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ' +
+                        queueDetails[1] +
+                        ' }){ message }}',
+                    };
+
+                    console.log(requestJSON, 'reqest json');
+
+                    axios
+                      .post(process.env.API_URL, requestJSON)
+                      .then((placedResponse) => {
+                        console.log(placedResponse, 'placed respose');
+                      })
+                      .catch((placedError) => {
+                        console.log(placedError, 'placed error');
+                      });
+                  }
+                  res.send({
+                    status: 'success',
+                    reason: '',
+                    code: responseOrderId + ', ' + responseAmount,
+                  });
                 })
                 .catch((pharmaerror) => {
                   console.log('pharma error', pharmaerror);
+                  res.send({
+                    status: 'Failed',
+                    reason: '',
+                    code: responseOrderId + ', ' + responseAmount,
+                  });
                 });
-
-              res.send({
-                status: 'success',
-                reason: '',
-                code: responseOrderId + ', ' + responseAmount,
-              });
             }
           })
           .catch((error) => {
