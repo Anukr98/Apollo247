@@ -105,7 +105,7 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 66
+        versionCode 18
         versionName "1.0"
         multiDexEnabled true
         ndk {
@@ -169,8 +169,8 @@ android {
 }
 
 dependencies {
-    implementation project(':bugsnag-react-native')
     implementation project(':rn-fetch-blob')
+    implementation project(':bugsnag-react-native')
     implementation project(':react-native-pdf')
     implementation project(':react-native-gesture-handler')
     implementation project(':react-native-set-soft-input-mode')

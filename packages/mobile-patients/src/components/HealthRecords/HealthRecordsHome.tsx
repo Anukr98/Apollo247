@@ -149,15 +149,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   // const [loading, setLoading && setLoading] = useState<boolean>(true);
   const { loading, setLoading } = useUIElements();
-
-  const [pastarrya, setPastarrya] = useState<[]>([]);
+  const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
+  const [medicalRecordsLoader, setMedicalRecordsLoader] = useState<boolean>(false);
+  const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
-  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
-  const [isfollowcount, setIsfollowucount] = useState<number>(0);
-  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   useEffect(() => {
@@ -166,6 +164,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+  useEffect(() => {
+    if (prismdataLoader || medicalRecordsLoader || pastDataLoader) {
+      !loading && setLoading!(true);
+    } else {
+      loading && setLoading!(false);
+    }
+  }, [prismdataLoader, medicalRecordsLoader, pastDataLoader]);
 
   const fetchPastData = (filters: filterDataType[] = []) => {
     const filterArray = [];
@@ -175,7 +180,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
 
-    setLoading && setLoading(true);
+    setPastDataLoader(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -189,16 +194,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .then((_data) => {
         console.log('data', _data);
-        const formatDate = (date: string) =>
-          moment(date)
-            .clone()
-            .format('YYYY-MM-DD');
+        // const formatDate = (date: string) =>
+        //   moment(date)
+        //     .clone()
+        //     .format('YYYY-MM-DD');
 
         const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
         const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
         const consultsAndMedOrders: { [key: string]: any } = {};
 
-        const ok = consults.forEach((c) => {
+        consults.forEach((c) => {
           consultsAndMedOrders[c!.bookingDate] = {
             ...consultsAndMedOrders[c!.bookingDate],
             ...c,
@@ -222,77 +227,70 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               moment(a.bookingDate || a.quoteDateTime)
                 .toDate()
                 .getTime()
+          )
+          .filter(
+            (i) =>
+              (!i.patientId && (i.prescriptionImageUrl || i.prismPrescriptionFileId)) || i.patientId
           );
-
-        // console.log('sort', array);
+        console.log('sort', array);
         setarrayValues(array);
         //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
-
-        setLoading && setLoading(false);
       })
       .catch((e) => {
-        setLoading && setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
         //Alert.alert('Error', error);
-      });
+      })
+      .finally(() => setPastDataLoader(false));
   };
 
-  const fetchData = useCallback(
-    (loading: boolean = false) => {
-      loading && setLoading && setLoading(true);
-      client
-        .query<getPatientMedicalRecords>({
-          query: GET_MEDICAL_RECORD,
-          variables: {
-            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          console.log('data', data);
-          loading && setLoading && setLoading(false);
-          const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-          setmedicalRecords(records);
-        })
-        .catch((error) => {
-          loading && setLoading && setLoading(false);
-          console.log('Error occured', { error });
-          //Alert.alert('Error', error.message);
-        });
-    },
-    [currentPatient]
-  );
+  const fetchData = useCallback(() => {
+    setMedicalRecordsLoader(true);
+    client
+      .query<getPatientMedicalRecords>({
+        query: GET_MEDICAL_RECORD,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        console.log('data', data);
+        const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
+        setmedicalRecords(records);
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+        //Alert.alert('Error', error.message);
+      })
+      .finally(() => setMedicalRecordsLoader(false));
+  }, [currentPatient]);
 
-  const fetchTestData = useCallback(
-    (loading: boolean = false) => {
-      loading && setLoading && setLoading(true);
-      client
-        .query<getPatientPrismMedicalRecords>({
-          query: GET_MEDICAL_PRISM_RECORD,
-          variables: {
-            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          console.log('data', data);
-          loading && setLoading && setLoading(false);
-          const labTestsData = g(data, 'getPatientPrismMedicalRecords', 'labTests');
-          const healthChecksData = g(data, 'getPatientPrismMedicalRecords', 'healthChecks');
-          const hospitalizationsData = g(data, 'getPatientPrismMedicalRecords', 'hospitalizations');
-          setlabTests(labTestsData);
-          sethealthChecks(healthChecksData);
-          sethospitalizations(hospitalizationsData);
-        })
-        .catch((error) => {
-          loading && setLoading && setLoading(false);
-          console.log('Error occured', { error });
-          //Alert.alert('Error', error.message);
-        });
-    },
-    [currentPatient]
-  );
+  const fetchTestData = useCallback(() => {
+    setPrismdataLoader(true);
+    client
+      .query<getPatientPrismMedicalRecords>({
+        query: GET_MEDICAL_PRISM_RECORD,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        console.log('data', data);
+        const labTestsData = g(data, 'getPatientPrismMedicalRecords', 'labTests');
+        const healthChecksData = g(data, 'getPatientPrismMedicalRecords', 'healthChecks');
+        const hospitalizationsData = g(data, 'getPatientPrismMedicalRecords', 'hospitalizations');
+        setlabTests(labTestsData);
+        sethealthChecks(healthChecksData);
+        sethospitalizations(hospitalizationsData);
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+        //Alert.alert('Error', error.message);
+      })
+      .finally(() => setPrismdataLoader(false));
+  }, [currentPatient]);
 
   useEffect(() => {
     fetchPastData();
@@ -320,7 +318,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        const newRecords = medicalRecords!.filter((record: any) => record!.id != MedicaId);
+        const newRecords = medicalRecords!.filter((record: any) => record.id != MedicaId);
         setmedicalRecords(newRecords);
       })
       .catch((e) => {
@@ -386,7 +384,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
                 <View style={styles.nameTextContainerStyle}>
                   <Text style={styles.nameTextStyle} numberOfLines={1}>
-                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                    {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
                 </View>
@@ -396,7 +394,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
             }
             selectedProfile={profile}
-            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            setDisplayAddProfile={() => {}}
             unsetloaderDisplay={true}
           ></ProfileList>
           {/* <MaterialMenu
@@ -498,10 +496,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <View style={styles.filterViewStyle}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => (
-            CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record'),
-            props.navigation.navigate(AppRoutes.AddRecord)
-          )}
+          onPress={() => {
+            CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
+            props.navigation.navigate(AppRoutes.AddRecord);
+          }}
         >
           <AddFileIcon />
         </TouchableOpacity>
@@ -512,8 +510,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
-  const renderConsult = (item: any, index: number) => {
-    let dataval =
+  const doctorType = (item: any) => {
+    return (
       item.caseSheet &&
       item.caseSheet.find((obj: any) => {
         return (
@@ -521,13 +519,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           obj.doctorType === 'APOLLO' ||
           obj.doctorType === 'PAYROLL'
         );
-      });
+      })
+    );
+  };
 
+  const renderConsult = (item: any, index: number) => {
     return (
       <HealthConsultView
         key={index}
         onPressOrder={() => {
-          CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup'), setdisplayOrderPopup(true);
+          CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup');
+          setdisplayOrderPopup(true);
         }}
         onClickCard={() => {
           props.navigation.navigate(AppRoutes.ConsultDetails, {
@@ -536,7 +538,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             FollowUp: item.isFollowUp,
             appointmentType: item.appointmentType,
             DisplayId: item.displayId,
-            BlobName: g(dataval, 'blobName'),
+            BlobName: g(doctorType(item), 'blobName'),
           });
         }}
         PastData={item}
@@ -598,15 +600,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const onFollowUpClick = (item: any) => {
-    let dataval =
-      item.caseSheet &&
-      item.caseSheet.find((obj: any) => {
-        return (
-          obj.doctorType === 'STAR_APOLLO' ||
-          obj.doctorType === 'APOLLO' ||
-          obj.doctorType === 'PAYROLL'
-        );
-      });
+    let dataval = doctorType(item);
 
     client
       .query<checkIfFollowUpBooked>({
@@ -618,9 +612,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .then(({ data }) => {
         console.log('CHECK_IF_FOLLOWUP_BOOKED', data);
-
-        setIsfollowucount(data.checkIfFollowUpBooked);
-        setdisplayoverlay(true);
         props.navigation.push(AppRoutes.ConsultDetails, {
           CaseSheet: item.id,
           DoctorInfo: item.doctorInfo,
@@ -642,18 +633,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTopView()}
-          {selectedTab === tabs[0].title ? (
-            renderConsults()
-          ) : (
-            <MedicalRecords
-              navigation={props.navigation}
-              MedicalRecordData={medicalRecords}
-              renderDeleteMedicalOrder={renderDeleteMedicalOrder}
-              labTestsData={labTests}
-              healthChecksData={healthChecks}
-              hospitalizationsData={hospitalizations}
-            />
-          )}
+          {!loading ? (
+            selectedTab === tabs[0].title ? (
+              renderConsults()
+            ) : (
+              <MedicalRecords
+                navigation={props.navigation}
+                MedicalRecordData={medicalRecords}
+                renderDeleteMedicalOrder={renderDeleteMedicalOrder}
+                labTestsData={labTests}
+                healthChecksData={healthChecks}
+                hospitalizationsData={hospitalizations}
+              />
+            )
+          ) : null}
         </ScrollView>
       </SafeAreaView>
       {displayFilter && (
@@ -682,14 +675,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           getData={(data: (PickerImage | PickerImage[])[]) => {}}
         />
       )}
-      {/* {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )} */}
     </View>
   );
 };
