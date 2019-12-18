@@ -17,7 +17,6 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   DeviceHelper,
   CommonLogEvent,
-  CommonScreenLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -231,8 +230,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       console.log('No current patients available', allCurrentPatients);
       getPatientApiCall();
     }
-
-    analytics.setAnalyticsCollectionEnabled(true);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
