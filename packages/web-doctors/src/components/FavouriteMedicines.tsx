@@ -583,10 +583,9 @@ interface errorObject {
 
 export const FavouriteMedicines: React.FC = () => {
   const classes = useStyles();
-  const {
-    favouriteMedicines: selectedMedicinesArr,
-    setFavouriteMedicines: setSelectedMedicinesArr,
-  } = useContext(CaseSheetContext);
+  const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
