@@ -367,6 +367,14 @@ export const NeedHelp = [
       'Feedback on Medicine Deliver',
     ],
   },
+  {
+    category: 'Test',
+    options: [
+      'Payment Issues in online test payments',
+      'Orders cancelled without any information',
+      'Order Cancelled, No Refund',
+    ],
+  },
 ];
 
 type SpecialitiesType = {
