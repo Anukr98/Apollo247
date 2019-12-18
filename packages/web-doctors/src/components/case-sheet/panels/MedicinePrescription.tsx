@@ -685,6 +685,27 @@ export const MedicinePrescription: React.FC = () => {
   const updateFavMedicine = (idx: any) => {
     setSelectedValue(idx.medicineName);
     setFavMedicineName(idx.medicineName);
+    setTabletsCount(idx.medicineDosage);
+    setMedicineUnit(idx.medicineUnit);
+    setConsumptionDuration(idx.medicineConsumptionDurationInDays);
+    setMedicineInstruction(idx.medicineInstructions);
+    toBeTakenSlots.map((slot: SlotsObject) => {
+      idx.medicineToBeTaken.map((selectedSlot: any) => {
+        const selectedValue = selectedSlot.replace('_', '');
+        if (selectedValue.toLowerCase() === slot.id) {
+          slot.selected = true;
+        }
+        return slot;
+      });
+    });
+    daySlots.map((slot: SlotsObject) => {
+      idx.medicineTimings.map((selectedSlot: any) => {
+        if (selectedSlot.toLowerCase() === slot.id) {
+          slot.selected = true;
+        }
+      });
+      return slot;
+    });
     setShowDosage(true);
   };
   useEffect(() => {
@@ -972,6 +993,7 @@ export const MedicinePrescription: React.FC = () => {
               medicine.medicineTimings.length > 0
                 ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
                 : medicine.medicineDosage;
+
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
@@ -1063,8 +1085,6 @@ export const MedicinePrescription: React.FC = () => {
                       classes={{ root: classes.updateSymptom }}
                       onClick={(id) => {
                         setIsEditFavMedicine(true);
-                        //  setSelectedMedicinesArr(favMedicine);
-
                         updateFavMedicine(favMedicine);
                       }}
                     >
