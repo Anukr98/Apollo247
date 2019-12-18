@@ -275,6 +275,7 @@ const SaveMedicineOrderPayment: Resolver<
     textRes,
     ''
   );
+  errorMessage = textRes;
 
   // const orderResp: PharmaResponse = JSON.parse(textRes);
   // console.log(orderResp, 'respp', orderResp.ordersResult.Message);
