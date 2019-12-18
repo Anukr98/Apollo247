@@ -2,12 +2,11 @@ import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Paper, Popover, Typography, FormControlLabel, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
-import { MedicineCartItem } from 'components/MedicinesCartProvider';
+import { MedicineCartItem, useShoppingCart } from 'components/MedicinesCartProvider';
 import _uniqueId from 'lodash/uniqueId';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import _unescape from 'lodash/unescape';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
 import axios from 'axios';
 // import { AphCheckbox } from 'components/AphCheckbox';
 
@@ -314,9 +313,9 @@ interface MedicineStripCardProps {
 }
 
 export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const medicineRef = useRef(null);
-  const { addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { updateCartItem, removeCartItem } = useShoppingCart();
 
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [selectedPackedQty, setSelectedPackedQty] = React.useState<number[]>([]);
@@ -327,6 +326,11 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
   const [popoverItemName, setpopoverItemName] = React.useState<string>('');
 
   const { medicines } = props;
+
+  const apiDetails = {
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+  };
 
   const medicinesMarkup = () => {
     return medicines.map((medicineDetails, index) => {
@@ -362,9 +366,9 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                   src={
                     isPrescriptionRequired
                       ? require('images/ic_tablets_rx.svg')
-                      : require('images/ic_tablets.svg')
+                      : `${apiDetails.imageUrl}${medicineImage}`
                   }
-                  alt="Medicine Type"
+                  alt=""
                   title={isPrescriptionRequired ? 'Prescription required' : ''}
                 />
               </div>
@@ -422,22 +426,23 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                       ...previousValues,
                       ...existingValues,
                     ]);
-                    updateCartItem({
-                      description: medicineDescription,
-                      id: medicineId,
-                      image: medicineImage,
-                      is_in_stock: isInStock,
-                      is_prescription_required: medicineDetails.is_prescription_required,
-                      name: medicineName,
-                      price: parseFloat(medicinePrice),
-                      sku: medicineSku,
-                      small_image: medicineSmallImage,
-                      status: status,
-                      thumbnail: thumbnail,
-                      type_id: typeId,
-                      quantity: selectedPackedQty[index],
-                      mou: mou,
-                    });
+                    updateCartItem &&
+                      updateCartItem({
+                        description: medicineDescription,
+                        id: medicineId,
+                        image: medicineImage,
+                        is_in_stock: isInStock,
+                        is_prescription_required: medicineDetails.is_prescription_required,
+                        name: medicineName,
+                        price: parseFloat(medicinePrice),
+                        sku: medicineSku,
+                        small_image: medicineSmallImage,
+                        status: status,
+                        thumbnail: thumbnail,
+                        type_id: typeId,
+                        quantity: selectedPackedQty[index],
+                        mou: mou,
+                      });
                   }}
                   key={_uniqueId('dropdown_')}
                 >
@@ -460,7 +465,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                   {medicineQty > 0 ? (
                     <AphButton
                       onClick={(e) => {
-                        removeCartItem(medicineId);
+                        removeCartItem && removeCartItem(medicineId);
                       }}
                     >
                       <img
