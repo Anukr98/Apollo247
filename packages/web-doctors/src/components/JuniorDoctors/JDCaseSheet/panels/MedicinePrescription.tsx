@@ -723,7 +723,9 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       const dosageCount =
         medicine.medicineTimings.length > 0
-          ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
+          ? parseFloat(medicine.medicineDosage) *
+            medicine.medicineTimings.length *
+            medicine.medicineToBeTaken.length
           : medicine.medicineDosage;
       return (
         <div key={index} className={classes.medicineBox}>

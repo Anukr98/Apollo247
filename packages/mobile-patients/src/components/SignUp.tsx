@@ -41,10 +41,7 @@ import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalT
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 

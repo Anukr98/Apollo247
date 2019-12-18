@@ -31,7 +31,6 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   DeviceHelper,
-  CommonScreenLog,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -399,9 +398,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
     // requestToJrDoctor();
-    analytics.setAnalyticsCollectionEnabled(true);
-    CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
-
     // updateSessionAPI();
   }, []);
 
@@ -2616,14 +2612,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress={() => {
                     console.log('pdf', rowData.url);
                     // setShowWeb(true);
-                    setPatientImageshow(true);
-                    setUrl(rowData.url);
+                    // setPatientImageshow(true);
+                    // setUrl(rowData.url);
                     // if ((Platform.OS = 'android')) {
                     //   setShowWeb(true);
                     //   setUrl(rowData.url);
-                    //   // Linking.openURL(rowData.url).catch((err) =>
-                    //   //   console.error('An error occurred', err)
-                    //   // );
+                       Linking.openURL(rowData.url).catch((err) =>
+                         console.error('An error occurred', err)
+                       );
                     // } else {
                     //   setShowWeb(true);
                     //   setUrl(rowData.url);
@@ -3280,14 +3276,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       onPress={() => {
                         console.log('pdf', rowData.url);
 
-                        if ((Platform.OS = 'android')) {
+                        // if ((Platform.OS = 'android')) {
                           Linking.openURL(rowData.url).catch((err) =>
                             console.error('An error occurred', err)
                           );
-                        } else {
-                          setShowWeb(true);
-                          setUrl(rowData.url);
-                        }
+                        // } else {
+                        //   setShowWeb(true);
+                        //   setUrl(rowData.url);
+                        // }
                       }}
                     >
                       <View
