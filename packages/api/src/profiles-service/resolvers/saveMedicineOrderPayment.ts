@@ -234,30 +234,41 @@ const SaveMedicineOrderPayment: Resolver<
     JSON.stringify(medicineOrderPharma),
     ''
   );
-  const pharmaResp = await fetch(placeOrderUrl, {
-    method: 'POST',
-    body: JSON.stringify(medicineOrderPharma),
-    headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+  const dummyUrl = 'http://dummy.restapiexample.com/api/v1/create';
+  const dummyUrl2 = 'http://blue.phrdemo.com/ui/data/getauthtoken?mobile=8019677178';
+  const pharmaResp = await fetch(dummyUrl2, {
+    method: 'GET',
+    //body: JSON.stringify({ name: 'testName', salary: '12345', age: '23' }),
+    //headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
   }).catch((error) => {
     console.log('pharma_payment_error', error);
     throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_PAYMENT_ERROR);
   });
 
+  // const pharmaResp = await fetch(placeOrderUrl, {
+  //   method: 'POST',
+  //   body: JSON.stringify(medicineOrderPharma),
+  //   headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+  // }).catch((error) => {
+  //   console.log('pharma_payment_error', error);
+  //   throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_PAYMENT_ERROR);
+  // });
+
   console.log('pharmaResp===>', pharmaResp);
 
-  if (pharmaResp.status == 400 || pharmaResp.status == 404) {
-    log(
-      'profileServiceLogger',
-      'API_CALL_RESPONSE',
-      'SaveMedicineOrderPayment()->API_CALL_RESPONSE',
-      JSON.stringify(pharmaResp),
-      ''
-    );
-    throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
-  }
+  // if (pharmaResp.status == 400 || pharmaResp.status == 404) {
+  //   log(
+  //     'profileServiceLogger',
+  //     'API_CALL_RESPONSE',
+  //     'SaveMedicineOrderPayment()->API_CALL_RESPONSE',
+  //     JSON.stringify(pharmaResp),
+  //     ''
+  //   );
+  //   throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
+  // }
 
-  console.log(pharmaResp, 'pharmaResp');
   const textRes = await pharmaResp.text();
+  console.log('pharmaRespText', pharmaResp);
   log(
     'profileServiceLogger',
     'API_CALL_RESPONSE',
@@ -265,33 +276,34 @@ const SaveMedicineOrderPayment: Resolver<
     textRes,
     ''
   );
+  errorMessage = textRes;
 
-  const orderResp: PharmaResponse = JSON.parse(textRes);
-  console.log(orderResp, 'respp', orderResp.ordersResult.Message);
-  if (orderResp.ordersResult.Status === false) {
-    errorCode = -1;
-    errorMessage = orderResp.ordersResult.Message;
-    paymentOrderId = savePaymentDetails.id;
-    orderStatus = MEDICINE_ORDER_STATUS.ORDER_FAILED;
-  } else {
-    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-      orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
-      medicineOrders: orderDetails,
-      statusDate: new Date(),
-      statusMessage: orderResp.ordersResult.Message,
-    };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-    await medicineOrdersRepo.updateMedicineOrderDetails(
-      orderDetails.id,
-      orderDetails.orderAutoId,
-      new Date(),
-      MEDICINE_ORDER_STATUS.ORDER_PLACED
-    );
-    errorCode = 0;
-    errorMessage = orderResp.ordersResult.Message;
-    paymentOrderId = savePaymentDetails.id;
-    orderStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
-  }
+  // const orderResp: PharmaResponse = JSON.parse(textRes);
+  // console.log(orderResp, 'respp', orderResp.ordersResult.Message);
+  // if (orderResp.ordersResult.Status === false) {
+  //   errorCode = -1;
+  //   errorMessage = orderResp.ordersResult.Message;
+  //   paymentOrderId = savePaymentDetails.id;
+  //   orderStatus = MEDICINE_ORDER_STATUS.ORDER_FAILED;
+  // } else {
+  //   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+  //     orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+  //     medicineOrders: orderDetails,
+  //     statusDate: new Date(),
+  //     statusMessage: orderResp.ordersResult.Message,
+  //   };
+  //   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+  //   await medicineOrdersRepo.updateMedicineOrderDetails(
+  //     orderDetails.id,
+  //     orderDetails.orderAutoId,
+  //     new Date(),
+  //     MEDICINE_ORDER_STATUS.ORDER_PLACED
+  //   );
+  //   errorCode = 0;
+  //   errorMessage = orderResp.ordersResult.Message;
+  //   paymentOrderId = savePaymentDetails.id;
+  //   orderStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
+  // }
 
   return {
     errorCode,
