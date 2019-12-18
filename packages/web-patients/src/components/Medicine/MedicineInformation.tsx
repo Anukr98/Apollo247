@@ -249,7 +249,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
-  const { addCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
 
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprdsubt_api.php`,
@@ -310,7 +310,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   useEffect(() => {
-    fetchSubstitutes();
+    if (!substitutes) {
+      fetchSubstitutes();
+    }
   }, [substitutes]);
 
   const options = Array.from(Array(20), (_, x) => x);
@@ -425,7 +427,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   mou: data.mou,
                   quantity: medicineQty,
                 };
-                addCartItem && addCartItem(cartItem);
+                const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                if (index >= 0) {
+                  updateCartItem && updateCartItem(cartItem);
+                } else {
+                  addCartItem && addCartItem(cartItem);
+                }
                 setIsAddCartPopoverOpen(true);
               }}
             >

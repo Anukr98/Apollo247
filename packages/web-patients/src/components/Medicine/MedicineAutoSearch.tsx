@@ -173,40 +173,38 @@ export const MedicineAutoSearch: React.FC = (props) => {
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>
-      {(searchMedicines && searchMedicines.length > 0) ||
-        (loading && (
-          <Paper className={classes.autoSearchPopover}>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'45vh'}>
-              {loading && (
-                <div className={classes.progressLoader}>
-                  <CircularProgress size={30} />
-                </div>
-              )}
-              {searchMedicines && searchMedicines.length > 0 && (
-                <div className={classes.searchList}>
-                  <ul>
-                    {searchMedicines.map((medicine) => (
-                      <li>
-                        <Link to={clientRoutes.medicineDetails(medicine.sku)}>
-                          <div className={classes.medicineImg}>
-                            {medicine.is_prescription_required ? (
-                              <img src={require('images/ic_tablets_rx.svg')} alt="" />
-                            ) : (
-                              <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
-                            )}
-                          </div>
-                          <div className={classes.medicineInfo}>
-                            <div className={classes.medicineName}>{medicine.name}</div>
-                            {medicine.is_in_stock ? (
-                              <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
-                            ) : (
-                              <div className={classes.noStock}>Out Of Stock</div>
-                            )}
-                          </div>
-                        </Link>
-                      </li>
-                    ))}
-                    {/* <li className={classes.itemSelected}>
+      <Paper className={classes.autoSearchPopover}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'45vh'}>
+          {loading && (
+            <div className={classes.progressLoader}>
+              <CircularProgress size={30} />
+            </div>
+          )}
+          {searchMedicines && searchMedicines.length > 0 && (
+            <div className={classes.searchList}>
+              <ul>
+                {searchMedicines.map((medicine) => (
+                  <li>
+                    <Link to={clientRoutes.medicineDetails(medicine.sku)}>
+                      <div className={classes.medicineImg}>
+                        {medicine.is_prescription_required ? (
+                          <img src={require('images/ic_tablets_rx.svg')} alt="" />
+                        ) : (
+                          <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                        )}
+                      </div>
+                      <div className={classes.medicineInfo}>
+                        <div className={classes.medicineName}>{medicine.name}</div>
+                        {medicine.is_in_stock ? (
+                          <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
+                        ) : (
+                          <div className={classes.noStock}>Out Of Stock</div>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+                {/* <li className={classes.itemSelected}>
                   <Link to={clientRoutes.medicineDetails()}>
                     <div className={classes.medicineImg}>
                       <img src={require("images/img_product.png")} alt="" />
@@ -244,12 +242,11 @@ export const MedicineAutoSearch: React.FC = (props) => {
                   </Link>
                 </li>
                */}
-                  </ul>
-                </div>
-              )}
-            </Scrollbars>
-          </Paper>
-        ))}
+              </ul>
+            </div>
+          )}
+        </Scrollbars>
+      </Paper>
     </div>
   );
 };

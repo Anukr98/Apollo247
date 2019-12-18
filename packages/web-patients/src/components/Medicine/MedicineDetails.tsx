@@ -354,82 +354,82 @@ export const MedicineDetails: React.FC = (props) => {
 
   return (
     <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
-      <div className={classes.container}>
-        <div className={classes.medicineDetailsPage}>
-          <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.medicines())}>
-              <div className={classes.backArrow}>
-                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
-            </a>
-            Product Detail
+      <MedicinesCartProvider>
+        <div className={classes.headerSticky}>
+          <div className={classes.container}>
+            <Header />
           </div>
-          {medicineDetails && medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
-            <div className={classes.medicineDetailsGroup}>
-              <div className={classes.searchSection}>
-                <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
-                  <div className={classes.customScroll}>
-                    <div className={classes.productInformation}>
-                      <MedicineImageGallery data={medicineDetails} />
-                      <div className={classes.productDetails}>
-                        <h2>{medicineDetails.name}</h2>
-                        <div className={classes.textInfo}>
-                          <label>Manufacturer</label>
-                          {medicineDetails.manufacturer}
-                        </div>
-                        <div className={classes.textInfo}>
-                          <label>Composition</label>
-                          {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
-                        </div>
-                        <div className={classes.textInfo}>
-                          <label>Pack Of</label>
-                          {`${medicineDetails.mou} ${medicinePharmacyDetails[0].Doseform}`}
-                        </div>
-                        {medicineDetails.is_prescription_required !== '0' && (
-                          <div className={classes.prescriptionBox}>
-                            <span>This medicine requires doctor’s prescription</span>
-                            <span className={classes.preImg}>
-                              <img src={require('images/ic_tablets.svg')} alt="" />
-                            </span>
+        </div>
+        <div className={classes.container}>
+          <div className={classes.medicineDetailsPage}>
+            <div className={classes.breadcrumbs}>
+              <a onClick={() => (window.location.href = clientRoutes.medicines())}>
+                <div className={classes.backArrow}>
+                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </a>
+              Product Detail
+            </div>
+            {medicineDetails && medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+              <div className={classes.medicineDetailsGroup}>
+                <div className={classes.searchSection}>
+                  <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+                    <div className={classes.customScroll}>
+                      <div className={classes.productInformation}>
+                        <MedicineImageGallery data={medicineDetails} />
+                        <div className={classes.productDetails}>
+                          <h2>{medicineDetails.name}</h2>
+                          <div className={classes.textInfo}>
+                            <label>Manufacturer</label>
+                            {medicineDetails.manufacturer}
                           </div>
-                        )}
-                        {medicinePharmacyDetails[0].Overview &&
-                          medicinePharmacyDetails[0].Overview.length > 0 && (
-                            <>
-                              <Tabs
-                                value={tabValue}
-                                variant="fullWidth"
-                                classes={{
-                                  root: classes.tabsRoot,
-                                  indicator: classes.tabsIndicator,
-                                }}
-                                onChange={(e, newValue) => {
-                                  setTabValue(newValue);
-                                }}
-                              >
-                                {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                              </Tabs>
-                              {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                            </>
+                          <div className={classes.textInfo}>
+                            <label>Composition</label>
+                            {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
+                          </div>
+                          <div className={classes.textInfo}>
+                            <label>Pack Of</label>
+                            {`${medicineDetails.mou} ${medicinePharmacyDetails[0].Doseform}`}
+                          </div>
+                          {medicineDetails.is_prescription_required !== '0' && (
+                            <div className={classes.prescriptionBox}>
+                              <span>This medicine requires doctor’s prescription</span>
+                              <span className={classes.preImg}>
+                                <img src={require('images/ic_tablets.svg')} alt="" />
+                              </span>
+                            </div>
                           )}
+                          {medicinePharmacyDetails[0].Overview &&
+                            medicinePharmacyDetails[0].Overview.length > 0 && (
+                              <>
+                                <Tabs
+                                  value={tabValue}
+                                  variant="fullWidth"
+                                  classes={{
+                                    root: classes.tabsRoot,
+                                    indicator: classes.tabsIndicator,
+                                  }}
+                                  onChange={(e, newValue) => {
+                                    setTabValue(newValue);
+                                  }}
+                                >
+                                  {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                </Tabs>
+                                {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                              </>
+                            )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Scrollbars>
-              </div>
-              <MedicinesCartProvider>
+                  </Scrollbars>
+                </div>
                 <MedicineInformation data={medicineDetails} />
-              </MedicinesCartProvider>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </MedicinesCartProvider>
     </div>
   );
 };

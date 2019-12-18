@@ -3,6 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Header } from 'components/Header';
 import { MedicineCart } from 'components/Cart/MedicineCart';
+import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,19 +38,21 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicineCartLanding: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
-      <div className={classes.headerSticky}>
+      <MedicinesCartProvider>
+        <div className={classes.headerSticky}>
+          <div className={classes.container}>
+            <Header />
+          </div>
+        </div>
         <div className={classes.container}>
-          <Header />
+          <div className={classes.cartPage}>
+            <MedicineCart />
+          </div>
         </div>
-      </div>
-      <div className={classes.container}>
-        <div className={classes.cartPage}>
-          <MedicineCart />
-        </div>
-      </div>
+      </MedicinesCartProvider>
     </div>
   );
 };

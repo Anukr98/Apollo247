@@ -23,6 +23,7 @@ import { MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
+import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -376,7 +377,7 @@ export interface PrescriptionFormat {
 }
 
 export const MedicineCart: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const defPresObject = {
     name: '',
@@ -408,7 +409,7 @@ export const MedicineCart: React.FC = (props) => {
     }
   }, [prescriptionUploaded]);
 
-  const { cartTotal, cartItems } = useShoppingCart();
+  const { cartItems, cartTotal } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const { authToken } = useAuth();
 
@@ -464,7 +465,7 @@ export const MedicineCart: React.FC = (props) => {
             </div>
             {cartItems.length > 0 ? (
               <>
-                <MedicineStripCard medicines={cartItems} />
+                <MedicineListingCard />
                 {uploadPrescriptionRequired >= 0 ? (
                   <>
                     <div className={classes.sectionHeader}>Upload Prescription</div>
@@ -532,17 +533,26 @@ export const MedicineCart: React.FC = (props) => {
               <div className={classes.deliveryAddress}>
                 <Tabs
                   value={tabValue}
-                  classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                  classes={{
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
+                  }}
                   onChange={(e, newValue) => {
                     setTabValue(newValue);
                   }}
                 >
                   <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
                     label="Home Delivery"
                   />
                   <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
                     label="Store Pick Up"
                   />
                 </Tabs>
