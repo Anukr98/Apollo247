@@ -868,6 +868,7 @@ export const MedicinePrescription: React.FC = () => {
         setSelectedMedicines(x);
       }
       setIsDialogOpen(false);
+      setIsEditFavMedicine(false);
       setIsUpdate(false);
       setShowDosage(false);
       const slots = toBeTakenSlots.map((slot: SlotsObject) => {
@@ -1255,7 +1256,6 @@ export const MedicinePrescription: React.FC = () => {
                     className={classes.updateBtn}
                     onClick={() => {
                       addUpdateMedicines();
-                      setIsEditFavMedicine(false);
                     }}
                   >
                     Add Medicine
