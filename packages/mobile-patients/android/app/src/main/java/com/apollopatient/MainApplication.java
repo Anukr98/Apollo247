@@ -4,9 +4,9 @@ import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.react.ReactApplication;
+import com.bugsnag.BugsnagReactNative;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import org.wonday.pdf.RCTPdfView;
-import com.bugsnag.BugsnagReactNative;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import io.fabric.sdk.android.Fabric;
 import io.github.mr03web.softinputmode.SoftInputModePackage;
@@ -46,9 +46,9 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            BugsnagReactNative.getPackage(),
             new RNFetchBlobPackage(),
             new RCTPdfView(),
-            BugsnagReactNative.getPackage(),
             new RNGestureHandlerPackage(),
             new SoftInputModePackage(),
             new PickerPackage(),

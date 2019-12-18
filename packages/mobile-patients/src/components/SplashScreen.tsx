@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Linking } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
-import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
@@ -20,7 +19,6 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { signInError, signOut } = useAuth();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   useEffect(() => {
