@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -113,8 +113,14 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SearchByMedicine: React.FC = (props) => {
+export const SearchByMedicine: React.FC = (props: any) => {
   const classes = useStyles();
+
+  const [medList, setMedList] = useState([]);
+
+  const callbackMedcineList = (value: any) => {
+    setMedList(value);
+  };
 
   return (
     <div className={classes.welcome}>
@@ -135,11 +141,11 @@ export const SearchByMedicine: React.FC = (props) => {
             Search Medicine (04)
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter />
+            <MedicineFilter medicineFiltercall={callbackMedcineList} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
-                  <MedicineListingCard />
+                  <MedicineListingCard medList={medList!} />
                 </div>
               </Scrollbars>
             </div>

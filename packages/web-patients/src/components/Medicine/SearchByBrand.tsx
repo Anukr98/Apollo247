@@ -115,6 +115,8 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SearchByBrand: React.FC = (props) => {
   const classes = useStyles();
+  const callbackMedcineList = (value: any) => {
+  };
 
   return (
     <div className={classes.welcome}>
@@ -135,7 +137,7 @@ export const SearchByBrand: React.FC = (props) => {
             Shop By Brand (06)
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter />
+            <MedicineFilter medicineFiltercall={callbackMedcineList} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
