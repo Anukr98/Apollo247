@@ -370,9 +370,15 @@ export const NeedHelp = [
   {
     category: 'Test',
     options: [
-      'Payment Issues in online test payments',
-      'Orders cancelled without any information',
-      'Order Cancelled, No Refund',
+      'Payment Issues while ordering',
+      'Sample pick up related',
+      'Excess amount related',
+      'Issues in Order confirmation',
+      'Pickup cancelled without any information',
+      'Pickup Cancelled, No Refund',
+      'Report not received',
+      'Wrong report received',
+      'Sample pick up staff related',
     ],
   },
 ];
