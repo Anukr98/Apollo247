@@ -28,6 +28,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     devliveryCharges: Float
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
+    pharmaRequest: String
     medicineOrderLineItems: [MedicineOrderLineItems]
     medicineOrdersStatus: [MedicineOrdersStatus]
     medicineOrderPayments: [MedicineOrderPayments]
@@ -80,6 +81,7 @@ export const getMedicineOrdersListTypeDefs = gql`
   extend type Query {
     getMedicineOrdersList(patientId: String): MedicineOrdersListResult!
     getMedicineOrderDetails(patientId: String, orderAutoId: Int): MedicineOrderDetailsResult!
+    getMedicinePaymentOrder: MedicineOrdersListResult!
   }
 `;
 
@@ -132,9 +134,21 @@ const getMedicineOrderDetails: Resolver<
   return { MedicineOrderDetails };
 };
 
+const getMedicinePaymentOrder: Resolver<
+  null,
+  {},
+  ProfilesServiceContext,
+  MedicineOrdersListResult
+> = async (parent, args, { profilesDb }) => {
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
+  return { MedicineOrdersList };
+};
+
 export const getMedicineOrdersListResolvers = {
   Query: {
     getMedicineOrdersList,
     getMedicineOrderDetails,
+    getMedicinePaymentOrder,
   },
 };

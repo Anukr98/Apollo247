@@ -57,6 +57,10 @@ import {
   saveMedicineOrderPaymentResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrderPayment';
 import {
+  saveMedicineOrderPaymentMqTypeDefs,
+  saveMedicineOrderPaymentMqResolvers,
+} from 'profiles-service/resolvers/saveMedicineOrderPaymentmq';
+import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
@@ -102,6 +106,10 @@ import {
   pharmaOrderDeliveredTypeDefs,
   pharmaOrderDeliveryResolvers,
 } from 'profiles-service/resolvers/pharmaOrderDelivered';
+import {
+  pharmaOrderPlacedTypeDefs,
+  pharmaOrderPlacedResolvers,
+} from 'profiles-service/resolvers/pharmaOrderPlaced';
 import {
   pharmaOrderCancelledTypeDefs,
   pharmaOrderCancelResolvers,
@@ -226,6 +234,10 @@ import { winstonLogger } from 'customWinstonLogger';
         resolvers: saveMedicineOrderPaymentResolvers,
       },
       {
+        typeDefs: saveMedicineOrderPaymentMqTypeDefs,
+        resolvers: saveMedicineOrderPaymentMqResolvers,
+      },
+      {
         typeDefs: getMedicineOrdersListTypeDefs,
         resolvers: getMedicineOrdersListResolvers,
       },
@@ -276,6 +288,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: pharmaOrderDeliveredTypeDefs,
         resolvers: pharmaOrderDeliveryResolvers,
+      },
+      {
+        typeDefs: pharmaOrderPlacedTypeDefs,
+        resolvers: pharmaOrderPlacedResolvers,
       },
       {
         typeDefs: pharmaOrderCancelledTypeDefs,
