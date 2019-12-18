@@ -26,6 +26,7 @@ import {
   getPlaceInfoByLatLng,
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
+  Store,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -142,7 +143,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   const _pincode = (
                     addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
                   ).long_name;
-                  fetchStorePickup(_pincode || '');
+                  !pinCode && fetchStorePickup(_pincode || '');
                 }
               } catch {}
             })
@@ -157,7 +158,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       );
       console.log('pincode');
     } else {
-      fetchStorePickup(locationDetails.pincode);
+      !pinCode && fetchStorePickup(locationDetails.pincode);
     }
   }, []);
 
@@ -379,14 +380,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderHomeDelivery = () => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
-    const addressListLength = addresses.length;
-    const spliceStartIndex =
-      selectedAddressIndex == addressListLength - 1
-        ? selectedAddressIndex - 1
-        : selectedAddressIndex;
-    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
@@ -405,7 +398,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <ActivityIndicator size="large" color="green" />
           </View>
         ) : null}
-        {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
+        {slicedAddressList.map((item, index, array) => {
           return (
             <RadioSelectionItem
               key={item.id}
@@ -457,6 +450,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           .then(({ data: { Stores, stores_count } }) => {
             setStorePickUpLoading(false);
             setStores && setStores(stores_count > 0 ? Stores : []);
+            setSlicedStoreList(stores_count > 0 ? Stores.slice(0, 2) : []);
+            setStoreId && setStoreId('');
           })
           .catch((e) => {
             setStorePickUpLoading(false);
@@ -468,14 +463,53 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
-  const renderStorePickup = () => {
+  const [slicedStoreList, setSlicedStoreList] = useState<Store[]>([]);
+  const [slicedAddressList, setSlicedAddressList] = useState<
+    savePatientAddress_savePatientAddress_patientAddress[]
+  >([]);
+
+  const updateStoreSelection = () => {
     const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
     const storesLength = stores.length;
     const spliceStartIndex =
       selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    const _slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    setSlicedStoreList(_slicedStoreList);
+  };
 
+  const updateAddressSelection = () => {
+    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+    const addressListLength = addresses.length;
+    const spliceStartIndex =
+      selectedAddressIndex == addressListLength - 1
+        ? selectedAddressIndex - 1
+        : selectedAddressIndex;
+    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
+    const _slicedAddressList = [...addresses].slice(startIndex, startIndex + 2);
+    setSlicedAddressList(_slicedAddressList);
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
+      updateStoreSelection();
+      updateAddressSelection();
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
+      updateStoreSelection();
+      updateAddressSelection();
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, [stores, storeId, addresses, deliveryAddressId]);
+
+  useEffect(() => {
+    pinCode.length !== 6 && setSlicedStoreList([]);
+  }, [pinCode]);
+
+  const renderStorePickup = () => {
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
         <TextInputComponent

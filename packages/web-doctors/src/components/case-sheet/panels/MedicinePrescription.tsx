@@ -991,7 +991,9 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const dosageCount =
               medicine.medicineTimings.length > 0
-                ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
+                ? parseFloat(medicine.medicineDosage) *
+                  medicine.medicineTimings.length *
+                  medicine.medicineToBeTaken.length
                 : medicine.medicineDosage;
 
             return (
@@ -1066,7 +1068,9 @@ export const MedicinePrescription: React.FC = () => {
                     : '';
                 const favDosageCount =
                   favMedicine.medicineTimings.length > 0
-                    ? parseFloat(favMedicine.medicineDosage) * favMedicine.medicineTimings.length
+                    ? parseFloat(favMedicine.medicineDosage) *
+                      favMedicine.medicineTimings.length *
+                      favMedicine.medicineToBeTaken.length
                     : favMedicine.medicineDosage;
                 const favMedicineName = favMedicine && favMedicine.medicineName;
                 return (

@@ -33,10 +33,7 @@ import {
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
@@ -132,7 +129,6 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
   ]);
 
   useEffect(() => {
-    CommonScreenLog('ConsultDoctorOnline', 'ConsultDoctorOnline');
     if (date !== props.date) {
       setDate(props.date);
     }

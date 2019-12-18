@@ -18,6 +18,7 @@ import { PatientAddressRepository } from 'profiles-service/repositories/patientA
 export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
+    PAYMENT_SUCCESS
     ORDER_PLACED
     ORDER_VERIFIED
     DELIVERED
