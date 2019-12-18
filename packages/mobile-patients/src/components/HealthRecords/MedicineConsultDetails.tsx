@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log('a', data);
@@ -141,7 +141,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
     //   Alert.alert('There is no prism filed ');
     // } else {
     const blobUrls = blobURL && blobURL.split(',');
-    prismFile &&
+    if (prismFile) {
       client
         .query<downloadDocuments>({
           query: DOWNLOAD_DOCUMENT,
@@ -167,7 +167,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           console.log('Error occured', e);
         })
         .finally(() => {});
-    // }
+    } else if (blobUrls) {
+      setUrls(blobUrls);
+    }
   }, []);
 
   const addToCart = () => {

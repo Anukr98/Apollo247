@@ -127,7 +127,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [placeImage, setPlaceImage] = useState<any>();
   const client = useApolloClient();
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     if (
@@ -138,9 +138,9 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
     ) {
       const prismFileds =
         (data.prismFileIds && data.prismFileIds.split(',')) ||
-        (data.hospitalizationPrismFileIds && data.hospitalizationPrismFileIds) ||
-        (data.healthCheckPrismFileIds && data.healthCheckPrismFileIds) ||
-        (data.testResultPrismFileIds && data.testResultPrismFileIds);
+        (data.hospitalizationPrismFileIds && data.hospitalizationPrismFileIds.split(',')) ||
+        (data.healthCheckPrismFileIds && data.healthCheckPrismFileIds.split(',')) ||
+        (data.testResultPrismFileIds && data.testResultPrismFileIds.split(','));
       const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
       console.log('prismFileIds', urls && urls.join(','));
       setshowSpinner(true);
@@ -171,10 +171,13 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         .finally(() => {
           setshowSpinner(false);
         });
+    } else if (data.prescriptionImageUrl) {
+      setPlaceImage(data.prescriptionImageUrl.split(','));
     } else {
       setshowPopUp(true);
     }
   }, []);
+
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
@@ -421,11 +424,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
       </View>
     );
   };
-  const saveimageIos = (url: any) => {
-    if (Platform.OS === 'ios') {
-      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
-    }
-  };
+  // const saveimageIos = (url: any) => {
+  //   if (Platform.OS === 'ios') {
+  //     Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+  //   }
+  // };
 
   if (data)
     return (
@@ -503,7 +506,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         </SafeAreaView>
         {showPopUp && (
           <BottomPopUp
-            title={`Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`}
+            title={`Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`}
             description={'You do not have any images'}
           >
             <View style={{ height: 60, alignItems: 'flex-end' }}>
