@@ -454,15 +454,18 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                             .pop()!
                             .split('=')
                             .pop() || 'Document';
+                        const downloadPath =
+                          Platform.OS === 'ios'
+                            ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
+                            : dirs.DownloadDir + '/' + fileName;
                         RNFetchBlob.config({
                           fileCache: true,
-                          path:
-                            Platform.OS === 'ios'
-                              ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
-                              : dirs.DownloadDir + '/' + fileName,
+                          path: downloadPath,
                           addAndroidDownloads: {
                             title: fileName,
                             useDownloadManager: true,
+                            path: downloadPath,
+                            mime: mimeType(downloadPath),
                             notification: true,
                             description: 'File downloaded by download manager.',
                           },

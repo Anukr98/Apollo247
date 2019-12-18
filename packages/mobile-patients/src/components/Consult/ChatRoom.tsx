@@ -80,7 +80,6 @@ import {
   AsyncStorage,
   Dimensions,
   FlatList,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   KeyboardEvent,
@@ -99,6 +98,7 @@ import {
   StyleSheet,
   AppState,
   AppStateStatus,
+  Image as ImageReact,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
@@ -138,6 +138,9 @@ import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '../../graphql/types/cancelAppointment';
+import { mimeType } from '../../helpers/mimeType';
+import { Image } from 'react-native-elements';
+import { RenderPdf } from '../ui/RenderPdf';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -316,7 +319,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     false,
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-
+  const [showPDF, setShowPDF] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -1885,6 +1888,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       .format('Do MMMM, dddd \nhh:mm a')}
                   </Text>
                   <TouchableOpacity
+                    activeOpacity={1}
                     onPress={() => {
                       CommonLogEvent(AppRoutes.ChatRoom, 'navigate to choose doctor');
                       props.navigation.navigate(AppRoutes.ChooseDoctor, {
@@ -2101,21 +2105,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         rowData.transferInfo.pdfUrl &&
                         rowData.transferInfo.pdfUrl.split('/').pop()
                     );
-
+                    const downloadPath =
+                      Platform.OS === 'ios'
+                        ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                          '/' +
+                          (fileName || 'Apollo_Prescription.pdf')
+                        : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
                     setLoading(true);
                     RNFetchBlob.config({
                       fileCache: true,
-                      path:
-                        Platform.OS === 'ios'
-                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
-                            '/' +
-                            (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
+                      path: downloadPath,
                       addAndroidDownloads: {
                         title: fileName,
                         useDownloadManager: true,
                         notification: true,
-                        mime: 'application/pdf',
+                        mime: mimeType(downloadPath),
+                        path: downloadPath,
                         description: 'File downloaded by download manager.',
                       },
                     })
@@ -2135,7 +2140,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         // }
                         Platform.OS === 'ios'
                           ? RNFetchBlob.ios.previewDocument(res.path())
-                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
                       })
                       .catch((err: Error) => {
                         console.log('error ', err);
@@ -2591,14 +2596,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
-                    setPatientImageshow(true);
+                    setLoading(true);
                     if (rowData.prismId) {
-                      getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
-                        setUrl((data && data.urls[0]) || rowData.url);
-                      });
+                      getPrismUrls(client, patientId, rowData.prismId)
+                        .then((data: any) => {
+                          setUrl((data && data.urls[0]) || rowData.url);
+                        })
+                        .catch(() => {
+                          setUrl(rowData.url);
+                        })
+                        .finally(() => {
+                          setPatientImageshow(true);
+                          setLoading(false);
+                        });
+                    } else {
+                      setUrl(rowData.url);
+                      setPatientImageshow(true);
+                      setLoading(false);
                     }
-                    // setUrl(rowData.url);
                   }}
+                  activeOpacity={1}
                 >
                   <View
                     style={{
@@ -2613,6 +2630,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }}
                   >
                     <Image
+                      placeholderStyle={{
+                        height: 180,
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                      }}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                       source={{ uri: rowData.url }}
                       style={{
                         resizeMode: 'stretch',
@@ -2625,26 +2649,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
+                  activeOpacity={1}
                   onPress={() => {
                     console.log('pdf', rowData.url);
+                    setLoading(true);
+                    if (rowData.url.match(/\.(pdf)$/) ){
+                      if (rowData.prismId) {
+                        getPrismUrls(client, patientId, rowData.prismId)
+                          .then((data: any) => {
+                            setUrl((data && data.urls[0]) || rowData.url);
+                          })
+                          .catch(() => setUrl(rowData.url))
+                          .finally(() => {
+                            setLoading(false);
+                            setShowPDF(true);
+                          });
+                      } else {
+                        setUrl(rowData.url);
+                        setLoading(false);
+                        setShowPDF(true);
+                      }
+                    }else{
+                      if (rowData.prismId) {
+                        getPrismUrls(client, patientId, rowData.prismId)
+                          .then((data: any) => {
+                            setUrl((data && data.urls[0]) || rowData.url);
+                          })
+                          .catch(() => setUrl(rowData.url))
+                          .finally(() => {
+                            setLoading(false);
+                            setPatientImageshow(true);
+                          });
+                      } else {
+                        setUrl(rowData.url);
+                        setLoading(false);
+                        setPatientImageshow(true);
+                      }
+                    }
                     // setShowWeb(true);
                     // setPatientImageshow(true);
-                    if (rowData.prismId) {
-                      getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
-                        setUrl((data && data.urls[0]) || rowData.url);
-                      });
-                    }
-                    // setUrl(rowData.url);
-                    // if ((Platform.OS = 'android')) {
-                    //   setShowWeb(true);
-                    //   setUrl(rowData.url);
-                    Linking.openURL(rowData.url).catch((err) =>
-                      console.error('An error occurred', err)
-                    );
-                    // } else {
-                    //   setShowWeb(true);
-                    //   setUrl(rowData.url);
-                    // }
                   }}
                 >
                   <View
@@ -2660,6 +2703,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }}
                   >
                     <Image
+                      placeholderStyle={{
+                        height: 180,
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                      }}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                       source={{ uri: rowData.url }}
                       style={{
                         resizeMode: 'stretch',
@@ -3270,15 +3320,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View>
                   {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
                     <TouchableOpacity
+                      activeOpacity={1}
                       onPress={() => {
                         console.log('IMAGE', rowData.url);
-                        setPatientImageshow(true);
+                        setLoading(true);
                         if (rowData.prismId) {
-                          getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
-                            setUrl((data && data.urls[0]) || rowData.url);
-                          });
+                          getPrismUrls(client, patientId, rowData.prismId)
+                            .then((data: any) => {
+                              setUrl((data && data.urls[0]) || rowData.url);
+                            })
+                            .catch(() => {
+                              setUrl(rowData.url);
+                            })
+                            .finally(() => {
+                              setPatientImageshow(true);
+                              setLoading(false);
+                            });
+                        } else {
+                          setUrl(rowData.url);
+                          setPatientImageshow(true);
+                          setLoading(false);
                         }
-                        // setUrl(rowData.url);
                       }}
                     >
                       <View
@@ -3294,6 +3356,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         }}
                       >
                         <Image
+                          placeholderStyle={{
+                            height: 180,
+                            width: '100%',
+                            alignItems: 'center',
+                            backgroundColor: 'transparent',
+                          }}
+                          PlaceholderContent={
+                            <Spinner style={{ backgroundColor: 'transparent' }} />
+                          }
                           source={{ uri: rowData.url }}
                           style={{
                             resizeMode: 'stretch',
@@ -3306,21 +3377,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
+                      activeOpacity={1}
                       onPress={() => {
                         console.log('pdf', rowData.url);
-                        if (rowData.prismId) {
-                          getPrismUrls(client, patientId, rowData.prismId).then((data: any) => {
-                            setUrl((data && data.urls[0]) || rowData.url);
-                          });
+                        setLoading(true);
+                        if (rowData.url.match(/\.(pdf)$/)) {
+                          if (rowData.prismId) {
+                            getPrismUrls(client, patientId, rowData.prismId)
+                              .then((data: any) => {
+                                setUrl((data && data.urls[0]) || rowData.url);
+                              })
+                              .catch(() => setUrl(rowData.url))
+                              .finally(() => {
+                                setLoading(false);
+                                setShowPDF(true);
+                              });
+                          } else {
+                            setUrl(rowData.url);
+                            setLoading(false);
+                            setShowPDF(true);
+                          }
+                        } else {
+                          if (rowData.prismId) {
+                            getPrismUrls(client, patientId, rowData.prismId)
+                              .then((data: any) => {
+                                setUrl((data && data.urls[0]) || rowData.url);
+                              })
+                              .catch(() => setUrl(rowData.url))
+                              .finally(() => {
+                                setLoading(false);
+                                setPatientImageshow(true);
+                              });
+                          } else {
+                            setUrl(rowData.url);
+                            setLoading(false);
+                            setPatientImageshow(true);
+                          }
                         }
-                        // if ((Platform.OS = 'android')) {
-                        Linking.openURL(rowData.url).catch((err) =>
-                          console.error('An error occurred', err)
-                        );
-                        // } else {
-                        //   setShowWeb(true);
-                        //   setUrl(rowData.url);
-                        // }
                       }}
                     >
                       <View
@@ -4625,14 +4718,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
               const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
               getPrismUrls(client, patientId, [prismFeildId])
-                .then((urls: any) => {
-                  console.log('api call data', urls);
+                .then((data: any) => {
+                  console.log('api call data', data);
                   const text = {
                     id: patientId,
                     message: imageconsult,
                     fileType: 'image',
                     prismId: prismFeildId,
-                    url: (urls && urls[0]) || '',
+                    url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
                   };
                   pubnub.publish(
@@ -4803,6 +4896,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             return;
           } else {
             selectedEPres.forEach((item) => {
+              console.log(item, 'from selected');
+
               const url = item.uploadedUrl && item.uploadedUrl.split(',');
               const prism = item.prismPrescriptionFileId && item.prismPrescriptionFileId.split(',');
               url &&
@@ -4851,7 +4946,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           marginTop: 30,
         }}
       >
-        <TouchableOpacity onPress={() => closeviews()}>
+        <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
       </View>
@@ -4882,7 +4977,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
         {renderCloseIcon()}
-        <Image
+        <ImageReact
           style={{
             flex: 1,
             resizeMode: 'contain',
@@ -5237,6 +5332,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5276,6 +5372,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5313,6 +5410,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           >
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.claimStyles}
               onPress={() => {
                 setIsDoctorNoShow(false);
@@ -5322,6 +5420,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.rescheduletyles}
               onPress={() => {
                 NextAvailableSlot(appointmentData, 'Transfer', true);
@@ -5340,6 +5439,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5379,6 +5479,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5423,6 +5524,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             <View style={{ height: 60 }}>
               <TouchableOpacity
+                activeOpacity={1}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setSucessPopup(false);
@@ -5495,6 +5597,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         isVisible={showFeedback}
       />
       {loading && <Spinner />}
+      {showPDF && (
+        <RenderPdf
+          uri={url}
+          title={
+            url
+              .split('/')
+              .pop()!
+              .split('=')
+              .pop() || 'Document'
+          }
+          isPopup={true}
+          setDisplayPdf={() => {
+            setShowPDF(false);
+            setUrl('');
+          }}
+          navigation={props.navigation}
+        />
+      )}
     </View>
   );
 };

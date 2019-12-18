@@ -296,16 +296,19 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                               .pop()!
                               .split('=')
                               .pop() || 'Document';
+                          const downloadPath =
+                            Platform.OS === 'ios'
+                              ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
+                              : dirs.DownloadDir + '/' + fileName;
                           RNFetchBlob.config({
                             fileCache: true,
-                            path:
-                              Platform.OS === 'ios'
-                                ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
-                                : dirs.DownloadDir + '/' + fileName,
+                            path: downloadPath,
                             addAndroidDownloads: {
                               title: fileName,
                               useDownloadManager: true,
                               notification: true,
+                              path: downloadPath,
+                              mime: mimeType(downloadPath),
                               description: 'File downloaded by download manager.',
                             },
                           })
@@ -340,9 +343,11 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           <RenderPdf
             uri={pdfUri}
             title={
-              pdfUri.indexOf('fileName=') > -1
-                ? pdfUri.split('fileName=').pop() || 'Document'
-                : 'Document'
+              pdfUri
+                .split('/')
+                .pop()!
+                .split('=')
+                .pop() || 'Document'
             }
             isPopup={true}
             setDisplayPdf={() => {
