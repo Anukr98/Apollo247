@@ -455,3 +455,6 @@ export const statusBarHeight = () =>
 
 export const isValidSearch = (value: string) =>
   /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.]*)*$/.test(value);
+
+export const isValidText = (value: string) =>
+  /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);
