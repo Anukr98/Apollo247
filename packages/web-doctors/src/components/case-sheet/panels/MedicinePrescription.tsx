@@ -808,7 +808,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1400,8 +1400,8 @@ export const MedicinePrescription: React.FC = () => {
                         <AphTextField
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount === 0 ? '' : tabletsCount}
-                          onChange={(event) => {
-                            setTabletsCount(Number(event.target.value));
+                          onChange={(event: any) => {
+                            setTabletsCount(event.target.value);
                           }}
                           error={errorState.dosageErr}
                         />
