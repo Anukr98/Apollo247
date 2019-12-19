@@ -137,9 +137,13 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface TestsProps extends NavigationScreenProps {}
+export interface TestsProps
+  extends NavigationScreenProps<{
+    focusSearch?: boolean;
+  }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
+  const focusSearch = props.navigation.getParam('focusSearch');
   const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -180,12 +184,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
+    focusSearch && setSearchFocused(true);
+  }, []);
+
+  useEffect(() => {
     console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
 
   useEffect(() => {
-    if (profile.id !== currentPatient!.id) {
+    if (currentPatient && profile.id !== currentPatient!.id) {
       setLoadingContext!(true);
       setProfile(currentPatient!);
       ordersRefetch().then((data: any) => {
