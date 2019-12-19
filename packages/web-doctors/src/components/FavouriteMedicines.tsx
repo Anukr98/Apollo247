@@ -124,6 +124,9 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'block',
       overflow: 'hidden',
       borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '& div': {
+        paddingLeft: 0,
+      },
       '&:hover': {
         '& div': {
           backgroundColor: '#f0f4f5 !important',
@@ -309,7 +312,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogContent: {
       padding: 20,
-      minHeight: 400,
+      minHeight: 300,
       position: 'relative',
       '& h6': {
         fontSize: 14,
@@ -513,6 +516,7 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'inline-block',
       width: '90%',
       wordBreak: 'break-word',
+      textAlign: 'center',
     },
   })
 );
@@ -1407,6 +1411,11 @@ export const FavouriteMedicines: React.FC = () => {
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
                             }}
+                            InputProps={{
+                              classes: {
+                                root: classes.inputRoot,
+                              },
+                            }}
                           />
                           {errorState.dosageErr && (
                             <FormHelperText
@@ -1534,7 +1543,7 @@ export const FavouriteMedicines: React.FC = () => {
                           )}
                         </Grid>
                         <Grid item lg={12} xs={12}>
-                          <h6>Instructions (if any)</h6>
+                          <h6>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
                               value={medicineInstruction}
