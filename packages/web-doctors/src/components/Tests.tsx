@@ -738,7 +738,7 @@ export const Tests: React.FC = () => {
             <Autosuggest
               onSuggestionSelected={(e, { suggestion }) => {
                 if (selectedValues && selectedValues.length > 0) {
-                  selectedValues!.push(suggestion);
+                  selectedValues.push(suggestion);
                   setSelectedValues(selectedValues);
                 } else {
                   const emptySelectedValue = [];
@@ -767,7 +767,7 @@ export const Tests: React.FC = () => {
                   if (e.which == 13 || e.keyCode == 13) {
                     if (suggestions.length === 1) {
                       if (selectedValues && selectedValues.length > 0) {
-                        selectedValues!.push(suggestions[0]);
+                        selectedValues.push(suggestions[0]);
                         setSelectedValues(selectedValues);
                       } else {
                         const emptySelectedValue = [];
@@ -777,7 +777,7 @@ export const Tests: React.FC = () => {
                       saveTests(suggestions[0]);
                       setShowAddCondition(false);
                       suggestions = suggestions.filter(
-                        (val) => selectedValues && !selectedValues!.includes(val!)
+                        (val) => selectedValues && selectedValues.includes(val!)
                       );
                       setState({
                         single: '',
