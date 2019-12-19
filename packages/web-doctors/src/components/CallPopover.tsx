@@ -1699,6 +1699,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
+                    disabled={disableOnCancel}
                     onClick={() => {
                       handleClose();
                       props.setStartConsultAction(false);
@@ -1715,6 +1716,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
+                    disabled={disableOnCancel}
                     onClick={() => {
                       handleClose();
                       props.setStartConsultAction(true);
