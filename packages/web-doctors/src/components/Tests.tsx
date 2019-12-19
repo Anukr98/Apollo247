@@ -589,7 +589,7 @@ export const Tests: React.FC = () => {
     renderSuggestion,
   };
 
-  const saveMedicines = (value: any) => {
+  const saveTests = (value: any) => {
     client
       .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
         mutation: ADD_DOCTOR_FAVOURITE_TEST,
@@ -745,7 +745,7 @@ export const Tests: React.FC = () => {
                   emptySelectedValue.push(suggestion);
                   setSelectedValues(emptySelectedValue);
                 }
-                saveMedicines(suggestion);
+                saveTests(suggestion);
                 setShowAddCondition(false);
                 suggestions = suggestions.filter(
                   (val) => selectedValues && !selectedValues!.includes(val!)
@@ -763,6 +763,30 @@ export const Tests: React.FC = () => {
                 placeholder: 'Search Tests',
                 value: state.single,
                 onChange: handleChange('single'),
+                onKeyPress: (e) => {
+                  if (e.which == 13 || e.keyCode == 13) {
+                    if (suggestions.length === 1) {
+                      if (selectedValues && selectedValues.length > 0) {
+                        selectedValues!.push(suggestions[0]);
+                        setSelectedValues(selectedValues);
+                      } else {
+                        const emptySelectedValue = [];
+                        emptySelectedValue.push(suggestions[0]);
+                        setSelectedValues(emptySelectedValue);
+                      }
+                      saveTests(suggestions[0]);
+                      setShowAddCondition(false);
+                      suggestions = suggestions.filter(
+                        (val) => selectedValues && !selectedValues!.includes(val!)
+                      );
+                      setState({
+                        single: '',
+                        popper: '',
+                      });
+                      setOtherDiagnostic('');
+                    }
+                  }
+                },
               }}
               theme={{
                 container: classes.container,
@@ -790,7 +814,7 @@ export const Tests: React.FC = () => {
                     const obj = {
                       itemName: otherDiagnostic,
                     };
-                    saveMedicines(obj);
+                    saveTests(obj);
                     selectedValues!.splice(idx, 0, {
                       itemname: otherDiagnostic,
                       __typename: 'DiagnosticPrescription',
