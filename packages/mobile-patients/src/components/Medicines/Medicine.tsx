@@ -139,11 +139,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    focusSearch && setSearchFocused(true);
-  }, []);
-
-  useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient!.id) {
+    if (currentPatient && profile.id !== currentPatient.id) {
       globalLoading!(true);
       setProfile(currentPatient);
       ordersRefetch().then(({ data }) => {
@@ -187,10 +183,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(
-            MEDICINE_LANDING_PAGE_DATA,
-            JSON.stringify(localData)
-          ).catch(() => {});
+          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
+            () => {}
+          );
         setData(d.data);
         setLoading(false);
       })
@@ -1075,6 +1070,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <>
         <Input
+          autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });

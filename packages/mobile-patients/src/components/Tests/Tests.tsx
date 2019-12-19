@@ -185,10 +185,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
-    focusSearch && setSearchFocused(true);
-  }, []);
-
-  useEffect(() => {
     console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
@@ -1443,6 +1439,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Input
+          autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               props.navigation.navigate(AppRoutes.SearchTestScene, {

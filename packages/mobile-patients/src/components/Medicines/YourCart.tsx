@@ -601,7 +601,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
-        <ListCard
+        {/* <ListCard
           container={{ marginTop: 16, marginBottom: 4 }}
           leftIcon={<CouponIcon />}
           rightIcon={<ArrowRight />}
@@ -615,12 +615,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                     'Coupon is applicable only on Rx medicines. To apply coupon add atleast one Rx medicine to cart.',
                 });
           }}
-        />
+        /> */}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
-            marginTop: 4,
+            marginTop: 16,
             marginBottom: 12,
             padding: 16,
           }}

@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
   doctorNameStyle: {
     paddingTop: 8,
     paddingBottom: 2,
+    textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansSemiBold(23),
     color: theme.colors.LIGHT_BLUE,
   },
@@ -220,7 +221,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               <View style={theme.viewStyles.lightSeparatorStyle} />
               <Text style={styles.doctorNameStyle}>
                 {props.navigation.state.params!.DoctorInfo &&
-                  'Dr.' + props.navigation.state.params!.DoctorInfo.firstName}
+                  props.navigation.state.params!.DoctorInfo.displayName}
               </Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.timeStyle}>
