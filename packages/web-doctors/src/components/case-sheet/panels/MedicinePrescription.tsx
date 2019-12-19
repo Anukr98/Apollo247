@@ -1338,6 +1338,42 @@ export const MedicinePrescription: React.FC = () => {
                       setSelectedId(suggestion.sku);
                       setLoading(false);
                       setMedicine('');
+                      setTabletsCount(0);
+                      setConsumptionDuration('');
+                      setDaySlots([
+                        {
+                          id: 'morning',
+                          value: 'Morning',
+                          selected: false,
+                        },
+                        {
+                          id: 'noon',
+                          value: 'Noon',
+                          selected: false,
+                        },
+                        {
+                          id: 'evening',
+                          value: 'Evening',
+                          selected: false,
+                        },
+                        {
+                          id: 'night',
+                          value: 'Night',
+                          selected: false,
+                        },
+                      ]);
+                      setToBeTakenSlots([
+                        {
+                          id: 'afterfood',
+                          value: 'After Food',
+                          selected: false,
+                        },
+                        {
+                          id: 'beforefood',
+                          value: 'Before Food',
+                          selected: false,
+                        },
+                      ]);
                     }}
                     {...autosuggestProps}
                     inputProps={{
