@@ -224,6 +224,7 @@ const SaveMedicineOrderPayment: Resolver<
     ? process.env.PHARMACY_MED_PLACE_ORDERS
     : '';
   const placeOrderToken = process.env.PHARMACY_ORDER_TOKEN ? process.env.PHARMACY_ORDER_TOKEN : '';
+  console.log('placeOrderToken', placeOrderToken);
   if (placeOrderUrl == '' || placeOrderToken == '') {
     throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
   }
@@ -249,6 +250,7 @@ const SaveMedicineOrderPayment: Resolver<
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
     headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+    timeout: 50000,
   }).catch((error) => {
     console.log('pharma_payment_error', error);
     log(
@@ -271,6 +273,8 @@ const SaveMedicineOrderPayment: Resolver<
     );
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
+
+  console.log('pharmaResp', pharmaResp);
 
   const textRes = await pharmaResp.text();
   log(

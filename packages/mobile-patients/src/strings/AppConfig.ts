@@ -373,6 +373,20 @@ export const NeedHelp = [
       'Feedback on Medicine Deliver',
     ],
   },
+  {
+    category: 'Diagonostics',
+    options: [
+      'Payment Issues while ordering',
+      'Sample pick up related',
+      'Excess amount related',
+      'Issues in Order confirmation',
+      'Pickup cancelled without any information',
+      'Pickup Cancelled, No Refund',
+      'Report not received',
+      'Wrong report received',
+      'Sample pick up staff related',
+    ],
+  },
 ];
 
 type SpecialitiesType = {

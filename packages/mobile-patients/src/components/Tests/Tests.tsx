@@ -138,9 +138,13 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface TestsProps extends NavigationScreenProps {}
+export interface TestsProps
+  extends NavigationScreenProps<{
+    focusSearch?: boolean;
+  }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
+  const focusSearch = props.navigation.getParam('focusSearch');
   const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -179,6 +183,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
+
+  useEffect(() => {
+    focusSearch && setSearchFocused(true);
+  }, []);
 
   useEffect(() => {
     console.log(locationDetails, 'locationDetails');

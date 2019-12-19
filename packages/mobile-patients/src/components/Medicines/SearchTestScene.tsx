@@ -283,20 +283,21 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     });
 
   const onAddCartItem = ({
-    id,
+    itemId,
     itemName,
     rate,
+    collectionType,
   }: searchDiagnostics_searchDiagnostics_diagnostics) => {
-    savePastSeacrh(id, itemName).catch((e) => {
+    savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
     addCartItem!({
-      id,
+      id: `${itemId}`,
       name: stripHtml(itemName),
       price: rate,
       mou: 1,
       thumbnail: '',
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
+      collectionMethod: collectionType!,
     });
   };
 
