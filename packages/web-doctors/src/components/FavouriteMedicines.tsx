@@ -1346,6 +1346,7 @@ export const FavouriteMedicines: React.FC = () => {
                         setSelectedId(suggestion.sku);
                         setLoading(false);
                         setMedicine('');
+                        setTabletsCount(0);
                       }}
                       {...autosuggestProps}
                       inputProps={{
