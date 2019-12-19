@@ -960,9 +960,8 @@ export const JDConsultRoom: React.FC = () => {
 
   const endConsultAction = () => {
     // open confirmation popup after removing from queue
-    mutationRemoveConsult().then(() => {
-      saveCasesheetAction(false, true);
-    });
+    mutationRemoveConsult();
+    saveCasesheetAction(false, true);
   };
 
   // this will trigger end consult automatically after one minute
