@@ -139,10 +139,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    focusSearch && setSearchFocused(true);
-  }, []);
-
-  useEffect(() => {
     if (currentPatient && profile.id !== currentPatient.id) {
       globalLoading!(true);
       setProfile(currentPatient);
@@ -1074,6 +1070,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <>
         <Input
+          autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
