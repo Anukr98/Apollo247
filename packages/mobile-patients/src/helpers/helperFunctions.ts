@@ -363,8 +363,8 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
                     resolve({
                       displayName:
                         (area || []).pop() ||
-                        (findAddrComponents('locality', addrComponents) ||
-                          findAddrComponents('administrative_area_level_2', addrComponents)),
+                        findAddrComponents('locality', addrComponents) ||
+                          findAddrComponents('administrative_area_level_2', addrComponents),
                       latitude,
                       longitude,
                       area: area.join(', '),
