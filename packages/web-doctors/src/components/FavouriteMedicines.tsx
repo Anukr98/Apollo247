@@ -76,7 +76,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-
 function renderSuggestion(
   suggestion: OptionType,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
@@ -1413,7 +1412,6 @@ export const FavouriteMedicines: React.FC = () => {
                               setTabletsCount(event.target.value);
                             }}
                             InputProps={{
-
                               classes: {
                                 root: classes.inputRoot,
                               },
@@ -1548,7 +1546,6 @@ export const FavouriteMedicines: React.FC = () => {
                           <h6>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
-                           
                               value={medicineInstruction}
                               onChange={(event: any) => {
                                 setMedicineInstruction(event.target.value);
