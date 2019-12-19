@@ -655,23 +655,35 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async createPrismUser(patientData: Patient, uhid: string) {
-    const createUserAPI =
-      'http://blue.phrdemo.com/ui/data/createUser?securitykey=55a76134e4b0370e2a79b4641235&';
-    const params = `gender=male&firstName=${patientData.firstName}&lastName=${
-      patientData.lastName
-    }&mobile=${patientData.mobileNumber.substr(
+    //date of birth formatting
+    let utc_dob = new Date().getTime();
+    if (patientData.dateOfBirth != null) {
+      utc_dob = new Date(patientData.dateOfBirth).getTime();
+    }
+
+    const queryParams = `securitykey=${
+      process.env.PRISM_SECURITY_KEY
+    }&gender=${patientData.gender.toLocaleLowerCase()}&firstName=${
+      patientData.firstName
+    }&lastName=${patientData.lastName}&mobile=${patientData.mobileNumber.substr(
       3
-    )}&uhid=${uhid}&CountryPhoneCode=91&dob=12345600&sitekey=&martialStatus=&pincode=&email=&state=&country=&city=&address=`;
+    )}&uhid=${uhid}&CountryPhoneCode=${
+      ApiConstants.COUNTRY_CODE
+    }&dob=${utc_dob}&sitekey=&martialStatus=&pincode=&email=${
+      patientData.emailAddress
+    }&state=&country=&city=&address=`;
+
+    const createUserAPI = `${process.env.PRISM_CREATE_UHID_USER_API}?${queryParams}`;
 
     log(
       'profileServiceLogger',
-      `EXTERNAL_API_CALL_PRISM: ${createUserAPI + params}`,
+      `EXTERNAL_API_CALL_PRISM: ${createUserAPI}`,
       'createPrismUser()->API_CALL_STARTING',
       '',
       ''
     );
 
-    const uhidUserResp = await fetch(createUserAPI + params, {
+    const uhidUserResp = await fetch(createUserAPI, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
