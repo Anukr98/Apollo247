@@ -12,6 +12,12 @@ export interface LocationContextProps {
   setCurrentPincode: (currenPincode: string) => void;
 }
 
+interface Address {
+  long_name: string;
+  short_name: string;
+  types: Array<string>;
+}
+
 export const LocationContext = React.createContext<LocationContextProps>({
   currentLocation: null,
   currentLat: null,
@@ -43,7 +49,7 @@ export const LocationProvider: React.FC = (props) => {
           const { lat, lng } = res.data.results[0].geometry.location;
           const addrComponents = res.data.results[0].address_components || [];
           const _pincode = (
-            addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+            addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
           ).long_name;
           setCurrentLat(lat.toString());
           setCurrentLong(lng.toString());
@@ -62,7 +68,7 @@ export const LocationProvider: React.FC = (props) => {
             .then((res) => {
               const addrComponents = res.data.results[0].address_components || [];
               const _pincode = (
-                addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
               ).long_name;
               localStorage.setItem('currentAddress', addrComponents[2].short_name);
               setCurrentLocation(addrComponents[2].short_name);

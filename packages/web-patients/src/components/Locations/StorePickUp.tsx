@@ -115,6 +115,12 @@ interface StorePickupProps {
   updateDeliveryAddress: (deliveryAddressId: string) => void;
 }
 
+type Address = {
+  long_name: string;
+  short_name: string;
+  types: Array<string>;
+};
+
 export const StorePickUp: React.FC<StorePickupProps> = (props) => {
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/searchpin_api.php`,
@@ -177,9 +183,11 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
       .then((res) => {
         try {
           if (res && res.data && res.data.results[0] && res.data.results[0].address_components) {
-            const addrComponents = res.data.results[0].address_components || [];
+            const addressComponents = res.data.results[0].address_components || [];
+            console.log(addressComponents);
             const _pincode = (
-              addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+              addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
+              {}
             ).long_name;
             if (_pincode && _pincode.length === 6) {
               setPincode(_pincode);
@@ -299,7 +307,7 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
                   pincode={pincode}
                   storeAddresses={storeAddresses}
                   setStoreAddresses={setStoreAddresses}
-                  setStoreAddress={(storeAddressId: any) => setStoreAddressId(storeAddressId)}
+                  setStoreAddress={(storeAddressId: string) => setStoreAddressId(storeAddressId)}
                   getPharmacyAddresses={getPharmacyAddresses}
                   pincodeError={pincodeError}
                   setPincodeError={setPincodeError}
