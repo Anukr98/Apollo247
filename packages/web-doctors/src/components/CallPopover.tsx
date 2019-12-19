@@ -723,8 +723,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       'pagename'
     );
     if (
-      window.location.pathname.indexOf('Consulttabs') ||
-      window.location.pathname.indexOf('consulttabs')
+      window.location.pathname.indexOf('Consulttabs') > -1 ||
+      window.location.pathname.indexOf('consulttabs') > -1
     ) {
       console.log('noShowAction', 'call');
       client
@@ -1168,6 +1168,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     return function cleanup() {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
+      //stopInterval();
       //clearInterval(timerIntervalId);
       //clearInterval(intervalMissCall);
       // clearInterval(intervalId);
