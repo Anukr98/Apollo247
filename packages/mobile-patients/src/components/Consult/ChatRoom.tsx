@@ -2537,7 +2537,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const openPopUp = (rowData:any)=>{
+  const openPopUp = (rowData: any) => {
     setLoading(true);
     if (rowData.url.match(/\.(pdf)$/)) {
       if (rowData.prismId) {
@@ -2555,7 +2555,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setLoading(false);
         setShowPDF(true);
       }
-    } else {
+    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
@@ -2571,8 +2571,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setLoading(false);
         setPatientImageshow(true);
       }
+    } else {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
+              console.error('An error occurred', err)
+            );
+          })
+          .catch(() =>
+            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err))
+          )
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(true);
+          });
+      } else {
+        setLoading(false);
+        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+      }
     }
-  }
+  };
 
   const messageView = (rowData: any, index: number) => {
     // console.log('messageView', rowData.message);
