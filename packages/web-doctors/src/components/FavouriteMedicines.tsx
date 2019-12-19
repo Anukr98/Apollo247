@@ -1355,8 +1355,22 @@ export const FavouriteMedicines: React.FC = () => {
                         id: 'react-autosuggest-simple',
                         placeholder: 'Search',
                         value: state.single,
-
                         onChange: handleChange('single'),
+                        onKeyPress: (e) => {
+                          if (e.which == 13 || e.keyCode == 13) {
+                            if (suggestions.length === 1) {
+                              setState({
+                                single: '',
+                                popper: '',
+                              });
+                              setShowDosage(true);
+                              setSelectedValue(suggestions[0].label);
+                              setSelectedId(suggestions[0].sku);
+                              setLoading(false);
+                              setMedicine('');
+                            }
+                          }
+                        },
                       }}
                       theme={{
                         container: classes.container,
