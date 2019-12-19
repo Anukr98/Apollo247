@@ -393,13 +393,12 @@ app.get('/mob-error', (req, res) => {
 
 app.get('/processOrders', (req, res) => {
   let queueMessage = '';
-  const serviceBusConnectionString =
-    'Endpoint=sb://apollodevpopcorn.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zBbU2kCqxiBny22Zj7rCefaM930uJUYGKw3L/4AqNeQ=';
+  const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
   azureServiceBus.receiveSubscriptionMessage(
-    'orders',
-    'supplier1',
-    { isPeekLock: true },
+    process.env.AZURE_SERVICE_BUS_QUEUE_NAME,
+    process.env.AZURE_SERVICE_BUS_SUBSCRIBER,
+    { isPeekLock: false },
     (subscriptionError, result) => {
       if (subscriptionError) {
         console.log('read error', subscriptionError);
@@ -429,6 +428,7 @@ app.get('/processOrders', (req, res) => {
                   pharmaRequest
                   devliveryCharges
                   deliveryType
+                  patientAddressId
                   patient{
                     mobileNumber
                     firstName
@@ -465,6 +465,58 @@ app.get('/processOrders', (req, res) => {
               response.data.data.getMedicineOrderDetails &&
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
             ) {
+              console.log(
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
+                'order details233'
+              );
+              let deliveryCity = 'Kakinada',
+                deliveryZipcode = '500045',
+                deliveryAddress = 'Kakinada';
+              if (
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
+                  '' &&
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
+                  null
+              ) {
+                axios({
+                  url: process.env.API_URL,
+                  method: 'post',
+                  data: {
+                    query: `
+                  query {
+                    getPatientAddressById(id:"${response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId}") {
+                      patientAddress{
+                          id
+                          city
+                          state
+                          zipcode
+                          addressLine1
+                          addressLine2
+                          landmark
+                        }
+                    }
+                  }
+                `,
+                  },
+                })
+                  .then((response) => {
+                    deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
+                    deliveryZipcode =
+                      response.data.data.getPatientAddressById.patientAddress.zipcode;
+                    deliveryAddress =
+                      response.data.data.getPatientAddressById.patientAddress.addressLine1 +
+                      ' ' +
+                      response.data.data.getPatientAddressById.patientAddress.addressLine2;
+                    console.log(
+                      response,
+                      response.data.data.getPatientAddressById.patientAddress.state,
+                      'address resp'
+                    );
+                  })
+                  .catch((error) => {
+                    console.log(error, 'address error');
+                  });
+              }
               const responseOrderId =
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
               const responseAmount =
@@ -504,9 +556,18 @@ app.get('/processOrders', (req, res) => {
                   orderPrescriptionUrl.push(url);
                 });
               }
+              let payStatus =
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                  .medicineOrderPayments.paymentType;
+              if (
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                  .medicineOrderPayments.paymentType == 'COD'
+              ) {
+                payStatus = '';
+              }
               //axios.defaults.headers.common['token'] = '9f15bdd0fcd5423190c2e877ba0228A24';
               let patientAge = 30;
-              const phinput = {
+              const pharmaInput = {
                 tpdetails: {
                   OrderId:
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId,
@@ -514,7 +575,9 @@ app.get('/processOrders', (req, res) => {
                   ShippingMethod:
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.deliveryType,
                   RequestType: 'CART',
-                  PaymentMethod: 'CASHLESS',
+                  PaymentMethod:
+                    response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                      .medicineOrderPayments.paymentType,
                   VendorName: '*****',
                   DotorName: 'Apollo',
                   OrderType: 'Pharma',
@@ -526,16 +589,16 @@ app.get('/processOrders', (req, res) => {
                     MobileNo: response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient.mobileNumber.substr(
                       3
                     ),
-                    Comm_addr: 'Kakinada',
-                    Del_addr: 'Kakinada',
+                    Comm_addr: deliveryAddress,
+                    Del_addr: deliveryAddress,
                     FirstName:
                       response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient
                         .firstName,
                     LastName:
                       response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient
                         .lastName,
-                    City: 'Kakinada',
-                    PostCode: 500045,
+                    City: deliveryCity,
+                    PostCode: deliveryZipcode,
                     MailId: '',
                     Age: patientAge,
                     CardNo: null,
@@ -547,8 +610,10 @@ app.get('/processOrders', (req, res) => {
                     TotalAmount:
                       response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                         .medicineOrderPayments.amountPaid,
-                    PaymentSource: 'CASHLESS',
-                    PaymentStatus: 'Success',
+                    PaymentSource:
+                      response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                        .medicineOrderPayments.paymentType,
+                    PaymentStatus: payStatus,
                     PaymentOrderId:
                       response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                         .medicineOrderPayments.paymentRefId,
@@ -558,16 +623,12 @@ app.get('/processOrders', (req, res) => {
                 },
               };
               axios
-                .post(
-                  'https://online.apollopharmacy.org/POPCORN/OrderPlace.svc/PLACE_ORDERS',
-                  JSON.stringify(phinput),
-                  {
-                    headers: {
-                      token: '9f15bdd0fcd5423190c2e877ba0228A24',
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                )
+                .post(process.env.PHARMA_ORDER_PLACE_URL, JSON.stringify(pharmaInput), {
+                  headers: {
+                    token: process.env.PHARMA_TOKEN,
+                    'Content-Type': 'application/json',
+                  },
+                })
                 .then((resp) => {
                   console.log('pharma resp', resp, resp.data.ordersResult);
                   //const orderData = JSON.parse(resp.data);
@@ -581,7 +642,12 @@ app.get('/processOrders', (req, res) => {
                     };
 
                     console.log(requestJSON, 'reqest json');
-
+                    azureServiceBus.deleteMessage(result, (deleteError) => {
+                      if (deleteError) {
+                        console.log('delete error', deleteError);
+                      }
+                      console.log('message deleted');
+                    });
                     axios
                       .post(process.env.API_URL, requestJSON)
                       .then((placedResponse) => {
