@@ -61,6 +61,7 @@ import {
   doRequestAndAccessLocation,
   g,
   getNetStatus,
+  isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -1275,33 +1276,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const client = useApolloClient();
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      console.log('onSearchMedicine');
-      return;
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        console.log('onSearchMedicine');
+        return;
+      }
+      setsearchSate('load');
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: _searchText,
+            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          // aphConsole.log({ e });
+          setsearchSate('fail');
+        });
     }
-    setsearchSate('load');
-    client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
-        variables: {
-          searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-          patientId: (currentPatient && currentPatient.id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        // aphConsole.log({ data });
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        // aphConsole.log({ e });
-        setsearchSate('fail');
-      });
   };
 
   interface SuggestionType {

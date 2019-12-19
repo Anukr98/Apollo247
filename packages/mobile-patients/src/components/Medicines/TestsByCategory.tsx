@@ -32,7 +32,7 @@ import {
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
@@ -506,34 +506,36 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setsearchSate('load');
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: _searchText,
+            city: locationForDiagnostics && locationForDiagnostics.city,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          // aphConsole.log({ e });
+          if (!Axios.isCancel(e)) {
+            setsearchSate('fail');
+          }
+        });
     }
-    setsearchSate('load');
-    client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
-        variables: {
-          searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city,
-          patientId: (currentPatient && currentPatient.id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        // aphConsole.log({ data });
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        // aphConsole.log({ e });
-        if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
-        }
-      });
   };
 
   const renderSearchResults = () => {
