@@ -137,7 +137,7 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
               <CircularProgress />
             ) : (
               <ul>
-                {props.storeAddresses.map((addressDetails: any, index: number) => {
+                {props.storeAddresses.map((addressDetails: StoreAddresses, index: number) => {
                   const storeAddress = addressDetails.address.replace(' -', ' ,');
                   return (
                     <li key={index}>
