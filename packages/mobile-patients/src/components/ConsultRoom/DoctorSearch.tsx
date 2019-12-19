@@ -684,8 +684,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderHelpView = () => {
     if (needHelp) {
-      return;
-      <NeedHelpAssistant navigation={props.navigation} containerStyle={styles.helpView} />;
+      return <NeedHelpAssistant navigation={props.navigation} containerStyle={styles.helpView} />;
     }
   };
 
