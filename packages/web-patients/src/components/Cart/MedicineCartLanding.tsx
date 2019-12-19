@@ -4,6 +4,7 @@ import React from 'react';
 import { Header } from 'components/Header';
 import { MedicineCart } from 'components/Cart/MedicineCart';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
+import { LocationContext, LocationProvider } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,7 +52,9 @@ export const MedicineCartLanding: React.FC = (props) => {
             </div>
             <div className={classes.container}>
               <div className={classes.cartPage}>
-                <MedicineCart />
+                <LocationProvider>
+                  <MedicineCart />
+                </LocationProvider>
               </div>
             </div>
           </>
