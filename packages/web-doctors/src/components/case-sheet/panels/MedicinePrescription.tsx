@@ -685,6 +685,27 @@ export const MedicinePrescription: React.FC = () => {
   const updateFavMedicine = (idx: any) => {
     setSelectedValue(idx.medicineName);
     setFavMedicineName(idx.medicineName);
+    setTabletsCount(idx.medicineDosage);
+    setMedicineUnit(idx.medicineUnit);
+    setConsumptionDuration(idx.medicineConsumptionDurationInDays);
+    setMedicineInstruction(idx.medicineInstructions);
+    toBeTakenSlots.map((slot: SlotsObject) => {
+      idx.medicineToBeTaken.map((selectedSlot: any) => {
+        const selectedValue = selectedSlot.replace('_', '');
+        if (selectedValue.toLowerCase() === slot.id) {
+          slot.selected = true;
+        }
+        return slot;
+      });
+    });
+    daySlots.map((slot: SlotsObject) => {
+      idx.medicineTimings.map((selectedSlot: any) => {
+        if (selectedSlot.toLowerCase() === slot.id) {
+          slot.selected = true;
+        }
+      });
+      return slot;
+    });
     setShowDosage(true);
   };
   useEffect(() => {
@@ -868,6 +889,7 @@ export const MedicinePrescription: React.FC = () => {
         setSelectedMedicines(x);
       }
       setIsDialogOpen(false);
+      setIsEditFavMedicine(false);
       setIsUpdate(false);
       setShowDosage(false);
       const slots = toBeTakenSlots.map((slot: SlotsObject) => {
@@ -969,8 +991,11 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const dosageCount =
               medicine.medicineTimings.length > 0
-                ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
+                ? parseFloat(medicine.medicineDosage) *
+                  medicine.medicineTimings.length *
+                  medicine.medicineToBeTaken.length
                 : medicine.medicineDosage;
+
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
@@ -1017,7 +1042,7 @@ export const MedicinePrescription: React.FC = () => {
           <Grid item lg={6} xs={12}>
             <div className={classes.favmedicineHeading}>Favourite Medicines</div>
             <div className={classes.mediceneContainer}>
-              {favouriteMedicine.map((favMedicine, id, index) => {
+              {favouriteMedicine.map((favMedicine: any, id, index) => {
                 const favDuration = `${Number(
                   favMedicine && favMedicine.medicineConsumptionDurationInDays
                 )} days`;
@@ -1039,19 +1064,14 @@ export const MedicinePrescription: React.FC = () => {
                   favMedicine &&
                   favMedicine.medicineTimings &&
                   favMedicine.medicineTimings.length > 0
-                    ? '(' + favMedicine &&
-                      favMedicine.medicineTimings &&
-                      favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                    ? '(' + favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
                     : '';
                 const favDosageCount =
-                  favMedicine && favMedicine.medicineDosage === ''
-                    ? favMedicine &&
-                      favMedicine.medicineTimings &&
-                      favMedicine.medicineTimings.length > 0
-                      ? parseFloat(favMedicine && favMedicine.medicineDosage) *
-                        favMedicine.medicineTimings.length
-                      : favMedicine && favMedicine.medicineDosage
-                    : '';
+                  favMedicine.medicineTimings.length > 0
+                    ? parseFloat(favMedicine.medicineDosage) *
+                      favMedicine.medicineTimings.length *
+                      favMedicine.medicineToBeTaken.length
+                    : favMedicine.medicineDosage;
                 const favMedicineName = favMedicine && favMedicine.medicineName;
                 return (
                   <div className={classes.paper} key={id}>
@@ -1069,8 +1089,6 @@ export const MedicinePrescription: React.FC = () => {
                       classes={{ root: classes.updateSymptom }}
                       onClick={(id) => {
                         setIsEditFavMedicine(true);
-                        //  setSelectedMedicinesArr(favMedicine);
-
                         updateFavMedicine(favMedicine);
                       }}
                     >
@@ -1097,11 +1115,6 @@ export const MedicinePrescription: React.FC = () => {
             <AphDialogTitle
               className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
             >
-              {showDosage && (
-                <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
-                  <img src={require('images/ic_back.svg')} alt="" />
-                </div>
-              )}
               {showDosage ? favMedicineName.toUpperCase() : 'ADD FAVOURITE MEDICINE'}
               <Button className={classes.cross}>
                 <img
@@ -1267,7 +1280,6 @@ export const MedicinePrescription: React.FC = () => {
                     className={classes.updateBtn}
                     onClick={() => {
                       addUpdateMedicines();
-                      setIsEditFavMedicine(false);
                     }}
                   >
                     Add Medicine

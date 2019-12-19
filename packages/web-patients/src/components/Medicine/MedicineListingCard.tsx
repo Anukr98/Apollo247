@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -120,135 +121,92 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicineListingCard: React.FC = (props) => {
-  const classes = useStyles();
-  const [selectedPackedQty] = React.useState(1);
+  const classes = useStyles({});
+  const [medicineQty, setMedicineQty] = React.useState<number>(1);
+  const { cartItems, cartTotal, removeCartItem, updateCartItemQty } = useShoppingCart();
+  const options = Array.from(Array(20), (_, x) => x);
 
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/img_product.png')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Crocin Advance <div className={classes.tabInfo}>Pack Of 15</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_plus.svg')} alt="Add Item" title="Add item to Cart" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** medice card with prescription required */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/img_product.png')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Crocin Pain Relief <div className={classes.tabInfo}>Pack Of 15</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_plus.svg')} alt="Add Item" title="Add item to Cart" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** medice card with prescription required and no product image */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets_rx.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Crocin 650mg <div className={classes.tabInfo}>Pack Of 10</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_plus.svg')} alt="Add Item" title="Add item to Cart" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** out of stock medicine card */}
-      <div className={`${classes.medicineStrip} ${classes.medicineStripDisabled}`}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Crocin 650mg <div className={classes.noStock}>Out Of Stock</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** medice card section start */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/img_product.png')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Crocin Advance <div className={classes.tabInfo}>Pack Of 10</div>
+      {cartItems &&
+        cartItems.map((item, index) => (
+          <div className={classes.medicineStrip}>
+            <div className={classes.medicineStripWrap}>
+              <div className={classes.medicineInformation}>
+                <div className={classes.medicineIcon}>
+                  <img
+                    src={
+                      item.is_prescription_required
+                        ? require('images/img_product.png')
+                        : require('images/img_product.png')
+                    }
+                    alt=""
+                  />
+                </div>
+                <div className={classes.medicineName}>
+                  {item.name}
+                  <div className={classes.tabInfo}>
+                    {item.is_in_stock ? 'Pack Of 15' : 'Out Of Stock'}
+                  </div>
+                </div>
+              </div>
+              {item.is_in_stock && (
+                <div className={classes.cartRight}>
+                  <div className={classes.medicinePack}>
+                    QTY :
+                    <AphCustomDropdown
+                      classes={{ selectMenu: classes.selectMenuItem }}
+                      value={item.quantity}
+                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                        updateCartItemQty &&
+                        updateCartItemQty({
+                          description: item.description,
+                          id: item.id,
+                          image: item.image,
+                          is_in_stock: item.is_in_stock,
+                          is_prescription_required: item.is_prescription_required,
+                          name: item.name,
+                          price: item.price,
+                          sku: item.sku,
+                          small_image: item.small_image,
+                          status: item.status,
+                          thumbnail: item.thumbnail,
+                          type_id: item.type_id,
+                          quantity: parseInt(e.target.value),
+                          special_price: item.special_price,
+                          mou: item.mou,
+                        })
+                      }
+                    >
+                      {options.map((option) => (
+                        <MenuItem
+                          classes={{
+                            root: classes.menuRoot,
+                            selected: classes.menuSelected,
+                          }}
+                          value={option}
+                        >
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </AphCustomDropdown>
+                  </div>
+                  <div className={classes.medicinePrice}>{item.price}</div>
+                  <div className={classes.addToCart}>
+                    <AphButton onClick={() => removeCartItem && removeCartItem(item.id)}>
+                      <img
+                        src={require('images/ic_cross_onorange_small.svg')}
+                        alt="Remove Item"
+                        title="Remove item from Cart"
+                      />
+                    </AphButton>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          <div className={classes.cartRight}>
-            <div className={classes.medicinePack}>
-              QTY :
-              <AphCustomDropdown
-                classes={{ selectMenu: classes.selectMenuItem }}
-                value={selectedPackedQty}
-              >
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={1}
-                >
-                  1
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={2}
-                >
-                  2
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={3}
-                >
-                  3
-                </MenuItem>
-              </AphCustomDropdown>
-            </div>
-            <div className={classes.medicinePrice}>Rs. 120</div>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img
-                  src={require('images/ic_cross_onorange_small.svg')}
-                  alt="Remove Item"
-                  title="Remove item from Cart"
-                />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
+        ))}
     </div>
   );
 };

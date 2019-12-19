@@ -407,40 +407,36 @@ export const FavouriteAdvice: React.FC = () => {
             <div>
               <div>
                 <div className={classes.dialogContent}>
-                    <div>
-                    <AphDialogTitle  className={classes.popupHeading } >
-                       <span className={classes.headingName}>FAVOURITE ADVICE</span>
-                      <Button className={classes.cross}
-                       onClick={() => {
-                        setShowAddInputText(false);
-                      }}
+                  <div>
+                    <AphDialogTitle className={classes.popupHeading}>
+                      <span className={classes.headingName}>FAVOURITE ADVICE</span>
+                      <Button
+                        className={classes.cross}
+                        onClick={() => {
+                          setShowAddInputText(false);
+                        }}
                       >
-                        
-                      <img
-                          src={require('images/ic_cross.svg')}
-                          alt=""
-                      />
+                        <img src={require('images/ic_cross.svg')} alt="" />
                       </Button>
-                  </AphDialogTitle>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          fullWidth
-                          placeholder="Type your favourite advice"
-                          className={classes.textFieldColor}
-                          value={advice}
-                          onChange={(event: any) => {
-                            setAdvice(event.target.value);
-                          }}
-                        />
+                    </AphDialogTitle>
+                    <div className={classes.numberTablets}>
+                      <AphTextField
+                        fullWidth
+                        placeholder="Type your favourite advice"
+                        className={classes.textFieldColor}
+                        value={advice}
+                        onChange={(event: any) => {
+                          setAdvice(event.target.value);
+                        }}
+                      />
 
                       {/* <AphTextField
                         fullWidth
                         className={classes.textFieldColor}
                         placeholder="What you enter here won't be shown to the patient.."                       
                       /> */}
-
-                      </div>
                     </div>
+                  </div>
                 </div>
               </div>
               <div className={classes.dialogActions}>

@@ -95,15 +95,15 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
             <div className={classes.card}>
               <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
                 <div className={classes.cardWrap}>
-                  <div className={classes.cardTitle}>
+                  {/* <div className={classes.cardTitle}>
                     Personal
                     <br /> Care Products
-                  </div>
+                  </div> */}
                   <div className={classes.cardIcon}>
-                    <img src={`${apiDetails.url}${deal.image_url}`} alt="" />
+                    <img src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" />
                   </div>
                 </div>
-                <div className={classes.offerDetails}>Upto 30% Off</div>
+                {/* <div className={classes.offerDetails}>Upto 30% Off</div> */}
               </Link>
             </div>
           ))}

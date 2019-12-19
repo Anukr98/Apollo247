@@ -49,6 +49,7 @@ import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalType
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '../UIElementsProvider';
+import { mimeType } from '../../helpers/mimeType';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -713,20 +714,22 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                           0,
                           props.navigation.state.params!.BlobName.indexOf('.pdf')
                         ) + '.pdf';
+                      const downloadPath =
+                        Platform.OS === 'ios'
+                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                            '/' +
+                            (fileName || 'Apollo_Prescription.pdf')
+                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
-                        path:
-                          Platform.OS === 'ios'
-                            ? (dirs.DocumentDir || dirs.MainBundleDir) +
-                              '/' +
-                              (fileName || 'Apollo_Prescription.pdf')
-                            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
+                        path: downloadPath,
                         addAndroidDownloads: {
                           title: fileName,
                           useDownloadManager: true,
                           notification: true,
-                          mime: 'application/pdf',
+                          path: downloadPath,
+                          mime: mimeType(downloadPath),
                           description: 'File downloaded by download manager.',
                         },
                       })
@@ -746,7 +749,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                           // }
                           Platform.OS === 'ios'
                             ? RNFetchBlob.ios.previewDocument(res.path())
-                            : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                            : RNFetchBlob.android.actionViewIntent(
+                                res.path(),
+                                mimeType(res.path())
+                              );
                         })
                         .catch((err) => {
                           console.log('error ', err);
