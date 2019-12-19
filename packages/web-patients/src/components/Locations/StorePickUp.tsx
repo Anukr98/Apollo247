@@ -150,8 +150,8 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
           },
         }
       )
-      .then((result: any) => {
-        if (result) {
+      .then((result) => {
+        if (result && result.data && result.data.Stores) {
           const stores = result.data.Stores;
           if (stores && stores[0] && stores[0].message !== 'Data Not Available') {
             setStoreAddresses(stores);
@@ -166,7 +166,6 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
       .catch((thrown: AxiosError | Cancel) => {
         setLoading(false);
         setPincodeError(true);
-        // alert("An error occurred while fetching Stores.");
       });
   };
 
@@ -189,10 +188,13 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
             }
           }
         } catch {
-          (e: any) => console.log(e);
+          (e: AxiosError) => console.log(e);
         }
       })
-      .catch((e: any) => console.log(e));
+      .catch((e: AxiosError) => {
+        console.log(e);
+        setPincodeError(true);
+      });
   };
 
   useEffect(() => {
