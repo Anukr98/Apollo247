@@ -286,20 +286,25 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {orderStatusList.map((order, index, array) => {
-            return (
-              <OrderProgressCard
-                style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-                key={index}
-                description={''}
-                status={getOrderStatusText(order!.orderStatus!)}
-                date={getFormattedDate(order!.statusDate)}
-                time={getFormattedTime(order!.statusDate)}
-                isStatusDone={true}
-                nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
-              />
-            );
-          })}
+          {orderStatusList
+            .filter(
+              (item, idx, array) =>
+                array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+            )
+            .map((order, index, array) => {
+              return (
+                <OrderProgressCard
+                  style={index < array.length - 1 ? { marginBottom: 8 } : {}}
+                  key={index}
+                  description={''}
+                  status={getOrderStatusText(order!.orderStatus!)}
+                  date={getFormattedDate(order!.statusDate)}
+                  time={getFormattedTime(order!.statusDate)}
+                  isStatusDone={true}
+                  nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
+                />
+              );
+            })}
         </View>
         {isDelivered ? (
           <Button

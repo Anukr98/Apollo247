@@ -368,7 +368,7 @@ export const NeedHelp = [
     ],
   },
   {
-    category: 'Test',
+    category: 'Diagonostics',
     options: [
       'Payment Issues while ordering',
       'Sample pick up related',
