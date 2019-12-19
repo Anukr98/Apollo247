@@ -135,9 +135,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    if (profile.id !== currentPatient!.id) {
+    if (currentPatient && profile.id !== currentPatient.id) {
       globalLoading!(true);
-      setProfile(currentPatient!);
+      setProfile(currentPatient);
       ordersRefetch().then(({ data }) => {
         const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
           (item) =>
@@ -1276,7 +1276,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   <Text style={styles.hiTextStyle}>{'hi'}</Text>
                   <View style={styles.nameTextContainerStyle}>
                     <Text style={styles.nameTextStyle} numberOfLines={1}>
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                      {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
                     </Text>
                     <View style={styles.seperatorStyle} />
                   </View>
