@@ -19,7 +19,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { log } from 'customWinstonLogger';
-import { text } from 'body-parser';
 
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
