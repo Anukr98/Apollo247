@@ -24,6 +24,7 @@ export interface MedicineCartItem {
 }
 
 export interface MedicineCartContextProps {
+  itemsStr: string | null;
   cartItems: MedicineCartItem[];
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
@@ -35,6 +36,7 @@ export interface MedicineCartContextProps {
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
+  itemsStr: null,
   cartItems: [],
   addCartItem: null,
   removeCartItem: null,
@@ -48,8 +50,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems') || '') : []
   );
 
+  const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
+    JSON.stringify(cartItems || {})
+  );
+
   useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    const items = JSON.stringify(cartItems);
+    localStorage.setItem('cartItems', items);
+    setItemsStr(items);
   }, [cartItems]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
@@ -90,6 +98,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     <MedicinesCartContext.Provider
       value={{
         cartItems,
+        itemsStr,
         addCartItem,
         removeCartItem,
         updateCartItem,
