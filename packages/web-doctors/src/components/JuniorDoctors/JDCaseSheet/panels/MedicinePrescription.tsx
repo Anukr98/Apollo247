@@ -490,7 +490,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(0.5);
+  const [tabletsCount, setTabletsCount] = React.useState<number>();
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -706,14 +706,16 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
-      const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
+      const durations = Number(medicine.medicineConsumptionDurationInDays);
+      const duration = durations === 1 ? `${durations} day` : `${durations} days`;
+
       const whenString =
         medicine.medicineToBeTaken.length > 0
           ? toBeTaken(medicine.medicineToBeTaken)
               .join(', ')
               .toLowerCase()
           : '';
-      const unitHtml =
+      const unitHtmls =
         medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
           ? medicine.medicineUnit.toLowerCase()
           : 'times';
@@ -727,6 +729,8 @@ export const MedicinePrescription: React.FC = () => {
             medicine.medicineTimings.length *
             medicine.medicineToBeTaken.length
           : medicine.medicineDosage;
+
+      const unitHtml = dosageCount === 1 ? unitHtmls : `${unitHtmls}s`;
       return (
         <div key={index} className={classes.medicineBox}>
           <div key={_uniqueId('med_id_')}>
@@ -778,7 +782,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -832,7 +836,6 @@ export const MedicinePrescription: React.FC = () => {
         id: selectedId,
         medicineUnit: medicineUnit,
       };
-      console.log(selectedValue);
 
       const inputParams: any = {
         id: selectedId,
@@ -859,7 +862,6 @@ export const MedicinePrescription: React.FC = () => {
         x.push(inputParams);
         setSelectedMedicines(x);
       }
-      console.log(selectedMedicines);
       setIsDialogOpen(false);
       setIsUpdate(false);
       setShowDosage(false);
@@ -876,7 +878,7 @@ export const MedicinePrescription: React.FC = () => {
       setDaySlots(dayslots);
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount(0);
       setSelectedValue('');
       setSelectedId('');
       setMedicineUnit('TABLET');
@@ -1054,7 +1056,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                           <AphTextField
                             inputProps={{ maxLength: 6 }}
-                            value={tabletsCount}
+                            value={tabletsCount === 0 ? '' : tabletsCount}
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
                             }}
