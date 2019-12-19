@@ -21,10 +21,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
     shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 3,
   },
   disabledStyle: {
     backgroundColor: theme.colors.BUTTON_DISABLED_BG,

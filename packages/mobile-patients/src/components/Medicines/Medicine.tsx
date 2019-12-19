@@ -143,9 +143,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient!.id) {
+    if (currentPatient && profile.id !== currentPatient.id) {
       globalLoading!(true);
-      setProfile(currentPatient!);
+      setProfile(currentPatient);
       ordersRefetch().then(({ data }) => {
         const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
           (item) =>
@@ -187,9 +187,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
-            () => {}
-          );
+          AsyncStorage.setItem(
+            MEDICINE_LANDING_PAGE_DATA,
+            JSON.stringify(localData)
+          ).catch(() => {});
         setData(d.data);
         setLoading(false);
       })
@@ -1284,7 +1285,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   <Text style={styles.hiTextStyle}>{'hi'}</Text>
                   <View style={styles.nameTextContainerStyle}>
                     <Text style={styles.nameTextStyle} numberOfLines={1}>
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                      {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
                     </Text>
                     <View style={styles.seperatorStyle} />
                   </View>
