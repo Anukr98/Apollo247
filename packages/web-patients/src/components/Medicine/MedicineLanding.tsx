@@ -360,7 +360,7 @@ export const MedicineLanding: React.FC = (props) => {
                         <>
                           <span>{item.key}</span>
                           <div className={classes.viewAllLink}>
-                            <Link to={clientRoutes.yourOrders()}>View All</Link>
+                            <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
                           </div>
                         </>
                       ) : (
