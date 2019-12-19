@@ -115,8 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SearchByBrand: React.FC = (props) => {
   const classes = useStyles();
-  const callbackMedcineList = (value: any) => {
-  };
+  const callbackMedcineList = (value: any) => { };
 
   return (
     <div className={classes.welcome}>

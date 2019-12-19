@@ -191,16 +191,16 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         {medicine.is_prescription_required ? (
                           <img src={require('images/ic_tablets_rx.svg')} alt="" />
                         ) : (
-                            <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
-                          )}
+                          <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                        )}
                       </div>
                       <div className={classes.medicineInfo}>
                         <div className={classes.medicineName}>{medicine.name}</div>
                         {medicine.is_in_stock ? (
                           <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
                         ) : (
-                            <div className={classes.noStock}>Out Of Stock</div>
-                          )}
+                          <div className={classes.noStock}>Out Of Stock</div>
+                        )}
                       </div>
                     </Link>
                   </li>

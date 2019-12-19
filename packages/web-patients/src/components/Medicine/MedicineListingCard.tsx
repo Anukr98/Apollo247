@@ -1,12 +1,8 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
-import { array } from 'prop-types';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -123,120 +119,90 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-export interface MedicineListingCardProps {
-  medList: Array<[]>;
-}
 
-export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
+export const MedicineListingCard: React.FC = (props) => {
   const classes = useStyles({});
   const [medicineQty, setMedicineQty] = React.useState<number>(1);
-  const { addCartItem, cartItems, cartTotal, removeCartItem, updateCartItemQty } = useShoppingCart();
+  const { cartItems, cartTotal, removeCartItem, updateCartItemQty } = useShoppingCart();
   const options = Array.from(Array(20), (_, x) => x);
-
-  const [selectedPackedQty, setSelectedPackedQty] = React.useState(1);
-  const [isQuantityShow, setIsQuantityShow] = React.useState<boolean>(false);
-  const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
-
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
-  };
-
-  // const [index,setIndex]=useState(0);
-  const [selectedValue, setSelectedValue] = useState<number[]>();
-  const addArray = (idx: number, medList: []) => {
-    var a: any = [];
-    if (selectedValue && selectedValue.length > 0) {
-      a = selectedValue;
-    }
-    a.push(idx);
-    setSelectedValue(a);
-    setSearchMedicines(medList);
-    console.log(selectedValue);
-  };
-
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
-      {props.medList &&
-        props.medList.map((med: any, idx: number) => (
+      {cartItems &&
+        cartItems.map((item, index) => (
           <div className={classes.medicineStrip}>
             <div className={classes.medicineStripWrap}>
-              <Link to={clientRoutes.medicineDetails(med.sku)}>
-                <div className={classes.medicineInformation}>
-                  <div className={classes.medicineIcon}>
-                    <img src={`${apiDetails.imageUrl}${med.image}`} alt="" />
-                  </div>
-                  <div className={classes.medicineName}>
-                    {med.name}
-                    {med.mou ? (
-                      <div className={classes.tabInfo}>Pack of {med.mou}</div>
-                    ) : (
-                        <div className={classes.noStock}>Out Of Stock</div>
-                      )}
+              <div className={classes.medicineInformation}>
+                <div className={classes.medicineIcon}>
+                  <img
+                    src={
+                      item.is_prescription_required
+                        ? require('images/img_product.png')
+                        : require('images/img_product.png')
+                    }
+                    alt=""
+                  />
+                </div>
+                <div className={classes.medicineName}>
+                  {item.name}
+                  <div className={classes.tabInfo}>
+                    {item.is_in_stock ? 'Pack Of 15' : 'Out Of Stock'}
                   </div>
                 </div>
-              </Link>
-              <div className={classes.cartRight}>
-                {isQuantityShow && selectedValue && selectedValue.includes(idx) && (
-                  <>
-                    <div className={classes.medicinePack}>
-                      QTY :
-                      <AphCustomDropdown
-                        classes={{ selectMenu: classes.selectMenuItem }}
-                        value={selectedPackedQty}
-                        onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                          setSelectedPackedQty(parseInt(e.target.value))
-                        }
-                      >
-                        {options.map((option) => (
-                          <MenuItem
-                            classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                            value={option}
-                          >
-                            {option}
-                          </MenuItem>
-                        ))}
-                      </AphCustomDropdown>
-                    </div>
-                    <div className={classes.medicinePrice}> Rs.{med.price}</div>
-                  </>
-                )}
-                <div className={classes.addToCart}>
-                  {isQuantityShow && selectedValue && selectedValue.includes(idx) ? (
-                    ''
-                  ) : (
-                      <AphButton>
-                        <img
-                          src={require('images/ic_plus.svg')}
-                          onClick={() => {
-                            setIsQuantityShow(true);
-                            addArray(idx, med);
-                            addCartItem(med);
+              </div>
+              {item.is_in_stock && (
+                <div className={classes.cartRight}>
+                  <div className={classes.medicinePack}>
+                    QTY :
+                    <AphCustomDropdown
+                      classes={{ selectMenu: classes.selectMenuItem }}
+                      value={item.quantity}
+                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                        updateCartItemQty &&
+                        updateCartItemQty({
+                          description: item.description,
+                          id: item.id,
+                          image: item.image,
+                          is_in_stock: item.is_in_stock,
+                          is_prescription_required: item.is_prescription_required,
+                          name: item.name,
+                          price: item.price,
+                          sku: item.sku,
+                          small_image: item.small_image,
+                          status: item.status,
+                          thumbnail: item.thumbnail,
+                          type_id: item.type_id,
+                          quantity: parseInt(e.target.value),
+                          special_price: item.special_price,
+                          mou: item.mou,
+                        })
+                      }
+                    >
+                      {options.map((option) => (
+                        <MenuItem
+                          classes={{
+                            root: classes.menuRoot,
+                            selected: classes.menuSelected,
                           }}
-                          alt="Add Item"
-                          title="Add item to Cart"
-                        />
-                      </AphButton>
-                    )}
-
-                  {isQuantityShow && selectedValue && selectedValue.includes(idx) && (
-                    <AphButton>
+                          value={option}
+                        >
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </AphCustomDropdown>
+                  </div>
+                  <div className={classes.medicinePrice}>{item.price}</div>
+                  <div className={classes.addToCart}>
+                    <AphButton onClick={() => removeCartItem && removeCartItem(item.id)}>
                       <img
                         src={require('images/ic_cross_onorange_small.svg')}
                         alt="Remove Item"
                         title="Remove item from Cart"
-                        onClick={() => {
-                          setSelectedValue(selectedValue.filter((item) => item !== idx));
-                          removeCartItem(med.id);
-
-                        }}
                       />
                     </AphButton>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         ))}

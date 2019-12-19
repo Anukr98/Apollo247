@@ -128,11 +128,11 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface MedicineFilterProps {
-  medicineFiltercall: (value: any) => void;
+  medicineFiltercall: (value: MedicineProduct[]) => void;
 }
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const apiDetails = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -147,8 +147,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   }, []);
 
   const onSearchMedicine = async (value: string) => {
-    console.log('In search');
-
     await axios
       .post(
         apiDetails.url,
@@ -177,12 +175,14 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   return (
     <div className={classes.root}>
       <div className={classes.searchInput}>
-        <AphTextField placeholder="Search med, brands and more"
+        <AphTextField
+          placeholder="Search med, brands and more"
           onChange={(e) => {
             setSubtxt(e.target.value);
             sessionStorage.setItem('medicineSearch', e.target.value);
           }}
-          value={subtxt} />
+          value={subtxt}
+        />
         <AphButton className={classes.refreshBtn}>
           <img src={require('images/ic_refresh.svg')} alt="" />
         </AphButton>

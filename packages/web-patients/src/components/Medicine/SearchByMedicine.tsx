@@ -5,7 +5,9 @@ import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
-import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
+import { MedicineListscard } from 'components/Medicine/MedicineListscard';
+import { MedicinesCartContext } from 'components/MedicinesCartProvider';
+import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -113,13 +115,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SearchByMedicine: React.FC = (props: any) => {
-  const classes = useStyles();
+export const SearchByMedicine: React.FC = (props) => {
+  const classes = useStyles({});
 
-  const [medList, setMedList] = useState([]);
+  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
 
-  const callbackMedcineList = (value: any) => {
-    setMedList(value);
+  const callbackMedcineList = (value: MedicineProduct[]) => {
+    setMedicineList(value);
   };
 
   return (
@@ -145,7 +147,9 @@ export const SearchByMedicine: React.FC = (props: any) => {
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
-                  <MedicineListingCard medList={medList!} />
+                  <MedicinesCartContext.Consumer>
+                    {() => <MedicineListscard medicineList={medicineList} />}
+                  </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
             </div>
