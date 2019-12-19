@@ -310,13 +310,13 @@ export const FavouriteAdvice: React.FC = () => {
         },
       })
       .then((data) => {
-        var temp = '';
+        let temp = '';
         if (
           data &&
-          data!.data! &&
-          data!.data!.addDoctorFavouriteAdvice! &&
-          data!.data!.addDoctorFavouriteAdvice!.adviceList &&
-          data!.data!.addDoctorFavouriteAdvice!.adviceList[0]!.id
+          data.data &&
+          data.data.addDoctorFavouriteAdvice &&
+          data.data.addDoctorFavouriteAdvice.adviceList &&
+          data.data.addDoctorFavouriteAdvice.adviceList[0]!.id
         ) {
           temp = data!.data!.addDoctorFavouriteAdvice!.adviceList[0]!.id;
         }
