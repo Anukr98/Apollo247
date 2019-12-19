@@ -43,6 +43,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
@@ -52,6 +54,8 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { useUIElements } from '../UIElementsProvider';
+import { AppConfig } from '../../strings/AppConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -128,22 +132,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#dddddd',
     marginHorizontal: 16,
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 6,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  placeholderTextStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
   },
 });
 
@@ -223,13 +211,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     currentPatient && setshowSpinner(false);
     if (!currentPatient) {
-      console.log('No current patients available', allCurrentPatients);
       getPatientApiCall();
     }
+    AppState.addEventListener('change', _handleAppStateChange);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
@@ -243,6 +232,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
     callDeviceTokenAPI();
+    // checkForVersionUpdate();
   }, []);
 
   useEffect(() => {
@@ -314,6 +304,116 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       });
   };
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (nextAppState === 'active') {
+      // checkForVersionUpdate();
+    }
+  };
+
+  // const checkForVersionUpdate = () => {
+  //   console.log('checkForVersionUpdate');
+
+  //   if (__DEV__) {
+  //     firebase.config().enableDeveloperMode();
+  //   }
+
+  //   firebase
+  //     .config()
+  //     .fetch(30 * 0) // 30 min
+  //     .then(() => {
+  //       return firebase.config().activateFetched();
+  //     })
+  //     .then(() => {
+  //       return firebase
+  //         .config()
+  //         .getValues([
+  //           'Android_mandatory',
+  //           'android_latest_version',
+  //           'ios_mandatory',
+  //           'ios_Latest_version',
+  //         ]);
+  //     })
+  //     .then((snapshot) => {
+  //       const myValye = snapshot;
+  //       let index: number = 0;
+  //       const nietos = [];
+  //       const Android_version: string = AppConfig.Configuration.Android_Version;
+  //       const iOS_version: string = AppConfig.Configuration.iOS_Version;
+
+  //       for (const val in myValye) {
+  //         if (myValye.hasOwnProperty(val)) {
+  //           index++;
+  //           const element = myValye[val];
+  //           nietos.push({ index: index, value: element.val() });
+  //           if (nietos.length === 4) {
+  //             console.log(
+  //               'nietos',
+  //               parseFloat(nietos[1].value),
+  //               parseFloat(iOS_version),
+  //               parseFloat(Android_version)
+  //             );
+  //             if (Platform.OS === 'ios') {
+  //               if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
+  //                 showUpdateAlert(nietos[2].value);
+  //               }
+  //             } else {
+  //               if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
+  //                 showUpdateAlert(nietos[0].value);
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     })
+  //     .catch((error) => console.log(`Error processing config: ${error}`));
+  // };
+
+  // const showUpdateAlert = (mandatory: boolean) => {
+  //   showAphAlert!({
+  //     title: `Hi there :)`,
+  //     description: 'There is a new version available for this app. Please update it.',
+  //     unDismissable: true,
+  //     children: (
+  //       <View
+  //         style={{
+  //           flexDirection: 'row',
+  //           marginHorizontal: 20,
+  //           justifyContent: 'space-between',
+  //           alignItems: 'flex-end',
+  //           marginVertical: 18,
+  //         }}
+  //       >
+  //         {!mandatory ? (
+  //           <Button
+  //             style={{
+  //               flex: 1,
+  //               marginRight: 16,
+  //             }}
+  //             title={'CANCEL'}
+  //             onPress={() => {
+  //               hideAphAlert!();
+  //             }}
+  //           />
+  //         ) : null}
+
+  //         <Button
+  //           style={{ flex: 1 }}
+  //           title={'UPDATE'}
+  //           onPress={() => {
+  //             hideAphAlert!();
+
+  //             Linking.openURL(
+  //               Platform.OS === 'ios'
+  //                 ? 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
+  //                 : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
+  //             ).catch((err) => console.error('An error occurred', err));
+  //           }}
+  //         />
+  //       </View>
+  //     ),
+  //   });
+  // };
 
   const Popup = () => (
     <TouchableOpacity

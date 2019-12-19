@@ -202,25 +202,25 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const handleScroll = () => {};
 
-  const onShare = async () => {
-    try {
-      const result = await Share.share({
-        message: profileDetails ? `${profileDetails.firstName} ${profileDetails.lastName}` : '',
-      });
+  // const onShare = async () => {
+  //   try {
+  //     const result = await Share.share({
+  //       message: profileDetails ? `${profileDetails.firstName} ${profileDetails.lastName}` : '',
+  //     });
 
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          // shared with activity type of result.activityType
-        } else {
-          // shared
-        }
-      } else if (result.action === Share.dismissedAction) {
-        // dismissed
-      }
-    } catch (error) {
-      // Alert(error.message);
-    }
-  };
+  //     if (result.action === Share.sharedAction) {
+  //       if (result.activityType) {
+  //         // shared with activity type of result.activityType
+  //       } else {
+  //         // shared
+  //       }
+  //     } else if (result.action === Share.dismissedAction) {
+  //       // dismissed
+  //     }
+  //   } catch (error) {
+  //     // Alert(error.message);
+  //   }
+  // };
 
   const onPressLogout = () => {
     signOut();

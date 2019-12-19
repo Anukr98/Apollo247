@@ -30,13 +30,21 @@ const styles = StyleSheet.create({
 
 export interface MedicalRecordsProps extends NavigationScreenProps {
   //onTabCount: (count: number) => void;
-  MedicalRecordData: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords[] | undefined;
-  labTestsData?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests[] | undefined;
+  MedicalRecordData:
+    | (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[]
+    | null
+    | undefined;
+  labTestsData?:
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[]
+    | null
+    | undefined;
   healthChecksData?:
-    | getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks[]
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[]
+    | null
     | undefined;
   hospitalizationsData?:
-    | getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations[]
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
+    | null
     | undefined;
   renderDeleteMedicalOrder: (id: string) => void;
 }
@@ -170,26 +178,26 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                       });
                     }}
                     onPressDelete={() => {
-                      CommonLogEvent('MEDICAL_RECORDS', 'Delete record'),
-                        Alert.alert(
-                          'Delete Record',
-                          '',
-                          [
-                            {
-                              text: 'Cancel',
-                              onPress: () => console.log('Cancel Pressed'),
-                              style: 'cancel',
+                      CommonLogEvent('MEDICAL_RECORDS', 'Delete record');
+                      Alert.alert(
+                        'Delete Record',
+                        '',
+                        [
+                          {
+                            text: 'Cancel',
+                            onPress: () => console.log('Cancel Pressed'),
+                            style: 'cancel',
+                          },
+                          {
+                            text: 'OK',
+                            onPress: () => {
+                              CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order');
+                              props.renderDeleteMedicalOrder(item.data.id);
                             },
-                            {
-                              text: 'OK',
-                              onPress: () => (
-                                CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order'),
-                                props.renderDeleteMedicalOrder(item.data.id)
-                              ),
-                            },
-                          ],
-                          { cancelable: false }
-                        );
+                          },
+                        ],
+                        { cancelable: false }
+                      );
                     }}
                   />
                 );
