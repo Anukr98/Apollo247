@@ -37,7 +37,7 @@ import {
   MedicinePageAPiResponse,
   MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -888,25 +888,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setsearchSate('load');
+      getMedicineSearchSuggestionsApi(_searchText)
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = data.products || [];
+          setMedicineList(products);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          // aphConsole.log({ e });
+          if (!Axios.isCancel(e)) {
+            setsearchSate('fail');
+          }
+        });
     }
-    setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
-      .then(({ data }) => {
-        // aphConsole.log({ data });
-        const products = data.products || [];
-        setMedicineList(products);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        // aphConsole.log({ e });
-        if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
-        }
-      });
   };
 
   interface SuggestionType {
