@@ -451,7 +451,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const setAnswerData = (value: { k: string; v: string[] }[]) => {
     let data = userAnswers || ({} as ConsultQueueInput);
-    value.map((item) => {
+    value.forEach((item) => {
       switch (item.k) {
         case 'height':
           data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';

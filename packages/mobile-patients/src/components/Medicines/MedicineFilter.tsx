@@ -59,7 +59,8 @@ export interface MedicineFilterProps {
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
   const { onClose, onApplyFilter, hideCategoryFilter } = props;
-
+  // const discountarray = [{ from: 0, to: 20 }, { from: 20, to: 40 }, { from: 40, to: undefined }];
+  // const priceArray = [{ from: 0, to: 250 }, { from: 250, to: 500 }, { from: 500, to: undefined }];
   const [discount, setdiscount] = useState<FilterRange>({
     from: 0,
     to: 100,
@@ -181,7 +182,15 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
   const getDiscount = (text: string) => {
     return text && !isNaN(parseInt(text)) ? parseInt(text) : undefined;
   };
-
+  // const renderButton = (item: { from: number; to: number | undefined }, isDiscount: boolean) => {
+  //   return (
+  //     <Button
+  //       style={[styles.buttonStyle, true ? { backgroundColor: theme.colors.APP_GREEN } : null]}
+  //       titleTextStyle={[styles.buttonTextStyle, true ? { color: theme.colors.WHITE } : null]}
+  //       title={item.from}
+  //     />
+  //   );
+  // };
   const renderDiscount = () => {
     return (
       <View
@@ -202,6 +211,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           style={{ marginTop: 10, marginLeft: 0 }}
         />
         <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
+        {/* <View style={styles.optionsView}>
+          {discountarray.map((item) => {
+            return renderButton(item, true);
+          })}
+        </View> */}
         <InputField
           maxLength={3}
           fromPlaceholder={'Discount'}
