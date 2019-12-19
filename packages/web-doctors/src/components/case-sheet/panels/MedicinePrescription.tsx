@@ -1339,6 +1339,7 @@ export const MedicinePrescription: React.FC = () => {
                       setLoading(false);
                       setMedicine('');
                       setTabletsCount(0);
+                      setMedicineUnit('TABLET');
                       setConsumptionDuration('');
                       setDaySlots([
                         {
