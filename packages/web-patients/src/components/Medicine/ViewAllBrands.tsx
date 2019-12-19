@@ -168,34 +168,7 @@ export const ViewAllBrands: React.FC = (props) => {
   };
   const classes = useStyles();
 
-  const alphabets = [
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
-    'f',
-    'g',
-    'h',
-    'i',
-    'j',
-    'k',
-    'l',
-    'm',
-    'n',
-    'o',
-    'p',
-    'q',
-    'r',
-    's',
-    't',
-    'u',
-    'v',
-    'w',
-    'x',
-    'y',
-    'z',
-  ];
+  const alphabets:string[] = ("abcdefghijklmnopqrstuvwxyz").split("");
   const [selectedAlphabates, setSelectedAlphabates] = useState('a');
   const alphabetFilter = alphabets.map((letter, index) => (
     <li key={index}>
@@ -208,8 +181,9 @@ export const ViewAllBrands: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [showData, setShowData] = useState<filter[] | []>([]);
 
-  const getAllBrands = async () => {
-    await axios
+  
+  useEffect(() => {
+     axios
       .post(
         apiDetails.url!,
         {},
@@ -228,12 +202,7 @@ export const ViewAllBrands: React.FC = (props) => {
       .catch((e) => {
         setLoading(false);
       });
-  };
-  useEffect(() => {
-    if (apiDetails.url != null) {
-      getAllBrands();
-    }
-  }, []);
+  }, );
 
   useEffect(() => {
     let filterData: filter[] = [];
@@ -250,7 +219,7 @@ export const ViewAllBrands: React.FC = (props) => {
     if (showData && showData.length > 0) {
     }
   }, [selectedAlphabates, data]);
-  const groupBy = (list: filter[], keyGetter: any) => {
+  const groupBy = (list: filter[], keyGetter: (brand: filter) => String) => {
     const map = new Map();
     list &&
       list.forEach((item: filter) => {
