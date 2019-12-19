@@ -808,7 +808,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1346,8 +1346,22 @@ export const MedicinePrescription: React.FC = () => {
                       id: 'react-autosuggest-simple',
                       placeholder: 'Search',
                       value: state.single,
-
                       onChange: handleChange('single'),
+                      onKeyPress: (e) => {
+                        if (e.which == 13 || e.keyCode == 13) {
+                          if (suggestions.length === 1) {
+                            setState({
+                              single: '',
+                              popper: '',
+                            });
+                            setShowDosage(true);
+                            setSelectedValue(suggestions[0].label);
+                            setSelectedId(suggestions[0].sku);
+                            setLoading(false);
+                            setMedicine('');
+                          }
+                        }
+                      },
                     }}
                     theme={{
                       container: classes.container,
@@ -1400,8 +1414,8 @@ export const MedicinePrescription: React.FC = () => {
                         <AphTextField
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount === 0 ? '' : tabletsCount}
-                          onChange={(event) => {
-                            setTabletsCount(Number(event.target.value));
+                          onChange={(event: any) => {
+                            setTabletsCount(event.target.value);
                           }}
                           error={errorState.dosageErr}
                         />
