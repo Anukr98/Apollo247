@@ -911,60 +911,58 @@ export const JDConsultRoom: React.FC = () => {
       });
     }
 
-    if (diagnosis || flag) {
-      setSaving(true);
-      client
-        .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
-          mutation: MODIFY_CASESHEET,
-          variables: {
-            ModifyCaseSheetInput: {
-              symptoms: symptomsFinal,
-              notes: notesJrd.length > 0 ? notesJrd : null,
-              diagnosis: diagnosisFinal,
-              diagnosticPrescription: diagnosticPrescriptionFinal,
-              followUp: false,
-              followUpAfterInDays: 0,
-              otherInstructions: otherInstructionsFinal,
-              medicinePrescription: medicinePrescriptionFinal,
-              id: caseSheetId,
-              status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
-              lifeStyle: lifeStyle,
-              familyHistory: familyHistory,
-              dietAllergies: dietAllergies,
-              drugAllergies: drugAllergies,
-              height: height,
-              menstrualHistory: menstrualHistory,
-              pastMedicalHistory: pastMedicalHistory,
-              pastSurgicalHistory: pastSurgicalHistory,
-              temperature: temperature,
-              weight: weight,
-              bp: bp,
-            },
+    // if (diagnosis || flag) {
+    setSaving(true);
+    client
+      .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
+        mutation: MODIFY_CASESHEET,
+        variables: {
+          ModifyCaseSheetInput: {
+            symptoms: symptomsFinal,
+            notes: notesJrd.length > 0 ? notesJrd : null,
+            diagnosis: diagnosisFinal,
+            diagnosticPrescription: diagnosticPrescriptionFinal,
+            followUp: false,
+            followUpAfterInDays: 0,
+            otherInstructions: otherInstructionsFinal,
+            medicinePrescription: medicinePrescriptionFinal,
+            id: caseSheetId,
+            status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
+            lifeStyle: lifeStyle,
+            familyHistory: familyHistory,
+            dietAllergies: dietAllergies,
+            drugAllergies: drugAllergies,
+            height: height,
+            menstrualHistory: menstrualHistory,
+            pastMedicalHistory: pastMedicalHistory,
+            pastSurgicalHistory: pastSurgicalHistory,
+            temperature: temperature,
+            weight: weight,
+            bp: bp,
           },
-          fetchPolicy: 'no-cache',
-        })
-        .then((_data) => {
-          // savePatientAllergiesMutation();
-          // savePatientFamilyHistoryMutation();
-          // savePatientLifeStyleMutation();
-          setSaving(false);
-        })
-        .catch((e) => {
-          const error = JSON.parse(JSON.stringify(e));
-          const errorMessage = error && error.message;
-          alert(errorMessage);
-          setSaving(false);
-        });
-    }
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        setSaving(false);
+        if (!flag) {
+          setIsDialogOpen(true);
+        }
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        alert(errorMessage);
+        setSaving(false);
+      });
+    //}
   };
 
   const endConsultAction = () => {
-    mutationRemoveConsult();
-    // savePatientAllergiesMutation();
-    // savePatientFamilyHistoryMutation();
-    // savePatientLifeStyleMutation();
-    setIsDialogOpen(true);
-    saveCasesheetAction(false, true);
+    // open confirmation popup after removing from queue
+    mutationRemoveConsult().then(() => {
+      saveCasesheetAction(false, true);
+    });
   };
 
   // this will trigger end consult automatically after one minute
@@ -1342,30 +1340,6 @@ export const JDConsultRoom: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* <Dialog
-        open={isAutoSubmitDialogOpened}
-        onClose={() => setIsAutoSubmitDialogOpened(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Auto Action</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Casesheet has been auto submitted.</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            color="primary"
-            onClick={() => {
-              setIsAutoSubmitDialogOpened(false);
-              window.location.href = clientRoutes.juniorDoctor();
-            }}
-            autoFocus
-          >
-            Ok
-          </Button>
-        </DialogActions>
-      </Dialog> */}
     </div>
   );
 };
