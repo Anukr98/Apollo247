@@ -194,7 +194,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient!.id) {
+    if (currentPatient && profile.id !== currentPatient.id) {
       setLoadingContext!(true);
       setProfile(currentPatient!);
       ordersRefetch().then((data: any) => {
@@ -1715,7 +1715,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
                 <View style={styles.nameTextContainerStyle}>
                   <Text style={styles.nameTextStyle} numberOfLines={1}>
-                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                    {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
                 </View>
