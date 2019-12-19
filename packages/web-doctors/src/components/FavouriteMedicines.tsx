@@ -606,7 +606,7 @@ export const FavouriteMedicines: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<any>();
+  const [tabletsCount, setTabletsCount] = React.useState<number>();
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -1020,7 +1020,7 @@ export const FavouriteMedicines: React.FC = () => {
 
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount('');
+      setTabletsCount(0);
       setMedicineUnit('TABLET');
       setSelectedValue('');
       setSelectedId('');
@@ -1407,7 +1407,7 @@ export const FavouriteMedicines: React.FC = () => {
                           <h6>Dosage*</h6>
                           <AphTextField
                             inputProps={{ maxLength: 6 }}
-                            value={tabletsCount}
+                            value={tabletsCount === 0 ? '' : tabletsCount}
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
                             }}
