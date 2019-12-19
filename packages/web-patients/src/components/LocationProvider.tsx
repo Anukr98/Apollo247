@@ -5,24 +5,35 @@ export interface LocationContextProps {
   currentLocation: string | null;
   currentLat: string | null;
   currentLong: string | null;
-  setCurrentLocation: Function;
-  setCurrentLat: Function;
-  setCurrentLong: Function;
+  currentPincode: string | null;
+  setCurrentLocation: (currentLocation: string) => void;
+  setCurrentLat: (currentLat: string) => void;
+  setCurrentLong: (currentLong: string) => void;
+  setCurrentPincode: (currenPincode: string) => void;
+}
+
+interface Address {
+  long_name: string;
+  short_name: string;
+  types: Array<string>;
 }
 
 export const LocationContext = React.createContext<LocationContextProps>({
   currentLocation: null,
   currentLat: null,
   currentLong: null,
+  currentPincode: null,
   setCurrentLocation: () => {},
   setCurrentLat: () => {},
   setCurrentLong: () => {},
+  setCurrentPincode: () => {},
 });
 
 export const LocationProvider: React.FC = (props) => {
   const [currentLocation, setCurrentLocation] = useState<string>('');
-  const [currentLat, setCurrentLat] = useState<string>('');
-  const [currentLong, setCurrentLong] = useState<string>('');
+  const [currentLat, setCurrentLat] = useState<string | null>(null);
+  const [currentLong, setCurrentLong] = useState<string | null>(null);
+  const [currentPincode, setCurrentPincode] = useState<string>('');
 
   useEffect(() => {
     const currentAddress = localStorage.getItem('currentAddress');
@@ -36,8 +47,13 @@ export const LocationProvider: React.FC = (props) => {
       axios.get(url).then((res) => {
         if (res && res.data && res.data.results[0]) {
           const { lat, lng } = res.data.results[0].geometry.location;
+          const addrComponents = res.data.results[0].address_components || [];
+          const _pincode = (
+            addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
+          ).long_name;
           setCurrentLat(lat.toString());
           setCurrentLong(lng.toString());
+          setCurrentPincode(_pincode);
         }
       });
     } else {
@@ -50,11 +66,13 @@ export const LocationProvider: React.FC = (props) => {
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
             )
             .then((res) => {
-              localStorage.setItem(
-                'currentAddress',
-                res.data.results[0].address_components[2].short_name
-              );
-              setCurrentLocation(res.data.results[0].address_components[2].short_name);
+              const addrComponents = res.data.results[0].address_components || [];
+              const _pincode = (
+                addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
+              ).long_name;
+              localStorage.setItem('currentAddress', addrComponents[2].short_name);
+              setCurrentLocation(addrComponents[2].short_name);
+              setCurrentPincode(_pincode);
             });
         },
         (err) => {
@@ -78,6 +96,8 @@ export const LocationProvider: React.FC = (props) => {
         setCurrentLocation,
         setCurrentLat,
         setCurrentLong,
+        currentPincode,
+        setCurrentPincode,
       }}
     >
       {props.children}

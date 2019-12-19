@@ -224,10 +224,16 @@ const getPatientPrismMedicalRecords: Resolver<
     throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
   }
 
+  //get authtoken for the logged in user mobile number
+  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
+
+  if (!prismUHIDAuthToken)
+    throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
+
   //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
   const formattedLabResults: LabTestResult[] = [];
-  const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
+  const labResults = await patientsRepo.getPatientLabResults(uhid, prismUHIDAuthToken);
   const labResultLog = {
     message: 'LabResults API Response',
     time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
@@ -276,7 +282,7 @@ const getPatientPrismMedicalRecords: Resolver<
   });
 
   const formattedHealthChecks: HealthCheckResult[] = [];
-  const healthChecks = await patientsRepo.getPatientHealthChecks(uhid, prismAuthToken);
+  const healthChecks = await patientsRepo.getPatientHealthChecks(uhid, prismUHIDAuthToken);
   const healthChecksLog = {
     message: 'HealthChecks API Response',
     time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
@@ -307,7 +313,7 @@ const getPatientPrismMedicalRecords: Resolver<
   });
 
   const formattedHospitalizations: HospitalizationResult[] = [];
-  const hospitalizations = await patientsRepo.getPatientHospitalizations(uhid, prismAuthToken);
+  const hospitalizations = await patientsRepo.getPatientHospitalizations(uhid, prismUHIDAuthToken);
   const hospitalizationsLog = {
     message: 'Hospitalizations API Response',
     time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),

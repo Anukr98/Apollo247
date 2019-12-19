@@ -18,7 +18,11 @@ export interface MedicineProduct {
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
 }
-
+export interface Brand {
+  category_id: string;
+  image_url: number;
+  title: string;
+}
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
 
 export interface PharmaOverview {

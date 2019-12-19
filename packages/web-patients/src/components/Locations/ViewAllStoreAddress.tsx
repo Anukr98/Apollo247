@@ -3,7 +3,7 @@ import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React, { useState, useEffect } from 'react';
 import { AphRadio, AphTextField } from '@aph/web-ui-components';
 import { StoreAddresses } from 'components/Locations/StorePickUp';
-import axios, { AxiosError, Cancel } from 'axios';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -63,69 +63,50 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+export interface StoreAddresses {
+  address: string;
+  city: string;
+  message: string;
+  phone: string;
+  state: string;
+  storeid: string;
+  storename: string;
+  workinghrs: string;
+}
+
 interface ViewAllStoreAddressProps {
-  pincode: string;
-  stores: StoreAddresses[];
+  pincode: string | null;
   setStoreAddress: (storeAddressId: string) => void;
+  storeAddresses: StoreAddresses[];
+  setStoreAddresses: (storeAddresses: StoreAddresses[]) => void;
+  getPharmacyAddresses: (pinCode: string) => void;
+  pincodeError: boolean;
+  setPincodeError: (pincodeError: boolean) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  setPincode: (pincode: string) => void;
+  storeAddressId: string;
+  setStoreAddressId: (storeAddressId: string) => void;
 }
 
 export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) => {
-  const classes = useStyles();
-  const [pincode, setPincode] = React.useState<string>(props.pincode || '');
-  const [storeAddresses, setStoreAddresses] = React.useState<StoreAddresses[]>(props.stores || []);
-  const [storeAddressId, setStoreAddressId] = React.useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [pincodeError, setPincodeError] = useState<boolean>(false);
-
-  const getPharmacyAddresses = (pincode: string) => {
-    axios
-      .post(
-        process.env.PHARMACY_MED_PHARMACIES_LIST_URL,
-        { params: pincode },
-        {
-          headers: {
-            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
-          },
-          transformRequest: [
-            (data, headers) => {
-              delete headers.common['Content-Type'];
-              return JSON.stringify(data);
-            },
-          ],
-        }
-      )
-      .then((result) => {
-        setTimeout(() => {
-          const stores = result.data.Stores ? result.data.Stores : [];
-          if (stores && stores[0] && stores[0].message !== 'Data Not Available') {
-            setTimeout(() => {
-              setStoreAddresses(stores);
-            }, 500);
-          } else {
-            setStoreAddresses([]);
-            setPincodeError(true);
-          }
-          setLoading(false);
-        }, 1000);
-      })
-      .catch((thrown: AxiosError | Cancel) => {
-        alert('An error occurred while fetching Stores.');
-      });
-  };
+  const classes = useStyles({});
+  // const [storeAddressId, setStoreAddressId] = React.useState<string>("");
+  const { setDeliveryPincode } = useShoppingCart();
 
   useEffect(() => {
-    if (pincode.length === 6) {
-      setLoading(true);
-      getPharmacyAddresses(pincode);
+    if (props.pincode && props.pincode.length === 6) {
+      props.setLoading(true);
+      props.getPharmacyAddresses(props.pincode);
     }
-  }, [pincode]);
+  }, [props.pincode]);
 
   return (
     <div className={classes.root}>
       <div className={classes.addressGroup}>
         <div className={classes.pinSearch}>
           <AphTextField
-            value={pincode}
+            value={props.pincode}
             placeholder="Enter Pincode"
             inputProps={{
               maxLength: 6,
@@ -136,37 +117,38 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
             }}
             onChange={(e) => {
               const newPincode = e.target.value;
-              setPincode(e.target.value);
               if (newPincode.length === 6) {
-                setLoading(true);
-                getPharmacyAddresses(newPincode);
+                props.setLoading(true);
+                props.getPharmacyAddresses(newPincode);
+                setDeliveryPincode && setDeliveryPincode(newPincode);
               } else if (newPincode === '') {
-                setStoreAddresses([]);
-                setPincodeError(false);
+                props.setStoreAddresses([]);
+                props.setPincodeError(false);
               }
+              props.setPincode(newPincode);
             }}
           />
         </div>
 
-        {storeAddresses.length > 0 ? (
+        {props.storeAddresses.length > 0 ? (
           <>
             <div className={classes.sectionHeader}>Stores In This Region</div>
-            {loading ? (
+            {props.loading ? (
               <CircularProgress />
             ) : (
               <ul>
-                {storeAddresses.map((addressDetails, index) => {
+                {props.storeAddresses.map((addressDetails: StoreAddresses, index: number) => {
                   const storeAddress = addressDetails.address.replace(' -', ' ,');
                   return (
                     <li key={index}>
                       <FormControlLabel
-                        checked={storeAddressId === addressDetails.storeid}
+                        checked={props.storeAddressId === addressDetails.storeid}
                         className={classes.radioLabel}
                         value={addressDetails.storeid}
                         control={<AphRadio color="primary" />}
                         label={storeAddress}
                         onChange={() => {
-                          setStoreAddressId(addressDetails.storeid);
+                          props.setStoreAddressId(addressDetails.storeid);
                           props.setStoreAddress(addressDetails.storeid);
                         }}
                       />
@@ -178,7 +160,7 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
           </>
         ) : null}
 
-        {pincodeError ? (
+        {props.pincodeError ? (
           <div className={classes.noAddress}>
             Sorry! We're working hard to get to this area! In the meantime, you can either pick up
             from a nearby store, or change the pincode.
