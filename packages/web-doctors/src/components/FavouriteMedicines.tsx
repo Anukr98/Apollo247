@@ -922,7 +922,7 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1041,7 +1041,7 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
