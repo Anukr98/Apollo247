@@ -270,7 +270,9 @@ export const ViewAllBrands: React.FC = (props) => {
                           grouped.get(alpha.toUpperCase()).length > 0 &&
                           grouped.get(alpha.toUpperCase()).map((brand: filter) => (
                             <li>
-                              <Link to={clientRoutes.medicineSearchByBrand()}>
+                              <Link
+                                to={clientRoutes.medicineSearchByBrand(brand.value.category_id)}
+                              >
                                 {brand.value.title}
                               </Link>
                             </li>
