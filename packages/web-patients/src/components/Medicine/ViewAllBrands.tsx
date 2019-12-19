@@ -156,7 +156,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 export interface filter {
-  key: string;
+  key: String;
   value: Brand;
 }
 
@@ -206,7 +206,7 @@ export const ViewAllBrands: React.FC = (props) => {
   ));
   const [data, setData] = useState<Brand[] | null>([]);
   const [loading, setLoading] = useState(false);
-  const [showData, setShowData] = useState<filter[] | null>([]);
+  const [showData, setShowData] = useState<filter[] | []>([]);
 
   const getAllBrands = async () => {
     await axios
@@ -220,7 +220,8 @@ export const ViewAllBrands: React.FC = (props) => {
           },
         }
       )
-      .then((res: any) => {
+      .then((res) => {
+
         if (res && res.data && res.data.brands) setData(res.data.brands);
         setLoading(false);
       })
@@ -238,24 +239,21 @@ export const ViewAllBrands: React.FC = (props) => {
     let filterData: filter[] = [];
     if (data && data.length > 0) {
       data.map((val: Brand, index: number) => {
-        console.log(val.title.substring(0, 1), selectedAlphabates.toLocaleUpperCase());
         var obj = {
           key: val.title.substring(0, 1),
           value: val,
         };
         filterData.push(obj);
       });
-      console.log(filterData);
     }
     setShowData(filterData);
     if (showData && showData.length > 0) {
-      console.log(grouped.get('A'));
     }
   }, [selectedAlphabates, data]);
-  const groupBy = (list: any, keyGetter: any) => {
+  const groupBy = (list: filter[], keyGetter: any) => {
     const map = new Map();
     list &&
-      list.forEach((item: any) => {
+      list.forEach((item: filter) => {
         const key = keyGetter(item);
         const collection = map.get(key);
         if (!collection) {
@@ -266,7 +264,7 @@ export const ViewAllBrands: React.FC = (props) => {
       });
     return map;
   };
-  const grouped = groupBy(showData, (brand: any) => brand.key);
+  const grouped = groupBy(showData, (brand: filter) => brand.key);
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -291,487 +289,28 @@ export const ViewAllBrands: React.FC = (props) => {
           <div className={classes.filterSection}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 212px)'}>
               <div className={classes.customScroll}>
-                <div className={classes.brandRow}>
-                  <div id="a" className={classes.brandType}>
-                    {selectedAlphabates.toLocaleUpperCase()}
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('A').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="b" className={classes.brandType}>
-                    B
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('B').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="c" className={classes.brandType}>
-                    C
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('C').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="d" className={classes.brandType}>
-                    D
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('D').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className={classes.brandRow}>
-                  <div id="e" className={classes.brandType}>
-                    E
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('E').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="f" className={classes.brandType}>
-                    F
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('F').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className={classes.brandRow}>
-                  <div id="g" className={classes.brandType}>
-                    G
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('G').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="h" className={classes.brandType}>
-                    H
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('H').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="i" className={classes.brandType}>
-                    I
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('I').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="j" className={classes.brandType}>
-                    J
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('J').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className={classes.brandRow}>
-                  <div id="k" className={classes.brandType}>
-                    K
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('K').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className={classes.brandRow}>
-                  <div id="l" className={classes.brandType}>
-                    L
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('L').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className={classes.brandRow}>
-                  <div id="m" className={classes.brandType}>
-                    M
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('M').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="n" className={classes.brandType}>
-                    N
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('N').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className={classes.brandRow}>
-                  <div id="o" className={classes.brandType}>
-                    O
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('O').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="p" className={classes.brandType}>
-                    P
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('P').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="q" className={classes.brandType}>
-                    Q
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('Q').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="r" className={classes.brandType}>
-                    R
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('R').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="s" className={classes.brandType}>
-                    S
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('S').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="t" className={classes.brandType}>
-                    T
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('T').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="u" className={classes.brandType}>
-                    U
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        (grouped.get('U') &&
-                          grouped.get('U').length > 0 &&
-                          grouped.get('U').map((brand: any) => (
+                {alphabets.map((alpha: string) => (
+                  <div className={classes.brandRow}>
+                    <div id={alpha} className={classes.brandType}>
+                      {alpha.toUpperCase()}
+                    </div>
+                    <div className={classes.brandList}>
+                      <ul>
+                        {showData &&
+                          showData.length > 0 &&
+                          grouped.get(alpha.toUpperCase()) &&
+                          grouped.get(alpha.toUpperCase()).length > 0 &&
+                          grouped.get(alpha.toUpperCase()).map((brand: filter) => (
                             <li>
                               <Link to={clientRoutes.medicineSearchByBrand()}>
                                 {brand.value.title}
                               </Link>
                             </li>
-                          )))}
-                    </ul>
+                          ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="v" className={classes.brandType}>
-                    V
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('V').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className={classes.brandRow}>
-                  <div id="w" className={classes.brandType}>
-                    W
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        (grouped.get('W') &&
-                          grouped.get('W').length > 0 &&
-                          grouped.get('W').map((brand: any) => (
-                            <li>
-                              <Link to={clientRoutes.medicineSearchByBrand()}>
-                                {brand.value.title}
-                              </Link>
-                            </li>
-                          )))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="x" className={classes.brandType}>
-                    X
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        (grouped.get('X') &&
-                          grouped.get('X').length > 0 &&
-                          grouped.get('X').map((brand: any) => (
-                            <li>
-                              <Link to={clientRoutes.medicineSearchByBrand()}>
-                                {brand.value.title}
-                              </Link>
-                            </li>
-                          )))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="y" className={classes.brandType}>
-                    Y
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('Y').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className={classes.brandRow}>
-                  <div id="z" className={classes.brandType}>
-                    Z
-                  </div>
-                  <div className={classes.brandList}>
-                    <ul>
-                      {showData &&
-                        showData.length > 0 &&
-                        grouped.get('Z').map((brand: any) => (
-                          <li>
-                            <Link to={clientRoutes.medicineSearchByBrand()}>
-                              {brand.value.title}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
+                ))}
               </div>
             </Scrollbars>
           </div>
