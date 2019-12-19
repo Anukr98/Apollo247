@@ -602,7 +602,7 @@ export const FavouriteMedicines: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [tabletsCount, setTabletsCount] = React.useState<any>();
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -1016,7 +1016,7 @@ export const FavouriteMedicines: React.FC = () => {
 
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount('');
       setMedicineUnit('TABLET');
       setSelectedValue('');
       setSelectedId('');
