@@ -1400,8 +1400,8 @@ export const MedicinePrescription: React.FC = () => {
                         <AphTextField
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount === 0 ? '' : tabletsCount}
-                          onChange={(event: any) => {
-                            setTabletsCount(event.target.value);
+                          onChange={(event) => {
+                            setTabletsCount(Number(event.target.value));
                           }}
                           error={errorState.dosageErr}
                         />
