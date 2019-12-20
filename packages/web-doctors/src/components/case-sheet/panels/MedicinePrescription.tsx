@@ -1263,20 +1263,12 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
+                    setIsUpdate(false);
                   }}
                 >
                   Cancel
                 </AphButton>
-                {isUpdate ? (
-                  <AphButton
-                    color="primary"
-                    onClick={() => {
-                      addUpdateMedicines();
-                    }}
-                  >
-                    Add Favourite Medicine
-                  </AphButton>
-                ) : (
+                {
                   <AphButton
                     color="primary"
                     className={classes.updateBtn}
@@ -1286,7 +1278,7 @@ export const MedicinePrescription: React.FC = () => {
                   >
                     Add Medicine
                   </AphButton>
-                )}
+                }
               </div>
             </div>
           </Paper>
@@ -1574,6 +1566,7 @@ export const MedicinePrescription: React.FC = () => {
                     onClick={() => {
                       setIsDialogOpen(false);
                       setShowDosage(false);
+                      setIsUpdate(false);
                     }}
                   >
                     Cancel
