@@ -132,7 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface MedicineFilterProps {
-  medicineFiltercall: (value: MedicineProduct[]) => void;
+  medicineFiltercall?: (value: MedicineProduct[]) => void;
 }
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
