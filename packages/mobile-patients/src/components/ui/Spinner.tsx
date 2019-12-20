@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, View, Platform, StyleProp, ViewStyle } from 'react-native';
-import { DotLoader } from './Loader';
+import { DotLoader } from './DotLoader';
 
 export interface SpinnerProps {
   style?: StyleProp<ViewStyle>;
