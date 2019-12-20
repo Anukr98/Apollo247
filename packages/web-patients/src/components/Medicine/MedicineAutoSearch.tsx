@@ -155,7 +155,6 @@ export const MedicineAutoSearch: React.FC = (props) => {
           className={classes.searchInput}
           onChange={(e) => {
             setSearchText(e.target.value);
-            // sessionStorage.setItem('medicineSearch', e.target.value);
             if (e.target.value.length > 2) {
               onSearchMedicine(e.target.value);
             } else {
@@ -166,7 +165,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
         <AphButton
           disabled={searchText.length < 3}
           className={classes.searchBtn}
-          onClick={() => (window.location.href = clientRoutes.searchByMedicine(searchText))}
+          onClick={() => (window.location.href = clientRoutes.searchByMedicine())}
           classes={{
             disabled: classes.searchBtnDisabled,
           }}
