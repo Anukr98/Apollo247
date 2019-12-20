@@ -7,6 +7,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import axios from 'axios';
+import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -186,7 +187,9 @@ export const SearchByBrand: React.FC = (props) => {
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
-                  <MedicineCard data={data} />
+                  <MedicinesCartContext.Consumer>
+                    {() => <MedicineCard data={data} />}
+                  </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
             </div>

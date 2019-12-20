@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import axios from 'axios';
 import { spawn } from 'child_process';
 
@@ -79,27 +80,57 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
 
   return (
     <Grid container spacing={2}>
       {props.data &&
         props.data.length > 0 &&
-        props.data.map((products: products) => (
+        props.data.map((product: products) => (
           <Grid item xs={6} sm={6} md={4} lg={4}>
             <div className={classes.root}>
               <div className={classes.bigAvatar}>
-                <img src={`${apiDetails.imageUrl}${products.image}`} alt="" />
+                <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
                 {/* <img src={require('images/category/img_product.png')} alt="" /> */}
               </div>
-              {products.name}
+              {product.name}
               <div className={classes.priceGroup}>
-                Rs. {products.special_price ? products.special_price : products.price}{' '}
-                {products.special_price && (
-                  <span className={classes.regularPrice}>(Rs. {products.price})</span>
+                Rs. {product.special_price ? product.special_price : product.price}{' '}
+                {product.special_price && (
+                  <span className={classes.regularPrice}>(Rs. {product.price})</span>
                 )}
               </div>
-              {products.is_in_stock ? (
-                <AphButton className={classes.addToCartBtn}>Add To Cart</AphButton>
+              {product.is_in_stock ? (
+                <AphButton
+                  className={classes.addToCartBtn}
+                  onClick={() => {
+                    const cartItem: MedicineCartItem = {
+                      description: product.description,
+                      id: product.id,
+                      image: product.image,
+                      is_in_stock: product.is_in_stock,
+                      is_prescription_required: product.is_prescription_required,
+                      name: product.name,
+                      price: product.price,
+                      sku: product.sku,
+                      special_price: product.special_price,
+                      small_image: product.small_image,
+                      status: product.status,
+                      thumbnail: product.thumbnail,
+                      type_id: product.type_id,
+                      mou: product.mou,
+                      quantity: 1,
+                    };
+                    const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                    if (index >= 0) {
+                      updateCartItem && updateCartItem(cartItem);
+                    } else {
+                      addCartItem && addCartItem(cartItem);
+                    }
+                  }}
+                >
+                  Add To Cart
+                </AphButton>
               ) : (
                 <span>Out of stock</span>
               )}
