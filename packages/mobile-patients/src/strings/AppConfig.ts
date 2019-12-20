@@ -374,7 +374,7 @@ export const NeedHelp = [
     ],
   },
   {
-    category: 'Diagonostics',
+    category: 'Diagnostics',
     options: [
       'Payment Issues while ordering',
       'Sample pick up related',
