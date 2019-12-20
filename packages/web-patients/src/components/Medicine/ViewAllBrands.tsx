@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
 import axios from 'axios';
@@ -168,7 +168,7 @@ export const ViewAllBrands: React.FC = (props) => {
   };
   const classes = useStyles();
 
-  const alphabets:string[] = ("abcdefghijklmnopqrstuvwxyz").split("");
+  const alphabets: string[] = 'abcdefghijklmnopqrstuvwxyz'.split('');
   const [selectedAlphabates, setSelectedAlphabates] = useState('a');
   const alphabetFilter = alphabets.map((letter, index) => (
     <li key={index}>
@@ -181,9 +181,8 @@ export const ViewAllBrands: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [showData, setShowData] = useState<filter[] | []>([]);
 
-  
   useEffect(() => {
-     axios
+    axios
       .post(
         apiDetails.url!,
         {},
@@ -195,14 +194,13 @@ export const ViewAllBrands: React.FC = (props) => {
         }
       )
       .then((res) => {
-
         if (res && res.data && res.data.brands) setData(res.data.brands);
         setLoading(false);
       })
       .catch((e) => {
         setLoading(false);
       });
-  }, );
+  }, []);
 
   useEffect(() => {
     let filterData: filter[] = [];
@@ -256,6 +254,7 @@ export const ViewAllBrands: React.FC = (props) => {
             <ul>{alphabetFilter}</ul>
           </div>
           <div className={classes.filterSection}>
+            {loading && <CircularProgress size={40} />}
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 212px)'}>
               <div className={classes.customScroll}>
                 {alphabets.map((alpha: string) => (
@@ -271,7 +270,9 @@ export const ViewAllBrands: React.FC = (props) => {
                           grouped.get(alpha.toUpperCase()).length > 0 &&
                           grouped.get(alpha.toUpperCase()).map((brand: filter) => (
                             <li>
-                              <Link to={clientRoutes.medicineSearchByBrand()}>
+                              <Link
+                                to={clientRoutes.medicineSearchByBrand(brand.value.category_id)}
+                              >
                                 {brand.value.title}
                               </Link>
                             </li>
