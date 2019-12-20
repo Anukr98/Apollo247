@@ -157,14 +157,11 @@ app.get('/consultpayment', (req, res) => {
           });
         } else {
           axios
-            .post(
-              'http://rest.askapollo.com:9047/restservice.svc/GetMarchantIdAnonymousforSourceApp',
-              {
-                AdminId: 'AskApollo',
-                AdminPassword: 'AskApollo',
-                sourceApp: '7729FD68-C552-4C90-B31E-98AA6C84FEBF~web',
-              }
-            )
+            .post(process.env.CONSULT_MERCHANT_URL, {
+              AdminId: process.env.CONSULT_MERCHANT_ADMINID,
+              AdminPassword: process.env.CONSULT_MERCHANT_ADMINID,
+              sourceApp: process.env.CONSULT_SOURCE_APP,
+            })
             .then((resp) => {
               console.log(resp.data, resp.data.Result);
               req.session.appointmentId = req.query.appointmentId;
@@ -175,7 +172,8 @@ app.get('/consultpayment', (req, res) => {
                 patientId: req.query.patientId,
                 patientName: response.data.data.getAthsToken.patient.firstName,
                 mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
-                baseUrl: 'https://aph.dev.pmt.popcornapps.com',
+                baseUrl: process.env.APP_BASE_URL,
+                pgUrl: process.env.CONSULT_PG_URL,
               });
             })
             .catch((err) => {
