@@ -407,7 +407,7 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
         }
       })
       .catch((_) => {
-        reject('Unable to get location4.');
+        reject('Unable to get location.');
       });
   });
 };

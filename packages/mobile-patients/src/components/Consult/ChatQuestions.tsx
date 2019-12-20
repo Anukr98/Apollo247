@@ -136,10 +136,7 @@ const slides: Slide[] = [
     index: 0,
     title: 'What is your height?',
     inputPlacerholder: 'Enter height…',
-    dropDown: [
-      { key: '1', value: 'cm' },
-      { key: '2', value: 'ft' },
-    ],
+    dropDown: [{ key: '1', value: 'cm' }, { key: '2', value: 'ft' }],
     inputData: ['value', 'drop'],
     keyboardType: 'number-pad',
   },
