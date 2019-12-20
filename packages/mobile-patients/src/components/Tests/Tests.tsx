@@ -192,7 +192,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (currentPatient && profile.id !== currentPatient.id) {
       setLoadingContext!(true);
-      setProfile(currentPatient!);
+      setProfile(currentPatient);
       ordersRefetch().then((data: any) => {
         const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
         setOrdersFetched(orderData);
