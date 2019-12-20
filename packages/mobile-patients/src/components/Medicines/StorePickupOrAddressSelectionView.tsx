@@ -4,13 +4,13 @@ import { TabsComponent } from '../ui/TabsComponent';
 import { theme } from '../../theme/theme';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { TextInputComponent } from '../ui/TextInputComponent';
-import { searchPickupStoresApi, pinCodeServiceabilityApi } from '../../helpers/apiCalls';
+import { searchPickupStoresApi, pinCodeServiceabilityApi, Store } from '../../helpers/apiCalls';
 import { RadioSelectionItem } from './RadioSelectionItem';
 import { AppRoutes } from '../NavigatorContainer';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
 import { useUIElements } from '../UIElementsProvider';
 import { aphConsole, handleGraphQlError, formatAddress } from '../../helpers/helperFunctions';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -46,6 +46,52 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
 
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
+
+  const [slicedStoreList, setSlicedStoreList] = useState<Store[]>([]);
+  const [slicedAddressList, setSlicedAddressList] = useState<
+    savePatientAddress_savePatientAddress_patientAddress[]
+  >([]);
+
+  const updateStoreSelection = () => {
+    const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
+    const storesLength = stores.length;
+    const spliceStartIndex =
+      selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
+    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
+    const _slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    setSlicedStoreList(_slicedStoreList);
+  };
+
+  const updateAddressSelection = () => {
+    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+    const addressListLength = addresses.length;
+    const spliceStartIndex =
+      selectedAddressIndex == addressListLength - 1
+        ? selectedAddressIndex - 1
+        : selectedAddressIndex;
+    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
+    const _slicedAddressList = [...addresses].slice(startIndex, startIndex + 2);
+    setSlicedAddressList(_slicedAddressList);
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
+      updateStoreSelection();
+      updateAddressSelection();
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
+      updateStoreSelection();
+      updateAddressSelection();
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, [stores, storeId, addresses, deliveryAddressId]);
+
+  useEffect(() => {
+    pinCode.length !== 6 && setSlicedStoreList([]);
+  }, [pinCode]);
 
   const fetchStorePickup = (pincode: string) => {
     if (isValidPinCode(pincode)) {
@@ -92,13 +138,6 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   };
 
   const renderStorePickup = () => {
-    const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
-    const storesLength = stores.length;
-    const spliceStartIndex =
-      selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
-    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
-
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
         <TextInputComponent
@@ -154,14 +193,6 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   };
 
   const renderHomeDelivery = () => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
-    const addressListLength = addresses.length;
-    const spliceStartIndex =
-      selectedAddressIndex == addressListLength - 1
-        ? selectedAddressIndex - 1
-        : selectedAddressIndex;
-    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
@@ -180,7 +211,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
             <ActivityIndicator size="large" color="green" />
           </View>
         ) : null}
-        {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
+        {slicedAddressList.map((item, index, array) => {
           return (
             <RadioSelectionItem
               key={item.id}
