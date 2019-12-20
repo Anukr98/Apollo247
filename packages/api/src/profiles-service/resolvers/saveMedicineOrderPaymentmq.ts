@@ -256,31 +256,24 @@ const SaveMedicineOrderPaymentMq: Resolver<
   orderStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
 
   //medicine order in queue starts
-  const serviceBusConnectionString =
-    'Endpoint=sb://apollodevpopcorn.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zBbU2kCqxiBny22Zj7rCefaM930uJUYGKw3L/4AqNeQ=';
+  //const serviceBusConnectionString =
+  //'Endpoint=sb://apollodevpopcorn.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zBbU2kCqxiBny22Zj7rCefaM930uJUYGKw3L/4AqNeQ=';
+  const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
-  azureServiceBus.createTopicIfNotExists('orders', (topicError) => {
+  const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME
+    ? process.env.AZURE_SERVICE_BUS_QUEUE_NAME
+    : '';
+  azureServiceBus.createTopicIfNotExists(queueName, (topicError) => {
     if (topicError) {
       console.log('topic create error', topicError);
     }
-    console.log('connected to topic orders');
+    console.log('connected to topic', queueName);
     const message = 'MEDICINE_ORDER:' + orderDetails.orderAutoId + ':' + patientDetails.id;
-    azureServiceBus.sendTopicMessage('orders', message, (sendMsgError) => {
+    azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
       if (sendMsgError) {
         console.log('send message error', sendMsgError);
       }
       console.log('message sent to topic');
-      /*azureServiceBus.createSubscription('orders', 'supplier1', (error3) => {
-        if (error3) {
-          console.log('subscription error', error3);
-        }
-        azureServiceBus.receiveSubscriptionMessage('orders', 'supplier1', (error4, result) => {
-          if (error4) {
-            console.log('read error', error4);
-          }
-          console.log('message from topic', result.body);
-        });
-      });*/
     });
   });
   //medicine order in queue ends
