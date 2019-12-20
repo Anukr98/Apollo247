@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, View, Platform, StyleProp, ViewStyle } from 'react-native';
+import { DotLoader } from './Loader';
 
 export interface SpinnerProps {
   style?: StyleProp<ViewStyle>;
@@ -26,6 +27,7 @@ export const Spinner: React.FC<SpinnerProps> = (props) => {
         props.style,
       ]}
     >
+      {/* <DotLoader /> */}
       <ActivityIndicator animating={true} size="large" color="green" />
     </View>
   );
