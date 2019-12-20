@@ -140,8 +140,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
 
-  const url = window.location.pathname;
-  const id = url.substring(url.lastIndexOf('/') + 1);
+  const params = window.location.pathname;
+  const id = params.substring(params.lastIndexOf('/') + 1);
 
   const [subtxt, setSubtxt] = useState(id);
 
@@ -182,9 +182,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           placeholder="Search med, brands and more"
           onChange={(e) => {
             setSubtxt(e.target.value);
-
-            // sessionStorage.setItem('medicineSearch', e.target.value);
-            // var id = url.substring(url.lastIndexOf('/') + 1);
           }}
           value={subtxt}
         />
