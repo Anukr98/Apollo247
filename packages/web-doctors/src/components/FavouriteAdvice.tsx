@@ -265,6 +265,7 @@ export const FavouriteAdvice: React.FC = () => {
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
     setIdx(sum); */
+    setAdviceLoader(true);
 
     client
       .mutate<UpdateDoctorFavouriteAdvice, UpdateDoctorFavouriteAdviceVariables>({
@@ -274,8 +275,10 @@ export const FavouriteAdvice: React.FC = () => {
           instruction: item,
         },
       })
-      .then((data: any) => {
+      .then((data) => {
         console.log('data after mutation' + data);
+        setSelectedValues(data && data!.data!.updateDoctorFavouriteAdvice!.adviceList);
+        setAdviceLoader(false);
       });
   };
 
@@ -298,6 +301,7 @@ export const FavouriteAdvice: React.FC = () => {
   };
 
   const saveAdvice = (advice: string) => {
+    setAdviceLoader(true);
     client
       .mutate<AddDoctorFavouriteAdvice, AddDoctorFavouriteAdviceVariables>({
         mutation: ADD_DOCTOR_FAVOURITE_ADVICE,
@@ -306,17 +310,28 @@ export const FavouriteAdvice: React.FC = () => {
         },
       })
       .then((data) => {
-        console.log('data after mutation', data);
+        let temp = '';
+        if (
+          data &&
+          data.data &&
+          data.data.addDoctorFavouriteAdvice &&
+          data.data.addDoctorFavouriteAdvice.adviceList &&
+          data.data.addDoctorFavouriteAdvice.adviceList[0]!.id
+        ) {
+          temp = data!.data!.addDoctorFavouriteAdvice!.adviceList[0]!.id;
+        }
+
         if (advice.trim() !== '') {
           selectedValues &&
             selectedValues!.splice(idx, 0, {
               instruction: advice,
-              id: selectedValues[selectedValues.length - 1]!.id,
+              id: selectedValues.length > 0 ? selectedValues[selectedValues.length - 1]!.id! : temp,
               __typename: 'DoctorsFavouriteAdvice',
             });
           setSelectedValues(selectedValues);
           setIdx(selectedValues!.length + 1);
         }
+        setAdviceLoader(false);
       });
   };
   const client = useApolloClient();
@@ -329,7 +344,6 @@ export const FavouriteAdvice: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('_data ', _data);
         setSelectedValues(
           _data.data &&
             _data.data.getDoctorFavouriteAdviceList &&
@@ -407,40 +421,36 @@ export const FavouriteAdvice: React.FC = () => {
             <div>
               <div>
                 <div className={classes.dialogContent}>
-                    <div>
-                    <AphDialogTitle  className={classes.popupHeading } >
-                       <span className={classes.headingName}>FAVOURITE ADVICE</span>
-                      <Button className={classes.cross}
-                       onClick={() => {
-                        setShowAddInputText(false);
-                      }}
+                  <div>
+                    <AphDialogTitle className={classes.popupHeading}>
+                      <span className={classes.headingName}>FAVOURITE ADVICE</span>
+                      <Button
+                        className={classes.cross}
+                        onClick={() => {
+                          setShowAddInputText(false);
+                        }}
                       >
-                        
-                      <img
-                          src={require('images/ic_cross.svg')}
-                          alt=""
-                      />
+                        <img src={require('images/ic_cross.svg')} alt="" />
                       </Button>
-                  </AphDialogTitle>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          fullWidth
-                          placeholder="Type your favourite advice"
-                          className={classes.textFieldColor}
-                          value={advice}
-                          onChange={(event: any) => {
-                            setAdvice(event.target.value);
-                          }}
-                        />
+                    </AphDialogTitle>
+                    <div className={classes.numberTablets}>
+                      <AphTextField
+                        fullWidth
+                        placeholder="Type your favourite advice"
+                        className={classes.textFieldColor}
+                        value={advice}
+                        onChange={(event: any) => {
+                          setAdvice(event.target.value);
+                        }}
+                      />
 
                       {/* <AphTextField
                         fullWidth
                         className={classes.textFieldColor}
                         placeholder="What you enter here won't be shown to the patient.."                       
                       /> */}
-
-                      </div>
                     </div>
+                  </div>
                 </div>
               </div>
               <div className={classes.dialogActions}>

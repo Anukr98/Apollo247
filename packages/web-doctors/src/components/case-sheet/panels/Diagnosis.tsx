@@ -59,7 +59,10 @@ function renderSuggestion(
         {parts.map((part) => (
           <span
             key={part.text}
-            style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+            style={{
+              fontWeight: part.highlight ? 500 : 400,
+              whiteSpace: 'pre',
+            }}
           >
             {part.text}
           </span>
@@ -348,10 +351,12 @@ export const Diagnosis: React.FC = () => {
       {showAddCondition && (
         <Autosuggest
           onSuggestionSelected={(e, { suggestion }) => {
-            selectedValues!.push(suggestion);
+            selectedValues && selectedValues.push(suggestion);
             setSelectedValues(selectedValues);
             setShowAddCondition(false);
-            suggestions = suggestions.filter((val) => !selectedValues!.includes(val));
+            suggestions = suggestions.filter(
+              (val) => selectedValues && selectedValues.includes(val)
+            );
             setState({
               single: '',
               popper: '',
@@ -364,6 +369,22 @@ export const Diagnosis: React.FC = () => {
             placeholder: 'Search Condition',
             value: state.single,
             onChange: handleChange('single'),
+            onKeyPress: (e) => {
+              if (e.which == 13 || e.keyCode == 13) {
+                if (selectedValues && suggestions.length === 1) {
+                  selectedValues.push(suggestions[0]);
+                  setSelectedValues(selectedValues);
+                  setShowAddCondition(false);
+                  suggestions = suggestions.filter(
+                    (val) => selectedValues && selectedValues.includes(val)
+                  );
+                  setState({
+                    single: '',
+                    popper: '',
+                  });
+                }
+              }
+            },
           }}
           theme={{
             container: classes.container,

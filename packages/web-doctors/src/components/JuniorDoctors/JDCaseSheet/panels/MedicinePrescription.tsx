@@ -490,7 +490,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(0.5);
+  const [tabletsCount, setTabletsCount] = React.useState<number>();
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -706,14 +706,16 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
-      const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
+      const durations = Number(medicine.medicineConsumptionDurationInDays);
+      const duration = durations === 1 ? `${durations} day` : `${durations} days`;
+
       const whenString =
         medicine.medicineToBeTaken.length > 0
           ? toBeTaken(medicine.medicineToBeTaken)
               .join(', ')
               .toLowerCase()
           : '';
-      const unitHtml =
+      const unitHtmls =
         medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
           ? medicine.medicineUnit.toLowerCase()
           : 'times';
@@ -723,8 +725,12 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       const dosageCount =
         medicine.medicineTimings.length > 0
-          ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
+          ? parseFloat(medicine.medicineDosage) *
+            medicine.medicineTimings.length *
+            medicine.medicineToBeTaken.length
           : medicine.medicineDosage;
+
+      const unitHtml = dosageCount === 1 ? unitHtmls : `${unitHtmls}s`;
       return (
         <div key={index} className={classes.medicineBox}>
           <div key={_uniqueId('med_id_')}>
@@ -776,7 +782,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -830,7 +836,6 @@ export const MedicinePrescription: React.FC = () => {
         id: selectedId,
         medicineUnit: medicineUnit,
       };
-      console.log(selectedValue);
 
       const inputParams: any = {
         id: selectedId,
@@ -857,7 +862,6 @@ export const MedicinePrescription: React.FC = () => {
         x.push(inputParams);
         setSelectedMedicines(x);
       }
-      console.log(selectedMedicines);
       setIsDialogOpen(false);
       setIsUpdate(false);
       setShowDosage(false);
@@ -874,7 +878,7 @@ export const MedicinePrescription: React.FC = () => {
       setDaySlots(dayslots);
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount(0);
       setSelectedValue('');
       setSelectedId('');
       setMedicineUnit('TABLET');
@@ -994,6 +998,43 @@ export const MedicinePrescription: React.FC = () => {
                     setSelectedId(suggestion.sku);
                     setMedicine('');
                     setLoading(false);
+                    setTabletsCount(0);
+                    setMedicineUnit('TABLET');
+                    setConsumptionDuration('');
+                    setDaySlots([
+                      {
+                        id: 'morning',
+                        value: 'Morning',
+                        selected: false,
+                      },
+                      {
+                        id: 'noon',
+                        value: 'Noon',
+                        selected: false,
+                      },
+                      {
+                        id: 'evening',
+                        value: 'Evening',
+                        selected: false,
+                      },
+                      {
+                        id: 'night',
+                        value: 'Night',
+                        selected: false,
+                      },
+                    ]);
+                    setToBeTakenSlots([
+                      {
+                        id: 'afterfood',
+                        value: 'After Food',
+                        selected: false,
+                      },
+                      {
+                        id: 'beforefood',
+                        value: 'Before Food',
+                        selected: false,
+                      },
+                    ]);
                   }}
                   {...autosuggestProps}
                   inputProps={{
@@ -1002,8 +1043,22 @@ export const MedicinePrescription: React.FC = () => {
                     id: 'react-autosuggest-simple',
                     placeholder: 'Search',
                     value: state.single,
-
                     onChange: handleChange('single'),
+                    onKeyPress: (e) => {
+                      if (e.which == 13 || e.keyCode == 13) {
+                        if (suggestions.length === 1) {
+                          setState({
+                            single: '',
+                            popper: '',
+                          });
+                          setShowDosage(true);
+                          setSelectedValue(suggestions[0].label);
+                          setSelectedId(suggestions[0].sku);
+                          setLoading(false);
+                          setMedicine('');
+                        }
+                      }
+                    },
                   }}
                   theme={{
                     container: classes.autoSuggestBox,
@@ -1052,7 +1107,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                           <AphTextField
                             inputProps={{ maxLength: 6 }}
-                            value={tabletsCount}
+                            value={tabletsCount === 0 ? '' : tabletsCount}
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
                             }}

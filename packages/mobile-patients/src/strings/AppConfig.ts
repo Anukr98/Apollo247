@@ -83,6 +83,8 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
+  iOS_Version: '1.0',
+  Android_Version: '1.0',
 };
 
 // QA
@@ -106,6 +108,8 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
+  iOS_Version: '1.0',
+  Android_Version: '1.0',
 };
 
 //Production
@@ -129,6 +133,8 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
+  iOS_Version: '1.0',
+  Android_Version: '1.0',
 };
 
 const Configuration =
@@ -365,6 +371,20 @@ export const NeedHelp = [
       'Feedback on Consultation',
       'Feedback on Health Records',
       'Feedback on Medicine Deliver',
+    ],
+  },
+  {
+    category: 'Diagonostics',
+    options: [
+      'Payment Issues while ordering',
+      'Sample pick up related',
+      'Excess amount related',
+      'Issues in Order confirmation',
+      'Pickup cancelled without any information',
+      'Pickup Cancelled, No Refund',
+      'Report not received',
+      'Wrong report received',
+      'Sample pick up staff related',
     ],
   },
 ];

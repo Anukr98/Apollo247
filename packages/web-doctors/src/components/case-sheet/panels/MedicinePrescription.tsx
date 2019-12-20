@@ -541,7 +541,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(0.5);
+  const [tabletsCount, setTabletsCount] = React.useState<number>();
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -685,6 +685,27 @@ export const MedicinePrescription: React.FC = () => {
   const updateFavMedicine = (idx: any) => {
     setSelectedValue(idx.medicineName);
     setFavMedicineName(idx.medicineName);
+    setTabletsCount(idx.medicineDosage);
+    setMedicineUnit(idx.medicineUnit);
+    setConsumptionDuration(idx.medicineConsumptionDurationInDays);
+    setMedicineInstruction(idx.medicineInstructions);
+    toBeTakenSlots.map((slot: SlotsObject) => {
+      idx.medicineToBeTaken.map((selectedSlot: any) => {
+        const selectedValue = selectedSlot.replace('_', '');
+        if (selectedValue.toLowerCase() === slot.id) {
+          slot.selected = true;
+        }
+        return slot;
+      });
+    });
+    daySlots.map((slot: SlotsObject) => {
+      idx.medicineTimings.map((selectedSlot: any) => {
+        if (selectedSlot.toLowerCase() === slot.id) {
+          slot.selected = true;
+        }
+      });
+      return slot;
+    });
     setShowDosage(true);
   };
   useEffect(() => {
@@ -787,7 +808,7 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -868,6 +889,7 @@ export const MedicinePrescription: React.FC = () => {
         setSelectedMedicines(x);
       }
       setIsDialogOpen(false);
+      setIsEditFavMedicine(false);
       setIsUpdate(false);
       setShowDosage(false);
       const slots = toBeTakenSlots.map((slot: SlotsObject) => {
@@ -884,7 +906,7 @@ export const MedicinePrescription: React.FC = () => {
 
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount(0);
       setMedicineUnit('TABLET');
       setSelectedValue('');
       setSelectedId('');
@@ -952,14 +974,16 @@ export const MedicinePrescription: React.FC = () => {
           {selectedMedicinesArr!.map((_medicine: any, index: number) => {
             const medicine = _medicine!;
 
-            const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
+            const durations = Number(medicine.medicineConsumptionDurationInDays);
+            const duration = durations === 1 ? `${durations} day` : `${durations} days`;
+
             const whenString =
               medicine.medicineToBeTaken.length > 0
                 ? toBeTaken(medicine.medicineToBeTaken)
                     .join(', ')
                     .toLowerCase()
                 : '';
-            const unitHtml =
+            const unitHtmls =
               medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
                 ? medicine.medicineUnit.toLowerCase()
                 : 'times';
@@ -969,8 +993,11 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const dosageCount =
               medicine.medicineTimings.length > 0
-                ? parseFloat(medicine.medicineDosage) * medicine.medicineTimings.length
+                ? parseFloat(medicine.medicineDosage) *
+                  medicine.medicineTimings.length *
+                  medicine.medicineToBeTaken.length
                 : medicine.medicineDosage;
+            const unitHtml = dosageCount === 1 ? unitHtmls : `${unitHtmls}s`;
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
@@ -979,8 +1006,7 @@ export const MedicinePrescription: React.FC = () => {
                   <h6>
                                                  {dosageCount} {unitHtml} a day
                     {' '}
-                                  {timesString.length > 0 && timesString} for 
-                    {duration}
+                                  {timesString.length > 0 && timesString} for  {''} {duration}
                     {' '}
                                   {whenString.length > 0 && whenString}
                                 
@@ -1017,10 +1043,13 @@ export const MedicinePrescription: React.FC = () => {
           <Grid item lg={6} xs={12}>
             <div className={classes.favmedicineHeading}>Favourite Medicines</div>
             <div className={classes.mediceneContainer}>
-              {favouriteMedicine.map((favMedicine, id, index) => {
-                const favDuration = `${Number(
+              {favouriteMedicine.map((favMedicine: any, id, index) => {
+                const favDurations = Number(
                   favMedicine && favMedicine.medicineConsumptionDurationInDays
-                )} days`;
+                );
+                const favDuration =
+                  favDurations === 1 ? `${favDurations} day` : `${favDurations} days`;
+
                 const favWhenString =
                   favMedicine &&
                   favMedicine.medicineToBeTaken &&
@@ -1029,7 +1058,7 @@ export const MedicinePrescription: React.FC = () => {
                         .join(', ')
                         .toLowerCase()
                     : '';
-                const favUnitHtml =
+                const favUnitHtmls =
                   favMedicine && favMedicine.medicineUnit && favMedicine.medicineUnit !== 'NA'
                     ? favMedicine &&
                       favMedicine.medicineUnit &&
@@ -1039,19 +1068,16 @@ export const MedicinePrescription: React.FC = () => {
                   favMedicine &&
                   favMedicine.medicineTimings &&
                   favMedicine.medicineTimings.length > 0
-                    ? '(' + favMedicine &&
-                      favMedicine.medicineTimings &&
-                      favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                    ? '(' + favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
                     : '';
                 const favDosageCount =
-                  favMedicine && favMedicine.medicineDosage === ''
-                    ? favMedicine &&
-                      favMedicine.medicineTimings &&
-                      favMedicine.medicineTimings.length > 0
-                      ? parseFloat(favMedicine && favMedicine.medicineDosage) *
-                        favMedicine.medicineTimings.length
-                      : favMedicine && favMedicine.medicineDosage
-                    : '';
+                  favMedicine.medicineTimings.length > 0
+                    ? parseFloat(favMedicine.medicineDosage) *
+                      favMedicine.medicineTimings.length *
+                      favMedicine.medicineToBeTaken.length
+                    : favMedicine.medicineDosage;
+
+                const favUnitHtml = favDosageCount === 1 ? favUnitHtmls : `${favUnitHtmls}s`;
                 const favMedicineName = favMedicine && favMedicine.medicineName;
                 return (
                   <div className={classes.paper} key={id}>
@@ -1069,8 +1095,6 @@ export const MedicinePrescription: React.FC = () => {
                       classes={{ root: classes.updateSymptom }}
                       onClick={(id) => {
                         setIsEditFavMedicine(true);
-                        //  setSelectedMedicinesArr(favMedicine);
-
                         updateFavMedicine(favMedicine);
                       }}
                     >
@@ -1097,11 +1121,6 @@ export const MedicinePrescription: React.FC = () => {
             <AphDialogTitle
               className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
             >
-              {showDosage && (
-                <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
-                  <img src={require('images/ic_back.svg')} alt="" />
-                </div>
-              )}
               {showDosage ? favMedicineName.toUpperCase() : 'ADD FAVOURITE MEDICINE'}
               <Button className={classes.cross}>
                 <img
@@ -1267,7 +1286,6 @@ export const MedicinePrescription: React.FC = () => {
                     className={classes.updateBtn}
                     onClick={() => {
                       addUpdateMedicines();
-                      setIsEditFavMedicine(false);
                     }}
                   >
                     Add Medicine
@@ -1320,6 +1338,43 @@ export const MedicinePrescription: React.FC = () => {
                       setSelectedId(suggestion.sku);
                       setLoading(false);
                       setMedicine('');
+                      setTabletsCount(0);
+                      setMedicineUnit('TABLET');
+                      setConsumptionDuration('');
+                      setDaySlots([
+                        {
+                          id: 'morning',
+                          value: 'Morning',
+                          selected: false,
+                        },
+                        {
+                          id: 'noon',
+                          value: 'Noon',
+                          selected: false,
+                        },
+                        {
+                          id: 'evening',
+                          value: 'Evening',
+                          selected: false,
+                        },
+                        {
+                          id: 'night',
+                          value: 'Night',
+                          selected: false,
+                        },
+                      ]);
+                      setToBeTakenSlots([
+                        {
+                          id: 'afterfood',
+                          value: 'After Food',
+                          selected: false,
+                        },
+                        {
+                          id: 'beforefood',
+                          value: 'Before Food',
+                          selected: false,
+                        },
+                      ]);
                     }}
                     {...autosuggestProps}
                     inputProps={{
@@ -1328,8 +1383,22 @@ export const MedicinePrescription: React.FC = () => {
                       id: 'react-autosuggest-simple',
                       placeholder: 'Search',
                       value: state.single,
-
                       onChange: handleChange('single'),
+                      onKeyPress: (e) => {
+                        if (e.which == 13 || e.keyCode == 13) {
+                          if (suggestions.length === 1) {
+                            setState({
+                              single: '',
+                              popper: '',
+                            });
+                            setShowDosage(true);
+                            setSelectedValue(suggestions[0].label);
+                            setSelectedId(suggestions[0].sku);
+                            setLoading(false);
+                            setMedicine('');
+                          }
+                        }
+                      },
                     }}
                     theme={{
                       container: classes.container,
@@ -1381,7 +1450,7 @@ export const MedicinePrescription: React.FC = () => {
                         <h6>Quantity (Per Dosage)*</h6>
                         <AphTextField
                           inputProps={{ maxLength: 6 }}
-                          value={tabletsCount}
+                          value={tabletsCount === 0 ? '' : tabletsCount}
                           onChange={(event: any) => {
                             setTabletsCount(event.target.value);
                           }}

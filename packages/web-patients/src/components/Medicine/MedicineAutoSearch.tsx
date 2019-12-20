@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Paper, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -86,7 +86,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       opacity: 0.6,
     },
-
     noStock: {
       fontSize: 12,
       color: '#890000',
@@ -94,6 +93,16 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     itemSelected: {
       backgroundColor: '#f7f8f5',
+    },
+    searchBtnDisabled: {
+      opacity: 0.5,
+      '& img': {
+        filter: 'grayscale(100%)',
+      },
+    },
+    progressLoader: {
+      textAlign: 'center',
+      padding: 20,
     },
   };
 });
@@ -123,10 +132,6 @@ export const MedicineAutoSearch: React.FC = (props) => {
           headers: {
             Authorization: apiDetails.authToken,
           },
-          // cancelToken: new CancelToken(function executor(c) {
-          //   // An executor function receives a cancel function as a parameter
-          //   cancelSearchSuggestionsApi = c;
-          // })
         }
       )
       .then(({ data }) => {
@@ -137,7 +142,11 @@ export const MedicineAutoSearch: React.FC = (props) => {
         console.log(e);
       });
   };
-
+  useEffect(() => {
+    if (searchText.length < 3) {
+      setLoading(false);
+    }
+  }, [searchText]);
   return (
     <div className={classes.root}>
       <div className={classes.medicineSearchForm}>
@@ -157,14 +166,21 @@ export const MedicineAutoSearch: React.FC = (props) => {
           disabled={searchText.length < 3}
           className={classes.searchBtn}
           onClick={() => (window.location.href = clientRoutes.searchByMedicine())}
+          classes={{
+            disabled: classes.searchBtnDisabled,
+          }}
         >
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>
-      {loading && <CircularProgress size={40} />}
-      {searchMedicines && searchMedicines.length > 0 && (
-        <Paper className={classes.autoSearchPopover}>
-          <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+      <Paper className={classes.autoSearchPopover}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'45vh'}>
+          {loading && (
+            <div className={classes.progressLoader}>
+              <CircularProgress size={30} />
+            </div>
+          )}
+          {searchMedicines && searchMedicines.length > 0 && (
             <div className={classes.searchList}>
               <ul>
                 {searchMedicines.map((medicine) => (
@@ -228,9 +244,9 @@ export const MedicineAutoSearch: React.FC = (props) => {
                */}
               </ul>
             </div>
-          </Scrollbars>
-        </Paper>
-      )}
+          )}
+        </Scrollbars>
+      </Paper>
     </div>
   );
 };

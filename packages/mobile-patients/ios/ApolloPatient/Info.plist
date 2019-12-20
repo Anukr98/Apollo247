@@ -40,7 +40,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>4</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
 	<key>ITunesAppleID</key>
@@ -61,27 +61,27 @@
 		</dict>
 	</dict>
 	<key>NSAppleMusicUsageDescription</key>
-	<string>Uses Music</string>
+	<string>${PRODUCT_NAME} need access to the media to play sound.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Uses Bluetooth</string>
+	<string>$(PRODUCT_NAME) need access to the bluetooth to connect your headset through bluetooth.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Uses Bluetooth</string>
+	<string>$(PRODUCT_NAME) need access to the bluetooth to connect your headset through bluetooth.</string>
 	<key>NSCalendarsUsageDescription</key>
-	<string>Uses Calendar</string>
+	<string>${PRODUCT_NAME} need access to the calendar to select the date for booking appointments.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Uses Camera</string>
+	<string>${PRODUCT_NAME} need access to the camera to update your avatar.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Uses location always</string>
+	<string>This will enable the nearby location functionality to get nearest doctors. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Uses Location</string>
+	<string>This will enable the nearby location functionality to get nearest doctors. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Uses Microphone</string>
+	<string>${PRODUCT_NAME} need access to the microphone to have virtual consultation.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Uses Motion</string>
+	<string>${PRODUCT_NAME} need access to your Phones motion manager to update when the phone is tilted.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Uses Gallery</string>
+	<string>${PRODUCT_NAME} need access to your photo to choose your avatar.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Uses Speech</string>
+	<string>$(PRODUCT_NAME)  would like to access speech recognition. Speech data from this app will be sent to Apple to process your requests. This will also help Apple improve its speech recognition technology.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialIcons-Regular.ttf</string>

@@ -31,7 +31,6 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   DeviceHelper,
-  CommonScreenLog,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -80,7 +79,6 @@ import {
   AsyncStorage,
   Dimensions,
   FlatList,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   KeyboardEvent,
@@ -99,6 +97,7 @@ import {
   StyleSheet,
   AppState,
   AppStateStatus,
+  Image as ImageReact,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
@@ -121,6 +120,7 @@ import {
   addToConsultQueueWithAutomatedQuestions,
   endCallSessionAppointment,
   getAppointmentDataDetails,
+  getPrismUrls,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -137,6 +137,9 @@ import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '../../graphql/types/cancelAppointment';
+import { mimeType } from '../../helpers/mimeType';
+import { Image } from 'react-native-elements';
+import { RenderPdf } from '../ui/RenderPdf';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -315,7 +318,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     false,
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-
+  const [showPDF, setShowPDF] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -399,9 +402,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
     // requestToJrDoctor();
-    analytics.setAnalyticsCollectionEnabled(true);
-    CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
-
     // updateSessionAPI();
   }, []);
 
@@ -1269,7 +1269,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log('msgs', msgs);
 
           res.messages.forEach((element, index) => {
-            newmessage[newmessage.length] = element.entry;
+            let item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(client, patientId, item.prismId).then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              });
+            }
+            newmessage[newmessage.length] = item;
           });
           // console.log('newmessage', newmessage);
           setLoading(false);
@@ -1878,6 +1884,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       .format('Do MMMM, dddd \nhh:mm a')}
                   </Text>
                   <TouchableOpacity
+                    activeOpacity={1}
                     onPress={() => {
                       CommonLogEvent(AppRoutes.ChatRoom, 'navigate to choose doctor');
                       props.navigation.navigate(AppRoutes.ChooseDoctor, {
@@ -2094,21 +2101,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         rowData.transferInfo.pdfUrl &&
                         rowData.transferInfo.pdfUrl.split('/').pop()
                     );
-
+                    const downloadPath =
+                      Platform.OS === 'ios'
+                        ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                          '/' +
+                          (fileName || 'Apollo_Prescription.pdf')
+                        : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
                     setLoading(true);
                     RNFetchBlob.config({
                       fileCache: true,
-                      path:
-                        Platform.OS === 'ios'
-                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
-                            '/' +
-                            (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
+                      path: downloadPath,
                       addAndroidDownloads: {
                         title: fileName,
                         useDownloadManager: true,
                         notification: true,
-                        mime: 'application/pdf',
+                        mime: mimeType(downloadPath),
+                        path: downloadPath,
                         description: 'File downloaded by download manager.',
                       },
                     })
@@ -2128,7 +2136,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         // }
                         Platform.OS === 'ios'
                           ? RNFetchBlob.ios.previewDocument(res.path())
-                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
                       })
                       .catch((err: Error) => {
                         console.log('error ', err);
@@ -2529,6 +2537,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const openPopUp = (rowData:any)=>{
+    setLoading(true);
+    if (rowData.url.match(/\.(pdf)$/)) {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch(() => setUrl(rowData.url))
+          .finally(() => {
+            setLoading(false);
+            setShowPDF(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setLoading(false);
+        setShowPDF(true);
+      }
+    } else {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch(() => setUrl(rowData.url))
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setLoading(false);
+        setPatientImageshow(true);
+      }
+    }
+  }
+
   const messageView = (rowData: any, index: number) => {
     // console.log('messageView', rowData.message);
     return (
@@ -2584,9 +2629,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
-                    setPatientImageshow(true);
-                    setUrl(rowData.url);
+                    openPopUp(rowData);
                   }}
+                  activeOpacity={1}
                 >
                   <View
                     style={{
@@ -2601,6 +2646,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }}
                   >
                     <Image
+                      placeholderStyle={{
+                        height: 180,
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                      }}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                       source={{ uri: rowData.url }}
                       style={{
                         resizeMode: 'stretch',
@@ -2613,21 +2665,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
+                  activeOpacity={1}
                   onPress={() => {
                     console.log('pdf', rowData.url);
+                    openPopUp(rowData);
                     // setShowWeb(true);
-                    setPatientImageshow(true);
-                    setUrl(rowData.url);
-                    // if ((Platform.OS = 'android')) {
-                    //   setShowWeb(true);
-                    //   setUrl(rowData.url);
-                    //   // Linking.openURL(rowData.url).catch((err) =>
-                    //   //   console.error('An error occurred', err)
-                    //   // );
-                    // } else {
-                    //   setShowWeb(true);
-                    //   setUrl(rowData.url);
-                    // }
+                    // setPatientImageshow(true);
                   }}
                 >
                   <View
@@ -2643,6 +2686,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }}
                   >
                     <Image
+                      placeholderStyle={{
+                        height: 180,
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                      }}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                       source={{ uri: rowData.url }}
                       style={{
                         resizeMode: 'stretch',
@@ -3123,7 +3173,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderChatRow = (
-    rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
+    rowData: {
+      id: string;
+      message: string;
+      duration: string;
+      transferInfo: any;
+      prismId: any;
+      url: any;
+    },
     index: number
   ) => {
     if (
@@ -3246,10 +3303,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View>
                   {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
                     <TouchableOpacity
+                      activeOpacity={1}
                       onPress={() => {
                         console.log('IMAGE', rowData.url);
-                        setPatientImageshow(true);
-                        setUrl(rowData.url);
+                        openPopUp(rowData);
                       }}
                     >
                       <View
@@ -3265,6 +3322,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         }}
                       >
                         <Image
+                          placeholderStyle={{
+                            height: 180,
+                            width: '100%',
+                            alignItems: 'center',
+                            backgroundColor: 'transparent',
+                          }}
+                          PlaceholderContent={
+                            <Spinner style={{ backgroundColor: 'transparent' }} />
+                          }
                           source={{ uri: rowData.url }}
                           style={{
                             resizeMode: 'stretch',
@@ -3277,17 +3343,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
+                      activeOpacity={1}
                       onPress={() => {
                         console.log('pdf', rowData.url);
-
-                        if ((Platform.OS = 'android')) {
-                          Linking.openURL(rowData.url).catch((err) =>
-                            console.error('An error occurred', err)
-                          );
-                        } else {
-                          setShowWeb(true);
-                          setUrl(rowData.url);
-                        }
+                        openPopUp(rowData);
                       }}
                     >
                       <View
@@ -4575,12 +4634,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ) {
         console.log('item', item.base64);
         setLoading(true);
-        const textin = {
-          fileType: type == 'jpg' ? 'JPEG' : type.toUpperCase(), //type,
-          base64FileInput: item.base64, //resource.data,
-          appointmentId: channel,
-        };
-        console.log('textin', textin);
         client
           .mutate<uploadChatDocumentToPrism>({
             mutation: UPLOAD_CHAT_FILE_PRISM,
@@ -4589,37 +4642,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
               base64FileInput: item.base64, //resource.data,
               appointmentId: channel,
-              patientId: currentPatient && currentPatient.id,
+              patientId: patientId,
             },
           })
           .then((data) => {
             console.log('upload data', data);
             setLoading(false);
-
             if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
-              client
-                .query<downloadDocuments>({
-                  query: DOWNLOAD_DOCUMENT,
-                  fetchPolicy: 'no-cache',
-                  variables: {
-                    downloadDocumentsInput: {
-                      patientId: currentPatient && currentPatient.id,
-                      fileIds: data.data!.uploadChatDocumentToPrism.fileId,
-                    },
-                  },
-                })
-                .then(({ data }) => {
-                  console.log(data, 'DOWNLOAD_DOCUMENT');
-                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                  console.log(uploadUrlscheck![0], 'DOWNLOAD_DOCUMENTcmple');
+              const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
+              getPrismUrls(client, patientId, [prismFeildId])
+                .then((data: any) => {
+                  console.log('api call data', data);
                   const text = {
                     id: patientId,
                     message: imageconsult,
                     fileType: 'image',
-                    url: uploadUrlscheck![0],
+                    prismId: prismFeildId,
+                    url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
                   };
-
                   pubnub.publish(
                     {
                       channel: channel,
@@ -4640,23 +4681,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             } else {
               Alert.alert('Upload document failed');
             }
-            // const text = {
-            //   id: patientId,
-            //   message: imageconsult,
-            //   fileType: 'image',
-            //   url: data.data && data.data.uploadChatDocument.filePath,
-            // };
-
-            // pubnub.publish(
-            //   {
-            //     channel: channel,
-            //     message: text,
-            //     storeInHistory: true,
-            //     sendByPost: true,
-            //   },
-            //   (status, response) => {}
-            // );
-            // KeepAwake.activate();
           })
           .catch((e) => {
             setLoading(false);
@@ -4804,109 +4828,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           } else {
-            console.log('sussess', 'ssss');
-            const ePresUrls = selectedEPres.map((item) => item!.prismPrescriptionFileId);
-            console.log('ePresUrls', ePresUrls);
-            let ePresAndPhysicalPresUrls = [...ePresUrls];
-            console.log(
-              'ePresAndPhysicalPresUrls',
-              ePresAndPhysicalPresUrls
-                .join(',')
-                .split(',')
-                .map((item) => item.trim())
-                .filter((i) => i)
-            );
-            if (ePresAndPhysicalPresUrls.length > 0) {
-              client
-                .query<downloadDocuments>({
-                  query: DOWNLOAD_DOCUMENT,
-                  fetchPolicy: 'no-cache',
-                  variables: {
-                    downloadDocumentsInput: {
-                      patientId: currentPatient && currentPatient.id,
-                      fileIds: ePresAndPhysicalPresUrls
-                        .join(',')
-                        .split(',')
-                        .map((item) => item.trim())
-                        .filter((i) => i),
+            selectedEPres.forEach((item) => {
+              console.log(item, 'from selected');
+
+              const url = item.uploadedUrl && item.uploadedUrl.split(',');
+              const prism = item.prismPrescriptionFileId && item.prismPrescriptionFileId.split(',');
+              url &&
+                url.map((item, index) => {
+                  const text = {
+                    id: patientId,
+                    message: imageconsult,
+                    fileType: 'image',
+                    prismId: (prism && prism[index]) || '',
+                    url: item,
+                    messageDate: new Date(),
+                  };
+                  pubnub.publish(
+                    {
+                      channel: channel,
+                      message: text,
+                      storeInHistory: true,
+                      sendByPost: true,
                     },
-                  },
-                })
-                .then(({ data }) => {
-                  console.log(data, 'DOWNLOAD_DOCUMENT');
-                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                  console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-                  if (uploadUrlscheck!.length > 0) {
-                    uploadUrlscheck!.map((item: any) => {
-                      //console.log(item, 'showitem');
-                      const text = {
-                        id: patientId,
-                        message: imageconsult,
-                        fileType: 'image',
-                        url: item,
-                        messageDate: new Date(),
-                      };
-
-                      pubnub.publish(
-                        {
-                          channel: channel,
-                          message: text,
-                          storeInHistory: true,
-                          sendByPost: true,
-                        },
-                        (status, response) => {}
-                      );
-                      KeepAwake.activate();
-                    });
-                  } else {
-                    Alert.alert('Images are not uploaded');
-                  }
-                })
-                .catch((e: string) => {
-                  console.log('Error occured', e);
-                })
-                .finally(() => {
-                  setLoading!(false);
+                    (status, response) => {}
+                  );
+                  KeepAwake.activate();
                 });
-            }
-            // setLoading(true);
-            // client
-            //   .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-            //     mutation: UPLOAD_CHAT_FILE,
-            //     fetchPolicy: 'no-cache',
-            //     variables: {
-            //       fileType: 'pdf',
-            //       base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
-            //       appointmentId: channel,
-            //     },
-            //   })
-            //   .then((data) => {
-            //     setLoading(false);
-            //     console.log('upload selectedEPres data', data);
-
-            //     const text = {
-            //       id: patientId,
-            //       message: imageconsult,
-            //       fileType: 'image',
-            //       url: data.data && data.data.uploadChatDocument.filePath,
-            //     };
-
-            //     pubnub.publish(
-            //       {
-            //         channel: channel,
-            //         message: text,
-            //         storeInHistory: true,
-            //         sendByPost: true,
-            //       },
-            //       (status, response) => {}
-            //     );
-            //     KeepAwake.activate();
-            //   })
-            //   .catch((e) => {
-            //     setLoading(false);
-            //     KeepAwake.activate();
-            //     console.log('upload data error', e);
-            //   });
+            });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
@@ -4931,7 +4879,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           marginTop: 30,
         }}
       >
-        <TouchableOpacity onPress={() => closeviews()}>
+        <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
       </View>
@@ -4962,7 +4910,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
         {renderCloseIcon()}
-        <Image
+        <ImageReact
           style={{
             flex: 1,
             resizeMode: 'contain',
@@ -5317,6 +5265,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5356,6 +5305,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5393,6 +5343,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           >
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.claimStyles}
               onPress={() => {
                 setIsDoctorNoShow(false);
@@ -5402,6 +5353,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.rescheduletyles}
               onPress={() => {
                 NextAvailableSlot(appointmentData, 'Transfer', true);
@@ -5420,6 +5372,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5459,6 +5412,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5503,6 +5457,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             <View style={{ height: 60 }}>
               <TouchableOpacity
+                activeOpacity={1}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setSucessPopup(false);
@@ -5575,6 +5530,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         isVisible={showFeedback}
       />
       {loading && <Spinner />}
+      {showPDF && (
+        <RenderPdf
+          uri={url}
+          title={
+            url
+              .split('/')
+              .pop()!
+              .split('=')
+              .pop() || 'Document'
+          }
+          isPopup={true}
+          setDisplayPdf={() => {
+            setShowPDF(false);
+            setUrl('');
+          }}
+          navigation={props.navigation}
+        />
+      )}
     </View>
   );
 };
