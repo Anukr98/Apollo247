@@ -355,7 +355,7 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
                       displayName:
                         (area || []).pop() ||
                         findAddrComponents('locality', addrComponents) ||
-                          findAddrComponents('administrative_area_level_2', addrComponents),
+                        findAddrComponents('administrative_area_level_2', addrComponents),
                       latitude,
                       longitude,
                       area: area.join(', '),
@@ -444,8 +444,7 @@ export const isIphone5s = () => height === 568;
 export const statusBarHeight = () =>
   Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;
 
-export const isValidSearch = (value: string) =>
-  /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.]*)*$/.test(value);
+export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
 export const isValidText = (value: string) =>
   /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);

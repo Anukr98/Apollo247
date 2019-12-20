@@ -290,16 +290,18 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       currentPatient.patientMedicalHistory.dietAllergies
         ? currentPatient.patientMedicalHistory.dietAllergies === 'No'
           ? (v.find((i) => i.k === 'diet')!.v = ['No'])
-          : (v.find((i) => i.k === 'dietAllergies')!.v = [
+          : ((v.find((i) => i.k === 'diet')!.v = ['Yes']),
+            (v.find((i) => i.k === 'dietAllergies')!.v = [
               currentPatient.patientMedicalHistory.dietAllergies,
-            ])
+            ]))
         : null;
       currentPatient.patientMedicalHistory.drugAllergies
         ? currentPatient.patientMedicalHistory.drugAllergies === 'No'
           ? (v.find((i) => i.k === 'drug')!.v = ['No'])
-          : (v.find((i) => i.k === 'drugAllergies')!.v = [
+          : ((v.find((i) => i.k === 'drug')!.v = ['Yes']),
+            (v.find((i) => i.k === 'drugAllergies')!.v = [
               currentPatient.patientMedicalHistory.drugAllergies,
-            ])
+            ]))
         : null;
       currentPatient.patientMedicalHistory.temperature
         ? (v.find((i) => i.k === 'temperature')!.v = [

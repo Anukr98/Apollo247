@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const PharmaApiConfig = {
   dev: {
@@ -83,7 +83,7 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
-  iOS_Version: '1.0',
+  iOS_Version: '1.5',
   Android_Version: '1.19',
 };
 
@@ -108,7 +108,7 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.0',
+  iOS_Version: '1.5',
   Android_Version: '1.19',
 };
 
@@ -133,7 +133,7 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.0',
+  iOS_Version: '1.5',
   Android_Version: '1.19',
 };
 
