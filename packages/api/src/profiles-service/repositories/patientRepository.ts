@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
+import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
@@ -223,10 +223,7 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     let uhid;
-    if (
-      (patientData.uhid === null || patientData.uhid === '') &&
-      patientData.firstName.trim() !== ''
-    ) {
+    if (patientData.uhid === null || patientData.uhid === '') {
       uhid = await this.createNewUhid(patientData.id);
       log(
         'profileServiceLogger',
@@ -244,6 +241,7 @@ export class PatientRepository extends Repository<Patient> {
         ''
       );
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
+
       log(
         'profileServiceLogger',
         `DEBUG_LOG`,
@@ -251,7 +249,15 @@ export class PatientRepository extends Repository<Patient> {
         JSON.stringify(matchedUser),
         ''
       );
-      uhid = matchedUser.length > 0 ? matchedUser[0].UHID : null;
+
+      if (matchedUser.length > 0) {
+        uhid = matchedUser[0].UHID;
+      } else {
+        //creating existing new medmentra uhids in prism
+        await this.createPrismUser(patientData, patientData.uhid);
+        uhid = patientData.uhid;
+      }
+
       log(
         'profileServiceLogger',
         `DEBUG_LOG`,
@@ -545,6 +551,26 @@ export class PatientRepository extends Repository<Patient> {
       JSON.stringify(patientDetails),
       ''
     );
+    if (!patientDetails) {
+      throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
+        error: 'Invalid PatientId',
+      });
+    }
+
+    //setting mandatory fields to create uhid in medmantra
+    if (patientDetails.firstName === null || patientDetails.firstName === '') {
+      patientDetails.firstName = 'New';
+    }
+    if (patientDetails.lastName === null || patientDetails.lastName === '') {
+      patientDetails.lastName = 'User';
+    }
+    if (patientDetails.emailAddress === null) {
+      patientDetails.emailAddress = '';
+    }
+    if (patientDetails.dateOfBirth === null) {
+      patientDetails.dateOfBirth = new Date('1970-01-01');
+    }
+
     if (patientDetails == null)
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
     const newUhidUrl = process.env.CREATE_NEW_UHID_URL ? process.env.CREATE_NEW_UHID_URL : '';
@@ -655,6 +681,19 @@ export class PatientRepository extends Repository<Patient> {
 
   async createPrismUser(patientData: Patient, uhid: string) {
     //date of birth formatting
+
+    if (patientData.firstName === null || patientData.firstName === '') {
+      patientData.firstName = 'New';
+    }
+    if (patientData.lastName === null || patientData.lastName === '') {
+      patientData.lastName = 'User';
+    }
+    if (patientData.gender === null) {
+      patientData.gender = Gender.MALE;
+    }
+    if (patientData.emailAddress === null) {
+      patientData.emailAddress = '';
+    }
     let utc_dob = new Date().getTime();
     if (patientData.dateOfBirth != null) {
       utc_dob = new Date(patientData.dateOfBirth).getTime();
@@ -662,11 +701,9 @@ export class PatientRepository extends Repository<Patient> {
 
     const queryParams = `securitykey=${
       process.env.PRISM_SECURITY_KEY
-    }&gender=${patientData.gender.toLocaleLowerCase()}&firstName=${
-      patientData.firstName
-    }&lastName=${patientData.lastName}&mobile=${patientData.mobileNumber.substr(
-      3
-    )}&uhid=${uhid}&CountryPhoneCode=${
+    }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
+      patientData.lastName
+    }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
       ApiConstants.COUNTRY_CODE
     }&dob=${utc_dob}&sitekey=&martialStatus=&pincode=&email=${
       patientData.emailAddress
