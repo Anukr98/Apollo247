@@ -106,7 +106,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     showAphAlert!({
       // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-      description: 'Your order has been placed successfully.',
+      description:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
       children: (
         <View
           style={{
