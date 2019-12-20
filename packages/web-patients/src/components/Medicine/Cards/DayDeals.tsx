@@ -93,7 +93,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         {props.data &&
           props.data.map((deal) => (
             <div className={classes.card}>
-              <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
+              <Link className={classes.cardLink} to={clientRoutes.searchByMedicine()}>
                 <div className={classes.cardWrap}>
                   {/* <div className={classes.cardTitle}>
                     Personal

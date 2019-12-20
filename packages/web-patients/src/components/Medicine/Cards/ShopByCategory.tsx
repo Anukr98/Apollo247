@@ -59,6 +59,7 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
+  console.log('props.data', props.data);
 
   return (
     <div className={classes.root}>
@@ -66,7 +67,7 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
         {props.data &&
           props.data.map((category) => (
             <div className={classes.card}>
-              <Link to={clientRoutes.medicineSearchByBrand()}>
+              <Link to={clientRoutes.medicineSearchByBrand(category.category_id)}>
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>
                     <img src={`${apiDetails.url}${category.image_url}`} alt="" />
