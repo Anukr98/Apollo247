@@ -307,20 +307,6 @@ export const TestsFeedBackData = {
 
 export const NeedHelp = [
   {
-    category: 'Virtual Consult',
-    options: [
-      'Delay in consult',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
-      'Application issues (bandwidth & payment errors)',
-      'Doctor not available',
-      'No past / Upcoming consultation details',
-      'How to consult virtually – demo video',
-    ],
-  },
-  {
     category: 'Pharmacy',
     options: [
       'Payment Issues in online pharmacy payments',
@@ -338,18 +324,17 @@ export const NeedHelp = [
     ],
   },
   {
-    category: 'Physical Consult',
+    category: 'Virtual Consult',
     options: [
-      'Long Waiting time for Physical consult',
+      'Delay in consult',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
       'Delayed Prescription',
       'Behavior and Attitude of the doctor',
-      'Application issues(bandwidth & payment errors)',
+      'Application issues (bandwidth & payment errors)',
       'Doctor not available',
-      'App appointment dishonored at confirmed time slot',
       'No past / Upcoming consultation details',
-      "Can't find Doctor’s name in respective list",
+      'How to consult virtually – demo video',
     ],
   },
   {
@@ -363,6 +348,21 @@ export const NeedHelp = [
       'Add multiple UHID’s linked to other mobile numbers',
       'No records available for linked UHID',
       'Issues in downloading the records',
+    ],
+  },
+  {
+    category: 'Physical Consult',
+    options: [
+      'Long Waiting time for Physical consult',
+      'No updates on delays, reschedules or cancellations of the consult',
+      'Payment issues',
+      'Delayed Prescription',
+      'Behavior and Attitude of the doctor',
+      'Application issues(bandwidth & payment errors)',
+      'Doctor not available',
+      'App appointment dishonored at confirmed time slot',
+      'No past / Upcoming consultation details',
+      "Can't find Doctor’s name in respective list",
     ],
   },
   {
