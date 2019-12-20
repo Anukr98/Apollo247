@@ -914,8 +914,8 @@ export const SAVE_MEDICINE_ORDER = gql`
 `;
 
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
-  mutation SaveMedicineOrderPayment($medicinePaymentInput: MedicinePaymentInput!) {
-    SaveMedicineOrderPayment(medicinePaymentInput: $medicinePaymentInput) {
+  mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
+    SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
       errorCode
       errorMessage
       # orderId

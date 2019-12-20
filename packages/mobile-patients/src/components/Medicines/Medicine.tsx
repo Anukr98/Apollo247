@@ -183,9 +183,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
-            () => {}
-          );
+          AsyncStorage.setItem(
+            MEDICINE_LANDING_PAGE_DATA,
+            JSON.stringify(localData)
+          ).catch(() => {});
         setData(d.data);
         setLoading(false);
       })

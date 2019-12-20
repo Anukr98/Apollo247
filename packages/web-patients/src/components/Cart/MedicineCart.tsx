@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
@@ -8,7 +8,7 @@ import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
@@ -24,6 +24,7 @@ import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
+import { LocationContext } from 'components/LocationProvider';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -398,7 +399,8 @@ export const MedicineCart: React.FC = (props) => {
   const [prescriptions, setPrescriptions] = React.useState<PrescriptionFormat[]>([]);
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
-
+  const { currentPincode } = useContext(LocationContext);
+  const { deliveryPincode } = useShoppingCart();
   const removePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
   };
@@ -577,7 +579,11 @@ export const MedicineCart: React.FC = (props) => {
                       updateDeliveryAddress={(deliveryAddressId) =>
                         setDeliveryAddressId(deliveryAddressId)
                       }
-                      pincode={localStorage.getItem('dp') || ''}
+                      pincode={
+                        deliveryPincode && deliveryPincode.length === 6
+                          ? deliveryPincode
+                          : currentPincode
+                      }
                     />
                   </TabContainer>
                 )}

@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
+import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
@@ -78,10 +78,10 @@ export class PatientRepository extends Repository<Patient> {
   //utility method to get prism auth token
   async getPrismAuthToken(mobileNumber: string) {
     //setting mobile number to static value in non-production environments
-    mobileNumber =
-      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
-        ? mobileNumber
-        : ApiConstants.PRISM_STATIC_MOBILE_NUMBER;
+    // mobileNumber =
+    //   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+    //     ? mobileNumber
+    //     : ApiConstants.PRISM_STATIC_MOBILE_NUMBER;
 
     const prismHeaders = {
       method: 'GET',
@@ -123,10 +123,10 @@ export class PatientRepository extends Repository<Patient> {
   //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
     //setting mobile number to static value in non-production environments
-    mobileNumber =
-      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
-        ? mobileNumber
-        : ApiConstants.PRISM_STATIC_MOBILE_NUMBER;
+    // mobileNumber =
+    //   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+    //     ? mobileNumber
+    //     : ApiConstants.PRISM_STATIC_MOBILE_NUMBER;
 
     const prismHeaders = {
       method: 'GET',
@@ -223,10 +223,7 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     let uhid;
-    if (
-      (patientData.uhid === null || patientData.uhid === '') &&
-      patientData.firstName.trim() !== ''
-    ) {
+    if (patientData.uhid === null || patientData.uhid === '') {
       uhid = await this.createNewUhid(patientData.id);
       log(
         'profileServiceLogger',
@@ -244,6 +241,7 @@ export class PatientRepository extends Repository<Patient> {
         ''
       );
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
+
       log(
         'profileServiceLogger',
         `DEBUG_LOG`,
@@ -251,7 +249,15 @@ export class PatientRepository extends Repository<Patient> {
         JSON.stringify(matchedUser),
         ''
       );
-      uhid = matchedUser.length > 0 ? matchedUser[0].UHID : null;
+
+      if (matchedUser.length > 0) {
+        uhid = matchedUser[0].UHID;
+      } else {
+        //creating existing new medmentra uhids in prism
+        await this.createPrismUser(patientData, patientData.uhid);
+        uhid = patientData.uhid;
+      }
+
       log(
         'profileServiceLogger',
         `DEBUG_LOG`,
@@ -262,10 +268,10 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     //setting mobile number to static value in non-production environments
-    uhid =
-      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
-        ? uhid
-        : ApiConstants.PRISM_STATIC_UHID;
+    // uhid =
+    //   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+    //     ? uhid
+    //     : ApiConstants.PRISM_STATIC_UHID;
 
     return uhid;
   }
@@ -545,6 +551,26 @@ export class PatientRepository extends Repository<Patient> {
       JSON.stringify(patientDetails),
       ''
     );
+    if (!patientDetails) {
+      throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
+        error: 'Invalid PatientId',
+      });
+    }
+
+    //setting mandatory fields to create uhid in medmantra
+    if (patientDetails.firstName === null || patientDetails.firstName === '') {
+      patientDetails.firstName = 'New';
+    }
+    if (patientDetails.lastName === null || patientDetails.lastName === '') {
+      patientDetails.lastName = 'User';
+    }
+    if (patientDetails.emailAddress === null) {
+      patientDetails.emailAddress = '';
+    }
+    if (patientDetails.dateOfBirth === null) {
+      patientDetails.dateOfBirth = new Date('1970-01-01');
+    }
+
     if (patientDetails == null)
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
     const newUhidUrl = process.env.CREATE_NEW_UHID_URL ? process.env.CREATE_NEW_UHID_URL : '';
@@ -647,7 +673,78 @@ export class PatientRepository extends Repository<Patient> {
     );
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
     this.updateUhid(id, uhidResp.result.toString());
+
+    await this.createPrismUser(patientDetails, uhidResp.result.toString());
+
     return uhidResp.result;
+  }
+
+  async createPrismUser(patientData: Patient, uhid: string) {
+    //date of birth formatting
+
+    if (patientData.firstName === null || patientData.firstName === '') {
+      patientData.firstName = 'New';
+    }
+    if (patientData.lastName === null || patientData.lastName === '') {
+      patientData.lastName = 'User';
+    }
+    if (patientData.gender === null) {
+      patientData.gender = Gender.MALE;
+    }
+    if (patientData.emailAddress === null) {
+      patientData.emailAddress = '';
+    }
+    let utc_dob = new Date().getTime();
+    if (patientData.dateOfBirth != null) {
+      utc_dob = new Date(patientData.dateOfBirth).getTime();
+    }
+
+    const queryParams = `securitykey=${
+      process.env.PRISM_SECURITY_KEY
+    }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
+      patientData.lastName
+    }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
+      ApiConstants.COUNTRY_CODE
+    }&dob=${utc_dob}&sitekey=&martialStatus=&pincode=&email=${
+      patientData.emailAddress
+    }&state=&country=&city=&address=`;
+
+    const createUserAPI = `${process.env.PRISM_CREATE_UHID_USER_API}?${queryParams}`;
+
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${createUserAPI}`,
+      'createPrismUser()->API_CALL_STARTING',
+      '',
+      ''
+    );
+
+    const uhidUserResp = await fetch(createUserAPI, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).catch((error) => {
+      log(
+        'profileServiceLogger',
+        'API_CALL_ERROR',
+        'createPrismUser()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
+      throw new AphError(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
+    });
+
+    const textRes = await uhidUserResp.text();
+    console.log(textRes);
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'createPrismUser()->API_CALL_RESPONSE',
+      textRes,
+      ''
+    );
+    return textRes;
   }
 
   async createAthsToken(id: string) {

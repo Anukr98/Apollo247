@@ -2325,213 +2325,244 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <>
         <View
           style={{
-            width: 244,
-            // height: 130,
-            backgroundColor: '#0087ba',
-            marginLeft: 38,
+            backgroundColor: 'transparent',
+            width: 282,
             borderRadius: 10,
-            marginBottom: 4,
+            marginVertical: 2,
+            alignSelf: 'flex-start',
           }}
         >
-          <Text
-            style={{
-              lineHeight: 22,
-              color: 'white',
-              ...theme.fonts.IBMPlexSansMedium(15),
-              paddingHorizontal: 16,
-              paddingTop: 12,
-            }}
-          >
-            {
-              // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
-              //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
-              //   :
-              "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
-              // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
-            }
-          </Text>
-          <Text
-            style={{
-              color: '#ffffff',
-              marginLeft: 27,
-              textAlign: 'right',
-              ...theme.fonts.IBMPlexSansMedium(10),
-              lineHeight: 24,
-              letterSpacing: 0.04,
-              marginTop: 0,
-              marginRight: 16,
-            }}
-          >
-            {convertChatTime(rowData)}
-          </Text>
-        </View>
-        <View
-          style={{
-            width: 244,
-            height: 206,
-            backgroundColor: '#0087ba',
-            marginLeft: 38,
-            borderRadius: 10,
-            marginBottom: 4,
-          }}
-        >
-          <Text
-            style={{
-              color: 'white',
-              lineHeight: 22,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-              marginHorizontal: 16,
-              marginTop: 12,
-            }}
-          >
-            Next slot for {appointmentData.doctorInfo.displayName} is available on —
-          </Text>
+          {leftComponent === 1 && (
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
+              }}
+            >
+              <Mascot
+                style={{
+                  width: 32,
+                  height: 32,
+                  bottom: 0,
+                  position: 'absolute',
+                  left: 0,
+                }}
+              />
+            </View>
+          )}
           <View
             style={{
-              marginHorizontal: 16,
-              marginTop: 9,
-              opacity: 0.5,
-              height: 2,
-              borderStyle: 'dashed',
-              borderWidth: 1,
-              borderRadius: 1,
-              borderColor: '#ffffff',
-              overflow: 'hidden',
-            }}
-          />
-          <Text
-            style={{
-              marginHorizontal: 16,
-              marginTop: 9,
-              lineHeight: 22,
-              ...theme.fonts.IBMPlexSansSemiBold(15),
-              color: 'white',
+              width: 244,
+              // height: 130,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              marginBottom: 4,
             }}
           >
-            {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
-          </Text>
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 10,
-              opacity: 0.5,
-              height: 2,
-              borderStyle: 'dashed',
-              borderWidth: 1,
-              borderRadius: 1,
-              borderColor: '#ffffff',
-              overflow: 'hidden',
-            }}
-          />
-          <StickyBottomComponent
-            style={{
-              paddingHorizontal: 0,
-              backgroundColor: 'transparent',
-              shadowColor: 'transparent',
-              paddingTop: 13,
-            }}
-          >
-            <Button
-              title={'CHANGE SLOT'}
+            <Text
               style={{
-                flex: 0.6,
-                marginLeft: 16,
-                marginRight: 5,
-                backgroundColor: '#0087ba',
-                borderWidth: 2,
-                borderColor: '#fcb715',
+                lineHeight: 22,
+                color: 'white',
+                ...theme.fonts.IBMPlexSansMedium(15),
+                paddingHorizontal: 16,
+                paddingTop: 12,
               }}
-              titleTextStyle={{ color: 'white' }}
-              onPress={() => {
-                if (type === 'Followup' || type === 'Reschedule') {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
-                  rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
-                  setTransferData(rowData.transferInfo);
-                  setdisplayoverlay(true);
-                } else {
-                  // props.navigation.navigate(AppRoutes.DoctorDetails, {
-                  //   doctorId: rowData.transferInfo.doctorInfo.id,
-                  //   PatientId: patientId,
-                  //   appointmentType: appointmentData.appointmentType,
-                  //   appointmentId: appointmentData.id,
-                  //   showBookAppointment: true,
-                  // });
-                }
-              }}
-            />
-            <Button
-              title={'ACCEPT'}
+            >
+              {
+                // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
+                //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
+                //   :
+                "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
+                // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
+              }
+            </Text>
+            <Text
               style={{
-                flex: 0.4,
+                color: '#ffffff',
+                marginLeft: 27,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+                lineHeight: 24,
+                letterSpacing: 0.04,
+                marginTop: 0,
                 marginRight: 16,
-                marginLeft: 5,
               }}
-              onPress={() => {
-                try {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Accept button clicked');
-
-                  if (type === 'Followup') {
-                    const bookRescheduleInput = {
-                      appointmentId: rowData.transferInfo.appointmentId,
-                      doctorId: rowData.transferInfo.transferDateTime
-                        ? rowData.transferInfo.doctorInfo.id
-                        : rowData.transferInfo.doctorId,
-                      newDateTimeslot: nextSlotAvailable,
-                      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                      initiatedId: patientId,
-                      patientId: patientId,
-                      rescheduledId: '',
-                    };
-                    console.log('bookRescheduleInput', bookRescheduleInput);
-                    rescheduleAPI(rowData, bookRescheduleInput);
-                  } else if (type === 'Reschedule') {
-                    const bookRescheduleInput = {
-                      appointmentId: rowData.transferInfo.appointmentId,
-                      doctorId: rowData.transferInfo.transferDateTime
-                        ? rowData.transferInfo.doctorInfo.id
-                        : rowData.transferInfo.doctorId,
-                      newDateTimeslot: nextSlotAvailable,
-                      initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-                      initiatedId: patientId,
-                      patientId: patientId,
-                      rescheduledId: rowData.transferInfo.reschduleId,
-                    };
-                    console.log('bookRescheduleInput', bookRescheduleInput);
-                    rescheduleAPI(rowData, bookRescheduleInput);
-                  } else {
-                    let datettimeval = nextSlotAvailable;
-                    let transferdataid = rowData.transferInfo.transferId;
-
-                    const appointmentTransferInput: BookTransferAppointmentInput = {
-                      patientId: patientId,
-                      doctorId: rowData.transferInfo.doctorId,
-                      appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
-                      existingAppointmentId: channel,
-                      transferId: transferdataid, //rowData.transferInfo.transferId,
-                    };
-                    console.log(appointmentTransferInput, 'AcceptApi Input');
-
-                    transferAppointmentAPI(rowData, appointmentTransferInput);
-                  }
-                } catch (error) {}
-              }}
-            />
-          </StickyBottomComponent>
-          <Text
+            >
+              {convertChatTime(rowData)}
+            </Text>
+          </View>
+          <View
             style={{
-              color: '#ffffff',
-              marginLeft: 27,
-              textAlign: 'right',
-              ...theme.fonts.IBMPlexSansMedium(10),
-              lineHeight: 24,
-              letterSpacing: 0.04,
-              marginTop: 53,
-              marginRight: 16,
+              width: 244,
+              height: 206,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              marginBottom: 4,
             }}
           >
-            {convertChatTime(rowData)}
-          </Text>
+            <Text
+              style={{
+                color: 'white',
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+                marginHorizontal: 16,
+                marginTop: 12,
+              }}
+            >
+              Next slot for {appointmentData.doctorInfo.displayName} is available on —
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <Text
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansSemiBold(15),
+                color: 'white',
+              }}
+            >
+              {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 10,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <StickyBottomComponent
+              style={{
+                paddingHorizontal: 0,
+                backgroundColor: 'transparent',
+                shadowColor: 'transparent',
+                paddingTop: 13,
+              }}
+            >
+              <Button
+                title={'CHANGE SLOT'}
+                style={{
+                  flex: 0.6,
+                  marginLeft: 16,
+                  marginRight: 5,
+                  backgroundColor: '#0087ba',
+                  borderWidth: 2,
+                  borderColor: '#fcb715',
+                }}
+                titleTextStyle={{ color: 'white' }}
+                onPress={() => {
+                  if (type === 'Followup' || type === 'Reschedule') {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
+                    rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
+                    setTransferData(rowData.transferInfo);
+                    setdisplayoverlay(true);
+                  } else {
+                    // props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    //   doctorId: rowData.transferInfo.doctorInfo.id,
+                    //   PatientId: patientId,
+                    //   appointmentType: appointmentData.appointmentType,
+                    //   appointmentId: appointmentData.id,
+                    //   showBookAppointment: true,
+                    // });
+                  }
+                }}
+              />
+              <Button
+                title={'ACCEPT'}
+                style={{
+                  flex: 0.4,
+                  marginRight: 16,
+                  marginLeft: 5,
+                }}
+                onPress={() => {
+                  try {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Accept button clicked');
+
+                    if (type === 'Followup') {
+                      const bookRescheduleInput = {
+                        appointmentId: rowData.transferInfo.appointmentId,
+                        doctorId: rowData.transferInfo.transferDateTime
+                          ? rowData.transferInfo.doctorInfo.id
+                          : rowData.transferInfo.doctorId,
+                        newDateTimeslot: nextSlotAvailable,
+                        initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                        initiatedId: patientId,
+                        patientId: patientId,
+                        rescheduledId: '',
+                      };
+                      console.log('bookRescheduleInput', bookRescheduleInput);
+                      rescheduleAPI(rowData, bookRescheduleInput);
+                    } else if (type === 'Reschedule') {
+                      const bookRescheduleInput = {
+                        appointmentId: rowData.transferInfo.appointmentId,
+                        doctorId: rowData.transferInfo.transferDateTime
+                          ? rowData.transferInfo.doctorInfo.id
+                          : rowData.transferInfo.doctorId,
+                        newDateTimeslot: nextSlotAvailable,
+                        initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+                        initiatedId: patientId,
+                        patientId: patientId,
+                        rescheduledId: rowData.transferInfo.reschduleId,
+                      };
+                      console.log('bookRescheduleInput', bookRescheduleInput);
+                      rescheduleAPI(rowData, bookRescheduleInput);
+                    } else {
+                      let datettimeval = nextSlotAvailable;
+                      let transferdataid = rowData.transferInfo.transferId;
+
+                      const appointmentTransferInput: BookTransferAppointmentInput = {
+                        patientId: patientId,
+                        doctorId: rowData.transferInfo.doctorId,
+                        appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
+                        existingAppointmentId: channel,
+                        transferId: transferdataid, //rowData.transferInfo.transferId,
+                      };
+                      console.log(appointmentTransferInput, 'AcceptApi Input');
+
+                      transferAppointmentAPI(rowData, appointmentTransferInput);
+                    }
+                  } catch (error) {}
+                }}
+              />
+            </StickyBottomComponent>
+            <Text
+              style={{
+                color: '#ffffff',
+                marginLeft: 27,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+                lineHeight: 24,
+                letterSpacing: 0.04,
+                marginTop: 53,
+                marginRight: 16,
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+          </View>
         </View>
       </>
     );
@@ -3110,40 +3141,70 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: '#0087ba',
-          marginLeft: 38,
+          backgroundColor: 'transparent',
           borderRadius: 10,
-          marginBottom: 4,
+          marginVertical: 2,
+          alignSelf: 'flex-start',
         }}
       >
-        {rowData.automatedText ? (
-          <>
-            <Text
+        {leftComponent === 1 && (
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              bottom: 0,
+              position: 'absolute',
+              left: 0,
+            }}
+          >
+            <Mascot
               style={{
-                color: '#ffffff',
-                paddingTop: 8,
-                paddingBottom: 4,
-                paddingHorizontal: 16,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
               }}
-            >
-              {rowData.automatedText}
-            </Text>
-            <Text
-              style={{
-                color: '#ffffff',
-                paddingHorizontal: 16,
-                paddingVertical: 4,
-                textAlign: 'right',
-                ...theme.fonts.IBMPlexSansMedium(10),
-              }}
-            >
-              {convertChatTime(rowData)}
-            </Text>
-            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
-          </>
-        ) : null}
+            />
+          </View>
+        )}
+        <View
+          style={{
+            backgroundColor: '#0087ba',
+            marginLeft: 38,
+            borderRadius: 10,
+            marginBottom: 4,
+          }}
+        >
+          {rowData.automatedText ? (
+            <>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingTop: 8,
+                  paddingBottom: 4,
+                  paddingHorizontal: 16,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+            </>
+          ) : null}
+        </View>
       </View>
     );
   };
@@ -3152,41 +3213,71 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: '#0087ba',
-          marginLeft: 38,
+          backgroundColor: 'transparent',
           borderRadius: 10,
-          marginBottom: 4,
-          width: 244,
+          marginVertical: 2,
+          alignSelf: 'flex-start',
         }}
       >
-        {rowData.automatedText ? (
-          <>
-            <Text
+        {leftComponent === 1 && (
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              bottom: 0,
+              position: 'absolute',
+              left: 0,
+            }}
+          >
+            <Mascot
               style={{
-                color: '#ffffff',
-                paddingTop: 8,
-                paddingBottom: 4,
-                paddingHorizontal: 16,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
               }}
-            >
-              {rowData.automatedText}
-            </Text>
-            <Text
-              style={{
-                color: '#ffffff',
-                paddingHorizontal: 16,
-                paddingVertical: 4,
-                textAlign: 'right',
-                ...theme.fonts.IBMPlexSansMedium(10),
-              }}
-            >
-              {convertChatTime(rowData)}
-            </Text>
-            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
-          </>
-        ) : null}
+            />
+          </View>
+        )}
+        <View
+          style={{
+            backgroundColor: '#0087ba',
+            marginLeft: 38,
+            borderRadius: 10,
+            marginBottom: 4,
+            width: 244,
+          }}
+        >
+          {rowData.automatedText ? (
+            <>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingTop: 8,
+                  paddingBottom: 4,
+                  paddingHorizontal: 16,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+            </>
+          ) : null}
+        </View>
       </View>
     );
   };
@@ -3408,7 +3499,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         paddingTop: 8,
                         paddingBottom: 3,
                         paddingHorizontal: 16,
-                        textAlign: 'right',
+                        textAlign: 'left',
                         ...theme.fonts.IBMPlexSansMedium(16),
                       }}
                     >
@@ -3677,13 +3768,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderChatView = () => {
-    // console.log('renderChatView');
-
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
           style={{
-            // flexGrow: 1,
             flex: 1,
           }}
           keyboardShouldPersistTaps="always"
