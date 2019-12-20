@@ -33,6 +33,8 @@ export interface MedicineCartContextProps {
     | null;
   updateCartItemQty: ((item: MedicineCartItem) => void) | null;
   cartTotal: number;
+  deliveryPincode: string | null;
+  setDeliveryPincode: ((deliveryPincode: string | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -43,6 +45,8 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   updateCartItem: null,
   updateCartItemQty: null,
   cartTotal: 0,
+  deliveryPincode: null,
+  setDeliveryPincode: null,
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
@@ -53,6 +57,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
     JSON.stringify(cartItems || {})
   );
+
+  const [deliveryPincode, setDeliveryPincode] = useState<
+    MedicineCartContextProps['deliveryPincode']
+  >(null);
 
   useEffect(() => {
     const items = JSON.stringify(cartItems);
@@ -104,6 +112,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         updateCartItem,
         updateCartItemQty,
         cartTotal,
+        setDeliveryPincode,
+        deliveryPincode,
       }}
     >
       {props.children}
@@ -120,4 +130,6 @@ export const useShoppingCart = () => ({
   updateCartItem: useShoppingCartContext().updateCartItem,
   updateCartItemQty: useShoppingCartContext().updateCartItemQty,
   cartTotal: useShoppingCartContext().cartTotal,
+  setDeliveryPincode: useShoppingCartContext().setDeliveryPincode,
+  deliveryPincode: useShoppingCartContext().deliveryPincode,
 });

@@ -816,10 +816,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       props.navigation.navigate(AppRoutes.DoctorSearch);
                     } else if (i == 1) {
                       CommonLogEvent(AppRoutes.ConsultRoom, 'SearchMedicineScene_clicked');
-                      props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                      // props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                      props.navigation.navigate('MEDICINES', { focusSearch: true });
                     } else if (i == 2) {
                       CommonLogEvent(AppRoutes.ConsultRoom, 'SearchTestScene_clicked');
-                      props.navigation.navigate(AppRoutes.SearchTestScene);
+                      // props.navigation.navigate(AppRoutes.SearchTestScene);
+                      props.navigation.navigate('TESTS', { focusSearch: true });
                     }
                   }}
                 >
