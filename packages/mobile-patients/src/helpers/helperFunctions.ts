@@ -358,7 +358,7 @@ const getlocationData = (
               displayName:
                 (area || []).pop() ||
                 findAddrComponents('locality', addrComponents) ||
-                  findAddrComponents('administrative_area_level_2', addrComponents),
+                findAddrComponents('administrative_area_level_2', addrComponents),
               latitude,
               longitude,
               area: area.join(', '),
