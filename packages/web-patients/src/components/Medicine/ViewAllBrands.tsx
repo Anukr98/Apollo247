@@ -168,7 +168,7 @@ export const ViewAllBrands: React.FC = (props) => {
   };
   const classes = useStyles();
 
-  const alphabets:string[] = ("abcdefghijklmnopqrstuvwxyz").split("");
+  const alphabets: string[] = 'abcdefghijklmnopqrstuvwxyz'.split('');
   const [selectedAlphabates, setSelectedAlphabates] = useState('a');
   const alphabetFilter = alphabets.map((letter, index) => (
     <li key={index}>
@@ -181,9 +181,8 @@ export const ViewAllBrands: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [showData, setShowData] = useState<filter[] | []>([]);
 
-  
   useEffect(() => {
-     axios
+    axios
       .post(
         apiDetails.url!,
         {},
@@ -195,14 +194,13 @@ export const ViewAllBrands: React.FC = (props) => {
         }
       )
       .then((res) => {
-
         if (res && res.data && res.data.brands) setData(res.data.brands);
         setLoading(false);
       })
       .catch((e) => {
         setLoading(false);
       });
-  }, );
+  });
 
   useEffect(() => {
     let filterData: filter[] = [];

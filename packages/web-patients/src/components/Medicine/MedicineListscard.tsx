@@ -130,14 +130,10 @@ export interface MedicineListscardProps {
 
 export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
   const classes = useStyles({});
-  // const [medicineQty, setMedicineQty] = React.useState<number>(1);
   const { addCartItem, removeCartItem, updateCartItemQty, cartItems } = useShoppingCart();
   const options = Array.from(Array(20), (_, x) => x);
 
-  const [selectedPackedQty, setSelectedPackedQty] = React.useState(1);
-  const [isQuantityShow, setIsQuantityShow] = React.useState<boolean>(false);
-  // const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
-  const [index, setIndex] = useState();
+  const [selectedPackedQty] = React.useState(1);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -166,8 +162,8 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                       {medicine.is_in_stock ? (
                         <div className={classes.tabInfo}>Pack of {medicine.mou}</div>
                       ) : (
-                          <div className={classes.noStock}>Out Of Stock</div>
-                        )}
+                        <div className={classes.noStock}>Out Of Stock</div>
+                      )}
                     </div>
                   </div>
                 </Link>
@@ -226,36 +222,36 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                         </div>
                       </>
                     ) : (
-                        <div className={classes.addToCart}>
-                          <AphButton>
-                            <img
-                              src={require('images/ic_plus.svg')}
-                              onClick={() => {
-                                const cartItem: MedicineCartItem = {
-                                  description: medicine.description,
-                                  id: medicine.id,
-                                  image: medicine.image,
-                                  is_in_stock: medicine.is_in_stock,
-                                  is_prescription_required: medicine.is_prescription_required,
-                                  name: medicine.name,
-                                  price: medicine.price,
-                                  sku: medicine.sku,
-                                  special_price: medicine.special_price,
-                                  small_image: medicine.small_image,
-                                  status: medicine.status,
-                                  thumbnail: medicine.thumbnail,
-                                  type_id: medicine.type_id,
-                                  mou: medicine.mou,
-                                  quantity: selectedPackedQty,
-                                };
-                                addCartItem && addCartItem(cartItem);
-                              }}
-                              alt="Add Item"
-                              title="Add item to Cart"
-                            />
-                          </AphButton>
-                        </div>
-                      )}
+                      <div className={classes.addToCart}>
+                        <AphButton>
+                          <img
+                            src={require('images/ic_plus.svg')}
+                            onClick={() => {
+                              const cartItem: MedicineCartItem = {
+                                description: medicine.description,
+                                id: medicine.id,
+                                image: medicine.image,
+                                is_in_stock: medicine.is_in_stock,
+                                is_prescription_required: medicine.is_prescription_required,
+                                name: medicine.name,
+                                price: medicine.price,
+                                sku: medicine.sku,
+                                special_price: medicine.special_price,
+                                small_image: medicine.small_image,
+                                status: medicine.status,
+                                thumbnail: medicine.thumbnail,
+                                type_id: medicine.type_id,
+                                mou: medicine.mou,
+                                quantity: selectedPackedQty,
+                              };
+                              addCartItem && addCartItem(cartItem);
+                            }}
+                            alt="Add Item"
+                            title="Add item to Cart"
+                          />
+                        </AphButton>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

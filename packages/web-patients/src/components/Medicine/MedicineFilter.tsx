@@ -136,14 +136,17 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const apiDetails = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
-  const [subtxt, setSubtxt] = useState();
+
+  const url = window.location.pathname;
+  const id = url.substring(url.lastIndexOf('/') + 1);
+
+  const [subtxt, setSubtxt] = useState(id);
+
   useEffect(() => {
-    onSearchMedicine(sessionStorage.getItem('medicineSearch')!);
-    setSubtxt(sessionStorage.getItem('medicineSearch'));
+    onSearchMedicine(subtxt);
   }, []);
 
   const onSearchMedicine = async (value: string) => {
@@ -179,7 +182,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           placeholder="Search med, brands and more"
           onChange={(e) => {
             setSubtxt(e.target.value);
-            sessionStorage.setItem('medicineSearch', e.target.value);
+
+            // sessionStorage.setItem('medicineSearch', e.target.value);
+            // var id = url.substring(url.lastIndexOf('/') + 1);
           }}
           value={subtxt}
         />

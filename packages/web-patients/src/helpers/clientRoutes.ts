@@ -23,7 +23,7 @@ export const clientRoutes = {
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/view-all-brands',
   medicineSearchByBrand: () => '/search-by-brand',
-  searchByMedicine: () => '/search-medicine',
+  searchByMedicine: (searchText: string) => `/search-medicine/${searchText}`,
   medicineDetails: (sku: string) => `/medicine-details/${sku}`,
 };
 
