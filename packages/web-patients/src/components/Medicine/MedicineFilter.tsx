@@ -3,8 +3,12 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+
+
+type Params = { searchText: string };
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -140,10 +144,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
 
-  const params = window.location.pathname;
-  const id = params.substring(params.lastIndexOf('/') + 1);
-
-  const [subtxt, setSubtxt] = useState(id);
+  const params = useParams<Params>();
+  const paramSearchText = params.searchText;
+  const [subtxt, setSubtxt] = useState(paramSearchText);
 
   useEffect(() => {
     onSearchMedicine(subtxt);
