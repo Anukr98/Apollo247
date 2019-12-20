@@ -183,7 +183,7 @@ export const SearchByBrand: React.FC = (props) => {
             Shop By Brand ({data && data.length})
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter medicineFiltercall={callbackMedcineList} />
+            <MedicineFilter />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
