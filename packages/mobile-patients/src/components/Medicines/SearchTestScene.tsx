@@ -301,8 +301,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     });
   };
 
-  const onRemoveCartItem = ({ id }: searchDiagnostics_searchDiagnostics_diagnostics) => {
-    removeCartItem!(id);
+  const onRemoveCartItem = ({ itemId }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+    removeCartItem!(`${itemId}`);
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -438,7 +438,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       index == 0 ? { marginTop: 20 } : {},
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
-    const foundMedicineInCart = cartItems.find((item) => item.id == product.id);
+    const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
     const price = product.rate;
 
     return (

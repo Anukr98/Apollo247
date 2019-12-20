@@ -84,7 +84,7 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   iOS_Version: '1.0',
-  Android_Version: '1.0',
+  Android_Version: '1.19',
 };
 
 // QA
@@ -109,7 +109,7 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   iOS_Version: '1.0',
-  Android_Version: '1.0',
+  Android_Version: '1.19',
 };
 
 //Production
@@ -134,7 +134,7 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   iOS_Version: '1.0',
-  Android_Version: '1.0',
+  Android_Version: '1.19',
 };
 
 const Configuration =
