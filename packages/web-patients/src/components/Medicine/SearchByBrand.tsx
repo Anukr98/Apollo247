@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -6,6 +6,8 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
+import axios from 'axios';
+import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -113,9 +115,55 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+export interface products {
+  description: string;
+  id: number;
+  image: string | null;
+  is_in_stock: boolean;
+  is_prescription_required: '0' | '1'; //1 for required
+  name: string;
+  price: number;
+  special_price: number | string;
+  sku: string;
+  small_image?: string | null;
+  status: number;
+  thumbnail: string | null;
+  type_id: string;
+  mou: string;
+}
 export const SearchByBrand: React.FC = (props) => {
   const classes = useStyles();
-
+  const apiDetails = {
+    url: process.env.PRODUCTS_BY_CATEGORY,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+  };
+  const [data, setData] = useState<products[] | []>([]);
+  useEffect(() => {
+    const url = window.location.pathname;
+    const id = url.substring(url.lastIndexOf('/') + 1);
+    axios
+      .post(
+        apiDetails.url!,
+        {
+          category_id: id,
+          page_id: 2,
+        },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+            Accept: '*/*',
+          },
+        }
+      )
+      .then((res) => {
+        if (res && res.data && res.data.products) {
+          setData(res.data.products);
+          console.log('888', res.data.products);
+        }
+      })
+      .catch((e) => {});
+  }, []);
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -132,14 +180,16 @@ export const SearchByBrand: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            Shop By Brand (06)
+            Shop By Brand ({data && data.length})
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter medicineFiltercall={callbackMedcineList} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
-                  <MedicineCard />
+                  <MedicinesCartContext.Consumer>
+                    {() => <MedicineCard data={data} />}
+                  </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
             </div>

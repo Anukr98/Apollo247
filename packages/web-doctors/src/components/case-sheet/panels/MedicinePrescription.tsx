@@ -975,7 +975,7 @@ export const MedicinePrescription: React.FC = () => {
             const medicine = _medicine!;
 
             const durations = Number(medicine.medicineConsumptionDurationInDays);
-            const duration = durations === 1 ? `${durations} day` : `${durations} days`;
+            const duration = durations === 1 ? ` ${durations} day ` : ` ${durations} days `;
 
             const whenString =
               medicine.medicineToBeTaken.length > 0
@@ -1002,14 +1002,10 @@ export const MedicinePrescription: React.FC = () => {
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
                               <h5>{medicine.medicineName}</h5>
-                              
                   <h6>
-                                                 {dosageCount} {unitHtml} a day
-                    {' '}
-                                  {timesString.length > 0 && timesString} for  {''} {duration}
-                    {' '}
-                                  {whenString.length > 0 && whenString}
-                                
+                    {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
+                    ${duration}
+                    ${whenString.length > 0 && whenString}`}
                   </h6>
                             
                 </Paper>
@@ -1339,6 +1335,7 @@ export const MedicinePrescription: React.FC = () => {
                       setLoading(false);
                       setMedicine('');
                       setTabletsCount(0);
+                      setMedicineUnit('TABLET');
                       setConsumptionDuration('');
                       setDaySlots([
                         {

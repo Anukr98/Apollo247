@@ -69,6 +69,7 @@ export const addPatientAddressTypeDefs = gql`
 
   extend type Query {
     getPatientAddressList(patientId: String): patientAddressListResult!
+    getPatientAddressById(id: String): AddPatientAddressResult!
   }
 
   extend type Mutation {
@@ -130,6 +131,19 @@ const getPatientAddressList: Resolver<
   const addressList = await patientAddressRepo.getPatientAddressList(args.patientId);
   console.log(addressList, 'address list');
   return { addressList };
+};
+
+const getPatientAddressById: Resolver<
+  null,
+  { id: string },
+  ProfilesServiceContext,
+  AddPatientAddressResult
+> = async (parent, args, { profilesDb }) => {
+  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+  const patientAddress = await patientAddressRepo.findById(args.id);
+  if (patientAddress == null)
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  return { patientAddress };
 };
 
 const updatePatientAddress: Resolver<
@@ -196,5 +210,6 @@ export const addPatientAddressResolvers = {
   },
   Query: {
     getPatientAddressList,
+    getPatientAddressById,
   },
 };

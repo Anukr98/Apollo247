@@ -22,7 +22,7 @@ export const clientRoutes = {
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/view-all-brands',
-  medicineSearchByBrand: () => '/search-by-brand',
+  medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
   searchByMedicine: (searchText: string) => `/search-medicine/${searchText}`,
   medicineDetails: (sku: string) => `/medicine-details/${sku}`,
 };
