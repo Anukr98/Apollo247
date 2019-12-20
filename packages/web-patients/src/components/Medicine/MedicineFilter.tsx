@@ -150,7 +150,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
 
   useEffect(() => {
     onSearchMedicine(subtxt);
-  }, []);
+  }, [subtxt]);
 
   const onSearchMedicine = async (value: string) => {
     await axios
