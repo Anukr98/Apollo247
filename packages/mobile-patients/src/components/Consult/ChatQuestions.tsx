@@ -136,10 +136,7 @@ const slides: Slide[] = [
     index: 0,
     title: 'What is your height?',
     inputPlacerholder: 'Enter height…',
-    dropDown: [
-      { key: '1', value: 'cm' },
-      { key: '2', value: 'ft' },
-    ],
+    dropDown: [{ key: '1', value: 'cm' }, { key: '2', value: 'ft' }],
     inputData: ['value', 'drop'],
     keyboardType: 'number-pad',
   },
@@ -290,16 +287,18 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       currentPatient.patientMedicalHistory.dietAllergies
         ? currentPatient.patientMedicalHistory.dietAllergies === 'No'
           ? (v.find((i) => i.k === 'diet')!.v = ['No'])
-          : (v.find((i) => i.k === 'dietAllergies')!.v = [
+          : ((v.find((i) => i.k === 'diet')!.v = ['Yes']),
+            (v.find((i) => i.k === 'dietAllergies')!.v = [
               currentPatient.patientMedicalHistory.dietAllergies,
-            ])
+            ]))
         : null;
       currentPatient.patientMedicalHistory.drugAllergies
         ? currentPatient.patientMedicalHistory.drugAllergies === 'No'
           ? (v.find((i) => i.k === 'drug')!.v = ['No'])
-          : (v.find((i) => i.k === 'drugAllergies')!.v = [
+          : ((v.find((i) => i.k === 'drug')!.v = ['Yes']),
+            (v.find((i) => i.k === 'drugAllergies')!.v = [
               currentPatient.patientMedicalHistory.drugAllergies,
-            ])
+            ]))
         : null;
       currentPatient.patientMedicalHistory.temperature
         ? (v.find((i) => i.k === 'temperature')!.v = [
