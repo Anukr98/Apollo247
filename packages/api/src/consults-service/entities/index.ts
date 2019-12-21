@@ -476,6 +476,7 @@ export type CaseSheetSymptom = {
   since: string;
   howOften: string;
   severity: string;
+  details: string;
 };
 
 @Entity()

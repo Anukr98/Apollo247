@@ -24,6 +24,7 @@ const buildSymptom = (): CaseSheetSymptom => {
     since: `last ${_random(2, 10)} ${_sample(['days', 'weeks', 'months'])}`,
     howOften: _sample(howOftens) as string,
     severity: _sample(severities) as string,
+    details: 'dont know',
   };
 };
 

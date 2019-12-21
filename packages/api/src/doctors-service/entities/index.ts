@@ -224,6 +224,9 @@ export class Doctor extends BaseEntity {
   @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
   doctorHospital: DoctorAndHospital[];
 
+  @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
+  doctorSecretary: DoctorSecretary;
+
   @Column()
   doctorType: DoctorType;
 
@@ -300,8 +303,8 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   salutation: Salutation;
 
-  @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
-  doctorSecretary: DoctorSecretary;
+  @Column({ nullable: true, type: 'text' })
+  signature: string;
 
   @ManyToOne((type) => DoctorSpecialty, (specialty) => specialty.doctor)
   specialty: DoctorSpecialty;

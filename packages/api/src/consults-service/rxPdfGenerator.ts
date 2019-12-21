@@ -102,6 +102,7 @@ export const convertCaseSheetToRxPdfData = async (
     qualifications: '',
     registrationNumber: '',
     specialty: '',
+    signature: '',
   };
 
   let hospitalAddress = {
@@ -186,6 +187,7 @@ export const convertCaseSheetToRxPdfData = async (
         qualifications: doctordata.qualification,
         registrationNumber: doctordata.registrationNumber,
         specialty: doctordata.specialty.name,
+        signature: doctordata.signature,
       };
     }
   }
@@ -392,6 +394,16 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .text(`${textArray.join('  |  ')}`, margin + 15)
         .moveDown(0.8);
 
+      if (prescription.details) {
+        doc
+          .fontSize(12)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#000000')
+          .opacity(0.6)
+          .text(`${prescription.details}`, margin + 15)
+          .moveDown(0.8);
+      }
+
       if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
@@ -419,6 +431,16 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .opacity(0.6)
         .text(`${prescription.frequency} `, margin + 30)
         .moveDown(0.8);
+
+      if (prescription.instructions !== undefined) {
+        doc
+          .fontSize(10)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#000000')
+          .opacity(0.6)
+          .text(`${prescription.instructions} `, margin + 30)
+          .moveDown(0.8);
+      }
     });
   };
 
