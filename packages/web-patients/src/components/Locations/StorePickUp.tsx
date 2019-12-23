@@ -184,15 +184,14 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
         try {
           if (res && res.data && res.data.results[0] && res.data.results[0].address_components) {
             const addressComponents = res.data.results[0].address_components || [];
-            console.log(addressComponents);
-            const _pincode = (
+            const pincode = (
               addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
               {}
             ).long_name;
-            if (_pincode && _pincode.length === 6) {
-              setPincode(_pincode);
-              setStorePickupPincode && setStorePickupPincode(_pincode);
-              setCurrentPincode(_pincode);
+            if (pincode && pincode.length === 6) {
+              setPincode(pincode);
+              setStorePickupPincode && setStorePickupPincode(pincode);
+              setCurrentPincode(pincode);
             }
           }
         } catch {
