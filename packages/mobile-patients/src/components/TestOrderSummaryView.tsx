@@ -144,7 +144,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       <View style={styles.horizontalline1} />
 
       <View style={styles.payment}>
-        <Text style={styles.paymentText1}> Total Paid — Online </Text>
+        <Text style={styles.paymentText1}> Total </Text>
         <Text style={styles.paymentText}> Rs. {orderDetails.totalPrice} </Text>
       </View>
       {false && (
