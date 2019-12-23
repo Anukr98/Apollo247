@@ -97,8 +97,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddNewAddress: React.FC = (props) => {
-  const classes = useStyles();
+type AddNewAddressProps = {
+  setIsAddAddressDialogOpen: (isAddAddressDialogOpen: boolean) => void;
+};
+
+export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
+  const classes = useStyles({});
   const [address1, setAddress1] = useState<string>('');
   const [pincode, setPincode] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -109,9 +113,6 @@ export const AddNewAddress: React.FC = (props) => {
   const address2 = 'Jubileehills, Hyderabad';
 
   const disableSubmit = address1.length === 0 || pincode.length < 6;
-
-  // console.log(currentPatient);
-  // const [name] = React.useState(1);
 
   return (
     <div className={classes.shadowHide}>
@@ -207,6 +208,7 @@ export const AddNewAddress: React.FC = (props) => {
               onClick={() => {
                 setMutationLoading(true);
                 mutate();
+                props.setIsAddAddressDialogOpen(false);
               }}
               disabled={disableSubmit}
               className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}

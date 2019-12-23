@@ -204,7 +204,7 @@ export const HomeDelivery: React.FC = (props) => {
           </div>
           Add New Address
         </AphDialogTitle>
-        <AddNewAddress />
+        <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
       </AphDialog>
 
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
@@ -215,7 +215,10 @@ export const HomeDelivery: React.FC = (props) => {
           </div>
           Select Delivery Address
         </AphDialogTitle>
-        <ViewAllAddress addresses={deliveryAddresses} />
+        <ViewAllAddress
+          addresses={deliveryAddresses}
+          setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
+        />
       </AphDialog>
     </div>
   );

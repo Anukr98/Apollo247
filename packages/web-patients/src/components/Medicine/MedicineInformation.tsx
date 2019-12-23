@@ -396,8 +396,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               </div>
             </>
           ) : (
-              <div className={classes.medicineNoStock}>Out Of Stock</div>
-            )}
+            <div className={classes.medicineNoStock}>Out Of Stock</div>
+          )}
           <div className={classes.medicinePrice}>
             {data.special_price && <span className={classes.regularPrice}>(Rs. {data.price})</span>}
             Rs. {data.special_price || data.price}
@@ -445,10 +445,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </AphButton>
           </>
         ) : (
-            <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
-              Notify when in stock
+          <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
+            Notify when in stock
           </AphButton>
-          )}
+        )}
       </div>
       <Popover
         open={isPopoverOpen}
