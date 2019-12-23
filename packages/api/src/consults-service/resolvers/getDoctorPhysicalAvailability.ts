@@ -139,7 +139,8 @@ const getDoctorPhysicalAvailableSlots: Resolver<
   const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
     DoctorPhysicalAvailabilityInput.doctorId,
     DoctorPhysicalAvailabilityInput.availableDate,
-    doctorsDb
+    doctorsDb,
+    availableSlots
   );
   if (doctorBblockedSlots.length > 0) {
     availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));

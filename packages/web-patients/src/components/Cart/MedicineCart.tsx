@@ -400,7 +400,7 @@ export const MedicineCart: React.FC = (props) => {
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const { currentPincode } = useContext(LocationContext);
-  const { deliveryPincode } = useShoppingCart();
+  const { storePickupPincode } = useShoppingCart();
   const removePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
   };
@@ -561,9 +561,8 @@ export const MedicineCart: React.FC = (props) => {
                 {tabValue === 0 && (
                   <TabContainer>
                     <HomeDelivery
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
+                      setDeliveryAddressId={setDeliveryAddressId}
+                      deliveryAddressId={deliveryAddressId}
                     />
                     <div className={classes.deliveryTimeGroup}>
                       <div className={classes.deliveryTimeGroupWrap}>
@@ -576,12 +575,11 @@ export const MedicineCart: React.FC = (props) => {
                 {tabValue === 1 && (
                   <TabContainer>
                     <StorePickUp
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
+                      setDeliveryAddressId={setDeliveryAddressId}
+                      deliveryAddressId={deliveryAddressId}
                       pincode={
-                        deliveryPincode && deliveryPincode.length === 6
-                          ? deliveryPincode
+                        storePickupPincode && storePickupPincode.length === 6
+                          ? storePickupPincode
                           : currentPincode
                       }
                     />

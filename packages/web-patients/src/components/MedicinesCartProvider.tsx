@@ -23,6 +23,17 @@ export interface MedicineCartItem {
   mou: string;
 }
 
+export interface StoreAddresses {
+  address: string;
+  city: string;
+  message: string;
+  phone: string;
+  state: string;
+  storeid: string;
+  storename: string;
+  workinghrs: string;
+}
+
 export interface MedicineCartContextProps {
   itemsStr: string | null;
   cartItems: MedicineCartItem[];
@@ -33,8 +44,12 @@ export interface MedicineCartContextProps {
     | null;
   updateCartItemQty: ((item: MedicineCartItem) => void) | null;
   cartTotal: number;
-  deliveryPincode: string | null;
-  setDeliveryPincode: ((deliveryPincode: string | null) => void) | null;
+  storePickupPincode: string | null;
+  setStorePickupPincode: ((storePickupPincode: string | null) => void) | null;
+  stores: StoreAddresses[];
+  setStores: ((stores: StoreAddresses[]) => void) | null;
+  deliveryAddress: any;
+  setDeliveryAddress: any;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -45,8 +60,12 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   updateCartItem: null,
   updateCartItemQty: null,
   cartTotal: 0,
-  deliveryPincode: null,
-  setDeliveryPincode: null,
+  storePickupPincode: null,
+  setStorePickupPincode: null,
+  stores: [],
+  setStores: null,
+  deliveryAddress: [],
+  setDeliveryAddress: null,
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
@@ -58,9 +77,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     JSON.stringify(cartItems || {})
   );
 
-  const [deliveryPincode, setDeliveryPincode] = useState<
-    MedicineCartContextProps['deliveryPincode']
+  const [storePickupPincode, setStorePickupPincode] = useState<
+    MedicineCartContextProps['storePickupPincode']
   >(null);
+
+  const [stores, setStores] = useState<MedicineCartContextProps['stores']>([]);
+  const [deliveryAddress, setDeliveryAddress] = useState<
+    MedicineCartContextProps['deliveryAddress']
+  >([]);
 
   useEffect(() => {
     const items = JSON.stringify(cartItems);
@@ -112,8 +136,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
         updateCartItem,
         updateCartItemQty,
         cartTotal,
-        setDeliveryPincode,
-        deliveryPincode,
+        setStorePickupPincode,
+        storePickupPincode,
+        stores,
+        setStores,
+        deliveryAddress,
+        setDeliveryAddress,
       }}
     >
       {props.children}
@@ -130,6 +158,10 @@ export const useShoppingCart = () => ({
   updateCartItem: useShoppingCartContext().updateCartItem,
   updateCartItemQty: useShoppingCartContext().updateCartItemQty,
   cartTotal: useShoppingCartContext().cartTotal,
-  setDeliveryPincode: useShoppingCartContext().setDeliveryPincode,
-  deliveryPincode: useShoppingCartContext().deliveryPincode,
+  setStorePickupPincode: useShoppingCartContext().setStorePickupPincode,
+  storePickupPincode: useShoppingCartContext().storePickupPincode,
+  stores: useShoppingCartContext().stores,
+  setStores: useShoppingCartContext().setStores,
+  deliveryAddress: useShoppingCartContext().deliveryAddress,
+  setDeliveryAddress: useShoppingCartContext().setDeliveryAddress,
 });

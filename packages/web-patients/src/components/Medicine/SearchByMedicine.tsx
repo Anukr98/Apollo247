@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
-import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
+import { MedicineListscard } from 'components/Medicine/MedicineListscard';
+import { MedicinesCartContext } from 'components/MedicinesCartProvider';
+import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -114,7 +116,13 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const SearchByMedicine: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+
+  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
+
+  const callbackMedcineList = (value: MedicineProduct[]) => {
+    setMedicineList(value);
+  };
 
   return (
     <div className={classes.welcome}>
@@ -135,11 +143,13 @@ export const SearchByMedicine: React.FC = (props) => {
             Search Medicine (04)
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter />
+            <MedicineFilter medicineFiltercall={callbackMedcineList} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
-                  <MedicineListingCard />
+                  <MedicinesCartContext.Consumer>
+                    {() => <MedicineListscard medicineList={medicineList} />}
+                  </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
             </div>

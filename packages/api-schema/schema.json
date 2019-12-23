@@ -230,6 +230,33 @@
             "deprecationReason": null
           },
           {
+            "name": "getPatientAddressById",
+            "description": null,
+            "args": [
+              {
+                "name": "id",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "AddPatientAddressResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getPatientNotificationSettings",
             "description": null,
             "args": [
@@ -2859,6 +2886,29 @@
                   "ofType": null
                 }
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "AddPatientAddressResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "patientAddress",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "PatientAddress",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -7245,6 +7295,18 @@
             "deprecationReason": null
           },
           {
+            "name": "signature",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "specialization",
             "description": null,
             "args": [],
@@ -11394,6 +11456,18 @@
           },
           {
             "name": "severity",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "details",
             "description": null,
             "args": [],
             "type": {
@@ -17790,29 +17864,6 @@
         "possibleTypes": null
       },
       {
-        "kind": "OBJECT",
-        "name": "AddPatientAddressResult",
-        "description": null,
-        "fields": [
-          {
-            "name": "patientAddress",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "OBJECT",
-              "name": "PatientAddress",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "inputFields": null,
-        "interfaces": [],
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
         "kind": "INPUT_OBJECT",
         "name": "UpdatePatientAddressInput",
         "description": null,
@@ -23979,6 +24030,16 @@
           },
           {
             "name": "severity",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "details",
             "description": null,
             "type": {
               "kind": "SCALAR",

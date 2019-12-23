@@ -966,6 +966,28 @@ export const MedicinePrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+
+  const handleClearRequested = () => {
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+
+    const dayslots = daySlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+
+    setToBeTakenSlots(slots);
+    setDaySlots(dayslots);
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setTabletsCount(0);
+    setMedicineUnit('TABLET');
+    setSelectedValue('');
+    setSelectedId('');
+  };
+
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
@@ -975,7 +997,7 @@ export const MedicinePrescription: React.FC = () => {
             const medicine = _medicine!;
 
             const durations = Number(medicine.medicineConsumptionDurationInDays);
-            const duration = durations === 1 ? `${durations} day` : `${durations} days`;
+            const duration = durations === 1 ? ` ${durations} day ` : ` ${durations} days `;
 
             const whenString =
               medicine.medicineToBeTaken.length > 0
@@ -1002,14 +1024,10 @@ export const MedicinePrescription: React.FC = () => {
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
                               <h5>{medicine.medicineName}</h5>
-                              
                   <h6>
-                                                 {dosageCount} {unitHtml} a day
-                    {' '}
-                                  {timesString.length > 0 && timesString} for  {''} {duration}
-                    {' '}
-                                  {whenString.length > 0 && whenString}
-                                
+                    {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
+                    ${duration}
+                    ${whenString.length > 0 && whenString}`}
                   </h6>
                             
                 </Paper>
@@ -1129,6 +1147,7 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
+                    handleClearRequested();
                   }}
                 />
               </Button>
@@ -1267,20 +1286,13 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
+                    setIsUpdate(false);
+                    handleClearRequested();
                   }}
                 >
                   Cancel
                 </AphButton>
-                {isUpdate ? (
-                  <AphButton
-                    color="primary"
-                    onClick={() => {
-                      addUpdateMedicines();
-                    }}
-                  >
-                    Add Favourite Medicine
-                  </AphButton>
-                ) : (
+                {
                   <AphButton
                     color="primary"
                     className={classes.updateBtn}
@@ -1290,7 +1302,7 @@ export const MedicinePrescription: React.FC = () => {
                   >
                     Add Medicine
                   </AphButton>
-                )}
+                }
               </div>
             </div>
           </Paper>
@@ -1319,6 +1331,7 @@ export const MedicinePrescription: React.FC = () => {
                 onClick={() => {
                   setIsDialogOpen(false);
                   setShowDosage(false);
+                  handleClearRequested();
                 }}
               />
             </Button>
@@ -1578,6 +1591,8 @@ export const MedicinePrescription: React.FC = () => {
                     onClick={() => {
                       setIsDialogOpen(false);
                       setShowDosage(false);
+                      setIsUpdate(false);
+                      handleClearRequested();
                     }}
                   >
                     Cancel

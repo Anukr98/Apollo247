@@ -1,11 +1,7 @@
 <html>
   <head></head>
   <body onload="document.forms[0].submit()">
-    <form
-      name="PostForm"
-      method="POST"
-      action="https://staging.askapollo.com/Online-Consultation/common/OnlinePhysicalAppointmentPayment.aspx"
-    >
+    <form name="PostForm" method="POST" action="<%= pgUrl %>">
       <input name="SourceApp" type="hidden" value="7729FD68-C552-4C90-B31E-98AA6C84FEBF~WEB" />
       <input name="PatientId" type="hidden" value="<%= patientId %>" />
       <input name="MarchantId" type="hidden" value="<%= merchantId %>" />

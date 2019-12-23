@@ -78,7 +78,7 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.prescriptionGroup}>
         <div className={classes.imgThumb}>
-          <img src={require('images/ic_prescription_thumbnail.png')} alt="" />
+          <img src={props.imageUrl} alt="" />
         </div>
         <div className={classes.fileInfo}>
           <a href={props.imageUrl} target="_blank" title="Download Document">

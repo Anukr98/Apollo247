@@ -2,8 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React, { useState, useEffect } from 'react';
 import { AphRadio, AphTextField } from '@aph/web-ui-components';
-import { StoreAddresses } from 'components/Locations/StorePickUp';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, StoreAddresses } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,7 +75,6 @@ export interface StoreAddresses {
 
 interface ViewAllStoreAddressProps {
   pincode: string | null;
-  setStoreAddress: (storeAddressId: string) => void;
   storeAddresses: StoreAddresses[];
   setStoreAddresses: (storeAddresses: StoreAddresses[]) => void;
   getPharmacyAddresses: (pinCode: string) => void;
@@ -92,7 +90,7 @@ interface ViewAllStoreAddressProps {
 export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) => {
   const classes = useStyles({});
   // const [storeAddressId, setStoreAddressId] = React.useState<string>("");
-  const { setDeliveryPincode } = useShoppingCart();
+  const { setStorePickupPincode } = useShoppingCart();
 
   useEffect(() => {
     if (props.pincode && props.pincode.length === 6) {
@@ -120,7 +118,7 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
               if (newPincode.length === 6) {
                 props.setLoading(true);
                 props.getPharmacyAddresses(newPincode);
-                setDeliveryPincode && setDeliveryPincode(newPincode);
+                setStorePickupPincode && setStorePickupPincode(newPincode);
               } else if (newPincode === '') {
                 props.setStoreAddresses([]);
                 props.setPincodeError(false);
@@ -149,7 +147,6 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
                         label={storeAddress}
                         onChange={() => {
                           props.setStoreAddressId(addressDetails.storeid);
-                          props.setStoreAddress(addressDetails.storeid);
                         }}
                       />
                     </li>
