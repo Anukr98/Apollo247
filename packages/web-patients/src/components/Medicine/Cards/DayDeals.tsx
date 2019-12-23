@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -86,6 +86,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
+  const [searchText] = useState('');
 
   return (
     <div className={classes.root}>
@@ -93,7 +94,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         {props.data &&
           props.data.map((deal) => (
             <div className={classes.card}>
-              <Link className={classes.cardLink} to={clientRoutes.searchByMedicine()}>
+              <Link className={classes.cardLink} to={clientRoutes.searchByMedicine(searchText)}>
                 <div className={classes.cardWrap}>
                   {/* <div className={classes.cardTitle}>
                     Personal

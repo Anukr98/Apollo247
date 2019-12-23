@@ -30,7 +30,7 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -445,19 +445,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             placeholder="Search doctors or specialities"
             underlineColorAndroid="transparent"
             onChangeText={(value) => {
-              setSearchText(value);
-              console.log(timeout, 'timeout');
-              if (timeout) clearTimeout(timeout);
-              timeout = setTimeout(() => {
-                fetchSearchData(value);
-              }, 300);
-              if (value.length > 2) {
-                // fetchSearchData(value);
-                // setDoctorName(true);
-                setdisplaySpeialist(true);
-                setisSearching(true);
-              } else {
-                setdisplaySpeialist(false);
+              if (isValidSearch(value)) {
+                setSearchText(value);
+                console.log(timeout, 'timeout');
+                if (timeout) clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                  fetchSearchData(value);
+                }, 300);
+                if (value.length > 2) {
+                  // fetchSearchData(value);
+                  // setDoctorName(true);
+                  setdisplaySpeialist(true);
+                  setisSearching(true);
+                } else {
+                  setdisplaySpeialist(false);
+                }
               }
             }}
             onFocus={() => {
@@ -682,8 +684,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderHelpView = () => {
     if (needHelp) {
-      return;
-      <NeedHelpAssistant navigation={props.navigation} containerStyle={styles.helpView} />;
+      return <NeedHelpAssistant navigation={props.navigation} containerStyle={styles.helpView} />;
     }
   };
 
