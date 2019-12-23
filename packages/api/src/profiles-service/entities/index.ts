@@ -1190,7 +1190,67 @@ export class DiagnosticOrders extends BaseEntity {
     (diagnosticOrderLineItems) => diagnosticOrderLineItems.diagnosticOrders
   )
   diagnosticOrderLineItems: DiagnosticOrderLineItems[];
+
+  @OneToMany(
+    (type) => DiagnosticOrderPayments,
+    (diagnosticOrderPayments) => diagnosticOrderPayments.diagnosticOrders
+  )
+  diagnosticOrderPayments: DiagnosticOrderPayments[];
 }
+
+//medicine orders  payments start
+@Entity()
+export class DiagnosticOrderPayments extends BaseEntity {
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  amountPaid: number;
+
+  @Column({ nullable: true })
+  bankTxnId: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+
+  @Column({ nullable: true })
+  paymentRefId: string;
+
+  @Column({ nullable: true })
+  paymentDateTime: Date;
+
+  @Column()
+  paymentStatus: string;
+
+  @Column({ nullable: true })
+  responseCode: string;
+
+  @Column({ nullable: true })
+  responseMessage: string;
+
+  @ManyToOne(
+    (type) => DiagnosticOrders,
+    (diagnosticOrders) => diagnosticOrders.diagnosticOrderPayments
+  )
+  diagnosticOrders: DiagnosticOrders;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine orders payments ends
 
 //diagnostic orders  line items start
 @Entity()
