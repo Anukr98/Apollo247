@@ -966,6 +966,28 @@ export const MedicinePrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+
+  const handleClearRequested = () => {
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+    setToBeTakenSlots(slots);
+
+    const dayslots = daySlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+    setDaySlots(dayslots);
+
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setTabletsCount(0);
+    setMedicineUnit('TABLET');
+    setSelectedValue('');
+    setSelectedId('');
+  };
+
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
@@ -1125,6 +1147,7 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
+                    handleClearRequested();
                   }}
                 />
               </Button>
@@ -1264,6 +1287,7 @@ export const MedicinePrescription: React.FC = () => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
                     setIsUpdate(false);
+                    handleClearRequested();
                   }}
                 >
                   Cancel
@@ -1307,6 +1331,7 @@ export const MedicinePrescription: React.FC = () => {
                 onClick={() => {
                   setIsDialogOpen(false);
                   setShowDosage(false);
+                  handleClearRequested();
                 }}
               />
             </Button>
@@ -1567,6 +1592,7 @@ export const MedicinePrescription: React.FC = () => {
                       setIsDialogOpen(false);
                       setShowDosage(false);
                       setIsUpdate(false);
+                      handleClearRequested();
                     }}
                   >
                     Cancel
