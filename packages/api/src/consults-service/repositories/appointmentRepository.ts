@@ -691,7 +691,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       const doctorBblockedSlots = await this.getDoctorBlockedSlots(
         doctorId,
         selectedDate,
-        doctorsDb
+        doctorsDb,
+        availableSlots
       );
       if (doctorBblockedSlots.length > 0) {
         availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
@@ -901,7 +902,12 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.count({ where: { followUpParentId: id } });
   }
 
-  async getDoctorBlockedSlots(doctorId: string, availableDate: Date, doctorsDb: Connection) {
+  async getDoctorBlockedSlots(
+    doctorId: string,
+    availableDate: Date,
+    doctorsDb: Connection,
+    availableSlots: string[]
+  ) {
     const bciRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
     const docConsultRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     const weekDay = format(availableDate, 'EEEE').toUpperCase();
@@ -911,35 +917,65 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     if (timeSlot.length > 0) {
       const duration = Math.floor(60 / timeSlot[0].consultDuration);
-      const consultStartTime = new Date(
-        format(new Date(), 'yyyy-MM-dd') + ' ' + timeSlot[0].startTime.toString()
-      );
+      // const consultStartTime = new Date(
+      //   format(new Date(), 'yyyy-MM-dd') + ' ' + timeSlot[0].startTime.toString()
+      // );
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
           let firstSlot = true;
-          const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
-          const consultStartMin = parseInt(format(consultStartTime, 'mm'), 0);
 
-          let addMin = Math.abs(
-            (startMin % timeSlot[0].consultDuration) - timeSlot[0].consultDuration
-          );
+          let apptDt = format(blockedSlot.start, 'yyyy-MM-dd');
+          let sl = `${apptDt}T${blockedSlot.start
+            .getUTCHours()
+            .toString()
+            .padStart(2, '0')}:${blockedSlot.start
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
-          if (startMin % timeSlot[0].consultDuration != 0 && timeSlot[0].consultDuration % 2 == 0) {
-            addMin = addMin + 1;
-          }
+          //const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
+          //const consultStartMin = parseInt(format(consultStartTime, 'mm'), 0);
+
+          //let addMin = Math.abs(
+          //(startMin % timeSlot[0].consultDuration) - timeSlot[0].consultDuration
+          //);
+
+          //if (startMin % timeSlot[0].consultDuration != 0 && timeSlot[0].consultDuration % 2 == 0) {
+          //addMin = addMin + 1;
+          //}
 
           let slot = blockedSlot.start;
-          if (addMin != timeSlot[0].consultDuration) {
-            slot = addMinutes(blockedSlot.start, addMin);
-          }
+          // if (addMin != timeSlot[0].consultDuration) {
+          //   slot = addMinutes(blockedSlot.start, addMin);
+          // }
 
-          if (
-            consultStartMin % timeSlot[0].consultDuration ==
-            startMin % timeSlot[0].consultDuration
-          ) {
-            slot = blockedSlot.start;
+          // if (
+          //   consultStartMin % timeSlot[0].consultDuration ==
+          //   startMin % timeSlot[0].consultDuration
+          // ) {
+          //   slot = blockedSlot.start;
+          // }
+          // console.log(startMin, addMin, slot, 'start min');
+          let counter = 0;
+          while (true) {
+            if (availableSlots.includes(sl)) {
+              break;
+            }
+            slot = addMinutes(slot, 1);
+            counter++;
+            if (counter >= availableSlots.length) {
+              break;
+            }
+            apptDt = format(slot, 'yyyy-MM-dd');
+            sl = `${apptDt}T${slot
+              .getUTCHours()
+              .toString()
+              .padStart(2, '0')}:${slot
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
-          console.log(startMin, addMin, slot, 'start min');
+          console.log('start slot', slot);
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
           if (!Number.isInteger(blockedSlotsCount)) {
