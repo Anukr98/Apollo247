@@ -10,7 +10,6 @@ import axios from 'axios';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
@@ -165,7 +164,7 @@ export const SearchByBrand: React.FC = (props) => {
           console.log('888', res.data.products);
         }
       })
-      .catch((e) => { });
+      .catch((e) => {});
   }, []);
   return (
     <div className={classes.welcome}>

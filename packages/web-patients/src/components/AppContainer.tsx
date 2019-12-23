@@ -65,7 +65,11 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
         <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
         <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
-        <AuthRouted exact path={clientRoutes.medicineSearchByBrand(':id')} component={SearchByBrand} />
+        <AuthRouted
+          exact
+          path={clientRoutes.medicineSearchByBrand(':id')}
+          component={SearchByBrand}
+        />
         <AuthRouted
           exact
           path={clientRoutes.searchByMedicine(':searchText')}

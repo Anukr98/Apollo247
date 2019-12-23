@@ -71,18 +71,16 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ViewAllAddressProps {
   addresses: GetPatientAddressList_getPatientAddressList_addressList[];
-  updateDeliveryAddress: (deliveryAddressId: string) => void;
+  deliveryAddressId: string;
+  setDeliveryAddressId: (deliveryAddressId: string) => void;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const { addresses } = props;
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
 
-  const { updateDeliveryAddress } = props;
-
-  const disableSubmit = deliveryAddressId === '';
+  const disableSubmit = props.deliveryAddressId === '';
 
   return (
     <div className={classes.shadowHide}>
@@ -92,20 +90,19 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <ul>
-                  {addresses.map((addressDetails, index) => {
+                  {addresses.map((addressDetails) => {
                     const addressId = addressDetails.id;
                     const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
                     return (
                       <li>
                         <FormControlLabel
-                          checked={deliveryAddressId === addressId}
+                          checked={props.deliveryAddressId === addressId}
                           className={classes.radioLabel}
                           value={addressId}
                           control={<AphRadio color="primary" />}
                           label={address}
                           onChange={() => {
-                            setDeliveryAddressId(addressId);
-                            updateDeliveryAddress(addressId);
+                            props.setDeliveryAddressId(addressId);
                           }}
                         />
                       </li>
