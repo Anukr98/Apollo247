@@ -434,7 +434,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   addCartItem && addCartItem(cartItem);
                 }
                 // setIsAddCartPopoverOpen(true);
-                (window.location.href = clientRoutes.mediciness());
+                (window.location.href = clientRoutes.medicinesLandingViewCart());
 
               }}
             >

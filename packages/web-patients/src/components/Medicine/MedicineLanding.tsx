@@ -22,11 +22,9 @@ import { useMutation } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { ApolloError } from 'apollo-client';
-import { useParams } from 'hooks/routerHooks';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 
-type Params = { id: string };
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -260,8 +258,6 @@ export const MedicineLanding: React.FC = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
 
-  const params = useParams<Params>();
-  const param1 = params.id;
 
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_UAT_URL}/apollo_24x7_api.php`,
