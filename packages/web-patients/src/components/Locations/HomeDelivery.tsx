@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   AphRadio,
   AphButton,
@@ -10,13 +10,14 @@ import {
 } from '@aph/web-ui-components';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
+import { useMutation } from 'react-apollo-hooks';
 
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
+  GetPatientAddressList_getPatientAddressList_addressList,
 } from 'graphql/types/GetPatientAddressList';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -96,72 +97,81 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface HomeDeliveryProps {
-  updateDeliveryAddress: (deliveryAddressId: string) => void;
-}
+type HomeDeliveryProps = {
+  deliveryAddressId: string;
+  setDeliveryAddressId: (deliveryAddressId: string) => void;
+};
 
 export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+  const { isSigningIn } = useAuth();
+
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
   );
-  const { currentPatient } = useAllCurrentPatients();
-  const { isSigningIn } = useAuth();
 
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+  const [patientAddresses, setPatientAddresses] = React.useState<
+    GetPatientAddressList_getPatientAddressList_addressList[]
+  >([]);
 
-  const { updateDeliveryAddress } = props;
+  const patientAddressMutation = useMutation<GetPatientAddressList, GetPatientAddressListVariables>(
+    GET_PATIENT_ADDRESSES_LIST,
+    {
+      variables: {
+        patientId: (currentPatient && currentPatient.id) || '',
+      },
+      fetchPolicy: 'no-cache',
+    }
+  );
 
-  const { data, loading, error } = useQueryWithSkip<
-    GetPatientAddressList,
-    GetPatientAddressListVariables
-  >(GET_PATIENT_ADDRESSES_LIST, {
-    variables: {
-      patientId: (currentPatient && currentPatient.id) || '',
-    },
-  });
-
-  if (loading) {
-    return <CircularProgress />;
-  }
-  if (error) {
-    return <></>;
-  }
-
-  const addressList =
-    data && data.getPatientAddressList && data.getPatientAddressList.addressList
-      ? data.getPatientAddressList.addressList
-      : [];
-
-  let showAddress = 0;
+  useEffect(() => {
+    if (patientAddresses.length === 0) {
+      patientAddressMutation()
+        .then((res) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getPatientAddressList &&
+            res.data.getPatientAddressList.addressList
+          ) {
+            setPatientAddresses(res.data.getPatientAddressList.addressList);
+          }
+        })
+        .catch((e) => console.log(e));
+    }
+  }, [patientAddresses]);
 
   return (
     <div className={classes.root}>
-      {addressList.length > 0 ? (
+      {patientAddresses.length > 0 ? (
         <ul>
-          {addressList.map((addressDetails, index) => {
-            const addressId = addressDetails.id;
-            const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
-            showAddress++;
-            return showAddress < 3 ? (
-              <li key={index}>
-                <FormControlLabel
-                  checked={deliveryAddressId === addressId}
-                  className={classes.radioLabel}
-                  value={addressId}
-                  control={<AphRadio color="primary" />}
-                  label={address}
-                  onChange={() => {
-                    setDeliveryAddressId(addressId);
-                    updateDeliveryAddress(addressId);
-                  }}
-                />
-              </li>
-            ) : (
-              ''
-            );
-          })}
+          {patientAddresses.map(
+            (
+              patientAddress: GetPatientAddressList_getPatientAddressList_addressList,
+              index: number
+            ) => {
+              if (index < 2) {
+                const addressId = patientAddress.id;
+                const address = `${patientAddress.addressLine1} - ${patientAddress.zipcode}`;
+                return (
+                  <li key={index}>
+                    <FormControlLabel
+                      checked={props.deliveryAddressId === addressId}
+                      className={classes.radioLabel}
+                      value={addressId}
+                      control={<AphRadio color="primary" />}
+                      label={address}
+                      onChange={() => {
+                        props.setDeliveryAddressId(addressId);
+                      }}
+                    />
+                  </li>
+                );
+              }
+            }
+          )}
         </ul>
       ) : (
         <>
@@ -178,7 +188,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         {!isSigningIn ? (
           <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
         ) : null}
-        {addressList.length > 0 ? (
+        {patientAddresses.length > 2 ? (
           <AphButton
             onClick={() => setIsViewAllAddressDialogOpen(true)}
             className={classes.viewAllBtn}
@@ -208,10 +218,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           Select Delivery Address
         </AphDialogTitle>
         <ViewAllAddress
-          addresses={addressList}
-          updateDeliveryAddress={(deliveryAddressId: string) =>
-            updateDeliveryAddress(deliveryAddressId)
-          }
+          addresses={patientAddresses}
+          deliveryAddressId={props.deliveryAddressId}
+          setDeliveryAddressId={props.setDeliveryAddressId}
         />
       </AphDialog>
     </div>

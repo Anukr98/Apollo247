@@ -13,7 +13,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ViewAllStoreAddress } from 'components/Locations/ViewAllStoreAddress';
 import axios, { AxiosError, Cancel } from 'axios';
 import { LocationContext } from 'components/LocationProvider';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, StoreAddresses } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -99,20 +99,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface StoreAddresses {
-  address: string;
-  city: string;
-  message: string;
-  phone: string;
-  state: string;
-  storeid: string;
-  storename: string;
-  workinghrs: string;
-}
-
 interface StorePickupProps {
   pincode: string | null;
-  updateDeliveryAddress: (deliveryAddressId: string) => void;
+  deliveryAddressId: string;
+  setDeliveryAddressId: (deliveryAddressId: string) => void;
 }
 
 type Address = {
@@ -129,7 +119,6 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
   };
 
   const classes = useStyles({});
-  const [storeAddressId, setStoreAddressId] = React.useState<string>('');
   const [storeAddresses, setStoreAddresses] = React.useState<StoreAddresses[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pincodeError, setPincodeError] = useState<boolean>(false);
@@ -137,9 +126,7 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
     false
   );
   const [pincode, setPincode] = useState<string | null>(props.pincode);
-  const { currentLat, currentLong, setCurrentPincode, currentPincode } = useContext(
-    LocationContext
-  );
+  const { currentLat, currentLong, setCurrentPincode } = useContext(LocationContext);
 
   const { setStorePickupPincode } = useShoppingCart();
 
@@ -215,7 +202,6 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
     }
   }, [pincode]);
 
-  props.updateDeliveryAddress(storeAddressId);
   return (
     <div className={classes.root}>
       <div className={classes.searchAddress}>
@@ -254,13 +240,13 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
               return showAddress < 3 ? (
                 <li key={index}>
                   <FormControlLabel
-                    checked={storeAddressId === addressDetails.storeid}
+                    checked={props.deliveryAddressId === addressDetails.storeid}
                     className={classes.radioLabel}
                     value={addressDetails.storeid}
                     control={<AphRadio color="primary" />}
                     label={storeAddress}
                     onChange={() => {
-                      setStoreAddressId(addressDetails.storeid);
+                      props.setDeliveryAddressId(addressDetails.storeid);
                     }}
                   />
                 </li>
@@ -306,15 +292,14 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
                   pincode={pincode}
                   storeAddresses={storeAddresses}
                   setStoreAddresses={setStoreAddresses}
-                  setStoreAddress={(storeAddressId: string) => setStoreAddressId(storeAddressId)}
                   getPharmacyAddresses={getPharmacyAddresses}
                   pincodeError={pincodeError}
                   setPincodeError={setPincodeError}
                   loading={loading}
                   setLoading={setLoading}
                   setPincode={setPincode}
-                  storeAddressId={storeAddressId}
-                  setStoreAddressId={setStoreAddressId}
+                  storeAddressId={props.deliveryAddressId}
+                  setStoreAddressId={props.setDeliveryAddressId}
                 />
               </div>
             </Scrollbars>
@@ -323,8 +308,8 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
             <AphButton
               color="primary"
               fullWidth
-              disabled={storeAddressId === ''}
-              className={storeAddressId === '' ? classes.buttonDisable : ''}
+              disabled={props.deliveryAddressId === ''}
+              className={props.deliveryAddressId === '' ? classes.buttonDisable : ''}
               onClick={() => setIsViewAllAddressDialogOpen(false)}
             >
               Done
