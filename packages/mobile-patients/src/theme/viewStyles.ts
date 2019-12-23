@@ -34,7 +34,7 @@ export const viewStyles = {
     margin: number = 20,
     borderRadius: number = 10,
     backgroundColor: string = '#fff',
-    elevation: number = 16
+    elevation: number = 10
   ): ViewStyle => ({
     padding,
     margin,

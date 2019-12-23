@@ -697,3 +697,7 @@ export const EditIcon: React.FC<IconProps> = (props) => (
 export const EditProfilePlaceHolder: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_profile_placeholder.png')} />
 );
+
+export const ManageProfileIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_manageprofile.png')} />
+);
