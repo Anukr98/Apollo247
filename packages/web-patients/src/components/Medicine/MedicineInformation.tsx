@@ -397,8 +397,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               </div>
             </>
           ) : (
-            <div className={classes.medicineNoStock}>Out Of Stock</div>
-          )}
+              <div className={classes.medicineNoStock}>Out Of Stock</div>
+            )}
           <div className={classes.medicinePrice}>
             {data.special_price && <span className={classes.regularPrice}>(Rs. {data.price})</span>}
             Rs. {data.special_price || data.price}
@@ -433,7 +433,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 } else {
                   addCartItem && addCartItem(cartItem);
                 }
-                setIsAddCartPopoverOpen(true);
+                // setIsAddCartPopoverOpen(true);
+                (window.location.href = clientRoutes.medicines('added-to-cart'));
+
               }}
             >
               Add To Cart
@@ -446,10 +448,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </AphButton>
           </>
         ) : (
-          <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
-            Notify when in stock
+            <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
+              Notify when in stock
           </AphButton>
-        )}
+          )}
       </div>
       <Popover
         open={isPopoverOpen}
@@ -473,7 +475,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           </div>
         </div>
       </Popover>
-      <Popover
+      {/*  <Popover
         open={isAddCartPopoverOpen}
         anchorEl={addToCartRef.current}
         anchorOrigin={{
@@ -494,7 +496,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <AddToCartPopover />
           </div>
         </div>
-      </Popover>
+      </Popover> */}
       <Popover
         open={isSubDrugsPopoverOpen}
         anchorEl={subDrugsRef.current}

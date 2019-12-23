@@ -45,7 +45,7 @@ export const AddToCartPopover: React.FC = (props) => {
         <p>Your medicines have been added to your cart.</p>
       </div>
       <div className={classes.actions}>
-        <Link className={classes.viewCartBtn} to={clientRoutes.medicines()}>
+        <Link className={classes.viewCartBtn} to={clientRoutes.medicines('0')}>
           View Cart
         </Link>
       </div>

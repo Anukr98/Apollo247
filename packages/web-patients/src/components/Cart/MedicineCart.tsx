@@ -432,18 +432,18 @@ export const MedicineCart: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-          return {
-            medicineSKU: cartItemDetails.sku,
-            medicineName: cartItemDetails.name,
-            price: cartItemDetails.price,
-            quantity: cartItemDetails.quantity,
-            mrp: cartItemDetails.price,
-            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            prescriptionImageUrl: '',
-            mou: parseInt(cartItemDetails.mou, 10),
-            isMedicine: cartItemDetails.is_prescription_required ? '1' : '0',
-          };
-        })
+        return {
+          medicineSKU: cartItemDetails.sku,
+          medicineName: cartItemDetails.name,
+          price: cartItemDetails.price,
+          quantity: cartItemDetails.quantity,
+          mrp: cartItemDetails.price,
+          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+          prescriptionImageUrl: '',
+          mou: parseInt(cartItemDetails.mou, 10),
+          isMedicine: cartItemDetails.is_prescription_required ? '1' : '0',
+        };
+      })
       : [];
 
   return (
@@ -459,7 +459,7 @@ export const MedicineCart: React.FC = (props) => {
               <AphButton
                 className={classes.addItemBtn}
                 onClick={() => {
-                  window.location.href = clientRoutes.medicines();
+                  window.location.href = clientRoutes.medicines('0');
                 }}
               >
                 Add Items
@@ -494,30 +494,30 @@ export const MedicineCart: React.FC = (props) => {
                         </div>
                       </div>
                     ) : (
-                      <div className={classes.uploadPrescription}>
-                        <div className={classes.prescriptionRow}>
-                          <span>
-                            Items in your cart marked with ‘Rx’ need prescriptions to complete your
-                            purchase. Please upload the necessary prescriptions
+                        <div className={classes.uploadPrescription}>
+                          <div className={classes.prescriptionRow}>
+                            <span>
+                              Items in your cart marked with ‘Rx’ need prescriptions to complete your
+                              purchase. Please upload the necessary prescriptions
                           </span>
-                          <AphButton
-                            onClick={() => setIsUploadPreDialogOpen(true)}
-                            className={classes.presUploadBtn}
-                          >
-                            Upload Prescription
+                            <AphButton
+                              onClick={() => setIsUploadPreDialogOpen(true)}
+                              className={classes.presUploadBtn}
+                            >
+                              Upload Prescription
                           </AphButton>
-                        </div>
-                        <div className={classes.consultDoctor}>
-                          <span>Don’t have a prescription? Don’t worry!</span>
-                          <Link
-                            to={clientRoutes.doctorsLanding()}
-                            className={classes.consultDoctoLink}
-                          >
-                            Consult A Doctor
+                          </div>
+                          <div className={classes.consultDoctor}>
+                            <span>Don’t have a prescription? Don’t worry!</span>
+                            <Link
+                              to={clientRoutes.doctorsLanding()}
+                              className={classes.consultDoctoLink}
+                            >
+                              Consult A Doctor
                           </Link>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </>
                 ) : null}
               </>
@@ -606,13 +606,13 @@ export const MedicineCart: React.FC = (props) => {
                   </span>
                 </div>
               ) : (
-                <div className={`${classes.serviceType} ${classes.textVCenter}`}>
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                  </span>
-                  <span className={classes.linkText}>Coupon Applied</span>
-                </div>
-              )}
+                  <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Coupon Applied</span>
+                  </div>
+                )}
             </div>
             <div className={`${classes.sectionGroup}`}>
               <div className={classes.priceSection}>

@@ -147,10 +147,10 @@ export const Navigation: React.FC = (props) => {
         Health Records
       </Link>
       <Link
-        to={clientRoutes.medicines()}
+        to={clientRoutes.medicines('0')}
         className={
-          currentPath === clientRoutes.medicines() ||
-          currentPath === clientRoutes.prescriptionsLanding()
+          currentPath === clientRoutes.medicines('0') ||
+            currentPath === clientRoutes.prescriptionsLanding()
             ? classes.menuItemActive
             : ''
         }
@@ -164,7 +164,7 @@ export const Navigation: React.FC = (props) => {
         tabIndex={0}
         className={`${classes.notificationBtn} ${
           currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-        }`}
+          }`}
       >
         <span>
           <img src={require('images/ic_cart.svg')} alt="Cart" />
