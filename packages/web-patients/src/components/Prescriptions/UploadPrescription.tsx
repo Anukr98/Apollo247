@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const client = new AphStorageClient(
-  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
 
@@ -137,7 +137,7 @@ interface UploadPrescriptionProps {
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isUploading, setIsUploading] = useState(false);
 
   return (
@@ -165,20 +165,42 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   type="file"
                   onChange={async (e) => {
                     setIsUploading(false);
-                    const files = e.currentTarget.files;
-                    const file = files && files.length > 0 ? files[0] : null;
-                    if (file) {
-                      setIsUploading(true);
-                      const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
-                        alert('File Upload Error....Please try again after sometime');
-                        throw error;
-                      });
-                      props.setPrescriptionUrls({
-                        imageUrl: '',
-                        name: '',
-                      });
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      const file = fileNames[0] || null;
+                      const fileExtension = file.name.split('.').pop();
+                      const fileSize = file.size;
+                      if (fileSize > 2000000) {
+                        alert('Invalid File Size. File size must be less than 2MB');
+                      } else if (
+                        fileExtension &&
+                        (fileExtension.toLowerCase() === 'png' ||
+                          fileExtension.toLowerCase() === 'jpg' ||
+                          fileExtension.toLowerCase() === 'jpeg' ||
+                          fileExtension.toLowerCase() === 'pdf')
+                      ) {
+                        setIsUploading(true);
+                        if (file) {
+                          const aphBlob = await client
+                            .uploadBrowserFile({ file })
+                            .catch((error) => {
+                              throw error;
+                            });
+                          if (aphBlob && aphBlob.name) {
+                            const url = client.getBlobUrl(aphBlob.name);
+                            props.setPrescriptionUrls({
+                              imageUrl: url,
+                              name: aphBlob.name,
+                            });
+                            props.closeDialog();
+                          }
+                        }
+                      } else {
+                        alert(
+                          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                        );
+                      }
                       setIsUploading(false);
-                      props.closeDialog();
                     }
                   }}
                   id="icon-button-file"

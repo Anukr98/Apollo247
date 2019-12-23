@@ -92,7 +92,7 @@ interface ViewAllStoreAddressProps {
 export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) => {
   const classes = useStyles({});
   // const [storeAddressId, setStoreAddressId] = React.useState<string>("");
-  const { setDeliveryPincode } = useShoppingCart();
+  const { setStorePickupPincode } = useShoppingCart();
 
   useEffect(() => {
     if (props.pincode && props.pincode.length === 6) {
@@ -120,7 +120,7 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
               if (newPincode.length === 6) {
                 props.setLoading(true);
                 props.getPharmacyAddresses(newPincode);
-                setDeliveryPincode && setDeliveryPincode(newPincode);
+                setStorePickupPincode && setStorePickupPincode(newPincode);
               } else if (newPincode === '') {
                 props.setStoreAddresses([]);
                 props.setPincodeError(false);
