@@ -972,14 +972,14 @@ export const MedicinePrescription: React.FC = () => {
       slot.selected = false;
       return slot;
     });
-    setToBeTakenSlots(slots);
 
     const dayslots = daySlots.map((slot: SlotsObject) => {
       slot.selected = false;
       return slot;
     });
-    setDaySlots(dayslots);
 
+    setToBeTakenSlots(slots);
+    setDaySlots(dayslots);
     setMedicineInstruction('');
     setConsumptionDuration('');
     setTabletsCount(0);
