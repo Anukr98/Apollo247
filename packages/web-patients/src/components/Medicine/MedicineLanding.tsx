@@ -252,7 +252,6 @@ export const MedicineLanding: React.FC = (props) => {
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
-  const [isAddCartPopoverOpen] = React.useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
@@ -399,8 +398,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                        item.key
-                      )}
+                          item.key
+                        )}
                     </div>
                     {item.value}
                   </div>
@@ -411,7 +410,7 @@ export const MedicineLanding: React.FC = (props) => {
       </div>
       {window.location.pathname === '/medicines/added-to-cart' ? (
         <Popover
-          open={isAddCartPopoverOpen}
+          open={true}
           anchorEl={addToCartRef.current}
           anchorOrigin={{
             vertical: 'bottom',
@@ -433,8 +432,8 @@ export const MedicineLanding: React.FC = (props) => {
           </div>
         </Popover>
       ) : (
-        ''
-      )}
+          ''
+        )}
     </div>
   );
 };
