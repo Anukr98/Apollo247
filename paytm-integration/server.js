@@ -581,7 +581,7 @@ app.get('/processOrders', (req, res) => {
                       .medicineOrderPayments.paymentType,
                   VendorName: '*****',
                   DotorName: 'Apollo',
-                  OrderType: 'Pharma',
+                  OrderType: orderType,
                   StateCode: 'TS',
                   TAT: null,
                   CouponCode: 'MED10',
