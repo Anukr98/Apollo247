@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ViewAllAddressProps {
   addresses: GetPatientAddressList_getPatientAddressList_addressList[];
+  setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
@@ -120,6 +121,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           fullWidth
           disabled={disableSubmit}
           className={disableSubmit ? classes.buttonDisable : ''}
+          onClick={() => props.setIsViewAllAddressDialogOpen(false)}
         >
           Done
         </AphButton>

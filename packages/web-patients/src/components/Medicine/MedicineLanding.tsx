@@ -398,8 +398,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                          item.key
-                        )}
+                        item.key
+                      )}
                     </div>
                     {item.value}
                   </div>
@@ -432,8 +432,8 @@ export const MedicineLanding: React.FC = (props) => {
           </div>
         </Popover>
       ) : (
-          ''
-        )}
+        ''
+      )}
     </div>
   );
 };

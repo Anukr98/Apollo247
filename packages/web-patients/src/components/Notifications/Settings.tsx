@@ -84,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Settings: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
 
   return (
@@ -111,7 +111,7 @@ export const Settings: React.FC = (props) => {
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
-                <AddNewAddress />
+                <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
               </div>
             </Scrollbars>
           </div>
