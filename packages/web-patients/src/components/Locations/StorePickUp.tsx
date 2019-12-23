@@ -99,19 +99,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface StorePickupProps {
-  pincode: string | null;
-  deliveryAddressId: string;
-  setDeliveryAddressId: (deliveryAddressId: string) => void;
-}
-
 type Address = {
   long_name: string;
   short_name: string;
   types: Array<string>;
 };
 
-export const StorePickUp: React.FC<StorePickupProps> = (props) => {
+export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/searchpin_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -119,7 +113,14 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
   };
 
   const classes = useStyles({});
-  const [storeAddresses, setStoreAddresses] = React.useState<StoreAddresses[]>([]);
+
+  const {
+    setStorePickupPincode,
+    deliveryAddressId,
+    setDeliveryAddressId,
+    stores,
+    setStores,
+  } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [pincodeError, setPincodeError] = useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
@@ -127,8 +128,6 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
   );
   const [pincode, setPincode] = useState<string | null>(props.pincode);
   const { currentLat, currentLong, setCurrentPincode } = useContext(LocationContext);
-
-  const { setStorePickupPincode } = useShoppingCart();
 
   let showAddress = 0;
 
@@ -145,12 +144,12 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
       )
       .then((result) => {
         if (result && result.data && result.data.Stores) {
-          const stores = result.data.Stores;
-          if (stores && stores[0] && stores[0].message !== 'Data Not Available') {
-            setStoreAddresses(stores);
+          const storesData = result.data.Stores;
+          if (storesData && storesData[0] && storesData[0].message !== 'Data Not Available') {
+            setStores && setStores(storesData);
             setPincodeError(false);
           } else {
-            setStoreAddresses([]);
+            setStores && setStores([]);
             setPincodeError(true);
           }
         }
@@ -192,7 +191,7 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
   };
 
   useEffect(() => {
-    if (pincode && pincode.length === 6) {
+    if (pincode && pincode.length === 6 && stores.length === 0) {
       setLoading(true);
       getPharmacyAddresses(pincode);
     } else if (!pincode && pincode !== '') {
@@ -222,7 +221,7 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
               getPharmacyAddresses(newPincode);
               setStorePickupPincode && setStorePickupPincode(newPincode);
             } else if (newPincode === '') {
-              setStoreAddresses([]);
+              setStores && setStores([]);
               setPincodeError(false);
             }
             setPincode(newPincode);
@@ -233,20 +232,20 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
 
       {!loading ? (
         <ul>
-          {storeAddresses.length > 0 ? (
-            storeAddresses.map((addressDetails, index) => {
+          {stores.length > 0 ? (
+            stores.map((addressDetails, index) => {
               const storeAddress = addressDetails.address.replace(' -', ' ,');
               showAddress++;
               return showAddress < 3 ? (
                 <li key={index}>
                   <FormControlLabel
-                    checked={props.deliveryAddressId === addressDetails.storeid}
+                    checked={deliveryAddressId === addressDetails.storeid}
                     className={classes.radioLabel}
                     value={addressDetails.storeid}
                     control={<AphRadio color="primary" />}
                     label={storeAddress}
                     onChange={() => {
-                      props.setDeliveryAddressId(addressDetails.storeid);
+                      setDeliveryAddressId && setDeliveryAddressId(addressDetails.storeid);
                     }}
                   />
                 </li>
@@ -268,14 +267,16 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
       ) : (
         <CircularProgress />
       )}
-      <div className={classes.bottomActions}>
-        <AphButton
-          onClick={() => setIsViewAllAddressDialogOpen(true)}
-          className={classes.viewAllBtn}
-        >
-          View All
-        </AphButton>
-      </div>
+      {stores.length > 2 && (
+        <div className={classes.bottomActions}>
+          <AphButton
+            onClick={() => setIsViewAllAddressDialogOpen(true)}
+            className={classes.viewAllBtn}
+          >
+            View All
+          </AphButton>
+        </div>
+      )}
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
         <AphDialogTitle>
@@ -290,16 +291,12 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
               <div className={classes.customScrollBar}>
                 <ViewAllStoreAddress
                   pincode={pincode}
-                  storeAddresses={storeAddresses}
-                  setStoreAddresses={setStoreAddresses}
                   getPharmacyAddresses={getPharmacyAddresses}
                   pincodeError={pincodeError}
                   setPincodeError={setPincodeError}
                   loading={loading}
                   setLoading={setLoading}
                   setPincode={setPincode}
-                  storeAddressId={props.deliveryAddressId}
-                  setStoreAddressId={props.setDeliveryAddressId}
                 />
               </div>
             </Scrollbars>
@@ -308,8 +305,8 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
             <AphButton
               color="primary"
               fullWidth
-              disabled={props.deliveryAddressId === ''}
-              className={props.deliveryAddressId === '' ? classes.buttonDisable : ''}
+              disabled={deliveryAddressId === ''}
+              className={deliveryAddressId === '' ? classes.buttonDisable : ''}
               onClick={() => setIsViewAllAddressDialogOpen(false)}
             >
               Done
