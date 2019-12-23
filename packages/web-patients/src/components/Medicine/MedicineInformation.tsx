@@ -242,7 +242,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const subDrugsRef = useRef(null);
   const addToCartRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
-  const [isAddCartPopoverOpen, setIsAddCartPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
   const { data } = props;
@@ -397,8 +396,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               </div>
             </>
           ) : (
-            <div className={classes.medicineNoStock}>Out Of Stock</div>
-          )}
+              <div className={classes.medicineNoStock}>Out Of Stock</div>
+            )}
           <div className={classes.medicinePrice}>
             {data.special_price && <span className={classes.regularPrice}>(Rs. {data.price})</span>}
             Rs. {data.special_price || data.price}
@@ -433,7 +432,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 } else {
                   addCartItem && addCartItem(cartItem);
                 }
-                setIsAddCartPopoverOpen(true);
+                window.location.href = clientRoutes.medicinesLandingViewCart();
               }}
             >
               Add To Cart
@@ -446,10 +445,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </AphButton>
           </>
         ) : (
-          <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
-            Notify when in stock
+            <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
+              Notify when in stock
           </AphButton>
-        )}
+          )}
       </div>
       <Popover
         open={isPopoverOpen}
@@ -470,28 +469,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
             <MedicineNotifyPopover medicineName={data.name} setIsPopoverOpen={setIsPopoverOpen} />
-          </div>
-        </div>
-      </Popover>
-      <Popover
-        open={isAddCartPopoverOpen}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
-            </div>
-            <AddToCartPopover />
           </div>
         </div>
       </Popover>
