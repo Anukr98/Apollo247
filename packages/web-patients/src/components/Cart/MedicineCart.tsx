@@ -384,10 +384,11 @@ export const MedicineCart: React.FC = (props) => {
     name: '',
     imageUrl: '',
   };
+  const { storePickupPincode, deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
@@ -400,7 +401,7 @@ export const MedicineCart: React.FC = (props) => {
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const { currentPincode } = useContext(LocationContext);
-  const { storePickupPincode } = useShoppingCart();
+
   const removePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
   };
@@ -560,10 +561,7 @@ export const MedicineCart: React.FC = (props) => {
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    <HomeDelivery
-                      setDeliveryAddressId={setDeliveryAddressId}
-                      deliveryAddressId={deliveryAddressId}
-                    />
+                    <HomeDelivery />
                     <div className={classes.deliveryTimeGroup}>
                       <div className={classes.deliveryTimeGroupWrap}>
                         <span className={classes.deliveryTime}>Delivery Time</span>
@@ -575,8 +573,6 @@ export const MedicineCart: React.FC = (props) => {
                 {tabValue === 1 && (
                   <TabContainer>
                     <StorePickUp
-                      setDeliveryAddressId={setDeliveryAddressId}
-                      deliveryAddressId={deliveryAddressId}
                       pincode={
                         storePickupPincode && storePickupPincode.length === 6
                           ? storePickupPincode

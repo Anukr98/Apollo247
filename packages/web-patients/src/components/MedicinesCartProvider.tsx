@@ -1,6 +1,7 @@
 /** Acknowledgement: This work is based on the POC done by Kabir Sarin :) **/
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
+import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 
 // import axios from 'axios';
 // const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
@@ -48,8 +49,12 @@ export interface MedicineCartContextProps {
   setStorePickupPincode: ((storePickupPincode: string | null) => void) | null;
   stores: StoreAddresses[];
   setStores: ((stores: StoreAddresses[]) => void) | null;
-  deliveryAddress: any;
-  setDeliveryAddress: any;
+  deliveryAddressId: string;
+  setDeliveryAddressId: ((deliveryAddressId: string) => void) | null;
+  deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[];
+  setDeliveryAddresses:
+    | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
+    | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -64,8 +69,10 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setStorePickupPincode: null,
   stores: [],
   setStores: null,
-  deliveryAddress: [],
-  setDeliveryAddress: null,
+  deliveryAddressId: '',
+  setDeliveryAddressId: null,
+  deliveryAddresses: [],
+  setDeliveryAddresses: null,
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
@@ -82,8 +89,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
   >(null);
 
   const [stores, setStores] = useState<MedicineCartContextProps['stores']>([]);
-  const [deliveryAddress, setDeliveryAddress] = useState<
-    MedicineCartContextProps['deliveryAddress']
+  const [deliveryAddressId, setDeliveryAddressId] = useState<
+    MedicineCartContextProps['deliveryAddressId']
+  >('');
+
+  const [deliveryAddresses, setDeliveryAddresses] = useState<
+    MedicineCartContextProps['deliveryAddresses']
   >([]);
 
   useEffect(() => {
@@ -140,8 +151,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
         storePickupPincode,
         stores,
         setStores,
-        deliveryAddress,
-        setDeliveryAddress,
+        deliveryAddressId,
+        setDeliveryAddressId,
+        deliveryAddresses,
+        setDeliveryAddresses,
       }}
     >
       {props.children}
@@ -162,6 +175,8 @@ export const useShoppingCart = () => ({
   storePickupPincode: useShoppingCartContext().storePickupPincode,
   stores: useShoppingCartContext().stores,
   setStores: useShoppingCartContext().setStores,
-  deliveryAddress: useShoppingCartContext().deliveryAddress,
-  setDeliveryAddress: useShoppingCartContext().setDeliveryAddress,
+  deliveryAddressId: useShoppingCartContext().deliveryAddressId,
+  setDeliveryAddressId: useShoppingCartContext().setDeliveryAddressId,
+  deliveryAddresses: useShoppingCartContext().deliveryAddresses,
+  setDeliveryAddresses: useShoppingCartContext().setDeliveryAddresses,
 });

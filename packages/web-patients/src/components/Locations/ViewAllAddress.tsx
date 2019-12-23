@@ -4,6 +4,7 @@ import React from 'react';
 import { AphRadio, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,16 +72,15 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ViewAllAddressProps {
   addresses: GetPatientAddressList_getPatientAddressList_addressList[];
-  deliveryAddressId: string;
-  setDeliveryAddressId: (deliveryAddressId: string) => void;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const classes = useStyles({});
+  const { deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
 
   const { addresses } = props;
 
-  const disableSubmit = props.deliveryAddressId === '';
+  const disableSubmit = deliveryAddressId === '';
 
   return (
     <div className={classes.shadowHide}>
@@ -96,13 +96,13 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                     return (
                       <li>
                         <FormControlLabel
-                          checked={props.deliveryAddressId === addressId}
+                          checked={deliveryAddressId === addressId}
                           className={classes.radioLabel}
                           value={addressId}
                           control={<AphRadio color="primary" />}
                           label={address}
                           onChange={() => {
-                            props.setDeliveryAddressId(addressId);
+                            setDeliveryAddressId && setDeliveryAddressId(addressId);
                           }}
                         />
                       </li>

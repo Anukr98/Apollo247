@@ -19,6 +19,7 @@ import {
   GetPatientAddressList_getPatientAddressList_addressList,
 } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,14 +98,15 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type HomeDeliveryProps = {
-  deliveryAddressId: string;
-  setDeliveryAddressId: (deliveryAddressId: string) => void;
-};
-
-export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
+export const HomeDelivery: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
+  const {
+    setDeliveryAddressId,
+    deliveryAddressId,
+    deliveryAddresses,
+    setDeliveryAddresses,
+  } = useShoppingCart();
   const { isSigningIn } = useAuth();
 
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
@@ -112,9 +114,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     false
   );
 
-  const [patientAddresses, setPatientAddresses] = React.useState<
-    GetPatientAddressList_getPatientAddressList_addressList[]
-  >([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const patientAddressMutation = useMutation<GetPatientAddressList, GetPatientAddressListVariables>(
     GET_PATIENT_ADDRESSES_LIST,
@@ -127,7 +127,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   );
 
   useEffect(() => {
-    if (patientAddresses.length === 0) {
+    if (deliveryAddresses.length === 0) {
+      setIsLoading(true);
       patientAddressMutation()
         .then((res) => {
           if (
@@ -136,35 +137,39 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             res.data.getPatientAddressList &&
             res.data.getPatientAddressList.addressList
           ) {
-            setPatientAddresses(res.data.getPatientAddressList.addressList);
+            setDeliveryAddresses &&
+              setDeliveryAddresses(res.data.getPatientAddressList.addressList);
+            setIsLoading(false);
           }
         })
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.log(e);
+        });
     }
-  }, [patientAddresses]);
+  }, [deliveryAddresses]);
 
   return (
     <div className={classes.root}>
-      {patientAddresses.length > 0 ? (
+      {deliveryAddresses.length > 0 ? (
         <ul>
-          {patientAddresses.map(
+          {deliveryAddresses.map(
             (
-              patientAddress: GetPatientAddressList_getPatientAddressList_addressList,
+              deliveryAddress: GetPatientAddressList_getPatientAddressList_addressList,
               index: number
             ) => {
               if (index < 2) {
-                const addressId = patientAddress.id;
-                const address = `${patientAddress.addressLine1} - ${patientAddress.zipcode}`;
+                const addressId = deliveryAddress.id;
+                const address = `${deliveryAddress.addressLine1} - ${deliveryAddress.zipcode}`;
                 return (
                   <li key={index}>
                     <FormControlLabel
-                      checked={props.deliveryAddressId === addressId}
+                      checked={deliveryAddressId === addressId}
                       className={classes.radioLabel}
                       value={addressId}
                       control={<AphRadio color="primary" />}
                       label={address}
                       onChange={() => {
-                        props.setDeliveryAddressId(addressId);
+                        setDeliveryAddressId && setDeliveryAddressId(addressId);
                       }}
                     />
                   </li>
@@ -174,21 +179,14 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           )}
         </ul>
       ) : (
-        <>
-          {!isSigningIn ? (
-            <div className={classes.noAddress}>
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
-              has been the industry's standard dummy text ever since the 1500s....
-            </div>
-          ) : null}
-        </>
+        <>{isLoading ? <CircularProgress /> : null}</>
       )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (
           <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
         ) : null}
-        {patientAddresses.length > 2 ? (
+        {deliveryAddresses.length > 2 ? (
           <AphButton
             onClick={() => setIsViewAllAddressDialogOpen(true)}
             className={classes.viewAllBtn}
@@ -217,11 +215,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           </div>
           Select Delivery Address
         </AphDialogTitle>
-        <ViewAllAddress
-          addresses={patientAddresses}
-          deliveryAddressId={props.deliveryAddressId}
-          setDeliveryAddressId={props.setDeliveryAddressId}
-        />
+        <ViewAllAddress addresses={deliveryAddresses} />
       </AphDialog>
     </div>
   );
