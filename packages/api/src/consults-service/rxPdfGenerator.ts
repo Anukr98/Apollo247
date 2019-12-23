@@ -577,6 +577,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fill('#02475b')
         .moveDown(0.5);
       doc
+        .opacity(1)
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
