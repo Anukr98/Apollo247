@@ -27,7 +27,7 @@ import {
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
@@ -238,33 +238,35 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
-    }
-    setShowMatchingMedicines(true);
-    setIsLoading(true);
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setShowMatchingMedicines(true);
+      setIsLoading(true);
 
-    client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
-        variables: {
-          searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city,
-          patientId: (currentPatient && currentPatient.id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-        setIsLoading(false);
-      })
-      .catch((e) => {
-        setIsLoading(false);
-        showGenericALert(e);
-      });
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: _searchText,
+            city: locationForDiagnostics && locationForDiagnostics.city,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          showGenericALert(e);
+        });
+    }
   };
 
   const savePastSeacrh = (sku: string, name: string) =>
@@ -299,8 +301,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     });
   };
 
-  const onRemoveCartItem = ({ id }: searchDiagnostics_searchDiagnostics_diagnostics) => {
-    removeCartItem!(id);
+  const onRemoveCartItem = ({ itemId }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+    removeCartItem!(`${itemId}`);
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -436,7 +438,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       index == 0 ? { marginTop: 20 } : {},
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
-    const foundMedicineInCart = cartItems.find((item) => item.id == product.id);
+    const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
     const price = product.rate;
 
     return (

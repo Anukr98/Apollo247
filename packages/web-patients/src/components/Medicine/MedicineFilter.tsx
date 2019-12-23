@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { useParams } from 'hooks/routerHooks';
+import axios from 'axios';
+import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+
+
+type Params = { searchText: string };
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -125,13 +131,63 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const MedicineFilter: React.FC = (props) => {
-  const classes = useStyles();
+interface MedicineFilterProps {
+  medicineFiltercall?: (value: MedicineProduct[]) => void;
+}
+
+export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
+  const classes = useStyles({});
+  const apiDetails = {
+    url: process.env.PHARMACY_MED_SEARCH_URL,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+
+  const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
+
+  const params = useParams<Params>();
+  const paramSearchText = params.searchText;
+  const [subtxt, setSubtxt] = useState(paramSearchText);
+
+  useEffect(() => {
+    onSearchMedicine(subtxt);
+  }, [subtxt]);
+
+  const onSearchMedicine = async (value: string) => {
+    await axios
+      .post(
+        apiDetails.url,
+        {
+          params: value,
+        },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+          // cancelToken: new CancelToken(function executor(c) {
+          //   // An executor function receives a cancel function as a parameter
+          //   cancelSearchSuggestionsApi = c;
+          // })
+        }
+      )
+      .then(({ data }) => {
+        setSearchMedicines(data.products);
+        props.medicineFiltercall(data.products);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.searchInput}>
-        <AphTextField placeholder="Search med, brands and more" />
+        <AphTextField
+          placeholder="Search med, brands and more"
+          onChange={(e) => {
+            setSubtxt(e.target.value);
+          }}
+          value={subtxt}
+        />
         <AphButton className={classes.refreshBtn}>
           <img src={require('images/ic_refresh.svg')} alt="" />
         </AphButton>
@@ -194,7 +250,17 @@ export const MedicineFilter: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.bottomActions}>
-        <AphButton color="primary" fullWidth>
+        <AphButton
+          color="primary"
+          fullWidth
+          onClick={(e) => {
+            if (subtxt.length > 2) {
+              onSearchMedicine(subtxt);
+            } else {
+              setSearchMedicines([]);
+            }
+          }}
+        >
           Apply Filters
         </AphButton>
       </div>

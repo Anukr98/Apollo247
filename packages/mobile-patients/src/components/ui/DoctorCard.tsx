@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
   doctorNameStyles: {
     paddingTop: 32,
     paddingLeft: 0,
+    textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SEARCH_DOCTOR_NAME,
   },
@@ -362,7 +363,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             ) : null} */}
             </View>
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
+              <Text style={styles.doctorNameStyles}>
+                {rowData.salutation + '. ' + rowData.firstName + ' ' + rowData.lastName}
+              </Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
                 {rowData.experience} YR

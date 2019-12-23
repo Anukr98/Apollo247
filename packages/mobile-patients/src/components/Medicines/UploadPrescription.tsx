@@ -360,7 +360,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
-        showConsultPrescriptionsOnly={true} // not showing e-prescriptions for non-cart flow
+        // showConsultPrescriptionsOnly={true} // not showing e-prescriptions for non-cart flow
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {
@@ -425,13 +425,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       {renderPrescriptionModal()}
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
-        disabledOption={
-          EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0
-            ? 'NONE'
-            : EPrescriptions.length > 0
-            ? 'CAMERA_AND_GALLERY'
-            : 'E-PRESCRIPTION'
-        }
+        // disabledOption={
+        //   EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0
+        //     ? 'NONE'
+        //     : EPrescriptions.length > 0
+        //     ? 'CAMERA_AND_GALLERY'
+        //     : 'E-PRESCRIPTION'
+        // }
         type="nonCartFlow"
         heading={'Upload Prescription(s)'}
         instructionHeading={'Instructions For Uploading Prescriptions'}

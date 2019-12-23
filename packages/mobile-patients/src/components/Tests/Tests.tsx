@@ -61,6 +61,7 @@ import {
   doRequestAndAccessLocation,
   g,
   getNetStatus,
+  isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -184,18 +185,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
-    focusSearch && setSearchFocused(true);
-  }, []);
-
-  useEffect(() => {
     console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
 
   useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient!.id) {
+    if (currentPatient && profile.id !== currentPatient.id) {
       setLoadingContext!(true);
-      setProfile(currentPatient!);
+      setProfile(currentPatient);
       ordersRefetch().then((data: any) => {
         const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
         setOrdersFetched(orderData);
@@ -1275,33 +1272,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const client = useApolloClient();
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      console.log('onSearchMedicine');
-      return;
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        console.log('onSearchMedicine');
+        return;
+      }
+      setsearchSate('load');
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: _searchText,
+            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          // aphConsole.log({ e });
+          setsearchSate('fail');
+        });
     }
-    setsearchSate('load');
-    client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
-        variables: {
-          searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-          patientId: (currentPatient && currentPatient.id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        // aphConsole.log({ data });
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        // aphConsole.log({ e });
-        setsearchSate('fail');
-      });
   };
 
   interface SuggestionType {
@@ -1440,6 +1439,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Input
+          autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               props.navigation.navigate(AppRoutes.SearchTestScene, {
@@ -1712,7 +1712,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
                 <View style={styles.nameTextContainerStyle}>
                   <Text style={styles.nameTextStyle} numberOfLines={1}>
-                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                    {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
                 </View>

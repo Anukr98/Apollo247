@@ -8,6 +8,8 @@ import { MedicineFilter } from 'components/Medicine/MedicineFilter';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import axios from 'axios';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
+import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -138,6 +140,7 @@ export const SearchByBrand: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+
   const [data, setData] = useState<products[] | []>([]);
   useEffect(() => {
     const url = window.location.pathname;
@@ -162,7 +165,7 @@ export const SearchByBrand: React.FC = (props) => {
           console.log('888', res.data.products);
         }
       })
-      .catch((e) => {});
+      .catch((e) => { });
   }, []);
   return (
     <div className={classes.welcome}>

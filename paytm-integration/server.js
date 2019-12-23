@@ -536,6 +536,7 @@ app.get('/processOrders', (req, res) => {
                 }
               );
               let prescriptionImages = [];
+              let orderType = 'FMCG';
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                   .prescriptionImageUrl != '' &&
@@ -545,8 +546,10 @@ app.get('/processOrders', (req, res) => {
                 prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
                   ','
                 );
+                orderType = 'Pharma';
               }
               if (prescriptionImages.length > 0) {
+                orderType = 'Pharma';
                 prescriptionImages.map((imageUrl) => {
                   const url = {
                     url: imageUrl,
@@ -578,7 +581,7 @@ app.get('/processOrders', (req, res) => {
                       .medicineOrderPayments.paymentType,
                   VendorName: '*****',
                   DotorName: 'Apollo',
-                  OrderType: 'Pharma',
+                  OrderType: orderType,
                   StateCode: 'TS',
                   TAT: null,
                   CouponCode: 'MED10',

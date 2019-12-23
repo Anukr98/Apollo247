@@ -232,7 +232,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
     callDeviceTokenAPI();
-    // checkForVersionUpdate();
+    checkForVersionUpdate();
   }, []);
 
   useEffect(() => {
@@ -307,113 +307,113 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
-      // checkForVersionUpdate();
+      checkForVersionUpdate();
     }
   };
 
-  // const checkForVersionUpdate = () => {
-  //   console.log('checkForVersionUpdate');
+  const checkForVersionUpdate = () => {
+    console.log('checkForVersionUpdate');
 
-  //   if (__DEV__) {
-  //     firebase.config().enableDeveloperMode();
-  //   }
+    if (__DEV__) {
+      firebase.config().enableDeveloperMode();
+    }
 
-  //   firebase
-  //     .config()
-  //     .fetch(30 * 0) // 30 min
-  //     .then(() => {
-  //       return firebase.config().activateFetched();
-  //     })
-  //     .then(() => {
-  //       return firebase
-  //         .config()
-  //         .getValues([
-  //           'Android_mandatory',
-  //           'android_latest_version',
-  //           'ios_mandatory',
-  //           'ios_Latest_version',
-  //         ]);
-  //     })
-  //     .then((snapshot) => {
-  //       const myValye = snapshot;
-  //       let index: number = 0;
-  //       const nietos = [];
-  //       const Android_version: string = AppConfig.Configuration.Android_Version;
-  //       const iOS_version: string = AppConfig.Configuration.iOS_Version;
+    firebase
+      .config()
+      .fetch(30 * 0) // 30 min
+      .then(() => {
+        return firebase.config().activateFetched();
+      })
+      .then(() => {
+        return firebase
+          .config()
+          .getValues([
+            'Android_mandatory',
+            'android_latest_version',
+            'ios_mandatory',
+            'ios_Latest_version',
+          ]);
+      })
+      .then((snapshot) => {
+        const myValye = snapshot;
+        let index: number = 0;
+        const nietos = [];
+        const Android_version: string = AppConfig.Configuration.Android_Version;
+        const iOS_version: string = AppConfig.Configuration.iOS_Version;
 
-  //       for (const val in myValye) {
-  //         if (myValye.hasOwnProperty(val)) {
-  //           index++;
-  //           const element = myValye[val];
-  //           nietos.push({ index: index, value: element.val() });
-  //           if (nietos.length === 4) {
-  //             console.log(
-  //               'nietos',
-  //               parseFloat(nietos[1].value),
-  //               parseFloat(iOS_version),
-  //               parseFloat(Android_version)
-  //             );
-  //             if (Platform.OS === 'ios') {
-  //               if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
-  //                 showUpdateAlert(nietos[2].value);
-  //               }
-  //             } else {
-  //               if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-  //                 showUpdateAlert(nietos[0].value);
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //     })
-  //     .catch((error) => console.log(`Error processing config: ${error}`));
-  // };
+        for (const val in myValye) {
+          if (myValye.hasOwnProperty(val)) {
+            index++;
+            const element = myValye[val];
+            nietos.push({ index: index, value: element.val() });
+            if (nietos.length === 4) {
+              console.log(
+                'nietos',
+                parseFloat(nietos[1].value),
+                parseFloat(iOS_version),
+                parseFloat(Android_version)
+              );
+              if (Platform.OS === 'ios') {
+                if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
+                  showUpdateAlert(nietos[2].value);
+                }
+              } else {
+                if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
+                  showUpdateAlert(nietos[0].value);
+                }
+              }
+            }
+          }
+        }
+      })
+      .catch((error) => console.log(`Error processing config: ${error}`));
+  };
 
-  // const showUpdateAlert = (mandatory: boolean) => {
-  //   showAphAlert!({
-  //     title: `Hi there :)`,
-  //     description: 'There is a new version available for this app. Please update it.',
-  //     unDismissable: true,
-  //     children: (
-  //       <View
-  //         style={{
-  //           flexDirection: 'row',
-  //           marginHorizontal: 20,
-  //           justifyContent: 'space-between',
-  //           alignItems: 'flex-end',
-  //           marginVertical: 18,
-  //         }}
-  //       >
-  //         {!mandatory ? (
-  //           <Button
-  //             style={{
-  //               flex: 1,
-  //               marginRight: 16,
-  //             }}
-  //             title={'CANCEL'}
-  //             onPress={() => {
-  //               hideAphAlert!();
-  //             }}
-  //           />
-  //         ) : null}
+  const showUpdateAlert = (mandatory: boolean) => {
+    showAphAlert!({
+      title: `Hi there :)`,
+      description: 'There is a new version available for this app. Please update it.',
+      unDismissable: true,
+      children: (
+        <View
+          style={{
+            flexDirection: 'row',
+            marginHorizontal: 20,
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            marginVertical: 18,
+          }}
+        >
+          {!mandatory ? (
+            <Button
+              style={{
+                flex: 1,
+                marginRight: 16,
+              }}
+              title={'CANCEL'}
+              onPress={() => {
+                hideAphAlert!();
+              }}
+            />
+          ) : null}
 
-  //         <Button
-  //           style={{ flex: 1 }}
-  //           title={'UPDATE'}
-  //           onPress={() => {
-  //             hideAphAlert!();
+          <Button
+            style={{ flex: 1 }}
+            title={'UPDATE'}
+            onPress={() => {
+              hideAphAlert!();
 
-  //             Linking.openURL(
-  //               Platform.OS === 'ios'
-  //                 ? 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-  //                 : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-  //             ).catch((err) => console.error('An error occurred', err));
-  //           }}
-  //         />
-  //       </View>
-  //     ),
-  //   });
-  // };
+              Linking.openURL(
+                Platform.OS === 'ios'
+                  ? 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
+                  : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
+              ).catch((err) => console.error('An error occurred', err));
+            }}
+          />
+        </View>
+      ),
+    });
+  };
 
   const Popup = () => (
     <TouchableOpacity

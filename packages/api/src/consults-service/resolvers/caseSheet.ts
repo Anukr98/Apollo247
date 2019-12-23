@@ -314,6 +314,7 @@ export const caseSheetTypeDefs = gql`
     since: String
     howOften: String
     severity: String
+    details: String
   }
 
   type SymptomList {
@@ -321,6 +322,7 @@ export const caseSheetTypeDefs = gql`
     since: String
     howOften: String
     severity: String
+    details: String
   }
 
   input ModifyCaseSheetInput {
@@ -792,6 +794,7 @@ const createJuniorDoctorCaseSheet: Resolver<
         since: null,
         howOften: null,
         severity: null,
+        details: null,
       };
       symptomList.push(eachsymptom);
     });

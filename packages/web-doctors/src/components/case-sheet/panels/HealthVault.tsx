@@ -432,9 +432,13 @@ export const HealthVault: React.FC = () => {
                 </ListItem>
               ))
             ) : (
-              <span className={classes.nodataFound}>No data Found</span>
+              <span className={classes.nodataFound}>
+                {`${!loading && prismImageList && prismImageList.length === 0 && 'No data Found'}`}{' '}
+              </span>
             )}
-            {!loading && prismImageList && prismImageList.length > 0 ? (
+            {!loading &&
+              prismImageList &&
+              prismImageList.length > 0 &&
               prismImageList.map((item: any, index: any) => (
                 <ListItem
                   key={index}
@@ -468,10 +472,7 @@ export const HealthVault: React.FC = () => {
                     }
                   />
                 </ListItem>
-              ))
-            ) : (
-              <span className={classes.nodataFound}>No data Found</span>
-            )}
+              ))}
             {
               <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
                 <div className={classes.modalWindowWrap}>
@@ -498,6 +499,7 @@ export const HealthVault: React.FC = () => {
           <Typography component="h5" variant="h5">
             Reports
           </Typography>
+          <span className={classes.nodataFound}>No Data Found</span>
           {/* <List className={classes.listContainer}>
             {appointmentDocuments && appointmentDocuments.length > 0 ? (
               appointmentDocuments!.map((item, index) => (
