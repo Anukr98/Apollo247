@@ -199,7 +199,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  const appointmentData = props.navigation.state.params!.data;
+  let appointmentData = props.navigation.state.params!.data;
 
   // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
@@ -1186,22 +1186,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const APIForUpdateAppointmentData = (toStopTimer: boolean) => {
     getAppointmentDataDetails(client, appointmentData.id)
       .then(({ data }: any) => {
-        console.log(data, 'data APIForUpdateAppointmentData');
-        const appointmentSeniorDoctorStarted =
-          data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
-        console.log(
-          appointmentSeniorDoctorStarted,
-          'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
-        );
+        try {
+           console.log(data, 'data APIForUpdateAppointmentData');
+           const appointmentSeniorDoctorStarted =
+             data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
+           console.log(
+             appointmentSeniorDoctorStarted,
+             data.data.getAppointmentData.appointmentsHistory[0],
+             'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+           );
 
-        if (toStopTimer) {
-          if (appointmentSeniorDoctorStarted) {
-            stopCallAbondmentTimer();
-            abondmentStarted = false;
-          }
-        } else {
-          callAbondmentMethod(appointmentSeniorDoctorStarted);
+           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
+
+           if (toStopTimer) {
+             if (appointmentSeniorDoctorStarted) {
+               stopCallAbondmentTimer();
+               abondmentStarted = false;
+             }
+           } else {
+             callAbondmentMethod(appointmentSeniorDoctorStarted);
+           }
+        } catch (error) {
         }
+       
       })
       .catch((e: string) => {
         abondmentStarted = false;
@@ -1584,8 +1591,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
-        //addMessages(message);
         setShowFeedback(true);
+        APIForUpdateAppointmentData(true);
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
         message.message.message === 'Audio call ended' ||
