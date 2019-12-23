@@ -843,7 +843,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         addCartItem!({
           id: `${diagnostics!.itemId!}`,
           mou: tests.length,
-          name: packageName!,
+          name: diagnostics!.itemName,
           price: diagnostics!.rate,
           specialPrice: specialPrice,
           thumbnail: packageImage,
