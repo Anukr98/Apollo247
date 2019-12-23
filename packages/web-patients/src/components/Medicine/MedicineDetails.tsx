@@ -365,7 +365,7 @@ export const MedicineDetails: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.medicineDetailsPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => (window.location.href = clientRoutes.medicines('0'))}>
+                  <a onClick={() => (window.location.href = clientRoutes.medicines())}>
                     <div className={classes.backArrow}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                       <img

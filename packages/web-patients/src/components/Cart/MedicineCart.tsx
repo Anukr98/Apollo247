@@ -459,7 +459,7 @@ export const MedicineCart: React.FC = (props) => {
               <AphButton
                 className={classes.addItemBtn}
                 onClick={() => {
-                  window.location.href = clientRoutes.medicines('0');
+                  window.location.href = clientRoutes.medicines();
                 }}
               >
                 Add Items

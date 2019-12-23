@@ -415,7 +415,7 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      {window.location.href.includes('/medicines/added-to-cart') ?
+      {window.location.pathname === '/medicines/added-to-cart' ?
         <Popover
           open={isAddCartPopoverOpen}
           anchorEl={addToCartRef.current}
