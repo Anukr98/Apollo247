@@ -764,6 +764,7 @@ export interface RxPdfData {
     qualifications: string;
     registrationNumber: string;
     specialty: string;
+    signature: string;
   };
   hospitalAddress: {
     name: string;
