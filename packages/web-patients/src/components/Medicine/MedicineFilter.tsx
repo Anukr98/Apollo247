@@ -7,7 +7,6 @@ import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 
-
 type Params = { searchText: string };
 
 const useStyles = makeStyles((theme: Theme) => {

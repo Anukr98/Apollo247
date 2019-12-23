@@ -23,6 +23,17 @@ export interface MedicineCartItem {
   mou: string;
 }
 
+export interface StoreAddresses {
+  address: string;
+  city: string;
+  message: string;
+  phone: string;
+  state: string;
+  storeid: string;
+  storename: string;
+  workinghrs: string;
+}
+
 export interface MedicineCartContextProps {
   itemsStr: string | null;
   cartItems: MedicineCartItem[];
@@ -35,6 +46,10 @@ export interface MedicineCartContextProps {
   cartTotal: number;
   storePickupPincode: string | null;
   setStorePickupPincode: ((storePickupPincode: string | null) => void) | null;
+  stores: StoreAddresses[];
+  setStores: ((stores: StoreAddresses[]) => void) | null;
+  deliveryAddress: any;
+  setDeliveryAddress: any;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -47,6 +62,10 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   cartTotal: 0,
   storePickupPincode: null,
   setStorePickupPincode: null,
+  stores: [],
+  setStores: null,
+  deliveryAddress: [],
+  setDeliveryAddress: null,
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
@@ -61,6 +80,11 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [storePickupPincode, setStorePickupPincode] = useState<
     MedicineCartContextProps['storePickupPincode']
   >(null);
+
+  const [stores, setStores] = useState<MedicineCartContextProps['stores']>([]);
+  const [deliveryAddress, setDeliveryAddress] = useState<
+    MedicineCartContextProps['deliveryAddress']
+  >([]);
 
   useEffect(() => {
     const items = JSON.stringify(cartItems);
@@ -114,6 +138,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
         cartTotal,
         setStorePickupPincode,
         storePickupPincode,
+        stores,
+        setStores,
+        deliveryAddress,
+        setDeliveryAddress,
       }}
     >
       {props.children}
@@ -132,4 +160,8 @@ export const useShoppingCart = () => ({
   cartTotal: useShoppingCartContext().cartTotal,
   setStorePickupPincode: useShoppingCartContext().setStorePickupPincode,
   storePickupPincode: useShoppingCartContext().storePickupPincode,
+  stores: useShoppingCartContext().stores,
+  setStores: useShoppingCartContext().setStores,
+  deliveryAddress: useShoppingCartContext().deliveryAddress,
+  setDeliveryAddress: useShoppingCartContext().setDeliveryAddress,
 });

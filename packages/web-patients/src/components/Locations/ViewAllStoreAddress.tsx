@@ -2,8 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React, { useState, useEffect } from 'react';
 import { AphRadio, AphTextField } from '@aph/web-ui-components';
-import { StoreAddresses } from 'components/Locations/StorePickUp';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, StoreAddresses } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,7 +75,6 @@ export interface StoreAddresses {
 
 interface ViewAllStoreAddressProps {
   pincode: string | null;
-  setStoreAddress: (storeAddressId: string) => void;
   storeAddresses: StoreAddresses[];
   setStoreAddresses: (storeAddresses: StoreAddresses[]) => void;
   getPharmacyAddresses: (pinCode: string) => void;
@@ -149,7 +147,6 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
                         label={storeAddress}
                         onChange={() => {
                           props.setStoreAddressId(addressDetails.storeid);
-                          props.setStoreAddress(addressDetails.storeid);
                         }}
                       />
                     </li>
