@@ -222,7 +222,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const client = useApolloClient();
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
-  const { setLoading, showAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
 
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>({
@@ -927,8 +927,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             data={tabs}
             onChange={(selectedTab: string) => {
               setselectedTab(selectedTab);
-              // setClinicId!('');
-              // setDeliveryAddressId!('');
+              setClinicId!('');
+              setDeliveryAddressId!('');
               // setPinCode!('');
             }}
             selectedTab={selectedTab}
@@ -1212,6 +1212,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const onPressProceedToPay = () => {
+    if (
+      !(
+        g(locationForDiagnostics, 'state') &&
+        g(locationForDiagnostics, 'stateId') &&
+        g(locationForDiagnostics, 'city') &&
+        g(locationForDiagnostics, 'cityId')
+      )
+    ) {
+      showAphAlert!({
+        title: `Hi ${currentPatient && currentPatient.firstName},`,
+        description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad to proceed.`,
+        onPressOk: () => {
+          hideAphAlert!();
+          props.navigation.navigate('TESTS', { focusLocation: true });
+        },
+      });
+      return;
+    }
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
       props.navigation.navigate(AppRoutes.TestsCheckoutScene);

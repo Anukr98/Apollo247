@@ -188,9 +188,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               <Text style={styles.doctorSpecializationStyles}>
                 {profileDetails.gender ? profileDetails.gender : '-'} |{' '}
                 {profileDetails.dateOfBirth
-                  ? Math.round(
-                      Moment().diff(profileDetails.dateOfBirth, 'years', true)
-                    ).toString() || '-'
+                  ? Moment()
+                      .diff(profileDetails.dateOfBirth, 'years')
+                      .toString() || '-'
                   : '-'}
               </Text>
             </View>
