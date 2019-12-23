@@ -25,7 +25,6 @@ import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
@@ -258,7 +257,6 @@ export const MedicineLanding: React.FC = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
 
-
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_UAT_URL}/apollo_24x7_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -401,8 +399,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                          item.key
-                        )}
+                        item.key
+                      )}
                     </div>
                     {item.value}
                   </div>
@@ -411,7 +409,7 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      {window.location.pathname === '/medicines/added-to-cart' ?
+      {window.location.pathname === '/medicines/added-to-cart' ? (
         <Popover
           open={isAddCartPopoverOpen}
           anchorEl={addToCartRef.current}
@@ -434,7 +432,9 @@ export const MedicineLanding: React.FC = (props) => {
             </div>
           </div>
         </Popover>
-        : ''}
+      ) : (
+        ''
+      )}
     </div>
   );
 };

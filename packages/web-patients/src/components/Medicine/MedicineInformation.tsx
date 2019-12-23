@@ -433,9 +433,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 } else {
                   addCartItem && addCartItem(cartItem);
                 }
-                // setIsAddCartPopoverOpen(true);
-                (window.location.href = clientRoutes.medicinesLandingViewCart());
-
+                window.location.href = clientRoutes.medicinesLandingViewCart();
               }}
             >
               Add To Cart
@@ -475,28 +473,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           </div>
         </div>
       </Popover>
-      {/*  <Popover
-        open={isAddCartPopoverOpen}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
-            </div>
-            <AddToCartPopover />
-          </div>
-        </div>
-      </Popover> */}
       <Popover
         open={isSubDrugsPopoverOpen}
         anchorEl={subDrugsRef.current}
