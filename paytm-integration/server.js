@@ -6,6 +6,7 @@ const ejs = require('ejs');
 const app = express();
 const session = require('express-session');
 const stripTags = require('striptags');
+const crypto = require('crypto');
 const azure = require('azure-sb');
 require('dotenv').config();
 
@@ -387,6 +388,129 @@ app.get('/mob-error', (req, res) => {
       code: '800',
     });
   }
+});
+
+//diagnostic payment apis
+app.get('/diagnosticpayment', (req, res) => {
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  // validate the order and token.
+  axios({
+    url: process.env.API_URL,
+    method: 'post',
+    data: {
+      query: `
+          query {
+            getPatientById(patientId:"${req.query.patientId}") {
+              patient {
+                id
+                emailAddress
+                firstName
+                lastName
+                dateOfBirth
+                gender
+                athsToken
+                mobileNumber
+              }
+            }
+          }
+        `,
+    },
+  })
+    .then((response) => {
+      if (
+        response &&
+        response.data &&
+        response.data.data &&
+        response.data.data.getPatientById &&
+        response.data.data.getPatientById.patient
+      ) {
+        const responsePatientId = response.data.data.getPatientById.patient.id;
+        console.log('responsePatientId', response.data.data.getPatientById.patient);
+        if (responsePatientId == '') {
+          res.statusCode = 401;
+          res.send({
+            status: 'failed',
+            reason: 'Invalid parameters',
+            code: '10000',
+          });
+        } else {
+          req.session.orderId = req.query.orderId;
+          const {
+            emailAddress,
+            mobileNumber,
+            firstName,
+            lastName,
+          } = response.data.data.getPatientById.patient;
+
+          const code = `gtKFFx|APL-${req.query.orderId}|${parseFloat(
+            req.query.price
+          )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
+
+          const hash = crypto
+            .createHash('sha512')
+            .update(code)
+            .digest('hex');
+
+          console.log(code, hash);
+
+          res.render('diagnosticsPayment.ejs', {
+            athsToken: response.data.data.getPatientById.patient.athsToken,
+            orderId: req.query.orderId,
+            totalPrice: parseFloat(req.query.price),
+            patientId: req.query.patientId,
+            firstName,
+            lastName,
+            emailAddress,
+            mobileNumber,
+            hash,
+            baseUrl: 'http://localhost:7000',
+            //baseUrl: 'https://aph.dev.pmt.popcornapps.com',
+          });
+        }
+      }
+    })
+    .catch((error) => {
+      // no need to explicitly saying details about error for clients.
+      console.log(error);
+      res.statusCode = 401;
+      return res.send({
+        status: 'failed',
+        reason: 'Invalid parameters',
+        code: '10001',
+      });
+    });
+});
+
+app.post('/diagnostic-pg-success', (req, res) => {
+  console.log('success------', req.body);
+  const paymentStatus = req.body.status;
+  const mihpayid = req.body.mihpayid;
+  if (paymentStatus === 'success' && mihpayid != null) {
+    res.statusCode = 200;
+    res.send({
+      status: 'success',
+      orderId: mihpayid,
+    });
+  } else {
+    res.statusCode = 401;
+    res.send({
+      status: 'failed',
+      reason: 'Unauthorized',
+      code: '800',
+    });
+  }
+});
+app.post('/diagnostic-pg-error', (req, res) => {
+  console.log('error', req.body, req);
+  res.send({
+    status: 'failed',
+  });
+});
+app.post('/diagnostic-pg-cancel', (req, res) => {
+  console.log('cancel', req.body, req);
+  res.send({
+    status: 'failed',
+  });
 });
 
 app.get('/processOrders', (req, res) => {
