@@ -261,50 +261,45 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
     });
 
     if (currentPatient && currentPatient.patientMedicalHistory) {
-      currentPatient.patientMedicalHistory.bp
-        ? (v.find((i) => i.k === 'bp')!.v = [
-            currentPatient.patientMedicalHistory.bp !== 'No Idea'
-              ? currentPatient.patientMedicalHistory.bp
-              : '',
-            currentPatient.patientMedicalHistory.bp === 'No Idea'
-              ? currentPatient.patientMedicalHistory.bp
-              : '',
-          ])
-        : null;
-      currentPatient.patientMedicalHistory.height
-        ? (v.find((i) => i.k === 'height')!.v =
-            currentPatient.patientMedicalHistory.height !== 'No Idea'
-              ? [...currentPatient.patientMedicalHistory.height.split(' ')]
-              : ['', 'cm'])
-        : null;
-      currentPatient.patientMedicalHistory.weight
-        ? (v.find((i) => i.k === 'weight')!.v = [
-            currentPatient.patientMedicalHistory.weight !== 'No Idea'
-              ? currentPatient.patientMedicalHistory.weight
-              : '',
-          ])
-        : null;
-      currentPatient.patientMedicalHistory.dietAllergies
-        ? currentPatient.patientMedicalHistory.dietAllergies === 'No'
+      currentPatient.patientMedicalHistory.bp &&
+        (v.find((i) => i.k === 'bp')!.v = [
+          currentPatient.patientMedicalHistory.bp !== 'No Idea'
+            ? currentPatient.patientMedicalHistory.bp
+            : '',
+          currentPatient.patientMedicalHistory.bp === 'No Idea'
+            ? currentPatient.patientMedicalHistory.bp
+            : '',
+        ]);
+      currentPatient.patientMedicalHistory.height &&
+        (v.find((i) => i.k === 'height')!.v =
+          currentPatient.patientMedicalHistory.height !== 'No Idea'
+            ? [...currentPatient.patientMedicalHistory.height.split(' ')]
+            : ['', 'cm']);
+      currentPatient.patientMedicalHistory.weight &&
+        (v.find((i) => i.k === 'weight')!.v = [
+          currentPatient.patientMedicalHistory.weight !== 'No Idea'
+            ? currentPatient.patientMedicalHistory.weight
+            : '',
+        ]);
+      currentPatient.patientMedicalHistory.dietAllergies &&
+        (currentPatient.patientMedicalHistory.dietAllergies === 'No'
           ? (v.find((i) => i.k === 'diet')!.v = ['No'])
-          : ((v.find((i) => i.k === 'diet')!.v = ['Yes']),
+          : (v.find((i) => i.k === 'diet')!.v = ['Yes']) ||
             (v.find((i) => i.k === 'dietAllergies')!.v = [
               currentPatient.patientMedicalHistory.dietAllergies,
-            ]))
-        : null;
-      currentPatient.patientMedicalHistory.drugAllergies
-        ? currentPatient.patientMedicalHistory.drugAllergies === 'No'
+            ]));
+
+      currentPatient.patientMedicalHistory.drugAllergies &&
+        (currentPatient.patientMedicalHistory.drugAllergies === 'No'
           ? (v.find((i) => i.k === 'drug')!.v = ['No'])
-          : ((v.find((i) => i.k === 'drug')!.v = ['Yes']),
+          : (v.find((i) => i.k === 'drug')!.v = ['Yes']) ||
             (v.find((i) => i.k === 'drugAllergies')!.v = [
               currentPatient.patientMedicalHistory.drugAllergies,
-            ]))
-        : null;
-      currentPatient.patientMedicalHistory.temperature
-        ? (v.find((i) => i.k === 'temperature')!.v = [
-            currentPatient.patientMedicalHistory.temperature,
-          ])
-        : null;
+            ]));
+      currentPatient.patientMedicalHistory.temperature &&
+        (v.find((i) => i.k === 'temperature')!.v = [
+          currentPatient.patientMedicalHistory.temperature,
+        ]);
     }
 
     setValues(v);
@@ -455,7 +450,6 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                           <Text
                             style={[
                               styles.placeholderTextStyle,
-                              ,
                               values && values[item.index] !== undefined
                                 ? null
                                 : styles.placeholderStyle,
