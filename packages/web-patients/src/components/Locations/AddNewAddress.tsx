@@ -99,6 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type AddNewAddressProps = {
   setIsAddAddressDialogOpen: (isAddAddressDialogOpen: boolean) => void;
+  setRenderAddresses?: (renderAddresses: boolean) => void;
 };
 
 export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
@@ -209,6 +210,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 setMutationLoading(true);
                 mutate();
                 props.setIsAddAddressDialogOpen(false);
+                props.setRenderAddresses && props.setRenderAddresses(true);
               }}
               disabled={disableSubmit}
               className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}

@@ -281,6 +281,7 @@ export interface SymptomInput {
   since?: string | null;
   howOften?: string | null;
   severity?: string | null;
+  details?: string | null;
 }
 
 export interface TransferAppointmentInput {

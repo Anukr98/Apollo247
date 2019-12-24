@@ -854,7 +854,7 @@ export const MedicinePrescription: React.FC = () => {
         dosageErr: false,
       });
       const inputParamsArr: any = {
-        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineConsumptionDurationInDays: String(consumptionDuration),
         medicineDosage: String(tabletsCount),
         medicineInstructions: medicineInstruction,
         medicineTimings: daySlotsArr,

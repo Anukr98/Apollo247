@@ -5,7 +5,6 @@ import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-componen
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
-import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';

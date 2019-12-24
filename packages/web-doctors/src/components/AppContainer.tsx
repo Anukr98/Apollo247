@@ -10,11 +10,13 @@ import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
 import { MyAccount } from 'components/profileDetails';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { PatientLogDetailsPage } from 'components/PatientLog/PatientLogDetailsPage';
 import { Calendar } from 'components/Calendar';
 import { PatientLog } from 'components/PatientLog/PatientLog';
 import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
+import DateFnsUtils from '@date-io/date-fns';
 import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
@@ -56,8 +58,8 @@ const App: React.FC = () => {
           ) : isSecretary ? (
             <Redirect to={clientRoutes.secretaryDashboard()} />
           ) : (
-            <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
-          )
+                  <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
+                )
         }
       />
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
@@ -92,23 +94,23 @@ const App: React.FC = () => {
       />
     </div>
   ) : (
-    // TODO why are there `AuthedRoute`s inside of the "is not signed in" section?
-    <div className={classes.app}>
-      <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
-      <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
-      <AuthRouted
-        exact
-        path={clientRoutes.PatientLogDetailsPage(':appointmentId', ':consultscount')}
-        component={PatientLogDetailsPage}
-      />
-      <AuthRouted
-        exact
-        path={clientRoutes.ConsultTabs(':id', ':patientId', ':tabValue')}
-        component={ConsultTabs}
-      />
-    </div>
-  );
+      // TODO why are there `AuthedRoute`s inside of the "is not signed in" section?
+      <div className={classes.app}>
+        <Route exact path={clientRoutes.welcome()} component={Welcome} />
+        <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
+        <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
+        <AuthRouted
+          exact
+          path={clientRoutes.PatientLogDetailsPage(':appointmentId', ':consultscount')}
+          component={PatientLogDetailsPage}
+        />
+        <AuthRouted
+          exact
+          path={clientRoutes.ConsultTabs(':id', ':patientId', ':tabValue')}
+          component={ConsultTabs}
+        />
+      </div>
+    );
 };
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -135,7 +137,9 @@ const AppContainer: React.FC = () => {
     <BrowserRouter>
       <AuthProvider>
         <AphThemeProvider theme={theme}>
-          <App />
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <App />
+          </MuiPickersUtilsProvider>
         </AphThemeProvider>
       </AuthProvider>
     </BrowserRouter>

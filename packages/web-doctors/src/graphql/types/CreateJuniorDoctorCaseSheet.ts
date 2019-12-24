@@ -62,6 +62,7 @@ export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_symptom
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet {
