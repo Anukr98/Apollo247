@@ -414,6 +414,7 @@ export const Symptoms: React.FC = (props) => {
             <div className={classes.formGroup}>
               <label>Complaint</label>
               <AphTextField
+                autoFocus
                 placeholder=""
                 value={symptom}
                 className={classes.formHeader}

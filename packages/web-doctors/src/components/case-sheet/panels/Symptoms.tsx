@@ -511,6 +511,7 @@ export const Symptoms: React.FC = (props) => {
                         <h6>COMPLAINT</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
+                            autoFocus
                             placeholder=""
                             value={symptom}
                             onChange={(event) => {
