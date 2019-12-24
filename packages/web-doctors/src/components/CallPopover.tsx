@@ -657,18 +657,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
-      timer = timer - 1;
-      console.log('call Abandonment', timer);
-      stoppedTimerCall = timer;
-      setCallAbundantCallTime(timer);
-      if (timer < 1) {
-        setCallAbundantCallTime(0);
-        clearInterval(intervalCallAbundant);
-        if (showVideo) {
-          stopAudioVideoCall();
+      if (props.appointmentStatus !== STATUS.COMPLETED) {
+        timer = timer - 1;
+        console.log('call Abandonment', timer);
+        stoppedTimerCall = timer;
+        setCallAbundantCallTime(timer);
+        if (timer < 1) {
+          setCallAbundantCallTime(0);
+          clearInterval(intervalCallAbundant);
+          if (showVideo) {
+            stopAudioVideoCall();
+          }
+          setShowAbandonment(true);
+          //callInitiateReschedule(true);
         }
-        setShowAbandonment(true);
-        //callInitiateReschedule(true);
+      } else {
+        console.log('clear abundant');
+        clearInterval(intervalCallAbundant);
       }
     }, 1000);
   };
@@ -1158,19 +1163,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (props.appointmentStatus === STATUS.COMPLETED) {
       setRemainingCallTime(0);
       clearInterval(intervalcallId);
+      clearInterval(intervalCallAbundant);
     }
   }, [props.appointmentStatus]);
-  //const pubnub = new Pubnub(config);
   const pubnub = props.pubnub;
 
   useEffect(() => {
     return function cleanup() {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
-      //stopInterval();
-      //clearInterval(timerIntervalId);
-      //clearInterval(intervalMissCall);
-      // clearInterval(intervalId);
     };
   }, []);
 
