@@ -115,6 +115,7 @@ export const HomeDelivery: React.FC = (props) => {
   );
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
 
   const patientAddressMutation = useMutation<GetPatientAddressList, GetPatientAddressListVariables>(
     GET_PATIENT_ADDRESSES_LIST,
@@ -127,7 +128,7 @@ export const HomeDelivery: React.FC = (props) => {
   );
 
   useEffect(() => {
-    if (deliveryAddresses.length === 0) {
+    if (deliveryAddresses.length === 0 || renderAddresses) {
       setIsLoading(true);
       patientAddressMutation()
         .then((res) => {
@@ -146,7 +147,7 @@ export const HomeDelivery: React.FC = (props) => {
           console.log(e);
         });
     }
-  }, [deliveryAddresses]);
+  }, [deliveryAddresses, renderAddresses]);
 
   return (
     <div className={classes.root}>
@@ -204,7 +205,10 @@ export const HomeDelivery: React.FC = (props) => {
           </div>
           Add New Address
         </AphDialogTitle>
-        <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
+        <AddNewAddress
+          setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
+          setRenderAddresses={setRenderAddresses}
+        />
       </AphDialog>
 
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">

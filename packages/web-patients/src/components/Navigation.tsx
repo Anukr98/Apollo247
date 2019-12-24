@@ -158,6 +158,7 @@ export const Navigation: React.FC = (props) => {
         Medicines
       </Link>
       <div
+        id="cartId"
         onClick={() => setIsCartPopoverOpen(true)}
         onKeyPress={() => setIsCartPopoverOpen(true)}
         ref={cartPopoverRef}

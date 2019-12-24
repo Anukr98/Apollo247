@@ -46,6 +46,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       placeholder="Search"
       fullWidth
       InputProps={{
@@ -853,7 +854,7 @@ export const MedicinePrescription: React.FC = () => {
         dosageErr: false,
       });
       const inputParamsArr: any = {
-        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineConsumptionDurationInDays: String(consumptionDuration),
         medicineDosage: String(tabletsCount),
         medicineInstructions: medicineInstruction,
         medicineTimings: daySlotsArr,
@@ -1462,6 +1463,7 @@ export const MedicinePrescription: React.FC = () => {
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>Quantity (Per Dosage)*</h6>
                         <AphTextField
+                          autoFocus
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount === 0 ? '' : tabletsCount}
                           onChange={(event: any) => {
