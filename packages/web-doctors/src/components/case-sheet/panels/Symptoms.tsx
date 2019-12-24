@@ -618,7 +618,7 @@ export const Symptoms: React.FC = (props) => {
                         <h6>Details</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
-                            placeholder=""
+                            placeholder="Enter the details here"
                             value={details}
                             onChange={(event) => {
                               setDetails(event.target.value);
