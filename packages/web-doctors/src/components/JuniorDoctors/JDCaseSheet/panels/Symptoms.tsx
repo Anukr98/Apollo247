@@ -518,6 +518,7 @@ export const Symptoms: React.FC = (props) => {
                     setDetails(event.target.value);
                     clearError();
                   }}
+                  multiline
                 />
               </div>
             </div>
