@@ -192,6 +192,44 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  mainView: {
+    backgroundColor: theme.colors.CARD_BG,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    ...theme.viewStyles.shadowStyle,
+  },
+  displayId: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SEARCH_EDUCATION_COLOR,
+    paddingBottom: 4,
+  },
+  separatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  doctorNameStyle: {
+    paddingTop: 8,
+    paddingBottom: 2,
+    textTransform: 'capitalize',
+    ...theme.fonts.IBMPlexSansSemiBold(23),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  timeStyle: {
+    paddingBottom: 20,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SKY_BLUE,
+  },
+  imageView: {
+    width: 80,
+    marginLeft: 20,
+    borderRadius: 40,
+    overflow: 'hidden',
+  },
+  doctorImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
 });
 
 export interface ChatRoomProps extends NavigationScreenProps {}
@@ -1187,28 +1225,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getAppointmentDataDetails(client, appointmentData.id)
       .then(({ data }: any) => {
         try {
-           console.log(data, 'data APIForUpdateAppointmentData');
-           const appointmentSeniorDoctorStarted =
-             data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
-           console.log(
-             appointmentSeniorDoctorStarted,
-             data.data.getAppointmentData.appointmentsHistory[0],
-             'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
-           );
+          console.log(data, 'data APIForUpdateAppointmentData');
+          const appointmentSeniorDoctorStarted =
+            data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
+          console.log(
+            appointmentSeniorDoctorStarted,
+            data.data.getAppointmentData.appointmentsHistory[0],
+            'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+          );
 
-           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
+          appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
 
-           if (toStopTimer) {
-             if (appointmentSeniorDoctorStarted) {
-               stopCallAbondmentTimer();
-               abondmentStarted = false;
-             }
-           } else {
-             callAbondmentMethod(appointmentSeniorDoctorStarted);
-           }
-        } catch (error) {
-        }
-       
+          if (toStopTimer) {
+            if (appointmentSeniorDoctorStarted) {
+              stopCallAbondmentTimer();
+              abondmentStarted = false;
+            }
+          } else {
+            callAbondmentMethod(appointmentSeniorDoctorStarted);
+          }
+        } catch (error) {}
       })
       .catch((e: string) => {
         abondmentStarted = false;
@@ -3317,7 +3353,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       leftComponent++;
       rightComponent = 0;
       return (
-        <View>
+        <View style={{ marginHorizontal: 20 }}>
           {leftComponent === 1 && (
             <View
               style={{
@@ -3357,7 +3393,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       leftComponent = 0;
       rightComponent++;
       return (
-        <View>
+        <View style={{ marginHorizontal: 20 }}>
           {rightComponent == 1 ? (
             <View
               style={{
@@ -3774,6 +3810,56 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
   };
 
+  const renderChatHeader = () => {
+    let time = '';
+    const diffMin = moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes');
+    const diffHours = moment(appointmentData.appointmentDateTime).diff(moment(), 'hours');
+    const diffDays = moment(appointmentData.appointmentDateTime).diff(moment(), 'days');
+    if (doctorJoined) {
+      time = 'Consult is In-progress';
+    } else {
+      if (diffMin < 0) {
+        time = `Consult is completed`;
+      } else if (diffMin > 0 && diffHours <= 0) {
+        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+      } else if (diffHours > 0 && diffDays <= 0) {
+        time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
+      } else {
+        time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+      }
+    }
+    return (
+      <View style={styles.mainView}>
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.displayId}>#{appointmentData.displayId}</Text>
+            <View style={styles.separatorStyle} />
+            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
+            <Text style={styles.timeStyle}>{time}</Text>
+          </View>
+          <View style={styles.imageView}>
+            {appointmentData.doctorInfo.thumbnailUrl &&
+            appointmentData.doctorInfo.thumbnailUrl.match(
+              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+            ) ? (
+              <Image
+                source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                resizeMode={'contain'}
+                style={styles.doctorImage}
+              />
+            ) : (
+              <DoctorPlaceholderImage style={styles.doctorImage} />
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
@@ -3781,12 +3867,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           style={{
             flex: 1,
           }}
+          ListHeaderComponent={renderChatHeader()}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
-            marginHorizontal: 20,
+            // marginHorizontal: 20,
             marginTop: 0,
           }}
           bounces={false}
