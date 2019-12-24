@@ -588,6 +588,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             data={tabs}
             onChange={(selectedTab: string) => {
               setselectedTab(selectedTab);
+              setStoreId!('');
+              setDeliveryAddressId!('');
             }}
             selectedTab={selectedTab}
           />

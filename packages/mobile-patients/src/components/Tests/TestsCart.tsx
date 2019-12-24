@@ -278,10 +278,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
+        .then(
+          ({
+            data: {
+              getPatientAddressList: { addressList },
+            },
+          }) => {
+            setLoading!(false);
+            setAddresses && setAddresses(addressList!);
+          }
+        )
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -434,7 +440,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          aphConsole.log('searchDiagnostics\n', { data });
+          console.log('searchDiagnostics\n', { data });
           const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
@@ -443,7 +449,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((e) => {
-          aphConsole.log({ e });
+          console.log({ e });
           errorAlert();
         })
         .finally(() => {
@@ -1212,24 +1218,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const onPressProceedToPay = () => {
-    if (
-      !(
-        g(locationForDiagnostics, 'state') &&
-        g(locationForDiagnostics, 'stateId') &&
-        g(locationForDiagnostics, 'city') &&
-        g(locationForDiagnostics, 'cityId')
-      )
-    ) {
-      showAphAlert!({
-        title: `Hi ${currentPatient && currentPatient.firstName},`,
-        description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad to proceed.`,
-        onPressOk: () => {
-          hideAphAlert!();
-          props.navigation.navigate('TESTS', { focusLocation: true });
-        },
-      });
-      return;
-    }
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
       props.navigation.navigate(AppRoutes.TestsCheckoutScene);
@@ -1459,14 +1447,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
         />
       )}
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         <ScrollView bounces={false}>
