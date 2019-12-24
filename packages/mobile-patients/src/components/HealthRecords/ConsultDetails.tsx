@@ -466,6 +466,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                                 )
                                 .join(', ')
                             : ''}
+                          {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
                         </Text>
                       </View>
                     );

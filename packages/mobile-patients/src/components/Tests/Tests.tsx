@@ -55,6 +55,8 @@ import {
   getTestsPackages,
   GooglePlacesType,
   TestPackage,
+  PackageInclusion,
+  getPackageData,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -212,14 +214,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           },
         })
         .then(({ data }) => {
-          aphConsole.log('getDiagnosticsCites\n', { data });
+          console.log('getDiagnosticsCites\n', { data });
           const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
           setDiagnosticsCities!(
             cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
           );
         })
         .catch((e) => {
-          aphConsole.log('getDiagnosticsCites Error\n', { e });
+          console.log('getDiagnosticsCites Error\n', { e });
           showAphAlert!({
             unDismissable: true,
             title: 'Uh oh! :(',
@@ -825,18 +827,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderHotSellerItem = (
     data: ListRenderItemInfo<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers>
   ) => {
-    const { id, packageImage, packageName, diagnostics } = data.item;
+    const { packageImage, packageName, diagnostics } = data.item;
     const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
     const specialPrice = undefined;
     const addToCart = () =>
-      addCartItem!({
-        id: `${diagnostics!.itemId!}`,
-        mou: 1,
-        name: packageName!,
-        price: diagnostics!.rate,
-        specialPrice: specialPrice,
-        thumbnail: packageImage,
-        collectionMethod: diagnostics!.collectionType!,
+      fetchPackageInclusion(`${diagnostics!.itemId}`, (tests) => {
+        addCartItem!({
+          id: `${diagnostics!.itemId!}`,
+          mou: tests.length,
+          name: diagnostics!.itemName,
+          price: diagnostics!.rate,
+          specialPrice: specialPrice,
+          thumbnail: packageImage,
+          collectionMethod: diagnostics!.collectionType!,
+        });
       });
     const removeFromCart = () => removeCartItem!(`${diagnostics!.itemId}`);
     // const specialPrice = special_price
@@ -1093,6 +1097,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setLoadingContext!(false);
         });
     }
+  };
+
+  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
+    setLoadingContext!(true);
+    getPackageData(id)
+      .then(({ data }) => {
+        console.log('getPackageData\n', { data });
+        const product = g(data, 'data');
+        if (product && product.length) {
+          func && func(product);
+        } else {
+          errorAlert();
+        }
+      })
+      .catch((e) => {
+        console.log('getPackageData Error\n', { e });
+        errorAlert();
+      })
+      .finally(() => {
+        setLoadingContext!(false);
+      });
   };
 
   const renderTestPackages = () => {

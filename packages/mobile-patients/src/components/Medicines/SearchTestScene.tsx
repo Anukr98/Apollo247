@@ -50,6 +50,7 @@ import stripHtml from 'string-strip-html';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -228,6 +229,27 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
+  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
+    setGlobalLoading!(true);
+    getPackageData(id)
+      .then(({ data }) => {
+        console.log('getPackageData\n', { data });
+        const product = g(data, 'data');
+        if (product && product.length) {
+          func && func(product);
+        } else {
+          errorAlert();
+        }
+      })
+      .catch((e) => {
+        console.log({ e });
+        errorAlert();
+      })
+      .finally(() => {
+        setGlobalLoading!(false);
+      });
+  };
+
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     aphConsole.log({ errorResponse: e.response, error }); //remove this line later
@@ -282,12 +304,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       },
     });
 
-  const onAddCartItem = ({
-    itemId,
-    itemName,
-    rate,
-    collectionType,
-  }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+  const onAddCartItem = (
+    { itemId, itemName, rate, collectionType }: searchDiagnostics_searchDiagnostics_diagnostics,
+    testsIncluded: number
+  ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
@@ -295,7 +315,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: rate,
-      mou: 1,
+      mou: testsIncluded,
       thumbnail: '',
       collectionMethod: collectionType!,
     });
@@ -439,6 +459,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
     const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
+    const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
     const price = product.rate;
 
     return (
@@ -467,7 +488,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         unit={1}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Add item to cart');
-          onAddCartItem(product);
+          fetchPackageInclusion(`${product.itemId}`, (tests) => {
+            onAddCartItem(product, tests.length);
+          });
         }}
         onPressRemove={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Remove item from cart');
@@ -476,7 +499,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         onChangeUnit={() => {}}
         isCardExpanded={!!foundMedicineInCart}
         isInStock={true}
-        packOfCount={parseInt('1') || undefined}
+        packOfCount={testsIncluded}
         isPrescriptionRequired={false}
         subscriptionStatus={'unsubscribed'}
         onChangeSubscription={() => {}}

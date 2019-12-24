@@ -138,9 +138,18 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
     ) {
       const prismFileds =
         (data.prismFileIds && data.prismFileIds.split(',')) ||
-        (data.hospitalizationPrismFileIds && data.hospitalizationPrismFileIds.split(',')) ||
-        (data.healthCheckPrismFileIds && data.healthCheckPrismFileIds.split(',')) ||
-        (data.testResultPrismFileIds && data.testResultPrismFileIds.split(','));
+        (data.hospitalizationPrismFileIds &&
+          (typeof data.hospitalizationPrismFileIds === 'string'
+            ? data.hospitalizationPrismFileIds.split(',')
+            : data.hospitalizationPrismFileIds)) ||
+        (data.healthCheckPrismFileIds &&
+          (typeof data.healthCheckPrismFileIds === 'string'
+            ? data.healthCheckPrismFileIds.split(',')
+            : data.healthCheckPrismFileIds)) ||
+        (data.testResultPrismFileIds &&
+          (typeof data.testResultPrismFileIds === 'string'
+            ? data.testResultPrismFileIds.split(',')
+            : data.testResultPrismFileIds));
       const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
       console.log('prismFileIds', urls && urls.join(','));
       setshowSpinner(true);
