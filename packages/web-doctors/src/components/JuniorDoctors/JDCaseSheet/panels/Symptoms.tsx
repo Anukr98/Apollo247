@@ -512,12 +512,13 @@ export const Symptoms: React.FC = (props) => {
               <div className={classes.formGroup}>
                 <label>Details</label>
                 <AphTextField
-                  placeholder=""
+                  placeholder="Enter the details here"
                   value={details}
                   onChange={(event) => {
                     setDetails(event.target.value);
                     clearError();
                   }}
+                  multiline
                 />
               </div>
             </div>
