@@ -393,6 +393,22 @@ app.get('/mob-error', (req, res) => {
 //diagnostic payment apis
 app.get('/diagnosticpayment', (req, res) => {
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+
+  if (!req.query.patientId || !req.query.orderId || !req.query.price) {
+    res.statusCode = 401;
+    return res.send({
+      status: 'failed',
+      reason: 'Invalid parameters',
+      code: '10001',
+    });
+  }
+
+  console.log('request query params => ', req.query);
+
+  req.session.diagnosticOrderId = stripTags(req.query.orderId);
+
+  console.log('Query API URL: ', process.env.API_URL);
+
   // validate the order and token.
   axios({
     url: process.env.API_URL,
@@ -417,6 +433,7 @@ app.get('/diagnosticpayment', (req, res) => {
     },
   })
     .then((response) => {
+      console.log('graphQL response', response);
       if (
         response &&
         response.data &&
@@ -451,8 +468,10 @@ app.get('/diagnosticpayment', (req, res) => {
             .update(code)
             .digest('hex');
 
-          console.log(code, hash);
+          console.log('paymentCode==>', code);
+          console.log('paymentHash==>', hash);
 
+          console.log('rendering==> diagnosticsPayment.ejs');
           res.render('diagnosticsPayment.ejs', {
             athsToken: response.data.data.getPatientById.patient.athsToken,
             orderId: req.query.orderId,
@@ -463,15 +482,15 @@ app.get('/diagnosticpayment', (req, res) => {
             emailAddress,
             mobileNumber,
             hash,
-            baseUrl: 'http://localhost:7000',
-            //baseUrl: 'https://aph.dev.pmt.popcornapps.com',
+            //baseUrl: 'http://localhost:7000',
+            baseUrl: 'https://aph.dev.pmt.popcornapps.com',
           });
         }
       }
     })
     .catch((error) => {
       // no need to explicitly saying details about error for clients.
-      console.log(error);
+      console.log('error', error);
       res.statusCode = 401;
       return res.send({
         status: 'failed',
@@ -481,15 +500,101 @@ app.get('/diagnosticpayment', (req, res) => {
     });
 });
 
-app.post('/diagnostic-pg-success', (req, res) => {
-  console.log('success------', req.body);
+app.post('/diagnostic-pg-success-url', (req, res) => {
+  console.log('diagnostisPaymentSuccess=>', req.body);
   const paymentStatus = req.body.status;
   const mihpayid = req.body.mihpayid;
-  if (paymentStatus === 'success' && mihpayid != null) {
+  saveDiagnosticOrderPaymentResponse(req, (status) => {
+    console.log(status);
+    if (paymentStatus == 'success') {
+      res.redirect(`/diagnostic-pg-success?tk=${mihpayid}&status=${paymentStatus}`);
+    } else {
+      res.redirect(`/diagnostic-pg-error?tk=${mihpayid}&status=${paymentStatus}`);
+    }
+  });
+});
+
+const saveDiagnosticOrderPaymentResponse = (req, callback) => {
+  const paymentResponse = req.body;
+  console.log('session', req.session);
+  const paymentDate = new Date(new Date(paymentResponse.addedon).toUTCString()).toISOString();
+  console.log('paymentResponse=>', paymentResponse);
+  console.log(paymentDate);
+
+  const requestJSON = {
+    query:
+      'mutation { saveDiagnosticOrderPayment(diagnosticPaymentInput: { diagnosticOrderId: "' +
+      req.session.diagnosticOrderId +
+      '", amountPaid: ' +
+      paymentResponse.amount +
+      ', bankRefNum: "' +
+      paymentResponse.bank_ref_num +
+      '", errorCode: "' +
+      paymentResponse.error +
+      '", errorMessage: "' +
+      paymentResponse.error_Message +
+      '", mihpayid: "' +
+      paymentResponse.mihpayid +
+      '", netAmountDebit: "' +
+      paymentResponse.net_amount_debit +
+      '", paymentDateTime: "' +
+      paymentDate +
+      '", paymentStatus: "' +
+      paymentResponse.status +
+      '", txnId: "' +
+      paymentResponse.txnid +
+      '", hash: "' +
+      paymentResponse.hash +
+      '", paymentSource: "' +
+      paymentResponse.payment_source +
+      '", discount: "' +
+      paymentResponse.discount +
+      '", bankCode: "' +
+      paymentResponse.bankcode +
+      '", issuingBank: "' +
+      paymentResponse.issuing_bank +
+      '", cardType: "' +
+      paymentResponse.card_type +
+      '", mode: "' +
+      paymentResponse.mode +
+      '" }){status}}',
+  };
+
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log('save diagnosticPayment response....', JSON.stringify(response.data));
+      callback(true);
+    })
+    .catch((error) => {
+      console.log('save diagnosticPayment error', error);
+    });
+};
+
+app.post('/diagnostic-pg-error-url', (req, res) => {
+  console.log('diagnostisPaymentErrorResponse=>', req.body);
+  const paymentStatus = req.body.status;
+  const mihpayid = req.body.mihpayid;
+  saveDiagnosticOrderPaymentResponse(req, (status) => {
+    console.log('response from payment save', status);
+    res.redirect(`/diagnostic-pg-error?tk=${mihpayid}&status=${paymentStatus}`);
+  });
+});
+
+app.post('/diagnostic-pg-cancel-url', (req, res) => {
+  console.log('diagnostisPaymentCancelResponse', req.body, req);
+  res.send({
+    status: 'failed',
+  });
+});
+
+app.get('/diagnostic-pg-success', (req, res) => {
+  const payloadToken = req.query.tk;
+  if (payloadToken) {
     res.statusCode = 200;
     res.send({
       status: 'success',
-      orderId: mihpayid,
+      orderId: payloadToken,
     });
   } else {
     res.statusCode = 401;
@@ -500,14 +605,8 @@ app.post('/diagnostic-pg-success', (req, res) => {
     });
   }
 });
-app.post('/diagnostic-pg-error', (req, res) => {
-  console.log('error', req.body, req);
-  res.send({
-    status: 'failed',
-  });
-});
-app.post('/diagnostic-pg-cancel', (req, res) => {
-  console.log('cancel', req.body, req);
+
+app.get('/diagnostic-pg-error', (req, res) => {
   res.send({
     status: 'failed',
   });

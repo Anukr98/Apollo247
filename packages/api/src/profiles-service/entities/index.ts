@@ -1198,26 +1198,50 @@ export class DiagnosticOrders extends BaseEntity {
   diagnosticOrderPayments: DiagnosticOrderPayments[];
 }
 
-//medicine orders  payments start
+//diagnostic orders  payments start
 @Entity()
 export class DiagnosticOrderPayments extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   amountPaid: number;
 
   @Column({ nullable: true })
-  bankTxnId: string;
+  bankCode: string;
+
+  @Column({ nullable: true })
+  bankRefNum: string;
+
+  @Column({ nullable: true })
+  cardType: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Column({ nullable: true })
+  discount: string;
+
+  @Column({ nullable: true })
+  errorCode: string;
+
+  @Column({ nullable: true })
+  errorMessage: string;
+
+  @Column({ nullable: true })
+  hash: string;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  @Column({ nullable: true })
+  issuingBank: string;
 
   @Column({ nullable: true })
-  paymentRefId: string;
+  mihpayid: string;
+
+  @Column({ nullable: true })
+  mode: string;
+
+  @Column({ nullable: true })
+  netAmountDebit: string;
 
   @Column({ nullable: true })
   paymentDateTime: Date;
@@ -1226,19 +1250,19 @@ export class DiagnosticOrderPayments extends BaseEntity {
   paymentStatus: string;
 
   @Column({ nullable: true })
-  responseCode: string;
+  paymentSource: string;
 
   @Column({ nullable: true })
-  responseMessage: string;
+  txnId: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
 
   @ManyToOne(
     (type) => DiagnosticOrders,
     (diagnosticOrders) => diagnosticOrders.diagnosticOrderPayments
   )
   diagnosticOrders: DiagnosticOrders;
-
-  @Column({ nullable: true })
-  updatedDate: Date;
 
   @BeforeInsert()
   updateDateCreation() {
@@ -1250,7 +1274,7 @@ export class DiagnosticOrderPayments extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
-//medicine orders payments ends
+//diagnostic order payment ends
 
 //diagnostic orders  line items start
 @Entity()
