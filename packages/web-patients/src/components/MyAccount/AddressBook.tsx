@@ -87,7 +87,7 @@ interface AddressBookProps {
 }
 
 export const AddressBook: React.FC<AddressBookProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
 
   const { data, error, loading } = useQueryWithSkip<
@@ -126,7 +126,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
-                <AddNewAddress />
+                <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
               </div>
             </Scrollbars>
           </div>

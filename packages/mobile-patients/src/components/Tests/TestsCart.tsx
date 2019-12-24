@@ -222,7 +222,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const client = useApolloClient();
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
-  const { setLoading, showAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
 
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>({
@@ -278,10 +278,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
+        .then(
+          ({
+            data: {
+              getPatientAddressList: { addressList },
+            },
+          }) => {
+            setLoading!(false);
+            setAddresses && setAddresses(addressList!);
+          }
+        )
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -434,7 +440,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          aphConsole.log('searchDiagnostics\n', { data });
+          console.log('searchDiagnostics\n', { data });
           const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
@@ -443,7 +449,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((e) => {
-          aphConsole.log({ e });
+          console.log({ e });
           errorAlert();
         })
         .finally(() => {
@@ -927,8 +933,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             data={tabs}
             onChange={(selectedTab: string) => {
               setselectedTab(selectedTab);
-              // setClinicId!('');
-              // setDeliveryAddressId!('');
+              setClinicId!('');
+              setDeliveryAddressId!('');
               // setPinCode!('');
             }}
             selectedTab={selectedTab}
@@ -1441,14 +1447,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
         />
       )}
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         <ScrollView bounces={false}>

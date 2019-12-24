@@ -43,7 +43,7 @@ export const buildRxPdfData = (): RxPdfData => {
   const vitals = { height: '', weight: '', temperature: '', bp: '' };
   const appointmentDetails = { displayId: '', consultDate: '', consultType: '' };
   const diagnosesTests = [{ itemname: '' }];
-  const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '' }];
+  const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];
   const followUpDetails = '';
 
   return {

@@ -1,6 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Location, NotificaitonAccounts } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Location,
+  NotificaitonAccounts,
+  ManageProfileIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -184,9 +188,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               <Text style={styles.doctorSpecializationStyles}>
                 {profileDetails.gender ? profileDetails.gender : '-'} |{' '}
                 {profileDetails.dateOfBirth
-                  ? Math.round(
-                      Moment().diff(profileDetails.dateOfBirth, 'years', true)
-                    ).toString() || '-'
+                  ? Moment()
+                      .diff(profileDetails.dateOfBirth, 'years')
+                      .toString() || '-'
                   : '-'}
               </Text>
             </View>
@@ -368,7 +372,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         <ListCard
           container={{ marginTop: 14 }}
           title={'Manage Profiles'}
-          leftIcon={<NotificaitonAccounts />}
+          leftIcon={<ManageProfileIcon />}
           onPress={() =>
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,

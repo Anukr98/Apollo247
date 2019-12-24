@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   AphDialog,
   AphRadio,
@@ -12,6 +12,8 @@ import {
 import Scrollbars from 'react-custom-scrollbars';
 import { ViewAllStoreAddress } from 'components/Locations/ViewAllStoreAddress';
 import axios, { AxiosError, Cancel } from 'axios';
+import { LocationContext } from 'components/LocationProvider';
+import { useShoppingCart, StoreAddresses } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,79 +99,107 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface StoreAddresses {
-  address: string;
-  city: string;
-  message: string;
-  phone: string;
-  state: string;
-  storeid: string;
-  storename: string;
-  workinghrs: string;
-}
+type Address = {
+  long_name: string;
+  short_name: string;
+  types: Array<string>;
+};
 
-interface StorePickupProps {
-  pincode: string;
-  updateDeliveryAddress: (deliveryAddressId: string) => void;
-}
+export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
+  const apiDetails = {
+    url: `${process.env.PHARMACY_MED_PROD_URL}/searchpin_api.php`,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    googleAPIKey: process.env.GOOGLE_API_KEY,
+  };
 
-export const StorePickUp: React.FC<StorePickupProps> = (props) => {
-  const classes = useStyles();
-  const [storeAddressId, setStoreAddressId] = React.useState<string>('');
-  const [storeAddresses, setStoreAddresses] = React.useState<StoreAddresses[]>([]);
+  const classes = useStyles({});
+
+  const {
+    setStorePickupPincode,
+    deliveryAddressId,
+    setDeliveryAddressId,
+    stores,
+    setStores,
+  } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [pincodeError, setPincodeError] = useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
   );
-  const [pincode, setPincode] = useState<string>(props.pincode);
+  const [pincode, setPincode] = useState<string | null>(props.pincode);
+  const { currentLat, currentLong, setCurrentPincode } = useContext(LocationContext);
 
   let showAddress = 0;
 
-  const getPharmacyAddresses = (pincode: string) => {
-    axios
+  const getPharmacyAddresses = async (pincode: string) => {
+    await axios
       .post(
-        process.env.PHARMACY_MED_PHARMACIES_LIST_URL,
+        apiDetails.url,
         { params: pincode },
         {
           headers: {
-            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+            Authorization: apiDetails.authToken,
           },
-          transformRequest: [
-            (data, headers) => {
-              delete headers.common['Content-Type'];
-              return JSON.stringify(data);
-            },
-          ],
         }
       )
       .then((result) => {
-        setTimeout(() => {
-          const stores = result.data.Stores ? result.data.Stores : [];
-          if (stores && stores[0] && stores[0].message !== 'Data Not Available') {
-            setTimeout(() => {}, 500);
-            setStoreAddresses(stores);
+        if (result && result.data && result.data.Stores) {
+          const storesData = result.data.Stores;
+          if (storesData && storesData[0] && storesData[0].message !== 'Data Not Available') {
+            setStores && setStores(storesData);
+            setPincodeError(false);
           } else {
-            setStoreAddresses([]);
+            setStores && setStores([]);
             setPincodeError(true);
           }
-          setLoading(false);
-        }, 1000);
+        }
+        setLoading(false);
       })
       .catch((thrown: AxiosError | Cancel) => {
-        alert('An error occurred while fetching Stores.');
+        setLoading(false);
+        setPincodeError(true);
+      });
+  };
+
+  const getCurrentLocationPincode = async (currentLat: string, currentLong: string) => {
+    await axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${apiDetails.googleAPIKey}`
+      )
+      .then((res) => {
+        try {
+          if (res && res.data && res.data.results[0] && res.data.results[0].address_components) {
+            const addressComponents = res.data.results[0].address_components || [];
+            const pincode = (
+              addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
+              {}
+            ).long_name;
+            if (pincode && pincode.length === 6) {
+              setPincode(pincode);
+              setStorePickupPincode && setStorePickupPincode(pincode);
+              setCurrentPincode(pincode);
+            }
+          }
+        } catch {
+          (e: AxiosError) => console.log(e);
+        }
+      })
+      .catch((e: AxiosError) => {
+        console.log(e);
+        setPincodeError(true);
       });
   };
 
   useEffect(() => {
-    if (pincode.length === 6) {
+    if (pincode && pincode.length === 6 && stores.length === 0) {
       setLoading(true);
       getPharmacyAddresses(pincode);
+    } else if (!pincode && pincode !== '') {
+      if (currentLat && currentLong) {
+        getCurrentLocationPincode(currentLat, currentLong);
+      }
     }
   }, [pincode]);
-
-  //set store address in cart.
-  props.updateDeliveryAddress(storeAddressId);
 
   return (
     <div className={classes.root}>
@@ -186,14 +216,15 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
           value={pincode}
           onChange={(e) => {
             const newPincode = e.target.value;
-            setPincode(e.target.value);
             if (newPincode.length === 6) {
               setLoading(true);
               getPharmacyAddresses(newPincode);
+              setStorePickupPincode && setStorePickupPincode(newPincode);
             } else if (newPincode === '') {
-              setStoreAddresses([]);
+              setStores && setStores([]);
               setPincodeError(false);
             }
+            setPincode(newPincode);
           }}
           autoFocus
         />
@@ -201,20 +232,20 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
 
       {!loading ? (
         <ul>
-          {storeAddresses.length > 0 ? (
-            storeAddresses.map((addressDetails, index) => {
+          {stores.length > 0 ? (
+            stores.map((addressDetails, index) => {
               const storeAddress = addressDetails.address.replace(' -', ' ,');
               showAddress++;
               return showAddress < 3 ? (
                 <li key={index}>
                   <FormControlLabel
-                    checked={storeAddressId === addressDetails.storeid}
+                    checked={deliveryAddressId === addressDetails.storeid}
                     className={classes.radioLabel}
                     value={addressDetails.storeid}
                     control={<AphRadio color="primary" />}
                     label={storeAddress}
                     onChange={() => {
-                      setStoreAddressId(addressDetails.storeid);
+                      setDeliveryAddressId && setDeliveryAddressId(addressDetails.storeid);
                     }}
                   />
                 </li>
@@ -236,14 +267,16 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
       ) : (
         <CircularProgress />
       )}
-      <div className={classes.bottomActions}>
-        <AphButton
-          onClick={() => setIsViewAllAddressDialogOpen(true)}
-          className={classes.viewAllBtn}
-        >
-          View All
-        </AphButton>
-      </div>
+      {stores.length > 2 && (
+        <div className={classes.bottomActions}>
+          <AphButton
+            onClick={() => setIsViewAllAddressDialogOpen(true)}
+            className={classes.viewAllBtn}
+          >
+            View All
+          </AphButton>
+        </div>
+      )}
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
         <AphDialogTitle>
@@ -258,8 +291,12 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
               <div className={classes.customScrollBar}>
                 <ViewAllStoreAddress
                   pincode={pincode}
-                  stores={storeAddresses}
-                  setStoreAddress={(storeAddressId) => setStoreAddressId(storeAddressId)}
+                  getPharmacyAddresses={getPharmacyAddresses}
+                  pincodeError={pincodeError}
+                  setPincodeError={setPincodeError}
+                  loading={loading}
+                  setLoading={setLoading}
+                  setPincode={setPincode}
                 />
               </div>
             </Scrollbars>
@@ -268,8 +305,9 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
             <AphButton
               color="primary"
               fullWidth
-              disabled={storeAddressId === ''}
-              className={storeAddressId === '' ? classes.buttonDisable : ''}
+              disabled={deliveryAddressId === ''}
+              className={deliveryAddressId === '' ? classes.buttonDisable : ''}
+              onClick={() => setIsViewAllAddressDialogOpen(false)}
             >
               Done
             </AphButton>

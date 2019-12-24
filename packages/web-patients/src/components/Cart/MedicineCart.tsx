@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
@@ -8,7 +8,7 @@ import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
@@ -24,6 +24,7 @@ import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
+import { LocationContext } from 'components/LocationProvider';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -383,10 +384,11 @@ export const MedicineCart: React.FC = (props) => {
     name: '',
     imageUrl: '',
   };
+  const { storePickupPincode, deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
@@ -398,6 +400,7 @@ export const MedicineCart: React.FC = (props) => {
   const [prescriptions, setPrescriptions] = React.useState<PrescriptionFormat[]>([]);
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
+  const { currentPincode } = useContext(LocationContext);
 
   const removePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
@@ -558,11 +561,7 @@ export const MedicineCart: React.FC = (props) => {
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    <HomeDelivery
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
-                    />
+                    <HomeDelivery />
                     <div className={classes.deliveryTimeGroup}>
                       <div className={classes.deliveryTimeGroupWrap}>
                         <span className={classes.deliveryTime}>Delivery Time</span>
@@ -574,10 +573,11 @@ export const MedicineCart: React.FC = (props) => {
                 {tabValue === 1 && (
                   <TabContainer>
                     <StorePickUp
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
+                      pincode={
+                        storePickupPincode && storePickupPincode.length === 6
+                          ? storePickupPincode
+                          : currentPincode
                       }
-                      pincode={localStorage.getItem('dp') || ''}
                     />
                   </TabContainer>
                 )}

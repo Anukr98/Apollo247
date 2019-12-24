@@ -839,18 +839,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
-      timer = timer - 1;
-      console.log('call Abandonment', timer);
-      stoppedTimerCall = timer;
-      setCallAbundantCallTime(timer);
-      if (timer < 1) {
-        setCallAbundantCallTime(0);
-        clearInterval(intervalCallAbundant);
-        if (showVideo) {
-          stopAudioVideoCall();
+      if (props.appointmentStatus !== STATUS.COMPLETED) {
+        timer = timer - 1;
+        console.log('call Abandonment', timer);
+        stoppedTimerCall = timer;
+        setCallAbundantCallTime(timer);
+        if (timer < 1) {
+          setCallAbundantCallTime(0);
+          clearInterval(intervalCallAbundant);
+          if (showVideo) {
+            stopAudioVideoCall();
+          }
+          setShowAbandonment(true);
+          //callInitiateReschedule(true);
         }
-        setShowAbandonment(true);
-        //callInitiateReschedule(true);
+      } else {
+        console.log('clear abundant');
+        clearInterval(intervalCallAbundant);
       }
     }, 1000);
   };
@@ -905,10 +910,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       'pagename'
     );
     if (
-      window.location.pathname.indexOf('Consulttabs') ||
-      window.location.pathname.indexOf('consulttabs')
+      window.location.pathname.indexOf('Consulttabs') > -1 ||
+      window.location.pathname.indexOf('consulttabs') > -1
     ) {
-      console.log('noShowAction', 'call');
       client
         .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
           mutation: END_APPOINTMENT_SESSION,
@@ -1345,18 +1349,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (props.appointmentStatus === STATUS.COMPLETED) {
       setRemainingCallTime(0);
       clearInterval(intervalcallId);
+      clearInterval(intervalCallAbundant);
     }
   }, [props.appointmentStatus]);
-  //const pubnub = new Pubnub(config);
   const pubnub = props.pubnub;
 
   useEffect(() => {
     return function cleanup() {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
-      //clearInterval(timerIntervalId);
-      //clearInterval(intervalMissCall);
-      // clearInterval(intervalId);
     };
   }, []);
 
@@ -1895,6 +1896,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
+                    disabled={disableOnCancel}
                     onClick={() => {
                       handleClose();
                       props.setStartConsultAction(false);
@@ -1911,6 +1913,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
+                    disabled={disableOnCancel}
                     onClick={() => {
                       handleClose();
                       props.setStartConsultAction(true);

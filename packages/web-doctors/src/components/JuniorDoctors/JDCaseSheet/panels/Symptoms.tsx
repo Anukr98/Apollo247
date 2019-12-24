@@ -185,6 +185,7 @@ export const Symptoms: React.FC = (props) => {
   const [symptom, setSymptom] = React.useState('');
   const [since, setSince] = React.useState('');
   const [howOften, setHowOften] = React.useState('');
+  const [details, setDetails] = React.useState('');
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
   const [isUpdate, setIsUpdate] = React.useState(false);
@@ -207,6 +208,7 @@ export const Symptoms: React.FC = (props) => {
     setSymptom('');
     setHowOften('');
     setSince('');
+    setDetails('');
   };
   const clearError = () => {
     setErrorState({
@@ -221,7 +223,6 @@ export const Symptoms: React.FC = (props) => {
   const [idxValue, setIdxValue] = React.useState();
 
   const addUpdateSymptom = () => {
-    console.log(symptoms);
     let duplicate = false;
     if (symptoms && symptom.length > 0) {
       symptoms.forEach(
@@ -243,23 +244,26 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    } else if (isEmpty(trim(since))) {
-      setErrorState({
-        ...errorState,
-        symptomError: false,
-        sinceError: true,
-        howOfftenError: false,
-        severityError: false,
-      });
-    } else if (isEmpty(trim(howOften))) {
-      setErrorState({
-        ...errorState,
-        symptomError: false,
-        sinceError: false,
-        howOfftenError: true,
-        severityError: false,
-      });
-    } else if (isEmpty(severity)) {
+    }
+    // else if (isEmpty(trim(since))) {
+    //   setErrorState({
+    //     ...errorState,
+    //     symptomError: false,
+    //     sinceError: true,
+    //     howOfftenError: false,
+    //     severityError: false,
+    //   });
+    // }
+    // else if (isEmpty(trim(howOften))) {
+    //   setErrorState({
+    //     ...errorState,
+    //     symptomError: false,
+    //     sinceError: false,
+    //     howOfftenError: true,
+    //     severityError: false,
+    //   });
+    // }
+    else if (isEmpty(severity)) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -290,6 +294,7 @@ export const Symptoms: React.FC = (props) => {
         currentSymptom.severity = severity;
         currentSymptom.howOften = howOften;
         currentSymptom.since = since;
+        currentSymptom.details = details;
       } else {
         const inputParams: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms = {
           __typename: 'SymptomList',
@@ -297,9 +302,12 @@ export const Symptoms: React.FC = (props) => {
           severity: severity,
           since: since,
           symptom: symptom,
+          details: details,
         };
         const x = symptoms;
         x!.push(inputParams);
+        console.log(inputParams, 'object');
+        console.log(x, 'array');
         setSymptoms(x);
       }
       setIsUpdate(false);
@@ -322,6 +330,7 @@ export const Symptoms: React.FC = (props) => {
         setSince(ReqSymptom.since || '');
         setHowOften(ReqSymptom.howOften || '');
         setSeverity(ReqSymptom.severity || '');
+        setDetails(ReqSymptom.details || '');
       }
       setIsDialogOpen(true);
       setIsUpdate(true);
@@ -360,14 +369,17 @@ export const Symptoms: React.FC = (props) => {
                       </AphButton>
                     </div>
                     <div className={classes.symtomContent}>
-                      {item!.since && item!.since.trim() !== '' && (
-                        <div className={classes.symtomType}>Since: {item!.since}</div>
+                      {item.since && item.since.trim() !== '' && (
+                        <div className={classes.symtomType}>Since: {item.since}</div>
                       )}
-                      {item!.howOften && item!.howOften.trim() !== '' && (
-                        <div className={classes.symtomType}>How Often : {item!.howOften}</div>
+                      {item.howOften && item.howOften.trim() !== '' && (
+                        <div className={classes.symtomType}>How Often : {item.howOften}</div>
                       )}
-                      {item!.severity && item!.severity.trim() !== '' && (
-                        <div className={classes.symtomType}>Severity: {item!.severity}</div>
+                      {item.severity && item.severity.trim() !== '' && (
+                        <div className={classes.symtomType}>Severity: {item.severity}</div>
+                      )}
+                      {item.details && item.details.trim() !== '' && (
+                        <div className={classes.symtomType}>Details: {item.details}</div>
                       )}
                     </div>
                   </div>
@@ -496,6 +508,18 @@ export const Symptoms: React.FC = (props) => {
                     Please Enter Severity
                   </FormHelperText>
                 )}
+              </div>
+              <div className={classes.formGroup}>
+                <label>Details</label>
+                <AphTextField
+                  placeholder="Enter the details here"
+                  value={details}
+                  onChange={(event) => {
+                    setDetails(event.target.value);
+                    clearError();
+                  }}
+                  multiline
+                />
               </div>
             </div>
           </div>

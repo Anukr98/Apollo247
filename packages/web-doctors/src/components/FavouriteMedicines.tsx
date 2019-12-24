@@ -76,7 +76,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-
 function renderSuggestion(
   suggestion: OptionType,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
@@ -607,7 +606,7 @@ export const FavouriteMedicines: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [tabletsCount, setTabletsCount] = React.useState<number>();
   const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -923,7 +922,7 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -967,6 +966,7 @@ export const FavouriteMedicines: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
 
       const inputParams: any = {
@@ -978,6 +978,7 @@ export const FavouriteMedicines: React.FC = () => {
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
       const xArr: any = selectedMedicinesArr;
       xArr!.push(inputParamsArr);
@@ -1012,6 +1013,7 @@ export const FavouriteMedicines: React.FC = () => {
               medicineToBeTaken: toBeTakenSlotsArr,
               medicineName: selectedValue,
               medicineUnit: medicineUnit,
+              medicineInstructions: String(medicineInstruction),
             },
           },
         })
@@ -1021,7 +1023,7 @@ export const FavouriteMedicines: React.FC = () => {
 
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount(0);
       setMedicineUnit('TABLET');
       setSelectedValue('');
       setSelectedId('');
@@ -1042,7 +1044,7 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1106,6 +1108,7 @@ export const FavouriteMedicines: React.FC = () => {
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -1257,7 +1260,10 @@ export const FavouriteMedicines: React.FC = () => {
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.btnAddDoctor }}
-                  onClick={() => setIsDialogOpen(true)}
+                  onClick={() => {
+                    setIsDialogOpen(true);
+                    setIsUpdate(false);
+                  }}
                 >
                   <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
                 </AphButton>
@@ -1347,6 +1353,7 @@ export const FavouriteMedicines: React.FC = () => {
                         setSelectedId(suggestion.sku);
                         setLoading(false);
                         setMedicine('');
+                        setTabletsCount(0);
                       }}
                       {...autosuggestProps}
                       inputProps={{
@@ -1355,8 +1362,22 @@ export const FavouriteMedicines: React.FC = () => {
                         id: 'react-autosuggest-simple',
                         placeholder: 'Search',
                         value: state.single,
-
                         onChange: handleChange('single'),
+                        onKeyPress: (e) => {
+                          if (e.which == 13 || e.keyCode == 13) {
+                            if (suggestions.length === 1) {
+                              setState({
+                                single: '',
+                                popper: '',
+                              });
+                              setShowDosage(true);
+                              setSelectedValue(suggestions[0].label);
+                              setSelectedId(suggestions[0].sku);
+                              setLoading(false);
+                              setMedicine('');
+                            }
+                          }
+                        },
                       }}
                       theme={{
                         container: classes.container,
@@ -1408,12 +1429,11 @@ export const FavouriteMedicines: React.FC = () => {
                           <h6>Dosage*</h6>
                           <AphTextField
                             inputProps={{ maxLength: 6 }}
-                            value={tabletsCount}
+                            value={tabletsCount === 0 ? '' : tabletsCount}
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
                             }}
                             InputProps={{
-
                               classes: {
                                 root: classes.inputRoot,
                               },
@@ -1548,7 +1568,6 @@ export const FavouriteMedicines: React.FC = () => {
                           <h6>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
-                           
                               value={medicineInstruction}
                               onChange={(event: any) => {
                                 setMedicineInstruction(event.target.value);

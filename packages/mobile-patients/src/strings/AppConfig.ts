@@ -83,8 +83,8 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
-  iOS_Version: '1.0',
-  Android_Version: '1.0',
+  iOS_Version: '1.5',
+  Android_Version: '1.20',
 };
 
 // QA
@@ -108,8 +108,8 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.0',
-  Android_Version: '1.0',
+  iOS_Version: '1.5',
+  Android_Version: '1.20',
 };
 
 //Production
@@ -133,8 +133,8 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.0',
-  Android_Version: '1.0',
+  iOS_Version: '1.5',
+  Android_Version: '1.20',
 };
 
 const Configuration =
@@ -307,20 +307,6 @@ export const TestsFeedBackData = {
 
 export const NeedHelp = [
   {
-    category: 'Virtual Consult',
-    options: [
-      'Delay in consult',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
-      'Application issues (bandwidth & payment errors)',
-      'Doctor not available',
-      'No past / Upcoming consultation details',
-      'How to consult virtually – demo video',
-    ],
-  },
-  {
     category: 'Pharmacy',
     options: [
       'Payment Issues in online pharmacy payments',
@@ -335,6 +321,33 @@ export const NeedHelp = [
       'Inappropriate Attitude and Behavior of Pharmacy staff',
       'Updates in Order delivery or status of the order',
       'Software - Not User Friendly',
+    ],
+  },
+  {
+    category: 'Virtual Consult',
+    options: [
+      'Delay in consult',
+      'No updates on delays, reschedules or cancellations of the consult',
+      'Payment issues',
+      'Delayed Prescription',
+      'Behavior and Attitude of the doctor',
+      'Application issues (bandwidth & payment errors)',
+      'Doctor not available',
+      'No past / Upcoming consultation details',
+      'How to consult virtually – demo video',
+    ],
+  },
+  {
+    category: 'Health Records',
+    options: [
+      'Incomplete health records',
+      'Delay in responses to Queries',
+      'Personal details are not editable',
+      'Unable to see my reports',
+      'No / Wrong UHID',
+      'Add multiple UHID’s linked to other mobile numbers',
+      'No records available for linked UHID',
+      'Issues in downloading the records',
     ],
   },
   {
@@ -353,24 +366,25 @@ export const NeedHelp = [
     ],
   },
   {
-    category: 'Health Records',
-    options: [
-      'Incomplete health records',
-      'Delay in responses to Queries',
-      'Personal details are not editable',
-      'Unable to see my reports',
-      'No / Wrong UHID',
-      'Add multiple UHID’s linked to other mobile numbers',
-      'No records available for linked UHID',
-      'Issues in downloading the records',
-    ],
-  },
-  {
     category: 'Feedback',
     options: [
       'Feedback on Consultation',
       'Feedback on Health Records',
       'Feedback on Medicine Deliver',
+    ],
+  },
+  {
+    category: 'Diagnostics',
+    options: [
+      'Payment Issues while ordering',
+      'Sample pick up related',
+      'Excess amount related',
+      'Issues in Order confirmation',
+      'Pickup cancelled without any information',
+      'Pickup Cancelled, No Refund',
+      'Report not received',
+      'Wrong report received',
+      'Sample pick up staff related',
     ],
   },
 ];
