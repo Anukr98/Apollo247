@@ -463,7 +463,7 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: 1.2,
         color: '#01475b',
         paddingBottom: 5,
-        paddingTop: 10,
+        paddingTop: 4,
       },
     },
     tabBodyTabs: {
@@ -2025,7 +2025,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           disableEscapeKeyDown
         >
           <div>
-            <Paper className={classes.modalBox}>
+            {/* <Paper className={classes.modalBox}>
               <div className={classes.tabHeader}>
                 <h4>RESCHEDULE CONSULT</h4>
                 <Button className={classes.cross}>
@@ -2135,8 +2135,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Reschedule Consult
               </Button>
               </div>
-            </Paper>
-            {/* <Paper className={classes.modalBoxTabs}>
+            </Paper> */}
+            <Paper className={classes.modalBoxTabs}>
               <div className={classes.tabHeader}>
                 <h4>PICK A SLOT</h4>
                 <Button className={classes.cross}>
@@ -2210,7 +2210,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Done
               </Button>
               </div>
-            </Paper> */}
+            </Paper>
           </div>
         </Modal>
         <Modal
