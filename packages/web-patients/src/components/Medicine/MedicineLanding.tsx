@@ -255,11 +255,15 @@ export const MedicineLanding: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
-
+  const [showPopup, setShowPopup] = React.useState<boolean>(true);
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_UAT_URL}/apollo_24x7_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+  };
+
+  const callbackCart = (value: boolean) => {
+    setShowPopup(value);
   };
 
   const getMedicinePageProducts = async () => {
@@ -410,7 +414,7 @@ export const MedicineLanding: React.FC = (props) => {
       </div>
       {window.location.pathname === '/medicines/added-to-cart' ? (
         <Popover
-          open={true}
+          open={showPopup}
           anchorEl={addToCartRef.current}
           anchorOrigin={{
             vertical: 'bottom',
@@ -427,7 +431,7 @@ export const MedicineLanding: React.FC = (props) => {
               <div className={classes.mascotIcon}>
                 <img src={require('images/ic_mascot.png')} alt="" />
               </div>
-              <AddToCartPopover />
+              <AddToCartPopover cartProps={callbackCart} />
             </div>
           </div>
         </Popover>

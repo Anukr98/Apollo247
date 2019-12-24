@@ -1,8 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -35,20 +34,34 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddToCartPopover: React.FC = (props) => {
-  const classes = useStyles({});
+interface AddToCarProps {
+  cartProps: (value: boolean) => void;
+}
 
-  return (
+export const AddToCartPopover: React.FC<AddToCarProps> = (props) => {
+  const classes = useStyles({});
+  const [showPopup, setShowPopup] = React.useState<boolean>(true);
+
+  return showPopup ? (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">hi there! :)</Typography>
         <p>Your medicines have been added to your cart.</p>
       </div>
       <div className={classes.actions}>
-        <Link className={classes.viewCartBtn} to={clientRoutes.medicines()}>
+        <AphButton
+          className={classes.viewCartBtn}
+          onClick={() => {
+            if (document.getElementById('cartId')) {
+              document.getElementById('cartId')!.click();
+            }
+            setShowPopup(false);
+            props.cartProps(false);
+          }}
+        >
           View Cart
-        </Link>
+        </AphButton>
       </div>
     </div>
-  );
+  ) : null;
 };
