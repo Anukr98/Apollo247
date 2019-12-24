@@ -95,12 +95,12 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
       </Typography>
       <div className={classes.helpSection}>
         <h4>SPOC for Apollo Hyderabad Doctors</h4>
-        <h5>Ms. Sreevani | +9177027 00910 </h5>
+        <h5>Ms. Sreevani | +9177027 00910</h5>
         <h6>sreevani_u@apollopharmacy.org</h6>
       </div>
       <div className={classes.helpSection}>
         <h4>SPOC for Apollo Chennai Doctors</h4>
-        <h5>Ms. Aruna | +9178239 13040 </h5>
+        <h5>Ms. Aruna | +9178239 13040</h5>
         <h6>edocmh_cni@apollohospitals.com</h6>
       </div>
       <div className={classes.helpSection}>
@@ -116,12 +116,12 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
       </Typography>
       <div className={classes.helpSection}>
         <h4>SPOC for Apollo Hyderabad Doctors</h4>
-        <h5>Ms. Sreevani | +9177027 00910 </h5>
+        <h5>Ms. Sreevani | +9177027 00910</h5>
         <h6>sreevani_u@apollopharmacy.org</h6>
       </div>
       <div className={classes.helpSection}>
         <h4>SPOC for Apollo Chennai Doctors</h4>
-        <h5>Ms. Aruna | +9178239 13040 </h5>
+        <h5>Ms. Aruna | +9178239 13040</h5>
         <h6>edocmh_cni@apollohospitals.com</h6>
       </div>
       <div className={classes.helpSection}>
