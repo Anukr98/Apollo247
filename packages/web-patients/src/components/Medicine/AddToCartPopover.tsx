@@ -35,14 +35,14 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface AddToCarProps {
-  cartProps: (value: boolean) => void;
+  setShowPopup: (showPopup: boolean) => void;
+  showPopup: boolean;
 }
 
 export const AddToCartPopover: React.FC<AddToCarProps> = (props) => {
   const classes = useStyles({});
-  const [showPopup, setShowPopup] = React.useState<boolean>(true);
 
-  return showPopup ? (
+  return props.showPopup ? (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">hi there! :)</Typography>
@@ -55,8 +55,7 @@ export const AddToCartPopover: React.FC<AddToCarProps> = (props) => {
             if (document.getElementById('cartId')) {
               document.getElementById('cartId')!.click();
             }
-            setShowPopup(false);
-            props.cartProps(false);
+            props.setShowPopup(false);
           }}
         >
           View Cart
