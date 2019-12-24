@@ -60,6 +60,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       placeholder="Search"
       fullWidth
       InputProps={{
@@ -1428,6 +1429,7 @@ export const FavouriteMedicines: React.FC = () => {
                         <Grid item lg={6} md={6} xs={12}>
                           <h6>Dosage*</h6>
                           <AphTextField
+                            autoFocus
                             inputProps={{ maxLength: 6 }}
                             value={tabletsCount === 0 ? '' : tabletsCount}
                             onChange={(event: any) => {

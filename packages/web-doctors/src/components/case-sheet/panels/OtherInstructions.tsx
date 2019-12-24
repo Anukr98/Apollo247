@@ -213,6 +213,7 @@ export const OtherInstructions: React.FC = () => {
           {showAddInputText && (
             <Typography component="div" className={classes.textFieldWrapper}>
               <InputBase
+                autoFocus
                 fullWidth
                 className={classes.textFieldColor}
                 placeholder="Enter instruction here.."
