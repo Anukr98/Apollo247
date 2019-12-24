@@ -11,7 +11,7 @@ import {
   Modal,
   Button,
 } from '@material-ui/core';
-//import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms } from 'graphql/types/GetCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
 
@@ -239,13 +239,6 @@ interface errorObject {
   howOfftenError: boolean;
   severityError: boolean;
 }
-interface symptomObject {
-  __typename: string;
-  symptom: string;
-  severity: string;
-  howOften: string;
-  since: string;
-}
 export const Symptoms: React.FC = (props) => {
   const classes = useStyles();
   const { symptoms, setSymptoms } = useContext(CaseSheetContext);
@@ -253,6 +246,7 @@ export const Symptoms: React.FC = (props) => {
   const [symptom, setSymptom] = React.useState('');
   const [since, setSince] = React.useState('');
   const [howOften, setHowOften] = React.useState('');
+  const [details, setDetails] = React.useState('');
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
   const { caseSheetEdit } = useContext(CaseSheetContext);
@@ -275,6 +269,7 @@ export const Symptoms: React.FC = (props) => {
     setSymptom('');
     setHowOften('');
     setSince('');
+    setDetails('');
   };
   const clearError = () => {
     setErrorState({
@@ -289,11 +284,13 @@ export const Symptoms: React.FC = (props) => {
   const addUpdateSymptom = () => {
     let duplicate = false;
     if (symptoms && symptom.length > 0) {
-      symptoms.forEach((val: any, index: any) => {
-        if (val.symptom && val.symptom.trim().toLowerCase() === symptom.trim().toLowerCase()) {
-          duplicate = isUpdate ? idxValue !== index : true;
+      symptoms.forEach(
+        (val: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms, index: number) => {
+          if (val.symptom && val.symptom.trim().toLowerCase() === symptom.trim().toLowerCase()) {
+            duplicate = isUpdate ? idxValue !== index : true;
+          }
         }
-      });
+      );
     }
     if (isEmpty(trim(symptom))) {
       setErrorState({
@@ -303,23 +300,25 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    } else if (isEmpty(trim(since))) {
-      setErrorState({
-        ...errorState,
-        symptomError: false,
-        sinceError: true,
-        howOfftenError: false,
-        severityError: false,
-      });
-    } else if (isEmpty(trim(howOften))) {
-      setErrorState({
-        ...errorState,
-        symptomError: false,
-        sinceError: false,
-        howOfftenError: true,
-        severityError: false,
-      });
-    } else if (isEmpty(severity)) {
+    }
+    // else if (isEmpty(trim(since))) {
+    //   setErrorState({
+    //     ...errorState,
+    //     symptomError: false,
+    //     sinceError: true,
+    //     howOfftenError: false,
+    //     severityError: false,
+    //   });
+    // } else if (isEmpty(trim(howOften))) {
+    //   setErrorState({
+    //     ...errorState,
+    //     symptomError: false,
+    //     sinceError: false,
+    //     howOfftenError: true,
+    //     severityError: false,
+    //   });
+    // }
+    else if (isEmpty(severity)) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -350,13 +349,15 @@ export const Symptoms: React.FC = (props) => {
         currentSymptom.severity = severity;
         currentSymptom.howOften = howOften;
         currentSymptom.since = since;
+        currentSymptom.details = details;
       } else {
-        const inputParams: any = {
+        const inputParams: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms = {
           __typename: 'SymptomList',
           howOften: howOften,
           severity: severity,
           since: since,
           symptom: symptom,
+          details: details,
         };
         const x = symptoms;
         x!.push(inputParams);
@@ -382,6 +383,7 @@ export const Symptoms: React.FC = (props) => {
         setSince(ReqSymptom.since || '');
         setHowOften(ReqSymptom.howOften || '');
         setSeverity(ReqSymptom.severity || '');
+        setDetails(ReqSymptom.details || '');
       }
       setIsDialogOpen(true);
       setIsUpdate(true);
@@ -419,37 +421,50 @@ export const Symptoms: React.FC = (props) => {
                       </AphButton>
                       <Fragment>
                         <List>
-                          {item!.since && item!.since.trim() !== '' && (
+                          {item && item.since && item.since.trim() !== '' && (
                             <ListItem alignItems="flex-start" className={classes.symtomContent}>
                               <ListItemText
                                 secondary={
                                   <Fragment>
-                                    <Typography component="span">Since: {item!.since}</Typography>
+                                    <Typography component="span">Since: {item.since}</Typography>
                                   </Fragment>
                                 }
                               />
                             </ListItem>
                           )}
-                          {item!.howOften && item!.howOften.trim() !== '' && (
+                          {item && item.howOften && item.howOften.trim() !== '' && (
                             <ListItem alignItems="flex-start" className={classes.symtomContent}>
                               <ListItemText
                                 secondary={
                                   <Fragment>
                                     <Typography component="span">
-                                      How Often : {item!.howOften}
+                                      How Often : {item.howOften}
                                     </Typography>
                                   </Fragment>
                                 }
                               />
                             </ListItem>
                           )}
-                          {item!.severity && item!.severity.trim() !== '' && (
+                          {item && item.severity && item.severity.trim() !== '' && (
                             <ListItem alignItems="flex-start" className={classes.symtomContent}>
                               <ListItemText
                                 secondary={
                                   <Fragment>
                                     <Typography component="span">
-                                      Severity: {item!.severity}
+                                      Severity: {item.severity}
+                                    </Typography>
+                                  </Fragment>
+                                }
+                              />
+                            </ListItem>
+                          )}
+                          {item && item.details && item.details.trim() !== '' && (
+                            <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                              <ListItemText
+                                secondary={
+                                  <Fragment>
+                                    <Typography component="span">
+                                      Details: {item.details}
                                     </Typography>
                                   </Fragment>
                                 }
@@ -597,6 +612,19 @@ export const Symptoms: React.FC = (props) => {
                               Please Enter Severity
                             </FormHelperText>
                           )}
+                        </div>
+                      </div>
+                      <div className={classes.symptomCaption}>
+                        <h6>Details</h6>
+                        <div className={classes.numberTablets}>
+                          <AphTextField
+                            placeholder=""
+                            value={details}
+                            onChange={(event) => {
+                              setDetails(event.target.value);
+                              clearError();
+                            }}
+                          />
                         </div>
                       </div>
                     </div>

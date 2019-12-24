@@ -87,6 +87,7 @@ export interface ModifyCaseSheet_modifyCaseSheet_symptoms {
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet {
