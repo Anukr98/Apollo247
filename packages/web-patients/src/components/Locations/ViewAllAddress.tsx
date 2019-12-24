@@ -121,9 +121,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           fullWidth
           disabled={disableSubmit}
           className={disableSubmit ? classes.buttonDisable : ''}
-          onClick={() => {
-            props.setIsViewAllAddressDialogOpen(false);
-          }}
+          onClick={() => props.setIsViewAllAddressDialogOpen(false)}
         >
           Done
         </AphButton>
