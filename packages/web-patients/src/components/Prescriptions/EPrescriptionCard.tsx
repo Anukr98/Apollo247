@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '12px 15px 15px 15px',
       },
     },
-    Checkbox: {
+    checkbox: {
       alignItems: 'baseline',
       '&:hover': {
         backgroundColor: 'transparent',
@@ -213,6 +213,7 @@ export const EPrescriptionCard: React.FC = (props) => {
               root: classes.tabRoot,
               selected: classes.tabSelected,
             }}
+            disabled
             label="Medical Records (27)"
           />
         </Tabs>
@@ -220,7 +221,7 @@ export const EPrescriptionCard: React.FC = (props) => {
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(45vh)'}>
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.Checkbox} color="primary" />
+                <AphCheckbox className={classes.checkbox} color="primary" />
                 <div className={classes.followUpWrapper}>
                   <div className={classes.followUpDetails}>
                     <div className={classes.imgThumb}>
@@ -246,7 +247,7 @@ export const EPrescriptionCard: React.FC = (props) => {
                 </div>
               </div>
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.Checkbox} color="primary" />
+                <AphCheckbox className={classes.checkbox} color="primary" />
                 <div className={classes.followUpWrapper}>
                   <div className={classes.followUpDetails}>
                     <div className={classes.imgThumb}>
@@ -272,7 +273,7 @@ export const EPrescriptionCard: React.FC = (props) => {
                 </div>
               </div>
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.Checkbox} color="primary" />
+                <AphCheckbox className={classes.checkbox} color="primary" />
                 <div className={classes.followUpWrapper}>
                   <div className={classes.followUpDetails}>
                     <div className={classes.imgThumb}>
@@ -304,7 +305,7 @@ export const EPrescriptionCard: React.FC = (props) => {
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(45vh)'}>
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.Checkbox} color="primary" />
+                <AphCheckbox className={classes.checkbox} color="primary" />
                 <div className={classes.followUpWrapper}>
                   <div className={classes.followUpDetails}>
                     <div className={classes.followUpText}>12th August 2019</div>
@@ -316,7 +317,7 @@ export const EPrescriptionCard: React.FC = (props) => {
                 </div>
               </div>
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.Checkbox} color="primary" />
+                <AphCheckbox className={classes.checkbox} color="primary" />
                 <div className={classes.followUpWrapper}>
                   <div className={classes.followUpDetails}>
                     <div className={classes.followUpText}>12th August 2019</div>
@@ -328,7 +329,7 @@ export const EPrescriptionCard: React.FC = (props) => {
                 </div>
               </div>
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.Checkbox} color="primary" />
+                <AphCheckbox className={classes.checkbox} color="primary" />
                 <div className={classes.followUpWrapper}>
                   <div className={classes.followUpDetails}>
                     <div className={classes.followUpText}>12th August 2019</div>
