@@ -1,9 +1,12 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel } from '@material-ui/core';
-import React from 'react';
+import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
 import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import _each from 'lodash';
+import { useMutation } from 'react-apollo-hooks';
+import { GET_COUPONS } from '../../graphql/profiles';
+import { getCoupons, getCoupons_getCoupons_coupons } from '../../graphql/types/getCoupons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -113,20 +116,46 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ApplyCouponProps {
   setCouponCode: (couponCode: string) => void;
+  couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
   cartValue: number;
 }
 
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
-  const [selectCouponCode, setSelectCouponCode] = React.useState<string>('');
-  const availableCoupons = [
-    { couponCode: 'APMED10', couponDesc: 'Get 10% off on total bill on the order above Rs.199' },
-  ];
+  // const [selectCouponCode, setSelectCouponCode] = useState<string>('');
+  const [availableCoupons, setAvailableCoupons] = useState<
+    (getCoupons_getCoupons_coupons | null)[]
+  >([]);
 
-  // set coupon id at cart.
-  props.setCouponCode(selectCouponCode);
+  const getCouponMutation = useMutation<getCoupons>(GET_COUPONS, {
+    fetchPolicy: 'no-cache',
+  });
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (availableCoupons.length === 0) {
+      setIsLoading(true);
+      getCouponMutation()
+        .then((res) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getCoupons &&
+            res.data.getCoupons.coupons &&
+            res.data.getCoupons.coupons.length > 0
+          ) {
+            setAvailableCoupons(res.data.getCoupons.coupons);
+            setIsLoading(false);
+          }
+        })
+        .catch((e) => {
+          setIsLoading(false);
+        });
+    }
+  }, [availableCoupons]);
 
   return (
     <div className={classes.shadowHide}>
@@ -136,41 +165,54 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <div className={classes.pinSearch}>
-                  <AphTextField value="APMED10" placeholder="APMED10" />
+                  <AphTextField value={props.couponCode} placeholder="CouponCode" />
                   <div className={classes.pinActions}>
-                    <AphButton className={classes.searchBtn}>
-                      <img src={require('images/ic_send.svg')} alt="" />
-                    </AphButton>
-                    <div className={classes.tickMark}>
-                      <img src={require('images/ic_tickmark.svg')} alt="" />
-                    </div>
+                    {props.couponCode.length > 0 ? (
+                      <div className={classes.tickMark}>
+                        <img src={require('images/ic_tickmark.svg')} alt="" />
+                      </div>
+                    ) : (
+                      <AphButton className={classes.searchBtn}>
+                        <img src={require('images/ic_send.svg')} alt="" />
+                      </AphButton>
+                    )}
                   </div>
                 </div>
-                <div className={classes.pinErrorMsg}>Invalid Coupon Code</div>
+                {/* <div className={classes.pinErrorMsg}>Invalid Coupon Code</div> */}
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
-                  {availableCoupons.map((couponDetails, index) => {
-                    return (
-                      <li key={index}>
-                        <FormControlLabel
-                          className={classes.radioLabel}
-                          checked={couponDetails.couponCode === selectCouponCode}
-                          value={selectCouponCode}
-                          control={<AphRadio color="primary" />}
-                          label={
-                            <span className={classes.couponCode}>
-                              {couponDetails.couponCode}
-                              <span>{couponDetails.couponDesc}</span>
-                            </span>
-                          }
-                          onChange={() => {
-                            setSelectCouponCode(couponDetails.couponCode);
-                          }}
-                          disabled={props.cartValue < 200}
-                        />
-                      </li>
-                    );
-                  })}
+                  {availableCoupons.length > 0 ? (
+                    availableCoupons.map(
+                      (couponDetails, index) =>
+                        couponDetails && (
+                          <li key={index}>
+                            <FormControlLabel
+                              className={classes.radioLabel}
+                              checked={couponDetails.code === props.couponCode}
+                              value={couponDetails.code}
+                              control={<AphRadio color="primary" />}
+                              label={
+                                <span className={classes.couponCode}>
+                                  {couponDetails.code}
+                                  {couponDetails.description && (
+                                    <span>{couponDetails.description}</span>
+                                  )}
+                                </span>
+                              }
+                              onChange={() => {
+                                // setSelectCouponCode(couponDetails.code);
+                                props.setCouponCode(couponDetails.code);
+                              }}
+                              disabled={props.cartValue < 200}
+                            />
+                          </li>
+                        )
+                    )
+                  ) : isLoading ? (
+                    <CircularProgress />
+                  ) : (
+                    'No available Coupons'
+                  )}
                 </ul>
               </div>
             </div>
