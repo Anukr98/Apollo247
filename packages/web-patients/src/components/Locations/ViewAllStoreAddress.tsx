@@ -75,25 +75,26 @@ export interface StoreAddresses {
 
 interface ViewAllStoreAddressProps {
   pincode: string | null;
-  storeAddresses: StoreAddresses[];
-  setStoreAddresses: (storeAddresses: StoreAddresses[]) => void;
   getPharmacyAddresses: (pinCode: string) => void;
   pincodeError: boolean;
   setPincodeError: (pincodeError: boolean) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
   setPincode: (pincode: string) => void;
-  storeAddressId: string;
-  setStoreAddressId: (storeAddressId: string) => void;
 }
 
 export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) => {
   const classes = useStyles({});
-  // const [storeAddressId, setStoreAddressId] = React.useState<string>("");
-  const { setStorePickupPincode } = useShoppingCart();
+  const {
+    setStorePickupPincode,
+    deliveryAddressId,
+    setDeliveryAddressId,
+    setStores,
+    stores,
+  } = useShoppingCart();
 
   useEffect(() => {
-    if (props.pincode && props.pincode.length === 6) {
+    if (props.pincode && props.pincode.length === 6 && stores.length === 0) {
       props.setLoading(true);
       props.getPharmacyAddresses(props.pincode);
     }
@@ -120,7 +121,7 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
                 props.getPharmacyAddresses(newPincode);
                 setStorePickupPincode && setStorePickupPincode(newPincode);
               } else if (newPincode === '') {
-                props.setStoreAddresses([]);
+                setStores && setStores([]);
                 props.setPincodeError(false);
               }
               props.setPincode(newPincode);
@@ -128,25 +129,25 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
           />
         </div>
 
-        {props.storeAddresses.length > 0 ? (
+        {stores.length > 0 ? (
           <>
             <div className={classes.sectionHeader}>Stores In This Region</div>
             {props.loading ? (
               <CircularProgress />
             ) : (
               <ul>
-                {props.storeAddresses.map((addressDetails: StoreAddresses, index: number) => {
+                {stores.map((addressDetails: StoreAddresses, index: number) => {
                   const storeAddress = addressDetails.address.replace(' -', ' ,');
                   return (
                     <li key={index}>
                       <FormControlLabel
-                        checked={props.storeAddressId === addressDetails.storeid}
+                        checked={deliveryAddressId === addressDetails.storeid}
                         className={classes.radioLabel}
                         value={addressDetails.storeid}
                         control={<AphRadio color="primary" />}
                         label={storeAddress}
                         onChange={() => {
-                          props.setStoreAddressId(addressDetails.storeid);
+                          setDeliveryAddressId && setDeliveryAddressId(addressDetails.storeid);
                         }}
                       />
                     </li>

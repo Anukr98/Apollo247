@@ -28,14 +28,14 @@ export class DoctorFavouriteAdviceRepository extends Repository<DoctorsFavourite
       });
   }
   getDoctorAdviceList(doctorId: string) {
-    return this.find({ where: { doctorId } }).catch((adviceError) => {
+    return this.find({ where: { doctor: doctorId } }).catch((adviceError) => {
       throw new AphError(AphErrorMessages.GET_DOCTOR_ADVICE_ERROR, undefined, {
         adviceError,
       });
     });
   }
   getDoctorAdviceById(doctorId: string, id: string) {
-    return this.find({ where: { doctorId, id } }).catch((adviceError) => {
+    return this.find({ where: { doctor: doctorId, id } }).catch((adviceError) => {
       throw new AphError(AphErrorMessages.GET_DOCTOR_ADVICE_ERROR, undefined, {
         adviceError,
       });

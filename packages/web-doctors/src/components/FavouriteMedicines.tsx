@@ -966,6 +966,7 @@ export const FavouriteMedicines: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
 
       const inputParams: any = {
@@ -977,6 +978,7 @@ export const FavouriteMedicines: React.FC = () => {
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
       const xArr: any = selectedMedicinesArr;
       xArr!.push(inputParamsArr);
@@ -1011,6 +1013,7 @@ export const FavouriteMedicines: React.FC = () => {
               medicineToBeTaken: toBeTakenSlotsArr,
               medicineName: selectedValue,
               medicineUnit: medicineUnit,
+              medicineInstructions: String(medicineInstruction),
             },
           },
         })
@@ -1105,6 +1108,7 @@ export const FavouriteMedicines: React.FC = () => {
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -1256,7 +1260,10 @@ export const FavouriteMedicines: React.FC = () => {
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.btnAddDoctor }}
-                  onClick={() => setIsDialogOpen(true)}
+                  onClick={() => {
+                    setIsDialogOpen(true);
+                    setIsUpdate(false);
+                  }}
                 >
                   <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
                 </AphButton>

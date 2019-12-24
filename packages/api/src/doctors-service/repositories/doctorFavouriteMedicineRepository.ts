@@ -16,7 +16,7 @@ export class DoctorFavouriteMedicineRepository extends Repository<DoctorsFavouri
   }
 
   favouriteMedicines(doctorId: string) {
-    return this.find({ where: { doctorId } }).catch((favouriteMedicineError) => {
+    return this.find({ where: { doctor: doctorId } }).catch((favouriteMedicineError) => {
       throw new AphError(AphErrorMessages.GET_DOCTOR_FAVOURITE_MEDICINE_ERROR, undefined, {
         favouriteMedicineError,
       });

@@ -143,12 +143,10 @@ const styles = StyleSheet.create({
 export interface TestsProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
-    focusLocation?: boolean;
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const focusLocation = props.navigation.getParam('focusLocation');
   const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -157,7 +155,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
-  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(!!focusLocation);
+  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
@@ -187,12 +185,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
-
-  useEffect(() => {
-    if (focusLocation) {
-      setshowLocationpopup(true);
-    }
-  }, [focusLocation]);
 
   useEffect(() => {
     console.log(locationDetails, 'locationDetails');
