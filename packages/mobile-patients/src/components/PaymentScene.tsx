@@ -20,6 +20,7 @@ import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/com
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { getParameterByName } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -207,17 +208,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     props.navigation.goBack();
     showAphAlert!({
       title: 'Uh oh.. :(',
-      description: `Payment failed.`,
+      description: `We're sorry but the payment failed.`,
     });
-  };
-
-  const getParameterByName = (name: string, url: string) => {
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-      results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
   };
 
   const onWebViewStateChange = (data: NavState) => {
