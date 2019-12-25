@@ -782,10 +782,10 @@ app.get('/processOrders', (req, res) => {
               }
               let payStatus =
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                  .medicineOrderPayments.paymentType;
+                  .medicineOrderPayments[0].paymentType;
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                  .medicineOrderPayments.paymentType == 'COD'
+                  .medicineOrderPayments[0].paymentType == 'COD'
               ) {
                 payStatus = '';
               }
@@ -801,7 +801,7 @@ app.get('/processOrders', (req, res) => {
                   RequestType: 'CART',
                   PaymentMethod:
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                      .medicineOrderPayments.paymentType,
+                      .medicineOrderPayments[0].paymentType,
                   VendorName: '*****',
                   DotorName: 'Apollo',
                   OrderType: orderType,
@@ -833,19 +833,20 @@ app.get('/processOrders', (req, res) => {
                   PaymentDetails: {
                     TotalAmount:
                       response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                        .medicineOrderPayments.amountPaid,
+                        .medicineOrderPayments[0].amountPaid,
                     PaymentSource:
                       response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                        .medicineOrderPayments.paymentType,
+                        .medicineOrderPayments[0].paymentType,
                     PaymentStatus: payStatus,
                     PaymentOrderId:
                       response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                        .medicineOrderPayments.paymentRefId,
+                        .medicineOrderPayments[0].paymentRefId,
                   },
                   ItemDetails: orderLineItems,
                   PrescUrl: orderPrescriptionUrl,
                 },
               };
+              console.log(pharmaInput, 'pharmaInput');
               axios
                 .post(process.env.PHARMA_ORDER_PLACE_URL, JSON.stringify(pharmaInput), {
                   headers: {
