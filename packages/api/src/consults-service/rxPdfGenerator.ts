@@ -45,10 +45,16 @@ export const convertCaseSheetToRxPdfData = async (
       const ingredients = [] as string[];
       const dosageTimingCount =
         csRx.medicineTimings !== undefined ? csRx.medicineTimings.length : 0;
-      const medicineDosage =
+      let medicineDosage =
         dosageTimingCount == 0
           ? csRx.medicineDosage
           : Number(csRx.medicineDosage) * dosageTimingCount;
+
+      const medicineToBeTaken =
+        csRx.medicineToBeTaken !== undefined ? csRx.medicineToBeTaken.length : 0;
+      medicineDosage =
+        medicineToBeTaken == 0 ? medicineDosage : Number(medicineDosage) * medicineToBeTaken;
+
       const timings =
         csRx.medicineTimings !== undefined
           ? '(' + csRx.medicineTimings.map(_capitalize).join(', ') + ')'
@@ -240,7 +246,6 @@ export const convertCaseSheetToRxPdfData = async (
 };
 
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
-console.log('............', assetsDir);
 
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
@@ -548,7 +553,6 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderFollowUp = (followUpData: RxPdfData['followUpDetails']) => {
-    console.log('renderFollowUp........', doc.x, doc.y);
     if (followUpData) {
       if (doc.y > doc.page.height - 150) {
         pageBreak();
@@ -568,24 +572,21 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
+      drawHorizontalDivider(doc.y);
+      doc.moveDown(0.5);
 
-      console.log('renderDoctorData........', doc.x, doc.y);
       doc
-        .moveTo(margin, doc.y) // set the current point
-        .lineTo(doc.y, doc.y) // draw a line
-        .opacity(0.15)
-        .fill('#02475b')
-        .moveDown(0.5);
-      doc
-        .opacity(1)
+        .opacity(0.6)
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
         .text('Prescribed by', margin + 15)
         .moveDown(0.5);
 
-      if (doctorInfo.signature)
-        doc.image(doctorInfo.signature, margin, margin / 2, { height: 72, width: 200 });
+      if (doctorInfo.signature) {
+        doc.image(doctorInfo.signature, margin + 15, doc.y, { height: 72, width: 200 });
+        doc.moveDown(0.5);
+      }
 
       //Doctor Details
       const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
@@ -593,13 +594,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
 
       doc
+        .opacity(1)
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
       doc
 
-        .fontSize(12)
+        .fontSize(10)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(`${specialty} | ${registrationLine}`, margin + 15)
@@ -679,7 +681,6 @@ export const uploadRxPdf = async (
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
   await delay(350);
-  console.log('....filePath....', filePath);
 
   const blob = await client.uploadFile({ name, filePath });
   fs.unlink(filePath, (error) => console.log(error));
