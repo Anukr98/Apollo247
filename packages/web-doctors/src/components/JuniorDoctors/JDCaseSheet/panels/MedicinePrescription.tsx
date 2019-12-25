@@ -36,6 +36,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       placeholder="Search"
       fullWidth
       InputProps={{
@@ -1106,6 +1107,7 @@ export const MedicinePrescription: React.FC = () => {
                             Quantity (Per Dosage)*
                           </div>
                           <AphTextField
+                            autoFocus
                             inputProps={{ maxLength: 6 }}
                             value={tabletsCount === 0 ? '' : tabletsCount}
                             onChange={(event: any) => {

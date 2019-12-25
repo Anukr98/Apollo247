@@ -104,6 +104,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
   PICKEDUP = "PICKEDUP",
   PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
   PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
@@ -446,7 +447,7 @@ export interface MedicineCartItem {
   isMedicine?: string | null;
 }
 
-export interface MedicinePaymentInput {
+export interface MedicinePaymentMqInput {
   orderId: string;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;

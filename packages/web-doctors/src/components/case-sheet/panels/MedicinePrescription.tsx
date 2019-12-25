@@ -46,6 +46,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       placeholder="Search"
       fullWidth
       InputProps={{
@@ -853,7 +854,7 @@ export const MedicinePrescription: React.FC = () => {
         dosageErr: false,
       });
       const inputParamsArr: any = {
-        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineConsumptionDurationInDays: String(consumptionDuration),
         medicineDosage: String(tabletsCount),
         medicineInstructions: medicineInstruction,
         medicineTimings: daySlotsArr,
@@ -966,6 +967,28 @@ export const MedicinePrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+
+  const handleClearRequested = () => {
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+
+    const dayslots = daySlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+
+    setToBeTakenSlots(slots);
+    setDaySlots(dayslots);
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setTabletsCount(0);
+    setMedicineUnit('TABLET');
+    setSelectedValue('');
+    setSelectedId('');
+  };
+
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
@@ -1125,6 +1148,7 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
+                    handleClearRequested();
                   }}
                 />
               </Button>
@@ -1264,6 +1288,7 @@ export const MedicinePrescription: React.FC = () => {
                     setIsEditFavMedicine(false);
                     setShowDosage(false);
                     setIsUpdate(false);
+                    handleClearRequested();
                   }}
                 >
                   Cancel
@@ -1307,6 +1332,7 @@ export const MedicinePrescription: React.FC = () => {
                 onClick={() => {
                   setIsDialogOpen(false);
                   setShowDosage(false);
+                  handleClearRequested();
                 }}
               />
             </Button>
@@ -1437,6 +1463,7 @@ export const MedicinePrescription: React.FC = () => {
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>Quantity (Per Dosage)*</h6>
                         <AphTextField
+                          autoFocus
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount === 0 ? '' : tabletsCount}
                           onChange={(event: any) => {
@@ -1567,6 +1594,7 @@ export const MedicinePrescription: React.FC = () => {
                       setIsDialogOpen(false);
                       setShowDosage(false);
                       setIsUpdate(false);
+                      handleClearRequested();
                     }}
                   >
                     Cancel

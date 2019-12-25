@@ -402,6 +402,7 @@ export const FavouriteAdvice: React.FC = () => {
               onClick={() => {
                 setShowAddInputText(true);
                 setShowUpdatePopup(false);
+                setAdvice('');
               }}
             >
               <img src={require('images/ic_round-add.svg')} alt="" /> Add Advice
@@ -435,6 +436,7 @@ export const FavouriteAdvice: React.FC = () => {
                     </AphDialogTitle>
                     <div className={classes.numberTablets}>
                       <AphTextField
+                        autoFocus
                         fullWidth
                         placeholder="Type your favourite advice"
                         className={classes.textFieldColor}

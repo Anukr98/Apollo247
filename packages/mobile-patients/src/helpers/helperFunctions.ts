@@ -109,6 +109,9 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
       break;
+    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      statusString = 'Payment Success';
+      break;
   }
   return statusString;
 };
@@ -199,22 +202,10 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
 
 export const handleGraphQlError = (
   error: any,
-  message: string = 'Uh oh! An Unknown Error Occurred.'
+  message: string = 'Oops! seems like we are having an issue. Please try again.'
 ) => {
   console.log({ error });
-
-  let formattedError = message;
-  if (typeof error == 'string') {
-    formattedError = error;
-  } else if (typeof error == 'object') {
-    try {
-      const graphqlErr = (error as GraphQLError).message;
-      formattedError = graphqlErr;
-    } catch (e) {
-      console.log({ e });
-    }
-  }
-  Alert.alert('Alert', formattedError);
+  Alert.alert('Uh oh.. :(', message);
 };
 
 export const timeTo12HrFormat = (time: string) => {
@@ -363,8 +354,8 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
                     resolve({
                       displayName:
                         (area || []).pop() ||
-                        (findAddrComponents('locality', addrComponents) ||
-                          findAddrComponents('administrative_area_level_2', addrComponents)),
+                        findAddrComponents('locality', addrComponents) ||
+                        findAddrComponents('administrative_area_level_2', addrComponents),
                       latitude,
                       longitude,
                       area: area.join(', '),
@@ -452,3 +443,8 @@ const { height } = Dimensions.get('window');
 export const isIphone5s = () => height === 568;
 export const statusBarHeight = () =>
   Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;
+
+export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
+
+export const isValidText = (value: string) =>
+  /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);

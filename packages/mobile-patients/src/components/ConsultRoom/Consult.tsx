@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
   doctorNameStyles: {
     paddingTop: 40,
     paddingLeft: 0,
+    textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SEARCH_DOCTOR_NAME,
   },
@@ -627,7 +628,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
+                        {item.doctorInfo
+                          ? `${item.doctorInfo.salutation}. ${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
+                          : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text

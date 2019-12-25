@@ -6,6 +6,7 @@ const ejs = require('ejs');
 const app = express();
 const session = require('express-session');
 const stripTags = require('striptags');
+const crypto = require('crypto');
 const azure = require('azure-sb');
 require('dotenv').config();
 
@@ -389,6 +390,228 @@ app.get('/mob-error', (req, res) => {
   }
 });
 
+//diagnostic payment apis
+app.get('/diagnosticpayment', (req, res) => {
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+
+  if (!req.query.patientId || !req.query.orderId || !req.query.price) {
+    res.statusCode = 401;
+    return res.send({
+      status: 'failed',
+      reason: 'Invalid parameters',
+      code: '10001',
+    });
+  }
+
+  console.log('request query params => ', req.query);
+
+  req.session.diagnosticOrderId = stripTags(req.query.orderId);
+
+  console.log('Query API URL: ', process.env.API_URL);
+
+  // validate the order and token.
+  axios({
+    url: process.env.API_URL,
+    method: 'post',
+    data: {
+      query: `
+          query {
+            getPatientById(patientId:"${req.query.patientId}") {
+              patient {
+                id
+                emailAddress
+                firstName
+                lastName
+                dateOfBirth
+                gender
+                athsToken
+                mobileNumber
+              }
+            }
+          }
+        `,
+    },
+  })
+    .then((response) => {
+      console.log('graphQL response', response);
+      if (
+        response &&
+        response.data &&
+        response.data.data &&
+        response.data.data.getPatientById &&
+        response.data.data.getPatientById.patient
+      ) {
+        const responsePatientId = response.data.data.getPatientById.patient.id;
+        console.log('responsePatientId', response.data.data.getPatientById.patient);
+        if (responsePatientId == '') {
+          res.statusCode = 401;
+          res.send({
+            status: 'failed',
+            reason: 'Invalid parameters',
+            code: '10000',
+          });
+        } else {
+          req.session.orderId = req.query.orderId;
+          const {
+            emailAddress,
+            mobileNumber,
+            firstName,
+            lastName,
+          } = response.data.data.getPatientById.patient;
+
+          const code = `gtKFFx|APL-${req.query.orderId}|${parseFloat(
+            req.query.price
+          )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
+
+          const hash = crypto
+            .createHash('sha512')
+            .update(code)
+            .digest('hex');
+
+          console.log('paymentCode==>', code);
+          console.log('paymentHash==>', hash);
+
+          console.log('rendering==> diagnosticsPayment.ejs');
+          res.render('diagnosticsPayment.ejs', {
+            athsToken: response.data.data.getPatientById.patient.athsToken,
+            orderId: req.query.orderId,
+            totalPrice: parseFloat(req.query.price),
+            patientId: req.query.patientId,
+            firstName,
+            lastName,
+            emailAddress,
+            mobileNumber,
+            hash,
+            //baseUrl: 'http://localhost:7000',
+            baseUrl: 'https://aph.dev.pmt.popcornapps.com',
+          });
+        }
+      }
+    })
+    .catch((error) => {
+      // no need to explicitly saying details about error for clients.
+      console.log('error', error);
+      res.statusCode = 401;
+      return res.send({
+        status: 'failed',
+        reason: 'Invalid parameters',
+        code: '10001',
+      });
+    });
+});
+
+app.post('/diagnostic-pg-success-url', (req, res) => {
+  console.log('diagnostisPaymentSuccess=>', req.body);
+  const paymentStatus = req.body.status;
+  const mihpayid = req.body.mihpayid;
+  saveDiagnosticOrderPaymentResponse(req, (status) => {
+    console.log(status);
+    if (paymentStatus == 'success') {
+      res.redirect(`/diagnostic-pg-success?tk=${mihpayid}&status=${paymentStatus}`);
+    } else {
+      res.redirect(`/diagnostic-pg-error?tk=${mihpayid}&status=${paymentStatus}`);
+    }
+  });
+});
+
+const saveDiagnosticOrderPaymentResponse = (req, callback) => {
+  const paymentResponse = req.body;
+  console.log('session', req.session);
+  const paymentDate = new Date(new Date(paymentResponse.addedon).toUTCString()).toISOString();
+  console.log('paymentResponse=>', paymentResponse);
+  console.log(paymentDate);
+
+  const requestJSON = {
+    query:
+      'mutation { saveDiagnosticOrderPayment(diagnosticPaymentInput: { diagnosticOrderId: "' +
+      req.session.diagnosticOrderId +
+      '", amountPaid: ' +
+      paymentResponse.amount +
+      ', bankRefNum: "' +
+      paymentResponse.bank_ref_num +
+      '", errorCode: "' +
+      paymentResponse.error +
+      '", errorMessage: "' +
+      paymentResponse.error_Message +
+      '", mihpayid: "' +
+      paymentResponse.mihpayid +
+      '", netAmountDebit: "' +
+      paymentResponse.net_amount_debit +
+      '", paymentDateTime: "' +
+      paymentDate +
+      '", paymentStatus: "' +
+      paymentResponse.status +
+      '", txnId: "' +
+      paymentResponse.txnid +
+      '", hash: "' +
+      paymentResponse.hash +
+      '", paymentSource: "' +
+      paymentResponse.payment_source +
+      '", discount: "' +
+      paymentResponse.discount +
+      '", bankCode: "' +
+      paymentResponse.bankcode +
+      '", issuingBank: "' +
+      paymentResponse.issuing_bank +
+      '", cardType: "' +
+      paymentResponse.card_type +
+      '", mode: "' +
+      paymentResponse.mode +
+      '" }){status}}',
+  };
+
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log('save diagnosticPayment response....', JSON.stringify(response.data));
+      callback(true);
+    })
+    .catch((error) => {
+      console.log('save diagnosticPayment error', error);
+    });
+};
+
+app.post('/diagnostic-pg-error-url', (req, res) => {
+  console.log('diagnostisPaymentErrorResponse=>', req.body);
+  const paymentStatus = req.body.status;
+  const mihpayid = req.body.mihpayid;
+  saveDiagnosticOrderPaymentResponse(req, (status) => {
+    console.log('response from payment save', status);
+    res.redirect(`/diagnostic-pg-error?tk=${mihpayid}&status=${paymentStatus}`);
+  });
+});
+
+app.post('/diagnostic-pg-cancel-url', (req, res) => {
+  console.log('diagnostisPaymentCancelResponse', req.body, req);
+  res.send({
+    status: 'failed',
+  });
+});
+
+app.get('/diagnostic-pg-success', (req, res) => {
+  const payloadToken = req.query.tk;
+  if (payloadToken) {
+    res.statusCode = 200;
+    res.send({
+      status: 'success',
+      orderId: payloadToken,
+    });
+  } else {
+    res.statusCode = 401;
+    res.send({
+      status: 'failed',
+      reason: 'Unauthorized',
+      code: '800',
+    });
+  }
+});
+
+app.get('/diagnostic-pg-error', (req, res) => {
+  res.send({
+    status: 'failed',
+  });
+});
+
 app.get('/processOrders', (req, res) => {
   let queueMessage = '';
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
@@ -536,6 +759,7 @@ app.get('/processOrders', (req, res) => {
                 }
               );
               let prescriptionImages = [];
+              let orderType = 'FMCG';
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                   .prescriptionImageUrl != '' &&
@@ -545,8 +769,10 @@ app.get('/processOrders', (req, res) => {
                 prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
                   ','
                 );
+                orderType = 'Pharma';
               }
               if (prescriptionImages.length > 0) {
+                orderType = 'Pharma';
                 prescriptionImages.map((imageUrl) => {
                   const url = {
                     url: imageUrl,
@@ -578,7 +804,7 @@ app.get('/processOrders', (req, res) => {
                       .medicineOrderPayments.paymentType,
                   VendorName: '*****',
                   DotorName: 'Apollo',
-                  OrderType: 'Pharma',
+                  OrderType: orderType,
                   StateCode: 'TS',
                   TAT: null,
                   CouponCode: 'MED10',

@@ -60,6 +60,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       placeholder="Search"
       fullWidth
       InputProps={{
@@ -966,6 +967,7 @@ export const FavouriteMedicines: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
 
       const inputParams: any = {
@@ -977,6 +979,7 @@ export const FavouriteMedicines: React.FC = () => {
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
       const xArr: any = selectedMedicinesArr;
       xArr!.push(inputParamsArr);
@@ -1011,6 +1014,7 @@ export const FavouriteMedicines: React.FC = () => {
               medicineToBeTaken: toBeTakenSlotsArr,
               medicineName: selectedValue,
               medicineUnit: medicineUnit,
+              medicineInstructions: String(medicineInstruction),
             },
           },
         })
@@ -1105,6 +1109,7 @@ export const FavouriteMedicines: React.FC = () => {
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
         medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -1256,7 +1261,10 @@ export const FavouriteMedicines: React.FC = () => {
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.btnAddDoctor }}
-                  onClick={() => setIsDialogOpen(true)}
+                  onClick={() => {
+                    setIsDialogOpen(true);
+                    setIsUpdate(false);
+                  }}
                 >
                   <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
                 </AphButton>
@@ -1421,6 +1429,7 @@ export const FavouriteMedicines: React.FC = () => {
                         <Grid item lg={6} md={6} xs={12}>
                           <h6>Dosage*</h6>
                           <AphTextField
+                            autoFocus
                             inputProps={{ maxLength: 6 }}
                             value={tabletsCount === 0 ? '' : tabletsCount}
                             onChange={(event: any) => {

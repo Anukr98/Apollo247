@@ -56,7 +56,7 @@ interface AddressCardProps {
 }
 
 export const AddressCard: React.FC<AddressCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = React.useState<boolean>(false);
   console.log('THE PROPS ARE: ', props);
 
@@ -86,7 +86,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
-                <AddNewAddress />
+                <AddNewAddress setIsAddAddressDialogOpen={setIsEditAddressDialogOpen} />
               </div>
             </Scrollbars>
           </div>

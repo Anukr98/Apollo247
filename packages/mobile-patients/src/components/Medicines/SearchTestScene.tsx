@@ -27,7 +27,7 @@ import {
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
@@ -50,6 +50,7 @@ import stripHtml from 'string-strip-html';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -228,6 +229,27 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
+  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
+    setGlobalLoading!(true);
+    getPackageData(id)
+      .then(({ data }) => {
+        console.log('getPackageData\n', { data });
+        const product = g(data, 'data');
+        if (product && product.length) {
+          func && func(product);
+        } else {
+          errorAlert();
+        }
+      })
+      .catch((e) => {
+        console.log({ e });
+        errorAlert();
+      })
+      .finally(() => {
+        setGlobalLoading!(false);
+      });
+  };
+
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     aphConsole.log({ errorResponse: e.response, error }); //remove this line later
@@ -238,33 +260,35 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
-    }
-    setShowMatchingMedicines(true);
-    setIsLoading(true);
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setShowMatchingMedicines(true);
+      setIsLoading(true);
 
-    client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
-        variables: {
-          searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city,
-          patientId: (currentPatient && currentPatient.id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-        setIsLoading(false);
-      })
-      .catch((e) => {
-        setIsLoading(false);
-        showGenericALert(e);
-      });
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: _searchText,
+            city: locationForDiagnostics && locationForDiagnostics.city,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          showGenericALert(e);
+        });
+    }
   };
 
   const savePastSeacrh = (sku: string, name: string) =>
@@ -280,12 +304,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       },
     });
 
-  const onAddCartItem = ({
-    itemId,
-    itemName,
-    rate,
-    collectionType,
-  }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+  const onAddCartItem = (
+    { itemId, itemName, rate, collectionType }: searchDiagnostics_searchDiagnostics_diagnostics,
+    testsIncluded: number
+  ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
@@ -293,14 +315,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: rate,
-      mou: 1,
+      mou: testsIncluded,
       thumbnail: '',
       collectionMethod: collectionType!,
     });
   };
 
-  const onRemoveCartItem = ({ id }: searchDiagnostics_searchDiagnostics_diagnostics) => {
-    removeCartItem!(id);
+  const onRemoveCartItem = ({ itemId }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+    removeCartItem!(`${itemId}`);
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -436,7 +458,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       index == 0 ? { marginTop: 20 } : {},
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
-    const foundMedicineInCart = cartItems.find((item) => item.id == product.id);
+    const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
+    const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
     const price = product.rate;
 
     return (
@@ -465,7 +488,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         unit={1}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Add item to cart');
-          onAddCartItem(product);
+          fetchPackageInclusion(`${product.itemId}`, (tests) => {
+            onAddCartItem(product, tests.length);
+          });
         }}
         onPressRemove={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Remove item from cart');
@@ -474,7 +499,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         onChangeUnit={() => {}}
         isCardExpanded={!!foundMedicineInCart}
         isInStock={true}
-        packOfCount={parseInt('1') || undefined}
+        packOfCount={testsIncluded}
         isPrescriptionRequired={false}
         subscriptionStatus={'unsubscribed'}
         onChangeSubscription={() => {}}

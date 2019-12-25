@@ -37,7 +37,7 @@ import {
   MedicinePageAPiResponse,
   MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -139,13 +139,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    focusSearch && setSearchFocused(true);
-  }, []);
-
-  useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient!.id) {
+    if (currentPatient && profile.id !== currentPatient.id) {
       globalLoading!(true);
-      setProfile(currentPatient!);
+      setProfile(currentPatient);
       ordersRefetch().then(({ data }) => {
         const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
           (item) =>
@@ -187,9 +183,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data: d.data,
         };
         d.data &&
-          AsyncStorage.setItem(MEDICINE_LANDING_PAGE_DATA, JSON.stringify(localData)).catch(
-            () => {}
-          );
+          AsyncStorage.setItem(
+            MEDICINE_LANDING_PAGE_DATA,
+            JSON.stringify(localData)
+          ).catch(() => {});
         setData(d.data);
         setLoading(false);
       })
@@ -896,25 +893,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setsearchSate('load');
+      getMedicineSearchSuggestionsApi(_searchText)
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = data.products || [];
+          setMedicineList(products);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          // aphConsole.log({ e });
+          if (!Axios.isCancel(e)) {
+            setsearchSate('fail');
+          }
+        });
     }
-    setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
-      .then(({ data }) => {
-        // aphConsole.log({ data });
-        const products = data.products || [];
-        setMedicineList(products);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        // aphConsole.log({ e });
-        if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
-        }
-      });
   };
 
   interface SuggestionType {
@@ -1072,6 +1071,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <>
         <Input
+          autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
@@ -1282,7 +1282,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   <Text style={styles.hiTextStyle}>{'hi'}</Text>
                   <View style={styles.nameTextContainerStyle}>
                     <Text style={styles.nameTextStyle} numberOfLines={1}>
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                      {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
                     </Text>
                     <View style={styles.seperatorStyle} />
                   </View>

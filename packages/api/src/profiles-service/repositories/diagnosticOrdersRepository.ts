@@ -3,6 +3,7 @@ import {
   DiagnosticOrders,
   DiagnosticOrderLineItems,
   DIAGNOSTIC_ORDER_STATUS,
+  DiagnosticOrderPayments,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -51,5 +52,15 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       where: { id },
       relations: ['diagnosticOrderLineItems', 'diagnosticOrderLineItems.diagnostics'],
     });
+  }
+
+  saveDiagnosticOrderPayment(paymentAttrs: Partial<DiagnosticOrderPayments>) {
+    return DiagnosticOrderPayments.create(paymentAttrs)
+      .save()
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.SAVE_DIAGNOSTIC_ORDER_ERROR, undefined, {
+          error,
+        });
+      });
   }
 }

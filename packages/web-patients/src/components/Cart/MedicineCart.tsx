@@ -3,12 +3,11 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { useShoppingCart, MedicinesCartProvider } from 'components/MedicinesCartProvider';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
@@ -384,10 +383,11 @@ export const MedicineCart: React.FC = (props) => {
     name: '',
     imageUrl: '',
   };
+  const { storePickupPincode, deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
@@ -400,7 +400,7 @@ export const MedicineCart: React.FC = (props) => {
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const { currentPincode } = useContext(LocationContext);
-  const { deliveryPincode } = useShoppingCart();
+
   const removePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
   };
@@ -410,6 +410,8 @@ export const MedicineCart: React.FC = (props) => {
       setPrescriptions((prevValues) => [...prevValues, prescriptionUploaded]);
     }
   }, [prescriptionUploaded]);
+
+  console.log(couponCode);
 
   const { cartItems, cartTotal } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -560,11 +562,7 @@ export const MedicineCart: React.FC = (props) => {
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    <HomeDelivery
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
-                    />
+                    <HomeDelivery />
                     <div className={classes.deliveryTimeGroup}>
                       <div className={classes.deliveryTimeGroupWrap}>
                         <span className={classes.deliveryTime}>Delivery Time</span>
@@ -576,12 +574,9 @@ export const MedicineCart: React.FC = (props) => {
                 {tabValue === 1 && (
                   <TabContainer>
                     <StorePickUp
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
                       pincode={
-                        deliveryPincode && deliveryPincode.length === 6
-                          ? deliveryPincode
+                        storePickupPincode && storePickupPincode.length === 6
+                          ? storePickupPincode
                           : currentPincode
                       }
                     />
@@ -604,7 +599,6 @@ export const MedicineCart: React.FC = (props) => {
                   <span className={classes.linkText}>Apply Coupon</span>
                   <span className={classes.rightArrow}>
                     <img src={require('images/ic_arrow_right.svg')} alt="" />
-                    <img src={require('images/ic_tickmark.svg')} alt="" />
                   </span>
                 </div>
               ) : (
@@ -613,6 +607,9 @@ export const MedicineCart: React.FC = (props) => {
                     <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
                   </span>
                   <span className={classes.linkText}>Coupon Applied</span>
+                  <span className={classes.rightArrow}>
+                    <img src={require('images/ic_tickmark.svg')} alt="" />
+                  </span>
                 </div>
               )}
             </div>
@@ -744,7 +741,8 @@ export const MedicineCart: React.FC = (props) => {
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
         <ApplyCoupon
-          setCouponCode={(couponCode: string) => setCouponCode(couponCode)}
+          setCouponCode={setCouponCode}
+          couponCode={couponCode}
           close={(isApplyCouponDialogOpen: boolean) => {
             setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
           }}
