@@ -4916,7 +4916,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           gallery: 'CHOOSE FROM\nGALLERY',
           prescription: 'UPLOAD\nFROM PHR',
         }}
-        hideTAndCs={false}
+        hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
         onResponse={(selectedType, response) => {
           console.log('res', response);

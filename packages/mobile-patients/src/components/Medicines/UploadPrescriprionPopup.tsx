@@ -473,7 +473,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             {props.type == 'nonCartFlow' && renderOrderSteps()}
             {renderOptions()}
             {renderInstructions()}
-            {/* {!props.hideTAndCs && renderTermsAndCondns()} */}
+            {!props.hideTAndCs && renderTermsAndCondns()}
           </ScrollView>
         </SafeAreaView>
         {showSpinner && <Spinner />}
