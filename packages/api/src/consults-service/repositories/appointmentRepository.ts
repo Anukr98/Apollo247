@@ -916,7 +916,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     const doctorBblockedSlots: string[] = [];
 
     if (timeSlot.length > 0) {
-      const duration = Math.floor(60 / timeSlot[0].consultDuration);
+      //const duration = Math.floor(60 / timeSlot[0].consultDuration);
+      const duration = parseFloat((60 / timeSlot[0].consultDuration).toFixed(1));
       // const consultStartTime = new Date(
       //   format(new Date(), 'yyyy-MM-dd') + ' ' + timeSlot[0].startTime.toString()
       // );
