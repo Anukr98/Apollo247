@@ -279,6 +279,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         })
         .catch((err) => {
           setdeliveryTime('');
+          showAphAlert &&
+            showAphAlert({
+              title: 'Uh oh.. :(',
+              description: 'Something went wrong, Unable to fetch delivery time',
+            });
           setshowDeliverySpinner(false);
         });
     }
