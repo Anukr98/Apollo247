@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { Patient } from 'profiles-service/entities';
+import { Patient, DEVICE_TYPE } from 'profiles-service/entities';
 import fetch from 'node-fetch';
 import {
   PrismGetAuthTokenResponse,
@@ -52,7 +52,8 @@ export const getCurrentPatientsTypeDefs = gql`
     athsToken: String
     relation: Relation
     uhid: String
-    appVersion: String
+    androidVersion: String
+    iosVersion: String
   }
 
   type LifeStyle {
@@ -81,7 +82,7 @@ export const getCurrentPatientsTypeDefs = gql`
   }
 
   extend type Query {
-    getCurrentPatients(appVersion: String): GetCurrentPatientsResult
+    getCurrentPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
   }
 `;
 
@@ -91,7 +92,7 @@ type GetCurrentPatientsResult = {
 
 const getCurrentPatients: Resolver<
   null,
-  { appVersion: string },
+  { appVersion: string; deviceType: DEVICE_TYPE },
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
@@ -241,9 +242,11 @@ const getCurrentPatients: Resolver<
   });*/
   const patients = await patientRepo.findByMobileNumber(mobileNumber);
 
-  if (args.appVersion) {
+  if (args.appVersion && args.deviceType) {
     const versionUpdateRecords = patients.map((patient) => {
-      return { id: patient.id, appVersion: args.appVersion };
+      return args.deviceType === DEVICE_TYPE.ANDROID
+        ? { id: patient.id, androidVersion: args.appVersion }
+        : { id: patient.id, iosVersion: args.appVersion };
     });
     console.log('verionUpdateRecords =>', versionUpdateRecords);
     log(
