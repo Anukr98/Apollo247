@@ -963,7 +963,7 @@ export class AppointmentRepository extends Repository<Appointment> {
             }
             slot = addMinutes(slot, 1);
             counter++;
-            if (counter >= availableSlots.length) {
+            if (counter >= availableSlots.length && counter >= timeSlot[0].consultDuration) {
               break;
             }
             apptDt = format(slot, 'yyyy-MM-dd');
