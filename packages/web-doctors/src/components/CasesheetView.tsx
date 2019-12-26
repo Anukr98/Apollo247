@@ -59,6 +59,20 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    signInformation: {
+      marginRight: 'auto',
+      width: 198,
+      '& h3': {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: 0,
+        '& span': {
+          fontWeight: 'normal',
+          fontSize: 10,
+        },
+      },
+    },
     address: {
       fontSize: 8,
     },
@@ -168,6 +182,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const CasesheetView: React.FC = (props) => {
   const classes = useStyles();
+  const signature = 'https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png';
   const {
     patientDetails,
     height,
@@ -505,6 +520,29 @@ export const CasesheetView: React.FC = (props) => {
               ) : null}
             </>
           )}
+          {isPageContentFull() ? null : (
+            <>
+              {signature && (
+                <>
+                  <div className={classes.sectionHeader}>Prescribed by</div>
+                  <div className={classes.followUpContent}>
+                    <img src={signature} />
+                  </div>
+                  {createdDoctorProfile && (
+                    <div className={classes.signInformation}>
+                      <h3>
+                        {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                        <br />
+                        <span>{`${
+                          createdDoctorProfile.specialty.specialistSingularTerm
+                        } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
+                      </h3>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
         </div>
         {isPageContentFull() &&
         ((followUp.length > 0 && followUp[0]) ||
@@ -519,7 +557,7 @@ export const CasesheetView: React.FC = (props) => {
       {isPageContentFull() &&
       ((followUp.length > 0 && followUp[0]) ||
         (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView getFollowUpData={getFollowUpData} />
+        <CaseSheetLastView getFollowUpData={getFollowUpData} signature={signature} />
       ) : null}
     </div>
   );
