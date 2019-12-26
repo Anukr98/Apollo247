@@ -1309,7 +1309,9 @@ export const ConsultTabs: React.FC = () => {
                 presenceEventObject={presenceEventObject}
               />
               <div>
-                {!isPdfPageOpen || isSecretary ? (
+                {!isPdfPageOpen ||
+                isSecretary ||
+                (params && params.tabValue && parseInt(params.tabValue, 10) === 1) ? (
                   <div>
                     <div className={classes.stickyConsultTabs}>
                       <Tabs
