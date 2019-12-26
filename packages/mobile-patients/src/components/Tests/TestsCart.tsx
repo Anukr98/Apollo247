@@ -800,7 +800,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </Text>
         )}
 
-        {slicedStoreList.map((item, index) => (
+        {slicedStoreList.map((item, index, array) => (
           <RadioSelectionItem
             key={item.CentreCode}
             title={`${item.CentreName}\n${item.Locality},${item.City},${item.State}`}
@@ -811,7 +811,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               setClinicId && setClinicId(item.CentreCode);
             }}
             containerStyle={{ marginTop: 16 }}
-            hideSeparator={index == slicedStoreList!.length - 1}
+            hideSeparator={index == array.length - 1}
           />
         ))}
         <View>
