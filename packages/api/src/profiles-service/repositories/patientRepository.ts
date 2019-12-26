@@ -526,6 +526,14 @@ export class PatientRepository extends Repository<Patient> {
       });
   }
 
+  updateProfiles(updateAttrs: Partial<Patient>[]) {
+    return this.save(updateAttrs).catch((savePatientError) => {
+      throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {
+        savePatientError,
+      });
+    });
+  }
+
   updateProfile(id: string, patientAttrs: Partial<Patient>) {
     return this.update(id, patientAttrs);
   }
