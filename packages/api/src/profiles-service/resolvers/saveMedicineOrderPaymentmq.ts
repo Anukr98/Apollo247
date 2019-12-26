@@ -85,6 +85,11 @@ const SaveMedicineOrderPaymentMq: Resolver<
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
+  let currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
+  if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
+    medicinePaymentMqInput.paymentDateTime = new Date();
+    currentStatus = MEDICINE_ORDER_STATUS.ORDER_INITIATED;
+  }
   if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     medicinePaymentMqInput.paymentDateTime = new Date();
   }
@@ -238,7 +243,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     orderPrescriptionUrlStr +
     '}}';*/
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS,
+    orderStatus: currentStatus,
     medicineOrders: orderDetails,
     statusDate: new Date(),
     statusMessage: 'order payment done successfully',
@@ -248,12 +253,12 @@ const SaveMedicineOrderPaymentMq: Resolver<
     orderDetails.id,
     orderDetails.orderAutoId,
     new Date(),
-    MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
+    currentStatus
   );
   errorCode = 0;
   errorMessage = '';
   paymentOrderId = savePaymentDetails.id;
-  orderStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
+  orderStatus = currentStatus;
 
   //medicine order in queue starts
   //const serviceBusConnectionString =

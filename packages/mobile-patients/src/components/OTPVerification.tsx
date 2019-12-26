@@ -356,14 +356,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 });
                 CommonBugFender('OTP_ENTERED_FAIL', error);
                 CommonLogEvent('OTP_ENTERED_FAIL', error);
-                if (
-                  error &&
-                  error.message ===
-                    'The sms code has expired. Please re-send the verification code to try again.'
-                ) {
-                  setshowSpinner(false);
-                  setErrorpopup(true);
-                }
+                // if (
+                //   error &&
+                //   error.message ===
+                //     'The sms code has expired. Please re-send the verification code to try again.'
+                // ) {
+                //   setshowSpinner(false);
+                //   setErrorpopup(true);
+                // }
                 setTimeout(() => {
                   if (isAuthChanged) {
                     _removeFromStore();

@@ -47,6 +47,7 @@ export enum SEARCH_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   QUOTE = 'QUOTE',
   PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
+  ORDER_INITIATED = 'ORDER_INITIATED',
   ORDER_PLACED = 'ORDER_PLACED',
   ORDER_VERIFIED = 'ORDER_VERIFIED',
   DELIVERED = 'DELIVERED',
@@ -477,7 +478,7 @@ export class PatientDeviceTokens extends BaseEntity {
 @Entity()
 export class Patient extends BaseEntity {
   @Column({ nullable: true })
-  appVersion: string;
+  androidVersion: string;
 
   @Column({ nullable: true, type: 'text' })
   allergies: string;
@@ -516,6 +517,9 @@ export class Patient extends BaseEntity {
 
   @Column()
   lastName: string;
+
+  @Column({ nullable: true })
+  iosVersion: string;
 
   @OneToMany((type) => PatientLifeStyle, (lifeStyle) => lifeStyle.patient)
   lifeStyle: PatientLifeStyle[];

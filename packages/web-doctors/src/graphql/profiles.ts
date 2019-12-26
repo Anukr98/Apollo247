@@ -685,6 +685,7 @@ export const GET_CASESHEET = gql`
           lastName
           salutation
           registrationNumber
+          signature
           specialty {
             createdDate
             id

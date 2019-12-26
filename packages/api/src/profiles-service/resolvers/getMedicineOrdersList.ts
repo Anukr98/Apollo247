@@ -69,7 +69,7 @@ export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrderPayments {
     id: ID!
     paymentType: MEDICINE_ORDER_PAYMENT_TYPE
-    amountPaid: Int
+    amountPaid: Float
     paymentRefId: String
     paymentStatus: String
     paymentDateTime: Date

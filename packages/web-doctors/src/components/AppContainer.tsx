@@ -58,8 +58,8 @@ const App: React.FC = () => {
           ) : isSecretary ? (
             <Redirect to={clientRoutes.secretaryDashboard()} />
           ) : (
-                  <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
-                )
+            <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
+          )
         }
       />
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
@@ -94,23 +94,23 @@ const App: React.FC = () => {
       />
     </div>
   ) : (
-      // TODO why are there `AuthedRoute`s inside of the "is not signed in" section?
-      <div className={classes.app}>
-        <Route exact path={clientRoutes.welcome()} component={Welcome} />
-        <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
-        <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
-        <AuthRouted
-          exact
-          path={clientRoutes.PatientLogDetailsPage(':appointmentId', ':consultscount')}
-          component={PatientLogDetailsPage}
-        />
-        <AuthRouted
-          exact
-          path={clientRoutes.ConsultTabs(':id', ':patientId', ':tabValue')}
-          component={ConsultTabs}
-        />
-      </div>
-    );
+    // TODO why are there `AuthedRoute`s inside of the "is not signed in" section?
+    <div className={classes.app}>
+      <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
+      <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
+      <AuthRouted
+        exact
+        path={clientRoutes.PatientLogDetailsPage(':appointmentId', ':consultscount')}
+        component={PatientLogDetailsPage}
+      />
+      <AuthRouted
+        exact
+        path={clientRoutes.ConsultTabs(':id', ':patientId', ':tabValue')}
+        component={ConsultTabs}
+      />
+    </div>
+  );
 };
 
 const useStyles = makeStyles((theme: Theme) => {
