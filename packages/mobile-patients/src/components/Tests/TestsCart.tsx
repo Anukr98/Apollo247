@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
-    padding: 16,
+    paddingTop: 16,
   },
   blueTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -278,16 +278,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setLoading!(false);
+          setAddresses && setAddresses(addressList!);
+        })
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -684,7 +678,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             />
           );
         })}
-        <View style={styles.rowSpaceBetweenStyle}>
+        <View style={[styles.rowSpaceBetweenStyle, { paddingBottom: 16 }]}>
           <Text
             style={styles.yellowTextStyle}
             onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
@@ -817,7 +811,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               setClinicId && setClinicId(item.CentreCode);
             }}
             containerStyle={{ marginTop: 16 }}
-            hideSeparator={index == clinicDetails!.length - 1}
+            hideSeparator={index == slicedStoreList!.length - 1}
           />
         ))}
         <View>
