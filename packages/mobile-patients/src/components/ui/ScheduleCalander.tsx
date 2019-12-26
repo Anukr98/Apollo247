@@ -184,7 +184,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+        const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
         setDiagnosticSlot &&
           setDiagnosticSlot({
             diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
@@ -196,12 +196,14 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             date: date.getTime(),
           });
 
-        var t = finalaray!.slotInfo!.map((item) => {
-          return {
-            label: (item!.slot || '').toString(),
-            time: `${item!.startTime} - ${item!.endTime}`,
-          };
-        });
+        const t = finalaray!
+          .slotInfo!.filter((item) => item!.status != 'booked')
+          .map((item) => {
+            return {
+              label: (item!.slot || '').toString(),
+              time: `${item!.startTime} - ${item!.endTime}`,
+            };
+          });
         setDropArray(t);
         props.setDropArray && props.setDropArray(t);
         if (selectedTime) {

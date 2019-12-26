@@ -42,6 +42,11 @@ export enum DEVICETYPE {
   IOS = "IOS",
 }
 
+export enum DiscountType {
+  AMOUNT = "AMOUNT",
+  PERCENT = "PERCENT",
+}
+
 export enum DoctorType {
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",

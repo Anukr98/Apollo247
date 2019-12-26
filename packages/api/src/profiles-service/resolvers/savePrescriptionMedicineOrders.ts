@@ -160,8 +160,8 @@ const SavePrescriptionMedicineOrder: Resolver<
         orderPrescriptionUrl.push(url);
       });
     }
-    let selShopId = '15288';
-    if (saveOrder.shopId != '' && saveOrder.shopId != null) {
+    let selShopId = '16001';
+    if (saveOrder.shopId != '' && saveOrder.shopId != null && saveOrder.shopId != '0') {
       selShopId = saveOrder.shopId;
     }
     let patientAge = 30;

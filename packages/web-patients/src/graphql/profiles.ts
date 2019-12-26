@@ -114,3 +114,20 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
     }
   }
 `;
+
+export const GET_COUPONS = gql`
+  query getCoupons {
+    getCoupons {
+      coupons {
+        id
+        code
+        description
+        discountType
+        discount
+        minimumOrderAmount
+        expirationDate
+        isActive
+      }
+    }
+  }
+`;
