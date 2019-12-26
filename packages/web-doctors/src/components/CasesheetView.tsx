@@ -182,7 +182,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const CasesheetView: React.FC = (props) => {
   const classes = useStyles();
-  const signature = 'https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png';
   const {
     patientDetails,
     height,
@@ -522,23 +521,21 @@ export const CasesheetView: React.FC = (props) => {
           )}
           {isPageContentFull() ? null : (
             <>
-              {signature && (
+              {createdDoctorProfile && createdDoctorProfile.signature && (
                 <>
                   <div className={classes.sectionHeader}>Prescribed by</div>
                   <div className={classes.followUpContent}>
-                    <img src={signature} />
+                    <img src={createdDoctorProfile.signature} />
                   </div>
-                  {createdDoctorProfile && (
-                    <div className={classes.signInformation}>
-                      <h3 className={classes.followUpContent}>
-                        {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                        <br />
-                        <span>{`${
-                          createdDoctorProfile.specialty.specialistSingularTerm
-                        } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
-                      </h3>
-                    </div>
-                  )}
+                  <div className={classes.signInformation}>
+                    <h3 className={classes.followUpContent}>
+                      {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                      <br />
+                      <span>{`${
+                        createdDoctorProfile.specialty.specialistSingularTerm
+                      } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
+                    </h3>
+                  </div>
                 </>
               )}
             </>
@@ -557,7 +554,7 @@ export const CasesheetView: React.FC = (props) => {
       {isPageContentFull() &&
       ((followUp.length > 0 && followUp[0]) ||
         (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView getFollowUpData={getFollowUpData} signature={signature} />
+        <CaseSheetLastView getFollowUpData={getFollowUpData} />
       ) : null}
     </div>
   );
