@@ -172,7 +172,7 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
               </div>
               {createdDoctorProfile && (
                 <div className={classes.signInformation}>
-                  <h3>
+                  <h3 className={classes.followUpContent}>
                     {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
                     <br />
                     <span>{`${
