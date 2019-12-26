@@ -567,7 +567,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     }
   };
 
-  const renderDoctorData = (doctorInfo: RxPdfData['doctorInfo']) => {
+  const renderDoctorData = async (doctorInfo: RxPdfData['doctorInfo']) => {
     if (doctorInfo) {
       if (doc.y > doc.page.height - 150) {
         pageBreak();
@@ -584,8 +584,44 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .moveDown(0.5);
 
       if (doctorInfo.signature) {
-        doc.image(doctorInfo.signature, margin + 15, doc.y, { height: 72, width: 200 });
-        doc.moveDown(0.5);
+        // const doctorSignature = (await fetch(doctorInfo.signature)).body;
+        // console.log('-----------', doctorSignature);
+        // doc.image(new Buffer(doctorSignature));
+        // const xhr = new XMLHttpRequest();
+        // xhr.responseType = 'arraybuffer';
+        // xhr.onload = function() {
+        //   doc.image(new Buffer(xhr.response));
+        // };
+        // xhr.open('GET', doctorInfo.signature, true);
+        // xhr.send();
+        /*let outside;
+
+        fetch(doctorInfo.signature)
+          .then((response) => response.blob())
+          .then((images) => {
+            // Then create a local URL for that image and print it
+            console.log('-----------', images);
+            const img = new Buffer(images, 'base64');
+
+            //outside = URL.createObjectURL(images);
+            //console.log('-----------', outside);
+          }); */
+        //const fileType = require('file-type');
+        /*const doctorSignature = await (await fetch(doctorInfo.signature)).blob();
+        console.log(doctorSignature);*/
+        /*const doctorSignature = await fetch(doctorInfo.signature, {
+          method: 'GET',
+        }).catch((error) => {
+          log(
+            'doctorServiceLogger',
+            'API_CALL_ERROR',
+            'getDoctorSignature()->CATCH_BLOCK',
+            '',
+            JSON.stringify(error)
+          );
+        }); */
+        //doc.image(doctorSignature, margin + 15, doc.y, { height: 72, width: 200 });
+        //doc.moveDown(0.5);
       }
 
       //Doctor Details
@@ -682,8 +718,9 @@ export const uploadRxPdf = async (
   pdfDoc.pipe(fs.createWriteStream(filePath));
   await delay(350);
 
-  const blob = await client.uploadFile({ name, filePath });
-  fs.unlink(filePath, (error) => console.log(error));
+  const blob = { name, filePath };
+  //const blob = await client.uploadFile({ name, filePath });
+  //fs.unlink(filePath, (error) => console.log(error));
   return blob;
 
   function delay(ms: number) {
