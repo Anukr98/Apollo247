@@ -330,6 +330,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View>{renderTestDetails()}</View>
           {renderTabsData()}
           {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
+          <View style={{ height: 100 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG style={styles.container}>
           <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
