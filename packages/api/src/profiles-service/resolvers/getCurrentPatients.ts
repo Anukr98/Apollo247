@@ -52,6 +52,7 @@ export const getCurrentPatientsTypeDefs = gql`
     athsToken: String
     relation: Relation
     uhid: String
+    appVersion: String
   }
 
   type LifeStyle {

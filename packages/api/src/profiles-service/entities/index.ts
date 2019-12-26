@@ -477,6 +477,9 @@ export class PatientDeviceTokens extends BaseEntity {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
+  @Column({ nullable: true })
+  appVersion: string;
+
   @Column({ nullable: true, type: 'text' })
   allergies: string;
 
