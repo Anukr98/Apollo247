@@ -480,6 +480,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setSendAnswers(1);
           } catch (error) {}
           break;
+        case 'drug':
+          if (item.v[0] === 'No') {
+            data.drugAllergies = 'No';
+            try {
+              const text = {
+                id: patientId,
+                message: 'Medicine Allergy:\n' + 'No',
+                messageDate: new Date(),
+              };
+              setMessageText('');
+              !isSendAnswers[2] && sendAnswerMessage(text);
+              setSendAnswers(2);
+            } catch (error) {}
+          }
+          break;
         case 'drugAllergies':
           data.drugAllergies = item.v[0] || 'No';
           try {
@@ -492,6 +507,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             !isSendAnswers[2] && sendAnswerMessage(text);
             setSendAnswers(2);
           } catch (error) {}
+          break;
+        case 'dite':
+          if (item.v[0] === 'No') {
+            data.dietAllergies = 'No';
+            try {
+              const text = {
+                id: patientId,
+                message: 'Food Allergy:\n' + data.dietAllergies,
+                messageDate: new Date(),
+              };
+              setMessageText('');
+              !isSendAnswers[3] && sendAnswerMessage(text);
+              setSendAnswers(3);
+            } catch (error) {}
+          }
           break;
         case 'dietAllergies':
           data.dietAllergies = item.v[0] || 'No';
@@ -1187,28 +1217,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getAppointmentDataDetails(client, appointmentData.id)
       .then(({ data }: any) => {
         try {
-           console.log(data, 'data APIForUpdateAppointmentData');
-           const appointmentSeniorDoctorStarted =
-             data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
-           console.log(
-             appointmentSeniorDoctorStarted,
-             data.data.getAppointmentData.appointmentsHistory[0],
-             'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
-           );
+          console.log(data, 'data APIForUpdateAppointmentData');
+          const appointmentSeniorDoctorStarted =
+            data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
+          console.log(
+            appointmentSeniorDoctorStarted,
+            data.data.getAppointmentData.appointmentsHistory[0],
+            'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+          );
 
-           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
+          appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
 
-           if (toStopTimer) {
-             if (appointmentSeniorDoctorStarted) {
-               stopCallAbondmentTimer();
-               abondmentStarted = false;
-             }
-           } else {
-             callAbondmentMethod(appointmentSeniorDoctorStarted);
-           }
-        } catch (error) {
-        }
-       
+          if (toStopTimer) {
+            if (appointmentSeniorDoctorStarted) {
+              stopCallAbondmentTimer();
+              abondmentStarted = false;
+            }
+          } else {
+            callAbondmentMethod(appointmentSeniorDoctorStarted);
+          }
+        } catch (error) {}
       })
       .catch((e: string) => {
         abondmentStarted = false;
@@ -4916,7 +4944,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           gallery: 'CHOOSE FROM\nGALLERY',
           prescription: 'UPLOAD\nFROM PHR',
         }}
-        hideTAndCs={false}
+        hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
         onResponse={(selectedType, response) => {
           console.log('res', response);

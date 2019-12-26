@@ -322,6 +322,17 @@ export const CasesheetView: React.FC = (props) => {
         );
       }
     );
+  const generateSymptomsHtml = (symptom: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms) => {
+    {
+      `Since: ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`;
+    }
+    const symptomArray = [];
+    symptom && symptom.since && symptomArray.push(`Since: ${symptom.since}`);
+    symptom && symptom.howOften && symptomArray.push(`How often: ${symptom.howOften}`);
+    symptom && symptom.severity && symptomArray.push(`Severity: ${symptom.severity}`);
+    symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
+    return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
+  };
   return (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
@@ -433,9 +444,7 @@ export const CasesheetView: React.FC = (props) => {
                 {symptoms.map((symptom) => (
                   <div className={classes.complaintsInfoRow}>
                     <div className={classes.complaintsLabel}>{symptom.symptom}</div>
-                    <div className={classes.labelContent}>
-                      {`Since: ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
-                    </div>
+                    <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
                   </div>
                 ))}
               </div>

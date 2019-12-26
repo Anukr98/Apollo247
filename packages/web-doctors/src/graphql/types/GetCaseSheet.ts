@@ -144,6 +144,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms {
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
@@ -193,6 +194,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription {

@@ -581,13 +581,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
           setPinCode && setPinCode(selectedAddress.zipcode!);
           aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
-          var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-          var t = finalaray!.slotInfo!.map((item) => {
-            return {
-              label: (item!.slot || '').toString(),
-              time: `${item!.startTime} - ${item!.endTime}`,
-            };
-          });
+          const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+          const t = finalaray!
+            .slotInfo!.filter((item) => item!.status != 'booked')
+            .map((item) => {
+              return {
+                label: (item!.slot || '').toString(),
+                time: `${item!.startTime} - ${item!.endTime}`,
+              };
+            });
           aphConsole.log(t, 'finalaray');
           setDiagnosticSlot &&
             setDiagnosticSlot({

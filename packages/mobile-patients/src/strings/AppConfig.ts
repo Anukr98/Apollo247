@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const PharmaApiConfig = {
   dev: {
@@ -84,7 +84,7 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   iOS_Version: '1.5',
-  Android_Version: '1.20',
+  Android_Version: '1.16',
 };
 
 // QA
@@ -109,7 +109,7 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   iOS_Version: '1.5',
-  Android_Version: '1.20',
+  Android_Version: '1.16',
 };
 
 //Production
@@ -134,7 +134,7 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   iOS_Version: '1.5',
-  Android_Version: '1.20',
+  Android_Version: '1.16',
 };
 
 const Configuration =

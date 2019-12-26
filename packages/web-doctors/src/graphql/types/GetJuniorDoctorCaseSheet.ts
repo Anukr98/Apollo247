@@ -47,6 +47,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis {
@@ -160,6 +161,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointme
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_medicinePrescription {

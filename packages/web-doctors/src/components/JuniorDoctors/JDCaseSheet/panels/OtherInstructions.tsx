@@ -206,6 +206,7 @@ export const OtherInstructions: React.FC = () => {
       {showAddInputText && (
         <div className={classes.inputRoot}>
           <AphTextField
+            autoFocus
             fullWidth
             multiline
             placeholder="Enter instruction here.."
