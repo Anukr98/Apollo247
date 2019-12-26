@@ -477,6 +477,9 @@ export class PatientDeviceTokens extends BaseEntity {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
+  @Column({ nullable: true })
+  androidVersion: string;
+
   @Column({ nullable: true, type: 'text' })
   allergies: string;
 
@@ -514,6 +517,9 @@ export class Patient extends BaseEntity {
 
   @Column()
   lastName: string;
+
+  @Column({ nullable: true })
+  iosVersion: string;
 
   @OneToMany((type) => PatientLifeStyle, (lifeStyle) => lifeStyle.patient)
   lifeStyle: PatientLifeStyle[];
