@@ -27,6 +27,7 @@ import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
+  getDeliveryTime,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -45,6 +46,8 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { colors } from '../../theme/colors';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -61,7 +64,8 @@ const styles = StyleSheet.create({
   },
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
-    padding: 16,
+    paddingTop: 16,
+    paddingBottom: 7,
   },
   blueTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -80,6 +84,24 @@ const styles = StyleSheet.create({
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  deliveryContainerStyle: {
+    backgroundColor: colors.CARD_BG,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 11.5,
+    marginBottom: 16,
+    borderRadius: 5,
+  },
+  deliveryStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
+  },
+  deliveryTimeStyle: {
+    ...theme.fonts.IBMPlexSansBold(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
   },
 });
 
@@ -123,6 +145,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { showAphAlert, setLoading } = useUIElements();
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+  const [deliveryTime, setdeliveryTime] = useState<string>('');
+  const [deliveryError, setdeliveryError] = useState<string>('');
+  const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const { locationDetails } = useAppCommonData();
 
   useEffect(() => {
@@ -217,6 +242,47 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   useEffect(() => {
     onFinishUpload();
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
+
+  useEffect(() => {
+    if (deliveryAddressId && cartItems.length > 0) {
+      setdeliveryTime('...');
+      setshowDeliverySpinner(true);
+      const lookUp = cartItems.map((item) => {
+        return { sku: item.id, qty: item.quantity };
+      });
+      getDeliveryTime({
+        postalcode: pinCode,
+        ordertype: 'pharma',
+        lookup: lookUp,
+      })
+        .then((res) => {
+          setdeliveryTime('');
+          try {
+            console.log('resresres', res);
+            if (res && res.data) {
+              if (
+                typeof res.data === 'object' &&
+                Array.isArray(res.data.tat) &&
+                res.data.tat.length
+              ) {
+                setdeliveryTime(res.data.tat[0].deliverydate);
+              } else if (typeof res.data === 'string') {
+                setdeliveryError(res.data);
+              } else if (typeof res.data.errorMSG === 'string') {
+                setdeliveryError(res.data.errorMSG);
+              }
+            }
+          } catch (error) {
+            console.log(error);
+          }
+          setshowDeliverySpinner(false);
+        })
+        .catch((err) => {
+          setdeliveryTime('');
+          setshowDeliverySpinner(false);
+        });
+    }
+  }, [deliveryAddressId, cartItems]);
 
   const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
     if (!(unit < 1)) {
@@ -434,6 +500,23 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             )}
           </View>
         </View>
+        {deliveryTime || deliveryError ? (
+          <View>
+            <View style={styles.separatorStyle} />
+            <View style={styles.deliveryContainerStyle}>
+              {showDeliverySpinner ? (
+                <ActivityIndicator animating={true} size={'small'} color="green" />
+              ) : (
+                <View style={styles.rowSpaceBetweenStyle}>
+                  <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
+                  <Text style={styles.deliveryTimeStyle}>{deliveryTime || deliveryError}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        ) : (
+          <View style={{ height: 9 }} />
+        )}
       </View>
     );
   };
