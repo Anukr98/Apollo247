@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { Patient } from 'profiles-service/entities';
+import { Patient, DEVICE_TYPE } from 'profiles-service/entities';
 import fetch from 'node-fetch';
 import {
   PrismGetAuthTokenResponse,
@@ -52,7 +52,6 @@ export const getCurrentPatientsTypeDefs = gql`
     athsToken: String
     relation: Relation
     uhid: String
-    appVersion: String
   }
 
   type LifeStyle {
@@ -81,7 +80,8 @@ export const getCurrentPatientsTypeDefs = gql`
   }
 
   extend type Query {
-    getCurrentPatients(appVersion: String): GetCurrentPatientsResult
+    getCurrentPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
+    getLoginPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
   }
 `;
 
@@ -91,7 +91,7 @@ type GetCurrentPatientsResult = {
 
 const getCurrentPatients: Resolver<
   null,
-  { appVersion: string },
+  { appVersion: string; deviceType: DEVICE_TYPE },
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
@@ -241,9 +241,191 @@ const getCurrentPatients: Resolver<
   });*/
   const patients = await patientRepo.findByMobileNumber(mobileNumber);
 
-  if (args.appVersion) {
+  if (args.appVersion && args.deviceType) {
     const versionUpdateRecords = patients.map((patient) => {
-      return { id: patient.id, appVersion: args.appVersion };
+      return args.deviceType === DEVICE_TYPE.ANDROID
+        ? { id: patient.id, androidVersion: args.appVersion }
+        : { id: patient.id, iosVersion: args.appVersion };
+    });
+    console.log('verionUpdateRecords =>', versionUpdateRecords);
+    log(
+      'profileServiceLogger',
+      'DEBUG_LOG',
+      'getCurrentPatients()->updateAppVersion',
+      JSON.stringify(versionUpdateRecords),
+      ''
+    );
+    const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
+    console.log('updatePatientProfiles', updatedProfiles);
+    log(
+      'profileServiceLogger',
+      'DEBUG_LOG',
+      'getCurrentPatients()->updateAppVersion',
+      JSON.stringify(updatedProfiles),
+      ''
+    );
+  }
+
+  return { patients };
+};
+
+const getLoginPatients: Resolver<
+  null,
+  { appVersion: string; deviceType: DEVICE_TYPE },
+  ProfilesServiceContext,
+  GetCurrentPatientsResult
+> = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
+  let isPrismWorking = 1;
+  const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
+  const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
+  if (prismUrl == '') {
+    //throw new AphError(AphErrorMessages.INVALID_PRISM_URL, undefined, {});
+    isPrismWorking = 0;
+  }
+  const prismBaseUrl = prismUrl + '/data';
+  const prismHeaders = {
+    method: 'get',
+    headers: { Host: prismHost },
+    timeOut: ApiConstants.PRISM_TIMEOUT,
+  };
+
+  const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+    'getCurrentPatients()->API_CALL_STARTING',
+    '',
+    ''
+  );
+
+  const prismAuthToken = await fetch(apiUrl, prismHeaders)
+    .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
+    .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
+      log(
+        'profileServiceLogger',
+        'API_CALL_ERROR',
+        'getCurrentPatients()->CATCH_BLOCK',
+        '',
+        JSON.stringify(prismGetAuthTokenError)
+      );
+      // throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
+      //   prismGetAuthTokenError,
+      // });
+      isPrismWorking = 0;
+    });
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'getCurrentPatients()->API_CALL_RESPONSE',
+    JSON.stringify(prismAuthToken),
+    ''
+  );
+  console.log(prismAuthToken, 'prismAuthToken');
+
+  let uhids;
+  if (prismAuthToken != null) {
+    const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${getUserApiUrl}`,
+      'getCurrentPatients()->prismGetUsersApiCall->API_CALL_STARTING',
+      '',
+      ''
+    );
+
+    uhids = await fetch(getUserApiUrl, prismHeaders)
+      .then((res) => res.json() as Promise<PrismGetUsersResponse>)
+      .catch((prismGetUsersError: PrismGetUsersError) => {
+        log(
+          'profileServiceLogger',
+          'API_CALL_ERROR',
+          'getCurrentPatients()->prismGetUsersApiCall->CATCH_BLOCK',
+          '',
+          JSON.stringify(prismGetUsersError)
+        );
+        // throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
+        //   prismGetUsersError,
+        // });
+        isPrismWorking = 0;
+      });
+  }
+
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
+    JSON.stringify(uhids),
+    ''
+  );
+
+  console.log(uhids, 'uhid', isPrismWorking);
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const findOrCreatePatient = (
+    findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
+    createOptions: Partial<Patient>
+  ): Promise<Patient> => {
+    return Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber },
+    }).then((existingPatient) => {
+      return existingPatient || Patient.create(createOptions).save();
+    });
+  };
+  let patientPromises: Object[] = [];
+  if (uhids != null && uhids.response != null) {
+    isPrismWorking = 1;
+    //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
+    patientPromises = uhids.response!.signUpUserData.map((data) => {
+      return findOrCreatePatient(
+        { uhid: data.UHID, mobileNumber },
+        {
+          firebaseUid,
+          firstName: data.userName,
+          lastName: '',
+          gender: undefined,
+          mobileNumber,
+          uhid: data.UHID,
+        }
+      );
+    });
+  } else {
+    isPrismWorking = 0;
+  }
+  const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
+  if (isPrismWorking == 0) {
+    if (checkPatients == null || checkPatients.length == 0) {
+      patientPromises = [
+        findOrCreatePatient(
+          { uhid: '', mobileNumber },
+          {
+            firebaseUid,
+            firstName: '',
+            lastName: '',
+            gender: undefined,
+            mobileNumber,
+            uhid: '',
+          }
+        ),
+      ];
+    }
+  }
+
+  const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
+  });
+  console.log(updatePatients);
+  /*
+  checkPatients.map(async (patient) => {
+    if ((patient.uhid == '' || patient.uhid == null) && patient.firstName.trim() != '') {
+      await patientRepo.createNewUhid(patient.id);
+    }
+  });*/
+  const patients = await patientRepo.findByMobileNumber(mobileNumber);
+
+  if (args.appVersion && args.deviceType) {
+    const versionUpdateRecords = patients.map((patient) => {
+      return args.deviceType === DEVICE_TYPE.ANDROID
+        ? { id: patient.id, androidVersion: args.appVersion }
+        : { id: patient.id, iosVersion: args.appVersion };
     });
     console.log('verionUpdateRecords =>', versionUpdateRecords);
     log(
@@ -278,5 +460,6 @@ export const getCurrentPatientsResolvers = {
   },
   Query: {
     getCurrentPatients,
+    getLoginPatients,
   },
 };
