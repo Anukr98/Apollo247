@@ -81,7 +81,7 @@ export const getCurrentPatientsTypeDefs = gql`
   }
 
   extend type Query {
-    getCurrentPatients: GetCurrentPatientsResult
+    getCurrentPatients(appVersion: String): GetCurrentPatientsResult
   }
 `;
 
@@ -91,7 +91,7 @@ type GetCurrentPatientsResult = {
 
 const getCurrentPatients: Resolver<
   null,
-  {},
+  { appVersion: string },
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
@@ -240,6 +240,30 @@ const getCurrentPatients: Resolver<
     }
   });*/
   const patients = await patientRepo.findByMobileNumber(mobileNumber);
+
+  if (args.appVersion) {
+    const versionUpdateRecords = patients.map((patient) => {
+      return { id: patient.id, appVersion: args.appVersion };
+    });
+    console.log('verionUpdateRecords =>', versionUpdateRecords);
+    log(
+      'profileServiceLogger',
+      'DEBUG_LOG',
+      'getCurrentPatients()->updateAppVersion',
+      JSON.stringify(versionUpdateRecords),
+      ''
+    );
+    const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
+    console.log('updatePatientProfiles', updatedProfiles);
+    log(
+      'profileServiceLogger',
+      'DEBUG_LOG',
+      'getCurrentPatients()->updateAppVersion',
+      JSON.stringify(updatedProfiles),
+      ''
+    );
+  }
+
   return { patients };
 };
 
