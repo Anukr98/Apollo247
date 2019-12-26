@@ -10,6 +10,7 @@ import _toLower from 'lodash/toLower';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_CASESHEET } from 'graphql/profiles';
 import { isEmpty, trim } from 'lodash';
+import { CircularProgress } from '@material-ui/core';
 
 import {
   GetCaseSheet,
@@ -33,6 +34,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 'bold',
       color: '#02475b',
+    },
+    loader: {
+      left: '50%',
+      top: 60,
+      position: 'relative',
     },
     prescriptionPreview: {
       backgroundColor: '#fff',
@@ -179,8 +185,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
-export const CasesheetView: React.FC = (props) => {
+interface savingProps {
+  saving: boolean;
+}
+export const CasesheetView: React.FC<savingProps> = (props) => {
   const classes = useStyles();
   const {
     patientDetails,
@@ -257,7 +265,7 @@ export const CasesheetView: React.FC = (props) => {
       .finally(() => {
         setLoader(false);
       });
-  }, []);
+  }, [props.saving]);
 
   const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
@@ -347,7 +355,9 @@ export const CasesheetView: React.FC = (props) => {
     symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
-  return (
+  return loader ? (
+    <CircularProgress className={classes.loader} />
+  ) : (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
       <div className={classes.prescriptionPreview}>

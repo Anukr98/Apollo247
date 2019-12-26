@@ -1087,6 +1087,8 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        console.log('savinggg.....');
+
         if (_data && _data!.data!.modifyCaseSheet && _data!.data!.modifyCaseSheet!.blobName) {
           const url = storageClient.getBlobUrl(_data!.data!.modifyCaseSheet!.blobName);
           setPrescriptionPdf(url);
@@ -1185,6 +1187,13 @@ export const ConsultTabs: React.FC = () => {
         <div>
           <CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div>
         </div>
+      )}
+
+      {saving && (
+        <span>
+          <CircularProgress className={classes.loading} />
+          <div className={classes.fadedBg}></div>
+        </span>
       )}
 
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
@@ -1358,7 +1367,7 @@ export const ConsultTabs: React.FC = () => {
                   </div>
                 ) : (
                   <div>
-                    <CasesheetView />
+                    <CasesheetView saving={saving} />
                   </div>
                 )}
               </div>
