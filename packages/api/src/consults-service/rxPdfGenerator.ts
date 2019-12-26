@@ -45,10 +45,16 @@ export const convertCaseSheetToRxPdfData = async (
       const ingredients = [] as string[];
       const dosageTimingCount =
         csRx.medicineTimings !== undefined ? csRx.medicineTimings.length : 0;
-      const medicineDosage =
+      let medicineDosage =
         dosageTimingCount == 0
           ? csRx.medicineDosage
           : Number(csRx.medicineDosage) * dosageTimingCount;
+
+      const medicineToBeTaken =
+        csRx.medicineToBeTaken !== undefined ? csRx.medicineToBeTaken.length : 0;
+      medicineDosage =
+        medicineToBeTaken == 0 ? medicineDosage : Number(medicineDosage) * medicineToBeTaken;
+
       const timings =
         csRx.medicineTimings !== undefined
           ? '(' + csRx.medicineTimings.map(_capitalize).join(', ') + ')'
@@ -557,6 +563,48 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(`${followUpData}`, margin + 15)
+        .moveDown(0.3);
+    }
+  };
+
+  const renderDoctorData = (doctorInfo: RxPdfData['doctorInfo']) => {
+    if (doctorInfo) {
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
+      drawHorizontalDivider(doc.y);
+      doc.moveDown(0.5);
+
+      doc
+        .opacity(0.6)
+        .fontSize(12)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#000000')
+        .text('Prescribed by', margin + 15)
+        .moveDown(0.5);
+
+      if (doctorInfo.signature) {
+        doc.image(doctorInfo.signature, margin + 15, doc.y, { height: 72, width: 200 });
+        doc.moveDown(0.5);
+      }
+
+      //Doctor Details
+      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+      const specialty = doctorInfo.specialty;
+      const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
+
+      doc
+        .opacity(1)
+        .fontSize(12)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(nameLine, margin + 15);
+      doc
+
+        .fontSize(10)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(`${specialty} | ${registrationLine}`, margin + 15)
         .moveDown(0.5);
     }
   };
@@ -601,6 +649,11 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   if (!_isEmpty(rxPdfData.followUpDetails)) {
     renderFollowUp(rxPdfData.followUpDetails);
+    doc.moveDown(1.5);
+  }
+
+  if (!_isEmpty(rxPdfData.doctorInfo)) {
+    renderDoctorData(rxPdfData.doctorInfo);
     doc.moveDown(1.5);
   }
 
