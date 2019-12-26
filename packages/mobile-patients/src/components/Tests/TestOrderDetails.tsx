@@ -4,7 +4,7 @@ import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOr
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -12,39 +12,22 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-  SAVE_ORDER_CANCEL_STATUS,
   GET_DIAGNOSTIC_ORDER_LIST,
+  GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
-import {
-  saveOrderCancelStatus,
-  saveOrderCancelStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/saveOrderCancelStatus';
-import {
-  aphConsole,
-  g,
-  handleGraphQlError,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import {
-  Alert,
-  BackHandler,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import {
   NavigationActions,
@@ -55,7 +38,8 @@ import {
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
-} from '../../graphql/types/getDiagnosticOrdersList';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -83,12 +67,13 @@ const styles = StyleSheet.create({
 });
 
 const cancelOptions: [string, string][] = [
-  ['MCCR0036', 'Placed order by mistake'],
-  ['MCCR0040', 'Higher discounts available on other app'],
-  ['MCCR0046', 'Delay in delivery'],
-  ['MCCR0047', 'Delay in order confirmation'],
-  ['MCCR0048', 'Do not require medicines any longer'],
-  ['MCCR0049', 'Already purchased'],
+  ['1', 'Booked from else where'],
+  ['2', 'Pick up person did not turn up'],
+  ['3', 'Not available at selected time'],
+  ['4', 'Pick up person was late'],
+  ['5', 'Do not require medicines any longer'],
+  ['6', 'Unhappy with the discounts'],
+  ['7', 'Others'],
 ];
 
 export interface TestOrderDetailsProps extends NavigationScreenProps {
@@ -263,10 +248,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 */
   const renderOrderHistory = () => {
-    // const isDelivered = orderStatusList.find(
-    //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-    // );
-
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -457,90 +438,37 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const onPressConfirmCancelOrder = () => {
-    setShowSpinner(true);
-    client
-      .mutate<saveOrderCancelStatus, saveOrderCancelStatusVariables>({
-        mutation: SAVE_ORDER_CANCEL_STATUS,
-        variables: {
-          orderCancelInput: {
-            orderNo: orderId,
-            remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0]!,
-          },
-        },
-      })
-      .then(({ data }) => {
-        aphConsole.log({
-          s: data!.saveOrderCancelStatus!,
-        });
-        const setInitialSate = () => {
-          setShowSpinner(false);
-          setCancelVisible(false);
-          setComment('');
-          setSelectedReason('');
-          setMenuOpen(false);
-        };
-        const requestStatus = g(data, 'saveOrderCancelStatus', 'requestStatus');
-        if (requestStatus == 'true') {
-          refetch()
-            .then(() => {
-              setInitialSate();
-            })
-            .catch(() => {
-              setInitialSate();
-            });
-          refetchOrders().then((data: any) => {
-            const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-            setOrders(_orders);
-          });
-        } else {
-          Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
-        }
-      })
-      .catch((e) => {
-        setShowSpinner(false);
-        handleGraphQlError(e);
-      });
+    setCancelVisible(false);
+    setSelectedReason('');
   };
 
-  /*
-  const onPressCancelOrder = () => {
-    setMenuOpen(false);
-    const isDelivered = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-    );
-    const isCancelled = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
-    );
-
-    if (isDelivered) {
-      Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
-    } else if (isCancelled) {
-      Alert.alert('Alert', 'Order is already cancelled.');
-    } else {
-      setCancelVisible(true);
-    }
-  };
-*/
-  const [isMenuOpen, setMenuOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
-  /*
-  const renderMenuOptions = () => {
-    if (isMenuOpen) {
-      return (
-        <View style={{ position: 'absolute', top: 0, right: 0 }}>
-          <DropDown
-            options={[
-              {
-                optionText: 'Cancel Order',
-                onPress: () => onPressCancelOrder(),
-              },
-            ]}
-          />
-        </View>
-      );
-    }
+
+  const renderMoreMenu = () => {
+    return (
+      <MaterialMenu
+        options={['Cancel Order'].map((item) => ({
+          key: item,
+          value: item,
+        }))}
+        menuContainerStyle={{
+          alignItems: 'center',
+          marginTop: 24,
+        }}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 0 }}
+        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
+        onPress={(item) => {
+          if (item.value == 'Cancel Order') {
+            setCancelVisible(true);
+          }
+        }}
+      >
+        <More />
+      </MaterialMenu>
+    );
   };
-*/
+
   return (
     <View style={{ flex: 1 }}>
       {renderReturnOrderOverlay()}
@@ -551,21 +479,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             title={`ORDER #${orderDetails.displayId}`}
             titleStyle={{ marginHorizontal: 10 }}
             container={{ borderBottomWidth: 0 }}
-            // rightComponent={
-            //   <TouchableOpacity
-            //     activeOpacity={1}
-            //     onPress={() => {
-            //       setMenuOpen(true);
-            //     }}
-            //   >
-            //     <More />
-            //   </TouchableOpacity>
-            // }
+            rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
           />
-          {/* {renderMenuOptions()} */}
         </View>
 
         <TabsComponent
