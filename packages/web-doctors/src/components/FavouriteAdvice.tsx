@@ -436,6 +436,7 @@ export const FavouriteAdvice: React.FC = () => {
                     </AphDialogTitle>
                     <div className={classes.numberTablets}>
                       <AphTextField
+                        autoFocus
                         fullWidth
                         placeholder="Type your favourite advice"
                         className={classes.textFieldColor}

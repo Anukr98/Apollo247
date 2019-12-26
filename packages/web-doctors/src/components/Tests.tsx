@@ -44,6 +44,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       fullWidth
       InputProps={{
         inputRef: (node) => {
