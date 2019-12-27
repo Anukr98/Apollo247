@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, Avatar } from '@material-ui/core';
+import { Theme, Typography, Tabs, Tab, Avatar, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
 import Scrollbars from 'react-custom-scrollbars';
+import { useMutation } from 'react-apollo-hooks';
+import { GET_PAST_CONSULTS_PRESCRIPTIONS } from 'graphql/profiles';
+import {
+  getPatientPastConsultsAndPrescriptions,
+  getPatientPastConsultsAndPrescriptionsVariables,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription,
+} from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -184,9 +192,46 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const EPrescriptionCard: React.FC = (props) => {
+type EPrescriptionCardProps = {
+  setIsEPrescriptionOpen?: (isEPrescriptionOpen: boolean) => void;
+  setPhrPrescriptionData?: (phrPrescriptionData: Prescription[]) => void;
+};
+
+export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
+  const { currentPatient } = useAllCurrentPatients();
+  const [pastPrescriptions, setPastPrescriptions] = useState<Prescription[] | null>(null);
+
+  const patientPastConsultAndPrescriptionMutation = useMutation<
+    getPatientPastConsultsAndPrescriptions,
+    getPatientPastConsultsAndPrescriptionsVariables
+  >(GET_PAST_CONSULTS_PRESCRIPTIONS, {
+    variables: {
+      consultsAndOrdersInput: {
+        patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+      },
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+  useEffect(() => {
+    if (!pastPrescriptions) {
+      patientPastConsultAndPrescriptionMutation()
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getPatientPastConsultsAndPrescriptions &&
+            data.getPatientPastConsultsAndPrescriptions.consults
+          ) {
+            setPastPrescriptions(data.getPatientPastConsultsAndPrescriptions.consults);
+          }
+        })
+        .catch((e) => console.log(e));
+    }
+  }, [pastPrescriptions]);
+
+  const selectedPrescriptions: Prescription[] = [];
 
   return (
     <div className={classes.root}>
@@ -220,84 +265,52 @@ export const EPrescriptionCard: React.FC = (props) => {
         {tabValue === 0 && (
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(45vh)'}>
-              <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.checkbox} color="primary" />
-                <div className={classes.followUpWrapper}>
-                  <div className={classes.followUpDetails}>
-                    <div className={classes.imgThumb}>
-                      <img src={require('images/ic_prescription_blue.svg')} alt="" />
-                    </div>
-                    <div className={classes.followUpText}>Follow-up to 20 Apr 2019</div>
-                  </div>
-                  <div className={classes.fileInfo}>
-                    <Avatar
-                      className={classes.doctorImage}
-                      src={require('images/doctordp_01.png')}
+              {pastPrescriptions && pastPrescriptions.length > 0 ? (
+                pastPrescriptions.map((pastPrescription) => (
+                  <div className={classes.prescriptionGroup}>
+                    <AphCheckbox
+                      onChange={() => selectedPrescriptions.push(pastPrescription)}
+                      className={classes.checkbox}
+                      color="primary"
                     />
-                    <div>
-                      <div className={classes.doctorName}>Dr. Simran Rai</div>
-                      <div className={classes.patientHistory}>
-                        <span>Cold,</span>
-                        <span>Cough,</span>
-                        <span>Fever,</span>
-                        <span>Nausea</span>
+                    <div className={classes.followUpWrapper}>
+                      <div className={classes.followUpDetails}>
+                        <div className={classes.imgThumb}>
+                          <img src={require('images/ic_prescription_blue.svg')} alt="" />
+                        </div>
+                        <div className={classes.followUpText}>Follow-up to 20 Apr 2019</div>
+                      </div>
+                      <div className={classes.fileInfo}>
+                        <Avatar
+                          className={classes.doctorImage}
+                          src={require('images/doctordp_01.png')}
+                        />
+                        <div>
+                          <div className={classes.doctorName}>
+                            Dr.{' '}
+                            {pastPrescription.doctorInfo && pastPrescription.doctorInfo.firstName}
+                          </div>
+                          <div className={classes.patientHistory}>
+                            {pastPrescription.caseSheet &&
+                              pastPrescription.caseSheet.length > 0 &&
+                              pastPrescription.caseSheet.map((caseSheet) =>
+                                caseSheet && caseSheet.symptoms
+                                  ? caseSheet.symptoms.map(
+                                      (symptomData) =>
+                                        symptomData &&
+                                        symptomData.symptom && <span>{symptomData.symptom} </span>
+                                    )
+                                  : null
+                              )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.checkbox} color="primary" />
-                <div className={classes.followUpWrapper}>
-                  <div className={classes.followUpDetails}>
-                    <div className={classes.imgThumb}>
-                      <img src={require('images/ic_prescription_blue.svg')} alt="" />
-                    </div>
-                    <div className={classes.followUpText}>Follow-up to 20 Apr 2019</div>
-                  </div>
-                  <div className={classes.fileInfo}>
-                    <Avatar
-                      className={classes.doctorImage}
-                      src={require('images/doctordp_01.png')}
-                    />
-                    <div>
-                      <div className={classes.doctorName}>Dr. Simran Rai</div>
-                      <div className={classes.patientHistory}>
-                        <span>Cold,</span>
-                        <span>Cough,</span>
-                        <span>Fever,</span>
-                        <span>Nausea</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.checkbox} color="primary" />
-                <div className={classes.followUpWrapper}>
-                  <div className={classes.followUpDetails}>
-                    <div className={classes.imgThumb}>
-                      <img src={require('images/ic_prescription_blue.svg')} alt="" />
-                    </div>
-                    <div className={classes.followUpText}>Follow-up to 20 Apr 2019</div>
-                  </div>
-                  <div className={classes.fileInfo}>
-                    <Avatar
-                      className={classes.doctorImage}
-                      src={require('images/doctordp_01.png')}
-                    />
-                    <div>
-                      <div className={classes.doctorName}>Dr. Simran Rai</div>
-                      <div className={classes.patientHistory}>
-                        <span>Cold,</span>
-                        <span>Cough,</span>
-                        <span>Fever,</span>
-                        <span>Nausea</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                ))
+              ) : (
+                <CircularProgress />
+              )}
             </Scrollbars>
           </TabContainer>
         )}
@@ -323,7 +336,7 @@ export const EPrescriptionCard: React.FC = (props) => {
                     <div className={classes.followUpText}>12th August 2019</div>
                   </div>
                   <div>
-                  <div className={classes.cbcText}>CBC</div>
+                    <div className={classes.cbcText}>CBC</div>
                     <div className={classes.typeOfClinic}>Apollo Sugar Clinic, Hyderabad</div>
                   </div>
                 </div>
@@ -344,7 +357,14 @@ export const EPrescriptionCard: React.FC = (props) => {
           </TabContainer>
         )}
         <div className={classes.uploadButtonWrapper}>
-          <AphButton className={classes.uploadPrescription} color="primary">
+          <AphButton
+            onClick={() => {
+              props.setPhrPrescriptionData && props.setPhrPrescriptionData(selectedPrescriptions);
+              props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
+            }}
+            className={classes.uploadPrescription}
+            color="primary"
+          >
             Upload
           </AphButton>
         </div>
