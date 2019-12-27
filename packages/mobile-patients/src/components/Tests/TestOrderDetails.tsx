@@ -476,7 +476,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <View style={styles.headerShadowContainer}>
           <Header
             leftIcon="backArrow"
-            title={`ORDER #${orderDetails.displayId}`}
+            title={`ORDER #${orderDetails.displayId || ''}`}
             titleStyle={{ marginHorizontal: 10 }}
             container={{ borderBottomWidth: 0 }}
             rightComponent={renderMoreMenu()}

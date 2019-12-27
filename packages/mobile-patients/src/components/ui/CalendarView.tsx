@@ -1,5 +1,5 @@
 import moment from 'moment';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Calendar, DateObject, DayComponentProps } from 'react-native-calendars';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -36,7 +36,11 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
   const calendarRef = useRef<CalendarRefType | null>(null);
   const weekViewRef = useRef<{ getPreviousWeek: () => void; getNextWeek: () => void } | null>(null);
   const [calendarDate, setCalendarDate] = useState<Date>(props.date || new Date());
-
+  useEffect(() => {
+    if (props.date) {
+      setCalendarDate(props.date);
+    }
+  }, [props.date]);
   const renderCalendarMothYearAndControls = () => {
     return (
       <View

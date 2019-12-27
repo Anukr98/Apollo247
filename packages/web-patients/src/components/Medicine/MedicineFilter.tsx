@@ -170,7 +170,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       )
       .then(({ data }) => {
         setSearchMedicines(data.products);
-        props.medicineFiltercall(data.products);
+        props.medicineFiltercall && props.medicineFiltercall(data.products);
       })
       .catch((e) => {
         console.log(e);

@@ -610,6 +610,7 @@ export class DoctorDeviceTokens extends BaseEntity {
 export enum AdminType {
   ADMIN = 'ADMIN',
   JDADMIN = 'JDADMIN',
+  QAADMIN = 'QAADMIN'
 }
 @Entity()
 export class AdminUsers extends BaseEntity {
@@ -621,6 +622,18 @@ export class AdminUsers extends BaseEntity {
 
   @Column({ default: true })
   isActive: Boolean;
+
+  @Column({ default: true })
+  userName: string;
+
+  @Column({ default: true })
+  password: string;
+
+  @Column({ nullable: true })
+  email: string;
+
+  @Column({ nullable: true })
+  description: string;
 
   @Column()
   @Validate(MobileNumberValidator)

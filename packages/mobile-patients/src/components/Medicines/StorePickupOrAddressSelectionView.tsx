@@ -102,6 +102,8 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
           .then(({ data: { Stores, stores_count } }) => {
             setStorePickUpLoading(false);
             setStores && setStores(stores_count > 0 ? Stores : []);
+            setSlicedStoreList(stores_count > 0 ? Stores.slice(0, 2) : []);
+            setStoreId && setStoreId('');
           })
           .catch((e) => {
             setStorePickUpLoading(false);
@@ -268,6 +270,8 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
           data={tabs}
           onChange={(selectedTab: string) => {
             setselectedTab(selectedTab);
+            setStoreId!('');
+            setDeliveryAddressId!('');
           }}
           selectedTab={selectedTab}
         />
