@@ -327,13 +327,6 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   ) => {
     doc.image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65 });
 
-    // const imageBuffer = Buffer.from(
-    //   'iVBORw0KGgoAAAANSUhEUgAAAMgAAABICAYAAACz6LpGAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADPSURBVHgB7dNBEYAwEACxFv/SzlMZ/mUVJB6yZ+Ys4E4QuPtuPAv4JQgEQSAIAkEQCIJAEASCIBAEgSAIBEEgCAJBEAiCQBAEgiAQBIEgCARBIAgCQRAIgkAQBIIgEASBIAgEQSAIAkEQCIJAEASCIBAEgSAIBEEgCAJBEAiCQBAEgiAQBIEgCARBIAgCQRAIgkAQBIIgEASBIAgEQSAIAkEQCIJAEASCIBAEgSAIBEEgCAJBEAiCQBAEgiAQBIEgCARBIAgCQRAIe2bOAq5ep4AOGT6VLesAAAAASUVORK5CYII=',
-    //   'base64'
-    // );
-
-    // doc.image(imageBuffer, margin, margin / 2, { height: 65 });
-
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
     const specialty = doctorInfo.specialty;
