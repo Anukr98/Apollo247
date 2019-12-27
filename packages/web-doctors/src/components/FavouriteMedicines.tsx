@@ -12,7 +12,6 @@ import {
   CircularProgress,
 } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
-import { useQuery } from 'react-apollo-hooks';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -536,15 +535,11 @@ interface MedicineObject {
   duration: string;
   selected: boolean;
 }
-interface MedicineObjectArr {
-  medicineConsumptionDurationInDays: string;
-  medicineDosage: any;
-  medicineInstructions: string;
-  medicineTimings: [];
-  medicineToBeTaken: [];
-  medicineName: string;
-  id: string;
+interface MedicineSelectObject {
+  label: string;
+  sku: string;
 }
+
 interface errorObject {
   daySlotErr: boolean;
   tobeTakenErr: boolean;
@@ -552,40 +547,6 @@ interface errorObject {
   dosageErr: boolean;
 }
 let cancel: any;
-
-interface SlotsObject {
-  id: string;
-  value: string;
-  selected: boolean;
-}
-
-interface MedicineObject {
-  id: string;
-  value: string;
-  name: string;
-  times: number;
-  daySlots: string;
-  duration: string;
-  selected: boolean;
-}
-
-interface MedicineObjectArr {
-  medicineConsumptionDurationInDays: string;
-  medicineDosage: any;
-  medicineInstructions: string;
-  medicineTimings: [];
-  medicineToBeTaken: [];
-  medicineName: string;
-  id: string;
-}
-
-interface errorObject {
-  daySlotErr: boolean;
-  tobeTakenErr: boolean;
-  durationErr: boolean;
-  dosageErr: boolean;
-}
-
 export const FavouriteMedicines: React.FC = () => {
   const classes = useStyles();
   const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<
@@ -865,33 +826,6 @@ export const FavouriteMedicines: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
-
-  /* const selectedMedicinesHtml: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] =
-    selectedMedicinesArr &&
-    selectedMedicinesArr!.map(
-      (
-        medicine: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-        index: number
-      ) => {
-        return (
-          <li>
-            {medicine.medicineName}
-            <span className={classes.iconRight}>
-              <img
-                onClick={() => updateMedicine(index)}
-                src={require("images/round_edit_24_px.svg")}
-                alt=""
-              />
-              <img
-                onClick={() => deletemedicine(index)}
-                src={require("images/ic_cancel_green.svg")}
-                alt=""
-              />
-            </span>
-          </li>
-        );
-      }
-    ); */
 
   const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
     const daySlotitem = _daySlotitem!;
@@ -1224,7 +1158,14 @@ export const FavouriteMedicines: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
-
+  const getMedicineDetails = (suggestion: MedicineSelectObject) => {
+    setShowDosage(true);
+    setSelectedValue(suggestion.label);
+    setSelectedId(suggestion.sku);
+    setLoading(false);
+    setMedicine('');
+    setTabletsCount(0);
+  };
   return (
     <div className={classes.ProfileContainer}>
       <div className={classes.root}>
@@ -1349,12 +1290,7 @@ export const FavouriteMedicines: React.FC = () => {
                           single: '',
                           popper: '',
                         });
-                        setShowDosage(true);
-                        setSelectedValue(suggestion.label);
-                        setSelectedId(suggestion.sku);
-                        setLoading(false);
-                        setMedicine('');
-                        setTabletsCount(0);
+                        getMedicineDetails(suggestion);
                       }}
                       {...autosuggestProps}
                       inputProps={{
