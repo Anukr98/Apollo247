@@ -92,7 +92,7 @@ const ConfigurationQA = {
   LOG_ENVIRONMENT: 'release',
   ANALYTICAL_ENIVRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   CONSULT_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',

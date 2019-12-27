@@ -146,6 +146,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     GetMedicineOrderDetailsVariables
   >(GET_MEDICINE_ORDER_DETAILS, {
     variables: vars,
+    fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
   console.log({ order });
