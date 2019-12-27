@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const PharmaApiConfig = {
   dev: {
@@ -84,7 +84,7 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   iOS_Version: '1.5',
-  Android_Version: '1.21',
+  Android_Version: '1.16',
 };
 
 // QA
@@ -92,7 +92,7 @@ const ConfigurationQA = {
   LOG_ENVIRONMENT: 'release',
   ANALYTICAL_ENIVRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   CONSULT_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -109,7 +109,7 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   iOS_Version: '1.5',
-  Android_Version: '1.21',
+  Android_Version: '1.16',
 };
 
 //Production
@@ -134,7 +134,7 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   iOS_Version: '1.5',
-  Android_Version: '1.21',
+  Android_Version: '1.16',
 };
 
 const Configuration =

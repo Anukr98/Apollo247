@@ -95,7 +95,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface CaseSheetViewProps {
   getFollowUpData: () => string;
-  signature: string;
 }
 
 export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
@@ -164,23 +163,21 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
               <div className={classes.followUpContent}>{props.getFollowUpData()}</div>
             </>
           ) : null}
-          {props.signature && (
+          {createdDoctorProfile && createdDoctorProfile.signature && (
             <>
               <div className={classes.sectionHeader}>Prescribed by</div>
               <div className={classes.followUpContent}>
-                <img src={props.signature} />
+                <img src={createdDoctorProfile.signature} />
               </div>
-              {createdDoctorProfile && (
-                <div className={classes.signInformation}>
-                  <h3 className={classes.followUpContent}>
-                    {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                    <br />
-                    <span>{`${
-                      createdDoctorProfile.specialty.specialistSingularTerm
-                    } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
-                  </h3>
-                </div>
-              )}
+              <div className={classes.signInformation}>
+                <h3 className={classes.followUpContent}>
+                  {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                  <br />
+                  <span>{`${
+                    createdDoctorProfile.specialty.specialistSingularTerm
+                  } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
+                </h3>
+              </div>
             </>
           )}
         </div>

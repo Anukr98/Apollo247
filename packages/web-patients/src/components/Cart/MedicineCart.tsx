@@ -24,6 +24,9 @@ import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
 import { LocationContext } from 'components/LocationProvider';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -364,6 +367,33 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       marginLeft: 'auto',
     },
+    followUpWrapper: {
+      backgroundColor: '#fff',
+      margin: '0 0 0 8px',
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      width: '100%',
+      padding: 10,
+    },
+    fileInfo: {
+      display: 'flex',
+      margin: '10px 0 0 0',
+    },
+    doctorName: {
+      fontSize: 16,
+      fontWeight: 500,
+      color: '#01475b',
+    },
+    patientHistory: {
+      opacity: 0.6,
+      fontSize: 12,
+      fontWeight: 500,
+      lineHeight: 1.67,
+      color: '#02475b',
+      '& span': {
+        margin: '0 5px 0 0',
+      },
+    },
   };
 });
 
@@ -400,6 +430,8 @@ export const MedicineCart: React.FC = (props) => {
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const { currentPincode } = useContext(LocationContext);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [phrPrescriptionData, setPhrPrescriptionData] = React.useState<Prescription[] | null>(null);
 
   const removePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
@@ -410,8 +442,6 @@ export const MedicineCart: React.FC = (props) => {
       setPrescriptions((prevValues) => [...prevValues, prescriptionUploaded]);
     }
   }, [prescriptionUploaded]);
-
-  console.log(couponCode);
 
   const { cartItems, cartTotal } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -473,6 +503,18 @@ export const MedicineCart: React.FC = (props) => {
                 {uploadPrescriptionRequired >= 0 ? (
                   <>
                     <div className={classes.sectionHeader}>Upload Prescription</div>
+                    {phrPrescriptionData &&
+                      phrPrescriptionData.length > 0 &&
+                      phrPrescriptionData.map((prescription) => (
+                        <div className={classes.followUpWrapper}>
+                          <div className={classes.fileInfo}>
+                            <div className={classes.doctorName}>
+                              Dr. {prescription.doctorInfo && prescription.doctorInfo.firstName}
+                            </div>
+                            <div className={classes.patientHistory}></div>
+                          </div>
+                        </div>
+                      ))}
                     {prescriptions.length > 0 ? (
                       <div className={classes.uploadedPreList}>
                         {prescriptions.map((prescriptionDetails, index) => {
@@ -489,6 +531,7 @@ export const MedicineCart: React.FC = (props) => {
                             />
                           );
                         })}
+                        <EPrescriptionCard />
                         <div className={classes.uploadMore}>
                           <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>
                             Upload More
@@ -734,6 +777,7 @@ export const MedicineCart: React.FC = (props) => {
           closeDialog={() => {
             setIsUploadPreDialogOpen(false);
           }}
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
         />
       </AphDialog>
 
@@ -747,6 +791,15 @@ export const MedicineCart: React.FC = (props) => {
             setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
           }}
           cartValue={cartTotal}
+        />
+      </AphDialog>
+
+      <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
+        <AphDialogTitle>E Prescription</AphDialogTitle>
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          setPhrPrescriptionData={setPhrPrescriptionData}
         />
       </AphDialog>
     </div>

@@ -1754,6 +1754,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         className={classes.endconsultButton}
                         disabled={props.saving}
                         onClick={() => {
+                          props.saveCasesheetAction(true, false);
                           setIsClickedOnEdit(false);
                           setIsClickedOnPriview(true);
                           props.setIsPdfPageOpen(true);

@@ -675,6 +675,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
+      rowData.message !== stopConsult &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
@@ -777,6 +778,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
+      rowData.message !== stopConsult &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
@@ -869,6 +871,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
+      rowData.message !== stopConsult &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&

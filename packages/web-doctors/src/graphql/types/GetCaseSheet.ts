@@ -117,6 +117,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   lastName: string | null;
   salutation: Salutation | null;
   registrationNumber: string | null;
+  signature: string | null;
   specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty;
   doctorHospital: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_doctorHospital[];
 }
