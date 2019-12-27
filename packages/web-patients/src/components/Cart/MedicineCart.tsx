@@ -24,8 +24,9 @@ import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
 import { LocationContext } from 'components/LocationProvider';
-import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -530,6 +531,7 @@ export const MedicineCart: React.FC = (props) => {
                             />
                           );
                         })}
+                        <EPrescriptionCard />
                         <div className={classes.uploadMore}>
                           <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>
                             Upload More
@@ -795,7 +797,7 @@ export const MedicineCart: React.FC = (props) => {
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
         <AphDialogTitle>E Prescription</AphDialogTitle>
-        <EPrescriptionCard
+        <UploadEPrescriptionCard
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
           setPhrPrescriptionData={setPhrPrescriptionData}
         />
