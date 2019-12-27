@@ -327,6 +327,13 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   ) => {
     doc.image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65 });
 
+    // const imageBuffer = Buffer.from(
+    //   'iVBORw0KGgoAAAANSUhEUgAAAMgAAABICAYAAACz6LpGAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADPSURBVHgB7dNBEYAwEACxFv/SzlMZ/mUVJB6yZ+Ys4E4QuPtuPAv4JQgEQSAIAkEQCIJAEASCIBAEgSAIBEEgCAJBEAiCQBAEgiAQBIEgCARBIAgCQRAIgkAQBIIgEASBIAgEQSAIAkEQCIJAEASCIBAEgSAIBEEgCAJBEAiCQBAEgiAQBIEgCARBIAgCQRAIgkAQBIIgEASBIAgEQSAIAkEQCIJAEASCIBAEgSAIBEEgCAJBEAiCQBAEgiAQBIEgCARBIAgCQRAIe2bOAq5ep4AOGT6VLesAAAAASUVORK5CYII=',
+    //   'base64'
+    // );
+
+    // doc.image(imageBuffer, margin, margin / 2, { height: 65 });
+
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
     const specialty = doctorInfo.specialty;
@@ -583,7 +590,56 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .text('Prescribed by', margin + 15)
         .moveDown(0.5);
 
-      if (doctorInfo.signature) {
+      if (doctorInfo.signature || true) {
+        console.log('in iffffffffffffffffffffff');
+        //const axios = require('axios');
+
+        const util = require('util');
+        const image2base64 = require('image-to-base64');
+
+        // const base64ImgSync = util.promisify(image2base64);
+        // const response = await base64ImgSync(
+        //   'https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png'
+        // );
+
+        // console.log('base64Response:=======', response); //cGF0aC90by9maWxlLmpwZw==
+        // const base64Image = response.toString();
+        // const imageBuffer = Buffer.from(base64Image, 'base64');
+        // doc.image(imageBuffer, margin, margin / 2, { height: 65 });
+
+        image2base64('https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png')
+          .then((response: any) => {
+            console.log(response); //cGF0aC90by9maWxlLmpwZw==
+            const base64Image = response.toString();
+            const imageBuffer = Buffer.from(base64Image, 'base64');
+            doc.image(imageBuffer, margin, margin / 2, { height: 65 });
+          })
+          .catch((error: any) => {
+            console.log(error); //Exepection error....
+          });
+
+        // var url = 'https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png';
+        // base64Img.requestBase64(url, (err: any, res: any, body: any) => {
+        //   console.log(err, body);
+        //   const base64 = body.split(',')[1];
+        //   console.log('===============================', base64);
+        //   const base64Image = base64;
+        //   const imageBuffer = Buffer.from(base64Image, 'base64');
+        //   doc.image(imageBuffer, margin, margin / 2, { height: 65 });
+        // });
+
+        // const base64_sign = base64Img.base64Sync(
+        //   'https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png'
+        // );
+        //doc.image(base64_sign, margin, margin / 2, { height: 65 });
+        // axios
+        //   .get('https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png', {
+        //     responseType: 'arraybuffer',
+        //   })
+        //   .then((response: any) => {
+        //     const pngBuffer = Buffer.from(JSON.stringify(response.data));
+        //     doc.image(pngBuffer);
+        //   });
         // const doctorSignature = (await fetch(doctorInfo.signature)).body;
         // console.log('-----------', doctorSignature);
         // doc.image(new Buffer(doctorSignature));
