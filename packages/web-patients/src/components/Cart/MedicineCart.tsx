@@ -438,7 +438,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (prescriptionUploaded.name !== '') {
+    if (prescriptionUploaded && prescriptionUploaded.name !== '') {
       setPrescriptions((prevValues) => [...prevValues, prescriptionUploaded]);
     }
   }, [prescriptionUploaded]);
