@@ -24,9 +24,10 @@ import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpeci
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, differenceInMinutes, addDays, subDays, subMinutes } from 'date-fns';
-import { ConsultHours, ConsultMode } from 'doctors-service/entities';
+import { ConsultHours, ConsultMode, Doctor } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Appointment)
@@ -1084,5 +1085,104 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   updateSeniorConsultStarted(id: string, status: Boolean) {
     return this.update(id, { isSeniorConsultStarted: status });
+  }
+
+  async bookMedMantraAppointment(
+    apptDetails: Appointment,
+    doctorDetails: Doctor,
+    patientsDb: Connection,
+    doctorsDb: Connection
+  ) {
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patientRepo.getPatientDetails(apptDetails.patientId);
+
+    if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+    //invalid date handling
+    let dateOfBirth = patientDetails.dateOfBirth;
+    if (patientDetails.dateOfBirth === null || !patientDetails) {
+      dateOfBirth = new Date('1990-01-01');
+    }
+
+    //calculating appt end time
+    const apptEndTime = await this.getAppointmentEndTime(apptDetails, doctorsDb);
+
+    const medMantraBookApptUrl = process.env.MEDMANTRA_BOOK_APPOINTMENT_API || '';
+    const medMantraBookApptInput = {
+      FirstName: patientDetails.firstName,
+      LastName: patientDetails.lastName,
+      Gender: '72',
+      RegionID: 1,
+      ResourceID: doctorDetails.externalId,
+      UHIDNumber: patientDetails.uhid,
+      MobileNumber: '91-' + patientDetails.mobileNumber.substr(3),
+      Title: '1',
+      StartDateTime: format(apptDetails.appointmentDateTime, 'dd-MMM-yyyy HH:mm:ss'),
+      EndDateTime: format(apptEndTime, 'dd-MMM-yyyy HH:mm:ss'),
+      ServiceID: 2118,
+      RegistrationType: 'PaidUHID',
+      SpecialityID: doctorDetails.specialty.externalId,
+      StatusCheck: 102,
+      DateOfBirth: format(dateOfBirth, 'dd-MMM-yyyy'),
+      MaritalStatus: 1,
+      LocationID: 10201,
+      UpdatedBy: 103330,
+      Flag: 1,
+      OnlineAppointmentID: '',
+      OnlineReceiptNO: '',
+      TranAmount: apptDetails.bookingDate, // Change it to price
+      PayeeName: patientDetails.firstName,
+      TranDateTime: format(new Date(), 'dd-MMM-yyyy'),
+      ModeofAppointment: 'Apollo247',
+      PayType: 'NETBANKING',
+    };
+
+    // this.createLog(
+    //   'MedMantra Book Appointment Input',
+    //   'bookMedMantraAppointment()->bookApptInput',
+    //   JSON.stringify(medMantraBookApptInput),
+    //   ''
+    // );
+
+    const msg = `External_API_Call: ${medMantraBookApptUrl}`;
+    const bookApptResp = await fetch(medMantraBookApptUrl, {
+      method: 'POST',
+      body: JSON.stringify(medMantraBookApptInput),
+      headers: {
+        'Content-Type': 'application/json',
+        Authkey: process.env.UHID_CREATE_AUTH_KEY ? process.env.UHID_CREATE_AUTH_KEY : '',
+      },
+    })
+      .then((res) => res.text())
+      .catch((error) => {
+        //this.createLog(msg, 'bookMedMantraAppointment->catchBlock', '', JSON.stringify(error));
+        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+      });
+
+    //this.createLog(msg, 'bookMedMantraAppointment->response', bookApptResp, '');
+    console.log('bookApptResp', bookApptResp);
+    const parsedResponse = JSON.parse(bookApptResp);
+    return parsedResponse;
+  }
+
+  async getAppointmentEndTime(apptDetails: Appointment, doctorsDb: Connection) {
+    const apptStartDateTime = apptDetails.appointmentDateTime;
+    const apptType = apptDetails.appointmentType;
+    const doctorId = apptDetails.doctorId;
+    const weekDay = format(apptStartDateTime, 'EEEE').toUpperCase();
+    const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    let docConsultHrs: ConsultHours[];
+    if (apptType == 'ONLINE') {
+      docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    } else {
+      docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
+    }
+
+    let endTime = addMinutes(new Date(apptStartDateTime), 15);
+    if (docConsultHrs) {
+      const duration = docConsultHrs[0].consultDuration;
+      endTime = addMinutes(new Date(apptStartDateTime), duration);
+    }
+    return endTime;
   }
 }
