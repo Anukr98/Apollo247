@@ -313,7 +313,7 @@ app.post('/paymed-response', (req, res) => {
   // this needs to be altered later.
   const requestJSON = {
     query:
-      'mutation { SaveMedicineOrderPayment(medicinePaymentInput: { orderId: "0", orderAutoId: ' +
+      'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
       payload.ORDERID +
       ', paymentType: CASHLESS, amountPaid: ' +
       payload.TXNAMOUNT +
@@ -650,6 +650,7 @@ app.get('/processOrders', (req, res) => {
                   devliveryCharges
                   deliveryType
                   patientAddressId
+                  prescriptionImageUrl
                   patient{
                     mobileNumber
                     firstName

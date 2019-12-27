@@ -631,7 +631,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
           consultStartTime = new Date(st);
         }
-        const duration = Math.floor(60 / docConsultHr.consultDuration);
+        //const duration = Math.floor(60 / docConsultHr.consultDuration);
+        const duration = parseFloat((60 / docConsultHr.consultDuration).toFixed(1));
         console.log(duration, 'doctor duration');
         consultBuffer = docConsultHr.consultBuffer;
 
