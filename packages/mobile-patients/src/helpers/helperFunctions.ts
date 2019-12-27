@@ -112,6 +112,9 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
       statusString = 'Payment Success';
       break;
+    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      statusString = 'Order Initiated';
+      break;
   }
   return statusString;
 };
