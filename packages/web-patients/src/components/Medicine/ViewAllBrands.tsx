@@ -162,11 +162,11 @@ export interface filter {
 
 export const ViewAllBrands: React.FC = (props) => {
   const apiDetails = {
-    url: process.env.ALL_BRANDS,
+    url: `${process.env.PHARMACY_MED_PROD_URL}/allbrands_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+    imageUrl: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const alphabets: string[] = 'abcdefghijklmnopqrstuvwxyz'.split('');
   const [selectedAlphabates, setSelectedAlphabates] = useState('a');
@@ -177,30 +177,33 @@ export const ViewAllBrands: React.FC = (props) => {
       </a>
     </li>
   ));
-  const [data, setData] = useState<Brand[] | null>([]);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<Brand[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [showData, setShowData] = useState<filter[] | []>([]);
 
   useEffect(() => {
-    axios
-      .post(
-        apiDetails.url!,
-        {},
-        {
-          headers: {
-            Authorization: apiDetails.authToken,
-            Accept: '*/*',
-          },
-        }
-      )
-      .then((res) => {
-        if (res && res.data && res.data.brands) setData(res.data.brands);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setLoading(false);
-      });
-  }, []);
+    if (!data) {
+      setIsLoading(true);
+      axios
+        .post(
+          apiDetails.url!,
+          {},
+          {
+            headers: {
+              Authorization: apiDetails.authToken,
+              Accept: '*/*',
+            },
+          }
+        )
+        .then((res) => {
+          if (res && res.data && res.data.brands) setData(res.data.brands);
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+        });
+    }
+  }, [data]);
 
   useEffect(() => {
     let filterData: filter[] = [];
@@ -217,6 +220,7 @@ export const ViewAllBrands: React.FC = (props) => {
     if (showData && showData.length > 0) {
     }
   }, [selectedAlphabates, data]);
+
   const groupBy = (list: filter[], keyGetter: (brand: filter) => String) => {
     const map = new Map();
     list &&
@@ -254,35 +258,38 @@ export const ViewAllBrands: React.FC = (props) => {
             <ul>{alphabetFilter}</ul>
           </div>
           <div className={classes.filterSection}>
-            {loading && <CircularProgress size={40} />}
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 212px)'}>
-              <div className={classes.customScroll}>
-                {alphabets.map((alpha: string) => (
-                  <div className={classes.brandRow}>
-                    <div id={alpha} className={classes.brandType}>
-                      {alpha.toUpperCase()}
+            {isLoading ? (
+              <CircularProgress size={40} />
+            ) : (
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 212px)'}>
+                <div className={classes.customScroll}>
+                  {alphabets.map((alpha: string) => (
+                    <div className={classes.brandRow}>
+                      <div id={alpha} className={classes.brandType}>
+                        {alpha.toUpperCase()}
+                      </div>
+                      <div className={classes.brandList}>
+                        <ul>
+                          {showData &&
+                            showData.length > 0 &&
+                            grouped.get(alpha.toUpperCase()) &&
+                            grouped.get(alpha.toUpperCase()).length > 0 &&
+                            grouped.get(alpha.toUpperCase()).map((brand: filter) => (
+                              <li>
+                                <Link
+                                  to={clientRoutes.medicineSearchByBrand(brand.value.category_id)}
+                                >
+                                  {brand.value.title}
+                                </Link>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
                     </div>
-                    <div className={classes.brandList}>
-                      <ul>
-                        {showData &&
-                          showData.length > 0 &&
-                          grouped.get(alpha.toUpperCase()) &&
-                          grouped.get(alpha.toUpperCase()).length > 0 &&
-                          grouped.get(alpha.toUpperCase()).map((brand: filter) => (
-                            <li>
-                              <Link
-                                to={clientRoutes.medicineSearchByBrand(brand.value.category_id)}
-                              >
-                                {brand.value.title}
-                              </Link>
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Scrollbars>
+                  ))}
+                </div>
+              </Scrollbars>
+            )}
           </div>
         </div>
       </div>

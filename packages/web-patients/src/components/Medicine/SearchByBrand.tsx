@@ -9,6 +9,7 @@ import { MedicineCard } from 'components/Medicine/MedicineCard';
 import axios from 'axios';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -132,24 +133,27 @@ export interface products {
   type_id: string;
   mou: string;
 }
+
+type Params = { id: string };
+
 export const SearchByBrand: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const apiDetails = {
-    url: process.env.PRODUCTS_BY_CATEGORY,
+    url: `${process.env.PHARMACY_MED_PROD_URL}/categoryproducts_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  const params = useParams<Params>();
 
   const [data, setData] = useState<products[] | []>([]);
+
   useEffect(() => {
-    const url = window.location.pathname;
-    const id = url.substring(url.lastIndexOf('/') + 1);
     axios
       .post(
-        apiDetails.url!,
+        apiDetails.url,
         {
-          category_id: id,
-          page_id: 2,
+          category_id: params.id,
+          page_id: 1,
         },
         {
           headers: {
@@ -161,11 +165,11 @@ export const SearchByBrand: React.FC = (props) => {
       .then((res) => {
         if (res && res.data && res.data.products) {
           setData(res.data.products);
-          console.log('888', res.data.products);
         }
       })
       .catch((e) => {});
   }, []);
+
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -176,22 +180,26 @@ export const SearchByBrand: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.welcome())}>
+            <a onClick={() => (window.location.href = clientRoutes.medicines())}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            Shop By Brand ({data && data.length})
+            Search By Brand ({data && data.length})
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
-                  <MedicinesCartContext.Consumer>
-                    {() => <MedicineCard data={data} />}
-                  </MedicinesCartContext.Consumer>
+                  {data && data.length > 0 ? (
+                    <MedicinesCartContext.Consumer>
+                      {() => <MedicineCard data={data} />}
+                    </MedicinesCartContext.Consumer>
+                  ) : (
+                    <h1 style={{ backgroundColor: 'white', color: 'black' }}>No Data Found</h1>
+                  )}
                 </div>
               </Scrollbars>
             </div>
