@@ -3908,6 +3908,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             // marginHorizontal: 20,
             marginTop: 0,
           }}
+          initialNumToRender={messages ? messages.length : 0}
           bounces={false}
           data={messages}
           onEndReachedThreshold={0.2}
