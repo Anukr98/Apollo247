@@ -35,6 +35,20 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    signInformation: {
+      marginRight: 'auto',
+      width: 198,
+      '& h3': {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: 0,
+        '& span': {
+          fontWeight: 'normal',
+          fontSize: 10,
+        },
+      },
+    },
     address: {
       fontSize: 8,
     },
@@ -149,6 +163,23 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
               <div className={classes.followUpContent}>{props.getFollowUpData()}</div>
             </>
           ) : null}
+          {createdDoctorProfile && createdDoctorProfile.signature && (
+            <>
+              <div className={classes.sectionHeader}>Prescribed by</div>
+              <div className={classes.followUpContent}>
+                <img src={createdDoctorProfile.signature} />
+              </div>
+              <div className={classes.signInformation}>
+                <h3 className={classes.followUpContent}>
+                  {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                  <br />
+                  <span>{`${
+                    createdDoctorProfile.specialty.specialistSingularTerm
+                  } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
+                </h3>
+              </div>
+            </>
+          )}
         </div>
         <div className={classes.pageNumbers}>Page 2 of 2</div>
         <div className={classes.disclaimer}>

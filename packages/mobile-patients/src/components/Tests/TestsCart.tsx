@@ -230,7 +230,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   });
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(
+    moment()
+      .add(1, 'day')
+      .toDate()
+  );
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
@@ -571,7 +575,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           query: GET_DIAGNOSTIC_SLOTS,
           fetchPolicy: 'no-cache',
           variables: {
-            patientId: currentPatient!.id,
+            patientId: g(currentPatient, 'id') || '',
             hubCode: 'HYD_HUB1', // not considering this field at backend
             selectedDate: moment(date).format('YYYY-MM-DD'),
             zipCode: parseInt(selectedAddress.zipcode!),
@@ -580,24 +584,36 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .then(({ data }) => {
           setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
           setPinCode && setPinCode(selectedAddress.zipcode!);
-          aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
+          console.log({ data, date }, 'GET_DIAGNOSTIC_SLOTS');
           const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
           const t = finalaray!
             .slotInfo!.filter((item) => item!.status != 'booked')
+            .filter((item) =>
+              moment(date)
+                .format('DMY')
+                .toString() ===
+              moment()
+                .format('DMY')
+                .toString()
+                ? parseInt(item!.startTime!.split(':')[0]) >= parseInt(moment().format('k'))
+                  ? parseInt(item!.startTime!.split(':')[1]) > moment().minute()
+                  : false
+                : true
+            )
             .map((item) => {
               return {
                 label: (item!.slot || '').toString(),
                 time: `${item!.startTime} - ${item!.endTime}`,
               };
             });
-          aphConsole.log(t, 'finalaray');
+          console.log(t, 'finalaray');
           setDiagnosticSlot &&
             setDiagnosticSlot({
-              employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+              employeeSlotId: parseInt(t[0].label),
               diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
               diagnosticEmployeeCode: finalaray!.employeeCode || '',
-              slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
-              slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+              slotStartTime: t[0]!.time.split('-')[0].trim(),
+              slotEndTime: t[0]!.time.split('-')[1].trim(),
               city: selectedAddress!.city || '',
               date: date.getTime(),
             });

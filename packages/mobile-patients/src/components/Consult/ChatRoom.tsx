@@ -1127,6 +1127,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
       timerId && clearInterval(timerId);
       intervalId && clearInterval(intervalId);
+      abondmentStarted = false;
       stopJoinTimer();
       stopCallAbondmentTimer();
       try {
@@ -1620,6 +1621,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopInterval();
         setConvertVideo(false);
         setShowFeedback(true);
+        abondmentStarted = false;
         APIForUpdateAppointmentData(true);
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
