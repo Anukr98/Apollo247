@@ -631,7 +631,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
           consultStartTime = new Date(st);
         }
-        const duration = Math.floor(60 / docConsultHr.consultDuration);
+        //const duration = Math.floor(60 / docConsultHr.consultDuration);
+        const duration = parseFloat((60 / docConsultHr.consultDuration).toFixed(1));
         console.log(duration, 'doctor duration');
         consultBuffer = docConsultHr.consultBuffer;
 
@@ -916,7 +917,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     const doctorBblockedSlots: string[] = [];
 
     if (timeSlot.length > 0) {
-      const duration = Math.floor(60 / timeSlot[0].consultDuration);
+      //const duration = Math.floor(60 / timeSlot[0].consultDuration);
+      const duration = parseFloat((60 / timeSlot[0].consultDuration).toFixed(1));
       // const consultStartTime = new Date(
       //   format(new Date(), 'yyyy-MM-dd') + ' ' + timeSlot[0].startTime.toString()
       // );
@@ -963,7 +965,7 @@ export class AppointmentRepository extends Repository<Appointment> {
             }
             slot = addMinutes(slot, 1);
             counter++;
-            if (counter >= availableSlots.length) {
+            if (counter >= availableSlots.length && counter >= timeSlot[0].consultDuration) {
               break;
             }
             apptDt = format(slot, 'yyyy-MM-dd');

@@ -19,6 +19,7 @@ import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { ApiConstants } from 'ApiConstants';
 
 export const savePrescriptionMedicineOrderTypeDefs = gql`
   input PrescriptionMedicineInput {
@@ -160,7 +161,7 @@ const SavePrescriptionMedicineOrder: Resolver<
         orderPrescriptionUrl.push(url);
       });
     }
-    let selShopId = '16001';
+    let selShopId = ApiConstants.PHARMA_DEFAULT_SHOPID.toString();
     if (saveOrder.shopId != '' && saveOrder.shopId != null && saveOrder.shopId != '0') {
       selShopId = saveOrder.shopId;
     }
