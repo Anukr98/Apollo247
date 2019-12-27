@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 
 export const GET_CURRENT_PATIENTS = gql`
-  query GetCurrentPatients {
-    getCurrentPatients {
+  query GetCurrentPatients($appVersion: String, $deviceType: DEVICE_TYPE) {
+    getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
       patients {
         id
         mobileNumber

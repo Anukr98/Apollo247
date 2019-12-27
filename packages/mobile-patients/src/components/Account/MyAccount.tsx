@@ -37,6 +37,7 @@ import {
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import DeviceInfo from 'react-native-device-info';
+import { AppConfig } from '../../strings/AppConfig';
 
 const { height, width } = Dimensions.get('window');
 
@@ -432,7 +433,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${DeviceInfo.getVersion()}.${DeviceInfo.getBuildNumber()}`}
+              {`${buildName()} - v ${
+                Platform.OS === 'ios'
+                  ? AppConfig.Configuration.iOS_Version
+                  : AppConfig.Configuration.Android_Version
+              }`}
             </Text>
           </View>
         </Animated.ScrollView>

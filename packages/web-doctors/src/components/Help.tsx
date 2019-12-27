@@ -87,48 +87,48 @@ interface HelpProps {
 export const HelpPopup: React.FC<HelpProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles();
-
-  return isSignedIn ? (
-    <div className={`${classes.afterloginFormWrap} ${classes.afterHelpWrap}`}>
+  const helpData = [
+    {
+      name: 'SPOC for Apollo Hyderabad Doctors',
+      doctorName: 'Ms. Sreevani',
+      helpNumber: '+9177027 00910',
+      email: 'sreevani_u@apollopharmacy.org',
+    },
+    {
+      name: 'SPOC for Apollo Chennai Doctors',
+      doctorName: 'Ms. Aruna',
+      helpNumber: '+9178239 13040',
+      email: 'edocmh_cni@apollohospitals.com',
+    },
+    {
+      name: 'SPOC for ATHS Doctors',
+      doctorName: 'Call Centre',
+      helpNumber: '18001021066',
+      email: 'mrc_support@healthnet-global.com',
+    },
+  ];
+  return (
+    <div
+      className={
+        isSignedIn
+          ? `${classes.afterloginFormWrap} ${classes.afterHelpWrap}`
+          : `${classes.loginFormWrap} ${classes.helpWrap}`
+      }
+    >
       <Typography variant="h2" className={classes.needHelp}>
         need help?
       </Typography>
-      <div className={classes.helpSection}>
-        <h4>SPOC for Apollo Hyderabad Doctors</h4>
-        <h5>Ms. Sreevani | 7702700910 </h5>
-        <h6>sreevani_u@apollohospitals.com</h6>
-      </div>
-      <div className={classes.helpSection}>
-        <h4>SPOC for Apollo Chennai Doctors</h4>
-        <h5>Mr. Sreekanth | 09941134567 </h5>
-        <h6>edocmh_cni@apollohospitals.com</h6>
-      </div>
-      <div className={classes.helpSection}>
-        <h4>SPOC for ATHS Doctors</h4>
-        <h5>Call Centre | 18001021066</h5>
-        <h6>mrc_support@healthnet-global.com</h6>
-      </div>
-    </div>
-  ) : (
-    <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
-      <Typography variant="h2" className={classes.needHelp}>
-        need help?
-      </Typography>
-      <div className={classes.helpSection}>
-        <h4>SPOC for Apollo Hyderabad Doctors</h4>
-        <h5>Ms. Sreevani | 7702700910 </h5>
-        <h6>sreevani_u@apollohospitals.com</h6>
-      </div>
-      <div className={classes.helpSection}>
-        <h4>SPOC for Apollo Chennai Doctors</h4>
-        <h5>Mr. Sreekanth | 09941134567 </h5>
-        <h6>edocmh_cni@apollohospitals.com</h6>
-      </div>
-      <div className={classes.helpSection}>
-        <h4>SPOC for ATHS Doctors</h4>
-        <h5>Call Centre | 18001021066</h5>
-        <h6>mrc_support@healthnet-global.com</h6>
-      </div>
+      {helpData &&
+        helpData.length > 0 &&
+        helpData.map((helpObj) => (
+          <div className={classes.helpSection}>
+            <h4>{helpObj.name}</h4>
+            <h5>
+              {helpObj.doctorName} | {helpObj.helpNumber}
+            </h5>
+            <h6>{helpObj.email}</h6>
+          </div>
+        ))}
     </div>
   );
 };
