@@ -1159,7 +1159,8 @@ export const MedicinePrescription: React.FC = () => {
                   <Grid container spacing={2}>
                     <Grid item lg={6} md={6} xs={12}>
                       <h6>Dosage*</h6>
-                      <AphTextField
+                      <AphTextField 
+                      autoFocus
                         inputProps={{ maxLength: 6 }}
                         value={tabletsCount}
                         onChange={(event: any) => {
