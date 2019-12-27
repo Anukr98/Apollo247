@@ -9,6 +9,7 @@ import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
 } from 'graphql/types/GetDoctorAvailableSlots';
+import moment from 'moment';
 import { GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import { usePrevious } from 'hooks/reactCustomHooks';
@@ -235,10 +236,9 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  const apiDateFormat =
-    props.dateSelected === ''
-      ? new Date().toISOString().substring(0, 10)
-      : getYyMmDd(props.dateSelected);
+  const apiDateFormat = props.dateSelected.includes('-')
+    ? moment(new Date()).format('YYYY-MM-DD')
+    : getYyMmDd(props.dateSelected);
 
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');

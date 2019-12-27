@@ -800,6 +800,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
     CaseSheetContext
   );
+  const apiDateFormat = new Date();
+
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -823,7 +825,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showAbandonment, setShowAbandonment] = React.useState(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
-  const [dateSelected, setDateSelected] = useState<string>('');
+
+  const [dateSelected, setDateSelected] = useState<string>(moment(new Date()).format('YYYY-MM-DD'));
 
   // timer for audio/video call start
   const timerMinuts = Math.floor(startingTime / 60);
@@ -1583,6 +1586,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   // flag: true is for missed call reschedule & false for normal
   const callInitiateReschedule = (flag: boolean) => {
     const today = moment();
+    const hours = timeSelected.split(':');
+    const momentDate = moment(dateSelected).hours();
     unSubscribeBrowserButtonsListener();
     const rescheduleParam = flag
       ? {
@@ -1601,11 +1606,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
           rescheduleInitiatedId: props.doctorId,
           //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
-          rescheduledDateTime: moment(today)
-            .add(1, 'days')
-            .toISOString(),
+          rescheduledDateTime: dateSelected + 'T' + timeSelected + ':00.000Z',
           autoSelectSlot: 0,
         };
+
     client
       .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
         mutation: INITIATE_RESCHDULE_APPONITMENT,
@@ -2065,10 +2069,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
               <div className={classes.tabBody}>
                 <p>The following slot will be suggested —</p>
+
                 {doctorNextAvailableSlot === '' ? (
                   <CircularProgress />
                 ) : (
-                  <p>{`${dateSelected} ${timeSelected}` || doctorNextAvailableSlot}</p>
+                  <p>
+                    {dateSelected && timeSelected
+                      ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
+                          'ddd, DD/MM/YYYY'
+                        ) +
+                        ' ' +
+                        moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
+                      : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY') +
+                        ' ' +
+                        moment(doctorNextAvailableSlot).format('h:mm a')}
+                  </p>
                   // <form noValidate>
                   //   <TextField
                   //     id="datetime-local"
@@ -2162,6 +2177,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   </div>
                 )}
               </div>
+
               <div className={classes.tabFooter}>
                 <Button
                   className={classes.ResheduleCosultButton}
