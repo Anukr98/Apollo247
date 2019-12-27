@@ -313,6 +313,15 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     }
   }, [substitutes]);
 
+  const applyCartOperations = (cartItem: MedicineCartItem) => {
+    const index = cartItems.findIndex((item) => item.id === cartItem.id);
+    if (index >= 0) {
+      updateCartItem && updateCartItem(cartItem);
+    } else {
+      addCartItem && addCartItem(cartItem);
+    }
+  };
+
   const options = Array.from(Array(20), (_, x) => x);
   return (
     <div className={classes.root}>
@@ -425,12 +434,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   mou: data.mou,
                   quantity: medicineQty,
                 };
-                const index = cartItems.findIndex((item) => item.id === cartItem.id);
-                if (index >= 0) {
-                  updateCartItem && updateCartItem(cartItem);
-                } else {
-                  addCartItem && addCartItem(cartItem);
-                }
+                applyCartOperations(cartItem);
                 window.location.href = clientRoutes.medicinesLandingViewCart();
               }}
             >
@@ -438,7 +442,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </AphButton>
             <AphButton
               color="primary"
-              onClick={() => (window.location.href = clientRoutes.medicinesCart())}
+              onClick={() => {
+                const cartItem: MedicineCartItem = {
+                  description: data.description,
+                  id: data.id,
+                  image: data.image,
+                  is_in_stock: data.is_in_stock,
+                  is_prescription_required: data.is_prescription_required,
+                  name: data.name,
+                  price: data.price,
+                  sku: data.sku,
+                  special_price: data.special_price,
+                  small_image: data.small_image,
+                  status: data.status,
+                  thumbnail: data.thumbnail,
+                  type_id: data.type_id,
+                  mou: data.mou,
+                  quantity: medicineQty,
+                };
+                applyCartOperations(cartItem);
+                window.location.href = clientRoutes.medicinesCart();
+              }}
             >
               Buy Now
             </AphButton>
