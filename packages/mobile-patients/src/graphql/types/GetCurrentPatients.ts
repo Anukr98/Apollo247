@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Relation, Gender } from "./globalTypes";
+import { DEVICE_TYPE, Relation, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCurrentPatients
@@ -43,4 +43,9 @@ export interface GetCurrentPatients_getCurrentPatients {
 
 export interface GetCurrentPatients {
   getCurrentPatients: GetCurrentPatients_getCurrentPatients | null;
+}
+
+export interface GetCurrentPatientsVariables {
+  appVersion?: string | null;
+  deviceType?: DEVICE_TYPE | null;
 }

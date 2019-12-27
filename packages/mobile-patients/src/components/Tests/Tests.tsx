@@ -885,7 +885,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (!hLoading && hotSellers.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
+        <SectionHeader leftText={'FEATURED TESTS'} />
         {hLoading ? (
           renderSectionLoader(188)
         ) : (
@@ -1243,7 +1243,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (!hLoading && shopByOrgans.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'BROWSE TESTS BY ORGANS'} />
+        <SectionHeader leftText={'BROWSE PACKAGES'} />
         {hLoading ? (
           renderSectionLoader()
         ) : (
