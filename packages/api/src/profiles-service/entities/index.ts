@@ -135,6 +135,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = 'PICKUP_REQUESTED',
   PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
   ORDER_FAILED = 'ORDER_FAILED',
+  ORDER_CANCELLED = 'ORDER_CANCELLED',
 }
 
 export enum FEEDBACKTYPE {
@@ -178,6 +179,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true, type: 'timestamp' })
   orderDateTime: Date;
+
+  @Column({ nullable: true })
+  orderTat: string;
 
   @Column({ nullable: true })
   patientAddressId: string;
