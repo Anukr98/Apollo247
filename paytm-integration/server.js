@@ -313,7 +313,7 @@ app.post('/paymed-response', (req, res) => {
   // this needs to be altered later.
   const requestJSON = {
     query:
-      'mutation { SaveMedicineOrderPayment(medicinePaymentInput: { orderId: "0", orderAutoId: ' +
+      'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
       payload.ORDERID +
       ', paymentType: CASHLESS, amountPaid: ' +
       payload.TXNAMOUNT +
@@ -650,6 +650,7 @@ app.get('/processOrders', (req, res) => {
                   devliveryCharges
                   deliveryType
                   patientAddressId
+                  prescriptionImageUrl
                   patient{
                     mobileNumber
                     firstName
@@ -791,11 +792,18 @@ app.get('/processOrders', (req, res) => {
               }
               //axios.defaults.headers.common['token'] = '9f15bdd0fcd5423190c2e877ba0228A24';
               let patientAge = 30;
+              let selShopId = '16001';
+              if (
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != '' &&
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != null
+              ) {
+                selShopId = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId;
+              }
               const pharmaInput = {
                 tpdetails: {
                   OrderId:
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId,
-                  ShopId: response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId,
+                  ShopId: selShopId,
                   ShippingMethod:
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.deliveryType,
                   RequestType: 'CART',
@@ -867,19 +875,25 @@ app.get('/processOrders', (req, res) => {
                     };
 
                     console.log(requestJSON, 'reqest json');
-                    azureServiceBus.deleteMessage(result, (deleteError) => {
-                      if (deleteError) {
-                        console.log('delete error', deleteError);
-                      }
-                      console.log('message deleted');
-                    });
                     axios
                       .post(process.env.API_URL, requestJSON)
                       .then((placedResponse) => {
                         console.log(placedResponse, 'placed respose');
+                        azureServiceBus.deleteMessage(result, (deleteError) => {
+                          if (deleteError) {
+                            console.log('delete error', deleteError);
+                          }
+                          console.log('message deleted');
+                        });
                       })
                       .catch((placedError) => {
                         console.log(placedError, 'placed error');
+                        azureServiceBus.deleteMessage(result, (deleteError) => {
+                          if (deleteError) {
+                            console.log('delete error', deleteError);
+                          }
+                          console.log('message deleted');
+                        });
                       });
                   }
                   res.send({

@@ -134,6 +134,7 @@ const client = new AphStorageClient(
 interface UploadPrescriptionProps {
   setPrescriptionUrls: (prescription: PrescriptionFormat) => void;
   closeDialog: () => void;
+  setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -216,7 +217,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 )}
               </div>
 
-              <div className={classes.uploadCard}>
+              <div
+                className={classes.uploadCard}
+                onClick={(e) => {
+                  props.setIsEPrescriptionOpen(true);
+                  props.closeDialog();
+                }}
+              >
                 <img src={require('images/ic_prescription.svg')} alt="" />
                 <p>Select from E-Prescription</p>
               </div>

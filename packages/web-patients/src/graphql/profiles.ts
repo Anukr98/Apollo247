@@ -131,3 +131,99 @@ export const GET_COUPONS = gql`
     }
   }
 `;
+
+export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
+  query getPatientPastConsultsAndPrescriptions(
+    $consultsAndOrdersInput: PatientConsultsAndOrdersInput
+  ) {
+    getPatientPastConsultsAndPrescriptions(consultsAndOrdersInput: $consultsAndOrdersInput) {
+      consults {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        appointmentState
+        hospitalId
+        isFollowUp
+        followUpParentId
+        followUpTo
+        displayId
+        bookingDate
+        caseSheet {
+          notes
+          blobName
+          consultType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
+          }
+          doctorId
+          doctorType
+          followUp
+          followUpAfterInDays
+          followUpDate
+          id
+
+          medicinePrescription {
+            medicineConsumptionDurationInDays
+            medicineDosage
+            medicineInstructions
+            medicineTimings
+            medicineToBeTaken
+            medicineName
+            id
+            medicineUnit
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
+        displayId
+        status
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          displayName
+          experience
+          city
+          onlineConsultationFees
+          physicalConsultationFees
+          photoUrl
+          qualification
+          specialty {
+            name
+            image
+          }
+        }
+      }
+      medicineOrders {
+        id
+        orderDateTime
+        quoteDateTime
+        deliveryType
+        currentStatus
+        orderType
+        estimatedAmount
+        prescriptionImageUrl
+        shopId
+        prismPrescriptionFileId
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          quantity
+          mrp
+          id
+        }
+      }
+    }
+  }
+`;
