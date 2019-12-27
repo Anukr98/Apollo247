@@ -150,6 +150,17 @@ export const Vital: React.FC = () => {
       }, 100);
   };
 
+  const moveCursorToEnd = (element: any) => {
+    if (typeof element.selectionStart == "number") {
+      element.selectionStart = element.selectionEnd = element.value.length;
+    } else if (typeof element.createTextRange != "undefined") {
+      element.focus();
+        var range = element.createTextRange();
+        range.collapse(false);
+        range.select();
+    }
+}
+
   return loading && !patientDetails ? (
     <div></div>
   ) : (
@@ -161,7 +172,7 @@ export const Vital: React.FC = () => {
               Height
             </Typography>
             <Typography component="div" className={classes.content}>
-              <AphTextField
+              <AphTextField   onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
                 multiline
                 defaultValue={height}
@@ -196,7 +207,7 @@ export const Vital: React.FC = () => {
               Weight
             </Typography>
             <Typography component="div" className={classes.content}>
-              <AphTextField
+              <AphTextField   onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
                 multiline
                 defaultValue={weight}
@@ -232,7 +243,7 @@ export const Vital: React.FC = () => {
                 BP
               </Typography>
               <Typography component="div" className={classes.content}>
-                <AphTextField
+                <AphTextField    onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
                   fullWidth
                   multiline
                   defaultValue={bp}
@@ -267,7 +278,7 @@ export const Vital: React.FC = () => {
                 Temperature
               </Typography>
               <Typography component="div" className={classes.content}>
-                <AphTextField
+                <AphTextField    onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
                   fullWidth
                   multiline
                   defaultValue={temperature}
