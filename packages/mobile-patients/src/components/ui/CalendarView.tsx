@@ -23,7 +23,7 @@ interface CalendarRefType extends Calendar {
 export interface CalendarViewProps {
   date: Date;
   onPressDate: (date: Date) => void;
-  onWeekChanged?: (date: Date) => void;
+  // onWeekChanged?: (date: Date) => void;
   onMonthChanged?: (date: Date) => void;
   calendarType?: CALENDAR_TYPE;
   onCalendarTypeChanged?: (type: CALENDAR_TYPE) => void;
@@ -156,14 +156,29 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         minDate={props.minDate}
         onTapDate={(selectedDate: Date) => {
           console.log(selectedDate, 'onTapDate');
-          props.onPressDate(moment(selectedDate).toDate());
-          setCalendarDate(moment(selectedDate).toDate());
+          const isDiabled = props.minDate
+            ? moment(props.minDate).format('YYYY-MM-DD') > moment(selectedDate).format('YYYY-MM-DD')
+            : false;
+          if (!isDiabled) {
+            props.onPressDate(
+              moment(selectedDate)
+                .clone()
+                .toDate()
+            );
+            setCalendarDate(
+              moment(selectedDate)
+                .clone()
+                .toDate()
+            );
+          }
         }}
-        onWeekChanged={(date) => {
-          const weekDate = moment(date).toDate();
-          setCalendarDate(weekDate);
-          props.onWeekChanged && props.onWeekChanged(weekDate);
-        }}
+        // onWeekChanged={(date) => {
+        //   const weekDate = moment(date)
+        //     .clone()
+        //     .toDate();
+        //   setCalendarDate(weekDate);
+        //   props.onWeekChanged && props.onWeekChanged(weekDate);
+        // }}
       />
     );
   };

@@ -1,4 +1,4 @@
-import { aphConsole, g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, formatAddress, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -7,12 +7,8 @@ import {
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  EPrescription,
-  PhysicalPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -27,7 +23,6 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  DOWNLOAD_DOCUMENT,
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
   SEARCH_DIAGNOSTICS,
@@ -49,6 +44,7 @@ import {
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
   Clinic,
   getPlaceInfoByLatLng,
@@ -63,7 +59,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -71,8 +66,6 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { downloadDocuments } from '../../graphql/types/downloadDocuments';
-import { uploadDocument } from '../../graphql/types/uploadDocument';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -230,11 +223,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   });
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [date, setDate] = useState<Date>(
-    moment()
-      .add(1, 'day')
-      .toDate()
-  );
+  const [date, setDate] = useState<Date>(new Date());
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
@@ -335,33 +324,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       }
     }
   }, [testCentresLoaded]);
-
-  /*  useEffect(() => {
-      getCartInfo()
-        .then((cartInfo) => {
-          setcartDetails(cartInfo);
-          let cartStatus = {} as typeof medicineCardStatus;
-          cartInfo &&
-            cartInfo.items.forEach((item) => {
-              cartStatus[item.sku] = {
-                isAddedToCart: true,
-                isCardExpanded: true,
-                unit: item.qty,
-                price: item.price!,
-              };
-            });
-          setMedicineCardStatus({
-            ...medicineCardStatus,
-            ...cartStatus,
-          });
-          setMedicineList(cartInfo.items);
-          setshowSpinner(false);
-        })
-        .catch((e) => {
-          Alert.alert(JSON.stringify({ e }));
-          setshowSpinner(false);
-        });
-    }, []);*/
 
   const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
@@ -582,8 +544,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           },
         })
         .then(({ data }) => {
-          setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
-          setPinCode && setPinCode(selectedAddress.zipcode!);
+          setDeliveryAddressId!(selectedAddress.id);
+          setPinCode!(selectedAddress.zipcode!);
           console.log({ data, date }, 'GET_DIAGNOSTIC_SLOTS');
           const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
           const t = finalaray!
@@ -607,21 +569,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               };
             });
           console.log(t, 'finalaray');
-          setDiagnosticSlot &&
-            setDiagnosticSlot({
-              employeeSlotId: parseInt(t[0].label),
-              diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
-              diagnosticEmployeeCode: finalaray!.employeeCode || '',
-              slotStartTime: t[0]!.time.split('-')[0].trim(),
-              slotEndTime: t[0]!.time.split('-')[1].trim(),
-              city: selectedAddress!.city || '',
-              date: date.getTime(),
-            });
           settimeArray(t);
-          setselectedTimeSlot(t[0].time);
+          setselectedTimeSlot(g(t, '0' as any, 'time')!);
+          setDisplaySchedule(true);
         })
         .catch((e) => {
-          aphConsole.log('Error occured', { e });
+          console.log('Error occured', { e });
           setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticSlot && setDiagnosticSlot(null);
           setPinCode && setPinCode('');
@@ -860,7 +813,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>
-          <Text style={styles.dateTextStyle}>{selectedTimeSlot ? selectedTimeSlot : ''}</Text>
+          <Text style={styles.dateTextStyle}>
+            {selectedTimeSlot ? selectedTimeSlot : 'No slot selected'}
+          </Text>
         </View>
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
