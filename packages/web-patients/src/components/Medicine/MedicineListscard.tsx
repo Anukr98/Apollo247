@@ -1,12 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem } from '@material-ui/core';
+import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
 import { array } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -124,8 +124,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+
 export interface MedicineListscardProps {
-  medicineList: MedicineProduct[];
+  medicineList: MedicineProduct[] | null;
 }
 
 export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
@@ -148,7 +149,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.root}>
-        {props.medicineList &&
+        {props.medicineList && props.medicineList.length > 0 ? (
           props.medicineList.map((medicine: MedicineProduct, idx: number) => (
             <div className={classes.medicineStrip}>
               <div className={classes.medicineStripWrap}>
@@ -199,7 +200,10 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                           >
                             {options.map((option) => (
                               <MenuItem
-                                classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                                classes={{
+                                  root: classes.menuRoot,
+                                  selected: classes.menuSelected,
+                                }}
                                 value={option}
                               >
                                 {option}
@@ -256,7 +260,12 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                 )}
               </div>
             </div>
-          ))}
+          ))
+        ) : !props.medicineList ? (
+          <CircularProgress />
+        ) : (
+          'No Data Found'
+        )}
       </div>
     </div>
   );

@@ -86,7 +86,6 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
-  const [searchText] = useState('');
 
   return (
     <div className={classes.root}>
@@ -94,12 +93,11 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         {props.data &&
           props.data.map((deal) => (
             <div className={classes.card}>
-              <Link className={classes.cardLink} to={clientRoutes.searchByMedicine(searchText)}>
+              <Link
+                className={classes.cardLink}
+                to={clientRoutes.searchByMedicine('Deals-of-the-day', deal.category_id)}
+              >
                 <div className={classes.cardWrap}>
-                  {/* <div className={classes.cardTitle}>
-                    Personal
-                    <br /> Care Products
-                  </div> */}
                   <div className={classes.cardIcon}>
                     <img src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" />
                   </div>

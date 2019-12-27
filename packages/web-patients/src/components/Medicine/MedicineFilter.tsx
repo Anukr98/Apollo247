@@ -5,9 +5,7 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
-
-type Params = { searchText: string };
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -131,8 +129,10 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface MedicineFilterProps {
-  medicineFiltercall?: (value: MedicineProduct[]) => void;
+  setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
 }
+
+type Params = { searchMedicineType: string; searchText: string };
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const classes = useStyles({});
@@ -141,17 +141,18 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
 
-  const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
-
   const params = useParams<Params>();
-  const paramSearchText = params.searchText;
-  const [subtxt, setSubtxt] = useState(paramSearchText);
+  const [subtxt, setSubtxt] = useState<string | null>(
+    params.searchMedicineType === 'search-medicines' ? params.searchText : null
+  );
 
   useEffect(() => {
-    onSearchMedicine(subtxt);
+    if (subtxt) {
+      onSearchMedicine(subtxt);
+    }
   }, [subtxt]);
 
-  const onSearchMedicine = async (value: string) => {
+  const onSearchMedicine = async (value: string | null) => {
     await axios
       .post(
         apiDetails.url,
@@ -162,15 +163,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           headers: {
             Authorization: apiDetails.authToken,
           },
-          // cancelToken: new CancelToken(function executor(c) {
-          //   // An executor function receives a cancel function as a parameter
-          //   cancelSearchSuggestionsApi = c;
-          // })
         }
       )
       .then(({ data }) => {
-        setSearchMedicines(data.products);
-        props.medicineFiltercall && props.medicineFiltercall(data.products);
+        props.setMedicineList && props.setMedicineList(data.products);
       })
       .catch((e) => {
         console.log(e);
@@ -253,10 +249,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           color="primary"
           fullWidth
           onClick={(e) => {
-            if (subtxt.length > 2) {
+            if (subtxt && subtxt.length > 2) {
               onSearchMedicine(subtxt);
-            } else {
-              setSearchMedicines([]);
             }
           }}
         >

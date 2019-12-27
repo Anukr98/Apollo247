@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -145,30 +145,32 @@ export const SearchByBrand: React.FC = (props) => {
   };
   const params = useParams<Params>();
 
-  const [data, setData] = useState<products[] | []>([]);
+  const [data, setData] = useState<products[] | null>(null);
 
   useEffect(() => {
-    axios
-      .post(
-        apiDetails.url,
-        {
-          category_id: params.id,
-          page_id: 1,
-        },
-        {
-          headers: {
-            Authorization: apiDetails.authToken,
-            Accept: '*/*',
+    if (!data) {
+      axios
+        .post(
+          apiDetails.url,
+          {
+            category_id: params.id,
+            page_id: 1,
           },
-        }
-      )
-      .then((res) => {
-        if (res && res.data && res.data.products) {
-          setData(res.data.products);
-        }
-      })
-      .catch((e) => {});
-  }, []);
+          {
+            headers: {
+              Authorization: apiDetails.authToken,
+              Accept: '*/*',
+            },
+          }
+        )
+        .then((res) => {
+          if (res && res.data && res.data.products) {
+            setData(res.data.products);
+          }
+        })
+        .catch((e) => {});
+    }
+  }, [data]);
 
   return (
     <div className={classes.welcome}>
@@ -197,6 +199,8 @@ export const SearchByBrand: React.FC = (props) => {
                     <MedicinesCartContext.Consumer>
                       {() => <MedicineCard data={data} />}
                     </MedicinesCartContext.Consumer>
+                  ) : !data ? (
+                    <CircularProgress />
                   ) : (
                     <h1 style={{ backgroundColor: 'white', color: 'black' }}>No Data Found</h1>
                   )}
