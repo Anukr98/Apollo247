@@ -8,6 +8,7 @@ import {
   DiagnosticOrderLineItems,
   DIAGNOSTIC_ORDER_STATUS,
   Gender,
+  DiagnosticOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -351,7 +352,7 @@ const SaveDiagnosticOrder: Resolver<
       JSON.stringify(preBookingInput),
       ''
     );
-    console.log(preBookingUrl, 'preBookingUrl');
+    console.log(preBookingInput, preBookingUrl, 'preBookingInput');
     const preBookingResp = await fetch(preBookingUrl, {
       method: 'POST',
       body: JSON.stringify(preBookingInput),
@@ -523,6 +524,13 @@ const SaveDiagnosticOrder: Resolver<
           addProceResp.successList[0],
           DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
         );
+        const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+          diagnosticOrders: saveOrder,
+          orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          statusDate: new Date(),
+          hideStatus: false,
+        };
+        await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
       }
     } else {
       await diagnosticOrdersRepo.updateDiagnosticOrder(
@@ -531,6 +539,13 @@ const SaveDiagnosticOrder: Resolver<
         '',
         DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
       );
+      const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+        diagnosticOrders: saveOrder,
+        orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+        statusDate: new Date(),
+        hideStatus: false,
+      };
+      await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
     }
   }
   return {

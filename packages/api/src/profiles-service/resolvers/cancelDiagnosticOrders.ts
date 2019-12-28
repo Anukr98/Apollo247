@@ -3,7 +3,11 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { DiagnosticOrdersRepository } from 'profiles-service/repositories/diagnosticOrdersRepository';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
-import { DiagnosticOrders } from 'profiles-service/entities';
+import {
+  DiagnosticOrders,
+  DiagnosticOrdersStatus,
+  DIAGNOSTIC_ORDER_STATUS,
+} from 'profiles-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const cancelDiagnosticOrdersTypeDefs = gql`
@@ -99,7 +103,13 @@ const cancelDiagnosticOrder: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_ORDER_ID, undefined, {});
   }
   await diagnosticOrdersRepo.cancelDiagnosticOrder(orderDetails.id);
-
+  const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+    diagnosticOrders: orderDetails,
+    orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+    statusDate: new Date(),
+    hideStatus: false,
+  };
+  await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
   return { message: 'Order cancelled successfully' };
 };
 
