@@ -29,6 +29,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
     pharmaRequest: String
+    orderTat: String
     medicineOrderLineItems: [MedicineOrderLineItems]
     medicineOrdersStatus: [MedicineOrdersStatus]
     medicineOrderPayments: [MedicineOrderPayments]

@@ -29,6 +29,10 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
     return this.update(id, { fareyeId, preBookingId, orderStatus });
   }
 
+  updateDiagnosticOrderDetails(id: string, diagnosticAttrs: Partial<DiagnosticOrders>) {
+    return this.update(id, diagnosticAttrs);
+  }
+
   saveDiagnosticOrderLineItem(lineItemAttrs: Partial<DiagnosticOrderLineItems>) {
     return DiagnosticOrderLineItems.create(lineItemAttrs)
       .save()
@@ -52,6 +56,17 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       where: { id },
       relations: ['diagnosticOrderLineItems', 'diagnosticOrderLineItems.diagnostics'],
     });
+  }
+
+  getOrderDetailsById(displayId: number) {
+    return this.findOne({
+      where: { displayId },
+      relations: ['diagnosticOrderLineItems', 'diagnosticOrderLineItems.diagnostics'],
+    });
+  }
+
+  cancelDiagnosticOrder(id: string) {
+    return this.update(id, { orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED });
   }
 
   saveDiagnosticOrderPayment(paymentAttrs: Partial<DiagnosticOrderPayments>) {

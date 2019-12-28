@@ -27,6 +27,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     PICKUP_REQUESTED
     PICKUP_CONFIRMED
     ORDER_FAILED
+    ORDER_CANCELLED
   }
 
   input DiagnosticOrderInput {
