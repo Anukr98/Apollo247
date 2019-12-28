@@ -769,7 +769,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         'ARRAY_AGG("id" order by appointment.appointmentDateTime desc ) as appointmentids',
       ])
       .addSelect('COUNT(*) AS consultsCount')
-      .where('appointment.doctorId = :doctorId', { doctorId: doctorId });
+      .where('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.status = :status', { status: STATUS.COMPLETED });
 
     if (type == patientLogType.FOLLOW_UP) {
       results.andWhere('appointment.appointmentDateTime > :tenDays', {
