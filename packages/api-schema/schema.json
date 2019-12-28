@@ -2536,13 +2536,13 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "MALE",
+            "name": "FEMALE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "FEMALE",
+            "name": "MALE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -7624,6 +7624,12 @@
             "deprecationReason": null
           },
           {
+            "name": "JUNIOR",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "PAYROLL",
             "description": null,
             "isDeprecated": false,
@@ -7631,12 +7637,6 @@
           },
           {
             "name": "STAR_APOLLO",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "JUNIOR",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -9857,6 +9857,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "AS_NEEDED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -11353,12 +11359,48 @@
         "description": null,
         "fields": [
           {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "medicineConsumptionDuration",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "medicineConsumptionDurationInDays",
             "description": null,
             "args": [],
             "type": {
               "kind": "SCALAR",
               "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "medicineConsumptionDurationUnit",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "MEDICINE_CONSUMPTION_DURATION",
               "ofType": null
             },
             "isDeprecated": false,
@@ -11377,12 +11419,24 @@
             "deprecationReason": null
           },
           {
-            "name": "medicineUnit",
+            "name": "medicineFormTypes",
             "description": null,
             "args": [],
             "type": {
               "kind": "ENUM",
-              "name": "MEDICINE_UNIT",
+              "name": "MEDICINE_FORM_TYPES",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "medicineFrequency",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "MEDICINE_FREQUENCY",
               "ofType": null
             },
             "isDeprecated": false,
@@ -11390,6 +11444,18 @@
           },
           {
             "name": "medicineInstructions",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "medicineName",
             "description": null,
             "args": [],
             "type": {
@@ -11433,24 +11499,12 @@
             "deprecationReason": null
           },
           {
-            "name": "medicineName",
+            "name": "medicineUnit",
             "description": null,
             "args": [],
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "id",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "kind": "ENUM",
+              "name": "MEDICINE_UNIT",
               "ofType": null
             },
             "isDeprecated": false,
@@ -11464,6 +11518,105 @@
       },
       {
         "kind": "ENUM",
+        "name": "MEDICINE_CONSUMPTION_DURATION",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "DAYS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MONTHS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "WEEKS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "MEDICINE_FORM_TYPES",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "GEL_LOTION_OINTMENT",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "OTHERS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "MEDICINE_FREQUENCY",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "AS_NEEDED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FIVE_TIMES_A_DAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FOUR_TIMES_A_DAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ONCE_A_DAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "THRICE_A_DAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "TWICE_A_DAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
         "name": "MEDICINE_UNIT",
         "description": null,
         "fields": null,
@@ -11471,7 +11624,7 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "TABLET",
+            "name": "BOTTLE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11483,7 +11636,7 @@
             "deprecationReason": null
           },
           {
-            "name": "ML",
+            "name": "CREAM",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11495,7 +11648,97 @@
             "deprecationReason": null
           },
           {
+            "name": "GEL",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INJECTION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "LOTION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ML",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "NA",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "OINTMENT",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "OTHERS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "POWDER",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ROTACAPS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SACHET",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SOAP",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SOLUTION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SPRAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SUSPENSION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SYRUP",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "TABLET",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -24722,11 +24965,41 @@
         "fields": null,
         "inputFields": [
           {
+            "name": "id",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "medicineConsumptionDuration",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "medicineConsumptionDurationInDays",
             "description": null,
             "type": {
               "kind": "SCALAR",
               "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "medicineConsumptionDurationUnit",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "MEDICINE_CONSUMPTION_DURATION",
               "ofType": null
             },
             "defaultValue": null
@@ -24742,17 +25015,37 @@
             "defaultValue": null
           },
           {
-            "name": "medicineUnit",
+            "name": "medicineFormTypes",
             "description": null,
             "type": {
               "kind": "ENUM",
-              "name": "MEDICINE_UNIT",
+              "name": "MEDICINE_FORM_TYPES",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "medicineFrequency",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "MEDICINE_FREQUENCY",
               "ofType": null
             },
             "defaultValue": null
           },
           {
             "name": "medicineInstructions",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "medicineName",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -24790,21 +25083,11 @@
             "defaultValue": null
           },
           {
-            "name": "medicineName",
+            "name": "medicineUnit",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "id",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "kind": "ENUM",
+              "name": "MEDICINE_UNIT",
               "ofType": null
             },
             "defaultValue": null
@@ -24823,13 +25106,13 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "PENDING",
+            "name": "COMPLETED",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "COMPLETED",
+            "name": "PENDING",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

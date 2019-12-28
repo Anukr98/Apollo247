@@ -69,20 +69,20 @@ export type DiagnosticJson = {
 
 export const caseSheetTypeDefs = gql`
   enum CASESHEET_STATUS {
-    PENDING
     COMPLETED
+    PENDING
   }
 
   enum DoctorType {
     APOLLO
+    JUNIOR
     PAYROLL
     STAR_APOLLO
-    JUNIOR
   }
 
   enum Gender {
-    MALE
     FEMALE
+    MALE
     OTHER
   }
 
@@ -91,6 +91,7 @@ export const caseSheetTypeDefs = gql`
     MORNING
     NIGHT
     NOON
+    AS_NEEDED
   }
 
   enum MEDICINE_TO_BE_TAKEN {
@@ -99,11 +100,26 @@ export const caseSheetTypeDefs = gql`
   }
 
   enum MEDICINE_UNIT {
-    TABLET
+    BOTTLE
     CAPSULE
-    ML
+    CREAM
     DROPS
+    GEL
+    INJECTION
+    LOTION
+    ML
     NA
+    OINTMENT
+    OTHERS
+    POWDER
+    ROTACAPS
+    SACHET
+    SOAP
+    SOLUTION
+    SPRAY
+    SUSPENSION
+    SYRUP
+    TABLET
   }
 
   enum Relation {
@@ -233,27 +249,53 @@ export const caseSheetTypeDefs = gql`
   input DiagnosticPrescriptionInput {
     itemname: String
   }
+  enum MEDICINE_FORM_TYPES {
+    GEL_LOTION_OINTMENT
+    OTHERS
+  }
+  enum MEDICINE_CONSUMPTION_DURATION {
+    DAYS
+    MONTHS
+    WEEKS
+  }
+
+  enum MEDICINE_FREQUENCY {
+    AS_NEEDED
+    FIVE_TIMES_A_DAY
+    FOUR_TIMES_A_DAY
+    ONCE_A_DAY
+    THRICE_A_DAY
+    TWICE_A_DAY
+  }
 
   type MedicinePrescription {
+    id: String
+    medicineConsumptionDuration: String
     medicineConsumptionDurationInDays: String
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION
     medicineDosage: String
-    medicineUnit: MEDICINE_UNIT
+    medicineFormTypes: MEDICINE_FORM_TYPES
+    medicineFrequency: MEDICINE_FREQUENCY
     medicineInstructions: String
+    medicineName: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
-    medicineName: String
-    id: String
+    medicineUnit: MEDICINE_UNIT
   }
 
   input MedicinePrescriptionInput {
+    id: String
+    medicineConsumptionDuration: String
     medicineConsumptionDurationInDays: String
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION
     medicineDosage: String
-    medicineUnit: MEDICINE_UNIT
+    medicineFormTypes: MEDICINE_FORM_TYPES
+    medicineFrequency: MEDICINE_FREQUENCY
     medicineInstructions: String
+    medicineName: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
-    medicineName: String
-    id: String
+    medicineUnit: MEDICINE_UNIT
   }
 
   type OtherInstructions {
@@ -482,20 +524,6 @@ const getCaseSheet: Resolver<
     juniorDoctorNotes,
     juniorDoctorCaseSheet,
   };
-};
-
-type UpdateCaseSheetInput = {
-  symptoms: string;
-  notes: string;
-  diagnosis: string;
-  diagnosticPrescription: string;
-  followUp: boolean;
-  followUpDate: string;
-  followUpAfterInDays: string;
-  otherInstructions: string;
-  medicinePrescription: string;
-  id: string;
-  status: CASESHEET_STATUS;
 };
 
 type PatientPrescriptionSentResponse = {

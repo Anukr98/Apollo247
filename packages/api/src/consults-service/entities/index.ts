@@ -433,21 +433,25 @@ export class JuniorAppointmentSessions extends BaseEntity {
 //Junior AppointmentSessions ends
 
 //case sheet starts
+export enum MEDICINE_FORM_TYPES {
+  GEL_LOTION_OINTMENT = 'GEL_LOTION_OINTMENT',
+  OTHERS = 'OTHERS',
+}
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = 'DAYS',
   MONTHS = 'MONTHS',
   WEEKS = 'WEEKS',
 }
 export enum MEDICINE_FREQUENCY {
-  AS_NEEDED = 'AS NEEDED',
+  AS_NEEDED = 'AS_NEEDED',
   FIVE_TIMES_A_DAY = 'FIVE_TIMES_A_DAY',
-  FOUR_TIMES_A_DAY = 'FOUR TIMES A DAY',
-  ONCE_A_DAY = 'ONCE A DAY',
-  THRICE_A_DAY = 'THRICE A DAY',
-  TWICE_A_DAY = 'TWICE A DAY',
+  FOUR_TIMES_A_DAY = 'FOUR_TIMES_A_DAY',
+  ONCE_A_DAY = 'ONCE_A_DAY',
+  THRICE_A_DAY = 'THRICE_A_DAY',
+  TWICE_A_DAY = 'TWICE_A_DAY',
 }
 export enum MEDICINE_TIMINGS {
-  AS_NEEDED = 'AS NEEDED',
+  AS_NEEDED = 'AS_NEEDED',
   EVENING = 'EVENING',
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
@@ -489,23 +493,27 @@ export enum MEDICINE_UNIT {
 export type CaseSheetMedicinePrescription = {
   externalId: string;
   id: string;
+  medicineConsumptionDuration: string;
   medicineConsumptionDurationInDays: number;
-  medicineDosage: string;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION;
+  medicineDosage: string; //take
+  medicineFormTypes: MEDICINE_FORM_TYPES;
+  medicineFrequency: MEDICINE_FREQUENCY;
   medicineInstructions?: string;
   medicineName: string;
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
-  medicineUnit: string;
+  medicineUnit: MEDICINE_UNIT;
 };
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = { itemname: string };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
-  symptom: string;
-  since: string;
+  details: string;
   howOften: string;
   severity: string;
-  details: string;
+  since: string;
+  symptom: string;
 };
 
 @Entity()

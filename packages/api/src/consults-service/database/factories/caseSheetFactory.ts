@@ -8,6 +8,10 @@ import {
   CaseSheetDiagnosisPrescription,
   CaseSheetOtherInstruction,
   APPOINTMENT_TYPE,
+  MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FREQUENCY,
+  MEDICINE_FORM_TYPES,
 } from 'consults-service/entities';
 import faker from 'faker';
 import _random from 'lodash/random';
@@ -30,16 +34,21 @@ const buildSymptom = (): CaseSheetSymptom => {
 
 const buildMedicinePrescription = (): CaseSheetMedicinePrescription => {
   const timesPerDay = _random(1, 3);
+
   return {
     id: faker.random.uuid(),
     externalId: faker.random.uuid(),
     medicineName: faker.commerce.productName(),
     medicineConsumptionDurationInDays: _random(3, 20),
     medicineDosage: `${timesPerDay} times/day`,
-    medicineUnit: '',
+    medicineUnit: randomEnum(MEDICINE_UNIT),
     medicineInstructions: faker.random.boolean ? faker.lorem.sentences(_random(1, 5)) : undefined,
     medicineTimings: _times(timesPerDay, () => randomEnum(MEDICINE_TIMINGS)),
     medicineToBeTaken: _times(timesPerDay, () => randomEnum(MEDICINE_TO_BE_TAKEN)),
+    medicineConsumptionDuration: '',
+    medicineConsumptionDurationUnit: randomEnum(MEDICINE_CONSUMPTION_DURATION),
+    medicineFrequency: randomEnum(MEDICINE_FREQUENCY),
+    medicineFormTypes: randomEnum(MEDICINE_FORM_TYPES),
   };
 };
 
