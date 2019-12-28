@@ -96,6 +96,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     displayId: Int!
     createdDate: DateTime!
     diagnosticOrderLineItems: [DiagnosticOrderLineItems]
+    diagnosticOrdersStatus: [DiagnosticOrdersStatus]
   }
 
   type DiagnosticOrderLineItems {
@@ -104,6 +105,12 @@ export const saveDiagnosticOrderTypeDefs = gql`
     price: Float
     quantity: Int
     diagnostics: Diagnostics
+  }
+
+  type DiagnosticOrdersStatus {
+    id: ID!
+    orderStatus: DIAGNOSTIC_ORDER_STATUS
+    createdDate: DateTime
   }
 
   extend type Mutation {
