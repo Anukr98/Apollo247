@@ -8,6 +8,7 @@ const session = require('express-session');
 const stripTags = require('striptags');
 const crypto = require('crypto');
 const azure = require('azure-sb');
+const fs = require('fs');
 require('dotenv').config();
 
 app.use(
@@ -613,6 +614,51 @@ app.get('/diagnostic-pg-error', (req, res) => {
 });
 
 app.get('/processOrders', (req, res) => {
+  let deliveryCity = 'Kakinada',
+    deliveryZipcode = '500045',
+    deliveryAddress = 'Kakinada';
+  function getAddressDetails(addressId) {
+    return new Promise(async (resolve, reject) => {
+      axios({
+        url: process.env.API_URL,
+        method: 'post',
+        data: {
+          query: `
+        query {
+          getPatientAddressById(id:"${addressId}") {
+            patientAddress{
+                id
+                city
+                state
+                zipcode
+                addressLine1
+                addressLine2
+                landmark
+              }
+          }
+        }
+      `,
+        },
+      })
+        .then((response) => {
+          deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
+          deliveryZipcode = response.data.data.getPatientAddressById.patientAddress.zipcode;
+          deliveryAddress =
+            response.data.data.getPatientAddressById.patientAddress.addressLine1 +
+            ' ' +
+            response.data.data.getPatientAddressById.patientAddress.addressLine2;
+          console.log(
+            response,
+            response.data.data.getPatientAddressById.patientAddress.state,
+            'address resp'
+          );
+          resolve(deliveryAddress);
+        })
+        .catch((error) => {
+          console.log(error, 'address error');
+        });
+    });
+  }
   let queueMessage = '';
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
@@ -672,6 +718,7 @@ app.get('/processOrders', (req, res) => {
                     paymentType
                     amountPaid
                     paymentRefId
+                    paymentStatus
                   }
                 }
               }
@@ -679,7 +726,7 @@ app.get('/processOrders', (req, res) => {
           `,
           },
         })
-          .then((response) => {
+          .then(async (response) => {
             if (
               response &&
               response.data &&
@@ -688,56 +735,18 @@ app.get('/processOrders', (req, res) => {
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
             ) {
               console.log(
-                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId,
                 'order details233'
               );
-              let deliveryCity = 'Kakinada',
-                deliveryZipcode = '500045',
-                deliveryAddress = 'Kakinada';
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
                   '' &&
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
                   null
               ) {
-                axios({
-                  url: process.env.API_URL,
-                  method: 'post',
-                  data: {
-                    query: `
-                  query {
-                    getPatientAddressById(id:"${response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId}") {
-                      patientAddress{
-                          id
-                          city
-                          state
-                          zipcode
-                          addressLine1
-                          addressLine2
-                          landmark
-                        }
-                    }
-                  }
-                `,
-                  },
-                })
-                  .then((response) => {
-                    deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
-                    deliveryZipcode =
-                      response.data.data.getPatientAddressById.patientAddress.zipcode;
-                    deliveryAddress =
-                      response.data.data.getPatientAddressById.patientAddress.addressLine1 +
-                      ' ' +
-                      response.data.data.getPatientAddressById.patientAddress.addressLine2;
-                    console.log(
-                      response,
-                      response.data.data.getPatientAddressById.patientAddress.state,
-                      'address resp'
-                    );
-                  })
-                  .catch((error) => {
-                    console.log(error, 'address error');
-                  });
+                await getAddressDetails(
+                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId
+                );
               }
               const responseOrderId =
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
@@ -783,7 +792,7 @@ app.get('/processOrders', (req, res) => {
               }
               let payStatus =
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                  .medicineOrderPayments[0].paymentType;
+                  .medicineOrderPayments[0].paymentStatus;
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                   .medicineOrderPayments[0].paymentType == 'COD'
@@ -855,6 +864,16 @@ app.get('/processOrders', (req, res) => {
                 },
               };
               console.log(pharmaInput, 'pharmaInput');
+              const fileName = 'pharmalogs/' + new Date().toDateString() + '-pharmaLogs.txt';
+              let content =
+                new Date().toString() +
+                '\n---------------------------\n' +
+                JSON.stringify(pharmaInput) +
+                '\n-------------------\n';
+              fs.appendFile(fileName, content, function(err) {
+                if (err) throw err;
+                console.log('Updated!');
+              });
               axios
                 .post(process.env.PHARMA_ORDER_PLACE_URL, JSON.stringify(pharmaInput), {
                   headers: {
@@ -865,6 +884,11 @@ app.get('/processOrders', (req, res) => {
                 .then((resp) => {
                   console.log('pharma resp', resp, resp.data.ordersResult);
                   //const orderData = JSON.parse(resp.data);
+                  content = resp.data.ordersResult + '\n==================================\n';
+                  fs.appendFile(fileName, content, function(err) {
+                    if (err) throw err;
+                    console.log('Updated!');
+                  });
                   //console.log(orderData, 'order data');
                   if (resp.data.ordersResult.Status == true) {
                     const requestJSON = {
