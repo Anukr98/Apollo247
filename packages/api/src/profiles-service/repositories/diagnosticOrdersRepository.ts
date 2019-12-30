@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import {
   DiagnosticOrders,
   DiagnosticOrderLineItems,
