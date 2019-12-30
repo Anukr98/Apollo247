@@ -10,8 +10,11 @@ import {
   getPatientPastConsultsAndPrescriptions,
   getPatientPastConsultsAndPrescriptionsVariables,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -188,20 +191,22 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const TabContainer: React.FC = (props) => {
-  return <Typography component="div">{props.children}</Typography>;
-};
-
 type EPrescriptionCardProps = {
   setIsEPrescriptionOpen?: (isEPrescriptionOpen: boolean) => void;
   setPhrPrescriptionData?: (phrPrescriptionData: Prescription[]) => void;
+  setMedicineOrderData?: (medicineOrderData: MedicineOrder[]) => void;
+  phrPrescriptionData?: Prescription[] | null;
+  medicineOrderData?: MedicineOrder[] | null;
 };
+
+let selectedPrescriptions: Prescription[] = [];
+let selectedMedicalRecords: MedicineOrder[] = [];
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
-  const [tabValue, setTabValue] = useState<number>(0);
   const { currentPatient } = useAllCurrentPatients();
   const [pastPrescriptions, setPastPrescriptions] = useState<Prescription[] | null>(null);
+  const [pastMedicalOrders, setPastMedicalOrders] = useState<MedicineOrder[] | null>(null);
 
   const patientPastConsultAndPrescriptionMutation = useMutation<
     getPatientPastConsultsAndPrescriptions,
@@ -216,150 +221,137 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   });
 
   useEffect(() => {
-    if (!pastPrescriptions) {
+    if (props.phrPrescriptionData && props.phrPrescriptionData.length > 0) {
+      selectedPrescriptions = props.phrPrescriptionData;
+    }
+  }, [props.phrPrescriptionData]);
+
+  useEffect(() => {
+    if (props.medicineOrderData && props.medicineOrderData.length > 0) {
+      selectedMedicalRecords = props.medicineOrderData;
+    }
+  }, [props.medicineOrderData]);
+
+  useEffect(() => {
+    if (!pastPrescriptions || !pastMedicalOrders) {
       patientPastConsultAndPrescriptionMutation()
         .then(({ data }: any) => {
           if (
             data &&
             data.getPatientPastConsultsAndPrescriptions &&
-            data.getPatientPastConsultsAndPrescriptions.consults
+            (data.getPatientPastConsultsAndPrescriptions.consults ||
+              data.getPatientPastConsultsAndPrescriptions.medicineOrders)
           ) {
-            setPastPrescriptions(data.getPatientPastConsultsAndPrescriptions.consults);
+            data.getPatientPastConsultsAndPrescriptions.consults &&
+              setPastPrescriptions(data.getPatientPastConsultsAndPrescriptions.consults || []);
+            data.getPatientPastConsultsAndPrescriptions.medicineOrders &&
+              setPastMedicalOrders(
+                data.getPatientPastConsultsAndPrescriptions.medicineOrders || []
+              );
+          } else {
+            setPastPrescriptions([]);
+            setPastMedicalOrders([]);
           }
         })
         .catch((e) => console.log(e));
     }
-  }, [pastPrescriptions]);
+  }, [pastPrescriptions, pastMedicalOrders]);
 
-  const selectedPrescriptions: Prescription[] = [];
+  const DATE_FORMAT = 'DD MMM YYYY';
+
+  const getMedicines = (
+    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
+  ) =>
+    medicines
+      .filter((item) => item!.medicineName)
+      .map((item) => item!.medicineName)
+      .join(', ');
 
   return (
     <div className={classes.root}>
       <div className={classes.tabsWrapper}>
-        <Tabs
-          value={tabValue}
-          classes={{
-            root: classes.tabsRoot,
-            indicator: classes.tabsIndicator,
-          }}
-          onChange={(e, newValue) => {
-            setTabValue(newValue);
-          }}
-        >
-          <Tab
-            classes={{
-              root: classes.tabRoot,
-              selected: classes.tabSelected,
-            }}
-            label="Consults & Rx (18)"
-          />
-          <Tab
-            classes={{
-              root: classes.tabRoot,
-              selected: classes.tabSelected,
-            }}
-            disabled
-            label="Medical Records (27)"
-          />
-        </Tabs>
-        {tabValue === 0 && (
-          <TabContainer>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(45vh)'}>
-              {pastPrescriptions && pastPrescriptions.length > 0 ? (
-                pastPrescriptions.map((pastPrescription) => (
-                  <div className={classes.prescriptionGroup}>
-                    <AphCheckbox
-                      onChange={() => selectedPrescriptions.push(pastPrescription)}
-                      className={classes.checkbox}
-                      color="primary"
-                    />
-                    <div className={classes.followUpWrapper}>
-                      <div className={classes.followUpDetails}>
-                        <div className={classes.imgThumb}>
-                          <img src={require('images/ic_prescription_blue.svg')} alt="" />
-                        </div>
-                        <div className={classes.followUpText}>Follow-up to 20 Apr 2019</div>
-                      </div>
-                      <div className={classes.fileInfo}>
-                        <Avatar
-                          className={classes.doctorImage}
-                          src={require('images/doctordp_01.png')}
-                        />
-                        <div>
-                          <div className={classes.doctorName}>
-                            Dr.{' '}
-                            {pastPrescription.doctorInfo && pastPrescription.doctorInfo.firstName}
-                          </div>
-                          <div className={classes.patientHistory}>
-                            {pastPrescription.caseSheet &&
-                              pastPrescription.caseSheet.length > 0 &&
-                              pastPrescription.caseSheet.map((caseSheet) =>
-                                caseSheet && caseSheet.symptoms
-                                  ? caseSheet.symptoms.map(
-                                      (symptomData) =>
-                                        symptomData &&
-                                        symptomData.symptom && <span>{symptomData.symptom} </span>
-                                    )
-                                  : null
-                              )}
-                          </div>
-                        </div>
-                      </div>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(45vh)'}>
+          {pastPrescriptions &&
+            pastPrescriptions.length > 0 &&
+            pastPrescriptions.map((pastPrescription: Prescription) => (
+              <>
+                <div className={classes.prescriptionGroup}>
+                  <AphCheckbox
+                    onChange={() => {
+                      selectedPrescriptions.push(pastPrescription);
+                    }}
+                    className={classes.checkbox}
+                    color="primary"
+                  />
+                  <div className={classes.fileInfo}>
+                    {pastPrescription.doctorInfo
+                      ? `${pastPrescription.doctorInfo.salutation} ${pastPrescription.doctorInfo.firstName}`
+                      : null}
+                    <div className={classes.priscriptionInfo}>
+                      <span className={classes.name}>
+                        {currentPatient && currentPatient.firstName}
+                      </span>
+                      <span className={classes.date}>
+                        {' '}
+                        {moment(pastPrescription.appointmentDateTime).format(DATE_FORMAT)}
+                      </span>
+                      <span>
+                        {pastPrescription.caseSheet &&
+                          pastPrescription.caseSheet.length > 0 &&
+                          pastPrescription.caseSheet.map((caseSheet) =>
+                            caseSheet && caseSheet.symptoms
+                              ? caseSheet.symptoms.map(
+                                  (symptomData) =>
+                                    symptomData &&
+                                    symptomData.symptom && <span>{symptomData.symptom} </span>
+                                )
+                              : null
+                          )}
+                      </span>
                     </div>
                   </div>
-                ))
-              ) : (
-                <CircularProgress />
-              )}
-            </Scrollbars>
-          </TabContainer>
-        )}
-        {tabValue === 1 && (
-          <TabContainer>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(45vh)'}>
+                </div>
+              </>
+            ))}
+          {pastMedicalOrders && pastMedicalOrders.length > 0 ? (
+            pastMedicalOrders.map((medicalOrder: MedicineOrder) => (
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.checkbox} color="primary" />
-                <div className={classes.followUpWrapper}>
-                  <div className={classes.followUpDetails}>
-                    <div className={classes.followUpText}>12th August 2019</div>
-                  </div>
-                  <div>
-                    <div className={classes.cbcText}>CBC</div>
-                    <div className={classes.typeOfClinic}>Apollo Sugar Clinic, Hyderabad</div>
+                <AphCheckbox
+                  onChange={() => selectedMedicalRecords.push(medicalOrder)}
+                  className={classes.checkbox}
+                  color="primary"
+                />
+                <div className={classes.fileInfo}>
+                  {`Meds Rx ${medicalOrder.id &&
+                    medicalOrder.id.substring(0, medicalOrder.id.indexOf('-'))}`}
+                  <div className={classes.priscriptionInfo}>
+                    <span className={classes.name}>
+                      {currentPatient && currentPatient.firstName}
+                    </span>
+                    <span className={classes.date}>
+                      {moment(medicalOrder.quoteDateTime).format(DATE_FORMAT)}
+                    </span>
+                    <span>
+                      {medicalOrder && medicalOrder.medicineOrderLineItems && (
+                        <div className={classes.patientHistory}>
+                          {medicalOrder.medicineOrderLineItems.length > 0 &&
+                            getMedicines(medicalOrder.medicineOrderLineItems)}
+                        </div>
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.checkbox} color="primary" />
-                <div className={classes.followUpWrapper}>
-                  <div className={classes.followUpDetails}>
-                    <div className={classes.followUpText}>12th August 2019</div>
-                  </div>
-                  <div>
-                    <div className={classes.cbcText}>CBC</div>
-                    <div className={classes.typeOfClinic}>Apollo Sugar Clinic, Hyderabad</div>
-                  </div>
-                </div>
-              </div>
-              <div className={classes.prescriptionGroup}>
-                <AphCheckbox className={classes.checkbox} color="primary" />
-                <div className={classes.followUpWrapper}>
-                  <div className={classes.followUpDetails}>
-                    <div className={classes.followUpText}>12th August 2019</div>
-                  </div>
-                  <div>
-                    <div className={classes.cbcText}>CBC</div>
-                    <div className={classes.typeOfClinic}>Apollo Sugar Clinic, Hyderabad</div>
-                  </div>
-                </div>
-              </div>
-            </Scrollbars>
-          </TabContainer>
-        )}
+            ))
+          ) : (
+            <CircularProgress />
+          )}
+        </Scrollbars>
         <div className={classes.uploadButtonWrapper}>
           <AphButton
             onClick={() => {
               props.setPhrPrescriptionData && props.setPhrPrescriptionData(selectedPrescriptions);
+              props.setMedicineOrderData && props.setMedicineOrderData(selectedMedicalRecords);
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
             }}
             className={classes.uploadPrescription}
