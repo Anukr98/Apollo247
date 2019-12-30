@@ -137,9 +137,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const orderDetails = ((!loading && order) ||
     {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
 
-  useEffect(() => {
-    setRescheduleVisible(true);
-  }, []);
+  // useEffect(() => {
+  //   setRescheduleVisible(true);
+  // }, []);
 
   const handleBack = () => {
     if (!goToHomeOnBack) {
@@ -331,7 +331,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             title={`ORDER #${orderDetails.displayId || ''}`}
             titleStyle={{ marginHorizontal: 10 }}
             container={{ borderBottomWidth: 0 }}
-            rightComponent={renderMoreMenu()}
+            // rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
