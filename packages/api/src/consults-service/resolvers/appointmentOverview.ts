@@ -5,11 +5,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { Appointment } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { Patient } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format, addMinutes, differenceInMinutes, addDays, subDays, subMinutes } from 'date-fns';
 
 export const getAppointmentOverviewTypeDefs = gql`
     type AppointmentList {
@@ -57,21 +53,13 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
     docRepo: doctorsDb.getCustomRepository(DoctorRepository),
 });
 
-const checkAuth = async (docRepo: DoctorRepository, firebaseUid: string, doctorId: string) => {
-    const currentDoctor = await docRepo.getDoctorDetails(firebaseUid);
-    const authorized = currentDoctor && currentDoctor.id && currentDoctor.id === doctorId;
-    if (!authorized) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-};
-
 const getAppointmentOverview: Resolver<
     null,
     GetAllDoctorAppointmentsInputArgs,
     ConsultServiceContext,
     getAppointmentOverviewResult
 > = async (parent, { appointmentOverviewInput }, context) => {
-    const { patRepo, apptRepo, docRepo } = getRepos(context);
-    // await checkAuth(docRepo, context.firebaseUid, doctorId);
-    //const formatDateTime = format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
+    const { apptRepo } = getRepos(context);
     const doctorId = appointmentOverviewInput.doctorId;
     const fromDate = appointmentOverviewInput.fromDate;
     const toDate = appointmentOverviewInput.toDate;
@@ -83,8 +71,6 @@ const getAppointmentOverview: Resolver<
         },
         order: { appointmentDateTime: 'DESC' },
     });
-    const currentDateTime = format(new Date(), 'yyyy-MM-dd hh:mm') + 'T' + format(new Date(), 'HH:mm') + ':00.000Z';
-    const NextHourDateTime = format(new Date(), 'yyyy-MM-dd hh:mm') + 'T' + format(new Date(), 'HH:mm') + ':00.000Z';
     const completedAppointments = await apptRepo.getCompletedAppointments(doctorId, fromDate, toDate, 0);
     const cannceldAppointments = await apptRepo.getCompletedAppointments(doctorId, fromDate, toDate, 1);
     const doctorAway = await apptRepo.getDoctorAway(doctorId, fromDate, toDate);
@@ -100,7 +86,7 @@ const getAppointmentOverview: Resolver<
         completed: completedAppointments,
         cancelled: cannceldAppointments,
         upcoming: inNextHour,
-        doctorAway: 0,
+        doctorAway: doctorAway,
 
     };
     return appointmentOverviewOutput;
