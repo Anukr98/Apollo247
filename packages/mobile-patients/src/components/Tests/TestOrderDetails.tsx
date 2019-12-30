@@ -1,45 +1,49 @@
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOrderSummaryView';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
+  CANCEL_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+  UPDATE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Overlay } from 'react-native-elements';
+import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
+  cancelDiagnosticOrder,
+  cancelDiagnosticOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrder';
 import {
-  getDiagnosticOrdersList,
-  getDiagnosticOrdersListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+  updateDiagnosticOrder,
+  updateDiagnosticOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
+import { OrderCancelOverlay } from './OrderCancelOverlay';
+import {
+  SlotInfo,
+  TestScheduleOverlay,
+  TestScheduleType,
+} from '@aph/mobile-patients/src/components/Tests/TestScheduleOverlay';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -67,14 +71,21 @@ const styles = StyleSheet.create({
 });
 
 const cancelOptions: [string, string][] = [
-  ['1', 'Booked from else where'],
-  ['2', 'Pick up person did not turn up'],
-  ['3', 'Not available at selected time'],
-  ['4', 'Pick up person was late'],
-  ['5', 'Do not require medicines any longer'],
-  ['6', 'Unhappy with the discounts'],
-  ['7', 'Others'],
-];
+  'Booked from else where',
+  'Pick up person did not turn up',
+  'Not available at selected time',
+  'Pick up person was late',
+  'Do not require medicines any longer',
+  'Unhappy with the discounts',
+  'Others',
+].map((val, idx) => [(idx + 1).toString(), val]);
+
+const rescheduleOptions: [string, string][] = [
+  'Not available at selected time',
+  'Pick up person was late',
+  'Not in fasting condition',
+  'Others',
+].map((val, idx) => [(idx + 1).toString(), val]);
 
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
@@ -91,6 +102,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const setOrders = props.navigation.getParam('setOrders');
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+  const [selectedTab, setSelectedTab] = useState<string>(
+    showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
+  );
+  const [apiLoading, setApiLoading] = useState(false);
+  const [isCancelVisible, setCancelVisible] = useState(false);
+  const [isRescheduleVisible, setRescheduleVisible] = useState(false);
+  const { getPatientApiCall } = useAuth();
 
   const refetchOrders =
     props.navigation.getParam('refetch') ||
@@ -100,14 +118,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       },
       fetchPolicy: 'cache-first',
     }).refetch;
-  const [selectedTab, setSelectedTab] = useState<string>(
-    showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
-  );
-  const [isCancelVisible, setCancelVisible] = useState(false);
-
-  const { getPatientApiCall } = useAuth();
-  const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
-  const { showAphAlert, setLoading } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -127,40 +137,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const orderDetails = ((!loading && order) ||
     {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
 
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    if (goToHomeOnBack) {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
-    } else {
+  useEffect(() => {
+    setRescheduleVisible(true);
+  }, []);
+
+  const handleBack = () => {
+    if (!goToHomeOnBack) {
       refetchOrders().then((data: any) => {
         const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
         setOrders(_orders);
       });
-      props.navigation.goBack();
     }
+    props.navigation.goBack();
     return false;
   };
-
-  useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
-    };
-  }, []);
 
   const getFormattedDate = (time: string) => {
     return moment(time).format('D MMM YYYY');
@@ -169,84 +159,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const getFormattedTime = (time: string) => {
     return moment(time).format('hh:mm a');
   };
-  /*
-  const reOrder = () => {
-    setLoading!(true);
-    const items = (orderDetails!.medicineOrderLineItems || [])
-      .map((item) => ({
-        sku: item!.medicineSKU!,
-        qty: item!.quantity!,
-      }))
-      .filter((item) => item.sku);
-    Promise.all(items.map((item) => getMedicineDetailsApi(item!.sku!)))
-      .then((result) => {
-        const itemsToAdd = result
-          .map(({ data: { productdp } }, index) => {
-            const medicineDetails = (productdp && productdp[0]) || {};
-            if (!medicineDetails.is_in_stock) return null;
-            return {
-              id: medicineDetails!.sku!,
-              mou: medicineDetails.mou,
-              name: medicineDetails!.name,
-              price: medicineDetails!.price,
-              quantity: items[index].qty || 1,
-              prescriptionRequired: medicineDetails.is_prescription_required == '1',
-              thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-            } as ShoppingCartItem;
-          })
-          .filter((item) => item) as ShoppingCartItem[];
 
-        const itemsToAddSkus = itemsToAdd.map((i) => i.id);
-        const itemsToAddInCart = [
-          ...itemsToAdd,
-          ...cartItems.filter((item) => !itemsToAddSkus.includes(item.id!)),
-        ];
-        setCartItems!(itemsToAddInCart);
-
-        // Adding prescriptions
-        if (orderDetails!.prescriptionImageUrl) {
-          const imageUrls = orderDetails!.prescriptionImageUrl
-            .split(',')
-            .map((item) => item.trim());
-
-          const ePresToAdd = imageUrls.map(
-            (item) =>
-              ({
-                id: item,
-                date: moment(order!.medicineOrdersStatus![0]!.statusDate).format('DD MMM YYYY'),
-                doctorName: '',
-                forPatient: (currentPatient && currentPatient.firstName) || '',
-                medicines: (order!.medicineOrderLineItems || [])
-                  .map((item) => item!.medicineName)
-                  .join(', '),
-                uploadedUrl: item,
-              } as EPrescription)
-          );
-          const ePresIds = ePresToAdd.map((i) => i!.uploadedUrl);
-          setEPrescriptions!([
-            ...ePrescriptions.filter((item) => !ePresIds.includes(item.uploadedUrl!)),
-            ...ePresToAdd,
-          ]);
-        }
-
-        setLoading!(false);
-        if (items.length > itemsToAdd.length) {
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: 'Few items are out of stock.',
-          });
-        }
-        props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
-      })
-      .catch((e) => {
-        setLoading!(false);
-        showAphAlert!({
-          title: 'Uh oh.. :(',
-          description: 'Something went wrong.',
-        });
-      });
-  };
-*/
   const renderOrderHistory = () => {
     return (
       <View>
@@ -270,184 +183,118 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
-  const [selectedReason, setSelectedReason] = useState('');
-  const [comment, setComment] = useState('');
-  const [overlayDropdown, setOverlayDropdown] = useState(false);
-  const renderReturnOrderOverlay = () => {
-    const optionsDropdown = overlayDropdown && (
-      <Overlay
-        onBackdropPress={() => setOverlayDropdown(false)}
-        isVisible={overlayDropdown}
-        overlayStyle={styles.dropdownOverlayStyle}
-      >
-        <DropDown
-          cardContainer={{
-            margin: 0,
-          }}
-          options={cancelOptions.map(
-            (item, i) =>
-              ({
-                onPress: () => {
-                  setSelectedReason(item[1]);
-                  setOverlayDropdown(false);
-                },
-                optionText: item[1],
-              } as Option)
-          )}
-        />
-      </Overlay>
-    );
-
-    const heading = (
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          backgroundColor: theme.colors.WHITE,
-          padding: 18,
-          marginBottom: 24,
-          borderTopLeftRadius: 10,
-          borderTopRightRadius: 10,
-        }}
-      >
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(16),
-            color: theme.colors.SHERPA_BLUE,
-            textAlign: 'center',
-          }}
-        >
-          Cancel Order
-        </Text>
-      </View>
-    );
-
-    const content = (
-      <View style={{ paddingHorizontal: 16 }}>
-        <Text
-          style={[
-            {
-              marginBottom: 12,
-              color: '#0087ba',
-              ...theme.fonts.IBMPlexSansMedium(17),
-              lineHeight: 24,
-            },
-          ]}
-        >
-          Why are you cancelling this order?
-        </Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            setOverlayDropdown(true);
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text
-              style={[
-                {
-                  flex: 0.9,
-                  ...theme.fonts.IBMPlexSansMedium(18),
-                  color: theme.colors.SHERPA_BLUE,
-                },
-                selectedReason ? {} : { opacity: 0.3 },
-              ]}
-              numberOfLines={1}
-            >
-              {selectedReason || 'Select reason for cancelling'}
-            </Text>
-            <View style={{ flex: 0.1 }}>
-              <DropdownGreen style={{ alignSelf: 'flex-end' }} />
-            </View>
-          </View>
-          <View
-            style={{
-              marginTop: 5,
-              backgroundColor: '#00b38e',
-              height: 2,
-            }}
-          />
-        </TouchableOpacity>
-        <TextInputComponent
-          value={comment}
-          onChangeText={(text) => {
-            setComment(text);
-          }}
-          label={'Add Comments (Optional)'}
-          placeholder={'Enter your comments here…'}
-        />
-      </View>
-    );
-
-    const bottomButton = (
-      <Button
-        style={{ margin: 16, marginTop: 32, width: 'auto' }}
-        onPress={onPressConfirmCancelOrder}
-        disabled={!!!selectedReason}
-        title={'SUBMIT REQUEST'}
+  const renderCancelOrderOverlay = () => {
+    return (
+      <OrderCancelOverlay
+        heading="Cancel Order"
+        onClose={() => setCancelVisible(false)}
+        isVisible={isCancelVisible}
+        loading={apiLoading}
+        options={cancelOptions}
+        onSubmit={onSubmitCancelOrder}
       />
     );
+  };
 
+  const renderRescheduleOrderOverlay = () => {
     return (
-      isCancelVisible && (
-        <View
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            justifyContent: 'flex-start',
-            flex: 1,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-          }}
-        >
-          <View style={{ marginHorizontal: 20 }}>
-            <TouchableOpacity
-              style={{ marginTop: 38, alignSelf: 'flex-end' }}
-              onPress={() => {
-                setCancelVisible(!isCancelVisible);
-                setSelectedReason('');
-              }}
-            >
-              <CrossPopup />
-            </TouchableOpacity>
-            <View style={{ height: 16 }} />
-            <View
-              style={{
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-                borderTopLeftRadius: 10,
-                borderTopRightRadius: 10,
-                borderBottomRightRadius: 10,
-                borderBottomLeftRadius: 10,
-              }}
-            >
-              {optionsDropdown}
-              {heading}
-              {content}
-              {bottomButton}
-            </View>
-          </View>
-        </View>
-      )
+      <TestScheduleOverlay
+        type={g(order, 'slotTimings') ? 'home-visit' : 'clinic-visit'}
+        heading="Schedule Appointment"
+        onClose={() => setRescheduleVisible(false)}
+        isVisible={isRescheduleVisible}
+        loading={apiLoading}
+        options={rescheduleOptions}
+        onReschedule={onSubmitRescheduleOrder}
+        addressId={orderDetails.patientAddressId}
+      />
     );
+  };
+
+  const setInitialSate = () => {
+    setApiLoading(false);
+    setCancelVisible(false);
+    setRescheduleVisible(false);
+  };
+
+  const callApiAndRefetchOrderDetails = (func: Promise<any>) => {
+    func
+      .then(() => {
+        refetch()
+          .then(() => {
+            setInitialSate();
+          })
+          .catch(() => {
+            setInitialSate();
+          });
+      })
+      .catch((e) => {
+        console.log({ e });
+        handleGraphQlError(e);
+        setApiLoading(false);
+      });
+  };
+
+  const onSubmitCancelOrder = (reason: string, comment?: string) => {
+    // TODO: call api and change visibility, refetch
+    setApiLoading(true);
+    const api = client.mutate<cancelDiagnosticOrder, cancelDiagnosticOrderVariables>({
+      mutation: CANCEL_DIAGNOSTIC_ORDER,
+      variables: { diagnosticOrderId: orderDetails.displayId },
+    });
+    callApiAndRefetchOrderDetails(api);
+  };
+
+  const onSubmitRescheduleOrder = (
+    type: TestScheduleType,
+    date: Date,
+    reason: string,
+    comment?: string,
+    slotInfo?: SlotInfo
+  ) => {
+    // TODO: call api and change visibility, refetch
+    setApiLoading(true);
+    const isClinicVisit = type == 'clinic-visit';
+    const slotTimings = !isClinicVisit
+      ? [slotInfo!.startTime, slotInfo!.endTime].map((val) => val.trim()).join(' - ')
+      : '';
+    const variables: updateDiagnosticOrderVariables = {
+      updateDiagnosticOrderInput: {
+        id: g(order, 'id'),
+        prescriptionUrl: g(order, 'prescriptionUrl')!,
+        centerName: g(order, 'centerName')!,
+        centerCode: g(order, 'centerCode')!,
+        centerCity: g(order, 'centerCity')!,
+        centerState: g(order, 'centerState')!,
+        centerLocality: g(order, 'centerLocality')!,
+        // customizations
+        diagnosticDate: moment(date).format('YYYY-MM-DD'),
+        slotTimings: slotTimings || '',
+        employeeSlotId: g(slotInfo, 'slot')!,
+        diagnosticEmployeeCode: g(slotInfo, 'employeeCode') || '',
+        diagnosticBranchCode: g(slotInfo, 'diagnosticBranchCode') || '',
+      },
+    };
+    console.log({ variables });
+    console.log(JSON.stringify(variables));
+
+    const api = client.mutate<updateDiagnosticOrder, updateDiagnosticOrderVariables>({
+      mutation: UPDATE_DIAGNOSTIC_ORDER,
+      variables,
+    });
+    callApiAndRefetchOrderDetails(api);
   };
 
   const renderOrderSummary = () => {
     return <TestOrderSummaryView orderDetails={orderDetails} />;
   };
 
-  const onPressConfirmCancelOrder = () => {
-    setCancelVisible(false);
-    setSelectedReason('');
-  };
-
-  const [showSpinner, setShowSpinner] = useState(false);
+  console.log({ isCancelVisible, isRescheduleVisible });
 
   const renderMoreMenu = () => {
     return (
       <MaterialMenu
-        options={['Cancel Order'].map((item) => ({
+        options={['Cancel Order', 'Reschedule Order'].map((item) => ({
           key: item,
           value: item,
         }))}
@@ -458,10 +305,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         lastContainerStyle={{ borderBottomWidth: 0 }}
         bottomPadding={{ paddingBottom: 0 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
-        onPress={(item) => {
-          if (item.value == 'Cancel Order') {
-            setCancelVisible(true);
-          }
+        onPress={({ value }) => {
+          console.log(value, value === 'Cancel Order', setCancelVisible);
+
+          // if (value === 'Cancel Order') {
+          setCancelVisible(true);
+          // } else if (value === 'Reschedule Order') {
+          // setRescheduleVisible(true);
+          // }
         }}
       >
         <More />
@@ -471,7 +322,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {renderReturnOrderOverlay()}
+      {renderCancelOrderOverlay()}
+      {renderRescheduleOrderOverlay()}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -485,7 +337,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             }}
           />
         </View>
-
         <TabsComponent
           style={styles.tabsContainer}
           onChange={(title) => {
@@ -498,7 +349,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
         </ScrollView>
       </SafeAreaView>
-      {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
+      {loading && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );
 };

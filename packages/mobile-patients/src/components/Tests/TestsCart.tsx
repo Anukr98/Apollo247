@@ -151,11 +151,6 @@ type TimeArray = {
   time: string;
 }[];
 
-type Profile = {
-  pid: string;
-  name: string;
-};
-
 export interface TestsCartProps extends NavigationScreenProps {
   isComingFromConsult: boolean;
 }

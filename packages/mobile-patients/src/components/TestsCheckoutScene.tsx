@@ -220,13 +220,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       diagnosticEmployeeCode: diagnosticEmployeeCode || '',
       employeeSlotId: employeeSlotId! || 0,
       slotTimings: slotTimings,
-      diagnosticDate: moment(date).format('YYYY-MM-DD'),
       patientAddressId: deliveryAddressId!,
       // for home collection order ->
-      city: (locationForDiagnostics || {}).city!,
-      state: (locationForDiagnostics || {}).state!,
-      stateId: `${(locationForDiagnostics || {}).stateId!}`,
-      cityId: `${(locationForDiagnostics || {}).cityId!}`,
       // <- for clinic order
       centerName: CentreName || '',
       centerCode: CentreCode || '',
@@ -234,6 +229,11 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       centerState: State || '',
       centerLocality: Locality || '',
       // for clinic order ->
+      city: (locationForDiagnostics || {}).city!,
+      state: (locationForDiagnostics || {}).state!,
+      stateId: `${(locationForDiagnostics || {}).stateId!}`,
+      cityId: `${(locationForDiagnostics || {}).cityId!}`,
+      diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
