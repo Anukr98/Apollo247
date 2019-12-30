@@ -8,6 +8,7 @@ import {
   AphDialogTitle,
   AphDialogClose,
 } from '@aph/web-ui-components';
+import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
@@ -108,7 +109,7 @@ export const HomeDelivery: React.FC = (props) => {
     setDeliveryAddresses,
   } = useShoppingCart();
   const { isSigningIn } = useAuth();
-
+  const client = useApolloClient();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
@@ -117,26 +118,57 @@ export const HomeDelivery: React.FC = (props) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
 
-  const { data, loading, error } = useQueryWithSkip<
-    GetPatientAddressList,
-    GetPatientAddressListVariables
-  >(GET_PATIENT_ADDRESSES_LIST, {
-    variables: {
-      patientId: currentPatient && currentPatient.id,
-    },
-    fetchPolicy: 'no-cache',
-  });
+  // const { data, loading, error } = useQueryWithSkip<
+  //   GetPatientAddressList,
+  //   GetPatientAddressListVariables
+  // >(GET_PATIENT_ADDRESSES_LIST, {
+  //   variables: {
+  //     patientId: currentPatient && currentPatient.id,
+  //   },
+  //   fetchPolicy: 'no-cache',
+  // });
 
-  if (loading) {
-    return <CircularProgress />;
-  }
-  if (error) {
-    return <div>Error....</div>;
-  }
+  // if (loading) {
+  //   return <CircularProgress />;
+  // }
+  // if (error) {
+  //   return <div>Error....</div>;
+  // }
 
-  if (data && data.getPatientAddressList && data.getPatientAddressList.addressList) {
-    setDeliveryAddresses && setDeliveryAddresses(data.getPatientAddressList.addressList);
-  }
+  // if (data && data.getPatientAddressList && data.getPatientAddressList.addressList) {
+  //   setDeliveryAddresses && setDeliveryAddresses(data.getPatientAddressList.addressList);
+  // }
+
+  const getAddressDetails = () => {
+    client
+      .query<GetPatientAddressList, GetPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESSES_LIST,
+        variables: {
+          patientId: currentPatient && currentPatient.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        if (
+          _data.data &&
+          _data.data.getPatientAddressList &&
+          _data.data.getPatientAddressList.addressList
+        ) {
+          setDeliveryAddresses &&
+            setDeliveryAddresses(_data.data.getPatientAddressList.addressList.reverse());
+          setDeliveryAddressId &&
+            setDeliveryAddressId(_data.data.getPatientAddressList.addressList[0].id);
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor', e);
+      });
+  };
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      getAddressDetails();
+    }
+  }, [currentPatient, isAddAddressDialogOpen]);
 
   return (
     <div className={classes.root}>
