@@ -46,7 +46,6 @@ export const convertCaseSheetToRxPdfData = async (
       let frequency = 'Take';
       if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
       if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
-      frequency = frequency + ' for';
       if (csRx.medicineConsumptionDuration) {
         frequency = frequency + ' for';
         frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
