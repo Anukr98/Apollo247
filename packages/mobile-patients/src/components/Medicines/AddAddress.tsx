@@ -841,32 +841,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   };
   return (
     <View style={{ flex: 1 }}>
+      {renderHeader()}
       <SafeAreaView style={theme.viewStyles.container}>
-        {renderHeader()}
-
         <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
-          <ScrollView bounces={false}>{renderAddress()}</ScrollView>
-          {/* <StickyBottomComponent defaultBG> */}
-
-          {/* {displayoverlay ? (
-            <Button
-              title="Delete Address"
-              style={{
-                position: 'absolute',
-                width: 159,
-                height: 58,
-                backgroundColor: '#ffffff',
-                top: -5,
-                shadowColor: colors.SHADOW_GRAY,
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.8,
-                shadowRadius: 5,
-                marginLeft: width / 2,
-              }}
-              titleTextStyle={{ color: '#02475b', ...theme.fonts.IBMPlexSansMedium(18) }}
-              onPress={() => setdisplayoverlay(false)}
-            />
-          ) : null} */}
+          <ScrollView bounces={false}>
+            {renderAddress()}
+            <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
+          </ScrollView>
           <View
             style={{
               width: '100%',

@@ -53,6 +53,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -308,7 +309,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     lastName === profileData.lastName &&
     Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD') === profileData.dateOfBirth &&
     gender === profileData.gender &&
-    (relation && relation.key === profileData.relation) &&
+    relation &&
+    relation.key === profileData.relation &&
     email === profileData.emailAddress &&
     photoUrl === profileData.photoUrl;
 
@@ -909,11 +911,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       {renderUploadSelection()}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
-        <ScrollView bounces={false} style={{ backgroundColor: '#f7f8f5' }}>
-          {renderForm()}
-          <View style={{ height: 120 }} />
-        </ScrollView>
-        {renderButtons()}
+        <KeyboardAvoidingView behavior={Platform.OS == 'ios' ? 'padding' : ''} style={{ flex: 1 }}>
+          <ScrollView bounces={false} style={{ backgroundColor: '#f7f8f5' }}>
+            {renderForm()}
+            <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
+          </ScrollView>
+
+          {renderButtons()}
+        </KeyboardAvoidingView>
       </SafeAreaView>
       {deleteProfile && isEdit && renderDeleteButton()}
       {loading && <Spinner />}
