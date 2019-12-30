@@ -406,14 +406,14 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.tabFooter}>
-        {/* <Button
+        <Button
           className={classes.BackCosultButton}
           onClick={() => {
-            props.rescheduleConsultAction();
+            props.setIsPopoverOpen(false);
           }}
         >
           Go Back
-        </Button> */}
+        </Button>
         <Button
           className={classes.ResheduleCosultButton}
           onClick={() => {
