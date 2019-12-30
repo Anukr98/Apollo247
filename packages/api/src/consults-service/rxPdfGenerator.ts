@@ -43,37 +43,30 @@ export const convertCaseSheetToRxPdfData = async (
     prescriptions = caseSheetMedicinePrescription.map((csRx) => {
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
-      const dosageTimingCount =
-        csRx.medicineTimings !== undefined ? csRx.medicineTimings.length : 0;
-      let medicineDosage =
-        dosageTimingCount == 0
-          ? csRx.medicineDosage
-          : Number(csRx.medicineDosage) * dosageTimingCount;
+      let frequency = 'Take';
+      if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
+      if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+      frequency = frequency + ' for';
+      if (csRx.medicineConsumptionDuration) {
+        frequency = frequency + ' for';
+        frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
+        if (csRx.medicineConsumptionDurationUnit)
+          frequency = frequency + ' ' + csRx.medicineConsumptionDurationUnit;
+      }
 
-      const medicineToBeTaken =
-        csRx.medicineToBeTaken !== undefined ? csRx.medicineToBeTaken.length : 0;
-      medicineDosage =
-        medicineToBeTaken == 0 ? medicineDosage : Number(medicineDosage) * medicineToBeTaken;
-
-      const timings =
-        csRx.medicineTimings !== undefined
-          ? '(' + csRx.medicineTimings.map(_capitalize).join(', ') + ')'
-          : '';
-
-      const medicineUnit =
-        csRx.medicineUnit === undefined || csRx.medicineUnit === 'NA'
-          ? ''
-          : csRx.medicineUnit.toLowerCase();
-      let frequency = `${medicineDosage} ${medicineUnit} ${timings} for ${csRx.medicineConsumptionDurationInDays} days`;
-      if (csRx.medicineToBeTaken !== undefined && csRx.medicineToBeTaken.length > 0)
+      if (csRx.medicineToBeTaken)
         frequency =
           frequency +
-          '; ' +
+          ' ' +
           csRx.medicineToBeTaken
-            .map(_capitalize)
             .join(', ')
             .split('_')
             .join(' ');
+      if (csRx.medicineTimings) {
+        frequency = frequency + ' in the';
+        frequency = frequency + ' ' + csRx.medicineTimings.join(', ');
+      }
+
       const instructions = csRx.medicineInstructions;
       return { name, ingredients, frequency, instructions } as PrescriptionData;
     });
