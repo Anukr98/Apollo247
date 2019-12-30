@@ -204,7 +204,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     followUpDate,
     followUpConsultType,
   } = useContext(CaseSheetContext);
-
+  const [callGetCasesheet, setCallGetCasesheet] = useState<boolean>(true);
   const [loader, setLoader] = useState<boolean>(true);
   let doctorFacilityDetails = null;
   if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
@@ -232,6 +232,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       ).toString();
     }
   };
+  setTimeout(() => {
+    if (callGetCasesheet) setCallGetCasesheet(!callGetCasesheet);
+  }, 3000);
 
   useEffect(() => {
     client
@@ -265,7 +268,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       .finally(() => {
         setLoader(false);
       });
-  }, [props.saving]);
+  }, [callGetCasesheet]);
 
   const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
@@ -355,7 +358,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
-  return loader ? (
+  return callGetCasesheet ? (
     <CircularProgress className={classes.loader} />
   ) : (
     <div className={classes.root}>

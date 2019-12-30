@@ -5,9 +5,7 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
-
-type Params = { searchText: string };
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -129,10 +127,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
+type priceFilter = { fromPrice: string; toPrice: string };
 
 interface MedicineFilterProps {
-  medicineFiltercall?: (value: MedicineProduct[]) => void;
+  setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
+  setPriceFilter?: (priceFilter: priceFilter) => void;
 }
+
+type Params = { searchMedicineType: string; searchText: string };
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const classes = useStyles({});
@@ -141,17 +143,19 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
 
-  const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
-
   const params = useParams<Params>();
-  const paramSearchText = params.searchText;
-  const [subtxt, setSubtxt] = useState(paramSearchText);
-
+  const [subtxt, setSubtxt] = useState<string | null>(
+    params.searchMedicineType === 'search-medicines' ? params.searchText : null
+  );
+  const [fromPrice, setFromPrice] = useState();
+  const [toPrice, setToPrice] = useState();
   useEffect(() => {
-    onSearchMedicine(subtxt);
+    if (subtxt ) {
+      onSearchMedicine(subtxt);
+    }
   }, [subtxt]);
 
-  const onSearchMedicine = async (value: string) => {
+  const onSearchMedicine = async (value: string | null) => {
     await axios
       .post(
         apiDetails.url,
@@ -162,21 +166,22 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           headers: {
             Authorization: apiDetails.authToken,
           },
-          // cancelToken: new CancelToken(function executor(c) {
-          //   // An executor function receives a cancel function as a parameter
-          //   cancelSearchSuggestionsApi = c;
-          // })
         }
       )
       .then(({ data }) => {
-        setSearchMedicines(data.products);
-        props.medicineFiltercall && props.medicineFiltercall(data.products);
+        props.setMedicineList && props.setMedicineList(data.products);
       })
       .catch((e) => {
         console.log(e);
       });
   };
-
+  const filterByPrice = () => {
+    const obj = {
+      fromPrice: fromPrice,
+      toPrice: toPrice,
+    };
+    props.setPriceFilter(obj);
+  };
   return (
     <div className={classes.root}>
       <div className={classes.searchInput}>
@@ -240,8 +245,21 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
               <div className={classes.filterType}>Price</div>
               <div className={classes.boxContent}>
                 <div className={classes.filterBy}>
-                  <AphTextField placeholder="RS.500" /> <span>TO</span>{' '}
-                  <AphTextField placeholder="RS.3000" />
+                  <AphTextField
+                    placeholder="RS.500"
+                    value={fromPrice}
+                    onChange={(e) => {
+                      setFromPrice(e.target.value);
+                    }}
+                  />{' '}
+                  <span>TO</span>{' '}
+                  <AphTextField
+                    placeholder="RS.3000"
+                    value={toPrice}
+                    onChange={(e) => {
+                      setToPrice(e.target.value);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -251,13 +269,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       <div className={classes.bottomActions}>
         <AphButton
           color="primary"
+          disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
           fullWidth
           onClick={(e) => {
-            if (subtxt.length > 2) {
-              onSearchMedicine(subtxt);
-            } else {
-              setSearchMedicines([]);
-            }
+            filterByPrice();
           }}
         >
           Apply Filters

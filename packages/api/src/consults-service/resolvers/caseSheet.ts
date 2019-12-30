@@ -69,20 +69,20 @@ export type DiagnosticJson = {
 
 export const caseSheetTypeDefs = gql`
   enum CASESHEET_STATUS {
-    PENDING
     COMPLETED
+    PENDING
   }
 
   enum DoctorType {
     APOLLO
+    JUNIOR
     PAYROLL
     STAR_APOLLO
-    JUNIOR
   }
 
   enum Gender {
-    MALE
     FEMALE
+    MALE
     OTHER
   }
 
@@ -91,6 +91,7 @@ export const caseSheetTypeDefs = gql`
     MORNING
     NIGHT
     NOON
+    AS_NEEDED
   }
 
   enum MEDICINE_TO_BE_TAKEN {
@@ -99,11 +100,26 @@ export const caseSheetTypeDefs = gql`
   }
 
   enum MEDICINE_UNIT {
-    TABLET
+    BOTTLE
     CAPSULE
-    ML
+    CREAM
     DROPS
+    GEL
+    INJECTION
+    LOTION
+    ML
     NA
+    OINTMENT
+    OTHERS
+    POWDER
+    ROTACAPS
+    SACHET
+    SOAP
+    SOLUTION
+    SPRAY
+    SUSPENSION
+    SYRUP
+    TABLET
   }
 
   enum Relation {
@@ -233,27 +249,53 @@ export const caseSheetTypeDefs = gql`
   input DiagnosticPrescriptionInput {
     itemname: String
   }
+  enum MEDICINE_FORM_TYPES {
+    GEL_LOTION_OINTMENT
+    OTHERS
+  }
+  enum MEDICINE_CONSUMPTION_DURATION {
+    DAYS
+    MONTHS
+    WEEKS
+  }
+
+  enum MEDICINE_FREQUENCY {
+    AS_NEEDED
+    FIVE_TIMES_A_DAY
+    FOUR_TIMES_A_DAY
+    ONCE_A_DAY
+    THRICE_A_DAY
+    TWICE_A_DAY
+  }
 
   type MedicinePrescription {
+    id: String
+    medicineConsumptionDuration: String
     medicineConsumptionDurationInDays: String
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION
     medicineDosage: String
-    medicineUnit: MEDICINE_UNIT
+    medicineFormTypes: MEDICINE_FORM_TYPES
+    medicineFrequency: MEDICINE_FREQUENCY
     medicineInstructions: String
+    medicineName: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
-    medicineName: String
-    id: String
+    medicineUnit: MEDICINE_UNIT
   }
 
   input MedicinePrescriptionInput {
+    id: String
+    medicineConsumptionDuration: String
     medicineConsumptionDurationInDays: String
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION
     medicineDosage: String
-    medicineUnit: MEDICINE_UNIT
+    medicineFormTypes: MEDICINE_FORM_TYPES
+    medicineFrequency: MEDICINE_FREQUENCY
     medicineInstructions: String
+    medicineName: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
-    medicineName: String
-    id: String
+    medicineUnit: MEDICINE_UNIT
   }
 
   type OtherInstructions {
@@ -353,6 +395,7 @@ export const caseSheetTypeDefs = gql`
 
   type PatientPrescriptionSentResponse {
     success: Boolean
+    blobName: String
   }
 
   extend type Mutation {
@@ -482,22 +525,6 @@ const getCaseSheet: Resolver<
     juniorDoctorCaseSheet,
   };
 };
-
-type UpdateCaseSheetInput = {
-  symptoms: string;
-  notes: string;
-  diagnosis: string;
-  diagnosticPrescription: string;
-  followUp: boolean;
-  followUpDate: string;
-  followUpAfterInDays: string;
-  otherInstructions: string;
-  medicinePrescription: string;
-  id: string;
-  status: CASESHEET_STATUS;
-};
-
-type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
 
 type PatientPrescriptionSentResponse = {
   success: boolean;
@@ -709,22 +736,9 @@ const modifyCaseSheet: Resolver<
   }
 
   //medicalHistory upsert ends
-
-  //convert casesheet to prescription
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
-
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
-  const pdfDocument = generateRxPdfDocument(rxPdfData);
-  const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
-  if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-  getCaseSheetData.blobName = blob.name;
-
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
-
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
+
   return getCaseSheetData;
 };
 
@@ -858,7 +872,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
   { caseSheetId: string; sentToPatient: boolean },
   ConsultServiceContext,
   PatientPrescriptionSentResponse
-> = async (parent, args, { mobileNumber, consultsDb, doctorsDb }) => {
+> = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   //validate is active Doctor
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
@@ -869,10 +883,33 @@ const updatePatientPrescriptionSentStatus: Resolver<
   const getCaseSheetData = await caseSheetRepo.getCaseSheetById(args.caseSheetId);
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
-  const caseSheetAttrs: Partial<CaseSheet> = { sentToPatient: args.sentToPatient };
-  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
-  return { success: true };
+  let caseSheetAttrs: Partial<CaseSheet> = {
+    sentToPatient: args.sentToPatient,
+  };
+
+  if (args.sentToPatient) {
+    //convert casesheet to prescription
+    const client = new AphStorageClient(
+      process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+      process.env.AZURE_STORAGE_CONTAINER_NAME
+    );
+
+    const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
+    const pdfDocument = generateRxPdfDocument(rxPdfData);
+    const blob = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
+    if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+    caseSheetAttrs = {
+      sentToPatient: args.sentToPatient,
+      blobName: blob.name,
+    };
+  }
+
+  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  return { success: true, blobName: caseSheetAttrs.blobName };
 };
 
 export const caseSheetResolvers = {

@@ -28,7 +28,7 @@ interface OptionType {
 let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -333,9 +333,9 @@ export const DiagnosticPrescription: React.FC = () => {
       .then((data) => {
         setFavTests(
           data &&
-          data.data &&
-          data.data.getDoctorFavouriteTestList &&
-          data.data.getDoctorFavouriteTestList.testList
+            data.data &&
+            data.data.getDoctorFavouriteTestList &&
+            data.data.getDoctorFavouriteTestList.testList
         );
       })
       .catch((error) => {
@@ -469,34 +469,34 @@ export const DiagnosticPrescription: React.FC = () => {
                 selectedValues!.map((item, idx) =>
                   item.itemName
                     ? item.itemName!.trim() !== '' && (
-                      <Chip
-                        className={classes.othersBtn}
-                        key={idx}
-                        label={item!.itemName}
-                        onDelete={() => handleDelete(item, idx)}
-                        deleteIcon={
-                          <img
-                            src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                            alt=""
-                          />
-                        }
-                      />
-                    )
+                        <Chip
+                          className={classes.othersBtn}
+                          key={idx}
+                          label={item!.itemName}
+                          onDelete={() => handleDelete(item, idx)}
+                          deleteIcon={
+                            <img
+                              src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                              alt=""
+                            />
+                          }
+                        />
+                      )
                     : item.itemname &&
-                    item.itemname!.trim() !== '' && (
-                      <Chip
-                        className={classes.othersBtn}
-                        key={idx}
-                        label={item!.itemname}
-                        onDelete={() => handleDelete(item, idx)}
-                        deleteIcon={
-                          <img
-                            src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                            alt=""
-                          />
-                        }
-                      />
-                    )
+                      item.itemname!.trim() !== '' && (
+                        <Chip
+                          className={classes.othersBtn}
+                          key={idx}
+                          label={item!.itemname}
+                          onDelete={() => handleDelete(item, idx)}
+                          deleteIcon={
+                            <img
+                              src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                              alt=""
+                            />
+                          }
+                        />
+                      )
                 )}
             </Typography>
           </Typography>

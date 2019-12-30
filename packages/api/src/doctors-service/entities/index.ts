@@ -610,7 +610,7 @@ export class DoctorDeviceTokens extends BaseEntity {
 export enum AdminType {
   ADMIN = 'ADMIN',
   JDADMIN = 'JDADMIN',
-  QAADMIN = 'QAADMIN'
+  QAADMIN = 'QAADMIN',
 }
 @Entity()
 export class AdminUsers extends BaseEntity {
