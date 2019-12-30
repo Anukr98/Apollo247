@@ -174,7 +174,7 @@ export const OtherInstructions: React.FC = () => {
         console.log('GET_DOCTOR_FAVOURITE_ADVICE_LIST ', data);
         setAdviceList(
           data.data.getDoctorFavouriteAdviceList &&
-          data.data.getDoctorFavouriteAdviceList.adviceList
+            data.data.getDoctorFavouriteAdviceList.adviceList
         );
       });
   }, []);
