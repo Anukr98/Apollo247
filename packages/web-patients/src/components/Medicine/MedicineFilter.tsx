@@ -150,7 +150,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
   useEffect(() => {
-    if (subtxt ) {
+    if (subtxt) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);
