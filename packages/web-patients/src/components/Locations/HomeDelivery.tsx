@@ -8,9 +8,9 @@ import {
   AphDialogTitle,
   AphDialogClose,
 } from '@aph/web-ui-components';
+import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
-import { useMutation } from 'react-apollo-hooks';
 
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
@@ -108,7 +108,7 @@ export const HomeDelivery: React.FC = (props) => {
     setDeliveryAddresses,
   } = useShoppingCart();
   const { isSigningIn } = useAuth();
-
+  const client = useApolloClient();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
@@ -116,38 +116,36 @@ export const HomeDelivery: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
-
-  const patientAddressMutation = useMutation<GetPatientAddressList, GetPatientAddressListVariables>(
-    GET_PATIENT_ADDRESSES_LIST,
-    {
-      variables: {
-        patientId: (currentPatient && currentPatient.id) || '',
-      },
-      fetchPolicy: 'no-cache',
-    }
-  );
-
+  const getAddressDetails = () => {
+    client
+      .query<GetPatientAddressList, GetPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESSES_LIST,
+        variables: {
+          patientId: currentPatient && currentPatient.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        if (
+          _data.data &&
+          _data.data.getPatientAddressList &&
+          _data.data.getPatientAddressList.addressList
+        ) {
+          setDeliveryAddresses &&
+            setDeliveryAddresses(_data.data.getPatientAddressList.addressList.reverse());
+          setDeliveryAddressId &&
+            setDeliveryAddressId(_data.data.getPatientAddressList.addressList[0].id);
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor', e);
+      });
+  };
   useEffect(() => {
-    if (deliveryAddresses.length === 0 || renderAddresses) {
-      setIsLoading(true);
-      patientAddressMutation()
-        .then((res) => {
-          if (
-            res &&
-            res.data &&
-            res.data.getPatientAddressList &&
-            res.data.getPatientAddressList.addressList
-          ) {
-            setDeliveryAddresses &&
-              setDeliveryAddresses(res.data.getPatientAddressList.addressList);
-            setIsLoading(false);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+    if (currentPatient && currentPatient.id) {
+      getAddressDetails();
     }
-  }, [deliveryAddresses, renderAddresses]);
+  }, [currentPatient, isAddAddressDialogOpen]);
 
   return (
     <div className={classes.root}>
