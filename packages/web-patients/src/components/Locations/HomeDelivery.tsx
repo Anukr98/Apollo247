@@ -10,7 +10,7 @@ import {
 } from '@aph/web-ui-components';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
-import { useMutation } from 'react-apollo-hooks';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
 
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
@@ -117,37 +117,26 @@ export const HomeDelivery: React.FC = (props) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
 
-  const patientAddressMutation = useMutation<GetPatientAddressList, GetPatientAddressListVariables>(
-    GET_PATIENT_ADDRESSES_LIST,
-    {
-      variables: {
-        patientId: (currentPatient && currentPatient.id) || '',
-      },
-      fetchPolicy: 'no-cache',
-    }
-  );
+  const { data, loading, error } = useQueryWithSkip<
+    GetPatientAddressList,
+    GetPatientAddressListVariables
+  >(GET_PATIENT_ADDRESSES_LIST, {
+    variables: {
+      patientId: currentPatient && currentPatient.id,
+    },
+    fetchPolicy: 'no-cache',
+  });
 
-  useEffect(() => {
-    if (deliveryAddresses.length === 0 || renderAddresses) {
-      setIsLoading(true);
-      patientAddressMutation()
-        .then((res) => {
-          if (
-            res &&
-            res.data &&
-            res.data.getPatientAddressList &&
-            res.data.getPatientAddressList.addressList
-          ) {
-            setDeliveryAddresses &&
-              setDeliveryAddresses(res.data.getPatientAddressList.addressList);
-            setIsLoading(false);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    }
-  }, [deliveryAddresses, renderAddresses]);
+  if (loading) {
+    return <CircularProgress />;
+  }
+  if (error) {
+    return <div>Error....</div>;
+  }
+
+  if (data && data.getPatientAddressList && data.getPatientAddressList.addressList) {
+    setDeliveryAddresses && setDeliveryAddresses(data.getPatientAddressList.addressList);
+  }
 
   return (
     <div className={classes.root}>
