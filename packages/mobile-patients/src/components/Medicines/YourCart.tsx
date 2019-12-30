@@ -48,6 +48,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { colors } from '../../theme/colors';
 import { Spinner } from '../ui/Spinner';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -245,47 +246,60 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     if (deliveryAddressId && cartItems.length > 0) {
+      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
       setdeliveryTime('...');
       setshowDeliverySpinner(true);
       const lookUp = cartItems.map((item) => {
         return { sku: item.id, qty: item.quantity };
       });
-      getDeliveryTime({
-        postalcode: pinCode,
-        ordertype: 'pharma',
-        lookup: lookUp,
-      })
-        .then((res) => {
-          setdeliveryTime('');
-          try {
-            console.log('resresres', res);
-            if (res && res.data) {
-              if (
-                typeof res.data === 'object' &&
-                Array.isArray(res.data.tat) &&
-                res.data.tat.length
-              ) {
-                setdeliveryTime(res.data.tat[0].deliverydate);
-              } else if (typeof res.data === 'string') {
-                setdeliveryError(res.data);
-              } else if (typeof res.data.errorMSG === 'string') {
-                setdeliveryError(res.data.errorMSG);
-              }
-            }
-          } catch (error) {
-            console.log(error);
-          }
-          setshowDeliverySpinner(false);
+      if (selectedAddress) {
+        getDeliveryTime({
+          postalcode: selectedAddress.zipcode || '',
+          ordertype: 'pharma',
+          lookup: lookUp,
         })
-        .catch((err) => {
-          setdeliveryTime('');
-          showAphAlert &&
-            showAphAlert({
-              title: 'Uh oh.. :(',
-              description: 'Something went wrong, Unable to fetch delivery time',
-            });
-          setshowDeliverySpinner(false);
-        });
+          .then((res) => {
+            setdeliveryTime('');
+            try {
+              console.log('resresres', res);
+              if (res && res.data) {
+                if (
+                  typeof res.data === 'object' &&
+                  Array.isArray(res.data.tat) &&
+                  res.data.tat.length
+                ) {
+                  let tatItems = res.data.tat;
+                  tatItems.sort(({ deliverydate: item1 }, { deliverydate: item2 }) => {
+                    return moment(item1, 'D-MMM-YYYY HH:mm a') > moment(item2, 'D-MMM-YYYY HH:mm a')
+                      ? -1
+                      : moment(item1, 'D-MMM-YYYY HH:mm a') < moment(item2, 'D-MMM-YYYY HH:mm a')
+                      ? 1
+                      : 0;
+                  });
+                  setdeliveryTime(
+                    moment(tatItems[0].deliverydate, 'D-MMM-YYYY HH:mm a').toString()
+                  );
+                } else if (typeof res.data === 'string') {
+                  setdeliveryError(res.data);
+                } else if (typeof res.data.errorMSG === 'string') {
+                  setdeliveryError(res.data.errorMSG);
+                }
+              }
+            } catch (error) {
+              console.log(error);
+            }
+            setshowDeliverySpinner(false);
+          })
+          .catch((err) => {
+            setdeliveryTime('');
+            showAphAlert &&
+              showAphAlert({
+                title: 'Uh oh.. :(',
+                description: 'Something went wrong, Unable to fetch delivery time',
+              });
+            setshowDeliverySpinner(false);
+          });
+      }
     }
   }, [deliveryAddressId, cartItems]);
 
@@ -514,7 +528,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               ) : (
                 <View style={styles.rowSpaceBetweenStyle}>
                   <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
-                  <Text style={styles.deliveryTimeStyle}>{deliveryTime || deliveryError}</Text>
+                  <Text style={styles.deliveryTimeStyle}>
+                    {moment(deliveryTime).isValid()
+                      ? moment(deliveryTime).format('D MMM YYYY')
+                      : '...' || deliveryError}
+                  </Text>
                 </View>
               )}
             </View>
@@ -910,7 +928,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else if (
       physicalPrescriptions.length == 0 &&
       ePrescriptions.length > 0 &&
@@ -918,7 +936,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length > 0 &&
@@ -928,14 +946,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     }
   };
 
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();
