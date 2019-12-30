@@ -139,6 +139,10 @@ import {
   saveDiagnosticOrderPaymentTypeDefs,
   saveDiagnosticOrderPaymentResolvers,
 } from 'profiles-service/resolvers/saveDiagnosticOrderPayment';
+import {
+  cancelDiagnosticOrdersTypeDefs,
+  cancelDiagnosticOrdersResolvers,
+} from 'profiles-service/resolvers/cancelDiagnosticOrders';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -332,6 +336,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: saveDiagnosticOrderPaymentTypeDefs,
         resolvers: saveDiagnosticOrderPaymentResolvers,
+      },
+      {
+        typeDefs: cancelDiagnosticOrdersTypeDefs,
+        resolvers: cancelDiagnosticOrdersResolvers,
       },
     ]),
     plugins: [

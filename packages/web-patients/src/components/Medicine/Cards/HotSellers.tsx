@@ -4,6 +4,9 @@ import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
+import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -112,6 +115,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
 
+  const { cartItems, addCartItem, updateCartItem } = useShoppingCart();
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -123,10 +128,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                 <div className={classes.offerPrice}>
                   <span>-30%</span>
                 </div>
-                <div className={classes.productIcon}>
-                  <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
-                </div>
-                <div className={classes.productTitle}>{hotSeller.name}</div>
+                <Link to={clientRoutes.medicineDetails(hotSeller.sku)}>
+                  <div className={classes.productIcon}>
+                    <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
+                  </div>
+                  <div className={classes.productTitle}>{hotSeller.name}</div>
+                </Link>
                 <div className={classes.bottomSection}>
                   <div className={classes.priceGroup}>
                     {!!hotSeller.special_price && (
@@ -135,7 +142,35 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
                   </div>
                   <div className={classes.addToCart}>
-                    <AphButton>Add To Cart</AphButton>
+                    <AphButton
+                      onClick={() => {
+                        const cartItem: MedicineCartItem = {
+                          description: hotSeller.description,
+                          id: hotSeller.id,
+                          image: hotSeller.image,
+                          is_in_stock: hotSeller.is_in_stock,
+                          is_prescription_required: hotSeller.is_prescription_required,
+                          name: hotSeller.name,
+                          price: hotSeller.price,
+                          sku: hotSeller.sku,
+                          special_price: hotSeller.special_price,
+                          small_image: hotSeller.small_image,
+                          status: hotSeller.status,
+                          thumbnail: hotSeller.thumbnail,
+                          type_id: hotSeller.type_id,
+                          mou: hotSeller.mou,
+                          quantity: 1,
+                        };
+                        const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                        if (index >= 0) {
+                          updateCartItem && updateCartItem(cartItem);
+                        } else {
+                          addCartItem && addCartItem(cartItem);
+                        }
+                      }}
+                    >
+                      Add To Cart
+                    </AphButton>
                   </div>
                 </div>
               </div>

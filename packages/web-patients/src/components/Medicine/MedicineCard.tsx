@@ -5,6 +5,8 @@ import { AphButton } from '@aph/web-ui-components';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import axios from 'axios';
 import { spawn } from 'child_process';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -74,7 +76,7 @@ type MedicineInformationProps = {
   data: products[];
 };
 export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const apiDetails = {
     url: process.env.PRODUCTS_BY_CATEGORY,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -89,11 +91,12 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
         props.data.map((product: products) => (
           <Grid item xs={6} sm={6} md={4} lg={4}>
             <div className={classes.root}>
-              <div className={classes.bigAvatar}>
-                <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
-                {/* <img src={require('images/category/img_product.png')} alt="" /> */}
-              </div>
-              {product.name}
+              <Link to={clientRoutes.medicineDetails(product.sku)}>
+                <div className={classes.bigAvatar}>
+                  <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
+                </div>
+                {product.name}
+              </Link>
               <div className={classes.priceGroup}>
                 Rs. {product.special_price ? product.special_price : product.price}{' '}
                 {product.special_price && (

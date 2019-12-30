@@ -567,7 +567,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     }
   };
 
-  const renderDoctorData = (doctorInfo: RxPdfData['doctorInfo']) => {
+  const renderDoctorData = async (doctorInfo: RxPdfData['doctorInfo']) => {
     if (doctorInfo) {
       if (doc.y > doc.page.height - 150) {
         pageBreak();
@@ -584,7 +584,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .moveDown(0.5);
 
       if (doctorInfo.signature) {
-        doc.image(doctorInfo.signature, margin + 15, doc.y, { height: 72, width: 200 });
+        const request = require('sync-request');
+        const res = request('GET', doctorInfo.signature);
+        doc.image(res.body, margin + 15, doc.y, { height: 72, width: 200 });
         doc.moveDown(0.5);
       }
 

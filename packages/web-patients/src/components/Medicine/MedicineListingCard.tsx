@@ -122,8 +122,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicineListingCard: React.FC = (props) => {
   const classes = useStyles({});
-  const [medicineQty, setMedicineQty] = React.useState<number>(1);
-  const { cartItems, cartTotal, removeCartItem, updateCartItemQty } = useShoppingCart();
+  const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
   const options = Array.from(Array(20), (_, x) => x);
   return (
     <div className={classes.root}>

@@ -26,6 +26,12 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum CONSULTS_RX_SEARCH_FILTER {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+  PRESCRIPTION = "PRESCRIPTION",
+}
+
 export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -78,6 +84,7 @@ export enum MEDICINE_ORDER_STATUS {
   ITEMS_RETURNED = "ITEMS_RETURNED",
   ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
@@ -88,6 +95,31 @@ export enum MEDICINE_ORDER_STATUS {
   QUOTE = "QUOTE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+}
+
+export enum MEDICINE_ORDER_TYPE {
+  CART_ORDER = "CART_ORDER",
+  UPLOAD_PRESCRIPTION = "UPLOAD_PRESCRIPTION",
+}
+
+export enum MEDICINE_TIMINGS {
+  EVENING = "EVENING",
+  MORNING = "MORNING",
+  NIGHT = "NIGHT",
+  NOON = "NOON",
+}
+
+export enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = "AFTER_FOOD",
+  BEFORE_FOOD = "BEFORE_FOOD",
+}
+
+export enum MEDICINE_UNIT {
+  CAPSULE = "CAPSULE",
+  DROPS = "DROPS",
+  ML = "ML",
+  NA = "NA",
+  TABLET = "TABLET",
 }
 
 export enum PATIENT_ADDRESS_TYPE {
@@ -285,6 +317,13 @@ export interface PatientAddressInput {
 export interface PatientAppointmentsInput {
   patientId: string;
   appointmentDate: any;
+}
+
+export interface PatientConsultsAndOrdersInput {
+  patient: string;
+  filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
+  offset?: number | null;
+  limit?: number | null;
 }
 
 export interface Range {
