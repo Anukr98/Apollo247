@@ -31,6 +31,7 @@ export const bookAppointmentTypeDefs = gql`
     JUNIOR_DOCTOR_STARTED
     JUNIOR_DOCTOR_ENDED
     CALL_ABANDON
+    UNAVAILABLE_MEDMANTRA
   }
 
   enum APPOINTMENT_TYPE {
@@ -269,6 +270,25 @@ const bookAppointment: Resolver<
     patientsDb
   );
   console.log('MedMantraAPIResponse:', medMantraResponse);
+
+  //if not available in medmantra, throw error
+  if (medMantraResponse.retcode && medMantraResponse.retcode === -2) {
+    //block these hours in appointment table as unavailable in medmantra
+    const updateAttrs = {
+      id: appointment.id,
+      status: STATUS.UNAVAILABLE_MEDMANTRA,
+      patientId: '',
+      patientName: '',
+    };
+    await appts.updateMedmantraStatus(updateAttrs);
+    throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+  } else {
+    const updateAttrs = {
+      id: appointment.id,
+      apolloAppointmentId: medMantraResponse.AppointmentID,
+    };
+    await appts.updateMedmantraStatus(updateAttrs);
+  }
 
   return { appointment };
 };
