@@ -1116,33 +1116,24 @@ app.get('/processOrderById', (req, res) => {
             orderPrescriptionUrl.push(url);
           });
         }
-        let payStatus =
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
-            .paymentStatus;
-        if (
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
-            .paymentType == 'COD'
-        ) {
-          payStatus = '';
-        }
-        //axios.defaults.headers.common['token'] = '9f15bdd0fcd5423190c2e877ba0228A24';
-        let patientAge = 30;
-        let selShopId = '16001';
-        if (
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != '' &&
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != null
-        ) {
-          selShopId = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId;
-        }
-
         let paymentDets = {};
         let paymentMethod = 'COD';
+        let payStatus = '';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderType == 'CART_ORDER'
         ) {
+          payStatus =
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
+              .paymentStatus;
           paymentMethod =
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
               .paymentType;
+          if (
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
+              .paymentType == 'COD'
+          ) {
+            payStatus = '';
+          }
           paymentDets = {
             TotalAmount:
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
@@ -1155,6 +1146,16 @@ app.get('/processOrderById', (req, res) => {
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                 .medicineOrderPayments[0].paymentRefId,
           };
+        }
+
+        //axios.defaults.headers.common['token'] = '9f15bdd0fcd5423190c2e877ba0228A24';
+        let patientAge = 30;
+        let selShopId = '16001';
+        if (
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != '' &&
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != null
+        ) {
+          selShopId = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId;
         }
 
         const pharmaInput = {

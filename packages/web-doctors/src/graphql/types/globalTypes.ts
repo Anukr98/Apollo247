@@ -70,7 +70,28 @@ export enum LoggedInUserType {
   SECRETARY = "SECRETARY",
 }
 
+export enum MEDICINE_CONSUMPTION_DURATION {
+  DAYS = "DAYS",
+  MONTHS = "MONTHS",
+  WEEKS = "WEEKS",
+}
+
+export enum MEDICINE_FORM_TYPES {
+  GEL_LOTION_OINTMENT = "GEL_LOTION_OINTMENT",
+  OTHERS = "OTHERS",
+}
+
+export enum MEDICINE_FREQUENCY {
+  AS_NEEDED = "AS_NEEDED",
+  FIVE_TIMES_A_DAY = "FIVE_TIMES_A_DAY",
+  FOUR_TIMES_A_DAY = "FOUR_TIMES_A_DAY",
+  ONCE_A_DAY = "ONCE_A_DAY",
+  THRICE_A_DAY = "THRICE_A_DAY",
+  TWICE_A_DAY = "TWICE_A_DAY",
+}
+
 export enum MEDICINE_TIMINGS {
+  AS_NEEDED = "AS_NEEDED",
   EVENING = "EVENING",
   MORNING = "MORNING",
   NIGHT = "NIGHT",
@@ -83,10 +104,25 @@ export enum MEDICINE_TO_BE_TAKEN {
 }
 
 export enum MEDICINE_UNIT {
+  BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
+  CREAM = "CREAM",
   DROPS = "DROPS",
+  GEL = "GEL",
+  INJECTION = "INJECTION",
+  LOTION = "LOTION",
   ML = "ML",
   NA = "NA",
+  OINTMENT = "OINTMENT",
+  OTHERS = "OTHERS",
+  POWDER = "POWDER",
+  ROTACAPS = "ROTACAPS",
+  SACHET = "SACHET",
+  SOAP = "SOAP",
+  SOLUTION = "SOLUTION",
+  SPRAY = "SPRAY",
+  SUSPENSION = "SUSPENSION",
+  SYRUP = "SYRUP",
   TABLET = "TABLET",
 }
 
@@ -215,14 +251,18 @@ export interface EndAppointmentSessionInput {
 }
 
 export interface MedicinePrescriptionInput {
+  id?: string | null;
+  medicineConsumptionDuration?: string | null;
   medicineConsumptionDurationInDays?: string | null;
+  medicineConsumptionDurationUnit?: MEDICINE_CONSUMPTION_DURATION | null;
   medicineDosage?: string | null;
-  medicineUnit?: MEDICINE_UNIT | null;
+  medicineFormTypes?: MEDICINE_FORM_TYPES | null;
+  medicineFrequency?: MEDICINE_FREQUENCY | null;
   medicineInstructions?: string | null;
+  medicineName?: string | null;
   medicineTimings?: (MEDICINE_TIMINGS | null)[] | null;
   medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
-  medicineName?: string | null;
-  id?: string | null;
+  medicineUnit?: MEDICINE_UNIT | null;
 }
 
 export interface ModifyCaseSheetInput {

@@ -121,7 +121,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const [priceFilter, setPriceFilter] = useState();
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
+  const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
 
   const getTitle = () => {
     return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
@@ -133,11 +135,18 @@ export const SearchByMedicine: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  const apiDetailsText = {
+    url: process.env.PHARMACY_MED_SEARCH_URL,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
 
   useEffect(() => {
-    if (!medicineList) {
+    if (
+      !medicineListFiltered ||
+      (medicineListFiltered && medicineListFiltered.length < 1 && Number(paramSearchText) > 0)
+    ) {
       axios
         .post(
           apiDetails.url,
@@ -155,11 +164,71 @@ export const SearchByMedicine: React.FC = (props) => {
         .then((res) => {
           if (res && res.data && res.data.products) {
             setMedicineList(res.data.products);
+            setMedicineListFiltered(res.data.products);
           }
         })
         .catch((e) => {});
+    } else if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
+      onSearchMedicine();
     }
-  }, [medicineList]);
+  }, [medicineListFiltered]);
+  const onSearchMedicine = async () => {
+    await axios
+      .post(
+        apiDetailsText.url,
+        {
+          params: paramSearchText,
+        },
+        {
+          headers: {
+            Authorization: apiDetailsText.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        setMedicineList(data.products);
+        setMedicineListFiltered(data.products);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+  useEffect(() => {
+    if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
+      if (priceFilter.fromPrice && priceFilter.toPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (Number(priceFilter.fromPrice) <= value.price) {
+              if (value.price <= Number(priceFilter.toPrice)) {
+                filterArray.push(value);
+              }
+            }
+          });
+        setMedicineList(filterArray);
+      } else if (priceFilter.fromPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (Number(priceFilter.fromPrice) <= value.price) {
+              filterArray.push(value);
+            }
+          });
+        setMedicineList(filterArray);
+      } else if (priceFilter.toPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (value.price <= Number(priceFilter.toPrice)) {
+              filterArray.push(value);
+            }
+          });
+        setMedicineList(filterArray);
+      }
+    } else {
+      setMedicineListFiltered([]);
+    }
+  }, [priceFilter]);
 
   return (
     <div className={classes.welcome}>
@@ -180,7 +249,7 @@ export const SearchByMedicine: React.FC = (props) => {
             {getTitle()}({medicineList && medicineList.length})
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter setMedicineList={setMedicineList} />
+            <MedicineFilter setMedicineList={setMedicineList} setPriceFilter={setPriceFilter} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>

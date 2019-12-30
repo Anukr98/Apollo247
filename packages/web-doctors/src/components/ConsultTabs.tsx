@@ -1240,6 +1240,7 @@ export const ConsultTabs: React.FC = () => {
         if (sendToPatientFlag) {
           sendToPatientAction();
         }
+        setSaving(false);
       })
       .catch(e => {
         const error = JSON.parse(JSON.stringify(e));

@@ -127,9 +127,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
+type priceFilter = { fromPrice: string; toPrice: string };
 
 interface MedicineFilterProps {
   setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
+  setPriceFilter?: (priceFilter: priceFilter) => void;
 }
 
 type Params = { searchMedicineType: string; searchText: string };
@@ -145,9 +147,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [subtxt, setSubtxt] = useState<string | null>(
     params.searchMedicineType === 'search-medicines' ? params.searchText : null
   );
-
+  const [fromPrice, setFromPrice] = useState();
+  const [toPrice, setToPrice] = useState();
   useEffect(() => {
-    if (subtxt) {
+    if (subtxt ) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);
@@ -172,7 +175,13 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         console.log(e);
       });
   };
-
+  const filterByPrice = () => {
+    const obj = {
+      fromPrice: fromPrice,
+      toPrice: toPrice,
+    };
+    props.setPriceFilter(obj);
+  };
   return (
     <div className={classes.root}>
       <div className={classes.searchInput}>
@@ -236,8 +245,21 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
               <div className={classes.filterType}>Price</div>
               <div className={classes.boxContent}>
                 <div className={classes.filterBy}>
-                  <AphTextField placeholder="RS.500" /> <span>TO</span>{' '}
-                  <AphTextField placeholder="RS.3000" />
+                  <AphTextField
+                    placeholder="RS.500"
+                    value={fromPrice}
+                    onChange={(e) => {
+                      setFromPrice(e.target.value);
+                    }}
+                  />{' '}
+                  <span>TO</span>{' '}
+                  <AphTextField
+                    placeholder="RS.3000"
+                    value={toPrice}
+                    onChange={(e) => {
+                      setToPrice(e.target.value);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -247,11 +269,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       <div className={classes.bottomActions}>
         <AphButton
           color="primary"
+          disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
           fullWidth
           onClick={(e) => {
-            if (subtxt && subtxt.length > 2) {
-              onSearchMedicine(subtxt);
-            }
+            filterByPrice();
           }}
         >
           Apply Filters
