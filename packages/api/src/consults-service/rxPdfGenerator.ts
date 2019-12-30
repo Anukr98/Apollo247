@@ -20,7 +20,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { Connection } from 'typeorm';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { Patient } from 'profiles-service/entities';
-import _ from 'lodash';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,

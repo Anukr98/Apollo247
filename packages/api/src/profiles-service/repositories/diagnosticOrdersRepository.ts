@@ -60,8 +60,7 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       .where('(diagnostic_orders.patient = :patientId)', {
         patientId: patient,
       })
-      .andWhere('diagnostic_orders.orderStatus not in(:status1,:status2)', {
-        status1: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+      .andWhere('diagnostic_orders.orderStatus not in(:status2)', {
         status2: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
       })
       .orderBy('diagnostic_orders.createdDate', 'DESC')
