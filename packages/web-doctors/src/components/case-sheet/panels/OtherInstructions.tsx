@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) =>
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
       borderRadius: 5,
-      padding: 10,
+      padding: '0 10px',
     },
     othersBtnfav: {
       height: 'auto',
@@ -174,7 +174,7 @@ export const OtherInstructions: React.FC = () => {
         console.log('GET_DOCTOR_FAVOURITE_ADVICE_LIST ', data);
         setAdviceList(
           data.data.getDoctorFavouriteAdviceList &&
-            data.data.getDoctorFavouriteAdviceList.adviceList
+          data.data.getDoctorFavouriteAdviceList.adviceList
         );
       });
   }, []);

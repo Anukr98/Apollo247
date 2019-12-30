@@ -10,6 +10,7 @@ import _toLower from 'lodash/toLower';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_CASESHEET } from 'graphql/profiles';
 import { isEmpty, trim } from 'lodash';
+import { CircularProgress } from '@material-ui/core';
 
 import {
   GetCaseSheet,
@@ -33,6 +34,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 'bold',
       color: '#02475b',
+    },
+    loader: {
+      left: '50%',
+      top: 60,
+      position: 'relative',
     },
     prescriptionPreview: {
       backgroundColor: '#fff',
@@ -179,10 +185,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
-export const CasesheetView: React.FC = (props) => {
+interface savingProps {
+  saving: boolean;
+}
+export const CasesheetView: React.FC<savingProps> = (props) => {
   const classes = useStyles();
-  const signature = 'https://apolloaphstorage.blob.core.windows.net/doctors/nosignature.png';
   const {
     patientDetails,
     height,
@@ -258,7 +265,7 @@ export const CasesheetView: React.FC = (props) => {
       .finally(() => {
         setLoader(false);
       });
-  }, []);
+  }, [props.saving]);
 
   const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
@@ -348,7 +355,9 @@ export const CasesheetView: React.FC = (props) => {
     symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
-  return (
+  return loader ? (
+    <CircularProgress className={classes.loader} />
+  ) : (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
       <div className={classes.prescriptionPreview}>
@@ -522,23 +531,21 @@ export const CasesheetView: React.FC = (props) => {
           )}
           {isPageContentFull() ? null : (
             <>
-              {signature && (
+              {createdDoctorProfile && createdDoctorProfile.signature && (
                 <>
                   <div className={classes.sectionHeader}>Prescribed by</div>
                   <div className={classes.followUpContent}>
-                    <img src={signature} />
+                    <img src={createdDoctorProfile.signature} />
                   </div>
-                  {createdDoctorProfile && (
-                    <div className={classes.signInformation}>
-                      <h3 className={classes.followUpContent}>
-                        {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                        <br />
-                        <span>{`${
-                          createdDoctorProfile.specialty.specialistSingularTerm
-                        } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
-                      </h3>
-                    </div>
-                  )}
+                  <div className={classes.signInformation}>
+                    <h3 className={classes.followUpContent}>
+                      {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                      <br />
+                      <span>{`${
+                        createdDoctorProfile.specialty.specialistSingularTerm
+                      } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
+                    </h3>
+                  </div>
                 </>
               )}
             </>
@@ -557,7 +564,7 @@ export const CasesheetView: React.FC = (props) => {
       {isPageContentFull() &&
       ((followUp.length > 0 && followUp[0]) ||
         (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView getFollowUpData={getFollowUpData} signature={signature} />
+        <CaseSheetLastView getFollowUpData={getFollowUpData} />
       ) : null}
     </div>
   );

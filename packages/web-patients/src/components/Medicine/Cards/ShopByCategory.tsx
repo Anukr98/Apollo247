@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
+import _lowerCase from 'lodash/lowerCase';
+import _replace from 'lodash/replace';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -59,24 +61,26 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
-  console.log('props.data', props.data);
 
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         {props.data &&
-          props.data.map((category) => (
-            <div className={classes.card}>
-              <Link to={clientRoutes.medicineSearchByBrand(category.category_id)}>
-                <div className={classes.cardWrap}>
-                  <div className={classes.cardIcon}>
-                    <img src={`${apiDetails.url}${category.image_url}`} alt="" />
+          props.data.map((category) => {
+            const formattedTitle = _replace(_lowerCase(category.title), ' ', '-');
+            return (
+              <div className={classes.card}>
+                <Link to={clientRoutes.searchByMedicine(formattedTitle, category.category_id)}>
+                  <div className={classes.cardWrap}>
+                    <div className={classes.cardIcon}>
+                      <img src={`${apiDetails.url}${category.image_url}`} alt="" />
+                    </div>
+                    <div className={classes.cardTitle}>{category.title}</div>
                   </div>
-                  <div className={classes.cardTitle}>{category.title}</div>
-                </div>
-              </Link>
-            </div>
-          ))}
+                </Link>
+              </div>
+            );
+          })}
       </Slider>
     </div>
   );

@@ -212,7 +212,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
 
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+    url: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
 
@@ -376,7 +376,7 @@ export const MedicineDetails: React.FC = (props) => {
                   </a>
                   Product Detail
                 </div>
-                {medicineDetails && medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+                {medicineDetails && (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
                       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
@@ -389,13 +389,19 @@ export const MedicineDetails: React.FC = (props) => {
                                 <label>Manufacturer</label>
                                 {medicineDetails.manufacturer}
                               </div>
-                              <div className={classes.textInfo}>
-                                <label>Composition</label>
-                                {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
-                              </div>
+                              {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+                                <div className={classes.textInfo}>
+                                  <label>Composition</label>
+                                  {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
+                                </div>
+                              )}
                               <div className={classes.textInfo}>
                                 <label>Pack Of</label>
-                                {`${medicineDetails.mou} ${medicinePharmacyDetails[0].Doseform}`}
+                                {`${medicineDetails.mou} ${
+                                  medicinePharmacyDetails && medicinePharmacyDetails.length > 0
+                                    ? medicinePharmacyDetails[0].Doseform
+                                    : ''
+                                }`}
                               </div>
                               {medicineDetails.is_prescription_required !== '0' && (
                                 <div className={classes.prescriptionBox}>
@@ -405,25 +411,32 @@ export const MedicineDetails: React.FC = (props) => {
                                   </span>
                                 </div>
                               )}
-                              {medicinePharmacyDetails[0].Overview &&
-                                medicinePharmacyDetails[0].Overview.length > 0 && (
-                                  <>
-                                    <Tabs
-                                      value={tabValue}
-                                      variant="fullWidth"
-                                      classes={{
-                                        root: classes.tabsRoot,
-                                        indicator: classes.tabsIndicator,
-                                      }}
-                                      onChange={(e, newValue) => {
-                                        setTabValue(newValue);
-                                      }}
-                                    >
-                                      {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                                    </Tabs>
-                                    {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                                  </>
-                                )}
+                              {medicinePharmacyDetails &&
+                              medicinePharmacyDetails.length > 0 &&
+                              medicinePharmacyDetails[0].Overview &&
+                              medicinePharmacyDetails[0].Overview.length > 0 ? (
+                                <>
+                                  <Tabs
+                                    value={tabValue}
+                                    variant="fullWidth"
+                                    classes={{
+                                      root: classes.tabsRoot,
+                                      indicator: classes.tabsIndicator,
+                                    }}
+                                    onChange={(e, newValue) => {
+                                      setTabValue(newValue);
+                                    }}
+                                  >
+                                    {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                  </Tabs>
+                                  {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                                </>
+                              ) : medicineDetails.description ? (
+                                <div>
+                                  <div>Product Information</div>
+                                  <div>{stripHtml(medicineDetails.description)}</div>
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </div>

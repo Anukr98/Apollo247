@@ -85,4 +85,6 @@ export enum ApiConstants {
 
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
+
+  PHARMA_DEFAULT_SHOPID = '16001',
 }
