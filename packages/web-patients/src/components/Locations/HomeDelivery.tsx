@@ -11,7 +11,6 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
@@ -117,28 +116,6 @@ export const HomeDelivery: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
-
-  // const { data, loading, error } = useQueryWithSkip<
-  //   GetPatientAddressList,
-  //   GetPatientAddressListVariables
-  // >(GET_PATIENT_ADDRESSES_LIST, {
-  //   variables: {
-  //     patientId: currentPatient && currentPatient.id,
-  //   },
-  //   fetchPolicy: 'no-cache',
-  // });
-
-  // if (loading) {
-  //   return <CircularProgress />;
-  // }
-  // if (error) {
-  //   return <div>Error....</div>;
-  // }
-
-  // if (data && data.getPatientAddressList && data.getPatientAddressList.addressList) {
-  //   setDeliveryAddresses && setDeliveryAddresses(data.getPatientAddressList.addressList);
-  // }
-
   const getAddressDetails = () => {
     client
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
