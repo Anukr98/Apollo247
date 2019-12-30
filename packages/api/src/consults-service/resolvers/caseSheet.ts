@@ -736,6 +736,8 @@ const modifyCaseSheet: Resolver<
   }
 
   //medicalHistory upsert ends
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
+  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
 
   return getCaseSheetData;
 };
