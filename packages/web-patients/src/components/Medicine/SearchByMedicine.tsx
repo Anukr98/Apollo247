@@ -121,7 +121,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const [priceFilter, setPriceFilter] = useState();
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
+  const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
 
   const getTitle = () => {
     return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
@@ -155,11 +157,48 @@ export const SearchByMedicine: React.FC = (props) => {
         .then((res) => {
           if (res && res.data && res.data.products) {
             setMedicineList(res.data.products);
+            setMedicineListFiltered(res.data.products);
           }
         })
         .catch((e) => {});
     }
   }, [medicineList]);
+  useEffect(() => {
+    if (priceFilter) {
+      if (priceFilter.fromPrice && priceFilter.toPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (Number(priceFilter.fromPrice) <= value.price) {
+              if (value.price <= Number(priceFilter.toPrice)) {
+                filterArray.push(value);
+              }
+            }
+          });
+        setMedicineList(filterArray);
+      } else if (priceFilter.fromPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (Number(priceFilter.fromPrice) <= value.price) {
+              filterArray.push(value);
+            }
+          });
+        setMedicineList(filterArray);
+      } else if (priceFilter.toPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (value.price <= Number(priceFilter.toPrice)) {
+              filterArray.push(value);
+            }
+          });
+        setMedicineList(filterArray);
+      }
+    } else {
+      setMedicineList([]);
+    }
+  }, [priceFilter]);
 
   return (
     <div className={classes.welcome}>
@@ -180,7 +219,7 @@ export const SearchByMedicine: React.FC = (props) => {
             {getTitle()}({medicineList && medicineList.length})
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter setMedicineList={setMedicineList} />
+            <MedicineFilter setMedicineList={setMedicineList} setPriceFilter={setPriceFilter} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
