@@ -703,7 +703,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               : (city == '' || /^([a-zA-Z0-9.\s])+$/.test(city)) && setcity(city)
           }
           placeholder={'Enter area / locality name'}
-          multiline={true}
+          multiline={false}
         />
         <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginBottom: 8 }}>
           Address Type{' '}
@@ -719,7 +719,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   setOptionalAddress(optionalAddress)
             }
             placeholder={'Enter address type'}
-            multiline={true}
+            multiline={false}
           />
         )}
         {/* <TextInputComponent
@@ -841,8 +841,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   };
   return (
     <View style={{ flex: 1 }}>
-      {renderHeader()}
       <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
         <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
           <ScrollView bounces={false}>
             {renderAddress()}
