@@ -12,6 +12,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { STATUS } from 'consults-service/entities';
 
+
 export const appointmentsSummaryTypeDefs = gql`
   type summaryResult {
     azureFilePath: String!
@@ -229,6 +230,8 @@ const appointmentsSummary: Resolver<
   //const azureFilePath = fileName;
   return { azureFilePath };
 };
+
+
 
 export const appointmentsSummaryResolvers = {
   Query: {
