@@ -135,11 +135,18 @@ export const SearchByMedicine: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  const apiDetailsText = {
+    url: process.env.PHARMACY_MED_SEARCH_URL,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
 
   useEffect(() => {
-    if (!medicineList) {
+    if (
+      !medicineListFiltered ||
+      (medicineListFiltered && medicineListFiltered.length < 1 && Number(paramSearchText) > 0)
+    ) {
       axios
         .post(
           apiDetails.url,
@@ -161,10 +168,33 @@ export const SearchByMedicine: React.FC = (props) => {
           }
         })
         .catch((e) => {});
+    } else if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
+      onSearchMedicine();
     }
-  }, [medicineList]);
+  }, [medicineListFiltered]);
+  const onSearchMedicine = async () => {
+    await axios
+      .post(
+        apiDetailsText.url,
+        {
+          params: paramSearchText,
+        },
+        {
+          headers: {
+            Authorization: apiDetailsText.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        setMedicineList(data.products);
+        setMedicineListFiltered(data.products);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
   useEffect(() => {
-    if (priceFilter) {
+    if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
       if (priceFilter.fromPrice && priceFilter.toPrice) {
         let filterArray: MedicineProduct[] = [];
         medicineListFiltered &&
@@ -196,7 +226,7 @@ export const SearchByMedicine: React.FC = (props) => {
         setMedicineList(filterArray);
       }
     } else {
-      setMedicineList([]);
+      setMedicineListFiltered([]);
     }
   }, [priceFilter]);
 

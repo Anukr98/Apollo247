@@ -150,7 +150,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
   useEffect(() => {
-    if (subtxt) {
+    if (subtxt && (!fromPrice && !toPrice)) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);
@@ -272,10 +272,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
           fullWidth
           onClick={(e) => {
-            if (subtxt && subtxt.length > 2) {
-              onSearchMedicine(subtxt);
-            }
-
             filterByPrice();
           }}
         >
