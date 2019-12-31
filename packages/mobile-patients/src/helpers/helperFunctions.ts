@@ -8,6 +8,7 @@ import Permissions from 'react-native-permissions';
 import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { RNAndroidLocationEnabler } from 'react-native-android-location-enabler';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -334,53 +335,73 @@ const findAddrComponents = (
     .long_name;
 };
 
+const getlocationData = (
+  resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
+  reject: (reason?: any) => void
+) => {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      getPlaceInfoByLatLng(latitude, longitude)
+        .then((response) => {
+          const addrComponents =
+            g(response, 'data', 'results', '0' as any, 'address_components') || [];
+          if (addrComponents.length == 0) {
+            reject('Unable to get location.');
+          } else {
+            const area = [
+              findAddrComponents('route', addrComponents),
+              findAddrComponents('sublocality_level_2', addrComponents),
+              findAddrComponents('sublocality_level_1', addrComponents),
+            ].filter((i) => i);
+            resolve({
+              displayName:
+                (area || []).pop() ||
+                findAddrComponents('locality', addrComponents) ||
+                findAddrComponents('administrative_area_level_2', addrComponents),
+              latitude,
+              longitude,
+              area: area.join(', '),
+              city:
+                findAddrComponents('locality', addrComponents) ||
+                findAddrComponents('administrative_area_level_2', addrComponents),
+              state: findAddrComponents('administrative_area_level_1', addrComponents),
+              country: findAddrComponents('country', addrComponents),
+              pincode: findAddrComponents('postal_code', addrComponents),
+              lastUpdated: new Date().getTime(),
+            });
+          }
+        })
+        .catch(() => {
+          reject('Unable to get location.');
+        });
+    },
+    (error) => {
+      reject('Unable to get location.');
+    },
+    { enableHighAccuracy: false, timeout: 2000 }
+  );
+};
+
 export const doRequestAndAccessLocation = (): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
         if (response === 'authorized') {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              getPlaceInfoByLatLng(latitude, longitude)
-                .then((response) => {
-                  const addrComponents =
-                    g(response, 'data', 'results', '0' as any, 'address_components') || [];
-                  if (addrComponents.length == 0) {
-                    reject('Unable to get location.');
-                  } else {
-                    const area = [
-                      findAddrComponents('route', addrComponents),
-                      findAddrComponents('sublocality_level_2', addrComponents),
-                      findAddrComponents('sublocality_level_1', addrComponents),
-                    ].filter((i) => i);
-                    resolve({
-                      displayName:
-                        (area || []).pop() ||
-                        findAddrComponents('locality', addrComponents) ||
-                        findAddrComponents('administrative_area_level_2', addrComponents),
-                      latitude,
-                      longitude,
-                      area: area.join(', '),
-                      city:
-                        findAddrComponents('locality', addrComponents) ||
-                        findAddrComponents('administrative_area_level_2', addrComponents),
-                      state: findAddrComponents('administrative_area_level_1', addrComponents),
-                      country: findAddrComponents('country', addrComponents),
-                      pincode: findAddrComponents('postal_code', addrComponents),
-                      lastUpdated: new Date().getTime(),
-                    });
-                  }
-                })
-                .catch(() => {
-                  reject('Unable to get location.');
-                });
-            },
-            (error) => {
-              reject('Unable to get location.');
-            },
-            { enableHighAccuracy: false, timeout: 2000 }
-          );
+          if (Platform.OS === 'android') {
+            RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+              interval: 10000,
+              fastInterval: 5000,
+            })
+              .then(() => {
+                getlocationData(resolve, reject);
+              })
+              .catch(() => {
+                reject('Unable to get location.');
+              });
+          } else {
+            getlocationData(resolve, reject);
+          }
         } else {
           reject('Unable to get location.');
         }

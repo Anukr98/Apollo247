@@ -27,6 +27,7 @@ import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
+  getDeliveryTime,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -45,6 +46,9 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { colors } from '../../theme/colors';
+import { Spinner } from '../ui/Spinner';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -61,7 +65,8 @@ const styles = StyleSheet.create({
   },
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
-    padding: 16,
+    paddingTop: 16,
+    paddingBottom: 7,
   },
   blueTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -80,6 +85,24 @@ const styles = StyleSheet.create({
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  deliveryContainerStyle: {
+    backgroundColor: colors.CARD_BG,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 11.5,
+    marginBottom: 16,
+    borderRadius: 5,
+  },
+  deliveryStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
+  },
+  deliveryTimeStyle: {
+    ...theme.fonts.IBMPlexSansBold(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
   },
 });
 
@@ -123,6 +146,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { showAphAlert, setLoading } = useUIElements();
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+  const [deliveryTime, setdeliveryTime] = useState<string>('');
+  const [deliveryError, setdeliveryError] = useState<string>('');
+  const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const { locationDetails } = useAppCommonData();
 
   useEffect(() => {
@@ -217,6 +243,65 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   useEffect(() => {
     onFinishUpload();
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
+
+  useEffect(() => {
+    if (deliveryAddressId && cartItems.length > 0) {
+      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
+      setdeliveryTime('...');
+      setshowDeliverySpinner(true);
+      const lookUp = cartItems.map((item) => {
+        return { sku: item.id, qty: item.quantity };
+      });
+      if (selectedAddress) {
+        getDeliveryTime({
+          postalcode: selectedAddress.zipcode || '',
+          ordertype: 'pharma',
+          lookup: lookUp,
+        })
+          .then((res) => {
+            setdeliveryTime('');
+            try {
+              console.log('resresres', res);
+              if (res && res.data) {
+                if (
+                  typeof res.data === 'object' &&
+                  Array.isArray(res.data.tat) &&
+                  res.data.tat.length
+                ) {
+                  let tatItems = res.data.tat;
+                  tatItems.sort(({ deliverydate: item1 }, { deliverydate: item2 }) => {
+                    return moment(item1, 'D-MMM-YYYY HH:mm a') > moment(item2, 'D-MMM-YYYY HH:mm a')
+                      ? -1
+                      : moment(item1, 'D-MMM-YYYY HH:mm a') < moment(item2, 'D-MMM-YYYY HH:mm a')
+                      ? 1
+                      : 0;
+                  });
+                  setdeliveryTime(
+                    moment(tatItems[0].deliverydate, 'D-MMM-YYYY HH:mm a').toString()
+                  );
+                } else if (typeof res.data === 'string') {
+                  setdeliveryError(res.data);
+                } else if (typeof res.data.errorMSG === 'string') {
+                  setdeliveryError(res.data.errorMSG);
+                }
+              }
+            } catch (error) {
+              console.log(error);
+            }
+            setshowDeliverySpinner(false);
+          })
+          .catch((err) => {
+            setdeliveryTime('');
+            showAphAlert &&
+              showAphAlert({
+                title: 'Uh oh.. :(',
+                description: 'Something went wrong, Unable to fetch delivery time',
+              });
+            setshowDeliverySpinner(false);
+          });
+      }
+    }
+  }, [deliveryAddressId, cartItems]);
 
   const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
     if (!(unit < 1)) {
@@ -434,6 +519,27 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             )}
           </View>
         </View>
+        {deliveryTime || deliveryError ? (
+          <View>
+            <View style={styles.separatorStyle} />
+            <View style={styles.deliveryContainerStyle}>
+              {showDeliverySpinner ? (
+                <ActivityIndicator animating={true} size={'small'} color="green" />
+              ) : (
+                <View style={styles.rowSpaceBetweenStyle}>
+                  <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
+                  <Text style={styles.deliveryTimeStyle}>
+                    {moment(deliveryTime).isValid()
+                      ? moment(deliveryTime).format('D MMM YYYY')
+                      : '...' || deliveryError}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        ) : (
+          <View style={{ height: 9 }} />
+        )}
       </View>
     );
   };
@@ -822,7 +928,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else if (
       physicalPrescriptions.length == 0 &&
       ePrescriptions.length > 0 &&
@@ -830,7 +936,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length > 0 &&
@@ -840,14 +946,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     }
   };
 
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();
