@@ -229,6 +229,16 @@ export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
 }
 
+export interface DoctorAvailabilityInput {
+  availableDate: any;
+  doctorId: string;
+}
+
+export interface DoctorNextAvailableSlotInput {
+  availableDate: any;
+  doctorIds: string[];
+}
+
 export interface DownloadDocumentsInput {
   fileIds: string[];
   patientId: string;
