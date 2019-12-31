@@ -16146,6 +16146,33 @@
             "deprecationReason": null
           },
           {
+            "name": "saveOrderOutForDeliveryStatus",
+            "description": null,
+            "args": [
+              {
+                "name": "outForDeliveryInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "OrderDeliveryInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "OrderDeliveryResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "saveOrderPlacedStatus",
             "description": null,
             "args": [
@@ -27972,6 +27999,27 @@
             "deprecationReason": null
           }
         ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "OutForDeliveryInput",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "ordersResult",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "DeliveryOrderResult",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
         "possibleTypes": null
       },
       {

@@ -262,32 +262,34 @@ const bookAppointment: Resolver<
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
 
-  //Book appointment in MedMantra
-  const medMantraResponse = await bookMedMantraAppointment(
-    appointment,
-    consultsDb,
-    doctorsDb,
-    patientsDb
-  );
-  console.log('MedMantraAPIResponse:', medMantraResponse);
+  if (patientDetails.mobileNumber == '+919052959527') {
+    //Book appointment in MedMantra
+    const medMantraResponse = await bookMedMantraAppointment(
+      appointment,
+      consultsDb,
+      doctorsDb,
+      patientsDb
+    );
+    console.log('MedMantraAPIResponse:', medMantraResponse);
 
-  //if not available in medmantra, throw error
-  if (medMantraResponse.retcode && medMantraResponse.retcode === -2) {
-    //block these hours in appointment table as unavailable in medmantra
-    const updateAttrs = {
-      id: appointment.id,
-      status: STATUS.UNAVAILABLE_MEDMANTRA,
-      patientId: '',
-      patientName: '',
-    };
-    await appts.updateMedmantraStatus(updateAttrs);
-    throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
-  } else {
-    const updateAttrs = {
-      id: appointment.id,
-      apolloAppointmentId: medMantraResponse.AppointmentID,
-    };
-    await appts.updateMedmantraStatus(updateAttrs);
+    //if not available in medmantra, throw error
+    if (medMantraResponse.retcode && medMantraResponse.retcode === -2) {
+      //block these hours in appointment table as unavailable in medmantra
+      const updateAttrs = {
+        id: appointment.id,
+        status: STATUS.UNAVAILABLE_MEDMANTRA,
+        patientId: '',
+        patientName: '',
+      };
+      await appts.updateMedmantraStatus(updateAttrs);
+      throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+    } else {
+      const updateAttrs = {
+        id: appointment.id,
+        apolloAppointmentId: medMantraResponse.AppointmentID,
+      };
+      await appts.updateMedmantraStatus(updateAttrs);
+    }
   }
 
   return { appointment };
