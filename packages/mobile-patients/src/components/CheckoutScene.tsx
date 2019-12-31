@@ -51,6 +51,7 @@ import {
   SaveMedicineOrderPaymentMq,
   SaveMedicineOrderPaymentMqVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -166,6 +167,7 @@ const styles = StyleSheet.create({
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
 export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
+  const deliveryTime = props.navigation.getParam('deliveryTime');
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
@@ -263,6 +265,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       orderAutoId,
       token,
       amount: grandTotal,
+      deliveryTime,
     });
   };
 
@@ -414,11 +417,21 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               marginTop: 15.5,
             }}
           />
+          <View>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+              }}
+            >
+              {deliveryTime && `Delivery By: ${moment(deliveryTime).format('D MMM YYYY')}`}
+            </Text>
+          </View>
           {/* <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                marginTop: 7.5
               }}
             >
               <Text
@@ -433,16 +446,16 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
                 {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
               </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                height: 1,
-                backgroundColor: '#02475b',
-                opacity: 0.1,
-                marginBottom: 15.5,
-                marginTop: 7.5,
-              }}
-            /> */}
+            </View> */}
+          <View
+            style={{
+              height: 1,
+              backgroundColor: '#02475b',
+              opacity: 0.1,
+              marginBottom: 15.5,
+              marginTop: 7.5,
+            }}
+          />
           <View style={styles.popupButtonStyle}>
             <TouchableOpacity
               style={{ flex: 1 }}

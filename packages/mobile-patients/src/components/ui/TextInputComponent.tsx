@@ -84,6 +84,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           maxLength={props.maxLength}
           keyboardType={props.keyboardType}
           {...props.textInputprops}
+          returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
         />
       )}
     </View>
