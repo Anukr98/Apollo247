@@ -16,9 +16,8 @@ import { AphCalendar } from 'components/AphCalendar';
 import { Prompt, Link } from 'react-router-dom';
 import moment from 'moment';
 import { createMuiTheme } from '@material-ui/core';
-import DateFnsUtils from '@date-io/date-fns';
 import { isEmpty } from 'lodash';
-import { AphSelect, AphTextField } from '@aph/web-ui-components';
+import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import { useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { ApolloError } from 'apollo-client';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -29,7 +28,6 @@ import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/Can
 import { Consult } from 'components/Consult';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import { CircularProgress } from '@material-ui/core';
-import { KeyboardTimePicker, KeyboardDatePicker } from '@material-ui/pickers';
 import {
   InitiateRescheduleAppointment,
   InitiateRescheduleAppointmentVariables,
@@ -55,6 +53,13 @@ import {
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
+import { GET_DOCTOR_NEXT_AVAILABILITY, GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from 'graphql/types/GetDoctorNextAvailableSlot';
+import { format } from 'date-fns';
+import { AvailableSlots } from '../components/AvailableSlots';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -788,13 +793,15 @@ const unSubscribeBrowserButtonsListener = () => {
 
 type Params = { id: string; patientId: string };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const params = useParams<Params>();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserType } = useAuthContext();
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
     CaseSheetContext
   );
+  const apiDateFormat = new Date();
+
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -817,6 +824,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
   const [showAbandonment, setShowAbandonment] = React.useState(false);
   const [startingTime, setStartingTime] = useState<number>(0);
+  const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
+
+  const [dateSelected, setDateSelected] = useState<string>(moment(new Date()).format('YYYY-MM-DD'));
 
   // timer for audio/video call start
   const timerMinuts = Math.floor(startingTime / 60);
@@ -831,6 +841,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
+
+  //get Doctor's next availability slot
+
+  const getNextAvailabityMutation = useMutation<
+    GetDoctorNextAvailableSlot,
+    GetDoctorNextAvailableSlotVariables
+  >(GET_DOCTOR_NEXT_AVAILABILITY, {
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: [props.doctorId],
+        availableDate: format(new Date(), 'yyyy-MM-dd'),
+      },
+    },
+    fetchPolicy: 'no-cache',
+  });
 
   //call abundant timer start
   const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
@@ -857,7 +882,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }, 1000);
   };
   //call abundant timer end
-
   // timer for ring called start
   const [ringingCallTime, setRingingCallTime] = useState<number>(45);
   const missedCallIntervalTimer = (timer: number) => {
@@ -965,6 +989,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
   const [disableOnCancel, setDisableOnCancel] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isSlotPopoverOpen, setIsSlotPopoverOpen] = useState<boolean>(false);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = useState<boolean>(false);
   const [reason, setReason] = useState<string>('I am running late from previous consult');
   const [cancelReason, setCancelReason] = useState<string>('Not related to my specialty');
@@ -1391,11 +1416,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }
   }, [props.lastMsg]);
-  // console.log(
-  //   moment(new Date()),
-  //   moment(props.appointmentDateTime),
-  //   moment(new Date()).isAfter(moment(props.appointmentDateTime))
-  // );
+
   useEffect(() => {
     const presenceEventObject = props.presenceEventObject;
     if (presenceEventObject && isConsultStarted && props.appointmentStatus !== STATUS.COMPLETED) {
@@ -1546,7 +1567,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const navigateToCalendar = () => {
     window.location.href = clientRoutes.calendar();
   };
-  const [dateSelected, setDateSelected] = useState<string>('');
   const rescheduleConsultAction = () => {
     // do api call
     //setIsLoading(true);
@@ -1566,6 +1586,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   // flag: true is for missed call reschedule & false for normal
   const callInitiateReschedule = (flag: boolean) => {
     const today = moment();
+    const hours = timeSelected.split(':');
+    const momentDate = moment(dateSelected).hours();
     unSubscribeBrowserButtonsListener();
     const rescheduleParam = flag
       ? {
@@ -1584,11 +1606,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
           rescheduleInitiatedId: props.doctorId,
           //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
-          rescheduledDateTime: moment(today)
-            .add(1, 'days')
-            .toISOString(),
+          rescheduledDateTime: dateSelected + 'T' + timeSelected + ':00.000Z',
           autoSelectSlot: 0,
         };
+
     client
       .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
         mutation: INITIATE_RESCHDULE_APPONITMENT,
@@ -1672,12 +1693,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     !isClickedOnEdit
       ? true
       : false;
-  const apiDateFormat = new Date().toISOString().substring(0, 10);
 
-  const morningSlots: number[] = [10, 12, 23],
-    afternoonSlots: number[] = [10, 12, 23],
-    eveningSlots: number[] = [10, 12, 23],
-    lateNightSlots: number[] = [10, 12, 23];
   const [timeSelected, setTimeSelected] = useState<string>('');
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -1999,6 +2015,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         } else {
                           setIsCancelDialogOpen(false);
                           setIsPopoverOpen(true);
+                          getNextAvailabityMutation()
+                            .then(({ data }: any) => {
+                              try {
+                                if (
+                                  data &&
+                                  data.getDoctorNextAvailableSlot &&
+                                  data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+                                  data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                ) {
+                                  setDoctorNextAvailableSlot(
+                                    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                      .availableSlot || ''
+                                  );
+                                }
+                              } catch (error) {
+                                setDoctorNextAvailableSlot('');
+                                alert(error);
+                              }
+                            })
+                            .catch((e) => console.log(e));
                         }
                       }}
                     >
@@ -2019,7 +2055,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           disableEscapeKeyDown
         >
           <div>
-            {/* <Paper className={classes.modalBox}>
+            <Paper className={classes.modalBox}>
               <div className={classes.tabHeader}>
                 <h4>RESCHEDULE CONSULT</h4>
                 <Button className={classes.cross}>
@@ -2034,19 +2070,42 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
               <div className={classes.tabBody}>
                 <p>The following slot will be suggested —</p>
-                <form noValidate>
-                  <TextField
-                    id="datetime-local"
-                    label="Date & Time"
-                    type="datetime-local"
-                    defaultValue="2017-05-24T10:30"
-                    className={classes.textField}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                </form>
-                <div className={classes.suggestSlot}>SUGGEST ANOTHER SLOT</div>
+
+                {doctorNextAvailableSlot === '' ? (
+                  <CircularProgress />
+                ) : (
+                  <p>
+                    {dateSelected && timeSelected
+                      ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
+                          'ddd, DD/MM/YYYY'
+                        ) +
+                        ' ' +
+                        moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
+                      : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY') +
+                        ' ' +
+                        moment(doctorNextAvailableSlot).format('h:mm a')}
+                  </p>
+                  // <form noValidate>
+                  //   <TextField
+                  //     id="datetime-local"
+                  //     label="Date & Time"
+                  //     type="datetime-local"
+                  //     defaultValue={dateSelected || doctorNextAvailableSlot}
+                  //     className={classes.textField}
+                  //     InputLabelProps={{
+                  //       shrink: true
+                  //     }}
+                  //   />
+                  // </form>
+                )}
+                <AphButton
+                  className={classes.suggestSlot}
+                  onClick={() => {
+                    setIsSlotPopoverOpen(true);
+                  }}
+                >
+                  SUGGEST ANOTHER SLOT
+                </AphButton>
               </div>
               <div className={classes.tabBody}>
                 <p>Why do you want to reschedule this consult?</p>
@@ -2073,28 +2132,28 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     classes={{ selected: classes.menuSelected }}
                   >
                     I am running late from previous consult
-                </MenuItem>
+                  </MenuItem>
                   <MenuItem
                     value="I have personal engagement"
                     classes={{ selected: classes.menuSelected }}
                   >
                     I have personal engagement
-                </MenuItem>
+                  </MenuItem>
                   <MenuItem
                     value="I have a parallel appointment/ procedure"
                     classes={{ selected: classes.menuSelected }}
                   >
                     I have a parallel appointment/ procedure
-                </MenuItem>
+                  </MenuItem>
                   <MenuItem
                     value="Patient was not reachable"
                     classes={{ selected: classes.menuSelected }}
                   >
                     Patient was not reachable
-                </MenuItem>
+                  </MenuItem>
                   <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
                     Other
-                </MenuItem>
+                  </MenuItem>
                 </AphSelect>
                 {textOther && (
                   <div className={classes.othercases}>
@@ -2114,11 +2173,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         error={errorStateReshedule.otherError}
                       >
                         Please write other reason
-                    </FormHelperText>
+                      </FormHelperText>
                     )}
                   </div>
                 )}
               </div>
+
               <div className={classes.tabFooter}>
                 <Button
                   className={classes.ResheduleCosultButton}
@@ -2127,9 +2187,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   }}
                 >
                   Reschedule Consult
-              </Button>
+                </Button>
               </div>
-            </Paper> */}
+            </Paper>
+          </div>
+        </Modal>
+        <Modal
+          open={isSlotPopoverOpen}
+          onClose={() => setIsSlotPopoverOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <div>
             <Paper className={classes.modalBoxTabs}>
               <div className={classes.tabHeader}>
                 <h4>PICK A SLOT</h4>
@@ -2138,69 +2207,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     src={require('images/ic_cross.svg')}
                     alt=""
                     onClick={() => {
-                      setIsPopoverOpen(false);
+                      setIsSlotPopoverOpen(false);
                     }}
                   />
                 </Button>
               </div>
-              <div className={`${classes.tabBody} ${classes.tabBodyTabs}`}>
-                <Grid container spacing={2}>
-                  <Grid item sm={6}>
-                    <div
-                      className={`${classes.consultGroup} ${classes.scheduleCalendar} ${classes.showCalendar}`}
-                      ref={calendarRef}
-                    >
-                      <AphCalendar
-                        getDate={(dateSelected: string) => setDateSelected(dateSelected)}
-                        selectedDate={new Date()}
-                      />
-                    </div>
-                  </Grid>
-                  <Grid item sm={6}>
-                    {morningSlots.length > 0 ||
-                    afternoonSlots.length > 0 ||
-                    eveningSlots.length > 0 ||
-                    lateNightSlots.length > 0 ? (
-                      <div
-                        className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${classes.showTimeSlot}`}
-                      >
-                        <DayTimeSlots
-                          morningSlots={morningSlots}
-                          afternoonSlots={afternoonSlots}
-                          eveningSlots={eveningSlots}
-                          latenightSlots={lateNightSlots}
-                          doctorName={'Sushma'}
-                          timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
-                        />
-                      </div>
-                    ) : (
-                      <div className={classes.consultGroup}>
-                        <div className={classes.noSlotsAvailable}>
-                          Oops! No slots available with Dr. {'Sushma'} :(
-                        </div>
-                      </div>
-                    )}
-                  </Grid>
-                </Grid>
-              </div>
-              <div className={classes.tabFooter}>
-                <Button
-                  className={classes.BackCosultButton}
-                  onClick={() => {
-                    rescheduleConsultAction();
-                  }}
-                >
-                  Go Back
-                </Button>
-                <Button
-                  className={classes.ResheduleCosultButton}
-                  onClick={() => {
-                    rescheduleConsultAction();
-                  }}
-                >
-                  Done
-                </Button>
-              </div>
+              <AvailableSlots
+                setIsPopoverOpen={setIsSlotPopoverOpen}
+                rescheduleConsultAction={rescheduleConsultAction}
+                doctorId={props.doctorId}
+                setTimeSelected={setTimeSelected}
+                setDateSelected={setDateSelected}
+                dateSelected={dateSelected}
+                timeSelected={timeSelected}
+              />
             </Paper>
           </div>
         </Modal>

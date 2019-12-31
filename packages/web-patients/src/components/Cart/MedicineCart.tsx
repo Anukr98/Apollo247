@@ -397,6 +397,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 5px 0 0',
       },
     },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
   };
 });
 
@@ -823,7 +826,7 @@ export const MedicineCart: React.FC = (props) => {
 
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
-        <AphDialogTitle>E Prescription</AphDialogTitle>
+        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
           setPhrPrescriptionData={setPhrPrescriptionData}
