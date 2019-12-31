@@ -83,7 +83,7 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
-  iOS_Version: '1.5',
+  iOS_Version: '1.7',
   Android_Version: '1.16',
 };
 
@@ -108,7 +108,7 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.5',
+  iOS_Version: '1.7',
   Android_Version: '1.16',
 };
 
@@ -133,7 +133,7 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.5',
+  iOS_Version: '1.7',
   Android_Version: '1.16',
 };
 

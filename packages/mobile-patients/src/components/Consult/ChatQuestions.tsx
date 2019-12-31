@@ -44,14 +44,14 @@ const styles = StyleSheet.create({
     // ...theme.viewStyles.container,
   },
   mainView: {
-    height: 200,
+    minHeight: 200,
 
     // flex: 1,
     // flex: 9,
     // backgroundColor: 'transparent',
   },
   itemContainer: {
-    height: 200,
+    minHeight: 200,
     // margin: 20,
     paddingTop: 20,
     backgroundColor: 'white',
@@ -335,6 +335,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         <AppIntroSlider
           ref={appIntroSliderRef}
           extraData={refresh}
+          paginationStyle={{ bottom: 10 }}
           // hidePagination
           //scrollEnabled={false}
           slides={slides}
