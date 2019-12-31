@@ -136,7 +136,7 @@ export const ServiceList: React.FC = (props) => {
     {
       title: `Just want to buy medicines? It’s easy!`,
       content: 'You can search by name or prescription.',
-      action: { link: clientRoutes.testsAndMedicine(), content: 'Search Medicine' },
+      action: { link: clientRoutes.medicines(), content: 'Search Medicine' },
     },
     {
       title: 'Do you want to get some tests done?',
