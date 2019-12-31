@@ -185,29 +185,33 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderCancelOrderOverlay = () => {
     return (
-      <OrderCancelOverlay
-        heading="Cancel Order"
-        onClose={() => setCancelVisible(false)}
-        isVisible={isCancelVisible}
-        loading={apiLoading}
-        options={cancelOptions}
-        onSubmit={onSubmitCancelOrder}
-      />
+      isCancelVisible && (
+        <OrderCancelOverlay
+          heading="Cancel Order"
+          onClose={() => setCancelVisible(false)}
+          isVisible={isCancelVisible}
+          loading={apiLoading}
+          options={cancelOptions}
+          onSubmit={onSubmitCancelOrder}
+        />
+      )
     );
   };
 
   const renderRescheduleOrderOverlay = () => {
     return (
-      <TestScheduleOverlay
-        type={g(order, 'slotTimings') ? 'home-visit' : 'clinic-visit'}
-        heading="Schedule Appointment"
-        onClose={() => setRescheduleVisible(false)}
-        isVisible={isRescheduleVisible}
-        loading={apiLoading}
-        options={rescheduleOptions}
-        onReschedule={onSubmitRescheduleOrder}
-        addressId={orderDetails.patientAddressId}
-      />
+      isRescheduleVisible && (
+        <TestScheduleOverlay
+          type={g(order, 'slotTimings') ? 'home-visit' : 'clinic-visit'}
+          heading="Schedule Appointment"
+          onClose={() => setRescheduleVisible(false)}
+          isVisible={isRescheduleVisible}
+          loading={apiLoading}
+          options={rescheduleOptions}
+          onReschedule={onSubmitRescheduleOrder}
+          addressId={orderDetails.patientAddressId}
+        />
+      )
     );
   };
 
@@ -289,8 +293,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return <TestOrderSummaryView orderDetails={orderDetails} />;
   };
 
-  console.log({ isCancelVisible, isRescheduleVisible });
-
   const renderMoreMenu = () => {
     return (
       <MaterialMenu
@@ -306,13 +308,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         bottomPadding={{ paddingBottom: 0 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={({ value }) => {
-          console.log(value, value === 'Cancel Order', setCancelVisible);
-
-          // if (value === 'Cancel Order') {
-          setCancelVisible(true);
-          // } else if (value === 'Reschedule Order') {
-          // setRescheduleVisible(true);
-          // }
+          if (value === 'Cancel Order') {
+            setCancelVisible(true);
+          } else if (value === 'Reschedule Order') {
+            setRescheduleVisible(true);
+          }
         }}
       >
         <More />

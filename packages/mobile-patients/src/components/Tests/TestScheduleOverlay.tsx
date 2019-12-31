@@ -123,7 +123,7 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
       patientId: g(currentPatient, 'id'),
       hubCode: 'HYD_HUB1',
       selectedDate: moment(date).format('YYYY-MM-DD'),
-      zipCode: parseInt(zipCode),
+      zipCode: parseInt(zipCode, 10),
     },
   });
 
@@ -140,8 +140,8 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
             moment()
               .format('DMY')
               .toString()
-              ? parseInt(item!.startTime!.split(':')[0]) >= parseInt(moment().format('k'))
-                ? parseInt(item!.startTime!.split(':')[1]) > moment().minute()
+              ? parseInt(item!.startTime!.split(':')[0], 10) >= parseInt(moment().format('k'), 10)
+                ? parseInt(item!.startTime!.split(':')[1], 10) > moment().minute()
                 : false
               : true
           )
@@ -270,7 +270,7 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
         cardContainer={{
           margin: 0,
         }}
-        options={props.options.map(
+        options={options.map(
           (item, i) =>
             ({
               onPress: () => {
