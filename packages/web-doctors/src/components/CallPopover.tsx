@@ -2219,6 +2219,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 setTimeSelected={setTimeSelected}
                 setDateSelected={setDateSelected}
                 dateSelected={dateSelected}
+                timeSelected={timeSelected}
               />
             </Paper>
           </div>

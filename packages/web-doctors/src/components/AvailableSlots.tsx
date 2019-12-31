@@ -225,6 +225,7 @@ interface AvailableSlotsProps {
   setTimeSelected: (timeSelected: string) => void;
   setDateSelected: (dateSelected: string) => void;
   dateSelected: string;
+  timeSelected: string;
 }
 
 export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {

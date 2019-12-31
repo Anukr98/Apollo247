@@ -91,6 +91,7 @@ const TabContainer: React.FC = (props) => {
 export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
   const classes = useStyles({});
   const [selectedTime, setTimeSelected] = useState<string>('');
+  const [selectedFlag, setSelectedFlag] = useState<boolean>(false);
 
   const {
     morningSlots,
@@ -194,6 +195,22 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
     }
   };
 
+  useEffect(() => {
+    tabs.map(
+      (tab) =>
+        tab.tabValue === tabValue &&
+        tab.slots.length > 0 &&
+        tab.slots.map((slotTime: number, idx) => {
+          if (idx === 0) {
+            const timeString = getTimeFromTimestamp(today, slotTime);
+
+            setTimeSelected(timeString);
+            timeSelected(timeString);
+          }
+        })
+    );
+  }, []);
+
   return (
     <div className={classes.root}>
       <Tabs
@@ -216,7 +233,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
             {/* <Scrollbars> */}
             <div className={classes.timeSlotActions}>
               {tab.slots.length > 0
-                ? tab.slots.map((slotTime: number) => {
+                ? tab.slots.map((slotTime: number, idx) => {
                     const timeString = getTimeFromTimestamp(today, slotTime);
                     const timeStringArray = timeString.split(':');
                     const formattedHour = getTwelveHour(tab.message, timeStringArray);
@@ -225,8 +242,13 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                         <AphButton
                           color="secondary"
                           value={timeString}
-                          className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
+                          className={
+                            selectedTime === timeString || (!selectedFlag && idx === 0)
+                              ? `${classes.buttonActive}`
+                              : ''
+                          }
                           onClick={(e) => {
+                            setSelectedFlag(true);
                             setTimeSelected(e.currentTarget.value);
                             timeSelected(e.currentTarget.value);
                           }}
