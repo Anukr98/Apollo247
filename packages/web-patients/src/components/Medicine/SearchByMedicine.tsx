@@ -122,6 +122,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [priceFilter, setPriceFilter] = useState();
+  const [filterData, setFilterData] = useState();
+  const [catageryFilterData, setCatageryFilterData] = useState<MedicineProduct[] | null>([]);
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
 
@@ -193,6 +195,7 @@ export const SearchByMedicine: React.FC = (props) => {
         console.log(e);
       });
   };
+
   useEffect(() => {
     if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
       if (priceFilter.fromPrice && priceFilter.toPrice) {
@@ -206,6 +209,7 @@ export const SearchByMedicine: React.FC = (props) => {
             }
           });
         setMedicineList(filterArray);
+        setCatageryFilterData(filterArray);
       } else if (priceFilter.fromPrice) {
         let filterArray: MedicineProduct[] = [];
         medicineListFiltered &&
@@ -215,6 +219,7 @@ export const SearchByMedicine: React.FC = (props) => {
             }
           });
         setMedicineList(filterArray);
+        setCatageryFilterData(filterArray);
       } else if (priceFilter.toPrice) {
         let filterArray: MedicineProduct[] = [];
         medicineListFiltered &&
@@ -224,11 +229,45 @@ export const SearchByMedicine: React.FC = (props) => {
             }
           });
         setMedicineList(filterArray);
+        setCatageryFilterData(filterArray);
+      }
+      if (filterData && filterData.length > 0) {
+        if (filterData[0] !== '') {
+          let filterArray: MedicineProduct[] = [];
+          if (catageryFilterData && catageryFilterData.length > 0) {
+            filterData &&
+              filterData.map((filter: string) => {
+                catageryFilterData &&
+                  catageryFilterData.map((value) => {
+                    if (value.category_id === filter) {
+                      filterArray.push(value);
+                    }
+                  });
+              });
+            setMedicineList(filterArray);
+          }
+        }
+      }
+    } else if (filterData && filterData.length > 0) {
+      if (filterData[0] !== '') {
+        let filterArray: MedicineProduct[] = [];
+        filterData &&
+          filterData.map((filter: string) => {
+            medicineListFiltered &&
+              medicineListFiltered.map((value) => {
+                if (value.category_id === filter) {
+                  filterArray.push(value);
+                }
+              });
+          });
+        setMedicineList(filterArray);
+      } else {
+        setMedicineListFiltered([]);
       }
     } else {
       setMedicineListFiltered([]);
     }
-  }, [priceFilter]);
+  }, [priceFilter, filterData]);
 
   return (
     <div className={classes.welcome}>
@@ -249,7 +288,11 @@ export const SearchByMedicine: React.FC = (props) => {
             {getTitle()}({medicineList && medicineList.length})
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter setMedicineList={setMedicineList} setPriceFilter={setPriceFilter} />
+            <MedicineFilter
+              setMedicineList={setMedicineList}
+              setPriceFilter={setPriceFilter}
+              setFilterData={setFilterData}
+            />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
