@@ -144,6 +144,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   };
 
   const params = useParams<Params>();
+  const locationUrl = window.location.href;
   const [subtxt, setSubtxt] = useState<string | null>(
     params.searchMedicineType === 'search-medicines' ? params.searchText : null
   );
@@ -199,39 +200,41 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       <div className={`${classes.filterSection}`}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
           <div className={classes.customScroll}>
-            <div className={classes.filterBox}>
-              <div className={classes.filterType}>Categories</div>
-              <div className={classes.boxContent}>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${classes.buttonActive}`}
-                >
-                  All
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Personal Care
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Mom &amp; Baby
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Nutrition
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Healthcare
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Special Offers
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Holland &amp; Barrett
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Apollo Products
-                </AphButton>
+            {locationUrl && locationUrl.includes('search-medicines') && (
+              <div className={classes.filterBox}>
+                <div className={classes.filterType}>Categories</div>
+                <div className={classes.boxContent}>
+                  <AphButton
+                    color="secondary"
+                    size="small"
+                    className={`${classes.button} ${classes.buttonActive}`}
+                  >
+                    All
+                  </AphButton>
+                  <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                    Personal Care
+                  </AphButton>
+                  <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                    Mom &amp; Baby
+                  </AphButton>
+                  <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                    Nutrition
+                  </AphButton>
+                  <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                    Healthcare
+                  </AphButton>
+                  <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                    Special Offers
+                  </AphButton>
+                  <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                    Holland &amp; Barrett
+                  </AphButton>
+                  <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                    Apollo Products
+                  </AphButton>
+                </div>
               </div>
-            </div>
+            )}
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Discount</div>
               <div className={classes.boxContent}>
