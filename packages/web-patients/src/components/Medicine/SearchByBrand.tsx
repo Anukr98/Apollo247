@@ -145,7 +145,8 @@ export const SearchByBrand: React.FC = (props) => {
   };
   const params = useParams<Params>();
 
-  const [data, setData] = useState<products[] | null>(null);
+  const [data, setData] = useState<MedicineProduct[] | null>(null);
+  const [priceFilter, setPriceFilter] = useState();
 
   useEffect(() => {
     if (!data) {
@@ -191,13 +192,13 @@ export const SearchByBrand: React.FC = (props) => {
             Search By Brand ({data && data.length})
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter />
+            <MedicineFilter setMedicineList={setData} setPriceFilter={setPriceFilter} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
                   {data && data.length > 0 ? (
                     <MedicinesCartContext.Consumer>
-                      {() => <MedicineCard data={data} />}
+                      {() => <MedicineCard medicineList={data} />}
                     </MedicinesCartContext.Consumer>
                   ) : !data ? (
                     <CircularProgress />
