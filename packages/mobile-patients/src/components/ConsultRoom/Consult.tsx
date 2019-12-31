@@ -469,13 +469,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
         // horizontal={true}
         data={
-          selectedTab === tabs[0].title
-            ? consultations.filter((item) =>
-                moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
-              )
-            : consultations.filter((item) =>
-                moment(item.appointmentDateTime).isBefore(moment(new Date()))
-              )
+          consultations
+          // selectedTab === tabs[0].title
+          //   ? consultations.filter((item) =>
+          //       moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+          //     )
+          //   : consultations.filter((item) =>
+          //       moment(item.appointmentDateTime).isBefore(moment(new Date()))
+          //     )
         }
         bounces={false}
         showsHorizontalScrollIndicator={false}
@@ -997,7 +998,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTopView()}
-          {renderTabSwitch()}
+          {/* {renderTabSwitch()} */}
           <View
             style={
               {
