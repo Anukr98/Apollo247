@@ -32,10 +32,13 @@ import {
   subMinutes,
   addHours,
 } from 'date-fns';
-import { ConsultHours, ConsultMode } from 'doctors-service/entities';
+import { ConsultHours, ConsultMode, Doctor } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
+import { log } from 'customWinstonLogger';
+import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -154,6 +157,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
   }
 
+  async updateMedmantraStatus(updateAttrs: Partial<Appointment>) {
+    return this.save(updateAttrs).catch((error) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { error });
+    });
+  }
+
   getPatientAppointments(doctorId: string, patientId: string) {
     const curDate = new Date();
     let curMin = curDate.getUTCMinutes();
@@ -228,9 +237,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: newEndDate,
       })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -256,9 +266,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: endDate,
       })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -290,9 +301,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .getMany();
   }
@@ -303,9 +315,10 @@ export class AppointmentRepository extends Repository<Appointment> {
   ) {
     const queryBuilder = this.createQueryBuilder('appointment')
       .where('appointment.doctorId IN (:...doctorIds)', { doctorIds })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       });
 
     if (utcAppointmentDateTimes && utcAppointmentDateTimes.length > 0) {
@@ -360,9 +373,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: endDate,
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .getMany();
   }
@@ -384,9 +398,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     const upcomingAppts = await this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -407,9 +422,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: new Date(),
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
@@ -900,9 +916,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: newEndDate,
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -1060,9 +1077,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.appointmentState = :appointmentState', {
         appointmentState: APPOINTMENT_STATE.NEW,
       })
-      .andWhere('appointment.status not in(:status1,:status2)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .getMany();
   }
@@ -1133,5 +1151,172 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime: Between(fromDate, toDate),
       },
     });
+  }
+
+  async bookMedMantraAppointment(
+    apptDetails: Appointment,
+    doctorDetails: Doctor,
+    patientsDb: Connection,
+    doctorsDb: Connection
+  ) {
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patientRepo.getPatientDetails(apptDetails.patientId);
+
+    if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+    //invalid date handling
+    let dateOfBirth = patientDetails.dateOfBirth;
+    if (patientDetails.dateOfBirth === null || !patientDetails) {
+      dateOfBirth = new Date('1990-01-01');
+    }
+
+    //calculating appt end time
+    const apptEndTime = await this.getAppointmentEndTime(apptDetails, doctorsDb);
+
+    const medMantraBookApptUrl = process.env.MEDMANTRA_BOOK_APPOINTMENT_API || '';
+    const medMantraBookApptInput = {
+      FirstName: patientDetails.firstName,
+      LastName: patientDetails.lastName,
+      Gender: ApiConstants.MEDMANTRA_GENDER,
+      RegionID: ApiConstants.MEDMANTRA_REGIONID,
+      ResourceID: doctorDetails.externalId,
+      UHIDNumber: patientDetails.uhid,
+      MobileNumber: '91-' + patientDetails.mobileNumber.substr(3),
+      Title: ApiConstants.MEDMANTRA_TITLE,
+      StartDateTime: format(apptDetails.appointmentDateTime, 'dd-MMM-yyyy HH:mm:ss'),
+      EndDateTime: format(apptEndTime, 'dd-MMM-yyyy HH:mm:ss'),
+      ServiceID: ApiConstants.MEDMANTRA_SERVICEID,
+      RegistrationType: ApiConstants.MEDMANTRA_REGISTRATION_TYPE,
+      SpecialityID: doctorDetails.specialty.externalId,
+      StatusCheck: ApiConstants.MEDMANTRA_STATUSCHECK,
+      DateOfBirth: format(dateOfBirth, 'dd-MMM-yyyy'),
+      MaritalStatus: ApiConstants.MEDMANTRA_MARITALSTATUS,
+      LocationID: ApiConstants.MEDMANTRA_LOCATIONID,
+      UpdatedBy: ApiConstants.MEDMANTRA_UPDATEDBY,
+      Flag: ApiConstants.MEDMANTRA_FLAG,
+      OnlineAppointmentID: '',
+      OnlineReceiptNO: '',
+      TranAmount: apptDetails.bookingDate, // Change it to price
+      PayeeName: patientDetails.firstName,
+      TranDateTime: format(new Date(), 'dd-MMM-yyyy'),
+      ModeofAppointment: ApiConstants.MEDMANTRA_APPOINTMENT_MODE,
+      PayType: ApiConstants.MEDMANTRA_PAYTYPE,
+    };
+
+    log(
+      'consultServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${medMantraBookApptUrl}`,
+      'bookMedMantraAppointment()->API_CALL_STARTING',
+      JSON.stringify(medMantraBookApptInput),
+      ''
+    );
+
+    console.log('process.env.UHID_CREATE_AUTH_KEY ==>', process.env.UHID_CREATE_AUTH_KEY);
+
+    const bookApptResp = await fetch(medMantraBookApptUrl, {
+      method: 'POST',
+      body: JSON.stringify(medMantraBookApptInput),
+      headers: {
+        'Content-Type': 'application/json',
+        Authkey: process.env.UHID_CREATE_AUTH_KEY ? process.env.UHID_CREATE_AUTH_KEY : '',
+      },
+    })
+      .then((res) => res.text())
+      .catch((error) => {
+        log(
+          'consultServiceLogger',
+          'API_CALL_ERROR',
+          'bookMedMantraAppointment()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+      });
+
+    log(
+      'consultServiceLogger',
+      'API_CALL_RESPONSE',
+      'bookMedMantraAppointment()->API_CALL_RESPONSE',
+      bookApptResp,
+      ''
+    );
+    console.log('medMantraBookApptResp:', bookApptResp);
+    const parsedResponse = JSON.parse(bookApptResp);
+    return parsedResponse;
+  }
+
+  async cancelMedMantraAppointment(apptDetails: Appointment, cancelReason: string) {
+    const medMantraCancelApptUrl = process.env.MEDMANTRA_CANCEL_APPOINTMENT_API || '';
+    const medMantraCancelApptInput = {
+      RegionID: ApiConstants.MEDMANTRA_REGIONID,
+      LocationID: ApiConstants.MEDMANTRA_LOCATIONID,
+      AppointmentID: apptDetails.apolloAppointmentId,
+      UpdatedBy: ApiConstants.MEDMANTRA_APPOINTMENT_MODE,
+      ReasonforCancellation: cancelReason,
+    };
+
+    log(
+      'consultServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${medMantraCancelApptUrl}`,
+      'cancelMedMantraAppointment()->API_CALL_STARTING',
+      JSON.stringify(medMantraCancelApptInput),
+      ''
+    );
+
+    console.log('process.env.UHID_CREATE_AUTH_KEY ==>', process.env.UHID_CREATE_AUTH_KEY);
+
+    const cancelApptResp = await fetch(medMantraCancelApptUrl, {
+      method: 'POST',
+      body: JSON.stringify(medMantraCancelApptInput),
+      headers: {
+        'Content-Type': 'application/json',
+        Authkey: process.env.UHID_CREATE_AUTH_KEY ? process.env.UHID_CREATE_AUTH_KEY : '',
+      },
+    })
+      .then((res) => res.json())
+      .catch((error) => {
+        log(
+          'consultServiceLogger',
+          'API_CALL_ERROR',
+          'cancelMedMantraAppointment()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+      });
+
+    log(
+      'consultServiceLogger',
+      'API_CALL_RESPONSE',
+      'cancelMedMantraAppointment()->API_CALL_RESPONSE',
+      JSON.stringify(cancelApptResp),
+      ''
+    );
+    console.log('MedMantraCancelApptResponse:', cancelApptResp);
+
+    const status = cancelApptResp.retcode == '0' ? true : false;
+
+    return { status, message: cancelApptResp.result };
+  }
+
+  async getAppointmentEndTime(apptDetails: Appointment, doctorsDb: Connection) {
+    const apptStartDateTime = apptDetails.appointmentDateTime;
+    const apptType = apptDetails.appointmentType;
+    const doctorId = apptDetails.doctorId;
+    const weekDay = format(apptStartDateTime, 'EEEE').toUpperCase();
+    const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    let docConsultHrs: ConsultHours[];
+    if (apptType == 'ONLINE') {
+      docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    } else {
+      docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
+    }
+
+    let endTime = addMinutes(new Date(apptStartDateTime), 15);
+    if (docConsultHrs) {
+      const duration = docConsultHrs[0].consultDuration;
+      endTime = addMinutes(new Date(apptStartDateTime), duration);
+    }
+    return endTime;
   }
 }

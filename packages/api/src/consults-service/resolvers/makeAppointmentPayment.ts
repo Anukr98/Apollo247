@@ -118,6 +118,11 @@ const makeAppointmentPayment: Resolver<
 
     //update appointment status
     apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.PENDING, false);
+  } else {
+    //cancel medmantra booking
+    if (processingAppointment.apolloAppointmentId) {
+      apptsRepo.cancelMedMantraAppointment(processingAppointment, 'PAYMENT_FAILED');
+    }
   }
 
   return { appointment: paymentInfo };
