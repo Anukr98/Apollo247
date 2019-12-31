@@ -146,7 +146,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 20px',
       textTransform: 'uppercase',
     },
-    caseNumber:{
+    caseNumber: {
       margin: '15px 0 0 0',
     },
     headerActions: {
@@ -403,15 +403,15 @@ export const ChatRoom: React.FC = (props) => {
               <div className={classes.sectionHeader}>
                 <span className={classes.caseNumber}>Case #362079 </span>
                 <div className={classes.headerActions}>
-                    <AphButton
-                        className={classes.viewButton}
-                        onClick={() => {
-                          nextAvailableSlot(params.doctorId, new Date());
-                          setIsPopoverOpen(true);
-                        }}
-                      >
-                        Reschedule
-                    </AphButton>
+                  <AphButton
+                    className={classes.viewButton}
+                    onClick={() => {
+                      nextAvailableSlot(params.doctorId, new Date());
+                      setIsPopoverOpen(true);
+                    }}
+                  >
+                    Reschedule
+                  </AphButton>
                 </div>
               </div>
               {data && (

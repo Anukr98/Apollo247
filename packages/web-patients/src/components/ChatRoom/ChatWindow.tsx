@@ -1,17 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
-import { Theme, Button, Avatar, Modal, Popover } from "@material-ui/core";
-import { makeStyles } from "@material-ui/styles";
-import { AphInput, AphButton } from "@aph/web-ui-components";
-import Pubnub from "pubnub";
-import Scrollbars from "react-custom-scrollbars";
-import { useAllCurrentPatients } from "hooks/authHooks";
-import { GetDoctorDetailsById as DoctorDetails } from "graphql/types/GetDoctorDetailsById";
-import moment from "moment";
-import {
-  TRANSFER_INITIATED_TYPE,
-  BookRescheduleAppointmentInput
-} from "graphql/types/globalTypes";
+import React, { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { Theme, Button, Avatar, Modal, Popover } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import { AphInput, AphButton } from '@aph/web-ui-components';
+import Pubnub from 'pubnub';
+import Scrollbars from 'react-custom-scrollbars';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import moment from 'moment';
+import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 // import { DoctorChatCard } from "components/ChatRoom/DoctorChatCard";
 // import { UPDATE_APPOINTMENT_SESSION } from "graphql/consult";
 // import {
@@ -24,350 +21,350 @@ import {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     acceptBtn: {
-      width: "calc(35% - 5px) !important"
+      width: 'calc(35% - 5px) !important',
     },
     audioVideoContainer: {
-      paddingBottom: 0
+      paddingBottom: 0,
     },
     avatar: {
       width: 32,
       height: 32,
-      "& img": {
-        verticalAlign: "middle"
-      }
+      '& img': {
+        verticalAlign: 'middle',
+      },
     },
     blueBubble: {
-      backgroundColor: "#0087ba",
+      backgroundColor: '#0087ba',
       color: theme.palette.common.white,
-      marginBottom: 5
+      marginBottom: 5,
     },
     borderSection: {
       fontSize: 15,
       fontWeight: 600,
       paddingTop: 9,
       paddingBottom: 9,
-      borderTop: "1px dashed rgba(255,255,255,0.5)",
-      borderBottom: "1px dashed rgba(255,255,255,0.5)",
-      marginTop: 10
+      borderTop: '1px dashed rgba(255,255,255,0.5)',
+      borderBottom: '1px dashed rgba(255,255,255,0.5)',
+      marginTop: 10,
     },
     boldTxt: {
-      fontWeight: 700
+      fontWeight: 700,
     },
     bubbleActions: {
-      display: "flex",
+      display: 'flex',
       paddingTop: 20,
-      "& button": {
+      '& button': {
         marginRight: 5,
-        boxShadow: "none",
-        border: "2px solid #fcb715",
+        boxShadow: 'none',
+        border: '2px solid #fcb715',
         borderRadius: 10,
         fontSize: 13,
         padding: 7,
-        backgroundColor: "transparent"
+        backgroundColor: 'transparent',
       },
-      "& a": {
-        textTransform: "uppercase",
-        width: "calc(50% - 5px)",
+      '& a': {
+        textTransform: 'uppercase',
+        width: 'calc(50% - 5px)',
         marginLeft: 5,
-        display: "block",
+        display: 'block',
         fontSize: 13,
-        backgroundColor: "#fcb716",
+        backgroundColor: '#fcb716',
         padding: 10,
         height: 40,
         borderRadius: 10,
-        textAlign: "center"
-      }
+        textAlign: 'center',
+      },
     },
     callActions: {
-      position: "absolute",
+      position: 'absolute',
       bottom: 0,
-      width: "100%",
-      padding: 10
+      width: '100%',
+      padding: 10,
     },
     callEnded: {
-      display: "flex",
-      "& img": {
-        position: "inherit",
-        maxWidth: 20
-      }
+      display: 'flex',
+      '& img': {
+        position: 'inherit',
+        maxWidth: 20,
+      },
     },
     callMsg: {
       fontSize: 14,
-      color: "#02475b",
+      color: '#02475b',
       fontWeight: 500,
       marginRight: 32,
-      lineHeight: "normal",
-      "& img": {
-        position: "relative",
+      lineHeight: 'normal',
+      '& img': {
+        position: 'relative',
         top: 5,
         marginRight: 7,
-        width: "auto",
-        left: 0
-      }
+        width: 'auto',
+        left: 0,
+      },
     },
     callPickIcon: {
       padding: 0,
-      boxShadow: "none",
-      minWidth: "auto",
-      backgroundColor: "transparent",
-      "&:hover": {
-        boxShadow: "none",
-        backgroundColor: "transparent"
+      boxShadow: 'none',
+      minWidth: 'auto',
+      backgroundColor: 'transparent',
+      '&:hover': {
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
       },
-      "&:focus": {
-        boxShadow: "none",
-        backgroundColor: "transparent"
-      }
+      '&:focus': {
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+      },
     },
     changeSlotBtn: {
-      width: "calc(65% - 5px) !important"
+      width: 'calc(65% - 5px) !important',
     },
     chatBubble: {
       backgroundColor: theme.palette.common.white,
-      boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.15)",
-      padding: "12px 16px",
-      color: "#01475b",
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.15)',
+      padding: '12px 16px',
+      color: '#01475b',
       fontSize: 15,
       fontWeight: 500,
-      textAlign: "left",
-      display: "inline-block",
+      textAlign: 'left',
+      display: 'inline-block',
       borderRadius: 10,
       maxWidth: 244,
-      wordBreak: "break-word"
+      wordBreak: 'break-word',
     },
     chatContainer: {
-      paddingRight: 5
+      paddingRight: 5,
     },
-    chatContainerScroll:{
-      '& > div':{
+    chatContainerScroll: {
+      '& > div': {
         overflow: 'auto !important',
       },
     },
     callOverlay: {
-      position: "absolute",
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0,0,0,0.2)",
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.2)',
       top: 0,
-      left: 0
+      left: 0,
     },
     chatSection: {
-      position: "relative",
-      paddingBottom: 10
+      position: 'relative',
+      paddingBottom: 10,
     },
     chatSubmitBtn: {
-      position: "absolute",
+      position: 'absolute',
       bottom: 14,
       right: 0,
-      minWidth: "auto",
-      padding: 0
+      minWidth: 'auto',
+      padding: 0,
     },
     chatWindowContainer: {
-      position: "relative"
+      position: 'relative',
     },
     chatWindowFooter: {
-      borderTop: "solid 0.5px rgba(2,71,91,0.5)",
+      borderTop: 'solid 0.5px rgba(2,71,91,0.5)',
       paddingTop: 12,
-      position: "relative",
-      margin: "20px 20px 0 20px"
+      position: 'relative',
+      margin: '20px 20px 0 20px',
     },
     consultRoom: {
       paddingTop: 0,
-      paddingBottom: 0
+      paddingBottom: 0,
     },
     customScroll: {
       paddingLeft: 20,
-      paddingRight: 17
+      paddingRight: 17,
     },
     doctorChatBubble: {
       borderRadius: 10,
-      boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.15)",
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.15)',
       backgroundColor: theme.palette.common.white,
       fontSize: 15,
       fontWeight: 500,
-      color: "#0087ba",
-      padding: "12px 16px",
-      width: 245
+      color: '#0087ba',
+      padding: '12px 16px',
+      width: 245,
     },
     doctorImg: {
-      position: "absolute",
+      position: 'absolute',
       left: 0,
-      bottom: 0
+      bottom: 0,
     },
     doctorChatWindow: {
-      position: "relative",
+      position: 'relative',
       paddingLeft: 38,
-      marginBottom: 10
+      marginBottom: 10,
     },
     durattiocallMsg: {
       marginLeft: 40,
-      marginTop: 7
+      marginTop: 7,
     },
     durationMsg: {
       fontSize: 10,
       marginTop: 2,
-      display: "block"
+      display: 'block',
     },
     incomingCallContainer: {
-      position: "absolute",
+      position: 'absolute',
       right: 17,
-      top: 0
+      top: 0,
     },
     incomingCallWindow: {
-      position: "relative",
+      position: 'relative',
       width: 154,
       height: 204,
       borderRadius: 10,
-      boxShadow: "0 5px 20px 0 rgba(0, 0, 0, 0.6)",
-      overflow: "hidden",
-      "& img": {
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
+      overflow: 'hidden',
+      '& img': {
         maxHeight: 204,
-        verticalAlign: "middle"
-      }
+        verticalAlign: 'middle',
+      },
     },
     meChat: {
-      padding: "5px 0",
-      textAlign: "right"
+      padding: '5px 0',
+      textAlign: 'right',
     },
     missCall: {
-      color: "#890000",
-      backgroundColor: "rgba(229, 0, 0, 0.1)",
+      color: '#890000',
+      backgroundColor: 'rgba(229, 0, 0, 0.1)',
       borderRadius: 10,
-      padding: "5px 20px",
+      padding: '5px 20px',
       fontSize: 12,
       fontWeight: 500,
-      lineHeight: "24px"
+      lineHeight: '24px',
     },
     none: {
-      display: "none"
+      display: 'none',
     },
     petient: {
-      color: "#fff",
-      textAlign: "left",
+      color: '#fff',
+      textAlign: 'left',
       padding: 12,
       fontWeight: theme.typography.fontWeightMedium,
-      display: "inline-block",
+      display: 'inline-block',
       borderRadius: 10,
-      boxShadow: "0 2px 4px 0 #00000026",
-      backgroundColor: "#0087ba",
+      boxShadow: '0 2px 4px 0 #00000026',
+      backgroundColor: '#0087ba',
       fontSize: 15,
       maxWidth: 240,
       margin: '0 0 10px 40px',
     },
     patientChat: {
-      display: "flex",
-      position: "relative",
-      "& img": {
-        position: "absolute",
+      display: 'flex',
+      position: 'relative',
+      '& img': {
+        position: 'absolute',
         bottom: 0,
         width: 40,
-        borderRadius: "50%"
-      }
+        borderRadius: '50%',
+      },
     },
     searchInput: {
-      "& input": {
+      '& input': {
         paddingTop: 10,
         paddingRight: 25,
         paddingBottom: 14,
-        minHeight: 25
-      }
+        minHeight: 25,
+      },
     },
     topText: {
-      textAlign: "center",
-      color: "#fff",
+      textAlign: 'center',
+      color: '#fff',
       fontSize: 14,
       fontWeight: 500,
-      paddingTop: 10
+      paddingTop: 10,
     },
     viewButton: {
-      width: "calc(50% - 5px)",
+      width: 'calc(50% - 5px)',
       marginLeft: 5,
-      display: "block",
+      display: 'block',
       fontSize: 13,
-      backgroundColor: "#fcb716",
+      backgroundColor: '#fcb716',
       padding: 10,
       height: 40,
       borderRadius: 10,
       marginRight: 0,
-      "&:hover": {
-        backgroundColor: "#fcb716 !important"
-      }
+      '&:hover': {
+        backgroundColor: '#fcb716 !important',
+      },
     },
     chatTime: {
       fontSize: 10,
       fontWeight: 500,
-      textAlign: "right",
-      color: "rgba(255, 255, 255, 0.6)",
+      textAlign: 'right',
+      color: 'rgba(255, 255, 255, 0.6)',
       margin: '10px 0 0 0',
     },
     defaultChatTime: {
-      color: "rgba(2, 71, 91, 0.6)",
+      color: 'rgba(2, 71, 91, 0.6)',
     },
     bottomPopover: {
-      overflow: "initial",
-      backgroundColor: "transparent",
-      boxShadow: "none",
-      [theme.breakpoints.down("xs")]: {
-        left: "0px !important",
-        maxWidth: "100%",
-        width: "100%",
-        top: "38px !important"
-      }
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
     },
     successPopoverWindow: {
-      display: "flex",
+      display: 'flex',
       marginRight: 5,
-      marginBottom: 5
+      marginBottom: 5,
     },
     windowWrap: {
       width: 368,
       borderRadius: 10,
       paddingTop: 36,
-      boxShadow: "0 5px 40px 0 rgba(0, 0, 0, 0.3)",
-      backgroundColor: theme.palette.common.white
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
     },
     mascotIcon: {
-      position: "absolute",
+      position: 'absolute',
       right: 12,
       top: -40,
-      "& img": {
-        maxWidth: 80
-      }
+      '& img': {
+        maxWidth: 80,
+      },
     },
-    scheduledText:{
+    scheduledText: {
       padding: '0 0 10px 0',
     },
-    scheduledTextTwo:{
+    scheduledTextTwo: {
       padding: '10px 0',
     },
     dashedBorderBottom: {
-      borderBottom: "1px dashed rgba(255,255,255,0.5)"
+      borderBottom: '1px dashed rgba(255,255,255,0.5)',
     },
     actions: {
-      padding: "0 20px 20px 20px",
-      display: "flex",
-      "& button": {
+      padding: '0 20px 20px 20px',
+      display: 'flex',
+      '& button': {
         borderRadius: 10,
-        color: "#fc9916",
+        color: '#fc9916',
         padding: 0,
-        boxShadow: "none",
-        "&:last-child": {
-          marginLeft: "auto"
-        }
-      }
+        boxShadow: 'none',
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
+      },
     },
     windowBody: {
       padding: 20,
       paddingTop: 0,
       paddingBottom: 0,
-      "& p": {
+      '& p': {
         fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
         color: theme.palette.secondary.main,
-        marginTop: 20
-      }
-    }
+        marginTop: 20,
+      },
+    },
   };
 });
 
@@ -415,35 +412,33 @@ interface AutoMessageStrings {
 }
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
-export const ChatWindow: React.FC<ChatWindowProps> = props => {
+export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles({});
   const { doctorDetails } = props;
   const profileImage =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.photoUrl
-      : "";
+      : '';
   const displayName =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.lastName
-      : "";
+      : '';
   const { currentPatient } = useAllCurrentPatients();
-  const currentUserId = (currentPatient && currentPatient.id) || "";
+  const currentUserId = (currentPatient && currentPatient.id) || '';
 
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
-  const [messageText, setMessageText] = useState<string>("");
+  const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isStartConsult, setStartConsult] = useState<boolean>(false);
-  const [sessionId, setsessionId] = useState<string>("");
-  const [token, settoken] = useState<string>("");
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
-  const [msg, setMsg] = useState<string>("");
+  const [msg, setMsg] = useState<string>('');
 
-  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<
-    boolean
-  >(false);
+  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
 
   const timerMinuts = Math.floor(startingTime / 60);
@@ -451,9 +446,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
   const [audio] = useState(
-    new Audio(
-      "https://mrrhealthcheck-stage.azurewebsites.net/Images/Passes/NotifySound.mp3"
-    )
+    new Audio('https://mrrhealthcheck-stage.azurewebsites.net/Images/Passes/NotifySound.mp3')
   );
   const [playing, setPlaying] = useState(false);
   const toggle = () => setPlaying(!playing);
@@ -464,33 +457,33 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
   const mascotRef = useRef(null);
 
   const autoMessageStrings: AutoMessageStrings = {
-    videoCallMsg: "^^callme`video^^",
-    audioCallMsg: "^^callme`audio^^",
-    stopcallMsg: "^^callme`stop^^",
-    acceptedcallMsg: "^^callme`accept^^",
-    startConsult: "^^#startconsult",
-    stopConsult: "^^#stopconsult",
-    rescheduleconsult: "^^#rescheduleconsult",
-    consultPatientStartedMsg: "^^#PatientConsultStarted",
-    firstMessage: "^^#firstMessage",
-    secondMessage: "^^#secondMessage",
-    typingMsg: "^^#typing",
-    covertVideoMsg: "^^convert`video^^",
-    covertAudioMsg: "^^convert`audio^^",
-    followupconsult: "^^#followupconsult",
-    imageconsult: "^^#DocumentUpload",
-    startConsultjr: "^^#startconsultJr",
-    languageQue: "^^#languageQue",
-    jdThankyou: "^^#jdThankyou"
+    videoCallMsg: '^^callme`video^^',
+    audioCallMsg: '^^callme`audio^^',
+    stopcallMsg: '^^callme`stop^^',
+    acceptedcallMsg: '^^callme`accept^^',
+    startConsult: '^^#startconsult',
+    stopConsult: '^^#stopconsult',
+    rescheduleconsult: '^^#rescheduleconsult',
+    consultPatientStartedMsg: '^^#PatientConsultStarted',
+    firstMessage: '^^#firstMessage',
+    secondMessage: '^^#secondMessage',
+    typingMsg: '^^#typing',
+    covertVideoMsg: '^^convert`video^^',
+    covertAudioMsg: '^^convert`audio^^',
+    followupconsult: '^^#followupconsult',
+    imageconsult: '^^#DocumentUpload',
+    startConsultjr: '^^#startconsultJr',
+    languageQue: '^^#languageQue',
+    jdThankyou: '^^#jdThankyou',
   };
 
   const doctorId = props.doctorId;
   const patientId = currentUserId;
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: process.env.SUBSCRIBE_KEY || "",
-    publishKey: process.env.PUBLISH_KEY || "",
-    ssl: true
+    subscribeKey: process.env.SUBSCRIBE_KEY || '',
+    publishKey: process.env.PUBLISH_KEY || '',
+    ssl: true,
   };
 
   // const mutationResponse = useMutation<
@@ -552,13 +545,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
       id: doctorId,
       isTyping: true,
       storeInHistory: true,
-      sendByPost: true
+      sendByPost: true,
     };
     pubnub.publish(
       {
         message: text,
         channel: channel,
-        storeInHistory: true
+        storeInHistory: true,
       },
       (status, response) => {}
     );
@@ -574,57 +567,48 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
   };
 
   const getHistory = (timetoken: number) => {
-    pubnub.history(
-      { channel: channel, reverse: true, count: 1000 },
-      (status, res) => {
-        const newmessage: MessagesObjectProps[] = [];
-        const end: number = res.endTimeToken ? res.endTimeToken : 1;
-        res.messages.forEach((element, index) => {
-          newmessage[index] = element.entry;
-        });
+    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
+      const newmessage: MessagesObjectProps[] = [];
+      const end: number = res.endTimeToken ? res.endTimeToken : 1;
+      res.messages.forEach((element, index) => {
+        newmessage[index] = element.entry;
+      });
 
-        if (messages.length !== newmessage.length) {
-          if (
-            newmessage[newmessage.length - 1].message ===
-            autoMessageStrings.startConsult
-          ) {
-            setJrDoctorJoined(false);
-            // updateSessionAPI();
-            // checkingAppointmentDates();
-          }
-
-          if (
-            newmessage[newmessage.length - 1].message ===
-            autoMessageStrings.startConsultjr
-          ) {
-            setJrDoctorJoined(true);
-            // updateSessionAPI();
-            // checkingAppointmentDates();
-          }
-
-          insertText = newmessage;
-          setMessages(newmessage as []);
-          if (res.messages.length == 100) {
-            getHistory(end);
-          }
-
-          checkAutomatedPatientText();
-        } else {
-          checkAutomatedPatientText();
+      if (messages.length !== newmessage.length) {
+        if (newmessage[newmessage.length - 1].message === autoMessageStrings.startConsult) {
+          setJrDoctorJoined(false);
+          // updateSessionAPI();
+          // checkingAppointmentDates();
         }
+
+        if (newmessage[newmessage.length - 1].message === autoMessageStrings.startConsultjr) {
+          setJrDoctorJoined(true);
+          // updateSessionAPI();
+          // checkingAppointmentDates();
+        }
+
+        insertText = newmessage;
+        setMessages(newmessage as []);
+        if (res.messages.length == 100) {
+          getHistory(end);
+        }
+
+        checkAutomatedPatientText();
+      } else {
+        checkAutomatedPatientText();
       }
-    );
+    });
   };
 
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true
+      withPresence: true,
     });
     getHistory(0);
     pubnub.addListener({
-      status: statusEvent => {},
-      message: message => {
+      status: (statusEvent) => {},
+      message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         resetMessagesAction();
@@ -658,20 +642,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
           setIsCalled(true);
           setShowVideo(false);
           setIsVideoCall(
-            message.message.message === autoMessageStrings.videoCallMsg
-              ? true
-              : false
+            message.message.message === autoMessageStrings.videoCallMsg ? true : false
           );
         }
-        if (
-          message.message &&
-          message.message.message === autoMessageStrings.stopcallMsg
-        ) {
+        if (message.message && message.message.message === autoMessageStrings.stopcallMsg) {
           setIsCalled(false);
           setShowVideo(false);
         }
       },
-      presence: presenceEvent => {}
+      presence: (presenceEvent) => {},
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
@@ -716,10 +695,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
                   ${displayName}
                 ’s team is with another patient right now. Your consultation prep will start soon.`,
                 id: doctorId,
-                isTyping: true
+                isTyping: true,
               },
               storeInHistory: true,
-              sendByPost: true
+              sendByPost: true,
             },
             (status, response) => {}
           );
@@ -775,10 +754,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
                 message: autoMessageStrings.secondMessage,
                 automatedText: `Sorry, but all the members in ’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
-                isTyping: true
+                isTyping: true,
               },
               storeInHistory: true,
-              sendByPost: true
+              sendByPost: true,
             },
             (status, response) => {}
           );
@@ -816,7 +795,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
 
   const srollToBottomAction = () => {
     setTimeout(() => {
-      const scrollDiv = document.getElementById("scrollDiv");
+      const scrollDiv = document.getElementById('scrollDiv');
       if (scrollDiv) {
         scrollDiv!.scrollIntoView();
       }
@@ -824,9 +803,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
   };
 
   const resetMessagesAction = () => {
-    if (messageText === "" || messageText === " ") {
-      setMsg("reset");
-      setMsg("");
+    if (messageText === '' || messageText === ' ') {
+      setMsg('reset');
+      setMsg('');
     }
   };
 
@@ -834,15 +813,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
     try {
       const text = {
         id: patientId,
-        message: messageText
+        message: messageText,
       };
-      setMessageText("");
+      setMessageText('');
       pubnub.publish(
         {
           channel: channel,
           message: text,
           storeInHistory: true,
-          sendByPost: true
+          sendByPost: true,
         },
         (status, response) => {
           // resetMessagesAction();
@@ -876,22 +855,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
 
   const nextAvailableSlot = (rowData: any, value: string) => {
     const todayDate = new Date(
-      value === "Followup"
+      value === 'Followup'
         ? rowData.transferInfo.folloupDateTime
         : rowData.transferInfo.transferDateTime
     );
 
     const slotDoctorId =
-      value === "Followup"
-        ? rowData.transferInfo.doctorId
-        : rowData.transferInfo.doctorInfo.id;
+      value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
     props.availableNextSlot(slotDoctorId, todayDate);
   };
 
   const showPrescriptionCard = () => (
-    <div
-      className={`${classes.blueBubble} ${classes.petient}`}
-    >
+    <div className={`${classes.blueBubble} ${classes.petient}`}>
       {`Hello ${currentPatient &&
         currentPatient.firstName},\nHope your consultation went well… Here is your prescription.`}
       <div className={classes.bubbleActions}>
@@ -903,9 +878,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
   );
 
   const getFollowupOrRescheduleCard = (rowData: MessagesObjectProps) => (
-    <div
-      className={`${classes.doctorChatBubble} ${classes.blueBubble} ${classes.petient}`}
-    >
+    <div className={`${classes.doctorChatBubble} ${classes.blueBubble} ${classes.petient}`}>
       {(rowData.message === autoMessageStrings.followupconsult &&
         rowData.transferInfo.folloupDateTime.length) > 0 ? (
         <div>
@@ -918,9 +891,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
             I've rescheduled your appointment --
           </div>
           <div className={`${classes.dashedBorderBottom} ${classes.scheduledTextTwo} `}>
-            {moment(rowData.transferInfo.transferDateTime).format(
-              "Do MMMM, dddd \nhh:mm a"
-            )}
+            {moment(rowData.transferInfo.transferDateTime).format('Do MMMM, dddd \nhh:mm a')}
           </div>
         </div>
       )}
@@ -928,7 +899,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
         <AphButton
           className={classes.viewButton}
           onClick={() => {
-            nextAvailableSlot(rowData, "Reschedule");
+            nextAvailableSlot(rowData, 'Reschedule');
             setReschedule(true);
           }}
         >
@@ -944,13 +915,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
       <div>
         {rowData.message === autoMessageStrings.rescheduleconsult &&
         rowData.transferInfo.rescheduleCount < 4
-          ? "We’re sorry that you have to reschedule. You can reschedule up to 3 times for free."
+          ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
           : `Since you have already rescheduled 3 times with ${rowData.transferInfo.doctorInfo.displayName}, we will consider this a new paid appointment.`}
       </div>
       <div>{`Next slot for ${rowData.transferInfo.doctorInfo.displayName} is available on —`}</div>
-      <div>
-        {moment(props.nextSlotAvailable).format("Do MMMM, dddd \nhh:mm a")}
-      </div>
+      <div>{moment(props.nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}</div>
       <div className={classes.bubbleActions}>
         <AphButton
           className={classes.viewButton}
@@ -964,17 +933,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
               initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
               initiatedId: patientId,
               patientId: patientId,
-              rescheduledId: ""
+              rescheduledId: '',
             };
             props.rescheduleAPI(bookRescheduleInput);
           }}
         >
           ACCEPT
         </AphButton>
-        <AphButton
-          className={classes.viewButton}
-          onClick={() => props.setIsModalOpen(true)}
-        >
+        <AphButton className={classes.viewButton} onClick={() => props.setIsModalOpen(true)}>
           CHANGE SLOT
         </AphButton>
       </div>
@@ -1009,27 +975,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
       rightComponent = 0;
       return (
         <div className={classes.meChat}>
-          <div
-            className={rowData.duration ? classes.callMsg : classes.chatBubble}
-          >
+          <div className={rowData.duration ? classes.callMsg : classes.chatBubble}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
-            {rowData.duration === "00 : 00" ? (
+            {rowData.duration === '00 : 00' ? (
               <span className={classes.none}>
-                <img src={require("images/ic_missedcall.svg")} />
-                {rowData.message.toLocaleLowerCase() === "video call ended"
-                  ? "You missed a video call"
-                  : "You missed a voice call"}
+                <img src={require('images/ic_missedcall.svg')} />
+                {rowData.message.toLocaleLowerCase() === 'video call ended'
+                  ? 'You missed a video call'
+                  : 'You missed a voice call'}
               </span>
             ) : rowData.duration ? (
               <div className={classes.callEnded}>
                 <span>
-                  <img src={require("images/ic_round_call.svg")} />
+                  <img src={require('images/ic_round_call.svg')} />
                 </span>
                 <div>
                   {rowData.automatedText}
-                  <span className={classes.durationMsg}>
-                    Duration- {rowData.duration}
-                  </span>
+                  <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
                 </div>
               </div>
             ) : (
@@ -1045,15 +1007,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
       leftComponent = 0;
       rightComponent++;
       return (
-        <div
-          className={
-            rowData.duration ? classes.durattiocallMsg : classes.patientChat
-          }
-        >
+        <div className={rowData.duration ? classes.durattiocallMsg : classes.patientChat}>
           {rightComponent == 1 && !rowData.duration && (
-          <Avatar alt="" src={require('images/doctordp_01.png')} 
+            <Avatar
+              alt=""
+              src={require('images/doctordp_01.png')}
               className={`${classes.avatar} ${classes.doctorImg}`}
-          />
+            />
           )}
           <div
             className={
@@ -1131,7 +1091,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
       ? messages.map((item: MessagesObjectProps, index: number) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
-      : "";
+      : '';
   // const toggelChatVideo = () => {
   //   setIsNewMsg(false);
   //   setShowVideoChat(!showVideoChat);
@@ -1201,8 +1161,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
   // };
   return (
     <div className={classes.consultRoom}>
-      <button onClick={toggle} id="soundButton" style={{ display: "none" }}>
-        {playing ? "Pause" : "Play"}
+      <button onClick={toggle} id="soundButton" style={{ display: 'none' }}>
+        {playing ? 'Pause' : 'Play'}
       </button>
       <div
         className={`${classes.chatSection} ${
@@ -1226,9 +1186,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
-              <Scrollbars className={classes.chatContainerScroll}
+              <Scrollbars
+                className={classes.chatContainerScroll}
                 autoHide={true}
-                style={{ height: "calc(100vh - 360px" }}
+                style={{ height: 'calc(100vh - 360px' }}
               >
                 <div className={classes.customScroll}>
                   {messagessHtml}
@@ -1312,7 +1273,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
               {isCalled && (
                 <div className={classes.incomingCallContainer}>
                   <div className={classes.incomingCallWindow}>
-                    <img src={require("images/doctor_profile_image.png")} />
+                    <img src={require('images/doctor_profile_image.png')} />
                     <div className={classes.callOverlay}>
                       <div className={classes.topText}>Ringing</div>
                       <div className={classes.callActions}>
@@ -1320,7 +1281,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
                           className={classes.callPickIcon}
                           // onClick={() => actionBtn()}
                         >
-                          <img src={require("images/ic_callpick.svg")} alt="" />
+                          <img src={require('images/ic_callpick.svg')} alt="" />
                         </Button>
                       </div>
                     </div>
@@ -1333,23 +1294,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
             <div className={classes.chatWindowFooter}>
               <AphInput
                 className={classes.searchInput}
-                inputProps={{ type: "text" }}
+                inputProps={{ type: 'text' }}
                 placeholder="Type here..."
                 value={messageText}
-                onKeyPress={e => {
-                  if (
-                    (e.which == 13 || e.keyCode == 13) &&
-                    messageText.trim() !== ""
-                  ) {
+                onKeyPress={(e) => {
+                  if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
                     send();
                   }
                 }}
-                onChange={event => {
+                onChange={(event) => {
                   setMessageText(event.currentTarget.value);
                 }}
               />
               <Button className={classes.chatSubmitBtn}>
-                <img src={require("images/ic_add_circle.svg")} alt="" />
+                <img src={require('images/ic_add_circle.svg')} alt="" />
               </Button>
             </div>
           )}
