@@ -1213,7 +1213,6 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     console.log('process.env.UHID_CREATE_AUTH_KEY ==>', process.env.UHID_CREATE_AUTH_KEY);
 
-    const msg = `External_API_Call: ${medMantraBookApptUrl}`;
     const bookApptResp = await fetch(medMantraBookApptUrl, {
       method: 'POST',
       body: JSON.stringify(medMantraBookApptInput),
@@ -1266,7 +1265,6 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     console.log('process.env.UHID_CREATE_AUTH_KEY ==>', process.env.UHID_CREATE_AUTH_KEY);
 
-    const msg = `External_API_Call: ${medMantraCancelApptUrl}`;
     const cancelApptResp = await fetch(medMantraCancelApptUrl, {
       method: 'POST',
       body: JSON.stringify(medMantraCancelApptInput),
