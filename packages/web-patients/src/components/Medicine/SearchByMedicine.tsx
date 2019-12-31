@@ -195,9 +195,7 @@ export const SearchByMedicine: React.FC = (props) => {
         console.log(e);
       });
   };
-  useEffect(() => {
-    console.log('filterData', filterData);
-  }, [filterData, filterData && filterData.length, filterData && filterData.includes('')]);
+
   useEffect(() => {
     if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
       if (priceFilter.fromPrice && priceFilter.toPrice) {
@@ -244,9 +242,6 @@ export const SearchByMedicine: React.FC = (props) => {
                     if (value.category_id === filter) {
                       filterArray.push(value);
                     }
-                    // if (Number(priceFilter.fromPrice) <= value.price) {
-                    //   filterArray.push(value);
-                    // }
                   });
               });
             setMedicineList(filterArray);
@@ -263,9 +258,6 @@ export const SearchByMedicine: React.FC = (props) => {
                 if (value.category_id === filter) {
                   filterArray.push(value);
                 }
-                // if (Number(priceFilter.fromPrice) <= value.price) {
-                //   filterArray.push(value);
-                // }
               });
           });
         setMedicineList(filterArray);
@@ -275,7 +267,7 @@ export const SearchByMedicine: React.FC = (props) => {
     } else {
       setMedicineListFiltered([]);
     }
-  }, [priceFilter]);
+  }, [priceFilter, filterData]);
 
   return (
     <div className={classes.welcome}>

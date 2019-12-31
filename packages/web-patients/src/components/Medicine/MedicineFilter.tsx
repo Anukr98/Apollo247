@@ -144,7 +144,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
   const [selectedCatagerys, setSelectedCatagerys] = useState(['']);
-  const [selected, setSelected] = useState(false);
+  const [selected, setSelected] = useState<boolean>(false);
 
   const params = useParams<Params>();
   const [subtxt, setSubtxt] = useState<string | null>(
@@ -178,29 +178,20 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         console.log(e);
       });
   };
+
   const filterByCatagery = (value: string) => {
-    const array = selectedCatagerys;
-    var indexEmpty = array.indexOf('');
-    if (indexEmpty > -1) {
-      array.splice(indexEmpty, 1);
-    }
-    if (value === '') {
-      array.splice(0, array.length);
-    }
-    if (array.length > 0) {
-      let index = array.indexOf(value);
-      if (index > -1) {
-        array.splice(index, 1);
-      } else {
-        array.push(value);
-      }
+    let categoryList = selectedCatagerys;
+    if (categoryList.includes(value)) {
+      categoryList = categoryList.filter((category) => category !== value);
     } else {
-      array.push(value);
+      categoryList = value === '' ? [] : categoryList.filter((category) => category !== '');
+      categoryList.push(value);
     }
-    setSelectedCatagerys(array);
+    setSelectedCatagerys(categoryList);
     setSelected(true);
   };
-  const filterByPrice = () => {
+
+  const filterByPriceAndCategory = () => {
     const obj = {
       fromPrice: fromPrice,
       toPrice: toPrice,
@@ -208,12 +199,14 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     props.setFilterData(selectedCatagerys);
     props.setPriceFilter(obj);
   };
+
   useEffect(() => {
     if (selected) {
       setSelectedCatagerys(selectedCatagerys);
+      setSelected(false);
     }
-    setSelected(false);
   }, [selected]);
+
   return (
     <div className={classes.root}>
       <div className={classes.searchInput}>
@@ -371,9 +364,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           color="primary"
           disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
           fullWidth
-          onClick={(e) => {
-            filterByPrice();
-          }}
+          onClick={(e) => filterByPriceAndCategory()}
         >
           Apply Filters
         </AphButton>
