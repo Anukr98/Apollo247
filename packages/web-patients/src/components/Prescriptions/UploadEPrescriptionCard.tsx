@@ -34,9 +34,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#01475b',
       display: 'flex',
-      padding: '12px 15px 0 15px ',
+      backgroundColor: '#fff',
+      margin: '10px 20px 0 20px',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      padding: 10,
+      borderRadius: 5,
       '&:nth-child(1)': {
-        padding: '15px 15px 0 15px',
+        margin: '15px 20px 0 20px',
       },
       '&:last-child': {
         padding: '12px 15px 15px 15px',
@@ -44,18 +48,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     checkbox: {
       alignItems: 'baseline',
+      margin: '0 0 0 auto',
       '&:hover': {
-        backgroundColor: 'transparent',
+        backgroundColor: 'transparent !important',
       },
-    },
-    closeBtn: {
-      marginLeft: 'auto',
-      paddingLeft: 20,
-      '& button': {
-        borderRadius: 0,
-        boxShadow: 'none',
-        padding: 0,
-        minWidth: 'auto',
+      '&:focus': {
+        backgroundColor: 'transparent',
       },
     },
     imgThumb: {
@@ -64,99 +62,24 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
-    followUpText: {
-      opacity: 0.6,
-      fontSize: 12,
-      fontWeight: 500,
-      lineHeight: 1.67,
-      color: '#02475b',
-    },
-    progressRoot: {
-      height: 2,
-      marginTop: 5,
-    },
     priscriptionInfo: {
       paddingTop: 5,
       fontSize: 12,
       fontWeight: 500,
       color: '#0087ba',
-      lineHeight: '1.67px',
       letterSpacing: 0.04,
       display: 'inline-block',
       width: '100%',
-      '& span': {
-        borderRight: '0.5px solid rgba(2,71,91,0.3)',
-        paddingRight: 10,
-        marginRight: 10,
-      },
-      '& span:last-child': {
-        marginRight: 0,
-        paddingRight: 0,
-        border: 'none',
-      },
     },
     name: {
       opacity: 0.6,
       color: '#02475b',
+      margin: '0 10px 0 0',
     },
     date: {
       opacity: 0.6,
       color: '#02475b',
-    },
-    tabsRoot: {
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      backgroundColor: '#fff',
-      '& span': {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#02475b',
-      },
-    },
-    tabRoot: {
-      fontSize: 14,
-      fontWeight: 500,
-      textAlign: 'center',
-      padding: '15px 10px',
-      color: '#01475b',
-      opacity: 0.6,
-      minWidth: '50%',
-      textTransform: 'none',
-    },
-    tabSelected: {
-      color: theme.palette.secondary.dark,
-      opacity: 1,
-    },
-    tabsIndicator: {
-      backgroundColor: '#00b38e',
-      height: 5,
-    },
-    rootTabContainer: {
-      padding: 0,
-    },
-    followUpWrapper: {
-      backgroundColor: '#fff',
-      margin: '0 0 0 8px',
-      borderRadius: 5,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      width: '100%',
-      padding: 10,
-    },
-    followUpDetails: {
-      display: 'flex',
-      alignItems: 'baseline',
-    },
-    fileInfo: {
-      display: 'flex',
-      margin: '10px 0 0 0',
-    },
-    doctorImage: {
-      borderRadius: '50%',
-      margin: '0 13px 0 0',
-    },
-    doctorName: {
-      fontSize: 16,
-      fontWeight: 500,
-      color: '#01475b',
+      margin: '0 10px 0 0',
     },
     patientHistory: {
       opacity: 0.6,
@@ -168,18 +91,6 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 5px 0 0',
       },
     },
-    cbcText: {
-      margin: '10px 0 0 0',
-      fontSize: 16,
-      color: '#01475b',
-    },
-    typeOfClinic: {
-      opacity: 0.6,
-      fontSize: 12,
-      fontWeight: 500,
-      lineHeight: 1.67,
-      color: '#02475b',
-    },
     uploadPrescription: {
       width: '100%',
       borderRadius: 10,
@@ -187,6 +98,10 @@ const useStyles = makeStyles((theme: Theme) => {
     uploadButtonWrapper: {
       padding: '0 20px',
       margin: '15px 0 0 0',
+    },
+    circularProgressWrapper: {
+      textAlign: 'center',
+      margin: '10px 0 0 0',
     },
   };
 });
@@ -274,54 +189,54 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
           {pastPrescriptions &&
             pastPrescriptions.length > 0 &&
             pastPrescriptions.map((pastPrescription: Prescription) => (
-              <>
-                <div className={classes.prescriptionGroup}>
-                  <AphCheckbox
-                    onChange={() => {
-                      selectedPrescriptions.push(pastPrescription);
-                    }}
-                    className={classes.checkbox}
-                    color="primary"
-                  />
-                  <div className={classes.fileInfo}>
+              <div className={classes.prescriptionGroup}>
+                <div className={classes.imgThumb}>
+                  <img src={require('images/ic_prescription.svg')} alt="" />
+                </div>
+                <div>
+                  <div>
                     {pastPrescription.doctorInfo
                       ? `${pastPrescription.doctorInfo.salutation} ${pastPrescription.doctorInfo.firstName}`
                       : null}
-                    <div className={classes.priscriptionInfo}>
-                      <span className={classes.name}>
-                        {currentPatient && currentPatient.firstName}
-                      </span>
-                      <span className={classes.date}>
-                        {' '}
-                        {moment(pastPrescription.appointmentDateTime).format(DATE_FORMAT)}
-                      </span>
-                      <span>
-                        {pastPrescription.caseSheet &&
-                          pastPrescription.caseSheet.length > 0 &&
-                          pastPrescription.caseSheet.map((caseSheet) =>
-                            caseSheet && caseSheet.symptoms
-                              ? caseSheet.symptoms.map(
-                                  (symptomData) =>
-                                    symptomData &&
-                                    symptomData.symptom && <span>{symptomData.symptom} </span>
-                                )
-                              : null
-                          )}
-                      </span>
-                    </div>
+                  </div>
+                  <div className={classes.priscriptionInfo}>
+                    <span className={classes.name}>
+                      {currentPatient && currentPatient.firstName}
+                    </span>
+                    <span className={classes.date}>
+                      {moment(pastPrescription.appointmentDateTime).format(DATE_FORMAT)}
+                    </span>
+                    <span>
+                      {pastPrescription.caseSheet &&
+                        pastPrescription.caseSheet.length > 0 &&
+                        pastPrescription.caseSheet.map((caseSheet) =>
+                          caseSheet && caseSheet.symptoms
+                            ? caseSheet.symptoms.map(
+                                (symptomData) =>
+                                  symptomData &&
+                                  symptomData.symptom && <span>{symptomData.symptom}, </span>
+                              )
+                            : null
+                        )}
+                    </span>
                   </div>
                 </div>
-              </>
+                <AphCheckbox
+                  onChange={() => {
+                    selectedPrescriptions.push(pastPrescription);
+                  }}
+                  className={classes.checkbox}
+                  color="primary"
+                />
+              </div>
             ))}
           {pastMedicalOrders && pastMedicalOrders.length > 0 ? (
             pastMedicalOrders.map((medicalOrder: MedicineOrder) => (
               <div className={classes.prescriptionGroup}>
-                <AphCheckbox
-                  onChange={() => selectedMedicalRecords.push(medicalOrder)}
-                  className={classes.checkbox}
-                  color="primary"
-                />
-                <div className={classes.fileInfo}>
+                <div className={classes.imgThumb}>
+                  <img src={require('images/ic_prescription.svg')} alt="" />
+                </div>
+                <div>
                   {`Meds Rx ${medicalOrder.id &&
                     medicalOrder.id.substring(0, medicalOrder.id.indexOf('-'))}`}
                   <div className={classes.priscriptionInfo}>
@@ -341,10 +256,17 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                     </span>
                   </div>
                 </div>
+                <AphCheckbox
+                  onChange={() => selectedMedicalRecords.push(medicalOrder)}
+                  className={classes.checkbox}
+                  color="primary"
+                />
               </div>
             ))
           ) : (
-            <CircularProgress />
+            <div className={classes.circularProgressWrapper}>
+              <CircularProgress />
+            </div>
           )}
         </Scrollbars>
         <div className={classes.uploadButtonWrapper}>
