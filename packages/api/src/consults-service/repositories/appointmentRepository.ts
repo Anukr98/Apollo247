@@ -38,6 +38,7 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 import { log } from 'customWinstonLogger';
+import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -1176,30 +1177,30 @@ export class AppointmentRepository extends Repository<Appointment> {
     const medMantraBookApptInput = {
       FirstName: patientDetails.firstName,
       LastName: patientDetails.lastName,
-      Gender: '72',
-      RegionID: 1,
+      Gender: ApiConstants.MEDMANTRA_GENDER,
+      RegionID: ApiConstants.MEDMANTRA_REGIONID,
       ResourceID: doctorDetails.externalId,
       UHIDNumber: patientDetails.uhid,
       MobileNumber: '91-' + patientDetails.mobileNumber.substr(3),
-      Title: '1',
+      Title: ApiConstants.MEDMANTRA_TITLE,
       StartDateTime: format(apptDetails.appointmentDateTime, 'dd-MMM-yyyy HH:mm:ss'),
       EndDateTime: format(apptEndTime, 'dd-MMM-yyyy HH:mm:ss'),
-      ServiceID: 2118,
-      RegistrationType: 'PaidUHID',
+      ServiceID: ApiConstants.MEDMANTRA_SERVICEID,
+      RegistrationType: ApiConstants.MEDMANTRA_REGISTRATION_TYPE,
       SpecialityID: doctorDetails.specialty.externalId,
-      StatusCheck: 102,
+      StatusCheck: ApiConstants.MEDMANTRA_STATUSCHECK,
       DateOfBirth: format(dateOfBirth, 'dd-MMM-yyyy'),
-      MaritalStatus: 1,
-      LocationID: 10201,
-      UpdatedBy: 103330,
-      Flag: 1,
+      MaritalStatus: ApiConstants.MEDMANTRA_MARITALSTATUS,
+      LocationID: ApiConstants.MEDMANTRA_LOCATIONID,
+      UpdatedBy: ApiConstants.MEDMANTRA_UPDATEDBY,
+      Flag: ApiConstants.MEDMANTRA_FLAG,
       OnlineAppointmentID: '',
       OnlineReceiptNO: '',
       TranAmount: apptDetails.bookingDate, // Change it to price
       PayeeName: patientDetails.firstName,
       TranDateTime: format(new Date(), 'dd-MMM-yyyy'),
-      ModeofAppointment: 'Apollo247',
-      PayType: 'NETBANKING',
+      ModeofAppointment: ApiConstants.MEDMANTRA_APPOINTMENT_MODE,
+      PayType: ApiConstants.MEDMANTRA_PAYTYPE,
     };
 
     log(
@@ -1248,10 +1249,10 @@ export class AppointmentRepository extends Repository<Appointment> {
   async cancelMedMantraAppointment(apptDetails: Appointment, cancelReason: string) {
     const medMantraCancelApptUrl = process.env.MEDMANTRA_CANCEL_APPOINTMENT_API || '';
     const medMantraCancelApptInput = {
-      RegionID: 1,
-      LocationID: 10201,
+      RegionID: ApiConstants.MEDMANTRA_REGIONID,
+      LocationID: ApiConstants.MEDMANTRA_LOCATIONID,
       AppointmentID: apptDetails.apolloAppointmentId,
-      UpdatedBy: 'Apollo247',
+      UpdatedBy: ApiConstants.MEDMANTRA_APPOINTMENT_MODE,
       ReasonforCancellation: cancelReason,
     };
 
