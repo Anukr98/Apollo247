@@ -732,7 +732,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('nextAppState :' + nextAppState, abondmentStarted);
-      handleCallTheEdSessionAPI();
+      // handleCallTheEdSessionAPI();
     }
   };
 
@@ -740,6 +740,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('API not Called');
 
     if (abondmentStarted == true) {
+      if (appointmentData.status === STATUS.COMPLETED) return;
       console.log('API Called');
       endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
     }
@@ -1169,6 +1170,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       stopJoinTimer();
       stopCallAbondmentTimer();
       try {
+        AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       } catch (error) {}
     };
