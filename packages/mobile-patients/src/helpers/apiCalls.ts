@@ -1,4 +1,4 @@
-import Axios, { AxiosResponse } from 'axios';
+import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface MedicineProduct {
@@ -415,7 +415,7 @@ export const getMedicineDetailsApi = (
   );
 };
 
-let cancelSearchMedicineApi: any;
+let cancelSearchMedicineApi: Canceler | undefined;
 
 export const searchMedicineApi = (
   searchText: string
@@ -511,7 +511,7 @@ export const inventoryCheckApi = (
 //   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
 // };
 
-let cancelSearchSuggestionsApi: any;
+let cancelSearchSuggestionsApi: Canceler | undefined;
 
 export const getMedicineSearchSuggestionsApi = (
   params: string

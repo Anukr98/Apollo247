@@ -68,6 +68,7 @@ import { ManageProfile } from '@aph/mobile-patients/src/components/Account/Manag
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
+import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -121,6 +122,7 @@ export enum AppRoutes {
   SearchByBrand = 'SearchByBrand',
   TestsByCategory = 'TestsByCategory',
   TestsCart = 'TestsCart',
+  TestPayment = 'TestPayment',
   MedAndTestCart = 'MedAndTestCart',
   TestDetails = 'TestDetails',
   EditProfile = 'EditProfile',
@@ -305,6 +307,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestsCart]: {
     screen: TestsCart,
+  },
+  [AppRoutes.TestPayment]: {
+    screen: TestPayment,
   },
   [AppRoutes.MedAndTestCart]: {
     screen: MedAndTestCart,

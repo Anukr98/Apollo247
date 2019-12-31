@@ -239,21 +239,10 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
-          const isNext = moment(selectedDate)
-            .clone()
-            .isAfter(moment().add(-1, 'day'));
-          console.log('Date cond', { isNext, date });
-          if (isNext) {
-            setDate(selectedDate);
-            setshowSpinner(true);
-            setDropArray([]);
-            getDropArrayData(selectedDate);
-          } else {
-            setDate(new Date());
-            setshowSpinner(true);
-            setDropArray([]);
-            getDropArrayData(new Date());
-          }
+          setDate(selectedDate);
+          setshowSpinner(true);
+          setDropArray([]);
+          getDropArrayData(selectedDate);
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
@@ -267,13 +256,14 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
     const timeOptionsArray = dropArray.map((item) => {
       return { key: item.label, value: item.time };
     });
+    console.log('renderDropTimings', { timeOptionsArray, dropArray, selectedDrop });
     return (
       <View>
         <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 16 }}>Slot</Text>
         <View style={styles.optionsView}>
           <MaterialMenu
             options={timeOptionsArray}
-            selectedText={selectedDrop && selectedDrop!.label}
+            selectedText={selectedDrop && selectedDrop.label}
             menuContainerStyle={{
               alignItems: 'flex-end',
               marginTop: 24,
@@ -292,10 +282,14 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                   style={[
                     styles.placeholderTextStyle,
                     ,
-                    selectedDrop !== undefined ? null : styles.placeholderStyle,
+                    selectedDrop ? null : styles.placeholderStyle,
                   ]}
                 >
-                  {selectedDrop !== undefined ? selectedDrop.time : 'Select Time'}
+                  {timeOptionsArray.length
+                    ? selectedDrop && selectedDrop.time
+                    : showSpinner
+                    ? 'Loading...'
+                    : 'No slots available'}
                 </Text>
                 <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                   <DropdownGreen />

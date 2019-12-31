@@ -277,17 +277,23 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         <View
           style={[
             styles.flexStyle,
-            { alignItems: 'flex-end', justifyContent: 'flex-end', flexDirection: 'row' },
+            {
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+              flexDirection: 'row',
+              marginLeft: 6,
+            },
           ]}
         >
           {specialPrice && (
-            <Text style={[styles.unitAndRupeeOfferText, { marginRight: 4 }]}>
+            <Text style={[styles.unitAndRupeeOfferText, { flex: 1, marginRight: 4 }]}>
               {'('}
               <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
               {')'}
             </Text>
           )}
-          <Text style={styles.unitAndRupeeText}>{`Rs. ${specialPrice || price}`}</Text>
+          <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>{`Rs. ${specialPrice ||
+            price}`}</Text>
         </View>
       </View>
     );

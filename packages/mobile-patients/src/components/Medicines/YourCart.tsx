@@ -390,12 +390,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             index == 0 ? { marginTop: 20 } : {},
             index == array.length - 1 ? { marginBottom: 20 } : {},
           ];
-          const imageUrl =
-            medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-              ? medicine.thumbnail.startsWith('http')
-                ? medicine.thumbnail
-                : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
-              : '';
+          const imageUrl = medicine.prescriptionRequired
+            ? ''
+            : medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
+            ? medicine.thumbnail.startsWith('http')
+              ? medicine.thumbnail
+              : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
+            : '';
 
           return (
             <MedicineCard
@@ -411,8 +412,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   title: medicine.name,
                 });
               }}
-              medicineName={medicine.name!}
-              price={medicine.price!}
+              medicineName={medicine.name}
+              price={medicine.price}
               specialPrice={medicine.specialPrice}
               unit={medicine.quantity}
               imageUrl={imageUrl}
