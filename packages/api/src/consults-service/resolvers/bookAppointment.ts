@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
+import { Connection } from 'typeorm';
 import {
+  Appointment,
   STATUS,
   APPOINTMENT_TYPE,
   APPOINTMENT_STATE,
@@ -29,6 +31,7 @@ export const bookAppointmentTypeDefs = gql`
     JUNIOR_DOCTOR_STARTED
     JUNIOR_DOCTOR_ENDED
     CALL_ABANDON
+    UNAVAILABLE_MEDMANTRA
   }
 
   enum APPOINTMENT_TYPE {
@@ -258,66 +261,57 @@ const bookAppointment: Resolver<
     appointmentState: APPOINTMENT_STATE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
-  // appts.getDoctorNextSlotDate(
-  //   appointmentInput.doctorId,
-  //   appointmentInput.appointmentDateTime,
-  //   doctorsDb,
-  //   appointmentInput.appointmentType
-  // );
 
-  //message queue starts
-  /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
-  const speciality = docDetails.specialty.name;
-  
-  const aptEndTime = addMinutes(istDateTime, 15);
-  console.log(istDateTime, aptEndTime);
-  const slotTime = format(istDateTime, 'HH:mm') + '-' + format(aptEndTime, 'HH:mm');
-  let patientDob: string = '01/08/1996';
-  if (patientDetails.dateOfBirth !== null) {
-    console.log(patientDetails.dateOfBirth.toString(), 'dob');
-    patientDob = format(patientDetails.dateOfBirth, 'dd/MM/yyyy');
+  //Book appointment in MedMantra
+  const medMantraResponse = await bookMedMantraAppointment(
+    appointment,
+    consultsDb,
+    doctorsDb,
+    patientsDb
+  );
+  console.log('MedMantraAPIResponse:', medMantraResponse);
+
+  //if not available in medmantra, throw error
+  if (medMantraResponse.retcode && medMantraResponse.retcode === -2) {
+    //block these hours in appointment table as unavailable in medmantra
+    const updateAttrs = {
+      id: appointment.id,
+      status: STATUS.UNAVAILABLE_MEDMANTRA,
+      patientId: '',
+      patientName: '',
+    };
+    await appts.updateMedmantraStatus(updateAttrs);
+    throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+  } else {
+    const updateAttrs = {
+      id: appointment.id,
+      apolloAppointmentId: medMantraResponse.AppointmentID,
+    };
+    await appts.updateMedmantraStatus(updateAttrs);
   }
 
-  const payload: AppointmentPayload = {
-    appointmentDate: format(appointmentInput.appointmentDateTime, 'dd/MM/yyyy'),
-    appointmentTypeId: 1,
-    askApolloReferenceIdForRelation: '52478bae-fab8-49ba-8f75-fce0e1a9f3ae',
-    askApolloReferenceIdForSelf: '52478bae-fab8-49ba-8f75-fce0e1a9f3ae',
-    cityId: 1,
-    cityName: 'Chennai',
-    dateOfBirth: patientDob,
-    doctorId: 100,
-    doctorName,
-    gender: '1',
-    hospitalId: '2',
-    hospitalName: 'Apollo Hospitals Greams Road Chennai',
-    leadSource: 'One Apollo-IOS',
-    patientEmailId: patientDetails.emailAddress,
-    patientFirstName: patientDetails.firstName,
-    patientLastName: patientDetails.lastName,
-    patientMobileNo: patientDetails.mobileNumber.substr(3),
-    patientUHID: '',
-    relationTypeId: 1,
-    salutation: 1,
-    slotId: '-1',
-    slotTime,
-    speciality,
-    specialityId: '1898',
-    userFirstName: patientDetails.firstName,
-    userLastName: patientDetails.lastName,
-    apptIdPg: appointment.id,
-  };
-  AphMqClient.connect();
-  type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
-  const testMessage: TestMessage = {
-    type: AphMqMessageTypes.BOOKAPPOINTMENT,
-    payload,
-  };
-
-  AphMqClient.send(testMessage);*/
-  //message queue ends
-
   return { appointment };
+};
+
+const bookMedMantraAppointment = async (
+  apptDetails: Appointment,
+  consultsDb: Connection,
+  doctorsDb: Connection,
+  patientsDb: Connection
+) => {
+  //get appointment doctor details
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorDetails = await doctorRepo.findById(apptDetails.doctorId);
+  if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+
+  const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const bookingResponse = await apptsRepo.bookMedMantraAppointment(
+    apptDetails,
+    doctorDetails,
+    patientsDb,
+    doctorsDb
+  );
+  return bookingResponse;
 };
 
 export const bookAppointmentResolvers = {
