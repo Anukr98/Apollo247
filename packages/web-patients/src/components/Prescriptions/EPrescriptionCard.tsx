@@ -3,6 +3,13 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
+} from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,32 +83,73 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const EPrescriptionCard: React.FC = (props) => {
-  const classes = useStyles();
-  return (
+type EPrescriptionCardProps = {
+  prescription?: Prescription;
+  medicineOrder?: MedicineOrder;
+  removePrescription?: (id: string, type: string) => void;
+};
+
+export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
+  const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+
+  const getMedicines = (
+    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
+  ) =>
+    medicines
+      .filter((item) => item!.medicineName)
+      .map((item) => item!.medicineName)
+      .join(', ');
+
+  return props.prescription || props.medicineOrder ? (
     <div className={classes.root}>
       <div className={classes.prescriptionGroup}>
         <div className={classes.imgThumb}>
           <img src={require('images/ic_prescription.svg')} alt="" />
         </div>
         <div className={classes.fileInfo}>
-          Dr. Simran Rai
+          {props.prescription && props.prescription.doctorInfo
+            ? `${props.prescription.doctorInfo.salutation} ${props.prescription.doctorInfo.firstName}`
+            : props.medicineOrder &&
+              props.medicineOrder.id &&
+              `${`Meds Rx ${props.medicineOrder.id &&
+                props.medicineOrder.id.substring(0, props.medicineOrder.id.indexOf('-'))}`}`}
           <div className={classes.priscriptionInfo}>
-            <span className={classes.name}>Preeti</span>
-            <span className={classes.date}>27 July 2019</span>
-            <span>Cytoplam, Metformin, Insulin, Crocin</span>
+            <span className={classes.name}>{currentPatient && currentPatient.firstName}</span>
+            <span className={classes.date}>
+              {moment(
+                props.prescription
+                  ? props.prescription.appointmentDateTime
+                  : props.medicineOrder && props.medicineOrder.quoteDateTime
+              ).format('DD MMM YYYY')}
+            </span>
+            <span>
+              {props.medicineOrder &&
+              props.medicineOrder.medicineOrderLineItems &&
+              props.medicineOrder.medicineOrderLineItems.length > 0
+                ? getMedicines(props.medicineOrder.medicineOrderLineItems)
+                : null}
+            </span>
           </div>
         </div>
       </div>
       <div className={classes.closeBtn}>
-        <AphButton>
+        <AphButton
+          onClick={() => {
+            props.removePrescription && props.medicineOrder
+              ? props.removePrescription(props.medicineOrder.id, 'medicineOrder')
+              : props.prescription &&
+                props.removePrescription &&
+                props.removePrescription(props.prescription.id, 'consults');
+          }}
+        >
           <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
         </AphButton>
-        <AphCheckbox color="primary" />
+        {/* <AphCheckbox color="primary" />
         <AphButton>
-          <img src={require('images/ic_tickmark.svg')} alt="" />
-        </AphButton>
+          <img src={require("images/ic_tickmark.svg")} alt="" />
+        </AphButton> */}
       </div>
     </div>
-  );
+  ) : null;
 };

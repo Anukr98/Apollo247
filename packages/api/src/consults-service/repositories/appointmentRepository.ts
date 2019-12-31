@@ -23,7 +23,15 @@ import {
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addMinutes, differenceInMinutes, addDays, subDays, subMinutes, addHours } from 'date-fns';
+import {
+  format,
+  addMinutes,
+  differenceInMinutes,
+  addDays,
+  subDays,
+  subMinutes,
+  addHours,
+} from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
@@ -681,9 +689,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -724,9 +732,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${nextSlot
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}`;
   }
 
   getAlignedSlot(curDate: Date) {
@@ -932,9 +940,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           //const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
           //const consultStartMin = parseInt(format(consultStartTime, 'mm'), 0);
@@ -974,9 +982,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
           let blockedSlotsCount =
@@ -1099,32 +1107,31 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: {
         doctorId,
         appointmentDateTime: Between(fromDate, toDate),
-        status: criteria
-      }
-    })
+        status: criteria,
+      },
+    });
   }
   getAppointmentsInNextHour(doctorId: string) {
     const curreDateTime = new Date();
     const apptDateTime = addHours(new Date(), 1);
-    const currentTime = format(curreDateTime, 'yyyy-MM-dd') + 'T' + format(curreDateTime, 'HH:mm') + ':00.000Z';
+    const currentTime =
+      format(curreDateTime, 'yyyy-MM-dd') + 'T' + format(curreDateTime, 'HH:mm') + ':00.000Z';
     const formatDateTime =
       format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
     return this.count({
       where: {
         doctorId,
         appointmentDateTime: Between(currentTime, formatDateTime),
-        status: Not(STATUS.CANCELLED)
-      }
+        status: Not(STATUS.CANCELLED),
+      },
     });
-
   }
   getDoctorAway(doctorId: string, fromDate: Date, toDate: Date) {
     return this.count({
       where: {
         doctorId,
         appointmentDateTime: Between(fromDate, toDate),
-
-      }
-    })
+      },
+    });
   }
 }
