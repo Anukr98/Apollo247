@@ -3827,6 +3827,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           numColumns={1}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={messages ? messages.length : 0}
         />
       </View>
     );
@@ -5184,6 +5185,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 height: 66,
                 backgroundColor: 'white',
                 bottom: isIphoneX() ? 36 : 0,
+                top:isIphoneX() ? 2 : 0
               }}
             >
               <View style={{ flexDirection: 'row', width: width }}>

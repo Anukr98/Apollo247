@@ -9,6 +9,8 @@ import {
   CaseSheetDiagnosis,
   CaseSheetDiagnosisPrescription,
   CaseSheetSymptom,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_TIMINGS,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
@@ -43,16 +45,24 @@ export const convertCaseSheetToRxPdfData = async (
     prescriptions = caseSheetMedicinePrescription.map((csRx) => {
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
-      let frequency = 'Take';
-      if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
-      if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
-      frequency = frequency + ' for';
+      let frequency;
+      if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
+        frequency = 'Apply';
+        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+      } else {
+        frequency = 'Take';
+        if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
+        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+      }
       if (csRx.medicineConsumptionDuration) {
         frequency = frequency + ' for';
         frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
         if (csRx.medicineConsumptionDurationUnit)
           frequency = frequency + ' ' + csRx.medicineConsumptionDurationUnit;
       }
+
+      if (csRx.medicineFrequency)
+        frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
 
       if (csRx.medicineToBeTaken)
         frequency =
@@ -62,10 +72,25 @@ export const convertCaseSheetToRxPdfData = async (
             .join(', ')
             .split('_')
             .join(' ');
+
       if (csRx.medicineTimings) {
-        frequency = frequency + ' in the';
-        frequency = frequency + ' ' + csRx.medicineTimings.join(', ');
+        if (
+          csRx.medicineTimings.length == 1 &&
+          csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
+        ) {
+          frequency = frequency + csRx.medicineTimings[0];
+        } else {
+          frequency = frequency + ' in the';
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineTimings
+              .join(', ')
+              .split('_')
+              .join(' ');
+        }
       }
+      frequency = _capitalize(frequency);
 
       const instructions = csRx.medicineInstructions;
       return { name, ingredients, frequency, instructions } as PrescriptionData;
