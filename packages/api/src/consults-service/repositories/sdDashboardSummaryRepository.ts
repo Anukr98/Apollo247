@@ -20,7 +20,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
-    return this.createQueryBuilder('appointment')
+    return Appointment.createQueryBuilder('appointment')
       .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: startDate,
         toDate: endDate,
