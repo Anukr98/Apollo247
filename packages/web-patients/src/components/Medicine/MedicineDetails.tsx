@@ -132,6 +132,14 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 10,
       },
     },
+    productInfo: {
+      fontSize: 14,
+      color: '#02475b',
+      lineHeight: '22px',
+      '& p': {
+        margin: '5px 0',
+      },
+    },
     textInfo: {
       fontSize: 10,
       fontWeight: 500,
@@ -172,6 +180,14 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 3,
     },
     tabContainer: {
+      fontSize: 14,
+      color: '#0087ba',
+      lineHeight: '22px',
+      '& p': {
+        margin: '5px 0',
+      },
+    },
+    productDescription: {
       fontSize: 14,
       color: '#0087ba',
       lineHeight: '22px',
@@ -351,7 +367,14 @@ export const MedicineDetails: React.FC = (props) => {
       />
     ));
   };
-
+  const description =
+    medicineDetails &&
+    medicineDetails.description
+      .split('&lt;')
+      .join('<')
+      .split('&gt;')
+      .join('>')
+      .replace(/(<([^>]+)>)/gi, '');
   return (
     <div className={classes.welcome}>
       <MedicinesCartContext.Consumer>
@@ -433,8 +456,13 @@ export const MedicineDetails: React.FC = (props) => {
                                 </>
                               ) : medicineDetails.description ? (
                                 <div>
-                                  <div>Product Information</div>
-                                  <div>{stripHtml(medicineDetails.description)}</div>
+                                  <div className={classes.productInfo}>Product Information</div>
+                                  <div className={classes.productDescription}>
+                                    {description &&
+                                      description.split('rn').map((data) => {
+                                        return <div>{data}</div>;
+                                      })}
+                                  </div>
                                 </div>
                               ) : null}
                             </div>

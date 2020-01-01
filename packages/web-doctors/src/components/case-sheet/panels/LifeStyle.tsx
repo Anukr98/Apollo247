@@ -217,15 +217,15 @@ export const LifeStyle: React.FC = () => {
       }, 100);
   };
   const moveCursorToEnd = (element: any) => {
-    if (typeof element.selectionStart == "number") {
+    if (typeof element.selectionStart == 'number') {
       element.selectionStart = element.selectionEnd = element.value.length;
-    } else if (typeof element.createTextRange != "undefined") {
+    } else if (typeof element.createTextRange != 'undefined') {
       element.focus();
-        var range = element.createTextRange();
-        range.collapse(false);
-        range.select();
+      var range = element.createTextRange();
+      range.collapse(false);
+      range.select();
     }
-}
+  };
 
   return loading && !patientDetails ? (
     <div></div>
@@ -237,11 +237,11 @@ export const LifeStyle: React.FC = () => {
             Patient's Past Medical History
           </Typography>
           <Typography component="div" className={classes.content}>
-            <AphTextField 
-            onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
-              multiline 
+              multiline
               defaultValue={pastMedicalHistory}
               onBlur={(e) => {
                 setPastMedicalHistory(e.target.value);
@@ -274,7 +274,7 @@ export const LifeStyle: React.FC = () => {
             Patient's Past Surgical History
           </Typography>
           <Typography component="div" className={classes.content}>
-            <AphTextField 
+            <AphTextField
               disabled={!caseSheetEdit}
               fullWidth
               multiline
@@ -310,9 +310,10 @@ export const LifeStyle: React.FC = () => {
             Drug Allergies
           </Typography>
           <Typography component="div" className={classes.content}>
-            <AphTextField  onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
-              id = "drugAllergies"
+              id="drugAllergies"
               fullWidth
               multiline
               defaultValue={drugAllergies}
@@ -347,7 +348,8 @@ export const LifeStyle: React.FC = () => {
             Diet Allergies/Restrictions
           </Typography>
           <Typography component="div" className={classes.content}>
-            <AphTextField  onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline
@@ -383,7 +385,8 @@ export const LifeStyle: React.FC = () => {
             Lifestyle & Habits
           </Typography>
           <Typography component="div" className={classes.content}>
-            <AphTextField  onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline
@@ -420,7 +423,8 @@ export const LifeStyle: React.FC = () => {
               Menstual History*
             </Typography>
             <Typography component="div" className={classes.content}>
-              <AphTextField  onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
+              <AphTextField
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 disabled={!caseSheetEdit}
                 fullWidth
                 multiline
@@ -457,7 +461,8 @@ export const LifeStyle: React.FC = () => {
             Patient's Family Medical History
           </Typography>
           <Typography component="div" className={classes.content}>
-            <AphTextField onFocus = {(e) => moveCursorToEnd(e.currentTarget)}
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline
