@@ -11,6 +11,7 @@ import {
   AppointmentCallDetails,
   DoctorNextAvaialbleSlots,
   AppointmentNoShow,
+  SdDashboardSummary,
 } from 'consults-service/entities';
 import {
   ConsultHours,
@@ -75,6 +76,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         DoctorNextAvaialbleSlots,
         AppointmentNoShow,
+        SdDashboardSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
