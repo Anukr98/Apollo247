@@ -47,6 +47,9 @@ export const useAllCurrentPatients = () => {
   const { loading, data, error } = useQueryWithSkip<GetCurrentPatients>(GET_CURRENT_PATIENTS);
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
+  if (currentPatientId) {
+    localStorage.setItem('currentUser', currentPatientId);
+  }
   const allCurrentPatients =
     data && data.getCurrentPatients ? data.getCurrentPatients.patients : null;
   const currentPatient = allCurrentPatients
@@ -60,10 +63,12 @@ export const useAllCurrentPatients = () => {
       return allCurrentPatients.find((p) => p.relation === Relation.ME) || null;
     };
     const defaultCurrentPatient = getDefaultCurrentPatient();
-if(!currentPatientId){
-  setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
-}
-   
+
+    if (!localStorage.getItem('currentUser')) {
+      setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
+    } else {
+      setCurrentPatientId(localStorage.getItem('currentUser'));
+    }
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
   return {
