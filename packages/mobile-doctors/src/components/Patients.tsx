@@ -95,15 +95,20 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     'Patient Name: Z to A',
   ];
 
-  const client = useApolloClient();
-  const [allData, setAllData] = useState<any>([]);
-  const [selectedId, setSelectedId] = useState(true);
-  const [SelectableValue, setSelectableValue] = useState(patientLogType.All);
-  const [patientLogSortData, setPatientLogSortData] = useState(patientLogSort.PATIENT_NAME_A_TO_Z);
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
   const [showSorting, setshowSorting] = useState(false);
   const [selectedSorting, setselectedSorting] = useState(sortingList[0]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const client = useApolloClient();
+  const [activeTabIndex, setActiveTabIndex] = useState(true);
+  const [regular, setRegular] = useState(false);
+  const [followup, setFollowup] = useState(false);
+  const [allData, setAllData] = useState<any>([]);
+  const [filterdata, setFilterData] = useState(false);
+  const [selectedId, setSelectedId] = useState(true);
+
+  const [SelectableValue, setSelectableValue] = useState(patientLogType.All);
+  const [patientLogSortData, setPatientLogSortData] = useState(patientLogSort.PATIENT_NAME_A_TO_Z);
 
   useEffect(() => {
     ShowAllTypeData(SelectableValue, patientLogSortData);

@@ -114,6 +114,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '30px auto 0 auto',
       boxShadow: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
     },
     popupHeadingCenter: {
       borderRadius: 10,
@@ -125,11 +128,17 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'center',
         marginTop: 5,
       },
+      '&:focus': {
+        outline: 'none',
+      },
     },
     dialogContent: {
-      padding: 20,
+      padding: '20px 20px 0 20px',
       minHeight: 100,
       position: 'relative',
+      '&:focus': {
+        outline: 'none',
+      },
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
@@ -161,13 +170,12 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     dialogActions: {
-      padding: 0,
-      paddingTop: 10,
-      boxShadow: 'none',
+      padding: '15px 15px 15px 0',
       position: 'relative',
       textAlign: 'right',
       fontSize: 14,
       fontWeight: 600,
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       '& button': {
         borderRadius: 10,
         minwidth: 130,
@@ -282,6 +290,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     textFieldColor: {
@@ -339,9 +348,9 @@ const useStyles = makeStyles((theme: Theme) =>
     addedList: {
       '& li': {
         padding: '10px 50px 10px 0 !important',
+        wordWrap: 'break-word',
       },
       '& li:last-child': {
-        padding: '10px 50px 10px 0 !important',
         borderBottom: '1px solid rgba(128, 128, 128, 0.2) !important',
       },
     },

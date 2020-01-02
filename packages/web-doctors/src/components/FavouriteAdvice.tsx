@@ -149,6 +149,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     popupHeadingCenter: {
       padding: 0,
+      backgroundColor: 'transparent',
       '& h6': {
         fontSize: 13,
         color: '#01475b',
@@ -186,6 +187,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     medicinePopup: {
