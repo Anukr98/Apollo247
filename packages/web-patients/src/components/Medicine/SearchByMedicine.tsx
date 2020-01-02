@@ -299,7 +299,7 @@ export const SearchByMedicine: React.FC = (props) => {
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
                     {() =>
-                      params.searchMedicineType === '' ? (
+                      params.searchMedicineType === 'search-by-brand' ? (
                         <MedicineCard medicineList={medicineList} />
                       ) : (
                         <MedicineListscard medicineList={medicineList} />

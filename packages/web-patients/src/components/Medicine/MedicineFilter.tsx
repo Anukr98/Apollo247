@@ -196,8 +196,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     const obj = {
       fromPrice: fromPrice,
       toPrice: toPrice,
-    };
-    props.setFilterData(selectedCatagerys);
+    };    
+    if( !window.location.href.includes('search-by-brand')){
+      props.setFilterData(selectedCatagerys);
+    }
+   
     props.setPriceFilter(obj);
   };
 
