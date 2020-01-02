@@ -1,5 +1,6 @@
 import '@aph/universal/dist/global';
 import {
+  AdminDoctorMapper,
   ConsultHours,
   Doctor,
   DoctorAndHospital,
@@ -105,6 +106,7 @@ export const connect = async () => {
     {
       name: 'doctors-db',
       entities: [
+        AdminDoctorMapper,
         Doctor,
         DoctorSpecialty,
         StarTeam,
