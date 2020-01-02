@@ -5,6 +5,7 @@ import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -134,6 +135,10 @@ const addNewProfile: Resolver<
   patientRepo.createAthsToken(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+
+  //send registration success notification here
+  sendPatientRegistrationNotification(patient, profilesDb);
+
   return { patient };
 };
 
