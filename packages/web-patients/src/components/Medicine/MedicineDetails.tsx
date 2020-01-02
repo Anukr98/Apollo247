@@ -319,10 +319,10 @@ export const MedicineDetails: React.FC = (props) => {
               x.value = `${x.value}
               ${getHeader(v.Caption)}: \n
               ${v.CaptionDesc.split('&amp;lt')
-                  .join('<')
-                  .split('&amp;gt;')
-                  .join('>')
-                  .replace(/(<([^>]+)>)/gi, '')}; \n
+                .join('<')
+                .split('&amp;gt;')
+                .join('>')
+                .replace(/(<([^>]+)>)/gi, '')}; \n
                 `;
             }
           });
@@ -352,7 +352,7 @@ export const MedicineDetails: React.FC = (props) => {
           tabValue === index && (
             <div className={classes.tabContainer}>
               {item.value.split(';').map((data) => {
-                return <p>{data}</p>
+                return <p>{data}</p>;
               })}
             </div>
           )
@@ -430,7 +430,7 @@ export const MedicineDetails: React.FC = (props) => {
                                   medicinePharmacyDetails && medicinePharmacyDetails.length > 0
                                     ? medicinePharmacyDetails[0].Doseform
                                     : ''
-                                  } `}
+                                } `}
                               </div>
                               {medicineDetails.is_prescription_required !== '0' && (
                                 <div className={classes.prescriptionBox}>
@@ -441,36 +441,36 @@ export const MedicineDetails: React.FC = (props) => {
                                 </div>
                               )}
                               {medicinePharmacyDetails &&
-                                medicinePharmacyDetails.length > 0 &&
-                                medicinePharmacyDetails[0].Overview &&
-                                medicinePharmacyDetails[0].Overview.length > 0 ? (
-                                  <>
-                                    <Tabs
-                                      value={tabValue}
-                                      variant="fullWidth"
-                                      classes={{
-                                        root: classes.tabsRoot,
-                                        indicator: classes.tabsIndicator,
-                                      }}
-                                      onChange={(e, newValue) => {
-                                        setTabValue(newValue);
-                                      }}
-                                    >
-                                      {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                                    </Tabs>
-                                    {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                                  </>
-                                ) : medicineDetails.description ? (
-                                  <div>
-                                    <div className={classes.productInfo}>Product Information</div>
-                                    <div className={classes.productDescription}>
-                                      {description &&
-                                        description.split('rn').map((data) => {
-                                          return <div>{data}</div>;
-                                        })}
-                                    </div>
+                              medicinePharmacyDetails.length > 0 &&
+                              medicinePharmacyDetails[0].Overview &&
+                              medicinePharmacyDetails[0].Overview.length > 0 ? (
+                                <>
+                                  <Tabs
+                                    value={tabValue}
+                                    variant="fullWidth"
+                                    classes={{
+                                      root: classes.tabsRoot,
+                                      indicator: classes.tabsIndicator,
+                                    }}
+                                    onChange={(e, newValue) => {
+                                      setTabValue(newValue);
+                                    }}
+                                  >
+                                    {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                  </Tabs>
+                                  {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                                </>
+                              ) : medicineDetails.description ? (
+                                <div>
+                                  <div className={classes.productInfo}>Product Information</div>
+                                  <div className={classes.productDescription}>
+                                    {description &&
+                                      description.split('rn').map((data) => {
+                                        return <div>{data}</div>;
+                                      })}
                                   </div>
-                                ) : null}
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </div>
