@@ -39,6 +39,10 @@ export const Mascot: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_mascot.png')} />
 );
 
+export const DoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_doctor.png')} />
+);
+
 export const More: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_more.png')} />
 );

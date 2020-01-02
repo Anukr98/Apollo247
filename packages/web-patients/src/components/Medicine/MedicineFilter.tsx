@@ -147,6 +147,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [selected, setSelected] = useState<boolean>(false);
 
   const params = useParams<Params>();
+  const locationUrl = window.location.href;
   const [subtxt, setSubtxt] = useState<string | null>(
     params.searchMedicineType === 'search-medicines' ? params.searchText : null
   );
@@ -195,8 +196,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     const obj = {
       fromPrice: fromPrice,
       toPrice: toPrice,
-    };
-    props.setFilterData(selectedCatagerys);
+    };    
+    if( !window.location.href.includes('search-by-brand')){
+      props.setFilterData(selectedCatagerys);
+    }
+   
     props.setPriceFilter(obj);
   };
 
@@ -225,7 +229,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
+            {locationUrl && locationUrl.includes('search-medicines') && (
+              <span>
               <div className={classes.filterType}>Categories</div>
+             
               <div className={classes.boxContent}>
                 <AphButton
                   color="secondary"
@@ -324,7 +331,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                   Apollo Products
                 </AphButton>
               </div>
-            </div>
+              </span>
+               )}
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Discount</div>
               <div className={classes.boxContent}>
@@ -356,6 +364,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                 </div>
               </div>
             </div>
+             
+          </div>
           </div>
         </Scrollbars>
       </div>

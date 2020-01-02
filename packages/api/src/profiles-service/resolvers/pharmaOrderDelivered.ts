@@ -15,12 +15,18 @@ export const pharmaOrderDeliveredTypeDefs = gql`
     ordersResult: DeliveryOrderResult
   }
 
-  input OutForDeliveryInput {
-    ordersResult: DeliveryOrderResult
-  }
-
   input DeliveryOrderResult {
     message: String
+    apOrderNo: String
+  }
+
+  input OutForDeliveryInput {
+    ordersResult: OutForDeliveryInputParameters
+  }
+
+  input OutForDeliveryInputParameters {
+    message: String
+    statusDateTime: String
     apOrderNo: String
   }
 
@@ -31,7 +37,7 @@ export const pharmaOrderDeliveredTypeDefs = gql`
 
   extend type Mutation {
     saveOrderDeliveryStatus(orderDeliveryInput: OrderDeliveryInput): OrderDeliveryResult!
-    saveOrderOutForDeliveryStatus(outForDeliveryInput: OrderDeliveryInput): OrderDeliveryResult!
+    saveOrderOutForDeliveryStatus(outForDeliveryInput: OutForDeliveryInput): OrderDeliveryResult!
   }
 `;
 
@@ -44,12 +50,26 @@ type DeliveryOrderResult = {
   apOrderNo: string;
 };
 
+type OutForDeliveryInput = {
+  ordersResult: OutForDeliveryInputParameters;
+};
+
+type OutForDeliveryInputParameters = {
+  message: string;
+  statusDateTime: string;
+  apOrderNo: string;
+};
+
 type OrderDeliveryResult = {
   requestStatus: string;
   requestMessage: string;
 };
 type orderDeliveryInputArgs = {
   orderDeliveryInput: OrderDeliveryInput;
+};
+
+type OutForDeliveryInputArgs = {
+  outForDeliveryInput: OutForDeliveryInput;
 };
 
 const saveOrderDeliveryStatus: Resolver<
@@ -91,8 +111,48 @@ const saveOrderDeliveryStatus: Resolver<
   return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
 };
 
+const saveOrderOutForDeliveryStatus: Resolver<
+  null,
+  OutForDeliveryInputArgs,
+  ProfilesServiceContext,
+  OrderDeliveryResult
+> = async (parent, { outForDeliveryInput }, { profilesDb }) => {
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByAp(
+    outForDeliveryInput.ordersResult.apOrderNo
+  );
+  if (!orderDetails) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+
+  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+    orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+    medicineOrders: orderDetails,
+    statusDate: new Date(outForDeliveryInput.ordersResult.statusDateTime),
+    statusMessage: outForDeliveryInput.ordersResult.message,
+  };
+  await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+  await medicineOrdersRepo.updateMedicineOrderDetails(
+    orderDetails.id,
+    orderDetails.orderAutoId,
+    new Date(),
+    MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY
+  );
+
+  const pushNotificationInput = {
+    orderAutoId: orderDetails.orderAutoId,
+    notificationType: NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY,
+  };
+  console.log(pushNotificationInput, 'pushNotificationInput');
+  const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
+  console.log(notificationResult, 'medicine order delivered notification');
+
+  return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
+};
+
 export const pharmaOrderDeliveryResolvers = {
   Mutation: {
     saveOrderDeliveryStatus,
+    saveOrderOutForDeliveryStatus,
   },
 };

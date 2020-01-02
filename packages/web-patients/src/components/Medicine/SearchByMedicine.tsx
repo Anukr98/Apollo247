@@ -12,6 +12,7 @@ import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import _lowerCase from 'lodash/lowerCase';
 import _replace from 'lodash/replace';
+import { MedicineCard } from 'components/Medicine/MedicineCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -297,7 +298,13 @@ export const SearchByMedicine: React.FC = (props) => {
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
-                    {() => <MedicineListscard medicineList={medicineList} />}
+                    {() =>
+                      params.searchMedicineType === 'search-by-brand' ? (
+                        <MedicineCard medicineList={medicineList} />
+                      ) : (
+                        <MedicineListscard medicineList={medicineList} />
+                      )
+                    }
                   </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
