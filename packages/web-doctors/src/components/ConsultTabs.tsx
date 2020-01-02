@@ -994,6 +994,16 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data) => {
+        if (
+          _data &&
+          _data!.data!.updatePatientPrescriptionSentStatus &&
+          _data!.data!.updatePatientPrescriptionSentStatus.blobName
+        ) {
+          const url = storageClient.getBlobUrl(
+            _data!.data!.updatePatientPrescriptionSentStatus.blobName
+          );
+          setPrescriptionPdf(url);
+        }
         setAppointmentStatus('COMPLETED');
         setSentToPatient(true);
         setIsPdfPageOpen(true);
@@ -1087,13 +1097,6 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('savinggg.....');
-
-        if (_data && _data!.data!.modifyCaseSheet && _data!.data!.modifyCaseSheet!.blobName) {
-          const url = storageClient.getBlobUrl(_data!.data!.modifyCaseSheet!.blobName);
-          setPrescriptionPdf(url);
-          setSaving(false);
-        }
         if (!flag) {
           setIsConfirmDialogOpen(true);
         }
