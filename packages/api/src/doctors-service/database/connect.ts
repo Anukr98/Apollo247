@@ -15,6 +15,7 @@ import {
   SdDashboardSummary,
 } from 'consults-service/entities/';
 import {
+  AdminDoctorMapper,
   ConsultHours,
   Doctor,
   DoctorAndHospital,
@@ -67,6 +68,7 @@ export const connect = async () => {
   return await createConnections([
     {
       entities: [
+        AdminDoctorMapper,
         Doctor,
         DoctorSpecialty,
         StarTeam,
