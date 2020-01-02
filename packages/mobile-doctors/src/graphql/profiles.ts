@@ -190,12 +190,79 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
     }
   }
 `;
+export const GET_PATIENT_LOG = gql`
+  query getPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
+    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+      patientid
+      consultscount
+      appointmentids
+      appointmentdatetime
+      patientInfo {
+        firstName
+        dateOfBirth
+        id
+        emailAddress
+        mobileNumber
+        gender
+        uhid
+        photoUrl
+      }
+    }
+  }
+`;
 
 export const CREATEAPPOINTMENTSESSION = gql`
   mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
     createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
       sessionId
       appointmentToken
+      caseSheetId
+    }
+  }
+`;
+
+export const END_APPOINTMENT_SESSION = gql`
+  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
+    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
+  }
+`;
+
+export const UPDATE_CASESHEET = gql`
+  mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
+    updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
+      consultType
+      appointment {
+        id
+      }
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        name
+      }
+      doctorId
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineName
+        medicineDosage
+        medicineTimings
+        medicineInstructions
+      }
+      notes
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+      }
+      otherInstructions {
+        instruction
+      }
     }
   }
 `;
@@ -315,6 +382,209 @@ export const UPDATE_DELEGATE_NUMBER = gql`
   }
 `;
 
+export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
+  query GetJuniorDoctorCaseSheet($appointmentId: String!) {
+    getJuniorDoctorCaseSheet(appointmentId: $appointmentId) {
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      caseSheetDetails {
+        id
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          name
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+    }
+  }
+`;
+
+export const GET_CASESHEET = gql`
+  query GetCaseSheet($appointmentId: String!) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      caseSheetDetails {
+        id
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          name
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+      pastAppointments {
+        appointmentDateTime
+        appointmentState
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        caseSheet {
+          consultType
+          appointment {
+            id
+          }
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            name
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+          followUpDate
+          followUpAfterInDays
+          followUp
+          medicinePrescription {
+            medicineName
+            medicineName
+            medicineTimings
+            medicineInstructions
+            medicineConsumptionDurationInDays
+          }
+          otherInstructions {
+            instruction
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
+  query SearchDoctorAndSpecialty($searchText: String!) {
+    SearchDoctorAndSpecialty(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        services
+        speciality
+        specialization
+        photoUrl
+        id
+        experience
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
+
+export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
+  mutation saveDoctorDeviceToken($SaveDoctorDeviceTokenInput: SaveDoctorDeviceTokenInput!) {
+    saveDoctorDeviceToken(SaveDoctorDeviceTokenInput: $SaveDoctorDeviceTokenInput) {
+      deviceToken {
+        id
+        deviceType
+        deviceOS
+        deviceToken
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
+
 export const GET_PATIENTS = gql`
   query GetPatients {
     getPatients {
@@ -363,6 +633,82 @@ export const UPDATE_PATIENT = gql`
         dateOfBirth
         emailAddress
       }
+    }
+  }
+`;
+
+export const INITIATE_TRANSFER_APPONITMENT = gql`
+  mutation initiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
+    initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
+      transferAppointment {
+        id
+        transferStatus
+        transferReason
+        transferredDoctorId
+        transferredSpecialtyId
+      }
+      doctorNextSlot
+    }
+  }
+`;
+
+export const INITIATE_RESCHDULE_APPONITMENT = gql`
+  mutation initiateRescheduleAppointment($RescheduleAppointmentInput: RescheduleAppointmentInput!) {
+    initiateRescheduleAppointment(RescheduleAppointmentInput: $RescheduleAppointmentInput) {
+      rescheduleAppointment {
+        id
+        rescheduleStatus
+        rescheduleReason
+        rescheduledDateTime
+      }
+      rescheduleCount
+    }
+  }
+`;
+
+export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
+  query SearchDoctorAndSpecialtyByName($searchText: String!) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        specialty {
+          name
+          id
+        }
+        specialization
+        photoUrl
+        id
+        experience
+        doctorHospital {
+          facility {
+            id
+            name
+          }
+        }
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSIS = gql`
+  query searchDiagnosis($searchString: String!) {
+    searchDiagnosis(searchString: $searchString) {
+      name
+      id
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSTIC = gql`
+  query searchDiagnostic($searchString: String!) {
+    searchDiagnostic(searchString: $searchString) {
+      itemname
     }
   }
 `;
