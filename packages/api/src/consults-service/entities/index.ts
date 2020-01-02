@@ -12,7 +12,6 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
-import { type } from 'os';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
