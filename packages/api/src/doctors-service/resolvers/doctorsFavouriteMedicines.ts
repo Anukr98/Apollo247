@@ -5,19 +5,28 @@ import {
   DoctorsFavouriteMedicine,
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
+  MEDICINE_FREQUENCY,
+  MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FORM_TYPES,
 } from 'doctors-service/entities';
 import { DoctorFavouriteMedicineRepository } from 'doctors-service/repositories/doctorFavouriteMedicineRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { MEDICINE_UNIT } from 'consults-service/entities';
 
 export const saveDoctorFavouriteMedicineTypeDefs = gql`
+  enum MEDICINE_FORM_TYPES {
+    GEL_LOTION_OINTMENT
+    OTHERS
+  }
+
   enum MEDICINE_TIMINGS {
+    AS_NEEDED
     EVENING
     MORNING
     NIGHT
     NOON
-    AS_NEEDED
   }
 
   enum MEDICINE_TO_BE_TAKEN {
@@ -25,39 +34,89 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     BEFORE_FOOD
   }
 
+  enum MEDICINE_CONSUMPTION_DURATION {
+    DAYS
+    MONTHS
+    WEEKS
+  }
+
+  enum MEDICINE_UNIT {
+    BOTTLE
+    CAPSULE
+    CREAM
+    DROPS
+    GEL
+    INJECTION
+    LOTION
+    ML
+    NA
+    OINTMENT
+    OTHERS
+    POWDER
+    ROTACAPS
+    SACHET
+    SOAP
+    SOLUTION
+    SPRAY
+    SUSPENSION
+    SYRUP
+    TABLET
+  }
+
+  enum MEDICINE_FREQUENCY {
+    AS_NEEDED
+    FIVE_TIMES_A_DAY
+    FOUR_TIMES_A_DAY
+    ONCE_A_DAY
+    THRICE_A_DAY
+    TWICE_A_DAY
+  }
+
   input SaveDoctorsFavouriteMedicineInput {
     externalId: String
+    medicineConsumptionDuration: String
     medicineConsumptionDurationInDays: Int!
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION
     medicineDosage: String!
-    medicineUnit: String!
+    medicineFormTypes: MEDICINE_FORM_TYPES
+    medicineFrequency: MEDICINE_FREQUENCY
     medicineInstructions: String
+    medicineName: String!
     medicineTimings: [MEDICINE_TIMINGS]!
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
-    medicineName: String!
+    medicineUnit: MEDICINE_UNIT!
   }
 
   type DoctorFavouriteMedicine {
     externalId: String
-    medicineConsumptionDurationInDays: Int
+    id: String
+    medicineConsumptionDuration: String
+    medicineConsumptionDurationInDays: String
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION
     medicineDosage: String
-    medicineUnit: String
+    medicineFormTypes: MEDICINE_FORM_TYPES
+    medicineFrequency: MEDICINE_FREQUENCY
     medicineInstructions: String
+    medicineName: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
-    medicineName: String!
-    id: ID!
+    medicineUnit: MEDICINE_UNIT
   }
 
   input UpdateDoctorsFavouriteMedicineInput {
     externalId: String
+    id: ID!
+    medicineConsumptionDuration: String
     medicineConsumptionDurationInDays: Int
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION
     medicineDosage: String
-    medicineUnit: String
+    medicineFormTypes: MEDICINE_FORM_TYPES
+    medicineFrequency: MEDICINE_FREQUENCY
     medicineInstructions: String
+    medicineName: String!
     medicineTimings: [MEDICINE_TIMINGS]!
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
-    medicineName: String!
-    id: ID!
+    medicineUnit: MEDICINE_UNIT
   }
 
   type FavouriteMedicineList {
@@ -85,13 +144,17 @@ type FavouriteMedicineList = {
 
 type SaveDoctorsFavouriteMedicineInput = {
   externalId: string;
+  medicineConsumptionDuration: string;
   medicineConsumptionDurationInDays: number;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION;
   medicineDosage: string;
-  medicineUnit: string;
+  medicineFormTypes: MEDICINE_FORM_TYPES;
+  medicineFrequency: MEDICINE_FREQUENCY;
   medicineInstructions: string;
+  medicineName: string;
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
-  medicineName: string;
+  medicineUnit: MEDICINE_UNIT;
 };
 
 type saveDoctorsFavouriteMedicineInputArgs = {
@@ -179,14 +242,18 @@ const removeFavouriteMedicine: Resolver<
 
 type UpdateDoctorsFavouriteMedicineInput = {
   externalId: string;
+  id: string;
+  medicineConsumptionDuration: string;
   medicineConsumptionDurationInDays: number;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION;
   medicineDosage: string;
-  medicineUnit: string;
+  medicineFormTypes: MEDICINE_FORM_TYPES;
+  medicineFrequency: MEDICINE_FREQUENCY;
   medicineInstructions: string;
+  medicineName: string;
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
-  medicineName: string;
-  id: string;
+  medicineUnit: string;
 };
 
 type UpdateDoctorsFavouriteMedicineInputArgs = {
