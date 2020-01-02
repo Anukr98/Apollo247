@@ -1,9 +1,8 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Between } from 'typeorm';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { Appointment, SdDashboardSummary } from 'consults-service/entities';
+import { SdDashboardSummary } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { SdDashboardSummaryRepository } from 'consults-service/repositories/sdDashboardSummaryRepository';
@@ -50,11 +49,23 @@ const updateSdSummary: Resolver<
         doctor.id,
         args.summaryDate
       );
+      const auidoCount = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
+      const videoCount = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
+      const reschduleCount = await dashboardRepo.getRescheduleCount(doctor.id, args.summaryDate);
+      const slotsCount = await dashboardRepo.getDoctorSlots(
+        doctor.id,
+        args.summaryDate,
+        context.doctorsDb
+      );
       const dashboardSummaryAttrs: Partial<SdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName,
         totalConsultations,
         appointmentDateTime: args.summaryDate,
+        audioConsultations: auidoCount,
+        videoConsultations: videoCount,
+        rescheduledByDoctor: reschduleCount,
+        consultSlots: slotsCount,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });
