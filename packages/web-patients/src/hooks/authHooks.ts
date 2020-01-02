@@ -60,8 +60,10 @@ export const useAllCurrentPatients = () => {
       return allCurrentPatients.find((p) => p.relation === Relation.ME) || null;
     };
     const defaultCurrentPatient = getDefaultCurrentPatient();
-
-    setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
+if(!currentPatientId){
+  setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
+}
+   
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
   return {
