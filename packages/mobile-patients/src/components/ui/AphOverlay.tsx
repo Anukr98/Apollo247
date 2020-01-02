@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { ScrollView } from 'react-navigation';
@@ -74,6 +75,9 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
     );
   };
 
+  // const keyboardAvoidingViewProps =
+  //   Platform.OS == 'ios' ? { behavior: 'padding', keyboardVerticalOffset: 35 } : {};
+
   return (
     <Overlay
       onRequestClose={props.onClose}
@@ -111,11 +115,7 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
         >
           {renderCloseIcon()}
           {renderHeader()}
-          <KeyboardAvoidingView
-            behavior={'padding'}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={35}
-          >
+          <KeyboardAvoidingView style={{ flex: 1 }}>
             <ScrollView
               bounces={false}
               showsVerticalScrollIndicator={false}

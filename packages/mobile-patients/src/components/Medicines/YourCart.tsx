@@ -1,8 +1,9 @@
 import {
   aphConsole,
-  handleGraphQlError,
   formatAddress,
+  handleGraphQlError,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -13,7 +14,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -22,16 +23,20 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
+  getDeliveryTime,
   getPlaceInfoByLatLng,
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
-  getDeliveryTime,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -42,13 +47,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import { colors } from '../../theme/colors';
-import { Spinner } from '../ui/Spinner';
-import moment from 'moment';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -291,13 +290,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             setshowDeliverySpinner(false);
           })
           .catch((err) => {
-            setdeliveryTime('');
-            showAphAlert &&
-              showAphAlert({
-                title: 'Uh oh.. :(',
-                description: 'Something went wrong, Unable to fetch delivery time',
-              });
-            setshowDeliverySpinner(false);
+            if (!Axios.isCancel(err)) {
+              setdeliveryTime('');
+              showAphAlert &&
+                showAphAlert({
+                  title: 'Uh oh.. :(',
+                  description: 'Something went wrong, Unable to fetch delivery time',
+                });
+              setshowDeliverySpinner(false);
+            }
           });
       }
     }
@@ -444,6 +445,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [checkingServicability, setCheckingServicability] = useState(false);
 
   const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    setdeliveryTime('');
+    setdeliveryError('');
+    setshowDeliverySpinner(false);
     setCheckingServicability(true);
     pinCodeServiceabilityApi(address.zipcode!)
       .then(({ data: { Availability } }) => {
@@ -531,7 +535,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
                   <Text style={styles.deliveryTimeStyle}>
                     {moment(deliveryTime).isValid()
-                      ? moment(deliveryTime).format('D MMM YYYY')
+                      ? moment(deliveryTime).format('D MMM YYYY  | hh:mm a')
                       : '...' || deliveryError}
                   </Text>
                 </View>
@@ -697,6 +701,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setselectedTab(selectedTab);
               setStoreId!('');
               setDeliveryAddressId!('');
+              // delivery time related
+              setdeliveryTime('');
+              setdeliveryError('');
+              setshowDeliverySpinner(false);
             }}
             selectedTab={selectedTab}
           />
