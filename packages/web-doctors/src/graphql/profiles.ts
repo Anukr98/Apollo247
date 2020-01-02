@@ -276,6 +276,9 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
         medicineToBeTaken
         medicineName
         id
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
       }
       notes
       otherInstructions {
@@ -340,6 +343,9 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
         medicineToBeTaken
         medicineName
         id
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
       }
       notes
       otherInstructions {
@@ -484,6 +490,9 @@ export const GET_CASESHEET_JRD = gql`
           medicineTimings
           medicineUnit
           medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
         }
         otherInstructions {
           instruction
@@ -585,6 +594,9 @@ export const GET_CASESHEET_JRD = gql`
             medicineTimings
             medicineInstructions
             medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
           }
           otherInstructions {
             instruction
@@ -717,6 +729,9 @@ export const GET_CASESHEET = gql`
           medicineTimings
           medicineUnit
           medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
         }
         otherInstructions {
           instruction
@@ -774,6 +789,9 @@ export const GET_CASESHEET = gql`
             medicineTimings
             medicineInstructions
             medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
           }
           otherInstructions {
             instruction
@@ -1006,6 +1024,9 @@ export const MODIFY_CASESHEET = gql`
         medicineTimings
         medicineUnit
         medicineInstructions
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
       }
       notes
       otherInstructions {

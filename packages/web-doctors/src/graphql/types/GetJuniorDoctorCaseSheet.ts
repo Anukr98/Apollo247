@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, Gender, Relation, DoctorType } from "./globalTypes";
+import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, Gender, Relation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetJuniorDoctorCaseSheet
@@ -34,6 +34,9 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
   medicineUnit: MEDICINE_UNIT | null;
   medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions {
@@ -170,6 +173,9 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointme
   medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
   medicineInstructions: string | null;
   medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_otherInstructions {

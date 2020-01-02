@@ -1196,6 +1196,12 @@ export const FavouriteMedicines: React.FC = () => {
   const addUpdateMedicines = () => {
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
+    const isTobeTakenSelected = toBeTakenSlots.filter((slot: SlotsObject) => {
+      if (slot.selected) {
+        toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
+      }
+      return slot.selected !== false;
+    });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
         daySlotsArr.push(slot.value.toUpperCase());
