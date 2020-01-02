@@ -16154,7 +16154,7 @@
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",
-                  "name": "OrderDeliveryInput",
+                  "name": "OutForDeliveryInput",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -21237,6 +21237,68 @@
       },
       {
         "kind": "INPUT_OBJECT",
+        "name": "OutForDeliveryInput",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "ordersResult",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "OutForDeliveryInputParameters",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "OutForDeliveryInputParameters",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "message",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "statusDateTime",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "apOrderNo",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
         "name": "OrderPlacedInput",
         "description": null,
         "fields": null,
@@ -21636,7 +21698,7 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "orderId",
+            "name": "orderNo",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -21646,27 +21708,7 @@
             "defaultValue": null
           },
           {
-            "name": "empId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
             "name": "siteId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "docnum",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -28085,27 +28127,6 @@
             "deprecationReason": null
           }
         ],
-        "possibleTypes": null
-      },
-      {
-        "kind": "INPUT_OBJECT",
-        "name": "OutForDeliveryInput",
-        "description": null,
-        "fields": null,
-        "inputFields": [
-          {
-            "name": "ordersResult",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "DeliveryOrderResult",
-              "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "interfaces": null,
-        "enumValues": null,
         "possibleTypes": null
       },
       {

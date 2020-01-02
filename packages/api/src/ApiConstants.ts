@@ -50,6 +50,9 @@ export enum ApiConstants {
   CART_READY_TITLE = 'Medicine order cart ready',
   CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
 
+  ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
+  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}, your medicine order is out for delivery',
+
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
   ORDER_DELIVERY_BODY = 'Hi {0}, your medicine order is delivered',
 
