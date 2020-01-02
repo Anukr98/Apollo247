@@ -319,6 +319,19 @@ export interface MedicinePaymentInput {
   bankTxnId?: string | null;
 }
 
+export interface MedicinePaymentMqInput {
+  orderId: string;
+  orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
