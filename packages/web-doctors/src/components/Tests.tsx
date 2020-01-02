@@ -873,7 +873,13 @@ export const Tests: React.FC = () => {
             variant="contained"
             className={classes.btnAddDoctor}
             color="primary"
-            onClick={() => setIsSmartTestsDialogOpen(true)}
+            onClick={() => {
+              setIsSmartTestsDialogOpen(true);
+              setState({
+                single: '',
+                popper: '',
+              });
+            }}
           >
             <img src={require('images/ic_dark_plus.svg')} alt="" />
             <div>ADD TESTS</div>
@@ -924,6 +930,7 @@ export const Tests: React.FC = () => {
                       }
                       saveTests(suggestion);
                       setShowAddCondition(false);
+                      setIsSmartTestsDialogOpen(false);
                       suggestions = suggestions.filter(
                         (val) => selectedValues && !selectedValues!.includes(val!)
                       );
@@ -1000,6 +1007,7 @@ export const Tests: React.FC = () => {
                           setShowAddOtherTests(false);
                           setShowAddCondition(false);
                           setIdx(selectedValues!.length + 1);
+                          setIsSmartTestsDialogOpen(false);
                           setTimeout(() => {
                             setOtherDiagnostic('');
                           }, 10);
