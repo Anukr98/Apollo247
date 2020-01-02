@@ -236,7 +236,7 @@ export const MedicineLanding: React.FC = (props) => {
   const mascotRef = useRef(null);
   const addToCartRef = useRef(null);
 
-  const params = useParams<{ orderId: string; orderStatus: string }>();
+  const params = useParams<{ orderAutoId: string; orderStatus: string }>();
   if (params.orderStatus === 'success') {
     localStorage.removeItem('cartItems');
     localStorage.removeItem('dp');
@@ -420,7 +420,7 @@ export const MedicineLanding: React.FC = (props) => {
         classes={{ paper: classes.bottomPopover }}
       >
         <OrderPlaced
-          orderId={params.orderId}
+          orderAutoId={params.orderAutoId}
           orderStatus={params.orderStatus}
           setShowOrderPopup={setShowOrderPopup}
         />

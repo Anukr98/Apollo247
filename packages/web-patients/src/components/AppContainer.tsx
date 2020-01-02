@@ -71,7 +71,7 @@ const App: React.FC = () => {
         />
         <AuthRouted
           exact
-          path={clientRoutes.medicinesCartInfo(':orderId', ':orderStatus')}
+          path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
           component={MedicineLanding}
         />
         <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />

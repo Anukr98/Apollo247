@@ -12,8 +12,8 @@ export const clientRoutes = {
   testsAndMedicine: () => '/tests-medicines',
   medicines: () => `/medicines`,
   medicinesLandingViewCart: () => `/medicines/added-to-cart`,
-  medicinesCartInfo: (orderId: string, orderStatus: string) =>
-    `/medicines/${orderId}/${orderStatus}`,
+  medicinesCartInfo: (orderAutoId: string, orderStatus: string) =>
+    `/medicines/${orderAutoId}/${orderStatus}`,
   healthRecords: () => '/health-records',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
