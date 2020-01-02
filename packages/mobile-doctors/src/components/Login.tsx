@@ -1,12 +1,15 @@
+import { AuthContext } from '@aph/mobile-doctors/src/components/AuthProvider';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-doctors/src/components/ui/Card';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { TimeOutData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { setOnboardingDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   AsyncStorage,
   Keyboard,
@@ -18,16 +21,17 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  WebView,
+  Dimensions,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
-import firebase from 'react-native-firebase';
+import Hyperlink from 'react-native-hyperlink';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
-import { NavigationEventSubscription } from 'react-navigation';
-import { TimeOutData } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { AuthContext } from '@aph/mobile-doctors/src/components/AuthProvider';
-// import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+
+const { height, width } = Dimensions.get('window');
+
 const isMobileNumberValid = (phoneNumber: string) => true;
 
 const styles = StyleSheet.create({
@@ -100,6 +104,16 @@ const styles = StyleSheet.create({
       }
     ),
   },
+  viewWebStyles: {
+    position: 'absolute',
+    width: width,
+    height: height,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 20,
+  },
 });
 
 type ReceivedSmsMessage = {
@@ -124,6 +138,9 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
   const [subscriptionId, setSubscriptionId] = useState<any>();
+  const [showTAC, setshowTAC] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
   const { analytics } = useAuth();
 
   const sendOtp = useContext(AuthContext).sendOtp;
@@ -206,6 +223,54 @@ export const Login: React.FC<LoginProps> = (props) => {
     return isNoBlocked;
   };
 
+  const openWebView = () => {
+    Keyboard.dismiss();
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          headerText={'Terms & Conditions'}
+          // leftIcon="close"
+          containerStyle={{
+            borderBottomWidth: 0,
+          }}
+          // onPressLeftIcon={() => setshowTAC(false)}
+        />
+        <View
+          style={{
+            flex: 1,
+            overflow: 'hidden',
+            backgroundColor: 'white',
+          }}
+        >
+          <WebView
+            source={{
+              uri: 'https://www.apollo247.com/TnC.html',
+            }}
+            style={{
+              flex: 1,
+              backgroundColor: 'white',
+            }}
+            useWebKit={true}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setshowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setshowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setshowSpinner(false);
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const isValid = phoneNumber == '' || phoneNumberIsValid;
+
   return (
     <View style={styles.container}>
       <View style={styles.statusBarBg} />
@@ -268,7 +333,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           <View
             style={[
               { height: 56, paddingTop: 20 },
-              phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+              isValid ? styles.inputValidView : styles.inputView,
             ]}
           >
             <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
@@ -279,20 +344,43 @@ export const Login: React.FC<LoginProps> = (props) => {
               maxLength={10}
               value={phoneNumber}
               onChangeText={(value) => validateAndSetPhoneNumber(value)}
+              selectionColor={theme.colors.INPUT_BORDER_SUCCESS}
             />
           </View>
-          <Text
-            style={
-              phoneNumber == '' || phoneNumberIsValid
-                ? styles.bottomValidDescription
-                : styles.bottomDescription
-            }
-          >
-            {phoneNumber == '' || phoneNumberIsValid
-              ? string.LocalStrings.otp_sent_to
-              : string.LocalStrings.wrong_number}
+          <Text style={isValid ? styles.bottomValidDescription : styles.bottomDescription}>
+            {isValid ? string.LocalStrings.otp_sent_to : string.LocalStrings.wrong_number}
           </Text>
-          {phoneNumber == '' || phoneNumberIsValid ? null : (
+          {isValid ? (
+            <View
+              style={{
+                marginRight: 32,
+              }}
+            >
+              <Hyperlink
+                linkStyle={{
+                  color: '#02475b',
+                  ...theme.fonts.IBMPlexSansBold(11), //fonts.IBMPlexSansBold(11),
+                  lineHeight: 16,
+                  letterSpacing: 0,
+                }}
+                linkText={(url) =>
+                  url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+                }
+                onPress={(url, text) => setshowTAC(true)}
+              >
+                <Text
+                  style={{
+                    color: '#02475b',
+                    ...theme.fonts.IBMPlexSans(11),
+                    lineHeight: 16,
+                    letterSpacing: 0,
+                  }}
+                >
+                  By logging in, you agree to our https://www.apollo247.com/TnC.html
+                </Text>
+              </Hyperlink>
+            </View>
+          ) : (
             // <View style={{ height: 28 }} />
             <TouchableOpacity
               onPress={() => props.navigation.push(AppRoutes.HelpScreen)}
@@ -302,25 +390,10 @@ export const Login: React.FC<LoginProps> = (props) => {
             </TouchableOpacity>
           )}
         </Card>
+        {showTAC && openWebView()}
       </SafeAreaView>
-      {verifyingPhoneNumber ? (
-        <View
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0, 0.2)',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        >
-          <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
-        </View>
-      ) : null}
+      {showSpinner && <Spinner />}
+      {verifyingPhoneNumber ? <Spinner /> : null}
     </View>
   );
 };

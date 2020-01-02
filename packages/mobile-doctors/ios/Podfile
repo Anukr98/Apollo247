@@ -12,7 +12,7 @@ target 'ApolloPatient' do
  pod 'Firebase/Auth'
  pod 'Firebase/Messaging'
  pod 'GoogleAppMeasurement'
- pod 'OpenTok', '~> 2.15.3'
+ pod 'OpenTok', '~> 2.16.3'
  
 # pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
