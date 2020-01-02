@@ -228,7 +228,12 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                           color="secondary"
                           value={timeString}
                           className={
-                            selectedTime === timeString || (!selectedFlag && idx === 0)
+                            selectedTime === timeString ||
+                            (!selectedTime &&
+                              !selectedFlag &&
+                              idx === 0 &&
+                              (idx === 0 && !selectedFlag && setTimeSelected(timeString),
+                              timeSelected(timeString)))
                               ? `${classes.buttonActive}`
                               : ''
                           }
