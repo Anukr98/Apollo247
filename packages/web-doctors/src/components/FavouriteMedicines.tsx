@@ -704,7 +704,6 @@ export const FavouriteMedicines: React.FC = () => {
     durationErr: false,
     dosageErr: false,
   });
-  const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>();
   const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
@@ -735,9 +734,7 @@ export const FavouriteMedicines: React.FC = () => {
       selected: false,
     },
   ]);
-
   const [loadingStatus, setLoading] = useState<boolean>(false);
-
   const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
     {
       id: 'afterfood',
@@ -828,7 +825,6 @@ export const FavouriteMedicines: React.FC = () => {
   const [medicine, setMedicine] = useState('');
   const [frequency, setFrequency] = useState('ONCE_A_DAY');
   const [forUnit, setforUnit] = useState('DAYS');
-
   const [searchInput, setSearchInput] = useState('');
   const client = useApolloClient();
   const [medicineForm, setMedicineForm] = useState<string>('OTHERS');
@@ -1030,18 +1026,8 @@ export const FavouriteMedicines: React.FC = () => {
     return suggestion.label;
   }
   useEffect(() => {
-    if (selectedMedicinesArr && selectedMedicinesArr!.length) {
-      selectedMedicinesArr!.forEach((res: any) => {
-        const inputParamsArr: any = {
-          medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
-          medicineDosage: String(res.medicineDosage),
-          medicineInstructions: res.medicineInstructions,
-          medicineTimings: res.medicineTimings,
-          medicineToBeTaken: res.medicineToBeTaken,
-          medicineName: res.medicineName,
-          medicineUnit: res.medicineUnit,
-          id: res.id,
-        };
+    if (selectedMedicinesArr && selectedMedicinesArr.length > 0) {
+      selectedMedicinesArr.forEach((res: any) => {
         const inputParams: any = {
           id: res.medicineName.trim(),
           value: res.medicineName,
@@ -1056,12 +1042,9 @@ export const FavouriteMedicines: React.FC = () => {
           selected: true,
           medicineUnit: res.medicineUnit,
         };
-        // const xArr = selectedMedicinesArr;
-        // xArr!.push(inputParamsArr);
-        // setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x!.push(inputParams);
-        setSelectedMedicines(x);
+        const allMedicines = selectedMedicines;
+        allMedicines.push(inputParams);
+        setSelectedMedicines(allMedicines);
       });
     }
   }, [selectedMedicinesArr]);
@@ -1073,8 +1056,8 @@ export const FavouriteMedicines: React.FC = () => {
 
   const daySlotsToggleAction = (slotId: string) => {
     const slots = daySlots.map((slot: SlotsObject) => {
-      if (slotId === slot.id) {
-        slot.selected = !slot.selected;
+      if (slot && slotId === slot.id) {
+        slot.selected = slot.selected;
       }
       return slot;
     });
@@ -1083,8 +1066,8 @@ export const FavouriteMedicines: React.FC = () => {
 
   const toBeTakenSlotsToggleAction = (slotId: string) => {
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
-      if (slotId === slot.id) {
-        slot.selected = !slot.selected;
+      if (slot && slotId === slot.id) {
+        slot.selected = slot.selected;
       }
       return slot;
     });
@@ -1171,12 +1154,12 @@ export const FavouriteMedicines: React.FC = () => {
         medicineUnit: medicineUnit,
         medicineInstructions: medicineInstruction,
       };
-      const xArr: any = selectedMedicinesArr;
-      xArr!.push(inputParamsArr);
-      setSelectedMedicinesArr(xArr);
-      const x = selectedMedicines;
-      x.push(inputParams);
-      setSelectedMedicines(x);
+      const medicineArray: any = selectedMedicinesArr;
+      medicineArray.push(inputParamsArr);
+      setSelectedMedicinesArr(medicineArray);
+      const medicineSelected = selectedMedicines;
+      medicineSelected.push(inputParams);
+      setSelectedMedicines(medicineSelected);
 
       setIsDialogOpen(false);
       setIsUpdate(false);
@@ -1278,19 +1261,19 @@ export const FavouriteMedicines: React.FC = () => {
         medicineInstructions: medicineInstruction,
       };
       if (isUpdate) {
-        const xArr = selectedMedicinesArr;
-        xArr!.splice(idx, 1, inputParamsArr);
-        setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x.splice(idx, 1, inputParams);
-        setSelectedMedicines(x);
+        const medicineArray = selectedMedicinesArr;
+        medicineArray!.splice(idx, 1, inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineSelected = selectedMedicines;
+        medicineSelected.splice(idx, 1, inputParams);
+        setSelectedMedicines(medicineSelected);
       } else {
-        const xArr: any = selectedMedicinesArr;
-        xArr!.push(inputParamsArr);
-        setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x.push(inputParams);
-        setSelectedMedicines(x);
+        const medicineArray: any = selectedMedicinesArr;
+        medicineArray!.push(inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineSelected = selectedMedicines;
+        medicineSelected.push(inputParams);
+        setSelectedMedicines(medicineSelected);
       }
       setIsDialogOpen(false);
       setIsUpdate(false);
