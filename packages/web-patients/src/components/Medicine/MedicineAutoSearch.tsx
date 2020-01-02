@@ -155,7 +155,6 @@ export const MedicineAutoSearch: React.FC = (props) => {
           className={classes.searchInput}
           onChange={(e) => {
             setSearchText(e.target.value);
-            // sessionStorage.setItem('medicineSearch', e.target.value);
             if (e.target.value.length > 2) {
               onSearchMedicine(e.target.value);
             } else {
@@ -166,7 +165,9 @@ export const MedicineAutoSearch: React.FC = (props) => {
         <AphButton
           disabled={searchText.length < 3}
           className={classes.searchBtn}
-          onClick={() => (window.location.href = clientRoutes.searchByMedicine(searchText))}
+          onClick={() =>
+            (window.location.href = clientRoutes.searchByMedicine('search-medicines', searchText))
+          }
           classes={{
             disabled: classes.searchBtnDisabled,
           }}
@@ -205,44 +206,6 @@ export const MedicineAutoSearch: React.FC = (props) => {
                     </Link>
                   </li>
                 ))}
-                {/* <li className={classes.itemSelected}>
-                  <Link to={clientRoutes.medicineDetails()}>
-                    <div className={classes.medicineImg}>
-                      <img src={require("images/img_product.png")} alt="" />
-                    </div>
-                    <div className={classes.medicineInfo}>
-                      <div className={classes.medicineName}>
-                        Crocin Pain Releif
-                      </div>
-                      <div className={classes.medicinePrice}>Rs. 14.95</div>
-                    </div>
-                  </Link>
-                </li>
-                <li>
-                  <Link to={clientRoutes.medicineDetails()}>
-                    <div className={classes.medicineImg}>
-                      <img src={require("images/ic_tablets_rx.svg")} alt="" />
-                    </div>
-                    <div className={classes.medicineInfo}>
-                      <div className={classes.medicineName}>
-                        Crocin Cold &amp; Flu
-                      </div>
-                      <div className={classes.noStock}>Out Of Stock</div>
-                    </div>
-                  </Link>
-                </li>
-                <li>
-                  <Link to={clientRoutes.medicineDetails()}>
-                    <div className={classes.medicineImg}>
-                      <img src={require("images/ic_tablets.svg")} alt="" />
-                    </div>
-                    <div className={classes.medicineInfo}>
-                      <div className={classes.medicineName}>Crocin 650mg</div>
-                      <div className={classes.medicinePrice}>Rs. 14.95</div>
-                    </div>
-                  </Link>
-                </li>
-               */}
               </ul>
             </div>
           )}

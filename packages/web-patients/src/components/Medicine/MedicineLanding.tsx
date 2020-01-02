@@ -238,7 +238,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicineLanding: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const queryParams = new URLSearchParams(location.search);
   const mascotRef = useRef(null);
   const addToCartRef = useRef(null);
@@ -259,7 +259,7 @@ export const MedicineLanding: React.FC = (props) => {
     window.location.pathname === '/medicines/added-to-cart'
   );
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_UAT_URL}/apollo_24x7_api.php`,
+    url: `${process.env.PHARMACY_MED_PROD_URL}/apollo_24x7_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
@@ -291,26 +291,6 @@ export const MedicineLanding: React.FC = (props) => {
       getMedicinePageProducts();
     }
   }, []);
-
-  //   const medicineData = useMutation<
-  //   GetMedicineOrdersList,
-  //   GetMedicineOrdersListVariables
-  // >(GET_MEDICINE_ORDERS_LIST, {
-  //   variables: { patientId: currentPatient && currentPatient.id },
-  //   fetchPolicy: 'no-cache',
-  // });
-
-  // useEffect(() => {
-  //   medicineData().then((res) => {
-  //     console.log(res);
-  //     if(res && res.data && res.data.getMedicineOrdersList){
-  //       setData(res.data.getMedicineOrdersList.MedicineOrdersList);
-  //     }
-
-  //   }).catch((e: ApolloError) => {
-  //     alert(e);
-  //   })
-  // });
 
   const list = data && [
     {

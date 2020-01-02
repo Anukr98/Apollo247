@@ -24,8 +24,12 @@ import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
 import { LocationContext } from 'components/LocationProvider';
-import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
-import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
+} from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -393,6 +397,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 5px 0 0',
       },
     },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
   };
 });
 
@@ -431,13 +438,31 @@ export const MedicineCart: React.FC = (props) => {
   const { currentPincode } = useContext(LocationContext);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [phrPrescriptionData, setPhrPrescriptionData] = React.useState<Prescription[] | null>(null);
+  const [medicineOrderData, setMedicineOrderData] = React.useState<MedicineOrder[] | null>(null);
 
-  const removePrescription = (fileName: string) => {
+  const removeImagePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
   };
 
+  const removePrescription = (id: string, type: string) => {
+    switch (type) {
+      case 'consults':
+        phrPrescriptionData &&
+          phrPrescriptionData.length > 0 &&
+          setPhrPrescriptionData(phrPrescriptionData.filter((data) => data.id !== id));
+        break;
+      case 'medicineOrder':
+        medicineOrderData &&
+          medicineOrderData.length > 0 &&
+          setMedicineOrderData(medicineOrderData.filter((data) => data.id !== id));
+        break;
+      default:
+        break;
+    }
+  };
+
   useEffect(() => {
-    if (prescriptionUploaded.name !== '') {
+    if (prescriptionUploaded && prescriptionUploaded.name !== '') {
       setPrescriptions((prevValues) => [...prevValues, prescriptionUploaded]);
     }
   }, [prescriptionUploaded]);
@@ -502,34 +527,41 @@ export const MedicineCart: React.FC = (props) => {
                 {uploadPrescriptionRequired >= 0 ? (
                   <>
                     <div className={classes.sectionHeader}>Upload Prescription</div>
-                    {phrPrescriptionData &&
-                      phrPrescriptionData.length > 0 &&
-                      phrPrescriptionData.map((prescription) => (
-                        <div className={classes.followUpWrapper}>
-                          <div className={classes.fileInfo}>
-                            <div className={classes.doctorName}>
-                              Dr. {prescription.doctorInfo && prescription.doctorInfo.firstName}
-                            </div>
-                            <div className={classes.patientHistory}></div>
-                          </div>
-                        </div>
-                      ))}
-                    {prescriptions.length > 0 ? (
+                    {prescriptions.length > 0 ||
+                    (phrPrescriptionData && phrPrescriptionData.length > 0) ||
+                    (medicineOrderData && medicineOrderData.length > 0) ? (
                       <div className={classes.uploadedPreList}>
-                        {prescriptions.map((prescriptionDetails, index) => {
-                          const fileName = prescriptionDetails.name;
-                          const imageUrl = prescriptionDetails.imageUrl;
-                          return (
-                            <PrescriptionCard
-                              fileName={fileName || ''}
-                              imageUrl={imageUrl || ''}
-                              removePrescription={(fileName: string) =>
-                                removePrescription(fileName)
-                              }
-                              key={index}
+                        {prescriptions.length > 0 &&
+                          prescriptions.map((prescriptionDetails, index) => {
+                            const fileName = prescriptionDetails.name;
+                            const imageUrl = prescriptionDetails.imageUrl;
+                            return (
+                              <PrescriptionCard
+                                fileName={fileName || ''}
+                                imageUrl={imageUrl || ''}
+                                removePrescription={(fileName: string) =>
+                                  removeImagePrescription(fileName)
+                                }
+                                key={index}
+                              />
+                            );
+                          })}
+                        {phrPrescriptionData &&
+                          phrPrescriptionData.length > 0 &&
+                          phrPrescriptionData.map((prescription) => (
+                            <EPrescriptionCard
+                              prescription={prescription}
+                              removePrescription={removePrescription}
                             />
-                          );
-                        })}
+                          ))}
+                        {medicineOrderData &&
+                          medicineOrderData.length > 0 &&
+                          medicineOrderData.map((medicineOrder) => (
+                            <EPrescriptionCard
+                              medicineOrder={medicineOrder}
+                              removePrescription={removePrescription}
+                            />
+                          ))}
                         <div className={classes.uploadMore}>
                           <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>
                             Upload More
@@ -794,10 +826,13 @@ export const MedicineCart: React.FC = (props) => {
 
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
-        <AphDialogTitle>E Prescription</AphDialogTitle>
-        <EPrescriptionCard
+        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+        <UploadEPrescriptionCard
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
           setPhrPrescriptionData={setPhrPrescriptionData}
+          setMedicineOrderData={setMedicineOrderData}
+          phrPrescriptionData={phrPrescriptionData}
+          medicineOrderData={medicineOrderData}
         />
       </AphDialog>
     </div>

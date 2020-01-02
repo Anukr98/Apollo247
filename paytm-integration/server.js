@@ -8,6 +8,7 @@ const session = require('express-session');
 const stripTags = require('striptags');
 const crypto = require('crypto');
 const azure = require('azure-sb');
+const fs = require('fs');
 require('dotenv').config();
 
 app.use(
@@ -313,7 +314,7 @@ app.post('/paymed-response', (req, res) => {
   // this needs to be altered later.
   const requestJSON = {
     query:
-      'mutation { SaveMedicineOrderPayment(medicinePaymentInput: { orderId: "0", orderAutoId: ' +
+      'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
       payload.ORDERID +
       ', paymentType: CASHLESS, amountPaid: ' +
       payload.TXNAMOUNT +
@@ -613,6 +614,51 @@ app.get('/diagnostic-pg-error', (req, res) => {
 });
 
 app.get('/processOrders', (req, res) => {
+  let deliveryCity = 'Kakinada',
+    deliveryZipcode = '500045',
+    deliveryAddress = 'Kakinada';
+  function getAddressDetails(addressId) {
+    return new Promise(async (resolve, reject) => {
+      axios({
+        url: process.env.API_URL,
+        method: 'post',
+        data: {
+          query: `
+        query {
+          getPatientAddressById(id:"${addressId}") {
+            patientAddress{
+                id
+                city
+                state
+                zipcode
+                addressLine1
+                addressLine2
+                landmark
+              }
+          }
+        }
+      `,
+        },
+      })
+        .then((response) => {
+          deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
+          deliveryZipcode = response.data.data.getPatientAddressById.patientAddress.zipcode;
+          deliveryAddress =
+            response.data.data.getPatientAddressById.patientAddress.addressLine1 +
+            ' ' +
+            response.data.data.getPatientAddressById.patientAddress.addressLine2;
+          console.log(
+            response,
+            response.data.data.getPatientAddressById.patientAddress.state,
+            'address resp'
+          );
+          resolve(deliveryAddress);
+        })
+        .catch((error) => {
+          console.log(error, 'address error');
+        });
+    });
+  }
   let queueMessage = '';
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
@@ -650,6 +696,7 @@ app.get('/processOrders', (req, res) => {
                   devliveryCharges
                   deliveryType
                   patientAddressId
+                  prescriptionImageUrl
                   patient{
                     mobileNumber
                     firstName
@@ -671,6 +718,7 @@ app.get('/processOrders', (req, res) => {
                     paymentType
                     amountPaid
                     paymentRefId
+                    paymentStatus
                   }
                 }
               }
@@ -678,7 +726,7 @@ app.get('/processOrders', (req, res) => {
           `,
           },
         })
-          .then((response) => {
+          .then(async (response) => {
             if (
               response &&
               response.data &&
@@ -687,56 +735,18 @@ app.get('/processOrders', (req, res) => {
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
             ) {
               console.log(
-                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId,
                 'order details233'
               );
-              let deliveryCity = 'Kakinada',
-                deliveryZipcode = '500045',
-                deliveryAddress = 'Kakinada';
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
                   '' &&
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
                   null
               ) {
-                axios({
-                  url: process.env.API_URL,
-                  method: 'post',
-                  data: {
-                    query: `
-                  query {
-                    getPatientAddressById(id:"${response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId}") {
-                      patientAddress{
-                          id
-                          city
-                          state
-                          zipcode
-                          addressLine1
-                          addressLine2
-                          landmark
-                        }
-                    }
-                  }
-                `,
-                  },
-                })
-                  .then((response) => {
-                    deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
-                    deliveryZipcode =
-                      response.data.data.getPatientAddressById.patientAddress.zipcode;
-                    deliveryAddress =
-                      response.data.data.getPatientAddressById.patientAddress.addressLine1 +
-                      ' ' +
-                      response.data.data.getPatientAddressById.patientAddress.addressLine2;
-                    console.log(
-                      response,
-                      response.data.data.getPatientAddressById.patientAddress.state,
-                      'address resp'
-                    );
-                  })
-                  .catch((error) => {
-                    console.log(error, 'address error');
-                  });
+                await getAddressDetails(
+                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId
+                );
               }
               const responseOrderId =
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
@@ -782,7 +792,7 @@ app.get('/processOrders', (req, res) => {
               }
               let payStatus =
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                  .medicineOrderPayments[0].paymentType;
+                  .medicineOrderPayments[0].paymentStatus;
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                   .medicineOrderPayments[0].paymentType == 'COD'
@@ -791,11 +801,18 @@ app.get('/processOrders', (req, res) => {
               }
               //axios.defaults.headers.common['token'] = '9f15bdd0fcd5423190c2e877ba0228A24';
               let patientAge = 30;
+              let selShopId = '16001';
+              if (
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != '' &&
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != null
+              ) {
+                selShopId = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId;
+              }
               const pharmaInput = {
                 tpdetails: {
                   OrderId:
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId,
-                  ShopId: response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId,
+                  ShopId: selShopId,
                   ShippingMethod:
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.deliveryType,
                   RequestType: 'CART',
@@ -847,6 +864,16 @@ app.get('/processOrders', (req, res) => {
                 },
               };
               console.log(pharmaInput, 'pharmaInput');
+              const fileName = 'pharmalogs/' + new Date().toDateString() + '-pharmaLogs.txt';
+              let content =
+                new Date().toString() +
+                '\n---------------------------\n' +
+                JSON.stringify(pharmaInput) +
+                '\n-------------------\n';
+              fs.appendFile(fileName, content, function(err) {
+                if (err) throw err;
+                console.log('Updated!');
+              });
               axios
                 .post(process.env.PHARMA_ORDER_PLACE_URL, JSON.stringify(pharmaInput), {
                   headers: {
@@ -857,6 +884,11 @@ app.get('/processOrders', (req, res) => {
                 .then((resp) => {
                   console.log('pharma resp', resp, resp.data.ordersResult);
                   //const orderData = JSON.parse(resp.data);
+                  content = resp.data.ordersResult + '\n==================================\n';
+                  fs.appendFile(fileName, content, function(err) {
+                    if (err) throw err;
+                    console.log('Updated!');
+                  });
                   //console.log(orderData, 'order data');
                   if (resp.data.ordersResult.Status == true) {
                     const requestJSON = {
@@ -867,19 +899,25 @@ app.get('/processOrders', (req, res) => {
                     };
 
                     console.log(requestJSON, 'reqest json');
-                    azureServiceBus.deleteMessage(result, (deleteError) => {
-                      if (deleteError) {
-                        console.log('delete error', deleteError);
-                      }
-                      console.log('message deleted');
-                    });
                     axios
                       .post(process.env.API_URL, requestJSON)
                       .then((placedResponse) => {
                         console.log(placedResponse, 'placed respose');
+                        azureServiceBus.deleteMessage(result, (deleteError) => {
+                          if (deleteError) {
+                            console.log('delete error', deleteError);
+                          }
+                          console.log('message deleted');
+                        });
                       })
                       .catch((placedError) => {
                         console.log(placedError, 'placed error');
+                        azureServiceBus.deleteMessage(result, (deleteError) => {
+                          if (deleteError) {
+                            console.log('delete error', deleteError);
+                          }
+                          console.log('message deleted');
+                        });
                       });
                   }
                   res.send({
@@ -911,6 +949,324 @@ app.get('/processOrders', (req, res) => {
       }
     }
   );
+});
+
+app.get('/processOrderById', (req, res) => {
+  let deliveryCity = 'Kakinada',
+    deliveryZipcode = '500045',
+    deliveryAddress = 'Kakinada';
+  const patientId = req.query.patientId;
+  const orderId = req.query.orderId;
+  function getAddressDetails(addressId) {
+    return new Promise(async (resolve, reject) => {
+      axios({
+        url: process.env.API_URL,
+        method: 'post',
+        data: {
+          query: `
+        query {
+          getPatientAddressById(id:"${addressId}") {
+            patientAddress{
+                id
+                city
+                state
+                zipcode
+                addressLine1
+                addressLine2
+                landmark
+              }
+          }
+        }
+      `,
+        },
+      })
+        .then((response) => {
+          deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
+          deliveryZipcode = response.data.data.getPatientAddressById.patientAddress.zipcode;
+          deliveryAddress =
+            response.data.data.getPatientAddressById.patientAddress.addressLine1 +
+            ' ' +
+            response.data.data.getPatientAddressById.patientAddress.addressLine2;
+          console.log(
+            response,
+            response.data.data.getPatientAddressById.patientAddress.state,
+            'address resp'
+          );
+          resolve(deliveryAddress);
+        })
+        .catch((error) => {
+          console.log(error, 'address error');
+        });
+    });
+  }
+
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios({
+    url: process.env.API_URL,
+    method: 'post',
+    data: {
+      query: `
+            query {
+              getMedicineOrderDetails(patientId:"${patientId}", orderAutoId:${orderId}) {
+                MedicineOrderDetails {
+                  id
+                  shopId
+                  orderAutoId
+                  estimatedAmount
+                  pharmaRequest
+                  devliveryCharges
+                  deliveryType
+                  patientAddressId
+                  prescriptionImageUrl
+                  orderType
+                  patient{
+                    mobileNumber
+                    firstName
+                    lastName
+                    emailAddress
+                    dateOfBirth
+                  }
+                  medicineOrderLineItems{
+                    medicineSKU
+                    medicineName
+                    mrp
+                    mou
+                    price
+                    quantity        
+                  }
+                  medicineOrderPayments{
+                    id
+                    bankTxnId
+                    paymentType
+                    amountPaid
+                    paymentRefId
+                    paymentStatus
+                  }
+                }
+              }
+            }
+          `,
+    },
+  })
+    .then(async (response) => {
+      if (
+        response &&
+        response.data &&
+        response.data.data &&
+        response.data.data.getMedicineOrderDetails &&
+        response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+      ) {
+        console.log(
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderType,
+          'order details233'
+        );
+        if (
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != '' &&
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
+        ) {
+          await getAddressDetails(
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId
+          );
+        }
+        const responseOrderId =
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
+        const responseAmount =
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.pharmaRequest;
+        const orderLineItems = [];
+        const orderPrescriptionUrl = [];
+        let requestType = 'NONCART';
+        if (
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderType == 'CART_ORDER'
+        ) {
+          requestType = 'CART';
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderLineItems.map(
+            (item) => {
+              const lineItem = {
+                ItemID: item.medicineSKU,
+                ItemName: item.medicineName,
+                Qty: item.quantity * item.mou,
+                Pack: item.quantity,
+                MOU: item.mou,
+                Price: item.price,
+                Status: true,
+              };
+              orderLineItems.push(lineItem);
+            }
+          );
+        }
+        let prescriptionImages = [];
+        let orderType = 'FMCG';
+        if (
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
+            '' &&
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
+            null
+        ) {
+          prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
+            ','
+          );
+          orderType = 'Pharma';
+        }
+        if (prescriptionImages.length > 0) {
+          orderType = 'Pharma';
+          prescriptionImages.map((imageUrl) => {
+            const url = {
+              url: imageUrl,
+            };
+            orderPrescriptionUrl.push(url);
+          });
+        }
+        let paymentDets = {};
+        let paymentMethod = 'COD';
+        let payStatus = '';
+        if (
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderType == 'CART_ORDER'
+        ) {
+          payStatus =
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
+              .paymentStatus;
+          paymentMethod =
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
+              .paymentType;
+          if (
+            response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderPayments[0]
+              .paymentType == 'COD'
+          ) {
+            payStatus = '';
+          }
+          paymentDets = {
+            TotalAmount:
+              response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                .medicineOrderPayments[0].amountPaid,
+            PaymentSource:
+              response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                .medicineOrderPayments[0].paymentType,
+            PaymentStatus: payStatus,
+            PaymentOrderId:
+              response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                .medicineOrderPayments[0].paymentRefId,
+          };
+        }
+
+        //axios.defaults.headers.common['token'] = '9f15bdd0fcd5423190c2e877ba0228A24';
+        let patientAge = 30;
+        let selShopId = '16001';
+        if (
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != '' &&
+          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId != null
+        ) {
+          selShopId = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.shopId;
+        }
+
+        const pharmaInput = {
+          tpdetails: {
+            OrderId: response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId,
+            ShopId: selShopId,
+            ShippingMethod:
+              response.data.data.getMedicineOrderDetails.MedicineOrderDetails.deliveryType,
+            RequestType: requestType,
+            PaymentMethod: paymentMethod,
+            VendorName: '*****',
+            DotorName: 'Apollo',
+            OrderType: orderType,
+            StateCode: 'TS',
+            TAT: null,
+            CouponCode: 'MED10',
+            OrderDate: new Date(),
+            CustomerDetails: {
+              MobileNo: response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient.mobileNumber.substr(
+                3
+              ),
+              Comm_addr: deliveryAddress,
+              Del_addr: deliveryAddress,
+              FirstName:
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient.firstName,
+              LastName:
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient.lastName,
+              City: deliveryCity,
+              PostCode: deliveryZipcode,
+              MailId: '',
+              Age: patientAge,
+              CardNo: null,
+              PatientName:
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patient.firstName,
+            },
+            PaymentDetails: paymentDets,
+            ItemDetails: orderLineItems,
+            PrescUrl: orderPrescriptionUrl,
+          },
+        };
+        console.log(pharmaInput, 'pharmaInput');
+        const fileName = 'pharmalogs/' + new Date().toDateString() + '-pharmaLogs.txt';
+        let content =
+          new Date().toString() +
+          '\n---------------------------\n' +
+          JSON.stringify(pharmaInput) +
+          '\n-------------------\n';
+        fs.appendFile(fileName, content, function(err) {
+          if (err) throw err;
+          console.log('Updated!');
+        });
+        axios
+          .post(process.env.PHARMA_ORDER_PLACE_URL, JSON.stringify(pharmaInput), {
+            headers: {
+              token: process.env.PHARMA_TOKEN,
+              'Content-Type': 'application/json',
+            },
+          })
+          .then((resp) => {
+            console.log('pharma resp', resp, resp.data.ordersResult);
+            //const orderData = JSON.parse(resp.data);
+            content = resp.data.ordersResult + '\n==================================\n';
+            fs.appendFile(fileName, content, function(err) {
+              if (err) throw err;
+              console.log('Updated!');
+            });
+            //console.log(orderData, 'order data');
+            if (resp.data.ordersResult.Status == true) {
+              const requestJSON = {
+                query:
+                  'mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ' +
+                  orderId +
+                  ' }){ message }}',
+              };
+
+              console.log(requestJSON, 'reqest json');
+              axios
+                .post(process.env.API_URL, requestJSON)
+                .then((placedResponse) => {
+                  console.log(placedResponse, 'placed respose');
+                })
+                .catch((placedError) => {
+                  console.log(placedError, 'placed error');
+                });
+            }
+            res.send({
+              status: 'success',
+              reason: '',
+              code: responseOrderId + ', ' + responseAmount,
+            });
+          })
+          .catch((pharmaerror) => {
+            console.log('pharma error', pharmaerror);
+            res.send({
+              status: 'Failed',
+              reason: '',
+              code: responseOrderId + ', ' + responseAmount,
+            });
+          });
+      }
+    })
+    .catch((error) => {
+      // no need to explicitly saying details about error for clients.
+      console.log(error);
+      //res.statusCode = 401;
+      return res.send({
+        status: 'failed',
+        reason: 'Invalid parameters',
+        code: '10001',
+      });
+    });
 });
 
 app.listen(PORT, () => {

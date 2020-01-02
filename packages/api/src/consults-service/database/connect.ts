@@ -12,6 +12,7 @@ import {
   AppointmentCallDetails,
   DoctorNextAvaialbleSlots,
   AppointmentNoShow,
+  SdDashboardSummary,
 } from 'consults-service/entities';
 import {
   ConsultHours,
@@ -59,6 +60,7 @@ import {
   DiagnosticOrgans,
   DiagnosticPincodeHubs,
   PatientFeedback,
+  DiagnosticOrdersStatus,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -77,6 +79,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         DoctorNextAvaialbleSlots,
         AppointmentNoShow,
+        SdDashboardSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -143,6 +146,7 @@ export const connect = async () => {
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
         PatientFeedback,
+        DiagnosticOrdersStatus,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

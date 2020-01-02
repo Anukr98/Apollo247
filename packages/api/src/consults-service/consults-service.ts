@@ -82,9 +82,17 @@ import {
   appointmentsSummaryResolvers,
 } from 'consults-service/resolvers/appointmentsSummary';
 import {
+  getAppointmentOverviewTypeDefs,
+  getAppointmentOverviewResolvers,
+} from 'consults-service/resolvers/appointmentOverview';
+import {
   doctorCallNotificationTypeDefs,
   doctorCallNotificationResolvers,
 } from 'consults-service/resolvers/doctorCallNotification';
+import {
+  sdDashboardSummaryTypeDefs,
+  sdDashboardSummaryResolvers,
+} from 'consults-service/resolvers/sdDashboardSummary';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 
@@ -202,6 +210,14 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: doctorCallNotificationTypeDefs,
         resolvers: doctorCallNotificationResolvers,
+      },
+      {
+        typeDefs: getAppointmentOverviewTypeDefs,
+        resolvers: getAppointmentOverviewResolvers,
+      },
+      {
+        typeDefs: sdDashboardSummaryTypeDefs,
+        resolvers: sdDashboardSummaryResolvers,
       },
     ]),
     plugins: [

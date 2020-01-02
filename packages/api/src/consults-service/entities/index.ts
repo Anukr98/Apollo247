@@ -43,6 +43,7 @@ export enum STATUS {
   JUNIOR_DOCTOR_STARTED = 'JUNIOR_DOCTOR_STARTED',
   JUNIOR_DOCTOR_ENDED = 'JUNIOR_DOCTOR_ENDED',
   CALL_ABANDON = 'CALL_ABANDON',
+  UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
 }
 
 export enum APPOINTMENT_STATE {
@@ -433,7 +434,25 @@ export class JuniorAppointmentSessions extends BaseEntity {
 //Junior AppointmentSessions ends
 
 //case sheet starts
+export enum MEDICINE_FORM_TYPES {
+  GEL_LOTION_OINTMENT = 'GEL_LOTION_OINTMENT',
+  OTHERS = 'OTHERS',
+}
+export enum MEDICINE_CONSUMPTION_DURATION {
+  DAYS = 'DAYS',
+  MONTHS = 'MONTHS',
+  WEEKS = 'WEEKS',
+}
+export enum MEDICINE_FREQUENCY {
+  AS_NEEDED = 'AS_NEEDED',
+  FIVE_TIMES_A_DAY = 'FIVE_TIMES_A_DAY',
+  FOUR_TIMES_A_DAY = 'FOUR_TIMES_A_DAY',
+  ONCE_A_DAY = 'ONCE_A_DAY',
+  THRICE_A_DAY = 'THRICE_A_DAY',
+  TWICE_A_DAY = 'TWICE_A_DAY',
+}
 export enum MEDICINE_TIMINGS {
+  AS_NEEDED = 'AS_NEEDED',
   EVENING = 'EVENING',
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
@@ -445,38 +464,57 @@ export enum MEDICINE_TO_BE_TAKEN {
 }
 
 export enum CASESHEET_STATUS {
-  PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
+  PENDING = 'PENDING',
 }
 
 export enum MEDICINE_UNIT {
-  TABLET = 'TABLET',
+  BOTTLE = 'BOTTLE',
   CAPSULE = 'CAPSULE',
-  ML = 'ML',
+  CREAM = 'CREAM',
   DROPS = 'DROPS',
+  GEL = 'GEL',
+  INJECTION = 'INJECTION',
+  LOTION = 'LOTION',
+  ML = 'ML',
   NA = 'NA',
+  OINTMENT = 'OINTMENT',
+  OTHERS = 'OTHERS',
+  POWDER = 'POWDER',
+  ROTACAPS = 'ROTACAPS',
+  SACHET = 'SACHET',
+  SOAP = 'SOAP',
+  SOLUTION = 'SOLUTION',
+  SPRAY = 'SPRAY',
+  SUSPENSION = 'SUSPENSION',
+  SYRUP = 'SYRUP',
+  TABLET = 'TABLET',
 }
 
 export type CaseSheetMedicinePrescription = {
-  id: string;
   externalId: string;
+  id: string;
+  medicineConsumptionDuration: string;
   medicineConsumptionDurationInDays: number;
-  medicineDosage: string;
-  medicineUnit: string;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION;
+  medicineDosage: string; //take
+  medicineFormTypes: MEDICINE_FORM_TYPES;
+  medicineFrequency: MEDICINE_FREQUENCY;
   medicineInstructions?: string;
+  medicineName: string;
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
-  medicineName: string;
+  medicineUnit: MEDICINE_UNIT;
 };
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = { itemname: string };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
-  symptom: string;
-  since: string;
+  details: string;
   howOften: string;
   severity: string;
-  details: string;
+  since: string;
+  symptom: string;
 };
 
 @Entity()
@@ -744,6 +782,66 @@ export class AppointmentNoShow extends BaseEntity {
   }
 }
 //Appointment no show details end
+
+//SD dashboard summary starts
+@Entity()
+export class SdDashboardSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  doctorId: string;
+
+  @Column()
+  doctorName: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column({ default: 0 })
+  totalConsultations: number;
+
+  @Column({ default: 0 })
+  onTimeConsultations: number;
+
+  @Column({ default: 0 })
+  within15Consultations: number;
+
+  @Column({ default: 0 })
+  moreThan15Consultations: number;
+
+  @Column({ default: 0 })
+  audioConsultations: number;
+
+  @Column({ default: 0 })
+  videoConsultations: number;
+
+  @Column({ default: 0 })
+  chatConsultations: number;
+
+  @Column({ default: 0 })
+  rescheduledByDoctor: number;
+
+  @Column({ default: 0 })
+  timePerConsult: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//SD dashboard summary end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

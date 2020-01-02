@@ -9,6 +9,8 @@ import {
   CaseSheetDiagnosis,
   CaseSheetDiagnosisPrescription,
   CaseSheetSymptom,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_TIMINGS,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
@@ -43,37 +45,53 @@ export const convertCaseSheetToRxPdfData = async (
     prescriptions = caseSheetMedicinePrescription.map((csRx) => {
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
-      const dosageTimingCount =
-        csRx.medicineTimings !== undefined ? csRx.medicineTimings.length : 0;
-      let medicineDosage =
-        dosageTimingCount == 0
-          ? csRx.medicineDosage
-          : Number(csRx.medicineDosage) * dosageTimingCount;
+      let frequency;
+      if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
+        frequency = 'Apply';
+        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+      } else {
+        frequency = 'Take';
+        if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
+        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+      }
+      if (csRx.medicineConsumptionDuration) {
+        frequency = frequency + ' for';
+        frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
+        if (csRx.medicineConsumptionDurationUnit)
+          frequency = frequency + ' ' + csRx.medicineConsumptionDurationUnit;
+      }
 
-      const medicineToBeTaken =
-        csRx.medicineToBeTaken !== undefined ? csRx.medicineToBeTaken.length : 0;
-      medicineDosage =
-        medicineToBeTaken == 0 ? medicineDosage : Number(medicineDosage) * medicineToBeTaken;
+      if (csRx.medicineFrequency)
+        frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
 
-      const timings =
-        csRx.medicineTimings !== undefined
-          ? '(' + csRx.medicineTimings.map(_capitalize).join(', ') + ')'
-          : '';
-
-      const medicineUnit =
-        csRx.medicineUnit === undefined || csRx.medicineUnit === 'NA'
-          ? ''
-          : csRx.medicineUnit.toLowerCase();
-      let frequency = `${medicineDosage} ${medicineUnit} ${timings} for ${csRx.medicineConsumptionDurationInDays} days`;
-      if (csRx.medicineToBeTaken !== undefined && csRx.medicineToBeTaken.length > 0)
+      if (csRx.medicineToBeTaken)
         frequency =
           frequency +
-          '; ' +
+          ' ' +
           csRx.medicineToBeTaken
-            .map(_capitalize)
             .join(', ')
             .split('_')
             .join(' ');
+
+      if (csRx.medicineTimings) {
+        if (
+          csRx.medicineTimings.length == 1 &&
+          csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
+        ) {
+          frequency = frequency + csRx.medicineTimings[0];
+        } else {
+          frequency = frequency + ' in the';
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineTimings
+              .join(', ')
+              .split('_')
+              .join(' ');
+        }
+      }
+      frequency = _capitalize(frequency);
+
       const instructions = csRx.medicineInstructions;
       return { name, ingredients, frequency, instructions } as PrescriptionData;
     });
@@ -567,7 +585,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     }
   };
 
-  const renderDoctorData = (doctorInfo: RxPdfData['doctorInfo']) => {
+  const renderDoctorData = async (doctorInfo: RxPdfData['doctorInfo']) => {
     if (doctorInfo) {
       if (doc.y > doc.page.height - 150) {
         pageBreak();
@@ -584,7 +602,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .moveDown(0.5);
 
       if (doctorInfo.signature) {
-        doc.image(doctorInfo.signature, margin + 15, doc.y, { height: 72, width: 200 });
+        const request = require('sync-request');
+        const res = request('GET', doctorInfo.signature);
+        doc.image(res.body, margin + 15, doc.y, { height: 72, width: 200 });
         doc.moveDown(0.5);
       }
 

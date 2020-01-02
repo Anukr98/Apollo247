@@ -170,7 +170,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 15,
       lineHeight: 1.6,
       fontWeight: 500,
-      padding: '10px 10px 0 10px',
+      padding: '4px 10px 0 10px',
       cursor: 'pointer',
     },
     navRightIcon: {
@@ -180,7 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     navLeftIcon: {
       position: 'relative',
-      top: 5,
+      top: 6,
       width: 'auto',
       marginRight: 19,
       marginLeft: 9,
@@ -359,6 +359,8 @@ export const MyAccount: React.FC = (props) => {
                             selectedNavTab === 0
                               ? require('images/ic_stats_white.svg')
                               : require('images/ic_stats.svg')
+                            // ? require('images/ic_profilenav_white.svg')
+                            // : require('images/ic_profilenav.svg')
                           }
                           className={classes.navLeftIcon}
                         />

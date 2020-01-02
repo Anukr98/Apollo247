@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
+import _lowerCase from 'lodash/lowerCase';
+import _replace from 'lodash/replace';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -64,18 +66,21 @@ export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         {props.data &&
-          props.data.map((healthArea) => (
-            <div className={classes.card}>
-              <Link to={clientRoutes.yourOrders()}>
-                <div className={classes.cardWrap}>
-                  <div className={classes.cardIcon}>
-                    <img src={`${apiDetails.url}${healthArea.image_url}`} alt="" />
+          props.data.map((healthArea) => {
+            const formattedTitle = _replace(_lowerCase(healthArea.title), ' ', '-');
+            return (
+              <div className={classes.card}>
+                <Link to={clientRoutes.searchByMedicine(formattedTitle, healthArea.category_id)}>
+                  <div className={classes.cardWrap}>
+                    <div className={classes.cardIcon}>
+                      <img src={`${apiDetails.url}${healthArea.image_url}`} alt="" />
+                    </div>
+                    <div className={classes.cardTitle}>{healthArea.title}</div>
                   </div>
-                  <div className={classes.cardTitle}>{healthArea.title}</div>
-                </div>
-              </Link>
-            </div>
-          ))}
+                </Link>
+              </div>
+            );
+          })}
       </Slider>
     </div>
   );

@@ -211,3 +211,22 @@ export const GET_DOCTOR_FAVOURITE_TESTS = gql`
     }
   }
 `;
+
+export const GET_DOCTOR_NEXT_AVAILABILITY = gql`
+  query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput) {
+    getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
+      doctorAvailalbeSlots {
+        doctorId
+        availableSlot
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
+  query GetDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput) {
+    getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
+      availableSlots
+    }
+  }
+`;

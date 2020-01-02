@@ -1,9 +1,10 @@
-import { EntityRepository, Repository, Not } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import {
   DiagnosticOrders,
   DiagnosticOrderLineItems,
   DIAGNOSTIC_ORDER_STATUS,
   DiagnosticOrderPayments,
+  DiagnosticOrdersStatus,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -29,6 +30,10 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
     return this.update(id, { fareyeId, preBookingId, orderStatus });
   }
 
+  updateDiagnosticOrderDetails(id: string, diagnosticAttrs: Partial<DiagnosticOrders>) {
+    return this.update(id, diagnosticAttrs);
+  }
+
   saveDiagnosticOrderLineItem(lineItemAttrs: Partial<DiagnosticOrderLineItems>) {
     return DiagnosticOrderLineItems.create(lineItemAttrs)
       .save()
@@ -40,11 +45,26 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
   }
 
   getListOfOrders(patient: string) {
-    return this.find({
-      where: { patient, orderStatus: Not(DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) },
-      order: { createdDate: 'DESC' },
-      relations: ['diagnosticOrderLineItems', 'diagnosticOrderLineItems.diagnostics'],
-    });
+    // return this.find({
+    //   where: {
+    //     patient,
+    //     orderStatus: Not(DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED),
+    //   },
+    //   order: { createdDate: 'DESC' },
+    //   relations: ['diagnosticOrderLineItems', 'diagnosticOrderLineItems.diagnostics'],
+    // });
+
+    return this.createQueryBuilder('diagnostic_orders')
+      .leftJoinAndSelect('diagnostic_orders.diagnosticOrderLineItems', 'diagnosticOrderLineItems')
+      .leftJoinAndSelect('diagnosticOrderLineItems.diagnostics', 'diagnostics')
+      .where('(diagnostic_orders.patient = :patientId)', {
+        patientId: patient,
+      })
+      .andWhere('diagnostic_orders.orderStatus not in(:status2)', {
+        status2: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+      })
+      .orderBy('diagnostic_orders.createdDate', 'DESC')
+      .getMany();
   }
 
   getOrderDetails(id: string) {
@@ -54,12 +74,33 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
     });
   }
 
+  getOrderDetailsById(displayId: number) {
+    return this.findOne({
+      where: { displayId },
+      relations: ['diagnosticOrderLineItems', 'diagnosticOrderLineItems.diagnostics'],
+    });
+  }
+
+  cancelDiagnosticOrder(id: string) {
+    return this.update(id, { orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED });
+  }
+
   saveDiagnosticOrderPayment(paymentAttrs: Partial<DiagnosticOrderPayments>) {
     return DiagnosticOrderPayments.create(paymentAttrs)
       .save()
       .catch((error) => {
         throw new AphError(AphErrorMessages.SAVE_DIAGNOSTIC_ORDER_ERROR, undefined, {
           error,
+        });
+      });
+  }
+
+  saveDiagnosticOrderStatus(orderStatusAttrs: Partial<DiagnosticOrdersStatus>) {
+    return DiagnosticOrdersStatus.create(orderStatusAttrs)
+      .save()
+      .catch((diagnosticOrderError) => {
+        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_STATUS_ERROR, undefined, {
+          diagnosticOrderError,
         });
       });
   }

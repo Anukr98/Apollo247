@@ -24,7 +24,8 @@ export const clientRoutes = {
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/view-all-brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
-  searchByMedicine: (searchText: string) => `/search-medicine/${searchText}`,
+  searchByMedicine: (searchMedicineType: string, searchText: string) =>
+    `/${searchMedicineType}/${searchText}`,
   medicineDetails: (sku: string) => `/medicine-details/${sku}`,
 };
 

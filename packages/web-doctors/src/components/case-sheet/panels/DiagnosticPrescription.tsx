@@ -170,7 +170,7 @@ const useStyles = makeStyles((theme: Theme) =>
     favTestContainer: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
-      padding: '10px 20px 10px 10px',
+      padding: '0px 20px 0px 5px',
       borderRadius: 5,
     },
     othersBtn: {

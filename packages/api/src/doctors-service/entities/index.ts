@@ -241,6 +241,9 @@ export class Doctor extends BaseEntity {
   emailAddress: string;
 
   @Column({ nullable: true })
+  externalId: string;
+
+  @Column({ nullable: true })
   fullName: string;
 
   @Column({ nullable: true })
@@ -426,6 +429,9 @@ export class DoctorSpecialty extends BaseEntity {
   @Column({ nullable: true })
   displayOrder: Number;
 
+  @Column({ nullable: true })
+  externalId: string;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -610,6 +616,7 @@ export class DoctorDeviceTokens extends BaseEntity {
 export enum AdminType {
   ADMIN = 'ADMIN',
   JDADMIN = 'JDADMIN',
+  QAADMIN = 'QAADMIN',
 }
 @Entity()
 export class AdminUsers extends BaseEntity {

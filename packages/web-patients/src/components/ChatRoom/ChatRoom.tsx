@@ -140,15 +140,17 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       paddingBottom: 10,
-      paddingTop: 10,
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
-      marginLeft: 20,
-      marginRight: 20,
+      margin: '0 20px',
+      textTransform: 'uppercase',
+    },
+    caseNumber: {
+      margin: '15px 0 0 0',
     },
     headerActions: {
-      marginLeft: 'auto',
+      margin: '-9px 0 2px auto',
       display: 'flex',
       '& a': {
         display: 'inline-block',
@@ -263,18 +265,16 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     viewButton: {
-      width: 'calc(50% - 5px)',
       marginLeft: 5,
       display: 'block',
       fontSize: 13,
-      backgroundColor: '#fcb716',
-      padding: 10,
-      height: 40,
+      padding: '8px 15px',
       borderRadius: 10,
       marginRight: 0,
-      '&:hover': {
-        backgroundColor: '#fcb716 !important',
-      },
+      color: '#fc9916',
+      fontWeight: 'bold',
+      lineHeight: 1.85,
+      backgroundColor: '#fff',
     },
   };
 });
@@ -388,15 +388,6 @@ export const ChatRoom: React.FC = (props) => {
               </div>
             </a>
             Consult Room
-            <AphButton
-              className={classes.viewButton}
-              onClick={() => {
-                nextAvailableSlot(params.doctorId, new Date());
-                setIsPopoverOpen(true);
-              }}
-            >
-              Reschedule
-            </AphButton>
           </div>
           <div className={classes.doctorListingSection}>
             <div className={classes.leftSection}>
@@ -410,14 +401,17 @@ export const ChatRoom: React.FC = (props) => {
             </div>
             <div className={classes.rightSection}>
               <div className={classes.sectionHeader}>
-                <span>Case #362079 </span>
+                <span className={classes.caseNumber}>Case #362079 </span>
                 <div className={classes.headerActions}>
-                  <Link to="#">
-                    <img src={require('images/ic_casesheet.svg')} alt="" />
-                  </Link>
-                  <Link to="#">
-                    <img src={require('images/ic_followup.svg')} alt="" />
-                  </Link>
+                  <AphButton
+                    className={classes.viewButton}
+                    onClick={() => {
+                      nextAvailableSlot(params.doctorId, new Date());
+                      setIsPopoverOpen(true);
+                    }}
+                  >
+                    Reschedule
+                  </AphButton>
                 </div>
               </div>
               {data && (

@@ -132,7 +132,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgba(0,0,0,0.02)',
       border: '1px solid rgba(2,71,91,0.1)',
       borderRadius: 5,
-      padding: 5,
+      padding: '0px 5px',
       position: 'relative',
       '& img': {
         border: '1px solid #00b38e',
@@ -375,7 +375,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       top: 5,
-      right: 0,
+      right: 21,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
@@ -1024,26 +1024,30 @@ export const MedicinePrescription: React.FC = () => {
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
-                              <h5>{medicine.medicineName}</h5>
+                  <h5>{medicine.medicineName}</h5>
                   <h6>
                     {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
                     ${duration}
                     ${whenString.length > 0 && whenString}`}
                   </h6>
-                            
                 </Paper>
-                          
+
                 <AphButton
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.updateSymptom }}
                   onClick={() => updateMedicine(index)}
                 >
-                              
                   <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-                            
                 </AphButton>
-                        
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.deleteSymptom }}
+                  onClick={() => deletemedicine(index)}
+                >
+                  <img width="16" src={require('images/ic_cancel_green.svg')} alt="" />
+                </AphButton>
               </div>
             );
           })}
@@ -1160,6 +1164,7 @@ export const MedicinePrescription: React.FC = () => {
                     <Grid item lg={6} md={6} xs={12}>
                       <h6>Dosage*</h6>
                       <AphTextField
+                        autoFocus
                         inputProps={{ maxLength: 6 }}
                         value={tabletsCount}
                         onChange={(event: any) => {

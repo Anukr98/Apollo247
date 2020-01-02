@@ -5,9 +5,7 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
-
-type Params = { searchText: string };
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -129,10 +127,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
+type priceFilter = { fromPrice: string; toPrice: string };
 
 interface MedicineFilterProps {
-  medicineFiltercall?: (value: MedicineProduct[]) => void;
+  setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
+  setPriceFilter?: (priceFilter: priceFilter) => void;
+  setFilterData?: (filterData: []) => void;
 }
+
+type Params = { searchMedicineType: string; searchText: string };
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const classes = useStyles({});
@@ -140,18 +143,22 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     url: process.env.PHARMACY_MED_SEARCH_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
-
-  const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
+  const [selectedCatagerys, setSelectedCatagerys] = useState(['']);
+  const [selected, setSelected] = useState<boolean>(false);
 
   const params = useParams<Params>();
-  const paramSearchText = params.searchText;
-  const [subtxt, setSubtxt] = useState(paramSearchText);
-
+  const [subtxt, setSubtxt] = useState<string | null>(
+    params.searchMedicineType === 'search-medicines' ? params.searchText : null
+  );
+  const [fromPrice, setFromPrice] = useState();
+  const [toPrice, setToPrice] = useState();
   useEffect(() => {
-    onSearchMedicine(subtxt);
+    if (subtxt) {
+      onSearchMedicine(subtxt);
+    }
   }, [subtxt]);
 
-  const onSearchMedicine = async (value: string) => {
+  const onSearchMedicine = async (value: string | null) => {
     await axios
       .post(
         apiDetails.url,
@@ -162,20 +169,43 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           headers: {
             Authorization: apiDetails.authToken,
           },
-          // cancelToken: new CancelToken(function executor(c) {
-          //   // An executor function receives a cancel function as a parameter
-          //   cancelSearchSuggestionsApi = c;
-          // })
         }
       )
       .then(({ data }) => {
-        setSearchMedicines(data.products);
-        props.medicineFiltercall(data.products);
+        props.setMedicineList && props.setMedicineList(data.products);
       })
       .catch((e) => {
         console.log(e);
       });
   };
+
+  const filterByCatagery = (value: string) => {
+    let categoryList = selectedCatagerys;
+    if (categoryList.includes(value)) {
+      categoryList = categoryList.filter((category) => category !== value);
+    } else {
+      categoryList = value === '' ? [] : categoryList.filter((category) => category !== '');
+      categoryList.push(value);
+    }
+    setSelectedCatagerys(categoryList);
+    setSelected(true);
+  };
+
+  const filterByPriceAndCategory = () => {
+    const obj = {
+      fromPrice: fromPrice,
+      toPrice: toPrice,
+    };
+    props.setFilterData(selectedCatagerys);
+    props.setPriceFilter(obj);
+  };
+
+  useEffect(() => {
+    if (selected) {
+      setSelectedCatagerys(selectedCatagerys);
+      setSelected(false);
+    }
+  }, [selected]);
 
   return (
     <div className={classes.root}>
@@ -200,29 +230,97 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                 <AphButton
                   color="secondary"
                   size="small"
-                  className={`${classes.button} ${classes.buttonActive}`}
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('');
+                  }}
                 >
                   All
                 </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                <AphButton
+                  color="secondary"
+                  size="small"
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('14') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('14');
+                  }}
+                >
                   Personal Care
                 </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                <AphButton
+                  color="secondary"
+                  size="small"
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('24') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('24');
+                  }}
+                >
                   Mom &amp; Baby
                 </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                <AphButton
+                  color="secondary"
+                  size="small"
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('6') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('6');
+                  }}
+                >
                   Nutrition
                 </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                <AphButton
+                  color="secondary"
+                  size="small"
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('71') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('71');
+                  }}
+                >
                   Healthcare
                 </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                <AphButton
+                  color="secondary"
+                  size="small"
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('234') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('234');
+                  }}
+                >
                   Special Offers
                 </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                <AphButton
+                  color="secondary"
+                  size="small"
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('97') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('97');
+                  }}
+                >
                   Holland &amp; Barrett
                 </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
+                <AphButton
+                  color="secondary"
+                  size="small"
+                  className={`${classes.button} ${
+                    selectedCatagerys.includes('680') ? classes.buttonActive : ''
+                  }`}
+                  onClick={(e) => {
+                    filterByCatagery('680');
+                  }}
+                >
                   Apollo Products
                 </AphButton>
               </div>
@@ -240,8 +338,21 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
               <div className={classes.filterType}>Price</div>
               <div className={classes.boxContent}>
                 <div className={classes.filterBy}>
-                  <AphTextField placeholder="RS.500" /> <span>TO</span>{' '}
-                  <AphTextField placeholder="RS.3000" />
+                  <AphTextField
+                    placeholder="RS.500"
+                    value={fromPrice}
+                    onChange={(e) => {
+                      setFromPrice(e.target.value);
+                    }}
+                  />{' '}
+                  <span>TO</span>{' '}
+                  <AphTextField
+                    placeholder="RS.3000"
+                    value={toPrice}
+                    onChange={(e) => {
+                      setToPrice(e.target.value);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -251,14 +362,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       <div className={classes.bottomActions}>
         <AphButton
           color="primary"
+          disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
           fullWidth
-          onClick={(e) => {
-            if (subtxt.length > 2) {
-              onSearchMedicine(subtxt);
-            } else {
-              setSearchMedicines([]);
-            }
-          }}
+          onClick={(e) => filterByPriceAndCategory()}
         >
           Apply Filters
         </AphButton>

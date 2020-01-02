@@ -135,6 +135,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = 'PICKUP_REQUESTED',
   PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
   ORDER_FAILED = 'ORDER_FAILED',
+  ORDER_CANCELLED = 'ORDER_CANCELLED',
 }
 
 export enum FEEDBACKTYPE {
@@ -178,6 +179,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true, type: 'timestamp' })
   orderDateTime: Date;
+
+  @Column({ nullable: true })
+  orderTat: string;
 
   @Column({ nullable: true })
   patientAddressId: string;
@@ -1203,6 +1207,12 @@ export class DiagnosticOrders extends BaseEntity {
     (diagnosticOrderPayments) => diagnosticOrderPayments.diagnosticOrders
   )
   diagnosticOrderPayments: DiagnosticOrderPayments[];
+
+  @OneToMany(
+    (type) => DiagnosticOrdersStatus,
+    (diagnosticOrdersStatus) => diagnosticOrdersStatus.diagnosticOrders
+  )
+  diagnosticOrdersStatus: DiagnosticOrdersStatus[];
 }
 
 //diagnostic orders  payments start
@@ -1323,6 +1333,48 @@ export class DiagnosticOrderLineItems extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
+
+//diagnostic orders status starts
+@Entity()
+export class DiagnosticOrdersStatus extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @ManyToOne(
+    (type) => DiagnosticOrders,
+    (diagnosticOrders) => diagnosticOrders.diagnosticOrdersStatus
+  )
+  diagnosticOrders: DiagnosticOrders;
+
+  @Column()
+  orderStatus: DIAGNOSTIC_ORDER_STATUS;
+
+  @Column({ nullable: true, default: true })
+  hideStatus: boolean;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp' })
+  statusDate: Date;
+
+  @Column({ nullable: true })
+  statusMessage: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Diagnostic orders status ends
 
 @Entity()
 export class DiagnosticOrgans extends BaseEntity {
