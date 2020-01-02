@@ -103,6 +103,7 @@ export enum MEDICINE_ORDER_TYPE {
 }
 
 export enum MEDICINE_TIMINGS {
+  AS_NEEDED = "AS_NEEDED",
   EVENING = "EVENING",
   MORNING = "MORNING",
   NIGHT = "NIGHT",
@@ -115,10 +116,25 @@ export enum MEDICINE_TO_BE_TAKEN {
 }
 
 export enum MEDICINE_UNIT {
+  BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
+  CREAM = "CREAM",
   DROPS = "DROPS",
+  GEL = "GEL",
+  INJECTION = "INJECTION",
+  LOTION = "LOTION",
   ML = "ML",
   NA = "NA",
+  OINTMENT = "OINTMENT",
+  OTHERS = "OTHERS",
+  POWDER = "POWDER",
+  ROTACAPS = "ROTACAPS",
+  SACHET = "SACHET",
+  SOAP = "SOAP",
+  SOLUTION = "SOLUTION",
+  SPRAY = "SPRAY",
+  SUSPENSION = "SUSPENSION",
+  SYRUP = "SYRUP",
   TABLET = "TABLET",
 }
 
@@ -164,6 +180,7 @@ export enum STATUS {
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
+  UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
 export enum Salutation {
@@ -272,6 +289,7 @@ export interface MedicineCartInput {
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
+  orderTat?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -289,6 +307,19 @@ export interface MedicineCartItem {
 }
 
 export interface MedicinePaymentInput {
+  orderId: string;
+  orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
+}
+
+export interface MedicinePaymentMqInput {
   orderId: string;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;

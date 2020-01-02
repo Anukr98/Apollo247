@@ -79,12 +79,12 @@ export const AphCalendar: React.FC<CustomAPHCalendarProps> = (props) => {
       value,
       onChange: (date) => {
         handleDateChange(date);
-        if (date) getDate(format(date, 'dd/MM/yyyy'));
+        if (date) getDate(format(date, 'yyyy-MM-dd'));
       },
       autoOk: true,
     },
     {
-      getDefaultFormat: () => 'dd/MM/yyyy',
+      getDefaultFormat: () => 'yyyy-MM-dd',
     }
   );
 

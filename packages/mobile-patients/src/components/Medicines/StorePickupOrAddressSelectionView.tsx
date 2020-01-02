@@ -15,7 +15,7 @@ import React, { useState, useEffect } from 'react';
 const styles = StyleSheet.create({
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
-    padding: 16,
+    paddingTop: 16,
   },
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
@@ -197,7 +197,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   const renderHomeDelivery = () => {
     return (
       <View
-        style={{ marginTop: 8, marginHorizontal: 16 }}
+        style={{ marginTop: 8, marginBottom: 16, marginHorizontal: 16 }}
         pointerEvents={checkingServicability ? 'none' : 'auto'}
       >
         {checkingServicability ? (

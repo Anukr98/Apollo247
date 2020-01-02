@@ -155,6 +155,7 @@ export enum STATUS {
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
+  UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
 export enum Salutation {
@@ -227,6 +228,16 @@ export interface DiagnosisInput {
 
 export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
+}
+
+export interface DoctorAvailabilityInput {
+  availableDate: any;
+  doctorId: string;
+}
+
+export interface DoctorNextAvailableSlotInput {
+  availableDate: any;
+  doctorIds: string[];
 }
 
 export interface DownloadDocumentsInput {

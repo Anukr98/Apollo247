@@ -1,24 +1,43 @@
-import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState, useEffect } from 'react';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import {
+  INITIATE_TRANSFER_APPONITMENT,
+  SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  initiateTransferAppointment,
+  initiateTransferAppointmentVariables,
+} from '@aph/mobile-doctors/src/graphql/types/initiateTransferAppointment';
+import {
+  SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByNameVariables,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
+} from '@aph/mobile-doctors/src/graphql/types/SearchDoctorAndSpecialtyByName';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import Pubnub from 'pubnub';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  Platform,
   SafeAreaView,
   StyleSheet,
-  View,
   Text,
-  TouchableOpacity,
-  Platform,
   TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import Highlighter from 'react-native-highlight-words';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
-import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
+//import { doctorDetails } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -125,16 +144,45 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ProfileProps extends NavigationScreenProps {}
+export interface ProfileProps
+  extends NavigationScreenProps<{
+    AppointmentId: string;
+
+    // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+  }> {
+  // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+}
 
 export const TransferConsult: React.FC<ProfileProps> = (props) => {
+  const client = useApolloClient();
   const [selectreason, setSelectReason] = useState<string>('Select a reason');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string>('');
   const [doctorvalue, setDoctorValue] = useState<string>('');
-  const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[] | null>([]);
+  const [doctorSpeciality, setDoctorSpeciality] = useState<string>('');
+  const [experience, setExperience] = useState<string | null>('');
+  const [photourl, setPhotourl] = useState<string | null>('');
+  const [filteredStarDoctors, setFilteredStarDoctors] = useState<
+    (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null
+  >([]);
+  const [filterSpeciality, setfilterSpeciality] = useState<
+    (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null)[] | null
+  >([]);
   const [doctorsCard, setDoctorsCard] = useState<boolean>(false);
+  const [doctorid, setDoctorId] = useState<string>('');
+  const [hospitalId, setHospitalId] = useState<string>('');
+  const [specialityId, setSpecialityId] = useState<string>('');
+  const [oldDoctorId, setOldDoctorId] = useState<string>('');
   const isEnabled = selectreason != 'Select a reason' && value.length > 0 && doctorvalue.length > 0;
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const transferconsult = '^^#transferconsult';
+
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
+    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    ssl: true,
+  };
+  const pubnub = new Pubnub(config);
   const sysmptonsList = [
     {
       id: '1',
@@ -151,6 +199,15 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
       fourthName: 'High',
     },
   ];
+  useEffect(() => {
+    getLocalData()
+      .then((data) => {
+        console.log('data', data);
+        setOldDoctorId((data.doctorDetails! || {}).id);
+      })
+      .catch(() => {});
+    console.log('DoctirNAME', oldDoctorId);
+  });
 
   const showHeaderView = () => {
     return (
@@ -169,7 +226,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>
@@ -178,10 +235,35 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const onPressDoctorSearchListItem = (text: string, id: string) => {
     setDropdownOpen(false);
     setSelectReason(text);
+    //setDoctorId(id);
   };
-  const onPressDoctorSearchListItemDoctor = (text: string, id: string) => {
+  const onPressDoctorSearchListItemDoctor = (
+    text: string,
+    id: string,
+    specilty: string,
+    ex: string | null,
+    photo: string | null,
+    hospitalId: string,
+    specilityId: string
+  ) => {
+    console.log('hospitalId', hospitalId);
     setDoctorsCard(false);
     setDoctorValue(text);
+    setDoctorSpeciality(specilty);
+    setExperience(ex);
+    setPhotourl(photo);
+    setDoctorId(id);
+    setHospitalId(hospitalId);
+    setSpecialityId(specilityId);
+  };
+
+  const onPressDoctorSearchListItemSpeciality = (text: string, id: string, imageurl: string) => {
+    console.log('id', id);
+    setDoctorsCard(false);
+    //   setDoctorValue(text);
+    setDoctorSpeciality(text);
+    setSpecialityId(id);
+    setPhotourl(imageurl);
   };
 
   const renderDropdownCard = () => (
@@ -190,11 +272,11 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         {sysmptonsList!.map((_doctor, i, array) => {
           //const doctor = _doctor!.associatedDoctor!;
 
-          const drName = ` ${_doctor.firstName}`;
+          const drName = ` ${_doctor.firstName!}`;
 
           return (
             <TouchableOpacity
-              onPress={() => onPressDoctorSearchListItem(` ${_doctor.firstName}`, _doctor!.id)}
+              onPress={() => onPressDoctorSearchListItem(_doctor.firstName, _doctor.id)}
               style={{ marginHorizontal: 16 }}
               key={i}
             >
@@ -241,64 +323,204 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
     console.log(searchText);
     if (searchText == '') {
       setFilteredStarDoctors([]);
-      //setDoctorsCard(doctorsCard);
+      setfilterSpeciality([]);
+      setDoctorsCard(doctorsCard);
+      return;
+    }
+    if (!(searchText && searchText.length > 2)) {
+      setFilteredStarDoctors([]);
+      setfilterSpeciality([]);
       return;
     }
     // do api call
-    // client
-    //   .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
-    //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-    //     variables: { searchString: searchText.replace('Dr. ', '') },
-    //   })
-    getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!(
-      searchText.replace('Dr. ', '')
-    )
+    client
+      .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+        query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+        variables: { searchText: searchText },
+      })
+
       .then((_data) => {
-        console.log('flitered array', _data);
-        // const doctorProfile =
-        //   (_data.data.getDoctorsForStarDoctorProgram &&
-        //     _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
-        //   [];
-        const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        setFilteredStarDoctors(doctorProfile);
+        console.log('flitered array', _data.data.SearchDoctorAndSpecialtyByName!.doctors);
+        console.log('flitered array1', _data.data.SearchDoctorAndSpecialtyByName!);
+        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
+        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialtyByName!.doctors);
+        setfilterSpeciality(_data.data.SearchDoctorAndSpecialtyByName!.specialties);
         setDoctorsCard(!doctorsCard);
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while searching for Doctors', errorMessage, error);
+        Alert.alert('Error', errorMessage);
       });
   };
   const renderSuggestionCardDoctor = () => (
     <View style={{ marginTop: 2 }}>
       <View style={styles.dropDownCardStyle}>
-        {filteredStarDoctors!.map((_doctor, i, array) => {
-          const drName = ` ${_doctor.firstName}`;
+        <>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#02475b',
+              opacity: 0.3,
+              marginLeft: 16,
+              marginTop: 16,
+              marginBottom: 8,
+            }}
+          >
+            Doctor
+          </Text>
+          {filteredStarDoctors!.map(
+            (
+              _doctor: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null,
+              i,
+              array
+            ) => {
+              console.log('_doctor', _doctor);
+              const drName = _doctor!.firstName + _doctor!.lastName;
 
-          return (
-            <TouchableOpacity
-              onPress={() =>
-                onPressDoctorSearchListItemDoctor(` ${_doctor.firstName}`, _doctor!.id)
-              }
-              style={{ marginHorizontal: 16 }}
-              key={i}
-            >
-              {formatSuggestionsText(drName, '')}
-              {i < array!.length - 1 ? (
-                <View
-                  style={{
-                    marginTop: 8,
-                    marginBottom: 7,
-                    height: 1,
-                    opacity: 0.1,
-                  }}
-                />
-              ) : null}
-            </TouchableOpacity>
-          );
-        })}
+              return (
+                <TouchableOpacity
+                  onPress={() =>
+                    onPressDoctorSearchListItemDoctor(
+                      _doctor!.firstName + _doctor!.lastName,
+                      _doctor!.id,
+                      _doctor!.specialty.name,
+                      _doctor!.experience,
+                      _doctor!.photoUrl,
+                      _doctor!.doctorHospital[0].facility.id,
+                      _doctor!.specialty.id
+                    )
+                  }
+                  style={{ marginHorizontal: 16 }}
+                  key={i}
+                >
+                  {formatSuggestionsText(drName, '')}
+                  {i < array!.length - 1 ? (
+                    <View
+                      style={{
+                        marginTop: 8,
+                        marginBottom: 7,
+                        height: 1,
+                        opacity: 0.1,
+                      }}
+                    />
+                  ) : null}
+                </TouchableOpacity>
+              );
+            }
+          )}
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#02475b',
+              opacity: 0.3,
+              marginLeft: 16,
+              marginTop: 16,
+              marginBottom: 8,
+            }}
+          >
+            Speciality
+          </Text>
+          {filterSpeciality!.map(
+            (
+              _doctor: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null,
+              i,
+              array
+            ) => {
+              console.log('_doctor', _doctor);
+              const drName = ` ${_doctor!.name}`;
+              const id = ` ${_doctor!.id}`;
+              const imageurl = ` ${_doctor!.image}`;
+              return (
+                <TouchableOpacity
+                  onPress={() => onPressDoctorSearchListItemSpeciality(drName, id, imageurl)}
+                  style={{ marginHorizontal: 16 }}
+                  key={i}
+                >
+                  {formatSuggestionsText(drName, '')}
+                  {i < array!.length - 1 ? (
+                    <View
+                      style={{
+                        marginTop: 8,
+                        marginBottom: 7,
+                        height: 1,
+                        opacity: 0.1,
+                      }}
+                    />
+                  ) : null}
+                </TouchableOpacity>
+              );
+            }
+          )}
+        </>
       </View>
     </View>
   );
+  const rendertransferdetails = (doctorId: string) => {
+    console.log('doctorDetails!.id', doctorId);
+    console.log('app', props.navigation.getParam('AppointmentId'));
+    console.log('oldDoctorId', oldDoctorId);
+    // do api call
+    setIsLoading(true);
+    client
+      .mutate<initiateTransferAppointment, initiateTransferAppointmentVariables>({
+        mutation: INITIATE_TRANSFER_APPONITMENT,
+        variables: {
+          TransferAppointmentInput: {
+            appointmentId: props.navigation.getParam('AppointmentId'),
+            transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+            transferInitiatedId: oldDoctorId,
+            transferredDoctorId: doctorId,
+            transferredSpecialtyId: specialityId,
+            transferReason: selectreason,
+            transferNotes: value,
+          },
+        },
+      })
+      .then((_data) => {
+        setIsLoading(false);
+        console.log('data', _data);
+        const transferObject: any = {
+          appointmentId: props.navigation.getParam('AppointmentId'),
+          transferDateTime: _data!.data!.initiateTransferAppointment!.doctorNextSlot,
+          photoUrl: photourl,
+          doctorId: doctorId,
+          specialtyId: specialityId,
+          doctorName: doctorvalue,
+          experience: experience + ' Yrs',
+          specilty: doctorSpeciality,
+          hospitalDoctorId: hospitalId,
+          transferId: _data!.data!.initiateTransferAppointment!.transferAppointment!.id,
+        };
+        pubnub.publish(
+          {
+            message: {
+              id: oldDoctorId,
+              message: transferconsult,
+              transferInfo: transferObject,
+            },
+            channel: props.navigation.getParam('AppointmentId'), //chanel
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+        props.navigation.push(AppRoutes.Appointments);
+      })
+      .catch((e) => {
+        setIsLoading(false);
+        console.log('Error occured while searching for Initiate transfer apppointment', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log(
+          'Error occured while searching for Initiate transfera apppointment',
+          errorMessage,
+          error
+        );
+        Alert.alert('Error', errorMessage);
+      });
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.commonView}>{showHeaderView()}</View>
@@ -382,6 +604,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
               autoCorrect={true}
             />
           </View>
+          {isLoading ? <Loader flex1 /> : null}
           <View style={{ marginBottom: 30 }}>
             <Button
               title="TRANSFER CONSULT"
@@ -391,7 +614,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
                   ? styles.buttonView
                   : styles.buttonViewfull
               }
-              //onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}
+              onPress={() => rendertransferdetails(doctorid)}
               disabled={!isEnabled}
             />
           </View>

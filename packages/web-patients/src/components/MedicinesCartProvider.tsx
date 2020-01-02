@@ -55,6 +55,7 @@ export interface MedicineCartContextProps {
   setDeliveryAddresses:
     | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
     | null;
+  clearCartInfo: (() => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -73,6 +74,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setDeliveryAddressId: null,
   deliveryAddresses: [],
   setDeliveryAddresses: null,
+  clearCartInfo: null,
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
@@ -137,6 +139,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     0
   );
 
+  const clearCartInfo = () => {
+    setCartItems([]);
+    setDeliveryAddressId('');
+    setStores([]);
+    setDeliveryAddresses([]);
+    setStorePickupPincode('');
+  };
+
   return (
     <MedicinesCartContext.Provider
       value={{
@@ -155,6 +165,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setDeliveryAddressId,
         deliveryAddresses,
         setDeliveryAddresses,
+        clearCartInfo,
       }}
     >
       {props.children}
@@ -179,4 +190,5 @@ export const useShoppingCart = () => ({
   setDeliveryAddressId: useShoppingCartContext().setDeliveryAddressId,
   deliveryAddresses: useShoppingCartContext().deliveryAddresses,
   setDeliveryAddresses: useShoppingCartContext().setDeliveryAddresses,
+  clearCartInfo: useShoppingCartContext().clearCartInfo,
 });

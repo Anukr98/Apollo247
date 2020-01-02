@@ -14,6 +14,10 @@ import {
 import { theme } from '../../theme/theme';
 import { Star } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { type } from 'os';
+import {
+  getPatientLog,
+  getPatientLog_getPatientLog_patientInfo,
+} from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -83,7 +87,7 @@ const styles = StyleSheet.create({
 
 export interface CalendarCardProps {
   containerStyle?: StyleProp<ViewStyle>;
-  doctorname?: string;
+  doctorname?: getPatientLog_getPatientLog_patientInfo;
   timing?: string;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;

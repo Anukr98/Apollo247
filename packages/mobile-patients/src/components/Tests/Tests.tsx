@@ -1298,6 +1298,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
+      if (!g(locationForDiagnostics, 'cityId')) {
+        renderLocationNotServingPopup();
+        return;
+      }
       setSearchText(_searchText);
       if (!(_searchText && _searchText.length > 2)) {
         setMedicineList([]);

@@ -102,21 +102,29 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   //   };
   // }, []);
 
-  const getDeliverType = (type: string) => {
-    switch (type) {
-      case 'H':
-        return 'Home Visit';
-        break;
-      case 'C':
-        return 'Clinic Visit';
-        break;
-      case 'HC':
-        return 'Home or Clinic Visit';
-        break;
-      default:
-        return 'Unknown';
-        break;
+  const getDeliverType = (
+    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+    type: string
+  ) => {
+    if (order.slotTimings) {
+      return 'Home Visit';
+    } else {
+      return 'Clinic Visit';
     }
+    // switch (type) {
+    //   case 'H':
+    //     return 'Home Visit';
+    //     break;
+    //   case 'C':
+    //     return 'Clinic Visit';
+    //     break;
+    //   case 'HC':
+    //     return 'Home or Clinic Visit';
+    //     break;
+    //   default:
+    //     return 'Unknown';
+    //     break;
+    // }
   };
 
   const getSortedList = (
@@ -175,7 +183,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           });
         }}
         title={title}
-        description={getDeliverType(order!.orderType)}
+        description={getDeliverType(order, order!.orderType)}
         statusDesc={order!.orderStatus!}
         status={order!.orderStatus!}
         dateTime={getFormattedTime(order!.createdDate)}

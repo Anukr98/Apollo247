@@ -8,10 +8,8 @@ import { MedicineOrderInvoice } from 'profiles-service/entities';
 
 export const saveMedicineOrderInvoiceTypeDefs = gql`
   input MedicineOrderInvoiceInput {
-    orderId: Int
-    empId: String
+    orderNo: Int
     siteId: String
-    docnum: String
     remarks: String
     requestType: String
     vendorName: String
@@ -60,10 +58,8 @@ export const saveMedicineOrderInvoiceTypeDefs = gql`
 `;
 
 type MedicineOrderInvoiceInput = {
-  orderId: number;
-  empId: string;
+  orderNo: number;
   siteId: string;
-  docnum: string;
   remarks: string;
   requestType: string;
   vendorName: string;
@@ -113,7 +109,7 @@ const SaveMedicineOrderInvoice: Resolver<
 > = async (parent, { medicineOrderInvoiceInput }, { profilesDb }) => {
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrders = await medicineOrderRepo.getMedicineOrderDetails(
-    medicineOrderInvoiceInput.orderId
+    medicineOrderInvoiceInput.orderNo
   );
 
   if (medicineOrders == null) {
@@ -121,10 +117,8 @@ const SaveMedicineOrderInvoice: Resolver<
   }
 
   const orderInvoiceAttrs: Partial<MedicineOrderInvoice> = {
-    orderNo: medicineOrderInvoiceInput.orderId,
+    orderNo: medicineOrderInvoiceInput.orderNo,
     otp: medicineOrderInvoiceInput.otp,
-    docnum: medicineOrderInvoiceInput.docnum,
-    empId: medicineOrderInvoiceInput.empId,
     siteId: medicineOrderInvoiceInput.siteId,
     remarks: medicineOrderInvoiceInput.remarks,
     requestType: medicineOrderInvoiceInput.requestType,

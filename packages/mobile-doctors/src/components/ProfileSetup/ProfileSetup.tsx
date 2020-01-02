@@ -8,12 +8,19 @@ import { ApploLogo, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icon
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  GET_DOCTOR_DETAILS,
+  SAVE_DOCTOR_DEVICE_TOKEN,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { setDoctorDetails, setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
+import {
+  setDoctorDetails,
+  setProfileFlowDone,
+  getLocalData,
+} from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -29,9 +36,17 @@ import {
   Text,
   TextInput,
   View,
+  AsyncStorage,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { DoctorType, DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import firebase, { RNFirebase } from 'react-native-firebase';
+import {
+  saveDoctorDeviceToken,
+  saveDoctorDeviceTokenVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
+
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const isMobileNumberValid = (n: string) => true;
@@ -181,11 +196,75 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
-  const { doctorDetails } = useAuth();
-  // useEffect(()=>{
-  //   props.navigation.addListener((''))
-  // })
+  const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext, doctorDetails } = useAuth();
+  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
+  console.log('isDelegateLogin', isDelegateLogin);
 
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+      callDeviceTokenAPI();
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      try {
+        await firebase.messaging().requestPermission();
+        console.log('authorized');
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fireBaseFCM();
+  });
+
+  const callDeviceTokenAPI = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('token', token);
+        if (token !== deviceToken2.deviceToken) {
+          const input = {
+            deviceType: Platform.OS === 'ios' ? DOCTOR_DEVICE_TYPE.IOS : DOCTOR_DEVICE_TYPE.ANDROID,
+            deviceToken: token,
+            deviceOS: Platform.OS === 'ios' ? '' : '',
+            doctorId: doctorDetails ? doctorDetails.id : '',
+          };
+          console.log('input', input);
+
+          if (doctorDetails && !deviceTokenApICalled) {
+            setDeviceTokenApICalled(true);
+            client
+              .mutate<saveDoctorDeviceToken, saveDoctorDeviceTokenVariables>({
+                mutation: SAVE_DOCTOR_DEVICE_TOKEN,
+                variables: {
+                  SaveDoctorDeviceTokenInput: input,
+                },
+              })
+              .then((data: any) => {
+                console.log('APICALLED', data.data.saveDoctorDeviceToken.deviceToken.deviceToken);
+                AsyncStorage.setItem(
+                  'deviceToken',
+                  JSON.stringify(data.data.saveDoctorDeviceToken.deviceToken.deviceToken)
+                );
+              })
+              .catch((e: string) => {
+                console.log('Error occured while calling device token', e);
+              });
+          }
+        }
+      });
+  };
   useEffect(() => {
     setLoading(true);
     client
@@ -196,6 +275,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
         try {
           setDoctorDetails(result);
+          setDoctorDetailsToContext && setDoctorDetailsToContext(result);
         } catch (e) {
           console.log('Unable to set DoctorDetails');
         }
@@ -209,22 +289,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         console.log('Error occured while fetching Doctor profile', error);
       });
   }, []);
-
-  const fetchProfileData = (isReload: boolean) => {
-    isReload ? setReloading(true) : setLoading(true);
-    client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-      .then((_data) => {
-        console.log('getDoctorProfile', _data!);
-        const result = _data.data.getDoctorDetails;
-        setGetDoctorProfile(result);
-        isReload ? setReloading(false) : setLoading(false);
-      })
-      .catch((e) => {
-        isReload ? setReloading(false) : setLoading(false);
-        console.log('Error occured while loading data', e);
-      });
-  };
 
   const [
     getDoctorProfile,
@@ -269,9 +333,9 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     <ProfileTabHeader
       title={headerContent[tabIndex].heading(data!.lastName)}
       description={headerContent[tabIndex].description}
-      tabs={(data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO'
-        ? headerContent
-        : [headerContent[0], headerContent[1]]
+      tabs={(data!.doctorType == DoctorType.PAYROLL || isDelegateLogin
+        ? [headerContent[0], headerContent[1]]
+        : headerContent
       ).map((content) => content.tab)}
       activeTabIndex={tabIndex}
     />
@@ -291,7 +355,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
   const renderFooterButtons = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => {
     const onPressProceed = () => {
-      const tabsCount = data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO' ? 3 : 2;
+      const tabsCount = data!.doctorType == DoctorType.PAYROLL || isDelegateLogin ? 2 : 3;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);

@@ -12,6 +12,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   Alert,
   AsyncStorage,
+  Dimensions,
   Keyboard,
   PermissionsAndroid,
   Platform,
@@ -22,9 +23,9 @@ import {
   TouchableOpacity,
   View,
   WebView,
-  Dimensions,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
+import { RNFirebase } from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
@@ -32,6 +33,7 @@ import { useAuth } from '../hooks/authHooks';
 
 const { height, width } = Dimensions.get('window');
 
+// import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 const isMobileNumberValid = (phoneNumber: string) => true;
 
 const styles = StyleSheet.create({
@@ -305,7 +307,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 });
               } else {
                 setVerifyingPhonenNumber(true);
-                (sendOtp &&
+                sendOtp &&
                   sendOtp(phoneNumber)
                     .then((confirmResult) => {
                       setVerifyingPhonenNumber(false);
@@ -319,12 +321,14 @@ export const Login: React.FC<LoginProps> = (props) => {
                       });
                       setPhoneNumber('');
                     })
-                    .catch((error) => {
+                    .catch((error: RNFirebase.RnError) => {
                       console.log(error, 'error');
                       setVerifyingPhonenNumber(false);
-                      Alert.alert('Error', 'The interaction was cancelled by the user.');
-                    })) ||
-                  Alert.alert('Something wrong');
+                      Alert.alert(
+                        'Error',
+                        (error && error.message) || 'The interaction was cancelled by the user.'
+                      );
+                    });
               }
             }
           }}
