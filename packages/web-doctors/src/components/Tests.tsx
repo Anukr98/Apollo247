@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     dialogContent: {
-      padding: 20,
+      padding: '20px 20px 0 20px',
       minHeight: 100,
       position: 'relative',
       '& h6': {
@@ -161,8 +161,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     dialogActions: {
-      padding: 0,
-      paddingTop: 10,
+      padding: '0 15px 15px 0',
       boxShadow: 'none',
       position: 'relative',
       textAlign: 'right',
@@ -282,6 +281,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     textFieldColor: {
@@ -339,9 +339,9 @@ const useStyles = makeStyles((theme: Theme) =>
     addedList: {
       '& li': {
         padding: '10px 50px 10px 0 !important',
+        wordWrap: 'break-word',
       },
       '& li:last-child': {
-        padding: '10px 50px 10px 0 !important',
         borderBottom: '1px solid rgba(128, 128, 128, 0.2) !important',
       },
     },
