@@ -696,7 +696,7 @@ export async function getInitializedFirebaseAdmin() {
 }
 
 //utility method to get the notification log file name based on notification type
-export async function getNotificationLogFileName(notificationType: NotificationType) {
+export function getNotificationLogFileName(notificationType: NotificationType) {
   const currentDate = format(new Date(), 'yyyyMMdd');
   switch (notificationType) {
     case NotificationType.PATIENT_REGISTRATION:
@@ -707,7 +707,7 @@ export async function getNotificationLogFileName(notificationType: NotificationT
 }
 
 //utility method to log the notification response
-export async function logNotificationResponse(type: NotificationType, logData: Object) {
+export function logNotificationResponse(type: NotificationType, logData: Object) {
   //get log file name
   const fileName = getNotificationLogFileName(type);
 
@@ -739,6 +739,8 @@ export async function sendPatientRegistrationNotification(
   //get all the patient device tokens
   let patientDeviceTokens: string[] = [];
   patientDeviceTokens = await getPatientDeviceTokens(patient.mobileNumber, patientsDb);
+
+  if (patientDeviceTokens.length == 0) return;
 
   //notification payload
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
