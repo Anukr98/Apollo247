@@ -39,7 +39,7 @@ export enum ApiConstants {
 
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
-  PATIENT_REGISTRATION_BODY = 'Hi {0}, Welcome to Apollo24X7. We’re glad you’re here! Consult online with our top Apollo doctors now!',
+  PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
   /*** push-notification messages end here ***/
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
