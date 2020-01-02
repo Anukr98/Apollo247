@@ -1,14 +1,42 @@
 import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  Alert,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import Highlighter from 'react-native-highlight-words';
 import { Doctor, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import {
+  initiateRescheduleAppointment,
+  initiateRescheduleAppointmentVariables,
+} from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
+import { INITIATE_RESCHDULE_APPONITMENT } from '@aph/mobile-doctors/src/graphql/profiles';
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { useApolloClient } from 'react-apollo-hooks';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+
+import Pubnub from 'pubnub';
+
+const rescheduleconsult = '^^#rescheduleconsult';
+const config: Pubnub.PubnubConfig = {
+  subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
+  publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+  ssl: true,
+};
+const pubnub = new Pubnub(config);
 
 const styles = StyleSheet.create({
   container: {
@@ -115,11 +143,21 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ProfileProps extends NavigationScreenProps {}
+export interface ProfileProps
+  extends NavigationScreenProps<{
+    AppointmentId: string;
+
+    // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+  }> {
+  // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+}
 
 export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
+  const client = useApolloClient();
   const [selectreason, setSelectReason] = useState<string>('Select a reason');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [oldDoctorId, setOldDoctorId] = useState<string>('');
   const isEnabled = selectreason != 'Select a reason';
   const sysmptonsList = [
     {
@@ -137,6 +175,15 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
       fourthName: 'High',
     },
   ];
+  useEffect(() => {
+    getLocalData()
+      .then((data) => {
+        console.log('data', data);
+        setOldDoctorId((data.doctorDetails! || {}).id);
+      })
+      .catch(() => {});
+    console.log('DoctirNAME', oldDoctorId);
+  });
   const showHeaderView = () => {
     return (
       <Header
@@ -154,7 +201,7 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>
@@ -210,6 +257,61 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
       />
     );
   };
+  const renderReschduleDetails = () => {
+    // do api call
+    setIsLoading(true);
+    client
+      .mutate<initiateRescheduleAppointment, initiateRescheduleAppointmentVariables>({
+        mutation: INITIATE_RESCHDULE_APPONITMENT,
+        variables: {
+          RescheduleAppointmentInput: {
+            appointmentId: props.navigation.getParam('AppointmentId'),
+            rescheduleReason: selectreason,
+            rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+            rescheduleInitiatedId: oldDoctorId,
+            rescheduledDateTime: '2019-09-09T09:00:00.000Z',
+            autoSelectSlot: 0,
+          },
+        },
+      })
+      .then((_data) => {
+        setIsLoading(false);
+        console.log('data', _data);
+        const reschduleObject: any = {
+          appointmentId: props.navigation.getParam('AppointmentId'),
+          transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
+            .rescheduledDateTime,
+          doctorId: oldDoctorId,
+          reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
+          reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+        };
+        pubnub.publish(
+          {
+            message: {
+              id: oldDoctorId,
+              message: rescheduleconsult,
+              transferInfo: reschduleObject,
+            },
+            channel: props.navigation.getParam('AppointmentId'), //chanel
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+        props.navigation.push(AppRoutes.Appointments);
+      })
+      .catch((e) => {
+        setIsLoading(false);
+        console.log('Error occured while searching for Initiate reschdule apppointment', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log(
+          'Error occured while searching for Initiate reschdule apppointment',
+          errorMessage,
+          error
+        );
+        Alert.alert('Error', errorMessage);
+      });
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.commonView}>{showHeaderView()}</View>
@@ -242,6 +344,8 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
           </View>
         </View>
         {isDropdownOpen ? <View style={{ top: 0 }}>{renderDropdownCard()}</View> : null}
+
+        {isLoading ? <Loader flex1 /> : null}
         <View
           style={{
             zIndex: -1,
@@ -256,7 +360,7 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
             title="RESCHDULE CONSULT"
             titleTextStyle={styles.titleTextStyle}
             style={selectreason != 'Select a reason' ? styles.buttonViewfull : styles.buttonView}
-            //onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}
+            onPress={() => renderReschduleDetails()}
             disabled={!isEnabled}
           />
         </View>

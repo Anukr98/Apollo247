@@ -66,6 +66,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isReloading, setReloading] = useState<boolean>(false);
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
+  const { setDoctorDetails, isDelegateLogin, doctorDetails } = useAuth();
 
   const client = useApolloClient();
 
@@ -75,8 +76,8 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
         const result = _data.data.getDoctorDetails;
-        // console.log('getDoctorProfile', _data!);
-        setGetDoctorProfile(result);
+        // console.log('doctorDetails', _data!);
+        setDoctorDetails && setDoctorDetails(result);
         setLoading(false);
       })
       .catch((e) => {
@@ -85,11 +86,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       });
   }, []);
 
-  const [
-    getDoctorProfile,
-    setGetDoctorProfile,
-  ] = useState<GetDoctorDetails_getDoctorDetails | null>(null);
-  console.log('getDoctorProfileAccount', getDoctorProfile!);
+  console.log('doctorDetailsAccount', doctorDetails!);
 
   const renderProfileData = (getDoctorDetails: any) => {
     console.log('getDoctorDetails', getDoctorDetails!.firstName);
@@ -173,7 +170,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <AvailabilityIcon />
-            <Text style={styles.headingText}>Availibility</Text>
+            <Text style={styles.headingText}>Availability</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -246,13 +243,13 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                 <ActivityIndicator size="large" color="green" />
               </View>
             ) : (
-              !!getDoctorProfile && (
+              !!doctorDetails && (
                 <>
-                  {getDoctorProfile!.photoUrl ? (
+                  {doctorDetails!.photoUrl ? (
                     <Image
                       style={{ height: 178, width: '100%' }}
                       source={{
-                        uri: getDoctorProfile!.photoUrl,
+                        uri: doctorDetails!.photoUrl,
                       }}
                     />
                   ) : (
@@ -271,14 +268,14 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                       elevation: 5,
                     }}
                   >
-                    {renderProfileData(getDoctorProfile)}
-                    {renderMciNumberData(getDoctorProfile)}
+                    {renderProfileData(doctorDetails)}
+                    {renderMciNumberData(doctorDetails)}
                   </View>
                   <View style={{ marginTop: 16 }}>
                     {renderMyStatsView()}
-                    {renderMyProfileView(getDoctorProfile)}
-                    {renderAvailabilityView(getDoctorProfile)}
-                    {renderFeesView(getDoctorProfile)}
+                    {renderMyProfileView(doctorDetails)}
+                    {renderAvailabilityView(doctorDetails)}
+                    {renderFeesView(doctorDetails)}
                     {renderSmartPrescriptionView()}
                     {renderSettingsView()}
                   </View>
