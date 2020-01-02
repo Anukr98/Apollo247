@@ -7,6 +7,7 @@ import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -80,6 +81,10 @@ const updatePatient: Resolver<
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
+  //send registration success notification here
+  sendPatientRegistrationNotification(patient, profilesDb);
+
   return { patient };
 };
 

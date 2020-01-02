@@ -7,6 +7,7 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
+import { Patient } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
@@ -94,6 +95,7 @@ export enum NotificationType {
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
+  PATIENT_REGISTRATION = 'PATIENT_REGISTRATION',
 }
 
 export enum APPT_CALL_TYPE {
@@ -653,6 +655,131 @@ export async function sendCartNotification(
   console.log(notificationResponse, 'notificationResponse');
 
   return notificationResponse;
+}
+
+//common method to get all the patient device tokens
+export async function getPatientDeviceTokens(mobileNumber: string, patientsDb: Connection) {
+  const patientDeviceTokens: string[] = [];
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+
+  //get all patients of a mobile number
+  const allRelatedPatients = await patientRepo.getIdsByMobileNumber(mobileNumber);
+  const patientIds = allRelatedPatients.map((patient) => patient.id);
+  console.log(patientIds, 'patientIds');
+
+  //get all device tokens data of related patients
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const patientAllDeviceTokens = await deviceTokenRepo.deviceTokensOfAllIds(patientIds);
+
+  //collect the deviceToken values
+  if (patientAllDeviceTokens.length > 0) {
+    patientAllDeviceTokens.forEach((values) => {
+      patientDeviceTokens.push(values.deviceToken);
+    });
+  }
+
+  return patientDeviceTokens;
+}
+
+//get initialized firebase admin
+export async function getInitializedFirebaseAdmin() {
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  const admin = !firebaseAdmin.apps.length
+    ? firebaseAdmin.initializeApp(config)
+    : firebaseAdmin.app();
+
+  return admin;
+}
+
+//utility method to get the notification log file name based on notification type
+export function getNotificationLogFileName(notificationType: NotificationType) {
+  const currentDate = format(new Date(), 'yyyyMMdd');
+  switch (notificationType) {
+    case NotificationType.PATIENT_REGISTRATION:
+      return `${process.env.NODE_ENV}_registration_notification_${currentDate}.txt`;
+    default:
+      return `${process.env.NODE_ENV}_registration_notification_${currentDate}.txt`;
+  }
+}
+
+//utility method to log the notification response
+export function logNotificationResponse(type: NotificationType, logData: Object) {
+  //get log file name
+  const fileName = getNotificationLogFileName(type);
+
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+
+  let content = format(new Date(), 'yyyy-MM-dd hh:mm');
+  Object.entries(logData).forEach(([key, value]) => {
+    content += `\n ${key}: ${value.toString()}`;
+  });
+  content += '\n-----------------------------------------------------------------\n';
+
+  console.log(type, fileName, content);
+
+  fs.appendFile(`${assetsDir}/${fileName}`, content, (err) => {
+    if (err) {
+      console.log('notification file saving error', err);
+    }
+    console.log('notification results saved successfully');
+  });
+}
+
+export async function sendPatientRegistrationNotification(
+  patient: Patient,
+  patientsDb: Connection
+) {
+  //get all the patient device tokens
+  let patientDeviceTokens: string[] = [];
+  patientDeviceTokens = await getPatientDeviceTokens(patient.mobileNumber, patientsDb);
+
+  if (patientDeviceTokens.length == 0) return;
+
+  //notification payload
+  const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
+  const notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
+  const payload = {
+    notification: {
+      title: notificationTitle,
+      body: notificationBody,
+    },
+    data: {
+      type: 'Registration_Success',
+      patientId: patient.id,
+      firstName: patient.firstName,
+    },
+  };
+
+  //notification options
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+
+  //initialize firebaseadmin
+  const admin = await getInitializedFirebaseAdmin();
+
+  admin
+    .messaging()
+    .sendToDevice(patientDeviceTokens, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      const logData = { patientId: patient.id, multicastId: response.multicastId };
+      logNotificationResponse(NotificationType.PATIENT_REGISTRATION, logData);
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotification Failed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  console.log('push notifications sent');
+  return { status: true };
 }
 
 const sendPushNotification: Resolver<
