@@ -93,10 +93,10 @@ const appointmentsSummary: Resolver<
           addMilliseconds(appt.appointmentDateTime, 19800000),
           'yyyy-MM-dd HH:mm'
         );
-        const bookingDateTime = format(
-          addMilliseconds(appt.bookingDate, 19800000),
-          'yyyy-MM-dd HH:mm'
-        );
+        // const bookingDateTime = format(
+        //   addMilliseconds(appt.bookingDate, 19800000),
+        //   'yyyy-MM-dd HH:mm'
+        // );
         const followupCount = await apptRepo.followUpBookedCount(appt.id);
         let followUpBooked = false,
           prescriptionIssued = false,
