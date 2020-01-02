@@ -254,9 +254,9 @@ export const caseSheetTypeDefs = gql`
     OTHERS
   }
   enum MEDICINE_CONSUMPTION_DURATION {
-    DAY(S)
-    MONTH(S)
-    WEEK(S)
+    DAYS
+    MONTHS
+    WEEKS
   }
 
   enum MEDICINE_FREQUENCY {

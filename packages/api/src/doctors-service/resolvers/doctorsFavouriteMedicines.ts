@@ -35,9 +35,9 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
   }
 
   enum MEDICINE_CONSUMPTION_DURATION {
-    DAY(S)
-    MONTH(S)
-    WEEK(S)
+    DAYS
+    MONTHS
+    WEEKS
   }
 
   enum MEDICINE_UNIT {
