@@ -140,6 +140,7 @@ import {
 import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
+import { colors } from '../../theme/colors';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -221,7 +222,15 @@ const styles = StyleSheet.create({
   },
   imageView: {
     width: 80,
+    height: 80,
     marginLeft: 20,
+    borderRadius: 40,
+    backgroundColor: theme.colors.CARD_BG,
+    ...theme.viewStyles.shadowStyle,
+  },
+  imageContainer: {
+    width: 80,
+    height: 80,
     borderRadius: 40,
     overflow: 'hidden',
   },
@@ -3852,8 +3861,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (doctorJoined) {
       time = 'Consult is In-progress';
     } else {
-      if (diffMin < 0) {
-        time = `Consult is completed`;
+      if (diffMin <= 0) {
+        time = appointmentData.status===STATUS.COMPLETED? `Consult is completed` : `Will be joining soon`;
       } else if (diffMin > 0 && diffHours <= 0) {
         time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours > 0 && diffDays <= 0) {
@@ -3876,18 +3885,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <Text style={styles.timeStyle}>{time}</Text>
           </View>
           <View style={styles.imageView}>
-            {appointmentData.doctorInfo.thumbnailUrl &&
-            appointmentData.doctorInfo.thumbnailUrl.match(
-              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
-            ) ? (
-              <Image
-                source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
-                resizeMode={'contain'}
-                style={styles.doctorImage}
-              />
-            ) : (
-              <DoctorPlaceholderImage style={styles.doctorImage} />
-            )}
+            <View style={styles.imageContainer}>
+              {appointmentData.doctorInfo.thumbnailUrl &&
+              appointmentData.doctorInfo.thumbnailUrl.match(
+                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+              ) ? (
+                <Image
+                  source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                  resizeMode={'contain'}
+                  style={styles.doctorImage}
+                />
+              ) : (
+                <DoctorPlaceholderImage style={styles.doctorImage} />
+              )}
+            </View>
           </View>
         </View>
       </View>
@@ -5276,7 +5287,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 height: 66,
                 backgroundColor: 'white',
                 bottom: isIphoneX() ? 36 : 0,
-                top:isIphoneX() ? 2 : 0
+                top: isIphoneX() ? 2 : 0,
               }}
             >
               <View style={{ flexDirection: 'row', width: width }}>
