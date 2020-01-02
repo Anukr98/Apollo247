@@ -825,6 +825,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   timePerConsult: number;
 
+  @Column({ default: 0 })
+  consultSlots: number;
+
   @Column()
   createdDate: Date;
 
