@@ -91,6 +91,7 @@ export enum NotificationType {
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
+  MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
 }
@@ -539,6 +540,14 @@ export async function sendCartNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
     notificationBody = ApiConstants.ORDER_DELIVERY_BODY.replace('{0}', patientDetails.firstName);
     notificationTitle = ApiConstants.ORDER_DELIVERY_TITLE;
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY
+  ) {
+    notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
   }
 
   //initialize firebaseadmin
@@ -567,6 +576,16 @@ export async function sendCartNotification(
   if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
     payload.data = {
       type: 'Order_Delivered',
+      orderAutoId: pushNotificationInput.orderAutoId.toString(),
+      orderId: medicineOrderDetails.id,
+      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      firstName: patientDetails.firstName,
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY) {
+    payload.data = {
+      type: 'Order_Out_For_Delivery',
       orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
       deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
