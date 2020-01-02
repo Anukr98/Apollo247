@@ -218,6 +218,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     textFieldColor: {

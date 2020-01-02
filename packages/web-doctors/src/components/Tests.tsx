@@ -114,6 +114,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '30px auto 0 auto',
       boxShadow: 'none',
+      '&:focus': {
+        outline: 'none',
+      }
     },
     popupHeadingCenter: {
       borderRadius: 10,
@@ -125,11 +128,17 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'center',
         marginTop: 5,
       },
+      '&:focus': {
+        outline: 'none',
+      },
     },
     dialogContent: {
       padding: '20px 20px 0 20px',
       minHeight: 100,
       position: 'relative',
+      '&:focus': {
+        outline: 'none',
+      },
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
@@ -161,12 +170,12 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     dialogActions: {
-      padding: '0 15px 15px 0',
-      boxShadow: 'none',
+      padding: '15px 15px 15px 0',
       position: 'relative',
       textAlign: 'right',
       fontSize: 14,
       fontWeight: 600,
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       '& button': {
         borderRadius: 10,
         minwidth: 130,
