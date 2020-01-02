@@ -729,6 +729,11 @@ export const FavouriteMedicines: React.FC = () => {
       value: 'Night',
       selected: false,
     },
+    {
+      id: 'AS_NEEDED',
+      value: 'As Needed',
+      selected: false,
+    },
   ]);
 
   const [loadingStatus, setLoading] = useState<boolean>(false);
@@ -745,7 +750,7 @@ export const FavouriteMedicines: React.FC = () => {
       selected: false,
     },
   ]);
-  const DoseType1 = [
+  const OtherTypes = [
     'SYRUP',
     'DROPS',
     'CAPSULE',
@@ -758,26 +763,75 @@ export const FavouriteMedicines: React.FC = () => {
     'ML',
     'OTHERS',
   ];
-  const DoseType2 = ['POWDER', 'CREAM', 'SOAP', 'GEL', 'LOTION', 'SPRAY', 'OINTMENT', 'OTHERS'];
-  const dosageFrequency = [
-    'Once a day',
-    'Twice a day',
-    'Thrice a day',
-    'Four times a day',
-    'Five times a day',
-    'As Needed',
+  const gelLotionOintmentTypes = [
+    'POWDER',
+    'CREAM',
+    'SOAP',
+    'GEL',
+    'LOTION',
+    'SPRAY',
+    'OINTMENT',
+    'OTHERS',
   ];
-  const forOptions = ['Days', 'Weeks', 'Months'];
+  const dosageFrequency = [
+    {
+      id: 'ONCE_A_DAY',
+      value: 'Once a day',
+      selected: false,
+    },
+    {
+      id: 'TWICE_A_DAY',
+      value: 'Twice a day',
+      selected: false,
+    },
+    {
+      id: 'THRICE_A_DAY',
+      value: 'Thrice a day',
+      selected: false,
+    },
+    {
+      id: 'FOUR_TIMES_A_DAY',
+      value: 'Four times a day',
+      selected: false,
+    },
+    {
+      id: 'FIVE_TIMES_A_DAY',
+      value: 'Five times a day',
+      selected: false,
+    },
+    {
+      id: 'AS_NEEDED',
+      value: 'As Needed',
+      selected: false,
+    },
+  ];
+  const forOptions = [
+    {
+      id: 'DAYS',
+      value: 'Day(s)',
+      selected: false,
+    },
+    {
+      id: 'WEEKS',
+      value: 'Week(S)',
+      selected: false,
+    },
+    {
+      id: 'MONTHS',
+      value: 'Month(S)',
+      selected: false,
+    },
+  ];
 
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
   const [medicine, setMedicine] = useState('');
-  const [frequency, setFrequency] = useState('Once a day');
-  const [forUnit, setforUnit] = useState('Days');
+  const [frequency, setFrequency] = useState('ONCE_A_DAY');
+  const [forUnit, setforUnit] = useState('DAYS');
 
   const [searchInput, setSearchInput] = useState('');
   const client = useApolloClient();
-  const [medicineForm, setMedicineForm] = useState<number>(1);
+  const [medicineForm, setMedicineForm] = useState<string>('OTHERS');
   const getMedicineDetails = (suggestion: OptionType) => {
     const CancelToken = axios.CancelToken;
     setLoading(true);
@@ -806,13 +860,13 @@ export const FavouriteMedicines: React.FC = () => {
           result.data.productdp[0].PharmaOverview &&
           result.data.productdp[0].PharmaOverview.length > 0 &&
           result.data.productdp[0].PharmaOverview[0].Doseform &&
-          DoseType1.indexOf(result.data.productdp[0].PharmaOverview[0].Doseform) > -1
+          OtherTypes.indexOf(result.data.productdp[0].PharmaOverview[0].Doseform) > -1
         ) {
           setMedicineUnit(result.data.productdp[0].PharmaOverview[0].Doseform);
-          setMedicineForm(1);
+          setMedicineForm('OTHERS');
         } else {
           setMedicineUnit('OTHERS');
-          setMedicineForm(2);
+          setMedicineForm('GEL_LOTION_OINTMENT');
         }
         setShowDosage(true);
         setSelectedValue(suggestion.label);
@@ -1075,15 +1129,7 @@ export const FavouriteMedicines: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } /* else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    }*/ else if (
+    } else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
@@ -1167,12 +1213,6 @@ export const FavouriteMedicines: React.FC = () => {
   const addUpdateMedicines = () => {
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
-    const isTobeTakenSelected = toBeTakenSlots.filter((slot: SlotsObject) => {
-      if (slot.selected) {
-        toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
-      }
-      return slot.selected !== false;
-    });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
         daySlotsArr.push(slot.value.toUpperCase());
@@ -1187,15 +1227,7 @@ export const FavouriteMedicines: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } /* else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    }*/ else if (
+    } else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
@@ -1349,8 +1381,8 @@ export const FavouriteMedicines: React.FC = () => {
     renderSuggestion,
   };
   const generateMedicineTypes =
-    medicineForm === 1
-      ? DoseType1.map((value: string, index: number) => {
+    medicineForm === 'OTHERS'
+      ? OtherTypes.map((value: string, index: number) => {
           return (
             <MenuItem
               key={index.toString()}
@@ -1363,7 +1395,7 @@ export const FavouriteMedicines: React.FC = () => {
             </MenuItem>
           );
         })
-      : DoseType2.map((value: string, index: number) => {
+      : gelLotionOintmentTypes.map((value: string, index: number) => {
           return (
             <MenuItem
               key={index.toString()}
@@ -1377,29 +1409,29 @@ export const FavouriteMedicines: React.FC = () => {
           );
         });
 
-  const generateFrequency = dosageFrequency.map((value: string, index: number) => {
+  const generateFrequency = dosageFrequency.map((dosageObj: SlotsObject, index: number) => {
     return (
       <MenuItem
         key={index.toString()}
         classes={{
           selected: classes.menuSelected,
         }}
-        value={value}
+        value={dosageObj.id}
       >
-        {value.toLowerCase()}
+        {dosageObj.value}
       </MenuItem>
     );
   });
-  const forOptionHtml = forOptions.map((value: string, index: number) => {
+  const forOptionHtml = forOptions.map((optionObj: SlotsObject, index: number) => {
     return (
       <MenuItem
         key={index.toString()}
         classes={{
           selected: classes.menuSelected,
         }}
-        value={value}
+        value={optionObj.id}
       >
-        {value.toLowerCase()}
+        {optionObj.value}
       </MenuItem>
     );
   });
@@ -1627,7 +1659,7 @@ export const FavouriteMedicines: React.FC = () => {
                             </AphSelect>
                           </div>
                         </Grid>
-                        {medicineForm === 1 && (
+                        {medicineForm === 'OTHERS' && (
                           <Grid item lg={12} md={12} xs={12}>
                             <h6>&nbsp;</h6>
                             <div className={classes.unitsSelect}>
