@@ -145,10 +145,12 @@ export const SearchByBrand: React.FC = (props) => {
   };
   const params = useParams<Params>();
 
-  const [data, setData] = useState<products[] | null>(null);
+  const [data, setData] = useState<MedicineProduct[] | null>(null);
+  const [priceFilter, setPriceFilter] = useState();
+  const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
 
   useEffect(() => {
-    if (!data) {
+    if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
       axios
         .post(
           apiDetails.url,
@@ -166,12 +168,48 @@ export const SearchByBrand: React.FC = (props) => {
         .then((res) => {
           if (res && res.data && res.data.products) {
             setData(res.data.products);
+            setMedicineListFiltered(res.data.products);
           }
         })
         .catch((e) => {});
     }
   }, [data]);
-
+  useEffect(() => {
+    if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
+      if (priceFilter.fromPrice && priceFilter.toPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (Number(priceFilter.fromPrice) <= value.price) {
+              if (value.price <= Number(priceFilter.toPrice)) {
+                filterArray.push(value);
+              }
+            }
+          });
+        setData(filterArray);
+      } else if (priceFilter.fromPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (Number(priceFilter.fromPrice) <= value.price) {
+              filterArray.push(value);
+            }
+          });
+        setData(filterArray);
+      } else if (priceFilter.toPrice) {
+        let filterArray: MedicineProduct[] = [];
+        medicineListFiltered &&
+          medicineListFiltered.map((value) => {
+            if (value.price <= Number(priceFilter.toPrice)) {
+              filterArray.push(value);
+            }
+          });
+        setData(filterArray);
+      }
+    } else {
+      setMedicineListFiltered([]);
+    }
+  }, [priceFilter]);
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -191,13 +229,13 @@ export const SearchByBrand: React.FC = (props) => {
             Search By Brand ({data && data.length})
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter />
+            <MedicineFilter setMedicineList={setData} setPriceFilter={setPriceFilter} />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
                   {data && data.length > 0 ? (
                     <MedicinesCartContext.Consumer>
-                      {() => <MedicineCard data={data} />}
+                      {() => <MedicineCard medicineList={data} />}
                     </MedicinesCartContext.Consumer>
                   ) : !data ? (
                     <CircularProgress />

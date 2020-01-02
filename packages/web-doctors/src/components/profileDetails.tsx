@@ -359,8 +359,8 @@ export const MyAccount: React.FC = (props) => {
                             selectedNavTab === 0
                               ? require('images/ic_stats_white.svg')
                               : require('images/ic_stats.svg')
-                              // ? require('images/ic_profilenav_white.svg')
-                              // : require('images/ic_profilenav.svg')
+                            // ? require('images/ic_profilenav_white.svg')
+                            // : require('images/ic_profilenav.svg')
                           }
                           className={classes.navLeftIcon}
                         />

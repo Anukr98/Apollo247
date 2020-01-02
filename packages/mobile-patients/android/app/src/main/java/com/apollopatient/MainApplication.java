@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.react.ReactApplication;
+import com.heanoria.library.reactnative.locationenabler.RNAndroidLocationEnablerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.bugsnag.BugsnagReactNative;
 import org.wonday.pdf.RCTPdfView;
@@ -46,6 +47,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNAndroidLocationEnablerPackage(),
             new RNFetchBlobPackage(),
             BugsnagReactNative.getPackage(),
             new RCTPdfView(),

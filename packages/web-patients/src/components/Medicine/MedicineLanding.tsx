@@ -281,10 +281,10 @@ export const MedicineLanding: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (apiDetails.url != null) {
+    if (apiDetails.url != null && !data) {
       getMedicinePageProducts();
     }
-  }, []);
+  }, [data]);
 
   const list = data && [
     {

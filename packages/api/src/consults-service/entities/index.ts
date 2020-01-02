@@ -783,6 +783,69 @@ export class AppointmentNoShow extends BaseEntity {
 }
 //Appointment no show details end
 
+//SD dashboard summary starts
+@Entity()
+export class SdDashboardSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  doctorId: string;
+
+  @Column()
+  doctorName: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column({ default: 0 })
+  totalConsultations: number;
+
+  @Column({ default: 0 })
+  onTimeConsultations: number;
+
+  @Column({ default: 0 })
+  within15Consultations: number;
+
+  @Column({ default: 0 })
+  moreThan15Consultations: number;
+
+  @Column({ default: 0 })
+  audioConsultations: number;
+
+  @Column({ default: 0 })
+  videoConsultations: number;
+
+  @Column({ default: 0 })
+  chatConsultations: number;
+
+  @Column({ default: 0 })
+  rescheduledByDoctor: number;
+
+  @Column({ default: 0 })
+  timePerConsult: number;
+
+  @Column({ default: 0 })
+  consultSlots: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//SD dashboard summary end
+
 ///////////////////////////////////////////////////////////
 // RxPdf
 ///////////////////////////////////////////////////////////

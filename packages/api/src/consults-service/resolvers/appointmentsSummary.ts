@@ -6,6 +6,9 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { format, addMilliseconds } from 'date-fns';
 import path from 'path';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
@@ -36,6 +39,11 @@ const appointmentsSummary: Resolver<
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+  const appointmentCallDetailsRepo = consultsDb.getCustomRepository(
+    AppointmentCallDetailsRepository
+  );
+  const rescheduleDetailsRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const apptsList = await apptRepo.getAllAppointments(args.fromDate, args.toDate, args.limit);
@@ -46,6 +54,7 @@ const appointmentsSummary: Resolver<
       if (apptsList.length == 0) {
         resolve(row1);
       }
+      console.log(apptsList, serialNo);
       await apptsList.map(async (appt) => {
         const patientDetails = await patientRepo.findById(appt.patientId);
         if (!patientDetails) {
@@ -55,14 +64,39 @@ const appointmentsSummary: Resolver<
         if (!doctorDetails) {
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
+        //new fields
+        const JDDetails = await consultQueueRepo.findByAppointmentId(
+          'ab37ca8f-7fbe-4a3a-a4b2-785405a62044'
+        );
+        if (!JDDetails) {
+          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        }
+        console.log('JDDetails==', JDDetails);
+        const JDPhone = await doctorRepo.getDoctorProfileData(JDDetails.doctorId);
+        if (!JDPhone) {
+          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        }
+        console.log('JDPhone==', JDPhone.mobileNumber);
+        const callDetails = await appointmentCallDetailsRepo.findByAppointmentId(
+          'ab37ca8f-7fbe-4a3a-a4b2-785405a62044'
+        );
+        if (!callDetails) {
+          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        }
+        console.log('callDetails==', callDetails);
+        const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(
+          'ab37ca8f-7fbe-4a3a-a4b2-785405a62045'
+        );
+        console.log('rescheduleDetails==:::::', rescheduleDetails);
+        //end
         const istDateTime = format(
           addMilliseconds(appt.appointmentDateTime, 19800000),
           'yyyy-MM-dd HH:mm'
         );
-        const bookingDateTime = format(
-          addMilliseconds(appt.bookingDate, 19800000),
-          'yyyy-MM-dd HH:mm'
-        );
+        // const bookingDateTime = format(
+        //   addMilliseconds(appt.bookingDate, 19800000),
+        //   'yyyy-MM-dd HH:mm'
+        // );
         const followupCount = await apptRepo.followUpBookedCount(appt.id);
         let followUpBooked = false,
           prescriptionIssued = false,
@@ -78,12 +112,16 @@ const appointmentsSummary: Resolver<
         if (appt.status == STATUS.CANCELLED) {
           isCancelled = true;
         }
+        // console.log('appointment details==', appt);
+        // console.log('appointment id==', appt.id);
         row1 +=
           serialNo +
           '\t' +
+          'NA' +
+          '\t' +
           appt.id +
           '\t' +
-          patientDetails.mobileNumber.toString() +
+          patientDetails.mobileNumber +
           '\t' +
           patientDetails.uhid +
           '\t' +
@@ -91,13 +129,17 @@ const appointmentsSummary: Resolver<
           ' ' +
           patientDetails.lastName +
           '\t' +
-          bookingDateTime +
-          '\t' +
           istDateTime +
           '\t' +
           appt.appointmentType +
           '\t' +
-          doctorDetails.mobileNumber.toString() +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          JDPhone.mobileNumber +
+          '\t' +
+          doctorDetails.mobileNumber +
           '\t' +
           doctorDetails.firstName +
           ' ' +
@@ -107,26 +149,84 @@ const appointmentsSummary: Resolver<
           '\t' +
           doctorDetails.specialty.name +
           '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
+            ? callDetails.startTime
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
+            ? callDetails.endTime
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
+            ? callDetails.startTime
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
+            ? callDetails.endTime
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
+            ? callDetails.startTime
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
+            ? callDetails.endTime
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
+            ? callDetails.startTime
+            : '') +
+          '\t' +
+          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
+            ? callDetails.endTime
+            : '') +
+          '\t' +
+          'NA' +
+          '\t' +
           appt.isFollowUp +
           '\t' +
           followUpBooked +
           '\t' +
-          caseSheetId +
+          'NA' +
+          '\t' +
+          (callDetails.callType == 'AUDIO' ? callDetails.id : '') +
+          '\t' +
+          (callDetails.callType == 'VIDEO' ? callDetails.id : '') +
+          '\t' +
+          'NA' +
           '\t' +
           caseSheetId +
           '\t' +
           prescriptionIssued +
           '\t' +
-          'NA' +
+          (rescheduleDetails !== undefined ? 'TRUE' : 'FALSE') +
           '\t' +
-          'NA' +
+          (rescheduleDetails !== undefined ? rescheduleDetails.rescheduleReason : '') +
           '\t' +
           isCancelled +
           '\n';
         if (serialNo == apptsList.length) {
           resolve(row1);
         }
-        console.log(row1, 'ro11');
+        console.log(row1, 'row1');
         serialNo++;
       });
     });
@@ -136,43 +236,91 @@ const appointmentsSummary: Resolver<
     const header =
       'Sl No' +
       '\t' +
-      ' Appointment Id' +
+      'Date' +
+      '\t' +
+      'Consult id' +
       '\t' +
       'Patient Mobile' +
       '\t' +
       'Patient UHID' +
       '\t' +
-      'Patient Name' +
-      '\t' +
-      'Booking Date Time' +
+      'Patient Full Name' +
       '\t' +
       'Appointment Date Time' +
       '\t' +
       'Appointment Type' +
       '\t' +
+      'Start time of chat' +
+      '\t' +
+      'End time of chat' +
+      '\t' +
+      'JD Mobile' +
+      '\t' +
       'SD Mobile' +
       '\t' +
-      'SD Name' +
+      'SD Full Name' +
       '\t' +
-      'Doctor Type' +
+      'Entity of Doctor' +
       '\t' +
-      'Doctor Speciality' +
+      'Speciality of SD' +
       '\t' +
-      'Is Followup' +
+      'Patient Start Time' +
       '\t' +
-      'Is Followup Booked' +
+      'Patient End Time' +
       '\t' +
-      'Prescription Id' +
+      'SD start Time' +
       '\t' +
-      'Case Sheet Id' +
+      'SD End Time' +
       '\t' +
-      'Prescription Issued Y/N' +
+      'Start time of Audio call done by SD' +
       '\t' +
-      'Consult Rescheduled' +
+      'End time of Audio call done by SD' +
+      '\t' +
+      'No. of Audio calls in this consult by SD' +
+      '\t' +
+      'Start time of Video call done by SD' +
+      '\t' +
+      'End time of Video call done by SD' +
+      '\t' +
+      'No. of video calls by SD in this consult by SD' +
+      '\t' +
+      'JD Start Time' +
+      '\t' +
+      'JD End Time' +
+      '\t' +
+      'Start time of Audio call done by JD' +
+      '\t' +
+      'End time of Audio call done by JD' +
+      '\t' +
+      'No. of Audio calls in this consult by JD' +
+      '\t' +
+      'Start time of Video call done by JD' +
+      '\t' +
+      'End time of Video call done by JD' +
+      '\t' +
+      'No. of video calls by SD in this consult by JD' +
+      '\t' +
+      'Fresh Consult or Follow Up?' +
+      '\t' +
+      'Followup booked Y/N' +
+      '\t' +
+      'Chat Transcript ID' +
+      '\t' +
+      'Audio Call ID' +
+      '\t' +
+      'Video Call ID' +
+      '\t' +
+      'Prescription ID' +
+      '\t' +
+      'Case Sheet ID' +
+      '\t' +
+      'Prescription issued by SD Y/N' +
+      '\t' +
+      'Consult Rescheduled?' +
       '\t' +
       'Reschedule Reason' +
       '\t' +
-      'Is Cancelled' +
+      'Consult cancelled Y/N' +
       '\n';
 
     //const row1 = '0' + '\t' + ' 21' + '\t' + 'Rob' + '\n';
@@ -183,6 +331,7 @@ const appointmentsSummary: Resolver<
   } catch (err) {
     console.log('file error', err);
   }
+  return { azureFilePath: 'test' };
 
   const client = new AphStorageClient(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,

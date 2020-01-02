@@ -16154,7 +16154,7 @@
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",
-                  "name": "OrderDeliveryInput",
+                  "name": "OutForDeliveryInput",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -17968,6 +17968,33 @@
               "kind": "OBJECT",
               "name": "ChatDocumentDeleteResult",
               "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "updateSdSummary",
+            "description": null,
+            "args": [
+              {
+                "name": "summaryDate",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Date",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "dashboardSummaryResult",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -21210,6 +21237,68 @@
       },
       {
         "kind": "INPUT_OBJECT",
+        "name": "OutForDeliveryInput",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "ordersResult",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "OutForDeliveryInputParameters",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "OutForDeliveryInputParameters",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "message",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "statusDateTime",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "apOrderNo",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
         "name": "OrderPlacedInput",
         "description": null,
         "fields": null,
@@ -21609,7 +21698,7 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "orderId",
+            "name": "orderNo",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -21619,27 +21708,7 @@
             "defaultValue": null
           },
           {
-            "name": "empId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
             "name": "siteId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "docnum",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -27207,6 +27276,65 @@
       },
       {
         "kind": "OBJECT",
+        "name": "dashboardSummaryResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "doctorId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "doctorName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "appointmentDateTime",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Date",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "totalConsultation",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
         "name": "__Schema",
         "description": "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
         "fields": [
@@ -27999,27 +28127,6 @@
             "deprecationReason": null
           }
         ],
-        "possibleTypes": null
-      },
-      {
-        "kind": "INPUT_OBJECT",
-        "name": "OutForDeliveryInput",
-        "description": null,
-        "fields": null,
-        "inputFields": [
-          {
-            "name": "ordersResult",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "DeliveryOrderResult",
-              "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "interfaces": null,
-        "enumValues": null,
         "possibleTypes": null
       },
       {
