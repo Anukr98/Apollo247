@@ -11,14 +11,13 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT_RESULT } from 'graphql/medicines';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
 import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
-  SaveMedicineOrderPayment,
-  SaveMedicineOrderPaymentVariables,
-} from 'graphql/types/SaveMedicineOrderPayment';
-import { Mutation } from 'react-apollo';
-import { MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
+  SaveMedicineOrderPaymentMqVariables,
+  SaveMedicineOrderPaymentMq_SaveMedicineOrderPaymentMq,
+} from 'graphql/types/SaveMedicineOrderPaymentMq';
+import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
@@ -414,12 +413,11 @@ export interface PrescriptionFormat {
 
 export const MedicineCart: React.FC = (props) => {
   const classes = useStyles({});
-
   const defPresObject = {
     name: '',
     imageUrl: '',
   };
-  const { storePickupPincode, deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
+  const { storePickupPincode, deliveryAddressId, clearCartInfo } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
@@ -501,6 +499,63 @@ export const MedicineCart: React.FC = (props) => {
           };
         })
       : [];
+
+  const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
+    SAVE_MEDICINE_ORDER,
+    {
+      variables: {
+        medicineCartInput: {
+          quoteId: '',
+          patientId: currentPatient ? currentPatient.id : '',
+          shopId: deliveryMode === 'HOME' ? '' : deliveryAddressId,
+          patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
+          medicineDeliveryType:
+            deliveryMode === 'HOME'
+              ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+              : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          estimatedAmount: parseFloat(totalAmount),
+          devliveryCharges: 0,
+          prescriptionImageUrl: Array.prototype.map
+            .call(prescriptions, (presDetails) => presDetails.imageUrl)
+            .toString(),
+          items: cartItemsForApi,
+        },
+      },
+    }
+  );
+
+  const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
+
+  const placeOrder = (orderId: string, orderAutoId: number) => {
+    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+      medicinePaymentMqInput: {
+        orderId: orderId,
+        orderAutoId: orderAutoId,
+        amountPaid: parseFloat(totalAmount),
+        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+
+    savePayment({ variables: paymentInfo })
+      .then(({ data }: any) => {
+        if (data && data.SaveMedicineOrderPaymentMq) {
+          const { errorCode, errorMessage } = data.SaveMedicineOrderPaymentMq;
+          if (errorCode || (errorMessage && errorMessage.length > 0)) {
+            window.location.href = clientRoutes.medicinesCartInfo(orderId, 'failed');
+            return;
+          }
+          setCheckoutDialogOpen(false);
+          clearCartInfo && clearCartInfo();
+          window.location.href = clientRoutes.medicinesCartInfo(orderId, 'success');
+        }
+      })
+      .catch((e) => {
+        window.location.href = clientRoutes.medicinesCartInfo(orderId, 'failed');
+      });
+  };
 
   return (
     <div className={classes.root}>
@@ -741,58 +796,37 @@ export const MedicineCart: React.FC = (props) => {
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <Mutation<SaveMedicineOrder, SaveMedicineOrderVariables>
-              mutation={SAVE_MEDICINE_ORDER}
-              variables={{
-                medicineCartInput: {
-                  quoteId: '',
-                  shopId: deliveryMode === 'HOME' ? '' : deliveryAddressId,
-                  estimatedAmount: parseFloat(totalAmount),
-                  patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
-                  devliveryCharges: 0,
-                  prescriptionImageUrl: Array.prototype.map
-                    .call(prescriptions, (presDetails) => presDetails.imageUrl)
-                    .toString(),
-                  medicineDeliveryType:
-                    deliveryMode === 'HOME'
-                      ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-                      : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-                  patientId: currentPatient ? currentPatient.id : '',
-                  items: cartItemsForApi,
-                },
+            <AphButton
+              onClick={(e) => {
+                setMutationLoading(true);
+                paymentMutation()
+                  .then((res) => {
+                    if (res && res.data && res.data.SaveMedicineOrder) {
+                      const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
+                      const currentPatiendId = currentPatient ? currentPatient.id : '';
+                      if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
+                        const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
+                        window.location.href = pgUrl;
+                      } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
+                        setOrderAutoId(orderAutoId);
+                        setAmountPaid(amountPaid);
+                        placeOrder(orderId, orderAutoId);
+                        setMutationLoading(false);
+                      }
+                    }
+                  })
+                  .catch((e) => {
+                    alert(e);
+                    setMutationLoading(false);
+                  });
               }}
-              onCompleted={(apiResponse) => {
-                const orderAutoId = apiResponse.SaveMedicineOrder.orderAutoId;
-                const currentPatiendId = currentPatient ? currentPatient.id : '';
-                // redirect to payment Gateway
-                if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                  const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
-                  window.location.href = pgUrl;
-                } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                  setOrderAutoId(orderAutoId);
-                  setAmountPaid(amountPaid);
-                }
-              }}
-              onError={(errorResponse) => {
-                alert(errorResponse);
-                setMutationLoading(false);
-              }}
+              color="primary"
+              fullWidth
+              disabled={disablePayButton}
+              className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
             >
-              {(mutate) => (
-                <AphButton
-                  onClick={(e) => {
-                    setMutationLoading(true);
-                    mutate();
-                  }}
-                  color="primary"
-                  fullWidth
-                  disabled={disablePayButton}
-                  className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
-                >
-                  {mutationLoading ? <CircularProgress /> : `Pay - RS. ${totalAmount}`}
-                </AphButton>
-              )}
-            </Mutation>
+              {mutationLoading ? <CircularProgress /> : `Pay - RS. ${totalAmount}`}
+            </AphButton>
           </div>
         </div>
       </AphDialog>

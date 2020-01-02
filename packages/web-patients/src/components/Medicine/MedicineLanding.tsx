@@ -12,18 +12,12 @@ import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
-
-import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
-} from 'graphql/types/GetMedicineOrdersList';
-import { useMutation } from 'react-apollo-hooks';
-import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
+import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -239,14 +233,11 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
-  const queryParams = new URLSearchParams(location.search);
   const mascotRef = useRef(null);
   const addToCartRef = useRef(null);
 
-  const orderId = queryParams.get('orderAutoId') || '';
-  const orderStatus = queryParams.get('status') || '';
-
-  if (parseInt(orderId, 10) > 0 && orderStatus === 'success') {
+  const params = useParams<{ orderId: string; orderStatus: string }>();
+  if (params.orderStatus === 'success') {
     localStorage.removeItem('cartItems');
     localStorage.removeItem('dp');
   }
@@ -257,6 +248,9 @@ export const MedicineLanding: React.FC = (props) => {
   const [error, setError] = useState<ApolloError | null>(null);
   const [showPopup, setShowPopup] = React.useState<boolean>(
     window.location.pathname === '/medicines/added-to-cart'
+  );
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
+    params.orderStatus && params.orderStatus.length > 0 ? true : false
   );
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/apollo_24x7_api.php`,
@@ -411,6 +405,25 @@ export const MedicineLanding: React.FC = (props) => {
             <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
           </div>
         </div>
+      </Popover>
+      <Popover
+        open={showOrderPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <OrderPlaced
+          orderId={params.orderId}
+          orderStatus={params.orderStatus}
+          setShowOrderPopup={setShowOrderPopup}
+        />
       </Popover>
     </div>
   );
