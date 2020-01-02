@@ -547,6 +547,7 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderId, 'failed');
             return;
           }
+          setCheckoutDialogOpen(false);
           clearCartInfo && clearCartInfo();
           window.location.href = clientRoutes.medicinesCartInfo(orderId, 'success');
         }
