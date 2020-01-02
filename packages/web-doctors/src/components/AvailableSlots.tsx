@@ -265,9 +265,9 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
     }
   }, [doctorDetails]);
 
-  /*   useEffect(() => {
-    if (prevDateSelected !== props.dateSelected) props.setTimeSelected("");
-  }, [props.dateSelected, prevDateSelected]); */
+  useEffect(() => {
+    if (prevDateSelected !== props.dateSelected) props.setTimeSelected('');
+  }, [props.dateSelected, prevDateSelected]);
 
   // get available slots.
   const {
