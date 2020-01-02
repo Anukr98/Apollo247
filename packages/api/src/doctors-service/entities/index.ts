@@ -82,9 +82,9 @@ export enum MEDICINE_FORM_TYPES {
   OTHERS = 'OTHERS',
 }
 export enum MEDICINE_CONSUMPTION_DURATION {
-  DAYS = 'DAY(S)',
-  MONTHS = 'MONTH(S)',
-  WEEKS = 'WEEK(S)',
+  DAYS = 'DAYS',
+  MONTHS = 'MONTHS',
+  WEEKS = 'WEEKS',
 }
 export enum MEDICINE_FREQUENCY {
   AS_NEEDED = 'AS_NEEDED',
