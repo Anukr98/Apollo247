@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface OrderPlacedProps {
-  orderId: string;
+  orderAutoId: string;
   orderStatus: string;
   setShowOrderPopup: (showOrderPopup: boolean) => void;
 }
@@ -116,7 +116,7 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
               </span>
               <span>Medicines</span>
             </div>
-            <div className={classes.invoiceNo}>#{props.orderId}</div>
+            <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
           </div>
           <div className={classes.orderBody}>Delivery By: 27 July 2019</div>
           <div className={classes.remindMe}>
