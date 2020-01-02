@@ -637,6 +637,7 @@ export enum AdminType {
   ADMIN = 'ADMIN',
   JDADMIN = 'JDADMIN',
   QAADMIN = 'QAADMIN',
+  SUPERADMIN = 'SUPERADMIN',
 }
 @Entity()
 export class AdminUsers extends BaseEntity {
