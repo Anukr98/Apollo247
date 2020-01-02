@@ -157,13 +157,13 @@ type SaveDoctorsFavouriteMedicineInput = {
   medicineUnit: MEDICINE_UNIT;
 };
 
-type saveDoctorsFavouriteMedicineInputArgs = {
+type SaveDoctorsFavouriteMedicineInputArgs = {
   saveDoctorsFavouriteMedicineInput: SaveDoctorsFavouriteMedicineInput;
 };
 
 const saveDoctorsFavouriteMedicine: Resolver<
   null,
-  saveDoctorsFavouriteMedicineInputArgs,
+  SaveDoctorsFavouriteMedicineInputArgs,
   DoctorsServiceContext,
   FavouriteMedicineList
 > = async (parent, { saveDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
