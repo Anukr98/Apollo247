@@ -11,7 +11,10 @@ import {
   ViewStyle,
   StyleSheet,
   Keyboard,
+  TextStyle,
 } from 'react-native';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const styles = StyleSheet.create({
   okButtonStyle: {
@@ -24,6 +27,25 @@ const styles = StyleSheet.create({
   okButtonTextStyle: {
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
+  },
+  aphAlertCtaViewStyle: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginVertical: 18,
+  },
+  ctaWhiteButtonViewStyle: {
+    flex: 1,
+    minHeight: 40,
+    height: 'auto',
+    backgroundColor: theme.colors.WHITE,
+  },
+  ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
+  ctaOrangeTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+    marginHorizontal: 5,
   },
 });
 
@@ -41,9 +63,20 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   hideAphAlert: null,
 });
 
+type AphAlertCTAs = {
+  text: string;
+  onPress: () => void;
+  type?: 'orange-button' | 'white-button' | 'orange-link';
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+};
+
 type AphAlertParams = {
   title?: string;
   description?: string;
+  CTAs?: AphAlertCTAs[];
+  // Note: CTAs will be rendered at end of the popup.
+  // If CTAs are passed, `OK, GOT IT` will not be rendered.
   children?: React.ReactNode;
   unDismissable?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -95,6 +128,41 @@ export const UIElementsProvider: React.FC = (props) => {
       </TouchableOpacity>
     );
 
+    const renderCTAs = () =>
+      !!g(alertParams, 'CTAs', 'length') && (
+        <View style={styles.aphAlertCtaViewStyle}>
+          {alertParams.CTAs!.map((item, index, array) =>
+            item.type == 'orange-link' ? (
+              <Text
+                onPress={item.onPress}
+                style={[
+                  styles.ctaOrangeTextStyle,
+                  { marginRight: index == array.length - 1 ? 0 : 16 },
+                ]}
+              >
+                {item.text}
+              </Text>
+            ) : (
+              <Button
+                style={[
+                  item.type == 'white-button'
+                    ? styles.ctaWhiteButtonViewStyle
+                    : styles.ctaOrangeButtonViewStyle,
+                  { marginRight: index == array.length - 1 ? 0 : 16 },
+                  item.style,
+                ]}
+                titleTextStyle={[
+                  item.type == 'white-button' && styles.ctaOrangeTextStyle,
+                  item.textStyle,
+                ]}
+                title={item.text}
+                onPress={item.onPress}
+              />
+            )
+          )}
+        </View>
+      );
+
     return (
       isAlertVisible && (
         <BottomPopUp
@@ -107,7 +175,8 @@ export const UIElementsProvider: React.FC = (props) => {
             }
           }}
         >
-          {alertParams.children || renderOkButton}
+          {alertParams.children || (g(alertParams, 'CTAs', 'length') ? null : renderOkButton)}
+          {renderCTAs()}
         </BottomPopUp>
       )
     );
