@@ -52,7 +52,7 @@ interface CalendarStripRefType extends CalendarStrip {
 export interface WeekViewProps {
   date: Date;
   onTapDate: (date: Date) => void;
-  onWeekChanged: (date: Date) => void;
+  // onWeekChanged: (date: Date) => void;
   minDate?: Date;
 }
 
@@ -138,9 +138,12 @@ export const WeekView: ForwardRefExoticComponent<
     <GestureRecognizer onSwipeLeft={onSwipeLeft} onSwipeRight={onSwipeRight} config={config}>
       <CalendarStrip
         showMonth={false}
-        onDateSelected={(date) => props.onTapDate(date)}
+        minDate={props.minDate}
+        onDateSelected={(date) => {
+          props.onTapDate(date);
+        }}
         selectedDate={props.date}
-        onWeekChanged={(date) => props.onWeekChanged(date)}
+        // onWeekChanged={(date) => props.onWeekChanged(date)}
         style={styles.calendarStripStyle}
         ref={(ref) => {
           calendarStripRef.current = ref as CalendarStripRefType;

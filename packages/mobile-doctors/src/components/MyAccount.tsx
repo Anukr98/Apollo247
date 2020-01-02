@@ -1,11 +1,12 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { clearUserData, CheckDelegate } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, View, AsyncStorage } from 'react-native';
 import { NavigationScreenProps, StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
+import console = require('console');
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
@@ -25,7 +26,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         style={{ width: '80%' }}
         title="LOGOUT"
         onPress={() => {
-          Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData()])
+          Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData(), CheckDelegate])
             .then(() => {
               props.navigation.dispatch(
                 StackActions.reset({

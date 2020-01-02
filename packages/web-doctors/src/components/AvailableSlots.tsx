@@ -237,9 +237,10 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  const apiDateFormat = props.dateSelected.includes('-')
-    ? moment(new Date()).format('YYYY-MM-DD')
-    : getYyMmDd(props.dateSelected);
+  const apiDateFormat =
+    props.dateSelected === moment(new Date()).format('YYYY-MM-DD')
+      ? moment(new Date()).format('YYYY-MM-DD')
+      : props.dateSelected;
 
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
@@ -264,9 +265,9 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
     }
   }, [doctorDetails]);
 
-  useEffect(() => {
-    if (prevDateSelected !== props.dateSelected) props.setTimeSelected('');
-  }, [props.dateSelected, prevDateSelected]);
+  /*   useEffect(() => {
+    if (prevDateSelected !== props.dateSelected) props.setTimeSelected("");
+  }, [props.dateSelected, prevDateSelected]); */
 
   // get available slots.
   const {
@@ -389,6 +390,7 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
                         : ''
                     }
                     timeSelected={(timeSelected) => props.setTimeSelected(timeSelected)}
+                    selectedTime={props.timeSelected}
                   />
                 </div>
               ) : (
@@ -417,6 +419,12 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
         </Button>
         <Button
           className={classes.ResheduleCosultButton}
+          disabled={
+            morningSlots.length === 0 &&
+            afternoonSlots.length === 0 &&
+            eveningSlots.length === 0 &&
+            lateNightSlots.length === 0
+          }
           onClick={() => {
             // props.rescheduleConsultAction();
             props.setIsPopoverOpen(false);

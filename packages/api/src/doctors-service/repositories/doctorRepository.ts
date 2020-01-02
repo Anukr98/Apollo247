@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
 import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
 import {
   Range,
@@ -671,5 +671,9 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
     return this.update(id, { nextAvailableSlot });
+  }
+
+  getAllDoctors() {
+    return this.find({ where: { isActive: true, doctorType: Not('JUNIOR') } });
   }
 }

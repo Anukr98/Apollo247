@@ -626,7 +626,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         <TabsComponent
           style={styles.tabsContainer}
           onChange={(title) => {
-            setSelectedTab(title);
+            const isNonCartOrder = orderStatusList.find(
+              (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+            );
+            if (!isNonCartOrder) {
+              setSelectedTab(title);
+            }
           }}
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}

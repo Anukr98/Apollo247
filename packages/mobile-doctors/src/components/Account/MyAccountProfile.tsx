@@ -7,7 +7,7 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Image,
   StyleSheet,
@@ -40,6 +40,7 @@ import {
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 import { RemoveDelegateNumber } from '@aph/mobile-doctors/src/graphql/types/RemoveDelegateNumber';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   container: {
@@ -214,16 +215,29 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const client = useApolloClient();
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
-  const [phoneNumber, setPhoneNumber] = useState<string>(profileData!.delegateNumber!);
+  const [phoneNumber, setPhoneNumber] = useState<string>(profileData!.delegateNumber!.substring(3));
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { doctorDetails, setDoctorDetails } = useAuth();
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   console.log('doctorDetailsmy', doctorDetails);
 
+  // useEffect(() => {
+  //   let value = profileData!.delegateNumber!;
+  //   // Remove all spaces
+  //   let mobile = value.replace(/ /g, '');
+
+  //   // If string starts with +, drop first 3 characters
+  //   if (value.slice(0, 1) == '+') {
+  //     mobile = mobile.substring(3);
+  //   }
+  //   console.log('mobile', mobile);
+  //   setPhoneNumber(mobile);
+  // });
   const delegateNumberUpdate = (phoneNumber: string) => {
     console.log('delegateNumberUpdate', phoneNumber);
     if (phoneNumber.length == 0) {
       // Alert.alert('Please add Delegate Number');
+      setIsLoading(true);
       client
         .mutate<RemoveDelegateNumber>({
           mutation: REMOVE_DELEGATE_NUMBER,
@@ -231,13 +245,9 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         })
         .then((_data) => {
           const result = _data.data!.removeDelegateNumber;
-          const newDoctorDetails = {
-            ...doctorDetails,
-            ...{ delegateNumber: phoneNumber },
-          } as GetDoctorDetails_getDoctorDetails;
-          setDoctorDetails && setDoctorDetails(newDoctorDetails);
           console.log('updatedelegatenumber', result);
           if (result) {
+            setIsLoading(false);
             const newDoctorDetails = {
               ...doctorDetails,
               ...{ delegateNumber: phoneNumber },
@@ -247,36 +257,37 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           }
         })
         .catch((e) => {
+          setIsLoading(false);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
           Alert.alert('Error', errorMessage);
         });
     } else {
+      setIsLoading(true);
       client
         .mutate<UpdateDelegateNumber, UpdateDelegateNumberVariables>({
           mutation: UPDATE_DELEGATE_NUMBER,
-          variables: { delegateNumber: phoneNumber },
+          variables: { delegateNumber: '+91'.concat(phoneNumber) },
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
           const result = _data.data!.updateDelegateNumber;
-          const newDoctorDetails = {
-            ...doctorDetails,
-            ...{ delegateNumber: phoneNumber },
-          } as GetDoctorDetails_getDoctorDetails;
-          setDoctorDetails && setDoctorDetails(newDoctorDetails);
+          setIsLoading(false);
           console.log('updatedelegatenumber', result);
+          setPhoneNumber('');
           if (result) {
             const newDoctorDetails = {
               ...doctorDetails,
               ...{ delegateNumber: phoneNumber },
             } as GetDoctorDetails_getDoctorDetails;
             setDoctorDetails && setDoctorDetails(newDoctorDetails);
-            props.navigation.push(AppRoutes.TabBar);
+            Alert.alert('Successfully Updated Delegate Number');
+            props.navigation.goBack();
           }
         })
         .catch((e) => {
+          setIsLoading(false);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
@@ -420,19 +431,21 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
 
         <View
           style={[
-            phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+            phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputValidView,
+            { marginBottom: 16 },
           ]}
         >
-          <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+          {/* <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text> */}
           <TextInput
             style={styles.inputStyle}
             keyboardType="numeric"
             maxLength={10}
             value={phoneNumber}
-            onChangeText={(value) => validateAndSetPhoneNumber(value)}
+            onChangeText={(phoneNumber) => validateAndSetPhoneNumber(phoneNumber)}
+            editable={true}
           />
         </View>
-        <Text
+        {/* <Text
           style={
             phoneNumber == '' || phoneNumberIsValid
               ? styles.bottomValidDescription
@@ -442,7 +455,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           {phoneNumber == '' || phoneNumberIsValid
             ? string.LocalStrings.otp_sent_to
             : string.LocalStrings.wrong_number}
-        </Text>
+        </Text> */}
       </View>
     );
   };
@@ -455,6 +468,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             title="CANCEL"
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
+            onPress={() => props.navigation.pop()}
             style={[styles.buttonsaveStyle, { marginRight: 16 }]}
           />
           <Button
@@ -469,82 +483,87 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   return (
     <SafeAreaView style={styles.container}>
       <View>{showHeaderView()}</View>
-      <ScrollView bounces={false}>
-        <SquareCardWithTitle title="Your Profile">
-          <View style={styles.cardView}>
-            <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
-              {profileData!.photoUrl ? (
-                // <Image
-                //   style={styles.imageview}
-                //   source={{
-                //     uri: profileData!.photoUrl,
-                //   }}
-                // />
-                <Image
-                  style={styles.imageview}
-                  source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
-                />
-              ) : (
-                <Image
-                  style={styles.imageview}
-                  source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
-                />
+      <KeyboardAwareScrollView bounces={false}>
+        <ScrollView bounces={false}>
+          <SquareCardWithTitle title="Your Profile">
+            <View style={styles.cardView}>
+              <View
+                style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}
+              >
+                {profileData!.photoUrl ? (
+                  // <Image
+                  //   style={styles.imageview}
+                  //   source={{
+                  //     uri: profileData!.photoUrl,
+                  //   }}
+                  // />
+                  <Image
+                    style={styles.imageview}
+                    source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
+                  />
+                ) : (
+                  <Image
+                    style={styles.imageview}
+                    source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
+                  />
+                )}
+              </View>
+              {profileData!.doctorType == 'STAR_APOLLO' ? (
+                <Star style={styles.starIconStyle}></Star>
+              ) : null}
+              <View style={styles.columnContainer}>
+                <Text style={[styles.drname]} numberOfLines={1}>
+                  {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
+                </Text>
+                <Text style={styles.drnametext}>
+                  {formatSpecialityAndExperience(
+                    profileData!.specialty.name,
+                    profileData!.experience || ''
+                  )}
+                </Text>
+                <View style={styles.understatusline} />
+              </View>
+              {profileRow('Education', profileData!.qualification!)}
+              {profileRow('Speciality', profileData!.specialty.name!)}
+              {profileRow('Services', profileData!.specialization || '')}
+              {profileRow(
+                'Awards',
+                (profileData!.awards || '')
+                  .replace('&amp;', '&')
+                  .replace(/<\/?[^>]+>/gi, '')
+                  .trim()
               )}
+              {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
+              {profileRow('MCI Number', profileData!.registrationNumber)}
+              {profileRow('In-person Consult Location', getFormattedLocation())}
             </View>
             {profileData!.doctorType == 'STAR_APOLLO' ? (
-              <Star style={styles.starIconStyle}></Star>
+              <AccountStarTeam
+                profileData={profileData}
+                scrollViewRef={props.scrollViewRef}
+                onReload={props.onReload}
+              />
             ) : null}
-            <View style={styles.columnContainer}>
-              <Text style={[styles.drname]} numberOfLines={1}>
-                {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
+            <View>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansSemiBold(16),
+                  letterSpacing: 0.06,
+                  color: '#02475b',
+                  marginLeft: 20,
+                  // marginBottom: 18,
+                }}
+              >
+                Secretary Login
               </Text>
-              <Text style={styles.drnametext}>
-                {formatSpecialityAndExperience(
-                  profileData!.specialty.name,
-                  profileData!.experience || ''
-                )}
-              </Text>
-              <View style={styles.understatusline} />
+              {renderMobilePhoneView()}
+              {renderHelpView()}
+              {isLoading ? <Loader flex1 /> : null}
+              {renderButtonsView()}
             </View>
-            {profileRow('Education', profileData!.qualification!)}
-            {profileRow('Speciality', profileData!.specialty.name!)}
-            {profileRow('Services', profileData!.specialization || '')}
-            {profileRow(
-              'Awards',
-              (profileData!.awards || '')
-                .replace('&amp;', '&')
-                .replace(/<\/?[^>]+>/gi, '')
-                .trim()
-            )}
-            {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
-            {profileRow('MCI Number', profileData!.registrationNumber)}
-            {profileRow('In-person Consult Location', getFormattedLocation())}
-          </View>
-          {profileData!.doctorType == 'STAR_APOLLO' ? (
-            <AccountStarTeam
-              profileData={profileData}
-              scrollViewRef={props.scrollViewRef}
-              onReload={props.onReload}
-            />
-          ) : null}
-          <View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansSemiBold(16),
-                letterSpacing: 0.06,
-                color: '#02475b',
-                marginLeft: 20,
-                // marginBottom: 18,
-              }}
-            >
-              Secretary Login
-            </Text>
-            {renderMobilePhoneView()}
-            {renderHelpView()}
-            {renderButtonsView()}
-          </View>
-        </SquareCardWithTitle>
-      </ScrollView>
+          </SquareCardWithTitle>
+        </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

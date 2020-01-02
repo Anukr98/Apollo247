@@ -2028,6 +2028,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                                     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
                                       .availableSlot || ''
                                   );
+                                  setTimeSelected(
+                                    moment(
+                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                        .availableSlot
+                                    ).format('HH:mm')
+                                  );
                                 }
                               } catch (error) {
                                 setDoctorNextAvailableSlot('');

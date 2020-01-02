@@ -21,6 +21,7 @@ import SmsListener from 'react-native-android-sms-listener';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { OTPTextView } from './ui/OTPTextView';
+import { RNFirebase } from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -276,9 +277,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const redirectToProfileSetup = () => {
+  const redirectToProfileSetup = (phoneNumber: string) => {
     console.log('redirectToProfileSetup called');
-    props.navigation.replace(AppRoutes.OTPVerificationApiCall, {});
+    props.navigation.replace(AppRoutes.OTPVerificationApiCall, { phoneNumber });
   };
 
   const onClickOk = async () => {
@@ -286,9 +287,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setIsLoading(true);
     verifyOtp &&
       verifyOtp(otp)
-        .then((_) => {
+        .then((user: RNFirebase.User | unknown) => {
           _removeFromStore();
-          redirectToProfileSetup();
+          redirectToProfileSetup((user as RNFirebase.User).phoneNumber || '');
         })
         .catch(async (error) => {
           setIsLoading(false);

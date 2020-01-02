@@ -147,6 +147,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [selected, setSelected] = useState<boolean>(false);
 
   const params = useParams<Params>();
+  const locationUrl = window.location.href;
   const [subtxt, setSubtxt] = useState<string | null>(
     params.searchMedicineType === 'search-medicines' ? params.searchText : null
   );
@@ -196,7 +197,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       fromPrice: fromPrice,
       toPrice: toPrice,
     };
-    props.setFilterData(selectedCatagerys);
+    if (!window.location.href.includes('search-by-brand')) {
+      props.setFilterData(selectedCatagerys);
+    }
+
     props.setPriceFilter(obj);
   };
 
@@ -225,134 +229,139 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
-              <div className={classes.filterType}>Categories</div>
-              <div className={classes.boxContent}>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('');
-                  }}
-                >
-                  All
-                </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('14') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('14');
-                  }}
-                >
-                  Personal Care
-                </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('24') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('24');
-                  }}
-                >
-                  Mom &amp; Baby
-                </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('6') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('6');
-                  }}
-                >
-                  Nutrition
-                </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('71') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('71');
-                  }}
-                >
-                  Healthcare
-                </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('234') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('234');
-                  }}
-                >
-                  Special Offers
-                </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('97') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('97');
-                  }}
-                >
-                  Holland &amp; Barrett
-                </AphButton>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${
-                    selectedCatagerys.includes('680') ? classes.buttonActive : ''
-                  }`}
-                  onClick={(e) => {
-                    filterByCatagery('680');
-                  }}
-                >
-                  Apollo Products
-                </AphButton>
-              </div>
-            </div>
-            <div className={classes.filterBox}>
-              <div className={classes.filterType}>Discount</div>
-              <div className={classes.boxContent}>
-                <div className={classes.filterBy}>
-                  <AphTextField placeholder="0%" /> <span>TO</span>{' '}
-                  <AphTextField placeholder="100%" />
+              {locationUrl && locationUrl.includes('search-medicines') && (
+                <span>
+                  <div className={classes.filterType}>Categories</div>
+
+                  <div className={classes.boxContent}>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('');
+                      }}
+                    >
+                      All
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('14') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('14');
+                      }}
+                    >
+                      Personal Care
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('24') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('24');
+                      }}
+                    >
+                      Mom &amp; Baby
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('6') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('6');
+                      }}
+                    >
+                      Nutrition
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('71') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('71');
+                      }}
+                    >
+                      Healthcare
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('234') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('234');
+                      }}
+                    >
+                      Special Offers
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('97') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('97');
+                      }}
+                    >
+                      Holland &amp; Barrett
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('680') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('680');
+                      }}
+                    >
+                      Apollo Products
+                    </AphButton>
+                  </div>
+                </span>
+              )}
+              <div className={classes.filterBox}>
+                <div className={classes.filterType}>Discount</div>
+                <div className={classes.boxContent}>
+                  <div className={classes.filterBy}>
+                    <AphTextField placeholder="0%" /> <span>TO</span>{' '}
+                    <AphTextField placeholder="100%" />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={classes.filterBox}>
-              <div className={classes.filterType}>Price</div>
-              <div className={classes.boxContent}>
-                <div className={classes.filterBy}>
-                  <AphTextField
-                    placeholder="RS.500"
-                    value={fromPrice}
-                    onChange={(e) => {
-                      setFromPrice(e.target.value);
-                    }}
-                  />{' '}
-                  <span>TO</span>{' '}
-                  <AphTextField
-                    placeholder="RS.3000"
-                    value={toPrice}
-                    onChange={(e) => {
-                      setToPrice(e.target.value);
-                    }}
-                  />
+              <div className={classes.filterBox}>
+                <div className={classes.filterType}>Price</div>
+                <div className={classes.boxContent}>
+                  <div className={classes.filterBy}>
+                    <AphTextField
+                      placeholder="RS.500"
+                      value={fromPrice}
+                      onChange={(e) => {
+                        setFromPrice(e.target.value);
+                      }}
+                    />{' '}
+                    <span>TO</span>{' '}
+                    <AphTextField
+                      placeholder="RS.3000"
+                      value={toPrice}
+                      onChange={(e) => {
+                        setToPrice(e.target.value);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

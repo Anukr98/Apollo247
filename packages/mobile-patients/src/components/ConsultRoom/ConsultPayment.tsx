@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { getParameterByName } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -73,15 +74,6 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     ]);
   };
 
-  const getParameterByName = (name: string, url: string) => {
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-      results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-  };
-
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     setLoading!(false);
@@ -126,7 +118,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     props.navigation.goBack();
     showAphAlert!({
       title: 'Uh oh.. :(',
-      description: `Payment failed.`,
+      description: `We're sorry but the payment failed.`,
       unDismissable: true,
     });
   };

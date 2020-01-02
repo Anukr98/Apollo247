@@ -13,9 +13,21 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps } from 'react-navigation';
+import { addDiagnosticPrescriptionDataList } from '@aph/mobile-doctors/src/components/ApiCall';
+import {
+  searchDiagnosis_searchDiagnosis,
+  searchDiagnosisVariables,
+} from '@aph/mobile-doctors/src/graphql/types/searchDiagnosis';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import {
+  searchDiagnostic,
+  searchDiagnostic_searchDiagnostic,
+} from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
+import { SEARCH_DIAGNOSTIC } from '@aph/mobile-doctors/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   container: {
@@ -28,7 +40,10 @@ export interface ProfileProps extends NavigationScreenProps {}
 
 export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
-  const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[] | null>([]);
+  const [filteredStarDoctors, setFilteredStarDoctors] = useState<
+    searchDiagnostic_searchDiagnostic[] | null
+  >([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const client = useApolloClient();
   const showHeaderView = () => {
     return (
@@ -43,11 +58,11 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="ADD DIAGNOSTICS"
+        headerText="ADD DIAGNOSTIC"
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>
@@ -57,7 +72,13 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
     Keyboard.dismiss();
 
     setDoctorSearchText(text);
-    setFilteredStarDoctors([]);
+    addDiagnosticPrescriptionDataList({
+      name: text,
+      __typename: 'DiagnosticPrescription',
+    });
+
+    props.navigation.pop();
+    //setFilteredStarDoctors([]);
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {
     return (
@@ -79,11 +100,11 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
     <View style={{ marginTop: 2 }}>
       {filteredStarDoctors!.length > 0 ? (
         <View>
-          {filteredStarDoctors!.map((item, i) => {
-            const drName = ` ${item!.firstName}`;
+          {filteredStarDoctors!.map((item: any, i) => {
+            const drName = ` ${item!.itemname}`;
             return (
               <TouchableOpacity
-                onPress={() => onPressDoctorSearchListItem(`Dr. ${item!.firstName}`)}
+                onPress={() => onPressDoctorSearchListItem(`${item!.itemname}`)}
                 style={{ marginHorizontal: 16, marginTop: 8 }}
                 key={i}
               >
@@ -115,31 +136,31 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
 
     setDoctorSearchText(searchText);
     console.log(searchText);
-    if (searchText == '') {
+    if (!(searchText && searchText.length > 2)) {
       setFilteredStarDoctors([]);
       return;
     }
+    setIsLoading(true);
     // do api call
-    // client
-    //   .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
-    //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-    //     variables: { searchString: searchText.replace('Dr. ', '') },
-    //   })
-    getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!(
-      searchText.replace('Dr. ', '')
-    )
+    client
+      .query<searchDiagnostic, searchDiagnosisVariables>({
+        query: SEARCH_DIAGNOSTIC,
+        variables: { searchString: searchText },
+      })
+
       .then((_data) => {
-        console.log('flitered array', _data);
-        // const doctorProfile =
-        //   (_data.data.getDoctorsForStarDoctorProgram &&
-        //     _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
-        //   [];
-        const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        setFilteredStarDoctors(doctorProfile);
+        console.log('flitered array', _data.data.searchDiagnostic!);
+
+        setFilteredStarDoctors(_data.data!.searchDiagnostic!);
+        setIsLoading(false);
       })
       .catch((e) => {
-        console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
+        console.log('Error occured while searching for searchDiagnosis', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while searching for searchDiagnosis', errorMessage, error);
+        setIsLoading(false);
+        Alert.alert('Error', errorMessage);
       });
   };
 
@@ -198,6 +219,7 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
           </View>
         </View>
       </View>
+      {isLoading ? <Loader flex1 /> : null}
       <View style={{ marginTop: 10 }}>{renderSuggestionCard()}</View>
     </SafeAreaView>
   );

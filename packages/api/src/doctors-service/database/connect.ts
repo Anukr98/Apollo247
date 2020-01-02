@@ -12,8 +12,10 @@ import {
   AppointmentCallDetails,
   DoctorNextAvaialbleSlots,
   AppointmentNoShow,
+  SdDashboardSummary,
 } from 'consults-service/entities/';
 import {
+  AdminDoctorMapper,
   ConsultHours,
   Doctor,
   DoctorAndHospital,
@@ -66,6 +68,7 @@ export const connect = async () => {
   return await createConnections([
     {
       entities: [
+        AdminDoctorMapper,
         Doctor,
         DoctorSpecialty,
         StarTeam,
@@ -107,6 +110,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         DoctorNextAvaialbleSlots,
         AppointmentNoShow,
+        SdDashboardSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

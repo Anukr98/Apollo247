@@ -1,4 +1,4 @@
-import Axios, { AxiosResponse } from 'axios';
+import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface MedicineProduct {
@@ -415,7 +415,7 @@ export const getMedicineDetailsApi = (
   );
 };
 
-let cancelSearchMedicineApi: any;
+let cancelSearchMedicineApi: Canceler | undefined;
 
 export const searchMedicineApi = (
   searchText: string
@@ -431,7 +431,7 @@ export const searchMedicineApi = (
         Authorization: config.MED_SEARCH[1],
         'Content-Type': 'application/json',
       },
-      cancelToken: new CancelToken(function executor(c) {
+      cancelToken: new CancelToken((c) => {
         // An executor function receives a cancel function as a parameter
         cancelSearchMedicineApi = c;
       }),
@@ -511,7 +511,7 @@ export const inventoryCheckApi = (
 //   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
 // };
 
-let cancelSearchSuggestionsApi: any;
+let cancelSearchSuggestionsApi: Canceler | undefined;
 
 export const getMedicineSearchSuggestionsApi = (
   params: string
@@ -528,7 +528,7 @@ export const getMedicineSearchSuggestionsApi = (
       headers: {
         Authorization: config.MED_SEARCH_SUGGESTION[1],
       },
-      cancelToken: new CancelToken(function executor(c) {
+      cancelToken: new CancelToken((c) => {
         // An executor function receives a cancel function as a parameter
         cancelSearchSuggestionsApi = c;
       }),
@@ -595,15 +595,23 @@ export const autoCompletePlaceSearch = (searchText: string): Promise<AxiosRespon
   return Axios.get(url);
 };
 
+let cancelGetDeliveryTimeApi: Canceler | undefined;
+
 export const getDeliveryTime = (params: {
   postalcode: string;
   ordertype: string;
   lookup: { sku: string; qty: number }[];
 }): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelGetDeliveryTimeApi && cancelGetDeliveryTimeApi();
   return Axios.post(config.GET_DELIVERY_TIME[0], params, {
     headers: {
       Authentication: config.GET_DELIVERY_TIME[1],
     },
+    cancelToken: new CancelToken((c) => {
+      // An executor function receives a cancel function as a parameter
+      cancelGetDeliveryTimeApi = c;
+    }),
   });
 };
 
