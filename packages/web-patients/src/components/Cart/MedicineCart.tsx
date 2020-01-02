@@ -14,8 +14,8 @@ import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
 import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
-  SaveMedicineOrderPaymentMq,
   SaveMedicineOrderPaymentMqVariables,
+  SaveMedicineOrderPaymentMq_SaveMedicineOrderPaymentMq,
 } from 'graphql/types/SaveMedicineOrderPaymentMq';
 import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
@@ -29,7 +29,6 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
 } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
 import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
-import { useApolloClient } from 'react-apollo-hooks';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -414,12 +413,11 @@ export interface PrescriptionFormat {
 
 export const MedicineCart: React.FC = (props) => {
   const classes = useStyles({});
-  const client = useApolloClient();
   const defPresObject = {
     name: '',
     imageUrl: '',
   };
-  const { storePickupPincode, deliveryAddressId } = useShoppingCart();
+  const { storePickupPincode, deliveryAddressId, clearCartInfo } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
@@ -526,11 +524,7 @@ export const MedicineCart: React.FC = (props) => {
     }
   );
 
-  const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
-    client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
-      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
-      variables: paymentInfo,
-    });
+  const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
 
   const placeOrder = (orderId: string, orderAutoId: number) => {
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
@@ -545,12 +539,20 @@ export const MedicineCart: React.FC = (props) => {
       },
     };
 
-    savePayment(paymentInfo)
-      .then(({ data }) => {
-        console.log(data);
+    savePayment({ variables: paymentInfo })
+      .then(({ data }: any) => {
+        if (data && data.SaveMedicineOrderPaymentMq) {
+          const { errorCode, errorMessage } = data.SaveMedicineOrderPaymentMq;
+          if (errorCode || (errorMessage && errorMessage.length > 0)) {
+            window.location.href = clientRoutes.medicinesCartInfo(orderId, 'failed');
+            return;
+          }
+          clearCartInfo && clearCartInfo();
+          window.location.href = clientRoutes.medicinesCartInfo(orderId, 'success');
+        }
       })
       .catch((e) => {
-        console.log(e);
+        window.location.href = clientRoutes.medicinesCartInfo(orderId, 'failed');
       });
   };
 
