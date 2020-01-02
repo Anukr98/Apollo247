@@ -15,6 +15,10 @@ export const pharmaOrderDeliveredTypeDefs = gql`
     ordersResult: DeliveryOrderResult
   }
 
+  input OutForDeliveryInput {
+    ordersResult: DeliveryOrderResult
+  }
+
   input DeliveryOrderResult {
     message: String
     apOrderNo: String
@@ -27,6 +31,7 @@ export const pharmaOrderDeliveredTypeDefs = gql`
 
   extend type Mutation {
     saveOrderDeliveryStatus(orderDeliveryInput: OrderDeliveryInput): OrderDeliveryResult!
+    saveOrderOutForDeliveryStatus(outForDeliveryInput: OrderDeliveryInput): OrderDeliveryResult!
   }
 `;
 

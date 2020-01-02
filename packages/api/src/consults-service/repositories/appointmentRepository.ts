@@ -1221,8 +1221,19 @@ export class AppointmentRepository extends Repository<Appointment> {
         Authkey: process.env.UHID_CREATE_AUTH_KEY ? process.env.UHID_CREATE_AUTH_KEY : '',
       },
     })
-      .then((res) => res.text())
+      .then((res) => {
+        console.log('API_response==>', res);
+        log(
+          'consultServiceLogger',
+          'API_CALL_RESPONSE',
+          'bookMedMantraAppointment()->API_CALL_RESPONSE',
+          JSON.stringify(res),
+          ''
+        );
+        return res.text();
+      })
       .catch((error) => {
+        console.log('bookingError:', error);
         log(
           'consultServiceLogger',
           'API_CALL_ERROR',
@@ -1230,7 +1241,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           '',
           JSON.stringify(error)
         );
-        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+        throw new AphError(AphErrorMessages.APPOINTMENT_EXTERNAL_ERROR);
       });
 
     log(
@@ -1282,7 +1293,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           '',
           JSON.stringify(error)
         );
-        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+        throw new AphError(AphErrorMessages.APPOINTMENT_EXTERNAL_ERROR);
       });
 
     log(
