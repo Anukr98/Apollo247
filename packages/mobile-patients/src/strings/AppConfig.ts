@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const PharmaApiConfig = {
   dev: {
@@ -73,6 +73,10 @@ const ConfigurationDev = {
   CONSULT_PG_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
@@ -84,7 +88,7 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   iOS_Version: '1.7',
-  Android_Version: '1.16',
+  Android_Version: '1.70',
 };
 
 // QA
@@ -98,6 +102,10 @@ const ConfigurationQA = {
   CONSULT_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
@@ -123,6 +131,10 @@ const ConfigurationProd = {
   CONSULT_PG_BASE_URL: 'https://pmt.apollo247.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://pmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
