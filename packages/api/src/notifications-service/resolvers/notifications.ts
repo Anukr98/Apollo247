@@ -384,18 +384,14 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
   } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
-    let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
-      '{0}',
-      patientDetails.firstName
-    );
-    smsMessage = smsMessage.replace('{1}', appointment.displayId.toString());
-    smsMessage = smsMessage.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    let notiBody = ApiConstants.BOOK_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+    notiBody = notiBody.replace('{1}', appointment.displayId.toString());
+    notiBody = notiBody.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-    smsMessage = smsMessage.replace('{3}', smsDate.toString());
-    smsMessage = smsMessage.replace('at {4}', '');
+    const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
+    notiBody = notiBody.replace('{3}', apptDate.toString());
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
-    notificationBody = smsMessage;
+    notificationBody = notiBody;
   } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
     notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);

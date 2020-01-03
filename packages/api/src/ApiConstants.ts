@@ -48,6 +48,11 @@ export enum ApiConstants {
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
+
+  //book appointment sucessfull
+  BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
+  BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
+
   /*** push-notification messages end here ***/
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
@@ -67,7 +72,6 @@ export enum ApiConstants {
   PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,raj@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
-  BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
 
   CANCEL_APPOINTMENT_SUBJECT = 'Appointment has been cancelled',
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
