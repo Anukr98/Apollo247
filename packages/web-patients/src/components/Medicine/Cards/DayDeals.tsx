@@ -92,7 +92,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
       <Slider {...sliderSettings}>
         {props.data &&
           props.data.map((deal) => (
-            <div className={classes.card}>
+            <div key={deal.category_id} className={classes.card}>
               <Link
                 className={classes.cardLink}
                 to={clientRoutes.searchByMedicine('Deals-of-the-day', deal.category_id)}

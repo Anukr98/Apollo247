@@ -63,7 +63,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
         {props.data &&
           props.data.map((brand) => {
             return (
-              <div className={classes.card}>
+              <div key={brand.category_id} className={classes.card}>
                 <Link to={clientRoutes.searchByMedicine('search-by-brand', brand.category_id)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>

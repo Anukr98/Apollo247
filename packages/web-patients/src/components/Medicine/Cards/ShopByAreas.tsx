@@ -69,7 +69,7 @@ export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
           props.data.map((healthArea) => {
             const formattedTitle = _replace(_lowerCase(healthArea.title), ' ', '-');
             return (
-              <div className={classes.card}>
+              <div key={healthArea.category_id} className={classes.card}>
                 <Link to={clientRoutes.searchByMedicine(formattedTitle, healthArea.category_id)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>

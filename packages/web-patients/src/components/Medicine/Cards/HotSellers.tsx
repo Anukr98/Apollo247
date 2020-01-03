@@ -123,7 +123,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         {props.data &&
           props.data.products &&
           props.data.products.map((hotSeller) => (
-            <div className={classes.card}>
+            <div key={hotSeller.sku} className={classes.card}>
               <div className={classes.cardWrap}>
                 <div className={classes.offerPrice}>
                   <span>-30%</span>
