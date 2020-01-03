@@ -19,19 +19,24 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginTop: height * 0.22,
   },
-  hideText: { ...theme.fonts.IBMPlexSansMedium(16), color: '#02475b' },
+  hideText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#02475b',
+    textAlign: 'right',
+    marginLeft: 20,
+  },
   orderName: {
     opacity: 0.6,
-    paddingLeft: 10,
+    paddingRight: 10,
     ...theme.fonts.IBMPlexSansMedium(14),
     color: '#02475b',
   },
-  subView: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  medicineText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    color: '#01475b',
-    marginBottom: 5,
-    marginTop: 5,
+  subView: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    alignItems: 'center',
   },
   commonText: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -91,6 +96,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     return moment(time).format('D MMM YYYY | hh:mm a');
   };
 
+  const formatSlot = (slot: string /*07:00-07:30 */) => {
+    return slot
+      .split('-')
+      .map((item) => moment(item.trim(), 'hh:mm').format('hh:mm a'))
+      .join(' - ');
+  };
+
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
     <View
@@ -111,6 +123,20 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <Text style={styles.orderName}>Date/Time</Text>
           <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.createdDate)}</Text>
         </View>
+        {!!orderDetails.slotTimings && (
+          <View style={styles.subView}>
+            <Text style={styles.orderName}>Pickup Date</Text>
+            <Text style={styles.hideText}>
+              {`${moment(orderDetails.diagnosticDate).format(`D MMM YYYY`)}`}
+            </Text>
+          </View>
+        )}
+        {!!orderDetails.slotTimings && (
+          <View style={styles.subView}>
+            <Text style={styles.orderName}>Pickup Time</Text>
+            <Text style={styles.hideText}>{`${formatSlot(orderDetails.slotTimings)}`}</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.horizontalline} />

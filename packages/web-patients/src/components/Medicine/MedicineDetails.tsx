@@ -74,6 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
+      padding: '0 10px 0 0',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 20,
@@ -111,9 +112,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     customScroll: {
-      paddingLeft: 20,
-      paddingRight: 17,
-      paddingBottom: 10,
+      padding: '0 7px 0 20px',
     },
     productInformation: {
       backgroundColor: theme.palette.common.white,
@@ -136,6 +135,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#02475b',
       lineHeight: '22px',
+      fontWeight: 500,
       '& p': {
         margin: '5px 0',
       },
@@ -156,7 +156,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 0,
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      marginTop: 5,
+      margin: '5px 0 0 0',
+      '& svg': {
+        color: '#02475b',
+      },
     },
     tabRoot: {
       fontSize: 14,
@@ -171,6 +174,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 'auto',
       minHeight: 'auto',
       flexBasis: 'auto',
+      margin: '0 15px 0 0',
     },
     tabSelected: {
       opacity: 1,
@@ -193,6 +197,9 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '22px',
       '& p': {
         margin: '5px 0',
+      },
+      '& ul': {
+        padding: '0 0 0 20px',
       },
     },
     prescriptionBox: {
@@ -408,7 +415,7 @@ export const MedicineDetails: React.FC = (props) => {
                 {medicineDetails && (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
-                      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+                      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 215px'}>
                         <div className={classes.customScroll}>
                           <div className={classes.productInformation}>
                             <MedicineImageGallery data={medicineDetails} />
@@ -421,7 +428,7 @@ export const MedicineDetails: React.FC = (props) => {
                               {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
                                 <div className={classes.textInfo}>
                                   <label>Composition</label>
-                                  {`${medicinePharmacyDetails[0].generic} -${medicinePharmacyDetails[0].Strengh} ${medicinePharmacyDetails[0].Unit} `}
+                                  {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
                                 </div>
                               )}
                               <div className={classes.textInfo}>
@@ -430,7 +437,7 @@ export const MedicineDetails: React.FC = (props) => {
                                   medicinePharmacyDetails && medicinePharmacyDetails.length > 0
                                     ? medicinePharmacyDetails[0].Doseform
                                     : ''
-                                } `}
+                                }`}
                               </div>
                               {medicineDetails.is_prescription_required !== '0' && (
                                 <div className={classes.prescriptionBox}>
@@ -447,7 +454,8 @@ export const MedicineDetails: React.FC = (props) => {
                                 <>
                                   <Tabs
                                     value={tabValue}
-                                    variant="fullWidth"
+                                    variant="scrollable"
+                                    scrollButtons="auto"
                                     classes={{
                                       root: classes.tabsRoot,
                                       indicator: classes.tabsIndicator,
@@ -466,7 +474,7 @@ export const MedicineDetails: React.FC = (props) => {
                                   <div className={classes.productDescription}>
                                     {description &&
                                       description.split('rn').map((data) => {
-                                        return <div>{data}</div>;
+                                        return <p>{data}</p>;
                                       })}
                                   </div>
                                 </div>

@@ -92,76 +92,6 @@ export const GET_DOCTOR_DETAILS = gql`
     }
   }
 `;
-export const GET_DOCTOR_PROFILE = gql`
-  query GetDoctorProfile {
-    getDoctorProfile {
-      profile {
-        id
-        salutation
-        firstName
-        lastName
-        mobileNumber
-        experience
-        speciality
-        specialization
-        isStarDoctor
-        education
-        services
-        languages
-        city
-        awards
-        photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
-        package
-        inviteStatus
-        address
-      }
-      paymentDetails {
-        accountNumber
-        address
-      }
-      clinics {
-        name
-        image
-        addressLine1
-        addressLine2
-        addressLine3
-        city
-      }
-      starDoctorTeam {
-        id
-        salutation
-        firstName
-        lastName
-        experience
-        speciality
-        specialization
-        education
-        services
-        languages
-        city
-        awards
-        photoUrl
-        package
-        inviteStatus
-        address
-      }
-      consultationHours {
-        days
-        startTime
-        endTime
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        type
-      }
-    }
-  }
-`;
 
 export const GET_DOCTOR_APPOINTMENTS = gql`
   query GetDoctorAppointments($startDate: Date, $endDate: Date) {
@@ -193,20 +123,23 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
 export const GET_PATIENT_LOG = gql`
   query getPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
     getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
-      patientid
-      consultscount
-      appointmentids
-      appointmentdatetime
-      patientInfo {
-        firstName
-        dateOfBirth
-        id
-        emailAddress
-        mobileNumber
-        gender
-        uhid
-        photoUrl
+      patientLog {
+        patientid
+        consultscount
+        appointmentids
+        appointmentdatetime
+        patientInfo {
+          firstName
+          dateOfBirth
+          id
+          emailAddress
+          mobileNumber
+          gender
+          uhid
+          photoUrl
+        }
       }
+      totalResultCount
     }
   }
 `;
@@ -216,7 +149,7 @@ export const CREATEAPPOINTMENTSESSION = gql`
     createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
       sessionId
       appointmentToken
-      caseSheetId
+      doctorId
     }
   }
 `;
@@ -227,9 +160,9 @@ export const END_APPOINTMENT_SESSION = gql`
   }
 `;
 
-export const UPDATE_CASESHEET = gql`
-  mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
-    updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
+export const MODIFY_CASESHEET = gql`
+  mutation modifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
+    modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
       consultType
       appointment {
         id
@@ -238,7 +171,7 @@ export const UPDATE_CASESHEET = gql`
         name
       }
       diagnosticPrescription {
-        name
+        itemname
       }
       doctorId
       followUp
@@ -264,44 +197,6 @@ export const UPDATE_CASESHEET = gql`
         instruction
       }
     }
-  }
-`;
-
-/**
- * @returns {DoctorProfile}
- * @param {String} searchString
- */
-export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
-  query GetDoctorsForStarDoctorProgram($searchString: String!) {
-    getDoctorsForStarDoctorProgram(searchString: $searchString) {
-      profile {
-        id
-        firstName
-        lastName
-      }
-    }
-  }
-`;
-
-/**
- * @returns {boolean}
- * @param {String} starDoctorId
- * @param {String} doctorId
- */
-export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
-  mutation AddDoctorToStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    addDoctorToStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
-  }
-`;
-
-/**
- * @returns {boolean}
- * @param {String} starDoctorId
- * @param {String} doctorId
- */
-export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
-  mutation RemoveDoctorFromStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
 
@@ -344,7 +239,7 @@ export const REMOVE_DELEGATE_NUMBER = gql`
 `;
 
 export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
-  mutation RemoveTeamDoctorFromStarTeam($associatedDoctor: String!, $starDoctor: String!) {
+  mutation removeTeamDoctorFromStarTeam($associatedDoctor: String!, $starDoctor: String!) {
     removeTeamDoctorFromStarTeam(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor) {
       firstName
     }
@@ -433,7 +328,7 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
           name
         }
         diagnosticPrescription {
-          name
+          itemname
         }
         followUp
         followUpDate
@@ -496,7 +391,7 @@ export const GET_CASESHEET = gql`
           name
         }
         diagnosticPrescription {
-          name
+          itemname
         }
         followUp
         followUpDate
@@ -521,7 +416,7 @@ export const GET_CASESHEET = gql`
             name
           }
           diagnosticPrescription {
-            name
+            itemname
           }
           symptoms {
             symptom
@@ -543,28 +438,6 @@ export const GET_CASESHEET = gql`
             instruction
           }
         }
-      }
-    }
-  }
-`;
-
-export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
-  query SearchDoctorAndSpecialty($searchText: String!) {
-    SearchDoctorAndSpecialty(searchText: $searchText) {
-      doctors {
-        firstName
-        lastName
-        services
-        speciality
-        specialization
-        photoUrl
-        id
-        experience
-      }
-      specialties {
-        id
-        name
-        image
       }
     }
   }

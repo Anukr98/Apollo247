@@ -134,7 +134,9 @@ const addNewProfile: Resolver<
   patientRepo.createNewUhid(savePatient.id);
   patientRepo.createAthsToken(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
-  if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  if (!patient || patient == null) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
 
   //send registration success notification here
   sendPatientRegistrationNotification(patient, profilesDb);
