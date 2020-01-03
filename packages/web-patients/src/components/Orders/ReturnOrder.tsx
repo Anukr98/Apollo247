@@ -196,10 +196,6 @@ export const ReturnOrder: React.FC<ReturnOrderProps> = (props) => {
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            <CancelOrderNotification
-              setIsCancelOrderDialogOpen={props.setIsReturnOrderDialogOpen}
-              setIsPopoverOpen={props.setIsPopoverOpen}
-            />
           </div>
         </div>
       </Popover>
