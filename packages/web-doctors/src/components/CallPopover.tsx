@@ -2065,7 +2065,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     >
                       Reschedule Consult
                     </li>
-                  }
+                  )}
                 </ul>
               </div>
             </Popover>
