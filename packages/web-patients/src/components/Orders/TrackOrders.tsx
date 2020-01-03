@@ -128,7 +128,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setMoreActionsDialog(event.currentTarget);
   };
-
+  const [orderDetailsData, setOrderDetailsData] = useState();
   const orderDetails = useMutation(GET_MEDICINE_ORDER_DETAILS);
 
   useEffect(() => {
@@ -140,7 +140,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             typeof props.orderAutoId == 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
         },
       })
-        .then((res) => console.log(res))
+        .then((res) => {
+          // if(res && res.data && res.data!.getMedicineOrderDetails&&res.data.getMedicineOrderDetails.MedicineOrderDetails)
+          setOrderDetailsData(res.data);
+        })
+
         .catch((e) => console.log(e));
     }
   }, [props.orderAutoId]);
@@ -149,7 +153,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         <div className={classes.orderId}>
-          <span>ORDER #A2472707936</span>
+          <span>{`ORDER #${props.orderAutoId}`}</span>
         </div>
         <div className={classes.headerActions}>
           <AphButton onClick={handleClick} className={classes.moreBtn}>
@@ -207,7 +211,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
               <div className={classes.customScroll}>
-                <OrdersSummary />
+                <OrdersSummary orderDetailsData={orderDetailsData} />
               </div>
             </Scrollbars>
           </TabContainer>
