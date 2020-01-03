@@ -5,7 +5,7 @@ import { TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getParameterByName } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getParameterByName, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -154,8 +154,8 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
     CommonLogEvent(AppRoutes.TestPayment, 'handleOrderFailure');
     props.navigation.goBack();
     showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: `We're sorry but the payment failed.`,
+      title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+      description: `We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.`,
       unDismissable: true,
     });
   };

@@ -232,8 +232,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         if (errorCode || errorMessage) {
           // Order-failed
           showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Order failed, ${errorMessage}.`,
+            title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+            description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+            // description: `Order failed, ${errorMessage}.`,
           });
         } else {
           // Order-Success, Show popup here & clear cart info
@@ -251,8 +252,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         setShowSpinner(false);
         aphConsole.log({ e });
         showAphAlert!({
-          title: `Uh oh.. :(`,
-          description: `Something went wrong, unable to place order.`,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `Your order failed due to some temporary issue :( Please submit the order again.`,
         });
       });
   };
