@@ -8,6 +8,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   sendCartNotification,
   NotificationType,
+  sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
@@ -139,13 +140,12 @@ const saveOrderOutForDeliveryStatus: Resolver<
     MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY
   );
 
-  const pushNotificationInput = {
-    orderAutoId: orderDetails.orderAutoId,
-    notificationType: NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY,
-  };
-  console.log(pushNotificationInput, 'pushNotificationInput');
-  const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
-  console.log(notificationResult, 'medicine order delivered notification');
+  //send order out for delivery notification
+  sendMedicineOrderStatusNotification(
+    NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY,
+    orderDetails,
+    profilesDb
+  );
 
   return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
 };

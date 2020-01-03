@@ -1026,7 +1026,7 @@ export const MedicinePrescription: React.FC = () => {
                 <Paper className={classes.medicineCard}>
                   <h5>{medicine.medicineName}</h5>
                   <h6>
-                    {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
+                    {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
                     ${duration}
                     ${whenString.length > 0 && whenString}`}
                   </h6>

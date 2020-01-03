@@ -7,7 +7,7 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import { Patient } from 'profiles-service/entities';
+import { Patient, MedicineOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
@@ -92,6 +92,8 @@ export enum NotificationType {
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
+  MEDICINE_ORDER_PLACED = 'MEDICINE_ORDER_PLACED',
+  MEDICINE_ORDER_CONFIRMED = 'MEDICINE_ORDER_CONFIRMED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
@@ -537,19 +539,15 @@ export async function sendCartNotification(
   const patientDetails = await patientRepo.getPatientDetails(medicineOrderDetails.patient.id);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   if (pushNotificationInput.notificationType == NotificationType.MEDICINE_CART_READY) {
-    notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
     notificationTitle = ApiConstants.CART_READY_TITLE;
+    notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
   } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
-    notificationBody = ApiConstants.ORDER_DELIVERY_BODY.replace('{0}', patientDetails.firstName);
     notificationTitle = ApiConstants.ORDER_DELIVERY_TITLE;
-  } else if (
-    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY
-  ) {
-    notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY.replace(
-      '{0}',
-      patientDetails.firstName
+    notificationBody = ApiConstants.ORDER_DELIVERY_BODY.replace('{0}', patientDetails.firstName);
+    notificationBody = notificationBody.replace(
+      '{1}',
+      pushNotificationInput.orderAutoId.toString()
     );
-    notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
   }
 
   //initialize firebaseadmin
@@ -570,7 +568,7 @@ export async function sendCartNotification(
       type: 'Cart_Ready',
       orderId: pushNotificationInput.orderAutoId.toString(),
       orderAutoId: '',
-      deliveredDate: '',
+      statusDate: '',
       firstName: patientDetails.firstName,
     },
   };
@@ -580,17 +578,7 @@ export async function sendCartNotification(
       type: 'Order_Delivered',
       orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
-      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
-      firstName: patientDetails.firstName,
-    };
-  }
-
-  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY) {
-    payload.data = {
-      type: 'Order_Out_For_Delivery',
-      orderAutoId: pushNotificationInput.orderAutoId.toString(),
-      orderId: medicineOrderDetails.id,
-      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      statusDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
     };
   }
@@ -665,7 +653,6 @@ export async function getPatientDeviceTokens(mobileNumber: string, patientsDb: C
   //get all patients of a mobile number
   const allRelatedPatients = await patientRepo.getIdsByMobileNumber(mobileNumber);
   const patientIds = allRelatedPatients.map((patient) => patient.id);
-  console.log(patientIds, 'patientIds');
 
   //get all device tokens data of related patients
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
@@ -701,6 +688,12 @@ export function getNotificationLogFileName(notificationType: NotificationType) {
   switch (notificationType) {
     case NotificationType.PATIENT_REGISTRATION:
       return `${process.env.NODE_ENV}_registration_notification_${currentDate}.txt`;
+    case NotificationType.MEDICINE_ORDER_PLACED:
+      return `${process.env.NODE_ENV}_order_placed_notification_${currentDate}.txt`;
+    case NotificationType.MEDICINE_ORDER_CONFIRMED:
+      return `${process.env.NODE_ENV}_order_cofirmed_notification_${currentDate}.txt`;
+    case NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY:
+      return `${process.env.NODE_ENV}_order_out_for_delivery_notification_${currentDate}.txt`;
     default:
       return `${process.env.NODE_ENV}_registration_notification_${currentDate}.txt`;
   }
@@ -775,6 +768,97 @@ export async function sendPatientRegistrationNotification(
     })
     .catch((error: JSON) => {
       console.log('PushNotification Failed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  console.log('push notifications sent');
+  return { status: true };
+}
+
+//Notification - Medicine order Status Changes
+export async function sendMedicineOrderStatusNotification(
+  notificationType: NotificationType,
+  orderDetails: MedicineOrders,
+  patientsDb: Connection
+) {
+  //get all the patient device tokens
+  let patientDeviceTokens: string[] = [];
+  const patientDetails = orderDetails.patient;
+  patientDeviceTokens = await getPatientDeviceTokens(patientDetails.mobileNumber, patientsDb);
+
+  if (patientDeviceTokens.length == 0) return;
+
+  let notificationTitle: string = '';
+  let notificationBody: string = '';
+  let payloadDataType: string = '';
+
+  switch (notificationType) {
+    case NotificationType.MEDICINE_ORDER_PLACED:
+      payloadDataType = 'Order_Placed';
+      notificationTitle = ApiConstants.ORDER_PLACED_TITLE;
+      notificationBody = ApiConstants.ORDER_PLACED_BODY;
+      break;
+    case NotificationType.MEDICINE_ORDER_CONFIRMED:
+      payloadDataType = 'Order_Confirmed';
+      notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
+      notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
+    case NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY:
+      payloadDataType = 'Order_Out_For_Delivery';
+      notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
+      notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
+      break;
+    default:
+      payloadDataType = 'Order_Placed';
+      notificationTitle = ApiConstants.ORDER_PLACED_TITLE;
+      notificationBody = ApiConstants.ORDER_PLACED_BODY;
+  }
+  //notification payload
+  const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
+  const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
+  const orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+
+  notificationTitle = notificationTitle.toString();
+  notificationBody = notificationBody.replace('{0}', userName);
+  notificationBody = notificationBody.replace('{1}', orderNumber);
+  notificationBody = notificationBody.replace('{2}', orderTat);
+
+  const payload = {
+    notification: {
+      title: notificationTitle,
+      body: notificationBody,
+    },
+    data: {
+      type: payloadDataType,
+      orderAutoId: orderDetails.orderAutoId.toString(),
+      orderId: orderDetails.id,
+      statusDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      firstName: patientDetails.firstName,
+    },
+  };
+
+  //notification options
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+
+  //initialize firebaseadmin
+  const admin = await getInitializedFirebaseAdmin();
+
+  admin
+    .messaging()
+    .sendToDevice(patientDeviceTokens, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      const logData = {
+        patientId: patientDetails.id,
+        orderAutoId: orderDetails.orderAutoId,
+        orderId: orderDetails.id,
+        multicastId: response.multicastId,
+      };
+      logNotificationResponse(notificationType, logData);
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotificationFailed::' + error);
       throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
     });
 

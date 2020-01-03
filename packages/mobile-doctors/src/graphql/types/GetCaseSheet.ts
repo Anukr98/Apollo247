@@ -74,7 +74,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
@@ -86,7 +86,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   diagnosis: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
   diagnosticPrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null;
   followUp: boolean | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   followUpAfterInDays: string | null;
   consultType: string | null;
   notes: string | null;
@@ -94,7 +94,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_appointment {
   __typename: "Appointment";
-  id: string | null;
+  id: string;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
@@ -104,7 +104,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis 
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
@@ -135,7 +135,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   diagnosis: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] | null;
   symptoms: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms | null)[] | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   followUpAfterInDays: string | null;
   followUp: boolean | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription | null)[] | null;
@@ -144,14 +144,14 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
   __typename: "Appointment";
-  appointmentDateTime: any | null;
+  appointmentDateTime: any;
   appointmentState: string | null;
-  doctorId: string | null;
+  doctorId: string;
   hospitalId: string | null;
-  patientId: string | null;
+  patientId: string;
   parentId: string | null;
-  status: STATUS | null;
-  caseSheet: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet | null)[] | null;
+  status: STATUS;
+  caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
 }
 
 export interface GetCaseSheet_getCaseSheet {

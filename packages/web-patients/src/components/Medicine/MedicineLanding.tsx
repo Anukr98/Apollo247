@@ -419,11 +419,18 @@ export const MedicineLanding: React.FC = (props) => {
         }}
         classes={{ paper: classes.bottomPopover }}
       >
-        <OrderPlaced
-          orderAutoId={params.orderAutoId}
-          orderStatus={params.orderStatus}
-          setShowOrderPopup={setShowOrderPopup}
-        />
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <OrderPlaced
+              orderAutoId={params.orderAutoId}
+              orderStatus={params.orderStatus}
+              setShowOrderPopup={setShowOrderPopup}
+            />
+          </div>
+        </div>
       </Popover>
     </div>
   );

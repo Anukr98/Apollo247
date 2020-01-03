@@ -120,7 +120,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   streetLine2: string | null;
   streetLine3: string | null;
   zip: string | null;
-  specialty: GetDoctorDetails_getDoctorDetails_specialty;
+  specialty: GetDoctorDetails_getDoctorDetails_specialty | null;
   consultHours: (GetDoctorDetails_getDoctorDetails_consultHours | null)[] | null;
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;
   doctorHospital: GetDoctorDetails_getDoctorDetails_doctorHospital[];
