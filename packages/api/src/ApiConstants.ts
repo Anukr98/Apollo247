@@ -26,12 +26,20 @@ export enum ApiConstants {
   CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
 
   //medicine order out for delivery
+  ORDER_PLACED_TITLE = 'Medicine order is placed',
+  ORDER_PLACED_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your order {1} is placed with us successfully.View Order Details',
+
+  //medicine order out for delivery
+  ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
+  ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verfied & successfully processed. Order will be delivered in {2} hours',
+
+  //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
-  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}, your medicine order is out for delivery',
+  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} is out for delivery. Our executive will be there soon :)',
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Hi {0}, your medicine order is delivered',
+  ORDER_DELIVERY_BODY = 'Hi {0}! Your order {1} has been delivered successfully',
 
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',

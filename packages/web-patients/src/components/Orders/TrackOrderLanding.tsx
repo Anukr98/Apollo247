@@ -77,7 +77,10 @@ export const TrackOrderLanding: React.FC = (props) => {
         <div className={classes.trackOrderPage}>
           <Tabs
             value={tabValue}
-            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+            classes={{
+              root: classes.tabsRoot,
+              indicator: classes.tabsIndicator,
+            }}
             onChange={(e, newValue) => {
               setTabValue(newValue);
             }}
@@ -94,7 +97,7 @@ export const TrackOrderLanding: React.FC = (props) => {
           </Tabs>
           {tabValue === 0 && (
             <TabContainer>
-              <TrackOrders />
+              <TrackOrders orderAutoId={0} />
             </TabContainer>
           )}
           {tabValue === 1 && <TabContainer>Test</TabContainer>}

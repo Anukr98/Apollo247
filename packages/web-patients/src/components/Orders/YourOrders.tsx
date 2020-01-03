@@ -72,19 +72,21 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const YourOrders: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const currentPath = window.location.pathname;
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(false);
+
+  const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
 
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.sectionHeader}>Your Orders</div>
-        <OrderCard />
+        <OrderCard setOrderAutoId={setOrderAutoId} />
       </div>
       <div className={classes.rightSection}>
-        <TrackOrders />
+        <TrackOrders orderAutoId={orderAutoId} />
       </div>
       <Popover
         open={isPopoverOpen}

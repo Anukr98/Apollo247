@@ -9,6 +9,7 @@ import {
   Cancel,
   Selected,
   UnSelected,
+  ClosePopup,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -23,7 +24,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { GET_PATIENT_LOG } from '@aph/mobile-doctors/src/graphql/profiles';
 import { patientLogType, patientLogSort } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import moment, { duration } from 'moment';
-import console = require('console');
+import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -57,10 +59,46 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(14),
     color: '#00b38e',
   },
+  showPopUp: {
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  container: {
+    justifyContent: 'flex-end',
+    flex: 1,
+  },
+  subViewPopup: {
+    marginTop: 150,
+    backgroundColor: 'white',
+    width: '100%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 15,
+  },
 });
 export interface PatientsProps extends NavigationScreenProps {}
 
 export const Patients: React.FC<PatientsProps> = (props) => {
+  const tabsData = [{ title: 'All' }, { title: 'Follow up' }, { title: 'Regular' }];
+  const sortingList = [
+    'Most Recent',
+    'Number of Consults',
+    'Patient Name: A to Z',
+    'Patient Name: Z to A',
+  ];
+
+  const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
+  const [showSorting, setshowSorting] = useState(false);
+  const [selectedSorting, setselectedSorting] = useState(sortingList[0]);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const client = useApolloClient();
   const [activeTabIndex, setActiveTabIndex] = useState(true);
   const [regular, setRegular] = useState(false);
@@ -97,6 +135,55 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     );
   };
 
+  const renderTabs = () => {
+    return (
+      <View style={styles.shadowview}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: theme.colors.WHITE,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <TabsComponent
+              onChange={(title) => {
+                setSelectedTab(title);
+                ShowAllTypeData(
+                  title === tabsData[0].title
+                    ? patientLogType.All
+                    : title === tabsData[1].title
+                    ? patientLogType.FOLLOW_UP
+                    : patientLogType.REGULAR,
+                  patientLogSortData
+                );
+              }}
+              data={tabsData}
+              selectedTab={selectedTab}
+            />
+          </View>
+
+          <View
+            style={{
+              width: 60,
+              height: 20,
+              borderLeftWidth: 0.5,
+              borderColor: 'rgba(2, 71, 91, 0.6)',
+              //marginLeft: 15,
+              marginVertical: 12,
+              alignItems: 'center',
+            }}
+          >
+            <TouchableOpacity onPress={() => setshowSorting(true)}>
+              <Up />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderDoctorGreeting = () => {
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
@@ -121,26 +208,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     );
   };
 
-  const showRegularData = () => {
-    ShowAllTypeData(patientLogType.REGULAR, patientLogSortData);
-    setRegular(true);
-    setActiveTabIndex(false);
-    setFollowup(false);
-  };
-  const showFollowUp = () => {
-    ShowAllTypeData(patientLogType.FOLLOW_UP, patientLogSortData);
-    setRegular(false);
-    setActiveTabIndex(false);
-    setFollowup(true);
-  };
-  const showAllData = () => {
-    ShowAllTypeData(patientLogType.All, patientLogSortData);
-    setActiveTabIndex(true);
-    setRegular(false);
-    setFollowup(false);
-  };
   const ShowAllTypeData = (SelectableValue: patientLogType, patientLogSortData: patientLogSort) => {
     console.log('patientLogSortData', patientLogSortData);
+    setshowSpinner(true);
     client
       .query<getPatientLog>({
         query: GET_PATIENT_LOG,
@@ -155,6 +225,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
       .then((_data) => {
         console.log('getPatientLog', _data!);
         setAllData(_data.data.getPatientLog);
+        setshowSpinner(false);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -166,156 +237,20 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     setPatientLogSortData(patientLogSort.MOST_RECENT);
   };
   return (
-    <SafeAreaView style={[theme.viewStyles.container]}>
-      {renderMainHeader()}
-      <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={[theme.viewStyles.container]}>
+        {renderMainHeader()}
 
-      <View style={styles.shadowview}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <TouchableOpacity onPress={() => showAllData()}>
-            {!activeTabIndex ? (
-              <Text
-                style={{
-                  textAlign: 'left',
-                  ...theme.fonts.IBMPlexSansSemiBold(14),
-                  color: '#02475b',
-                  marginTop: 8,
-                  marginBottom: 12,
-                  marginLeft: 24,
-                  opacity: 0.6,
-                }}
-              >
-                All
-              </Text>
-            ) : (
-              <View>
-                <Text
-                  style={{
-                    textAlign: 'left',
-                    ...theme.fonts.IBMPlexSansSemiBold(14),
-                    color: '#02475b',
-                    marginTop: 8,
-                    marginBottom: 12,
-                    marginLeft: 24,
-                  }}
-                >
-                  All
-                </Text>
-                <View
-                  style={{
-                    borderColor: '#00b38e',
-                    borderWidth: 2,
-                    width: 80,
-                    marginTop: 2,
-                  }}
-                ></View>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => showRegularData()}>
-            {!regular ? (
-              <Text
-                style={{
-                  textAlign: 'left',
-                  ...theme.fonts.IBMPlexSansSemiBold(14),
-                  color: '#02475b',
-                  marginTop: 8,
-                  marginBottom: 12,
-                  marginLeft: 24,
-                  opacity: 0.6,
-                }}
-              >
-                Regular
-              </Text>
-            ) : (
-              <View>
-                <Text
-                  style={{
-                    textAlign: 'left',
-                    ...theme.fonts.IBMPlexSansSemiBold(14),
-                    color: '#02475b',
-                    marginTop: 8,
-                    marginBottom: 12,
-                    marginLeft: 48,
-                  }}
-                >
-                  Regular
-                </Text>
-                <View
-                  style={{
-                    borderColor: '#00b38e',
-                    borderWidth: 2,
-                    width: 80,
-                    marginTop: 2,
-                    marginLeft: 30,
-                  }}
-                ></View>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => showFollowUp()}>
-            {!followup ? (
-              <Text
-                style={{
-                  textAlign: 'left',
-                  ...theme.fonts.IBMPlexSansSemiBold(14),
-                  color: '#02475b',
-                  marginTop: 8,
-                  marginBottom: 12,
-                  marginLeft: 24,
-                  marginRight: 24,
-                  opacity: 0.6,
-                }}
-              >
-                FollowUp
-              </Text>
-            ) : (
-              <View>
-                <Text
-                  style={{
-                    textAlign: 'left',
-                    ...theme.fonts.IBMPlexSansSemiBold(14),
-                    color: '#02475b',
-                    marginTop: 8,
-                    marginBottom: 12,
-                    marginLeft: 48,
-                  }}
-                >
-                  FollowUp
-                </Text>
-                <View
-                  style={{
-                    borderColor: '#00b38e',
-                    borderWidth: 2,
-                    width: 80,
-                    marginTop: 2,
-                    marginLeft: 30,
-                  }}
-                ></View>
-              </View>
-            )}
-          </TouchableOpacity>
-          <View
-            style={{
-              height: 20,
-              borderWidth: 0.5,
-              borderColor: 'rgba(2, 71, 91, 0.6)',
-              //marginLeft: 15,
-              marginTop: 10,
-            }}
-          ></View>
-          <View style={{ marginRight: 24 }}>
-            <TouchableOpacity onPress={() => setFilterData(!filterdata)}>
-              <Up />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      <View style={{ flex: 1 }}>
-        {activeTabIndex ? (
-          <ScrollView bounces={false} style={{ flex: 1 }}>
-            {allData.length == 0 ? (
+        <ScrollView
+          bounces={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          stickyHeaderIndices={[1]}
+        >
+          <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+          {renderTabs()}
+          <View style={{ paddingTop: 14 }}>
+            {allData.length == 0 && !showSpinner ? (
               <Text
                 style={{
                   flex: 1,
@@ -330,7 +265,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                 const dataeval = moment(_doctor.appointmentdatetime).format('DD/MM/YYYY');
                 return (
                   <PatientCard
-                    doctorname={_doctor.patientInfo!.firstName}
+                    doctorname={_doctor!.patientInfo!.firstName}
                     icon={
                       <View style={{ marginRight: 12 }}>
                         <Chat />
@@ -338,172 +273,85 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                     }
                     consults={_doctor.consultscount! + `Consults`}
                     lastconsult={dataeval}
+                    //typeValue={_doctor.type}
                     onPress={() =>
                       props.navigation.push(AppRoutes.PatientDetailsPage, {
-                        Appointments: _doctor.appointmentids![0],
-                        PatientInfo: _doctor.patientInfo,
-                        ConsultsCount: _doctor.consultscount,
+                        Appointments: _doctor!.appointmentids[0],
                       })
                     }
                   />
                 );
               })
             )}
-          </ScrollView>
-        ) : (
-          <View style={{ flex: 1 }}>
-            {regular ? (
-              <ScrollView bounces={false} style={{ flex: 1 }}>
-                {allData.length == 0 ? (
-                  <Text
-                    style={{
-                      flex: 1,
-                      color: '#01475b',
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                    }}
-                  >
-                    No Data
-                  </Text>
-                ) : (
-                  allData!.map((_doctor: getPatientLog_getPatientLog) => {
-                    const dataeval = moment(_doctor.appointmentdatetime).format('DD/MM/YYYY');
-                    return (
-                      <PatientCard
-                        doctorname={_doctor.patientInfo!.firstName}
-                        icon={
-                          <View style={{ marginRight: 12 }}>
-                            <Chat />
-                          </View>
-                        }
-                        consults={_doctor.consultscount! + `Consults`}
-                        lastconsult={dataeval}
-                        //typeValue={_doctor.type}
-                        onPress={() =>
-                          props.navigation.push(AppRoutes.PatientDetailsPage, {
-                            Appointments: _doctor.appointmentids![0],
-                            PatientInfo: _doctor.patientInfo,
-                            ConsultsCount: _doctor.consultscount,
-                          })
-                        }
-                      />
-                    );
-                  })
-                )}
-              </ScrollView>
-            ) : (
-              <View style={{ flex: 1 }}>
-                {followup ? (
-                  <View style={{ flex: 1 }}>
-                    <ScrollView bounces={false} style={{ flex: 1 }}>
-                      {allData.length == 0 ? (
-                        <Text
-                          style={{
-                            flex: 1,
-                            color: '#01475b',
-                            ...theme.fonts.IBMPlexSansMedium(14),
-                          }}
-                        >
-                          No Data
-                        </Text>
-                      ) : (
-                        allData!.map((_doctor: getPatientLog_getPatientLog) => {
-                          const dataeval = moment(_doctor.appointmentdatetime).format('DD/MM/YYYY');
-                          return (
-                            <PatientCard
-                              doctorname={_doctor.patientInfo!.firstName}
-                              icon={
-                                <View style={{ marginRight: 12 }}>
-                                  <Chat />
-                                </View>
-                              }
-                              consults={_doctor.consultscount! + `Consults`}
-                              lastconsult={dataeval}
-                              //typeValue={_doctor.type}
-                              onPress={() =>
-                                props.navigation.push(AppRoutes.PatientDetailsPage, {
-                                  Appointments: _doctor.appointmentids![0],
-                                  PatientInfo: _doctor.patientInfo,
-                                  ConsultsCount: _doctor.consultscount,
-                                })
-                              }
-                            />
-                          );
-                        })
-                      )}
-                    </ScrollView>
-                  </View>
-                ) : null}
-              </View>
-            )}
           </View>
-        )}
-        {filterdata ? (
-          <View
-            style={{
-              borderTopLeftRadius: 10,
-              borderTopRightRadius: 10,
-              backgroundColor: theme.colors.CARD_BG,
-              padding: 20,
-              marginBottom: 0,
-              shadowColor: '#808080',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 20,
-              elevation: 16,
-            }}
-          >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(14), color: '#01475b' }}>
-                {' '}
-                Sort By
-              </Text>
-              <TouchableOpacity onPress={() => setFilterData(false)}>
-                <Cancel />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                borderStyle: 'solid',
-                borderWidth: 0.5,
-                borderColor: 'rgba(2, 71, 91, 0.4)',
-                height: 1,
-                marginBottom: 16,
-                marginTop: 16,
-              }}
-            ></View>
+        </ScrollView>
+      </SafeAreaView>
 
-            <View>
-              {selectedId ? (
-                <TouchableOpacity onPress={() => showDataSort()}>
-                  <View style={styles.commonview}>
-                    <Selected />
-                    <Text style={styles.selectText}>Most Recent</Text>
-                  </View>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={() => showDataSort()}>
-                  <View style={styles.commonview}>
-                    <UnSelected />
-                    <Text style={styles.common}>Most Recent</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-              <View style={styles.commonview}>
-                <UnSelected />
-                <Text style={styles.common}>Number of Consults</Text>
+      {showSorting && (
+        <View style={styles.showPopUp}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.container}
+            onPress={() => setshowSorting(false)}
+          >
+            <TouchableOpacity activeOpacity={1} style={styles.subViewPopup} onPress={() => {}}>
+              <View style={{ marginHorizontal: 20 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingVertical: 23,
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    style={theme.viewStyles.text(
+                      'SB',
+                      14,
+                      theme.colors.darkBlueColor,
+                      1,
+                      undefined,
+                      0.54
+                    )}
+                  >
+                    SORT BY
+                  </Text>
+                  <TouchableOpacity activeOpacity={1} onPress={() => setshowSorting(false)}>
+                    <ClosePopup style={{ height: 24, width: 24 }} />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ marginVertical: 9 }}>
+                  {sortingList.map((title) => (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={{ flexDirection: 'row', marginVertical: 11 }}
+                      onPress={() => setselectedSorting(title)}
+                    >
+                      {selectedSorting === title ? <Selected /> : <UnSelected />}
+                      <Text
+                        style={[
+                          {
+                            marginLeft: 20,
+                            ...theme.viewStyles.text('S', 14, 'rgba(2, 71, 91, 0.3)'),
+                          },
+                          selectedSorting === title
+                            ? { ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN) }
+                            : {},
+                        ]}
+                      >
+                        {title}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-              <View style={styles.commonview}>
-                <UnSelected />
-                <Text style={styles.common}>Patient Name: A to Z</Text>
-              </View>
-              <View style={styles.commonview}>
-                <UnSelected />
-                <Text style={styles.common}>Patient Name: Z to A</Text>
-              </View>
-            </View>
-          </View>
-        ) : null}
-      </View>
-    </SafeAreaView>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
+      )}
+      {showSpinner && <Spinner />}
+    </View>
   );
 };
