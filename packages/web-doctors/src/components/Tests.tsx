@@ -116,7 +116,7 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       '&:focus': {
         outline: 'none',
-      }
+      },
     },
     popupHeadingCenter: {
       borderRadius: 10,
