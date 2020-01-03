@@ -301,7 +301,7 @@ app.post('/paymed-response', (req, res) => {
   /* never execute a transaction if the payment status is failed */
   if (transactionStatus === 'failed') {
     if (reqSource === 'web') {
-      const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+      const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
       res.redirect(redirectUrl);
     } else {
       res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
@@ -338,7 +338,7 @@ app.post('/paymed-response', (req, res) => {
     .then((response) => {
       console.log(response, 'response is....');
       if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
         res.redirect(redirectUrl);
       } else {
         res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
@@ -347,7 +347,7 @@ app.post('/paymed-response', (req, res) => {
     .catch((error) => {
       console.log('error', error);
       if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
         res.redirect(redirectUrl);
       } else {
         res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);

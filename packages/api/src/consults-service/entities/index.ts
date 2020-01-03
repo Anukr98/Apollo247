@@ -370,6 +370,9 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   endTime: Date;
 
+  @Column('decimal', { precision: 5, scale: 2, default: 0 })
+  callDuration: number;
+
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
 
@@ -827,6 +830,12 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column({ default: 0 })
   consultSlots: number;
+
+  @Column({ default: 0 })
+  paidFollowUp: number;
+
+  @Column({ default: 0 })
+  unPaidFollowUp: number;
 
   @Column()
   createdDate: Date;

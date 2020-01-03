@@ -11,7 +11,7 @@ import { Gender, Relation } from "./globalTypes";
 export interface GetPatients_getPatients_patients {
   __typename: "Patient";
   id: string;
-  mobileNumber: string | null;
+  mobileNumber: string;
   firstName: string | null;
   lastName: string | null;
   gender: Gender | null;

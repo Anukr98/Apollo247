@@ -544,16 +544,16 @@ export const MedicineCart: React.FC = (props) => {
         if (data && data.SaveMedicineOrderPaymentMq) {
           const { errorCode, errorMessage } = data.SaveMedicineOrderPaymentMq;
           if (errorCode || (errorMessage && errorMessage.length > 0)) {
-            window.location.href = clientRoutes.medicinesCartInfo(orderId, 'failed');
+            window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
           setCheckoutDialogOpen(false);
           clearCartInfo && clearCartInfo();
-          window.location.href = clientRoutes.medicinesCartInfo(orderId, 'success');
+          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
       })
       .catch((e) => {
-        window.location.href = clientRoutes.medicinesCartInfo(orderId, 'failed');
+        window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
       });
   };
 
@@ -805,6 +805,7 @@ export const MedicineCart: React.FC = (props) => {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
                       if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
+                        clearCartInfo && clearCartInfo();
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {

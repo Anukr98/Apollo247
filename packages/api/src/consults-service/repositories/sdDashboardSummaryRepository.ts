@@ -1,14 +1,13 @@
-import { EntityRepository, Repository, Connection } from 'typeorm';
+import { EntityRepository, Repository, Connection, Between } from 'typeorm';
 import {
   Appointment,
   AppointmentCallDetails,
   SdDashboardSummary,
   STATUS,
 } from 'consults-service/entities';
-import { format, addDays } from 'date-fns';
+import { format, addDays, differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { differenceInMinutes } from 'date-fns';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 @EntityRepository(SdDashboardSummary)
@@ -120,5 +119,53 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     }
     return totalSlots;
+  }
+
+  async getTimePerConsult(doctorId: string, appointmentDate: Date) {
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const startDate = new Date(inputStartDate + 'T18:30');
+    const totalTime = await AppointmentCallDetails.createQueryBuilder('appointment_call_details')
+      .leftJoinAndSelect('appointment_call_details.appointment', 'appointment')
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+        fromDate: startDate,
+        toDate: endDate,
+      })
+      .andWhere('appointment_call_details.endTime is not null')
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .getMany();
+    let totalHours = 0;
+    if (totalTime.length > 0) {
+      totalTime.map((apptTime) => {
+        totalHours += apptTime.callDuration;
+      });
+    }
+    return totalHours;
+  }
+
+  getFollowUpBookedCount(doctorId: string, appointmentDate: Date, followUpType: string) {
+    const newStartDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
+    if (followUpType == '0') {
+      return Appointment.count({
+        where: {
+          doctorId,
+          isFollowUp: true,
+          isFollowPaid: false,
+          bookingDate: Between(newStartDate, newEndDate),
+        },
+      });
+    } else {
+      return Appointment.count({
+        where: {
+          doctorId,
+          isFollowUp: true,
+          isFollowPaid: true,
+          bookingDate: Between(newStartDate, newEndDate),
+        },
+      });
+    }
   }
 }

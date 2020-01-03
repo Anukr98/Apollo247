@@ -82,9 +82,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
   const [selectedDoctor, setSelectedDoctor] = useState<string>('Select Doctor');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [isSelectDoctorVisible, setSelectDoctorVisible] = useState<boolean>(false);
-  // const [starDoctors, setFilteredStarDoctors] = useState<
-  //   (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
-  // >([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const client = useApolloClient();

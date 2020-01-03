@@ -19,6 +19,8 @@ export interface AuthContextProps {
   verifyOtp: ((otp: string) => Promise<GetDoctorDetails | unknown>) | null;
   clearFirebaseUser: (() => Promise<unknown>) | null;
   doctorDetails: GetDoctorDetails_getDoctorDetails | null;
+  setIsDelegateLogin: ((status: boolean) => void) | null;
+  isDelegateLogin: boolean;
   setDoctorDetails: ((doctorDetails: GetDoctorDetails_getDoctorDetails | null) => void) | null;
 }
 
@@ -29,6 +31,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   verifyOtp: null,
   clearFirebaseUser: null,
   doctorDetails: null,
+  isDelegateLogin: false,
+  setIsDelegateLogin: null,
   setDoctorDetails: null,
 });
 
@@ -38,10 +42,10 @@ export const AuthProvider: React.FC = (props) => {
     null
   );
   const [firebaseUser, setFirebaseUser] = useState<RNFirebase.User | null>(null);
-  const [isAuthenticating] = useState<boolean>(false);
-  const [doctorDetails, _setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>(
+  const [doctorDetails, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>(
     null
   );
+  const [isDelegateLogin, setIsDelegateLogin] = useState<boolean>(false);
 
   const analytics = firebase.analytics();
 
@@ -80,14 +84,12 @@ export const AuthProvider: React.FC = (props) => {
 
   const sendOtp = (mobileNumber: string) => {
     console.log('sendOtp triggered');
-
     return new Promise(async (resolve, reject) => {
       firebase
         .auth()
         .signInWithPhoneNumber(`+91${mobileNumber}`)
         .then((confirmResult) => {
           console.log('sendOtp then', confirmResult);
-
           setOtpConfirmResult(confirmResult);
           resolve(confirmResult);
         })
@@ -130,7 +132,9 @@ export const AuthProvider: React.FC = (props) => {
         .signOut()
         .then((_) => {
           setFirebaseUser(null);
-          _setDoctorDetails(null);
+          setDoctorDetails(null);
+          setIsDelegateLogin(false);
+          setAuthToken('');
           resolve();
         })
         .catch((e) => {
@@ -138,15 +142,13 @@ export const AuthProvider: React.FC = (props) => {
         });
     });
   };
-  const setDoctorDetails = (doctorDetails: GetDoctorDetails_getDoctorDetails | null) => {
-    _setDoctorDetails(doctorDetails);
-  }; // listen to firebase auth
+
+  // listen to firebase auth
   useEffect(() => {
     const authStateListener = firebase.auth().onAuthStateChanged((firebaseUser) => {
       // firebaseUser is verified and logged in
       if (firebaseUser) {
         console.log('onAuthStateChanged triggered', firebaseUser);
-
         firebaseUser!
           .getIdToken()
           .then((token) => {
@@ -173,21 +175,11 @@ export const AuthProvider: React.FC = (props) => {
             clearFirebaseUser,
             setDoctorDetails,
             doctorDetails,
+            setIsDelegateLogin,
+            isDelegateLogin,
           }}
         >
-          <>
-            {console.log({
-              analytics,
-              firebaseUser,
-              sendOtp,
-              verifyOtp,
-              clearFirebaseUser,
-              isAuthenticating,
-              setDoctorDetails,
-              doctorDetails,
-            })}
-            {props.children}
-          </>
+          {props.children}
         </AuthContext.Provider>
       </ApolloHooksProvider>
     </ApolloProvider>

@@ -5,6 +5,10 @@ import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import {
+  NotificationType,
+  sendMedicineOrderStatusNotification,
+} from 'notifications-service/resolvers/notifications';
 
 export const pharmaOrderPlacedTypeDefs = gql`
   input OrderPlacedInput {
@@ -57,6 +61,13 @@ const saveOrderPlacedStatus: Resolver<
     orderDetails.orderAutoId,
     new Date(),
     MEDICINE_ORDER_STATUS.ORDER_PLACED
+  );
+
+  //send order placed notification
+  sendMedicineOrderStatusNotification(
+    NotificationType.MEDICINE_ORDER_PLACED,
+    orderDetails,
+    profilesDb
   );
 
   return { message: 'Order placed successfully' };

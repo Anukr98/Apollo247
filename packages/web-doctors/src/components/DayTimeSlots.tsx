@@ -74,6 +74,7 @@ interface DayTimeSlotsProps {
   latenightSlots: number[];
   doctorName: string;
   timeSelected: (timeSelected: string) => void;
+  selectedTime: string;
 }
 
 // this must be moved into common utils later.
@@ -90,7 +91,7 @@ const TabContainer: React.FC = (props) => {
 
 export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
   const classes = useStyles({});
-  const [selectedTime, setTimeSelected] = useState<string>('');
+  const [selectedTime, setTimeSelected] = useState<string>(props.selectedTime);
   const [selectedFlag, setSelectedFlag] = useState<boolean>(false);
 
   const {
@@ -195,22 +196,6 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
     }
   };
 
-  useEffect(() => {
-    tabs.map(
-      (tab) =>
-        tab.tabValue === tabValue &&
-        tab.slots.length > 0 &&
-        tab.slots.map((slotTime: number, idx) => {
-          if (idx === 0) {
-            const timeString = getTimeFromTimestamp(today, slotTime);
-
-            setTimeSelected(timeString);
-            timeSelected(timeString);
-          }
-        })
-    );
-  }, []);
-
   return (
     <div className={classes.root}>
       <Tabs
@@ -243,7 +228,12 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                           color="secondary"
                           value={timeString}
                           className={
-                            selectedTime === timeString || (!selectedFlag && idx === 0)
+                            selectedTime === timeString ||
+                            (!selectedTime &&
+                              !selectedFlag &&
+                              idx === 0 &&
+                              (idx === 0 && !selectedFlag && setTimeSelected(timeString),
+                              timeSelected(timeString)))
                               ? `${classes.buttonActive}`
                               : ''
                           }

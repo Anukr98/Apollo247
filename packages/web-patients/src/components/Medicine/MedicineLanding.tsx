@@ -236,7 +236,7 @@ export const MedicineLanding: React.FC = (props) => {
   const mascotRef = useRef(null);
   const addToCartRef = useRef(null);
 
-  const params = useParams<{ orderId: string; orderStatus: string }>();
+  const params = useParams<{ orderAutoId: string; orderStatus: string }>();
   if (params.orderStatus === 'success') {
     localStorage.removeItem('cartItems');
     localStorage.removeItem('dp');
@@ -419,11 +419,18 @@ export const MedicineLanding: React.FC = (props) => {
         }}
         classes={{ paper: classes.bottomPopover }}
       >
-        <OrderPlaced
-          orderId={params.orderId}
-          orderStatus={params.orderStatus}
-          setShowOrderPopup={setShowOrderPopup}
-        />
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <OrderPlaced
+              orderAutoId={params.orderAutoId}
+              orderStatus={params.orderStatus}
+              setShowOrderPopup={setShowOrderPopup}
+            />
+          </div>
+        </div>
       </Popover>
     </div>
   );
