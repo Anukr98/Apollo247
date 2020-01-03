@@ -1,4 +1,5 @@
 import { colors } from './colors';
+import { getTextStyle } from '@aph/mobile-doctors/src/theme/fonts';
 
 export const viewStyles = {
   container: {
@@ -48,4 +49,5 @@ export const viewStyles = {
   disabled: {
     opacity: 0.5,
   },
+  text: getTextStyle,
 };

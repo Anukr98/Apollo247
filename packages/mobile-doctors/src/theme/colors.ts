@@ -2,6 +2,9 @@ const orange = '#fc9916';
 const green = '#00b38e';
 const red = '#e50000';
 const darkRed = '#890000';
+const app_light_blue = '#02475b';
+const app_sharp_Blue = '#01475b';
+const sky_blue = '#0087ba';
 
 const whiteColor = (opacity: number = 1) => `rgba(255,255,255,${opacity})`; //'#ffffff'
 const blackColor = (opacity: number = 1) => `rgba(0,0,0,${opacity})`; //'#000000'
@@ -43,6 +46,9 @@ const Common = {
   INPUT_CURSOR_COLOR: green,
   APP_GREEN: green,
   APP_YELLOW: orange,
+  CLEAR: 'transparent',
+  LIGHT_BLUE: app_light_blue,
+  SHARP_BLUE: app_sharp_Blue,
 };
 
 const Header = {
