@@ -328,8 +328,12 @@ export const MedicineDetails: React.FC = (props) => {
             if (x.key === 'Precautions') {
               x.value = `${x.value}
               ${getHeader(v.Caption)}: \n
-              ${stripHtml(v.CaptionDesc)} \n
-              `;
+              ${v.CaptionDesc.split('&amp;lt')
+                .join('<')
+                .split('&amp;gt;')
+                .join('>')
+                .replace(/(<([^>]+)>)/gi, '')}; \n
+                `;
             }
           });
         } else if (v.Caption === 'DRUGS WARNINGS') {
@@ -357,7 +361,9 @@ export const MedicineDetails: React.FC = (props) => {
         (item, index) =>
           tabValue === index && (
             <div className={classes.tabContainer}>
-              <p>{item.value}</p>
+              {item.value.split(';').map((data) => {
+                return <p>{data}</p>;
+              })}
             </div>
           )
       );
