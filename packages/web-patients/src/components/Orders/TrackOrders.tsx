@@ -137,8 +137,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
       orderDetails({
         variables: {
           patientId: currentPatient && currentPatient.id,
-          orderAutoId:
-            typeof props.orderAutoId == 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
+          orderAutoId: parseInt(props.orderAutoId),
         },
       })
         .then((res) => console.log(res))
