@@ -384,14 +384,14 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
   } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
-    let notiBody = ApiConstants.BOOK_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
-    notiBody = notiBody.replace('{1}', appointment.displayId.toString());
-    notiBody = notiBody.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    let content = ApiConstants.BOOK_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+    content = content.replace('{1}', appointment.displayId.toString());
+    content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
     const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-    notiBody = notiBody.replace('{3}', apptDate.toString());
+    content = content.replace('{3}', apptDate.toString());
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
-    notificationBody = notiBody;
+    notificationBody = content;
   } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
     notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
