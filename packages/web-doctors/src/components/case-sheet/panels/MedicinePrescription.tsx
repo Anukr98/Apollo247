@@ -458,6 +458,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#02475b',
         margin: 0,
         fontSize: 12,
+        fontWeight: 'normal',
       },
     },
   })
