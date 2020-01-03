@@ -184,7 +184,10 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
             cancelOrder({
               variables: {
                 orderCancelInput: {
-                  orderNo: parseInt(props.orderAutoId),
+                  orderNo:
+                    typeof props.orderAutoId === 'string'
+                      ? parseInt(props.orderAutoId)
+                      : props.orderAutoId,
                   remarksCode: selectedReason,
                 },
               },
