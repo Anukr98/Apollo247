@@ -378,6 +378,7 @@ const useStyles = makeStyles((theme: Theme) =>
     searchpopup: {
       borderRadius: 'none',
       boxShadow: 'none',
+      backgroundColor: 'transparent',
       '& ul': {
         padding: 0,
         margin: 0,
@@ -454,6 +455,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 500,
         color: '#01475b',
         paddingTop: 0,
+        paddingRight: 25,
       },
       '&:hover': {
         '&:before': {

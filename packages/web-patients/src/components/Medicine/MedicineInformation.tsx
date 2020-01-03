@@ -147,6 +147,14 @@ const useStyles = makeStyles((theme: Theme) => {
     medicinePack: {
       color: '#02475b',
       letterSpacing: 0.33,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    dropDown: {
+      width: 'calc(100% - 45px)',
+      '& > div': {
+        width: '100%',
+      },
     },
     medicineNoStock: {
       color: '#890000',
@@ -326,7 +334,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 350px' }}>
+        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 375px' }}>
           <div className={classes.customScroll}>
             {substitutes && (
               <>
@@ -380,26 +388,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <>
               <div className={classes.leftGroup}>
                 <div className={classes.medicinePack}>
-                  QTY :
-                  <AphCustomDropdown
-                    classes={{ selectMenu: classes.selectMenuItem }}
-                    value={medicineQty}
-                    onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                      setMedicineQty(parseInt(e.target.value))
-                    }
-                  >
-                    {options.map((option) => (
-                      <MenuItem
-                        classes={{
-                          root: classes.menuRoot,
-                          selected: classes.menuSelected,
-                        }}
-                        value={option}
-                      >
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </AphCustomDropdown>
+                  <div>QTY :</div>
+                  <div className={classes.dropDown}>
+                    <AphCustomDropdown
+                      classes={{ selectMenu: classes.selectMenuItem }}
+                      value={medicineQty}
+                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                        setMedicineQty(parseInt(e.target.value))
+                      }
+                    >
+                      {options.map((option) => (
+                        <MenuItem
+                          classes={{
+                            root: classes.menuRoot,
+                            selected: classes.menuSelected,
+                          }}
+                          value={option}
+                        >
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </AphCustomDropdown>
+                  </div>
                 </div>
               </div>
             </>
