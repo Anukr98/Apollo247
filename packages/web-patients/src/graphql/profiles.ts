@@ -227,3 +227,31 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
     }
   }
 `;
+
+export const GET_MEDICINE_ORDER_DETAILS = gql`
+  query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      MedicineOrderDetails {
+        id
+        orderAutoId
+        devliveryCharges
+        estimatedAmount
+        prescriptionImageUrl
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
+        }
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          quantity
+          isMedicine
+          mou
+        }
+      }
+    }
+  }
+`;

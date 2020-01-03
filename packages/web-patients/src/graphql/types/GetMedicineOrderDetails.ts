@@ -2,26 +2,39 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_TYPE } from "./globalTypes";
+import { MEDICINE_ORDER_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetMedicineOrderDetails
 // ====================================================
 
+export interface GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus {
+  __typename: "MedicineOrdersStatus";
+  id: string;
+  orderStatus: MEDICINE_ORDER_STATUS | null;
+  statusDate: any | null;
+  hideStatus: boolean | null;
+}
+
+export interface GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems {
+  __typename: "MedicineOrderLineItems";
+  medicineSKU: string | null;
+  medicineName: string | null;
+  price: number | null;
+  quantity: number | null;
+  isMedicine: string | null;
+  mou: number | null;
+}
+
 export interface GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails {
   __typename: "MedicineOrders";
   id: string;
   orderAutoId: number | null;
-  shopId: string | null;
-  estimatedAmount: number | null;
-  deliveryType: MEDICINE_DELIVERY_TYPE;
-  patientAddressId: string | null;
   devliveryCharges: number | null;
+  estimatedAmount: number | null;
   prescriptionImageUrl: string | null;
-  prismPrescriptionFileId: string | null;
-  pharmaRequest: string | null;
-  orderTat: string | null;
-  orderType: MEDICINE_ORDER_TYPE | null;
+  medicineOrdersStatus: (GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus | null)[] | null;
+  medicineOrderLineItems: (GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems | null)[] | null;
 }
 
 export interface GetMedicineOrderDetails_getMedicineOrderDetails {
@@ -34,6 +47,6 @@ export interface GetMedicineOrderDetails {
 }
 
 export interface GetMedicineOrderDetailsVariables {
-  patientId: string;
-  orderAutoId: number;
+  patientId?: string | null;
+  orderAutoId?: number | null;
 }

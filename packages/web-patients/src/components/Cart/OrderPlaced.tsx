@@ -5,7 +5,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/medicines';
+import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
