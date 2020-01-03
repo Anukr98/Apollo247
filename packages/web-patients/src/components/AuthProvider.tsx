@@ -127,7 +127,8 @@ export const AuthProvider: React.FC = (props) => {
       .signOut()
       .then(() => {
         localStorage.removeItem('currentUser');
-        window.location.reload()});
+        window.location.reload();
+      });
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
