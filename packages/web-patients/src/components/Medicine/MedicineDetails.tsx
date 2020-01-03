@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Theme, Tabs, Tab, Typography, Box } from '@material-ui/core';
+import { Theme, Tabs, Tab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -223,28 +223,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: any;
-  value: any;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <Typography
-      component="div"
-      role="tabpanel"
-      hidden={value !== index}
-      id={`scrollable-auto-tabpanel-${index}`}
-      aria-labelledby={`scrollable-auto-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box p={3}>{children}</Box>}
-    </Typography>
-  );
-}
 
 type MedicineOverViewDetails = {
   Caption: string;
@@ -495,12 +473,6 @@ export const MedicineDetails: React.FC = (props) => {
                                       description.split('rn').map((data) => {
                                         return <p>{data}</p>;
                                       })}
-                                    <ul>
-                                      <li>Size: Large</li>
-                                      <li>Number of Units: 75</li>
-                                      <li>MamyPoko extra absorb diaper prevents leakage.</li>
-                                      <li>4 litres</li>
-                                    </ul>
                                   </div>
                                 </div>
                               ) : null}
