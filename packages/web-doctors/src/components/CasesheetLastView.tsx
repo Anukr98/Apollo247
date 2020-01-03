@@ -89,6 +89,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       color: '#02475b',
       fontWeight: 500,
+      '& img': {
+        maxWidth: 200,
+      },
     },
   };
 });

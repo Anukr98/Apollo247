@@ -80,9 +80,11 @@ interface DayTimeSlotsProps {
 // this must be moved into common utils later.
 const getTimeFromTimestamp = (today: Date, slotTime: number) => {
   const hours = new Date(slotTime).getHours();
+  const hoursFormat = hours > 9 ? hours : `0${hours}`;
   const minutes = new Date(slotTime).getMinutes();
+
   const minutesFormat = minutes > 9 ? minutes : `0${minutes}`;
-  return `${hours}:${minutesFormat}`;
+  return `${hoursFormat}:${minutesFormat}`;
 };
 
 const TabContainer: React.FC = (props) => {
@@ -222,6 +224,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                     const timeString = getTimeFromTimestamp(today, slotTime);
                     const timeStringArray = timeString.split(':');
                     const formattedHour = getTwelveHour(tab.message, timeStringArray);
+
                     if (formattedHour !== '') {
                       return (
                         <AphButton
