@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,

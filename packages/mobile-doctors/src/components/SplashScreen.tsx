@@ -75,6 +75,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     checkNotificationPermission();
+    //need to remove
   }, []);
 
   useEffect(() => {

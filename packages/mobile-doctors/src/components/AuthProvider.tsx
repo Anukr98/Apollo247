@@ -7,11 +7,12 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { ApolloLink } from 'apollo-link';
 import { createHttpLink } from 'apollo-link-http';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import fetch from 'node-fetch';
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 
 export interface AuthContextProps {
   analytics: RNFirebase.Analytics | null;
@@ -23,6 +24,8 @@ export interface AuthContextProps {
   setIsDelegateLogin: ((status: boolean) => void) | null;
   isDelegateLogin: boolean;
   setDoctorDetails: ((doctorDetails: GetDoctorDetails_getDoctorDetails | null) => void) | null;
+  getDoctorDetailsApi: (() => void) | null;
+  signOut: (() => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -35,6 +38,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   isDelegateLogin: false,
   setIsDelegateLogin: null,
   setDoctorDetails: null,
+  getDoctorDetailsApi: null,
+  signOut: null,
 });
 
 export const AuthProvider: React.FC = (props) => {
@@ -144,6 +149,17 @@ export const AuthProvider: React.FC = (props) => {
     });
   };
 
+  const signOut = useCallback(() => {
+    try {
+      auth.signOut();
+      setAuthToken('');
+      setDoctorDetails(null);
+      console.log('authprovider signOut');
+    } catch (error) {
+      console.log('signOut error', error);
+    }
+  }, [auth]);
+
   // listen to firebase auth
   useEffect(() => {
     const authStateListener = firebase.auth().onAuthStateChanged((firebaseUser) => {
@@ -164,6 +180,25 @@ export const AuthProvider: React.FC = (props) => {
     });
   }, []);
 
+  const getDoctorDetailsApi = async () => {
+    await apolloClient
+      .query<GetDoctorDetails>({
+        query: GET_DOCTOR_DETAILS,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        console.log('GetDoctorDetails', data);
+        // AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+        // setAllPatients(data);
+      })
+      .catch(async (error) => {
+        // const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+        // const item = JSON.parse(retrievedItem);
+        // setAllPatients(item);
+        console.log('GetDoctorDetails error', error);
+      });
+  };
+
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
@@ -178,6 +213,8 @@ export const AuthProvider: React.FC = (props) => {
             doctorDetails,
             setIsDelegateLogin,
             isDelegateLogin,
+            getDoctorDetailsApi,
+            signOut,
           }}
         >
           {props.children}
