@@ -6,6 +6,8 @@ import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
 } from 'graphql/types/GetMedicineOrderDetails';
+import { CircularProgress } from '@material-ui/core';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -96,26 +98,25 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+
 type TrackOrdersProps = {
-  orderDetailsData: GetMedicineOrderDetails;
+  orderDetailsData: orederDetails | null;
+  isLoading: boolean;
 };
+
 export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const orderStatus = props.orderDetailsData && props.orderDetailsData.medicineOrdersStatus;
+  const orderItem = props.orderDetailsData && props.orderDetailsData.medicineOrderLineItems;
 
-  const orderSummaryData =
-    props &&
-    props.orderDetailsData &&
-    props.orderDetailsData.getMedicineOrderDetails &&
-    props.orderDetailsData.getMedicineOrderDetails.MedicineOrderDetails;
-  const orderStatus = orderSummaryData && orderSummaryData.medicineOrdersStatus;
-  const orderItem = orderSummaryData && orderSummaryData.medicineOrderLineItems;
-
-  return (
+  return props.isLoading ? (
+    <CircularProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.summaryHeader}>
         <div className={classes.headRow}>
           <label>Order ID</label>
-          <span>#{orderSummaryData && orderSummaryData.orderAutoId}</span>
+          <span>#{props.orderDetailsData && props.orderDetailsData.orderAutoId}</span>
         </div>
         <div className={classes.headRow}>
           <label>Date/Time</label>
