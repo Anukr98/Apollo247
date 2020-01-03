@@ -21,6 +21,9 @@
     "@aph/eslint-config": "file:../eslint-config",
     "@aph/prettier-config": "file:../prettier-config",
     "@aph/tsconfig": "file:../tsconfig",
+    "@babel/core": "^7.5.0",
+    "@babel/runtime": "^7.5.0",
+    "@react-native-community/eslint-config": "^0.0.3",
     "@types/graphql": "^14.2.1",
     "@types/jest": "^24.0.15",
     "@types/lodash": "^4.14.134",
@@ -34,10 +37,7 @@
     "@types/react-test-renderer": "^16.8.1",
     "@typescript-eslint/eslint-plugin": "^1.10.2",
     "@typescript-eslint/parser": "^1.10.2",
-    "@babel/core": "^7.5.0",
-    "@babel/runtime": "^7.5.0",
     "babel-jest": "24.1.0",
-    "@react-native-community/eslint-config": "^0.0.3",
     "eslint": "^5.16.0",
     "eslint-plugin-graphql": "^3.0.3",
     "eslint-plugin-import": "^2.17.3",
@@ -49,6 +49,7 @@
     "prettier": "^1.18.2",
     "react-native-typescript-transformer": "^1.2.12",
     "react-test-renderer": "16.8.1",
+    "reactotron-react-native": "^4.0.2",
     "typescript": "^3.5.2"
   },
   "dependencies": {
