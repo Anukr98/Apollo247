@@ -5,6 +5,10 @@ import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import {
+  sendMedicineOrderStatusNotification,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const pharmaOrderConfirmationTypeDefs = gql`
   input OrderConfirmationInput {
@@ -81,6 +85,13 @@ const saveOrderConfirmation: Resolver<
     orderDetails.orderAutoId,
     orderDetails.id,
     orderConfirmationInput.ordersResult.apOrderNo
+  );
+
+  //send push notification
+  sendMedicineOrderStatusNotification(
+    NotificationType.MEDICINE_ORDER_CONFIRMED,
+    orderDetails,
+    profilesDb
   );
 
   return { requestStatus: 'true', requestMessage: 'order confirmation updated succssfully' };
