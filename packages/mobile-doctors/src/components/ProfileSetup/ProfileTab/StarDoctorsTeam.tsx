@@ -1,5 +1,6 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
 import { Add, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import {
   MAKE_TEAM_DOCTOR_ACTIVE,
@@ -18,12 +19,11 @@ import {
   RemoveTeamDoctorFromStarTeamVariables,
 } from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Platform, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -82,9 +82,6 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   const [selectedDoctor, setSelectedDoctor] = useState<string>('Select Doctor');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [isSelectDoctorVisible, setSelectDoctorVisible] = useState<boolean>(false);
-  // const [starDoctors, setFilteredStarDoctors] = useState<
-  //   (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
-  // >([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const client = useApolloClient();

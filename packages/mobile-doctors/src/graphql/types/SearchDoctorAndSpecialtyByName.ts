@@ -27,7 +27,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   __typename: "DoctorDetails";
   firstName: string;
   lastName: string;
-  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty;
+  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
   specialization: string | null;
   photoUrl: string | null;
   id: string;
