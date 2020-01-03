@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Theme, Tabs, Tab } from '@material-ui/core';
+import { Theme, Tabs, Tab, Typography, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -74,6 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
+      padding:'0 10px 0 0',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 20,
@@ -111,10 +112,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     customScroll: {
-      paddingLeft: 20,
-      paddingRight: 17,
-      paddingBottom: 10,
-    },
+      padding: '0 7px 0 20px',
+      },
     productInformation: {
       backgroundColor: theme.palette.common.white,
       padding: 20,
@@ -136,6 +135,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#02475b',
       lineHeight: '22px',
+      fontWeight: 500,
       '& p': {
         margin: '5px 0',
       },
@@ -156,7 +156,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 0,
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      marginTop: 5,
+      margin: '5px 0 0 0',
+      '& svg':{
+        color: '#02475b',
+      },
     },
     tabRoot: {
       fontSize: 14,
@@ -171,6 +174,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 'auto',
       minHeight: 'auto',
       flexBasis: 'auto',
+      margin: '0 15px 0 0',
     },
     tabSelected: {
       opacity: 1,
@@ -194,6 +198,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         margin: '5px 0',
       },
+      '& ul':{
+        padding: '0 0 0 20px',
+      },
     },
     prescriptionBox: {
       backgroundColor: '#f7f8f5',
@@ -211,8 +218,33 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       paddingLeft: 20,
     },
+    flexContainer:{
+      overflow: 'scroll',
+    },
   };
 });
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: any;
+  value: any;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <Typography
+      component="div"
+      role="tabpanel"
+      hidden={value !== index}
+      id={`scrollable-auto-tabpanel-${index}`}
+      aria-labelledby={`scrollable-auto-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box p={3}>{children}</Box>}
+    </Typography>
+  );
+}
 
 type MedicineOverViewDetails = {
   Caption: string;
@@ -318,12 +350,8 @@ export const MedicineDetails: React.FC = (props) => {
             if (x.key === 'Precautions') {
               x.value = `${x.value}
               ${getHeader(v.Caption)}: \n
-              ${v.CaptionDesc.split('&amp;lt')
-                .join('<')
-                .split('&amp;gt;')
-                .join('>')
-                .replace(/(<([^>]+)>)/gi, '')}; \n
-                `;
+              ${stripHtml(v.CaptionDesc)} \n
+              `;
             }
           });
         } else if (v.Caption === 'DRUGS WARNINGS') {
@@ -351,9 +379,7 @@ export const MedicineDetails: React.FC = (props) => {
         (item, index) =>
           tabValue === index && (
             <div className={classes.tabContainer}>
-              {item.value.split(';').map((data) => {
-                return <p>{data}</p>;
-              })}
+              <p>{item.value}</p>
             </div>
           )
       );
@@ -408,7 +434,7 @@ export const MedicineDetails: React.FC = (props) => {
                 {medicineDetails && (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
-                      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+                      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 215px'}>
                         <div className={classes.customScroll}>
                           <div className={classes.productInformation}>
                             <MedicineImageGallery data={medicineDetails} />
@@ -421,7 +447,7 @@ export const MedicineDetails: React.FC = (props) => {
                               {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
                                 <div className={classes.textInfo}>
                                   <label>Composition</label>
-                                  {`${medicinePharmacyDetails[0].generic} -${medicinePharmacyDetails[0].Strengh} ${medicinePharmacyDetails[0].Unit} `}
+                                  {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
                                 </div>
                               )}
                               <div className={classes.textInfo}>
@@ -430,7 +456,7 @@ export const MedicineDetails: React.FC = (props) => {
                                   medicinePharmacyDetails && medicinePharmacyDetails.length > 0
                                     ? medicinePharmacyDetails[0].Doseform
                                     : ''
-                                } `}
+                                }`}
                               </div>
                               {medicineDetails.is_prescription_required !== '0' && (
                                 <div className={classes.prescriptionBox}>
@@ -447,7 +473,8 @@ export const MedicineDetails: React.FC = (props) => {
                                 <>
                                   <Tabs
                                     value={tabValue}
-                                    variant="fullWidth"
+                                    variant="scrollable"
+                                    scrollButtons="auto"
                                     classes={{
                                       root: classes.tabsRoot,
                                       indicator: classes.tabsIndicator,
@@ -466,8 +493,14 @@ export const MedicineDetails: React.FC = (props) => {
                                   <div className={classes.productDescription}>
                                     {description &&
                                       description.split('rn').map((data) => {
-                                        return <div>{data}</div>;
+                                        return <p>{data}</p>;
                                       })}
+                                        <ul>
+                                        <li>Size: Large</li>
+                                        <li>Number of Units: 75</li>
+                                        <li>MamyPoko extra absorb diaper prevents leakage.</li>
+                                        <li>4 litres</li>
+                                      </ul>
                                   </div>
                                 </div>
                               ) : null}

@@ -1,232 +1,247 @@
-import React, { useRef, useEffect } from 'react';
-import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover } from '@material-ui/core';
-import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
-import Scrollbars from 'react-custom-scrollbars';
-import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
-import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
-import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
-import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
-import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
-import { clientRoutes } from 'helpers/clientRoutes';
+import React, { useRef, useEffect } from "react";
+import { makeStyles, createStyles } from "@material-ui/styles";
+import { Theme, MenuItem, Popover } from "@material-ui/core";
+import {
+  AphButton,
+  AphTextField,
+  AphCustomDropdown
+} from "@aph/web-ui-components";
+import Scrollbars from "react-custom-scrollbars";
+import { MedicineNotifyPopover } from "components/Medicine/MedicineNotifyPopover";
+import { SubstituteDrugsList } from "components/Medicine/SubstituteDrugsList";
+import {
+  MedicineProductDetails,
+  MedicineProduct
+} from "../../helpers/MedicineApiCalls";
+import { useParams } from "hooks/routerHooks";
+import axios from "axios";
+import { useShoppingCart, MedicineCartItem } from "../MedicinesCartProvider";
+import { clientRoutes } from "helpers/clientRoutes";
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
       backgroundColor: theme.palette.common.white,
       width: 328,
-      borderRadius: 5,
+      borderRadius: 5
     },
     medicineSection: {
-      padding: '20px 5px 0 10px',
+      padding: "20px 5px 0 10px",
       paddingTop: 15,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
+      [theme.breakpoints.down("xs")]: {
+        display: "none"
+      }
     },
     customScroll: {
-      width: '100%',
+      width: "100%",
       paddingLeft: 10,
       paddingRight: 15,
-      paddingBottom: 10,
+      paddingBottom: 10
     },
     sectionTitle: {
       fontSize: 12,
       fontWeight: 600,
-      color: '#02475b',
+      color: "#02475b",
       paddingBottom: 10,
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      textTransform: 'uppercase',
-      marginBottom: 10,
+      borderBottom: "0.5px solid rgba(2,71,91,0.3)",
+      textTransform: "uppercase",
+      marginBottom: 10
     },
     bottomActions: {
       padding: 20,
       paddingTop: 10,
-      display: 'flex',
-      '& button': {
-        width: '50%',
+      display: "flex",
+      "& button": {
+        width: "50%",
         borderRadius: 10,
-        '&:first-child': {
+        "&:first-child": {
           marginRight: 8,
-          color: '#fc9916',
-          backgroundColor: theme.palette.common.white,
+          color: "#fc9916",
+          backgroundColor: theme.palette.common.white
         },
-        '&:last-child': {
-          marginLeft: 8,
-        },
-      },
+        "&:last-child": {
+          marginLeft: 8
+        }
+      }
     },
     notifyBtn: {
-      width: '100% !important',
-      color: '#fc9916',
-      margin: '0 !important',
+      width: "100% !important",
+      color: "#fc9916",
+      margin: "0 !important"
     },
     substitutes: {
-      backgroundColor: '#f7f8f5',
+      backgroundColor: "#f7f8f5",
       padding: 10,
       borderRadius: 5,
       fontSize: 14,
       fontWeight: 500,
-      color: '#01475b',
+      color: "#01475b",
       marginBottom: 16,
-      cursor: 'pointer',
-      position: 'relative',
-      paddingRight: 40,
+      cursor: "pointer",
+      position: "relative",
+      paddingRight: 40
     },
     dropDownArrow: {
-      position: 'absolute',
+      position: "absolute",
       right: 8,
-      top: '50%',
-      marginTop: -12,
+      top: "50%",
+      marginTop: -12
     },
     deliveryInfo: {
-      backgroundColor: '#f7f8f5',
+      backgroundColor: "#f7f8f5",
       padding: 10,
       borderRadius: 5,
       paddingTop: 1,
-      '& input': {
+      "& input": {
         fontSize: 14,
-        fontWeight: 500,
-      },
+        fontWeight: 500
+      }
     },
     deliveryTimeGroup: {
-      position: 'relative',
+      position: "relative"
     },
     checkBtn: {
-      color: '#fc9916',
-      boxShadow: 'none',
-      minWidth: 'auto',
+      color: "#fc9916",
+      boxShadow: "none",
+      minWidth: "auto",
       padding: 0,
-      position: 'absolute',
+      position: "absolute",
       right: 0,
       top: 6,
       fontSize: 13,
-      fontWeight: 'bold',
+      fontWeight: "bold"
     },
     checkBtnDisabled: {
       opacity: 0.5,
-      color: '#fc9916 !important',
+      color: "#fc9916 !important"
     },
     deliveryTimeInfo: {
-      display: 'flex',
-      alignItems: 'center',
+      display: "flex",
+      alignItems: "center",
       fontSize: 12,
       fontWeight: 500,
-      color: '#01475b',
+      color: "#01475b",
       paddingTop: 10,
-      '& span:last-child': {
-        fontWeight: 'bold',
-        marginLeft: 'auto',
-      },
+      "& span:last-child": {
+        fontWeight: "bold",
+        marginLeft: "auto"
+      }
     },
     priceGroup: {
-      padding: '10px 20px',
+      padding: "10px 20px"
     },
     priceWrap: {
-      backgroundColor: '#f7f8f5',
+      backgroundColor: "#f7f8f5",
       borderRadius: 5,
-      padding: '6px 10px',
-      display: 'flex',
-      alignItems: 'center',
+      padding: "6px 10px",
+      display: "flex",
+      alignItems: "center"
     },
     medicinePrice: {
       fontSize: 14,
-      color: '#02475b',
+      color: "#02475b",
       letterSpacing: 0.3,
-      fontWeight: 'bold',
-      width: '50%',
-      textAlign: 'right',
+      fontWeight: "bold",
+      width: "50%",
+      textAlign: "right"
     },
     leftGroup: {
-      width: '50%',
-      borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+      width: "50%",
+      borderRight: "solid 0.5px rgba(2,71,91,0.2)",
       fontSize: 14,
-      fontWeight: 500,
+      fontWeight: 500
     },
     medicinePack: {
-      color: '#02475b',
+      color: "#02475b",
       letterSpacing: 0.33,
+      display: "flex",
+      alignItems: "center"
+    },
+    dropDown: {
+      width: "calc(100% - 45px)",
+      "& > div": {
+        width: "100%"
+      }
     },
     medicineNoStock: {
-      color: '#890000',
-      lineHeight: '32px',
-      fontWeight: 'bold',
+      color: "#890000",
+      lineHeight: "32px",
+      fontWeight: "bold"
     },
     selectMenuItem: {
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       fontSize: 13,
-      color: '#02475b',
+      color: "#02475b",
       letterSpacing: 0.33,
-      textTransform: 'uppercase',
+      textTransform: "uppercase",
       paddingTop: 7,
       paddingBottom: 6,
       paddingLeft: 4,
-      '&:focus': {
-        backgroundColor: 'transparent',
-      },
+      "&:focus": {
+        backgroundColor: "transparent"
+      }
     },
     menuRoot: {
       fontSize: 13,
       fontWeight: 500,
-      color: '#02475b',
+      color: "#02475b"
     },
     menuSelected: {
-      backgroundColor: 'transparent !important',
-      color: '#00b38e',
-      fontWeight: 600,
+      backgroundColor: "transparent !important",
+      color: "#00b38e",
+      fontWeight: 600
     },
     bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
+      overflow: "initial",
+      backgroundColor: "transparent",
+      boxShadow: "none",
+      [theme.breakpoints.down("xs")]: {
+        left: "0px !important",
+        maxWidth: "100%",
+        width: "100%",
+        top: "38px !important"
+      }
     },
     successPopoverWindow: {
-      display: 'flex',
+      display: "flex",
       marginRight: 5,
-      marginBottom: 5,
+      marginBottom: 5
     },
     windowWrap: {
       width: 368,
       borderRadius: 10,
       paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
+      boxShadow: "0 5px 40px 0 rgba(0, 0, 0, 0.3)",
+      backgroundColor: theme.palette.common.white
     },
     mascotIcon: {
-      position: 'absolute',
+      position: "absolute",
       right: 12,
       top: -40,
-      '& img': {
-        maxWidth: 72,
-      },
+      "& img": {
+        maxWidth: 72
+      }
     },
     substitutePopover: {
-      margin: 0,
+      margin: 0
     },
     selectedDrugs: {
-      width: '100%',
+      width: "100%"
     },
     price: {
       fontSize: 12,
       fontWeight: 500,
-      color: '#02475b',
-      opacity: 0.6,
+      color: "#02475b",
+      opacity: 0.6
     },
     regularPrice: {
       fontSize: 14,
       fontWeight: 500,
-      color: '#01475b',
+      color: "#01475b",
       opacity: 0.6,
-      textDecoration: 'line-through',
-      paddingRight: 5,
-    },
+      textDecoration: "line-through",
+      paddingRight: 5
+    }
   });
 });
 
@@ -234,26 +249,30 @@ type MedicineInformationProps = {
   data: MedicineProductDetails;
 };
 
-export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
+export const MedicineInformation: React.FC<MedicineInformationProps> = props => {
   const classes = useStyles({});
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
   const addToCartRef = useRef(null);
-  const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
+  const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<
+    boolean
+  >(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
+  const [substitutes, setSubstitutes] = React.useState<
+    MedicineProductDetails[] | null
+  >(null);
   const { data } = props;
   const params = useParams<{ sku: string }>();
-  const [pinCode, setPinCode] = React.useState<string>('');
-  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
+  const [pinCode, setPinCode] = React.useState<string>("");
+  const [deliveryTime, setDeliveryTime] = React.useState<string>("");
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
 
   const apiDetails = {
     url: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchprdsubt_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
-    deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
+    deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN
   };
 
   const fetchSubstitutes = async () => {
@@ -263,8 +282,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         { params: params.sku },
         {
           headers: {
-            Authorization: apiDetails.authToken,
-          },
+            Authorization: apiDetails.authToken
+          }
         }
       )
       .then(({ data }) => {
@@ -278,29 +297,29 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           console.log(error);
         }
       })
-      .catch((err) => alert({ err }));
+      .catch(err => alert({ err }));
   };
 
   const fetchDeliveryTime = async () => {
     await axios
       .post(
-        apiDetails.deliveryUrl || '',
+        apiDetails.deliveryUrl || "",
         {
           params: {
             postalcode: pinCode,
-            ordertype: 'pharma',
+            ordertype: "pharma",
             lookup: [
               {
                 sku: params.sku,
-                qty: 1,
-              },
-            ],
-          },
+                qty: 1
+              }
+            ]
+          }
         },
         {
           headers: {
-            Authentication: apiDetails.deliveryAuthToken,
-          },
+            Authentication: apiDetails.deliveryAuthToken
+          }
         }
       )
       .then((res: any) => setDeliveryTime(res.tat.deliveryDate))
@@ -314,7 +333,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   }, [substitutes]);
 
   const applyCartOperations = (cartItem: MedicineCartItem) => {
-    const index = cartItems.findIndex((item) => item.id === cartItem.id);
+    const index = cartItems.findIndex(item => item.id === cartItem.id);
     if (index >= 0) {
       updateCartItem && updateCartItem(cartItem);
     } else {
@@ -326,7 +345,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 350px' }}>
+        <Scrollbars autoHide={true} style={{ height: "calc(100vh - 375px" }}>
           <div className={classes.customScroll}>
             {substitutes && (
               <>
@@ -349,13 +368,13 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   <div className={classes.deliveryTimeGroup}>
                     <AphTextField
                       placeholder="Enter Pin Code"
-                      onChange={(e) => setPinCode(e.target.value)}
+                      onChange={e => setPinCode(e.target.value)}
                     />
                     <AphButton
                       disabled={pinCode.length !== 6}
                       classes={{
                         root: classes.checkBtn,
-                        disabled: classes.checkBtnDisabled,
+                        disabled: classes.checkBtnDisabled
                       }}
                       onClick={() => fetchDeliveryTime()}
                     >
@@ -380,26 +399,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <>
               <div className={classes.leftGroup}>
                 <div className={classes.medicinePack}>
-                  QTY :
-                  <AphCustomDropdown
-                    classes={{ selectMenu: classes.selectMenuItem }}
-                    value={medicineQty}
-                    onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                      setMedicineQty(parseInt(e.target.value))
-                    }
-                  >
-                    {options.map((option) => (
-                      <MenuItem
-                        classes={{
-                          root: classes.menuRoot,
-                          selected: classes.menuSelected,
-                        }}
-                        value={option}
-                      >
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </AphCustomDropdown>
+                  <div>QTY :</div>
+                  <div className={classes.dropDown}>
+                    <AphCustomDropdown
+                      classes={{ selectMenu: classes.selectMenuItem }}
+                      value={medicineQty}
+                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                        setMedicineQty(parseInt(e.target.value))
+                      }
+                    >
+                      {options.map(option => (
+                        <MenuItem
+                          classes={{
+                            root: classes.menuRoot,
+                            selected: classes.menuSelected
+                          }}
+                          value={option}
+                        >
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </AphCustomDropdown>
+                  </div>
                 </div>
               </div>
             </>
@@ -407,7 +428,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <div className={classes.medicineNoStock}>Out Of Stock</div>
           )}
           <div className={classes.medicinePrice}>
-            {data.special_price && <span className={classes.regularPrice}>(Rs. {data.price})</span>}
+            {data.special_price && (
+              <span className={classes.regularPrice}>(Rs. {data.price})</span>
+            )}
             Rs. {data.special_price || data.price}
           </div>
         </div>
@@ -432,7 +455,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   thumbnail: data.thumbnail,
                   type_id: data.type_id,
                   mou: data.mou,
-                  quantity: medicineQty,
+                  quantity: medicineQty
                 };
                 applyCartOperations(cartItem);
                 window.location.href = clientRoutes.medicinesLandingViewCart();
@@ -458,7 +481,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   thumbnail: data.thumbnail,
                   type_id: data.type_id,
                   mou: data.mou,
-                  quantity: medicineQty,
+                  quantity: medicineQty
                 };
                 applyCartOperations(cartItem);
                 window.location.href = clientRoutes.medicinesCart();
@@ -468,7 +491,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </AphButton>
           </>
         ) : (
-          <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
+          <AphButton
+            fullWidth
+            className={classes.notifyBtn}
+            onClick={() => setIsPopoverOpen(true)}
+          >
             Notify when in stock
           </AphButton>
         )}
@@ -477,21 +504,24 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         open={isPopoverOpen}
         anchorEl={notifyPopRef.current}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right"
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right"
         }}
         classes={{ paper: classes.bottomPopover }}
       >
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require("images/ic_mascot.png")} alt="" />
             </div>
-            <MedicineNotifyPopover medicineName={data.name} setIsPopoverOpen={setIsPopoverOpen} />
+            <MedicineNotifyPopover
+              medicineName={data.name}
+              setIsPopoverOpen={setIsPopoverOpen}
+            />
           </div>
         </div>
       </Popover>
@@ -501,12 +531,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         onClose={() => setIsSubDrugsPopoverOpen(false)}
         className={classes.substitutePopover}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
+          vertical: "bottom",
+          horizontal: "left"
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+          vertical: "top",
+          horizontal: "left"
         }}
       >
         <SubstituteDrugsList
