@@ -377,7 +377,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 6,
     },
     modalBox: {
-      maxWidth: 480,
+      maxWidth: 380,
       minHeight: 420,
       margin: 'auto',
       marginTop: 88,
@@ -696,6 +696,13 @@ const useStyles = makeStyles((theme: Theme) => {
     showTimeSlot: {
       display: 'inline-block',
       paddingTop: 0,
+    },
+    modalPopup: {
+      '& div': {
+        '&:focus': {
+          outline: 'none',
+        },
+      },
     },
   };
 });
@@ -2053,6 +2060,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </span>
         </div>
         <Modal
+          className={classes.modalPopup}
           open={isPopoverOpen}
           onClose={() => {
             setIsPopoverOpen(false);
@@ -2076,7 +2084,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
               <div className={classes.tabBody}>
                 <p>The following slot will be suggested —</p>
-
                 {doctorNextAvailableSlot === '' ? (
                   <CircularProgress />
                 ) : (
@@ -2199,6 +2206,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Modal>
         <Modal
+          className={classes.modalPopup}
           open={isSlotPopoverOpen}
           onClose={() => setIsSlotPopoverOpen(false)}
           disableBackdropClick
