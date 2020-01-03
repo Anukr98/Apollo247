@@ -18,6 +18,7 @@ export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_m
   medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineName: string | null;
   id: string | null;
+  externalId: string | null;
 }
 
 export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList {

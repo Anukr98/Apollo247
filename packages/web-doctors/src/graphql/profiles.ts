@@ -829,6 +829,7 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineToBeTaken
         medicineName
         id
+        externalId
       }
     }
   }

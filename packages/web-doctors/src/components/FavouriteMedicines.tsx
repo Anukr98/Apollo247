@@ -47,7 +47,7 @@ import {
   RemoveFavouriteMedicineVariables,
 } from 'graphql/types/RemoveFavouriteMedicine';
 
-import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from 'graphql/types/GetCaseSheet';
+import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from 'graphql/types/GetDoctorFavouriteMedicineList';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -697,7 +697,7 @@ let cancel: any;
 export const FavouriteMedicines: React.FC = () => {
   const classes = useStyles();
   const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<
-    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList[] | null
   >([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
@@ -897,6 +897,33 @@ export const FavouriteMedicines: React.FC = () => {
     return tobeTakenObjectList;
   };
   const [medicineLoader, setMedicineLoader] = useState<boolean>(false);
+  const getMedicineData = () => {
+    setMedicineLoader(true);
+    client
+      .query<GetDoctorFavouriteMedicineList>({
+        query: GET_DOCTOR_FAVOURITE_MEDICINE_LIST,
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        const temp: any =
+          _data.data &&
+          _data.data.getDoctorFavouriteMedicineList &&
+          _data.data.getDoctorFavouriteMedicineList.medicineList;
+
+        const medicineList: any = temp;
+        // temp.map((data1: any) => {
+        //   if (data1) {
+        //     selectedMedicinesArr!.push(data1);
+        //   }
+        // });
+
+        setSelectedMedicinesArr(medicineList);
+        setMedicineLoader(false);
+      })
+      .catch((e) => {
+        setMedicineLoader(false);
+      });
+  }
   useEffect(() => {
     setMedicineLoader(true);
     client
@@ -1008,7 +1035,7 @@ export const FavouriteMedicines: React.FC = () => {
         }
       });
       return slot;
-    });
+    });    
     setDaySlots(dayslots);
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
@@ -1016,6 +1043,7 @@ export const FavouriteMedicines: React.FC = () => {
     setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
     setSelectedId(selectedMedicinesArr![idx].id!);
+    setSelectedExternalId(selectedMedicinesArr![idx].externalId!)
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
@@ -1173,7 +1201,7 @@ export const FavouriteMedicines: React.FC = () => {
         },
       })
       .then((data) => {
-        console.log('data after mutation' + data);
+        getMedicineData()
       });
 
     setMedicineInstruction('');
@@ -1246,7 +1274,7 @@ export const FavouriteMedicines: React.FC = () => {
         mutation: UPDATE_DOCTOR_FAVOURITE_MEDICINE,
         variables: {
           updateDoctorsFavouriteMedicineInput: {
-            externalId: selectedId,
+            externalId: selectedExternalId,
             medicineConsumptionDuration: '',
             medicineConsumptionDurationUnit: forUnit,
             medicineFormTypes:
@@ -1299,6 +1327,7 @@ export const FavouriteMedicines: React.FC = () => {
   const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>('');
   const [selectedId, setSelectedId] = useState<string>('');
+  const [selectedExternalId, setSelectedExternalId] = useState<string>('');
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
     setSuggestions(getSuggestions(value));
