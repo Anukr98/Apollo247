@@ -53,6 +53,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
+      relations: ['patient', 'medicineOrderLineItems'],
     });
   }
 

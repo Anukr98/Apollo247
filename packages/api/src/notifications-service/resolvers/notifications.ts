@@ -653,7 +653,6 @@ export async function getPatientDeviceTokens(mobileNumber: string, patientsDb: C
   //get all patients of a mobile number
   const allRelatedPatients = await patientRepo.getIdsByMobileNumber(mobileNumber);
   const patientIds = allRelatedPatients.map((patient) => patient.id);
-  console.log(patientIds, 'patientIds');
 
   //get all device tokens data of related patients
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
@@ -813,12 +812,15 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_PLACED_TITLE;
       notificationBody = ApiConstants.ORDER_PLACED_BODY;
   }
-
   //notification payload
+  const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
+  const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
+  const orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+
   notificationTitle = notificationTitle.toString();
-  notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
-  notificationBody = notificationBody.replace('{1}', orderDetails.orderAutoId.toString());
-  notificationBody = notificationBody.replace('{2}', orderDetails.orderTat.toString());
+  notificationBody = notificationBody.replace('{0}', userName);
+  notificationBody = notificationBody.replace('{1}', orderNumber);
+  notificationBody = notificationBody.replace('{2}', orderTat);
 
   const payload = {
     notification: {
