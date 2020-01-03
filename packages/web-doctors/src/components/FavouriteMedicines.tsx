@@ -393,9 +393,9 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     loader: {
-      left: '50%',
-      top: 41,
-      position: 'relative',
+      left: '45%',
+      top: '45%',
+      position: 'absolute',
     },
     faverite: {
       fontSize: 16,

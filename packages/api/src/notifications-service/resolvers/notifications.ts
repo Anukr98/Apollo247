@@ -568,8 +568,9 @@ export async function sendCartNotification(
       type: 'Cart_Ready',
       orderId: pushNotificationInput.orderAutoId.toString(),
       orderAutoId: '',
-      statusDate: '',
+      deliveredDate: '',
       firstName: patientDetails.firstName,
+      content: notificationBody,
     },
   };
 
@@ -578,8 +579,9 @@ export async function sendCartNotification(
       type: 'Order_Delivered',
       orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
-      statusDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
+      content: notificationBody,
     };
   }
 
@@ -747,6 +749,7 @@ export async function sendPatientRegistrationNotification(
       type: 'Registration_Success',
       patientId: patient.id,
       firstName: patient.firstName,
+      content: notificationBody,
     },
   };
 
@@ -833,6 +836,7 @@ export async function sendMedicineOrderStatusNotification(
       orderId: orderDetails.id,
       statusDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
+      content: notificationBody,
     },
   };
 

@@ -24,7 +24,7 @@ const PharmaApiConfig = {
     SHOP_BY_CITY: [apolloUatBaseUrl],
     IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
-      'http://tpuat.apollopharmacy.org:9090/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
@@ -88,7 +88,7 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   iOS_Version: '1.7',
-  Android_Version: '1.70',
+  Android_Version: '1.71',
 };
 
 // QA
