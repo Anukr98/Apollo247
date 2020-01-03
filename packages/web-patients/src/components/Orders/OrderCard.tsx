@@ -132,7 +132,11 @@ function valuetext(value: number) {
   return `${value}`;
 }
 
-export const OrderCard: React.FC = (props) => {
+type OrderCardProps = {
+  setOrderAutoId: (orderAutoId: number) => void;
+};
+
+export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
 
@@ -180,7 +184,10 @@ export const OrderCard: React.FC = (props) => {
             data.getMedicineOrdersList.MedicineOrdersList.map(
               (orderInfo) =>
                 orderInfo && (
-                  <div className={classes.root}>
+                  <div
+                    className={classes.root}
+                    onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
+                  >
                     <div className={classes.orderedItem}>
                       <div className={classes.itemImg}>
                         <img src={require('images/ic_tablets.svg')} alt="" />
