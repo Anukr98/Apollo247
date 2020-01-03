@@ -1,24 +1,22 @@
+import { MedicineProduct, searchMedicineApi } from '@aph/mobile-doctors/src/components/ApiCall';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
-import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { AxiosResponse } from 'axios';
 import React, { useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Keyboard,
   SafeAreaView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { searchMedicineApi, MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
-import { AxiosResponse } from 'axios';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   container: {
@@ -50,18 +48,29 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>
     );
   };
-  const onPressDoctorSearchListItem = (text: string) => {
+  const onPressDoctorSearchListItem = (text: string, id: number) => {
     Keyboard.dismiss();
     console.log('text', text); //remove this line later
     setDoctorSearchText(text);
-    setMedicineList([]);
-    props.navigation.pop();
+    props.navigation.push(AppRoutes.MedicineAddScreen, {
+      Name: text,
+    });
+    // addMedicineList({
+    //   medicineName: text,
+    //   medicineDosage: '3 tablets',
+    //   medicineToBeTaken: 'AFTER_FOOD',
+    //   medicineInstructions: 'No instructions',
+    //   medicineTimings: 'MORNING',
+    //   medicineConsumptionDurationInDays: '3',
+    //   id: id,
+    // });
+    // props.navigation.pop();
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {
     return (
@@ -83,7 +92,7 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
             const drName = ` ${item!.name}`;
             return (
               <TouchableOpacity
-                onPress={() => onPressDoctorSearchListItem(`Dr. ${item!.name}`)}
+                onPress={() => onPressDoctorSearchListItem(item.name, item.id)}
                 style={{ marginHorizontal: 16, marginTop: 8 }}
                 key={i}
               >
@@ -192,6 +201,7 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
           </View>
         </View>
       </View>
+      {isLoading ? <Loader flex1 /> : null}
       <View style={{ marginTop: 10 }}>{renderSuggestionCard()}</View>
     </SafeAreaView>
   );

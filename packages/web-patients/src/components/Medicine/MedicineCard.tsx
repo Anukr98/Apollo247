@@ -3,10 +3,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import axios from 'axios';
-import { spawn } from 'child_process';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -73,7 +72,7 @@ export interface products {
   mou: string;
 }
 type MedicineInformationProps = {
-  data: products[];
+  medicineList: MedicineProduct[] | null;
 };
 export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
@@ -86,9 +85,9 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
 
   return (
     <Grid container spacing={2}>
-      {props.data &&
-        props.data.length > 0 &&
-        props.data.map((product: products) => (
+      {props.medicineList &&
+        props.medicineList.length > 0 &&
+        props.medicineList.map((product: MedicineProduct) => (
           <Grid item xs={6} sm={6} md={4} lg={4}>
             <div className={classes.root}>
               <Link to={clientRoutes.medicineDetails(product.sku)}>

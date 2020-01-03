@@ -40,8 +40,8 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     textFieldColor: {
-      border: '1px solid #00b38e',
-      borderRadius: 5,
+      // border: '1px solid #00b38e',
+      // borderRadius: 5,
       padding: 16,
     },
     dialogContent: {
@@ -74,9 +74,9 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontWeight: 500,
       marginBottom: 0,
-      padding: '30px 20px',
+      // padding: '30px 20px',
       '& button': {
-        border: '1px solid #00b38e',
+        // border: '1px solid #00b38e',
         padding: '5px 10px',
         fontSize: 12,
         fontWeight: 'normal',
@@ -149,6 +149,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     popupHeadingCenter: {
       padding: 0,
+      backgroundColor: 'transparent',
       '& h6': {
         fontSize: 13,
         color: '#01475b',
@@ -186,6 +187,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     medicinePopup: {
@@ -194,7 +196,7 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
     },
     dialogActions: {
-      padding: 20,
+      padding: 10,
       paddingTop: 10,
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
@@ -438,6 +440,7 @@ export const FavouriteAdvice: React.FC = () => {
                       <AphTextField
                         autoFocus
                         fullWidth
+                        multiline
                         placeholder="Type your favourite advice"
                         className={classes.textFieldColor}
                         value={advice}

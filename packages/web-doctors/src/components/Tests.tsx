@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Chip, Theme, MenuItem, Paper, Button } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
-import { Grid, FormHelperText, Modal, CircularProgress,Tabs,Tab } from '@material-ui/core';
+import { Grid, FormHelperText, Modal, CircularProgress, Tabs, Tab } from '@material-ui/core';
 import { AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
@@ -14,7 +14,7 @@ import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
-import {AphDialog, AphDialogClose } from '@aph/web-ui-components';
+import { AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
 import {
@@ -44,10 +44,10 @@ let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosti
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-  
+
   return (
     <AphTextField
-    className={classes.inputField}
+      className={classes.inputField}
       autoFocus
       fullWidth
       InputProps={{
@@ -114,6 +114,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '30px auto 0 auto',
       boxShadow: 'none',
+      '&:focus': {
+        outline: 'none',
+      }
     },
     popupHeadingCenter: {
       borderRadius: 10,
@@ -125,11 +128,17 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'center',
         marginTop: 5,
       },
+      '&:focus': {
+        outline: 'none',
+      },
     },
     dialogContent: {
-      padding: 20,
+      padding: '20px 20px 0 20px',
       minHeight: 100,
       position: 'relative',
+      '&:focus': {
+        outline: 'none',
+      },
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
@@ -161,13 +170,12 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     dialogActions: {
-      padding: 0,
-      paddingTop: 10,
-      boxShadow: 'none',
+      padding: '15px 15px 15px 0',
       position: 'relative',
       textAlign: 'right',
       fontSize: 14,
       fontWeight: 600,
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       '& button': {
         borderRadius: 10,
         minwidth: 130,
@@ -282,6 +290,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     textFieldColor: {
@@ -336,12 +345,12 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
-    addedList:{
-      '& li':{
+    addedList: {
+      '& li': {
         padding: '10px 50px 10px 0 !important',
+        wordWrap: 'break-word',
       },
-      '& li:last-child':{
-        padding: '10px 50px 10px 0 !important',
+      '& li:last-child': {
         borderBottom: '1px solid rgba(128, 128, 128, 0.2) !important',
       },
     },
@@ -362,7 +371,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
-    searchPopupScroll:{
+    searchPopupScroll: {
       borderBottomRightRadius: 10,
       borderBottomLefttRadius: 10,
     },
@@ -458,7 +467,7 @@ const useStyles = makeStyles((theme: Theme) =>
     fullWidth: {
       width: '100%',
     },
-    inputField:{
+    inputField: {
       padding: '20px 20px 0 20px',
     },
     tabsRoot: {
@@ -493,31 +502,31 @@ const useStyles = makeStyles((theme: Theme) =>
     testsPopup: {
       margin: '30px auto 0 auto',
       boxShadow: 'none',
-      '& >div:nth-child(3)':{
+      '& >div:nth-child(3)': {
         '& >div': {
           maxWidth: 480,
         },
       },
     },
-    tabsContainer:{
+    tabsContainer: {
       fontSize: 18,
       fontWeight: 500,
       color: '#01475b',
       position: 'relative',
     },
-    closeIcon:{
+    closeIcon: {
       position: 'absolute',
       right: 15,
       top: 15,
       cursor: 'pointer',
     },
-    comingSoonWrapper:{
+    comingSoonWrapper: {
       padding: 20,
     },
     searchFrom: {
       padding: 0,
       position: 'relative',
-    },    
+    },
   })
 );
 
@@ -790,68 +799,68 @@ export const Tests: React.FC = () => {
         ) : (
           <Typography component="div" className={classes.listContainer}>
             {/* <div className={classes.card}> */}
-              <ul className={classes.addedList}>
-                {selectedValues !== null &&
-                  selectedValues &&
-                  selectedValues.length > 0 &&
-                  selectedValues!.map((item: any, idx: any) =>
-                    item && item.itemName
-                      ? item.itemName!.trim() !== '' && (
-                          <li key={idx}>
-                            {item!.itemName}
-                            <span className={classes.iconRight}>
-                              <img
-                                width="16"
-                                onClick={() => updateModalValue(idx)}
-                                src={require('images/round_edit_24_px.svg')}
-                                alt=""
-                              />
-                              <img
-                                width="16"
-                                onClick={() => handleDelete(item, idx)}
-                                src={require('images/ic_cancel_green.svg')}
-                                alt=""
-                              />
-                            </span>
-                          </li>
-                        )
-                      : //   <Chip
-                        //     className={classes.othersBtn}
-                        //     key={idx}
-                        //     label={item!.itemName}
-                        //     onDelete={() => handleDelete(item, idx)}
-                        //     deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                        //   />
-                        // )
-                        item.itemname &&
-                        item.itemname!.trim() !== '' && (
-                          <li key={idx}>
-                            {item!.itemname}
-                            <span className={classes.iconRight}>
-                              <img
-                                width="16"
-                                onClick={() => updateModalValue(idx)}
-                                src={require('images/round_edit_24_px.svg')}
-                                alt=""
-                              />
-                              <img
-                                width="16"
-                                onClick={() => handleDelete(item, idx)}
-                                src={require('images/ic_cancel_green.svg')}
-                                alt=""
-                              />
-                            </span>
-                          </li>
-                          // <Chip
-                          //   className={classes.othersBtn}
-                          //   key={idx}
-                          //   label={item!.itemname}
-                          //   onDelete={() => handleDelete(item, idx)}
-                          //   deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                          // />
-                        )
-                  )}
-              </ul>
+            <ul className={classes.addedList}>
+              {selectedValues !== null &&
+                selectedValues &&
+                selectedValues.length > 0 &&
+                selectedValues!.map((item: any, idx: any) =>
+                  item && item.itemName
+                    ? item.itemName!.trim() !== '' && (
+                        <li key={idx}>
+                          {item!.itemName}
+                          <span className={classes.iconRight}>
+                            <img
+                              width="16"
+                              onClick={() => updateModalValue(idx)}
+                              src={require('images/round_edit_24_px.svg')}
+                              alt=""
+                            />
+                            <img
+                              width="16"
+                              onClick={() => handleDelete(item, idx)}
+                              src={require('images/ic_cancel_green.svg')}
+                              alt=""
+                            />
+                          </span>
+                        </li>
+                      )
+                    : //   <Chip
+                      //     className={classes.othersBtn}
+                      //     key={idx}
+                      //     label={item!.itemName}
+                      //     onDelete={() => handleDelete(item, idx)}
+                      //     deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                      //   />
+                      // )
+                      item.itemname &&
+                      item.itemname!.trim() !== '' && (
+                        <li key={idx}>
+                          {item!.itemname}
+                          <span className={classes.iconRight}>
+                            <img
+                              width="16"
+                              onClick={() => updateModalValue(idx)}
+                              src={require('images/round_edit_24_px.svg')}
+                              alt=""
+                            />
+                            <img
+                              width="16"
+                              onClick={() => handleDelete(item, idx)}
+                              src={require('images/ic_cancel_green.svg')}
+                              alt=""
+                            />
+                          </span>
+                        </li>
+                        // <Chip
+                        //   className={classes.othersBtn}
+                        //   key={idx}
+                        //   label={item!.itemname}
+                        //   onDelete={() => handleDelete(item, idx)}
+                        //   deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                        // />
+                      )
+                )}
+            </ul>
           </Typography>
         )}
       </Typography>
@@ -863,166 +872,173 @@ export const Tests: React.FC = () => {
           //   color="primary"
           //   onClick={() => {
           //     showAddConditionHandler(true);
-              
+
           //   }}
           // >
-          //   <img src={require('images/ic_dark_plus.svg')} alt="" /> 
+          //   <img src={require('images/ic_dark_plus.svg')} alt="" />
           //   <div>ADD TESTS</div>
           // </AphButton>
-           <AphButton
-              variant="contained"
-              className={classes.btnAddDoctor}
-              color="primary"
-              onClick={() => setIsSmartTestsDialogOpen(true)}
-            >
-              <img src={require('images/ic_dark_plus.svg')} alt="" /> 
-              <div>ADD TESTS</div>
+          <AphButton
+            variant="contained"
+            className={classes.btnAddDoctor}
+            color="primary"
+            onClick={() => {
+              setIsSmartTestsDialogOpen(true);
+              setState({
+                single: '',
+                popper: '',
+              });
+            }}
+          >
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+            <div>ADD TESTS</div>
           </AphButton>
         )}
-          <AphDialog open={isSmartTestsDialogOpen} className={classes.testsPopup}>
-              <Tabs
-                  value={tabValue}
-                  classes={{
-                    root: classes.tabsRoot,
-                    indicator: classes.tabsIndicator,
-                  }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
+        <AphDialog open={isSmartTestsDialogOpen} className={classes.testsPopup}>
+          <Tabs
+            value={tabValue}
+            classes={{
+              root: classes.tabsRoot,
+              indicator: classes.tabsIndicator,
+            }}
+            onChange={(e, newValue) => {
+              setTabValue(newValue);
+            }}
+          >
+            <Tab
+              classes={{
+                root: classes.tabRoot,
+                selected: classes.tabSelected,
+              }}
+              label="ADD BLOOD TEST"
+            />
+            <Tab
+              classes={{
+                root: classes.tabRoot,
+                selected: classes.tabSelected,
+              }}
+              label="SCANS &amp; HEALTH CHECKS"
+            />
+          </Tabs>
+          <div onClick={() => setIsSmartTestsDialogOpen(false)} className={classes.closeIcon}>
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </div>
+          {tabValue === 0 && (
+            <TabContainer>
+              <div className={classes.tabsContainer}>
+                <div className={classes.searchFrom}>
+                  <Autosuggest
+                    onSuggestionSelected={(e, { suggestion }) => {
+                      if (selectedValues && selectedValues.length > 0) {
+                        selectedValues.push(suggestion);
+                        setSelectedValues(selectedValues);
+                      } else {
+                        const emptySelectedValue = [];
+                        emptySelectedValue.push(suggestion);
+                        setSelectedValues(emptySelectedValue);
+                      }
+                      saveTests(suggestion);
+                      setShowAddCondition(false);
+                      setIsSmartTestsDialogOpen(false);
+                      suggestions = suggestions.filter(
+                        (val) => selectedValues && !selectedValues!.includes(val!)
+                      );
+                      setState({
+                        single: '',
+                        popper: '',
+                      });
+                      setOtherDiagnostic('');
                     }}
-                    label="ADD BLOOD TEST"
-                  />
-                  <Tab
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="SCANS &amp; HEALTH CHECKS"
-                  />
-                </Tabs>
-                <div onClick={() => setIsSmartTestsDialogOpen(false)} 
-                     className={classes.closeIcon}>
-                  <img
-                    src={require('images/ic_cross.svg')}
-                    alt=""
-                  />
-                  </div>
-                {tabValue === 0 && (
-                  <TabContainer>
-                      <div className={classes.tabsContainer}>
-                        <div className={classes.searchFrom}>
-                        <Autosuggest
-                          onSuggestionSelected={(e, { suggestion }) => {
+                    {...autosuggestProps}
+                    inputProps={{
+                      classes,
+                      id: 'react-autosuggest-simple',
+                      placeholder: 'Search Tests',
+                      value: state.single,
+                      onChange: handleChange('single'),
+                      onKeyPress: (e) => {
+                        if (e.which == 13 || e.keyCode == 13) {
+                          if (suggestions.length === 1) {
                             if (selectedValues && selectedValues.length > 0) {
-                              selectedValues.push(suggestion);
+                              selectedValues.push(suggestions[0]);
                               setSelectedValues(selectedValues);
                             } else {
                               const emptySelectedValue = [];
-                              emptySelectedValue.push(suggestion);
+                              emptySelectedValue.push(suggestions[0]);
                               setSelectedValues(emptySelectedValue);
                             }
-                            saveTests(suggestion);
+                            saveTests(suggestions[0]);
                             setShowAddCondition(false);
                             suggestions = suggestions.filter(
-                              (val) => selectedValues && !selectedValues!.includes(val!)
+                              (val) => selectedValues && selectedValues.includes(val!)
                             );
                             setState({
                               single: '',
                               popper: '',
                             });
                             setOtherDiagnostic('');
-                          }}
-                          {...autosuggestProps}
-                          inputProps={{
-                            classes,
-                            id: 'react-autosuggest-simple',
-                            placeholder: 'Search Tests',
-                            value: state.single,
-                            onChange: handleChange('single'),
-                            onKeyPress: (e) => {
-                              if (e.which == 13 || e.keyCode == 13) {
-                                if (suggestions.length === 1) {
-                                  if (selectedValues && selectedValues.length > 0) {
-                                    selectedValues.push(suggestions[0]);
-                                    setSelectedValues(selectedValues);
-                                  } else {
-                                    const emptySelectedValue = [];
-                                    emptySelectedValue.push(suggestions[0]);
-                                    setSelectedValues(emptySelectedValue);
-                                  }
-                                  saveTests(suggestions[0]);
-                                  setShowAddCondition(false);
-                                  suggestions = suggestions.filter(
-                                    (val) => selectedValues && selectedValues.includes(val!)
-                                  );
-                                  setState({
-                                    single: '',
-                                    popper: '',
-                                  });
-                                  setOtherDiagnostic('');
-                                }
-                              }
-                            },
-                          }}
-                          theme={{
-                            container: classes.container,
-                            suggestionsContainerOpen: classes.suggestionsContainerOpen
-                          }}
-                          renderSuggestionsContainer={(options) => (
-                            <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }} 
-                            className={classes.searchPopupScroll}>
-                                <Paper {...options.containerProps} square className={classes.searchpopup}>
-                                    {options.children}
-                                </Paper>
-                            </Scrollbars>
-                              )}
-                            />
-                          {lengthOfSuggestions < 2 && otherDiagnostic.length > 2 && (
-                              <AphButton
-                                className={classes.darkGreenaddBtn}
-                                variant="contained"
-                                color="primary"
-                                onClick={() => {
-                                  if (otherDiagnostic.trim() !== '') {
-                                    const obj = {
-                                      itemName: otherDiagnostic,
-                                    };
-                                    saveTests(obj);
-                                    selectedValues!.splice(idx, 0, {
-                                      itemname: otherDiagnostic,
-                                      __typename: 'DiagnosticPrescription',
-                                    });
-                                    setSelectedValues(selectedValues);
-                                    setShowAddOtherTests(false);
-                                    setShowAddCondition(false);
-                                    setIdx(selectedValues!.length + 1);
-                                    setTimeout(() => {
-                                      setOtherDiagnostic('');
-                                    }, 10);
-                                  } else {
-                                    setOtherDiagnostic('');
-                                  }
-                                }}
-                              >
-                                <img src={require('images/ic_add_circle.svg')} alt="" />
-                              </AphButton>
-                        )}
-                        </div>
-                      </div>
-                  </TabContainer>
-                )}
-                  {tabValue === 1 && (
-                    <TabContainer>
-                      <div className={classes.tabsContainer}>
-                        <div className={classes.comingSoonWrapper}>Coming Soon..</div>
-                        </div>  
-                    </TabContainer>  
-                )}
+                          }
+                        }
+                      },
+                    }}
+                    theme={{
+                      container: classes.container,
+                      suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                    }}
+                    renderSuggestionsContainer={(options) => (
+                      <Scrollbars
+                        autoHide={true}
+                        style={{ height: 'calc(45vh' }}
+                        className={classes.searchPopupScroll}
+                      >
+                        <Paper {...options.containerProps} square className={classes.searchpopup}>
+                          {options.children}
+                        </Paper>
+                      </Scrollbars>
+                    )}
+                  />
+                  {otherDiagnostic.length > 2 && (
+                    <AphButton
+                      className={classes.darkGreenaddBtn}
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        if (otherDiagnostic.trim() !== '') {
+                          const obj = {
+                            itemName: otherDiagnostic,
+                          };
+                          saveTests(obj);
+                          selectedValues!.splice(idx, 0, {
+                            itemname: otherDiagnostic,
+                            __typename: 'DiagnosticPrescription',
+                          });
+                          setSelectedValues(selectedValues);
+                          setShowAddOtherTests(false);
+                          setShowAddCondition(false);
+                          setIdx(selectedValues!.length + 1);
+                          setIsSmartTestsDialogOpen(false);
+                          setTimeout(() => {
+                            setOtherDiagnostic('');
+                          }, 10);
+                        } else {
+                          setOtherDiagnostic('');
+                        }
+                      }}
+                    >
+                      <img src={require('images/ic_add_circle.svg')} alt="" />
+                    </AphButton>
+                  )}
+                </div>
+              </div>
+            </TabContainer>
+          )}
+          {tabValue === 1 && (
+            <TabContainer>
+              <div className={classes.tabsContainer}>
+                <div className={classes.comingSoonWrapper}>Coming Soon..</div>
+              </div>
+            </TabContainer>
+          )}
         </AphDialog>
       </Typography>
 

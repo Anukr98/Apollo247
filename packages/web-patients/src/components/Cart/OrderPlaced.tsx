@@ -94,25 +94,29 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface OrderPlacedProps {
-  orderId: string;
+  orderAutoId: string;
+  orderStatus: string;
+  setShowOrderPopup: (showOrderPopup: boolean) => void;
 }
 
 export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
-        <Typography variant="h2">yay!</Typography>
-        <p>Your orders have been placed successfully</p>
-        <div className={classes.orderPlaced}>
-          {/* <div className={classes.orderHeader}>
+        {props.orderStatus === 'success' ? (
+          <>
+            <Typography variant="h2">yay!</Typography>
+            <p>Your orders have been placed successfully</p>
+            <div className={classes.orderPlaced}>
+              {/* <div className={classes.orderHeader}>
             <div className={classes.medicineName}>
               <span className={classes.medicineIcon}>
                 <img src={require('images/ic_tablets.svg')} alt="" />
               </span>
               <span>Medicines</span>
             </div>
-            <div className={classes.invoiceNo}>#{props.orderId}</div>
+            <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
           </div>
           <div className={classes.orderBody}>Delivery By: 27 July 2019</div>
           <div className={classes.remindMe}>
@@ -121,16 +125,24 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
               <AphCheckbox />
             </span>
           </div> */}
-          <div className={classes.bottomActions}>
-            <AphButton>View Invoice</AphButton>
-            <AphButton
-              className={classes.trackBtn}
-              onClick={() => (window.location.href = clientRoutes.yourOrders())}
-            >
-              Track Order
-            </AphButton>
-          </div>
-        </div>
+              <div className={classes.bottomActions}>
+                <AphButton>View Invoice</AphButton>
+                <AphButton
+                  className={classes.trackBtn}
+                  onClick={() => (window.location.href = clientRoutes.yourOrders())}
+                >
+                  Track Order
+                </AphButton>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <Typography variant="h2">uh oh.. :(</Typography>
+            <p>Your payment wasn't successful duw to bad network connectivity. Please try again.</p>
+            <AphButton onClick={() => props.setShowOrderPopup(false)}>OK, GOT IT</AphButton>
+          </>
+        )}
       </div>
     </div>
   );

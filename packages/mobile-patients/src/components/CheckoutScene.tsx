@@ -294,6 +294,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         ].join(','),
+        orderTat: deliveryAddressId && moment(deliveryTime).isValid ? deliveryTime : '',
         items: cartItems.map(
           (item) =>
             ({
@@ -408,24 +409,29 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               {`#${orderAutoId}`}
             </Text>
           </View>
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 7.5,
-              marginTop: 15.5,
-            }}
-          />
-          <View>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-              }}
-            >
-              {deliveryTime && `Delivery By: ${moment(deliveryTime).format('D MMM YYYY')}`}
-            </Text>
-          </View>
+          {moment(deliveryTime).isValid() && (
+            <>
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: '#02475b',
+                  opacity: 0.1,
+                  marginBottom: 7.5,
+                  marginTop: 15.5,
+                }}
+              />
+              <View>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                  }}
+                >
+                  {deliveryTime &&
+                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm a')}`}
+                </Text>
+              </View>
+            </>
+          )}
           {/* <View
               style={{
                 flexDirection: 'row',

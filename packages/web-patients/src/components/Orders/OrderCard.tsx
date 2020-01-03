@@ -8,6 +8,14 @@ import {
   AphDeliveredSlider,
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus as statusList,
+} from 'graphql/types/GetMedicineOrdersList';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,69 +133,84 @@ function valuetext(value: number) {
 }
 
 export const OrderCard: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+
+  const { data, error, loading } = useQueryWithSkip<
+    GetMedicineOrdersList,
+    GetMedicineOrdersListVariables
+  >(GET_MEDICINE_ORDERS_LIST, {
+    variables: {
+      patientId: currentPatient && currentPatient.id,
+    },
+  });
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error :(</div>;
+
+  console.log(data);
+
+  const sortOrderByTime = (status: (statusList | null)[]) => {
+    if (status) {
+      status.reverse();
+    }
+  };
+
+  const getOrderStatus = (status: (statusList | null)[]) => {
+    if (status) {
+      const sortedList = sortOrderByTime(status);
+      return 'success';
+    }
+  };
+
+  const getOrderDeliveryDate = (status: (statusList | null)[]) => {
+    if (status) {
+      const sortedList = sortOrderByTime(status);
+      return 'date';
+    }
+  };
 
   return (
     <div className={classes.orderListing}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
         <div className={classes.customScroll}>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                defaultValue={80}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>Order Placed</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={`${classes.root} ${classes.cardSelected}`}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphOnHoldSlider
-                color="primary"
-                defaultValue={150}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>On Hold</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
+          {data &&
+            data.getMedicineOrdersList &&
+            data.getMedicineOrdersList.MedicineOrdersList &&
+            data.getMedicineOrdersList.MedicineOrdersList.length > 0 &&
+            data.getMedicineOrdersList.MedicineOrdersList.map(
+              (orderInfo) =>
+                orderInfo && (
+                  <div className={classes.root}>
+                    <div className={classes.orderedItem}>
+                      <div className={classes.itemImg}>
+                        <img src={require('images/ic_tablets.svg')} alt="" />
+                      </div>
+                      <div className={classes.itemSection}>
+                        <div className={classes.itemName}>Medicines</div>
+                        <div className={classes.deliveryType}>
+                          <span>{orderInfo.deliveryType}</span>
+                          <span>#{orderInfo.orderAutoId}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={classes.orderTrackSlider}>
+                      <AphTrackSlider
+                        color="primary"
+                        defaultValue={80}
+                        getAriaValueText={valuetext}
+                        min={0}
+                        max={360}
+                        valueLabelDisplay="off"
+                      />
+                    </div>
+                    <div className={classes.orderStatusGroup}>
+                      <div className={classes.orderStatus}>Order Placed</div>
+                      <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
+                    </div>
+                  </div>
+                )
+            )}
+          {/* <div className={classes.root}>
             <div className={classes.orderedItem}>
               <div className={classes.itemImg}>
                 <img src={require('images/ic_tablets.svg')} alt="" />
@@ -327,6 +350,7 @@ export const OrderCard: React.FC = (props) => {
               <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
             </div>
           </div>
+         */}
         </div>
       </Scrollbars>
     </div>
