@@ -122,6 +122,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const [tabValue, setTabValue] = useState<number>(0);
   const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
   const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = React.useState<boolean>(false);
+
   const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = React.useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
 
@@ -137,7 +138,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         variables: {
           patientId: currentPatient && currentPatient.id,
           orderAutoId:
-            typeof props.orderAutoId == 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
+            typeof props.orderAutoId === 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
         },
       })
         .then((res) => console.log(res))
@@ -149,7 +150,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         <div className={classes.orderId}>
-          <span>ORDER #A2472707936</span>
+          <span>ORDER #{props.orderAutoId}</span>
         </div>
         <div className={classes.headerActions}>
           <AphButton onClick={handleClick} className={classes.moreBtn}>
@@ -172,6 +173,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           >
             <div className={classes.menuBtnGroup}>
               <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>Cancel Order</AphButton>
+
               <AphButton onClick={() => setIsReturnOrderDialogOpen(true)}>Return Order</AphButton>
             </div>
           </Popover>
@@ -216,12 +218,18 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
       <AphDialog open={isCancelOrderDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} />
         <AphDialogTitle>Cancel Order</AphDialogTitle>
-        <CancelOrder />
+        <CancelOrder
+          setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
+          orderAutoId={props.orderAutoId}
+        />
       </AphDialog>
       <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
         <AphDialogTitle>Return Order</AphDialogTitle>
-        <ReturnOrder />
+        <ReturnOrder
+          setIsReturnOrderDialogOpen={setIsReturnOrderDialogOpen}
+          orderAutoId={props.orderAutoId}
+        />
       </AphDialog>
     </div>
   );
