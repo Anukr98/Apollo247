@@ -32,3 +32,23 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
     }
   }
 `;
+export const GET_MEDICINE_ORDER_DETAILS = gql`
+  query GetMedicineOrderDetails($patientId: String!, $orderAutoId: Int!) {
+    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      MedicineOrderDetails {
+        id
+        orderAutoId
+        shopId
+        estimatedAmount
+        deliveryType
+        patientAddressId
+        devliveryCharges
+        prescriptionImageUrl
+        prismPrescriptionFileId
+        pharmaRequest
+        orderTat
+        orderType
+      }
+    }
+  }
+`;
