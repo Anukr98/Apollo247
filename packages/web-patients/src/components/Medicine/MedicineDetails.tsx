@@ -74,7 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
-      padding:'0 10px 0 0',
+      padding: '0 10px 0 0',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 20,
@@ -113,7 +113,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     customScroll: {
       padding: '0 7px 0 20px',
-      },
+    },
     productInformation: {
       backgroundColor: theme.palette.common.white,
       padding: 20,
@@ -157,7 +157,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       margin: '5px 0 0 0',
-      '& svg':{
+      '& svg': {
         color: '#02475b',
       },
     },
@@ -198,7 +198,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         margin: '5px 0',
       },
-      '& ul':{
+      '& ul': {
         padding: '0 0 0 20px',
       },
     },
@@ -218,7 +218,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       paddingLeft: 20,
     },
-    flexContainer:{
+    flexContainer: {
       overflow: 'scroll',
     },
   };
@@ -495,12 +495,12 @@ export const MedicineDetails: React.FC = (props) => {
                                       description.split('rn').map((data) => {
                                         return <p>{data}</p>;
                                       })}
-                                        <ul>
-                                        <li>Size: Large</li>
-                                        <li>Number of Units: 75</li>
-                                        <li>MamyPoko extra absorb diaper prevents leakage.</li>
-                                        <li>4 litres</li>
-                                      </ul>
+                                    <ul>
+                                      <li>Size: Large</li>
+                                      <li>Number of Units: 75</li>
+                                      <li>MamyPoko extra absorb diaper prevents leakage.</li>
+                                      <li>4 litres</li>
+                                    </ul>
                                   </div>
                                 </div>
                               ) : null}
