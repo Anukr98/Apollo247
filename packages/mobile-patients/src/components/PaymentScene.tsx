@@ -20,7 +20,7 @@ import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/com
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getParameterByName } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getParameterByName, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 
 const styles = StyleSheet.create({
@@ -224,8 +224,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const handleOrderFailure = () => {
     props.navigation.goBack();
     showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: `We're sorry but the payment failed.`,
+      title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+      description: `We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.`,
     });
   };
 

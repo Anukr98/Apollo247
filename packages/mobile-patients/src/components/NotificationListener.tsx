@@ -67,8 +67,10 @@ type CustomNotificationType =
   | 'Cart_Ready'
   | 'call_started'
   | 'chat_room'
-  | 'Order_Delivered'
-  | 'Order_Out_For_Delivery';
+  | 'Order_Delivered' // for this we'll show feedback notification
+  | 'Order_Out_For_Delivery'
+  | 'Order_Placed'
+  | 'Order_Confirmed';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -84,6 +86,29 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     subtitle: '',
     transactionId: '',
   });
+
+  const showOrderStatusAlert = (_: string, orderAutoId: string, description: string) => {
+    showAphAlert!({
+      title: `Hi :)`,
+      description,
+      CTAs: [
+        {
+          text: 'DISMISS',
+          onPress: () => hideAphAlert!(),
+        },
+        {
+          text: 'VIEW DETAILS',
+          onPress: () => {
+            hideAphAlert!();
+            props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+              goToHomeOnBack: true,
+              orderAutoId: orderAutoId,
+            });
+          },
+        },
+      ],
+    });
+  };
 
   const processNotification = async (notification: Notification) => {
     const { title, body, data } = notification;
@@ -168,32 +193,16 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Order_Out_For_Delivery':
         {
           const orderAutoId: string = data.orderAutoId;
-          // data.orderId, data.deliveredDate
-          showAphAlert!({
-            title: 'Hi :(',
-            description: `Your order #${orderAutoId} is out for delivery.`,
-            CTAs: [
-              {
-                text: 'DISMISS',
-                onPress: () => hideAphAlert!(),
-              },
-              {
-                text: 'VIEW DETAILS',
-                onPress: () => {
-                  hideAphAlert!();
-                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-                    goToHomeOnBack: true,
-                    orderAutoId: orderAutoId,
-                  });
-                },
-              },
-            ],
-          });
+          const firstName: string = data.firstName;
+          const description: string = data.content;
+          // data.orderId, data.statusDate
+          showOrderStatusAlert(firstName, orderAutoId, description);
         }
         break;
 
       case 'Cart_Ready':
         {
+          // data.deliveredDate
           const orderId: number = parseInt(data.orderId || '0');
           console.log('Cart_Ready called');
           client
