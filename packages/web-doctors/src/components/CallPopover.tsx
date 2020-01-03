@@ -377,7 +377,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 6,
     },
     modalBox: {
-      maxWidth: 480,
+      maxWidth: 380,
       minHeight: 420,
       margin: 'auto',
       marginTop: 88,
@@ -697,6 +697,13 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       paddingTop: 0,
     },
+    modalPopup: {
+      '& div': {
+        '&:focus': {
+          outline: 'none',
+        },
+      },
+    },
   };
 });
 
@@ -820,6 +827,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
   const [showAbandonment, setShowAbandonment] = React.useState(false);
@@ -2007,6 +2015,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     (!props.startAppointment && appointmentInfo!.status === STATUS.PENDING)) && (
                     <li
                       onClick={() => {
+                        setLoading(true);
+
                         handleCloseThreeDots();
                         const rescheduleCountByDoctor =
                           (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
@@ -2028,6 +2038,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                                     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
                                       .availableSlot || ''
                                   );
+                                  setDateSelected(
+                                    moment(
+                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                        .availableSlot
+                                    ).format('YYYY-MM-DD')
+                                  );
+
                                   setTimeSelected(
                                     moment(
                                       data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
@@ -2038,6 +2055,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               } catch (error) {
                                 setDoctorNextAvailableSlot('');
                                 alert(error);
+                              } finally {
+                                setLoading(false);
                               }
                             })
                             .catch((e) => console.log(e));
@@ -2046,13 +2065,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     >
                       Reschedule Consult
                     </li>
-                  )}
+                  }
                 </ul>
               </div>
             </Popover>
           </span>
         </div>
         <Modal
+          className={classes.modalPopup}
           open={isPopoverOpen}
           onClose={() => {
             setIsPopoverOpen(false);
@@ -2076,8 +2096,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
               <div className={classes.tabBody}>
                 <p>The following slot will be suggested —</p>
-
-                {doctorNextAvailableSlot === '' ? (
+                {doctorNextAvailableSlot === '' || loading ? (
                   <CircularProgress />
                 ) : (
                   <p>
@@ -2199,6 +2218,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Modal>
         <Modal
+          className={classes.modalPopup}
           open={isSlotPopoverOpen}
           onClose={() => setIsSlotPopoverOpen(false)}
           disableBackdropClick
