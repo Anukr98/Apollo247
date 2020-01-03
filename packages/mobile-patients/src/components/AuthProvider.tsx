@@ -14,7 +14,6 @@ import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { AsyncStorage, Platform } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import DeviceInfo from 'react-native-device-info';
 import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
@@ -229,7 +228,6 @@ export const AuthProvider: React.FC = (props) => {
           : AppConfig.Configuration.Android_Version,
       deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
     };
-    // console.log('versionInput --->', versionInput);
     await apolloClient
       .query<GetCurrentPatients, GetCurrentPatientsVariables>({
         query: GET_CURRENT_PATIENTS,

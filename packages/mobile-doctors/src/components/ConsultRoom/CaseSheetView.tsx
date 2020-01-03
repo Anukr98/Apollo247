@@ -22,6 +22,7 @@ import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard
 import {
   AddPlus,
   CalendarIcon,
+  ClosePopup,
   DiagonisisRemove,
   End,
   Green,
@@ -29,21 +30,21 @@ import {
   InpersonIcon,
   PatientPlaceHolderImage,
   PhysicalIcon,
+  RoundCallIcon,
+  RoundVideoIcon,
   Selected,
   Start,
   ToogleOff,
   ToogleOn,
-  RoundCallIcon,
-  RoundVideoIcon,
-  ClosePopup,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import {
   CREATEAPPOINTMENTSESSION,
   END_APPOINTMENT_SESSION,
   GET_CASESHEET,
-  UPDATE_CASESHEET,
+  MODIFY_CASESHEET,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
@@ -58,8 +59,8 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
@@ -75,6 +76,7 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
+  Dimensions,
   Image,
   Platform,
   ScrollView,
@@ -83,7 +85,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Dimensions,
 } from 'react-native';
 import { Slider } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
@@ -94,7 +95,6 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -702,7 +702,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-        mutation: UPDATE_CASESHEET,
+        mutation: MODIFY_CASESHEET,
         variables: {
           UpdateCaseSheetInput: input,
         },

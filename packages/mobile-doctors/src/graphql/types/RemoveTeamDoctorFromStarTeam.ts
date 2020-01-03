@@ -3,19 +3,19 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: RemoveTeamDoctorFromStarTeam
+// GraphQL mutation operation: removeTeamDoctorFromStarTeam
 // ====================================================
 
-export interface RemoveTeamDoctorFromStarTeam_removeTeamDoctorFromStarTeam {
+export interface removeTeamDoctorFromStarTeam_removeTeamDoctorFromStarTeam {
   __typename: "DoctorDetails";
   firstName: string;
 }
 
-export interface RemoveTeamDoctorFromStarTeam {
-  removeTeamDoctorFromStarTeam: RemoveTeamDoctorFromStarTeam_removeTeamDoctorFromStarTeam | null;
+export interface removeTeamDoctorFromStarTeam {
+  removeTeamDoctorFromStarTeam: removeTeamDoctorFromStarTeam_removeTeamDoctorFromStarTeam | null;
 }
 
-export interface RemoveTeamDoctorFromStarTeamVariables {
+export interface removeTeamDoctorFromStarTeamVariables {
   associatedDoctor: string;
   starDoctor: string;
 }

@@ -1,36 +1,27 @@
+import { addDiagonsisList, MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
-import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { SEARCH_DIAGNOSIS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  searchDiagnosis,
+  searchDiagnosisVariables,
+  searchDiagnosis_searchDiagnosis,
+} from '@aph/mobile-doctors/src/graphql/types/searchDiagnosis';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-
+import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Keyboard,
   SafeAreaView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  searchMedicineApi,
-  MedicineProduct,
-  addDiagonsisList,
-} from '@aph/mobile-doctors/src/components/ApiCall';
-import { AxiosResponse } from 'axios';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  searchDiagnosis,
-  searchDiagnosisVariables,
-  searchDiagnosis_searchDiagnosis,
-} from '@aph/mobile-doctors/src/graphql/types/searchDiagnosis';
-import { SEARCH_DIAGNOSIS } from '@aph/mobile-doctors/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   container: {

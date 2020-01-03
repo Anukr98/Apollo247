@@ -4,6 +4,8 @@ import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -101,24 +103,27 @@ interface OrderPlacedProps {
 
 export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
   const classes = useStyles({});
+
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         {props.orderStatus === 'success' ? (
           <>
             <Typography variant="h2">yay!</Typography>
-            <p>Your orders have been placed successfully</p>
+            <p>
+              Your orders have been placed successfully.We will confirm the order in a few minutes
+            </p>
             <div className={classes.orderPlaced}>
-              {/* <div className={classes.orderHeader}>
-            <div className={classes.medicineName}>
-              <span className={classes.medicineIcon}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </span>
-              <span>Medicines</span>
-            </div>
-            <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
-          </div>
-          <div className={classes.orderBody}>Delivery By: 27 July 2019</div>
+              <div className={classes.orderHeader}>
+                <div className={classes.medicineName}>
+                  <span className={classes.medicineIcon}>
+                    <img src={require('images/ic_tablets.svg')} alt="" />
+                  </span>
+                  <span>Medicines</span>
+                </div>
+                <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
+              </div>
+              {/* <div className={classes.orderBody}>Delivery By: 27 July 2019</div>
           <div className={classes.remindMe}>
             <span>Remind me to take medicines</span>
             <span>
