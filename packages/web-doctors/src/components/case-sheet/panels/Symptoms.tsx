@@ -14,7 +14,7 @@ import {
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms } from 'graphql/types/GetCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
-
+import Scrollbars from 'react-custom-scrollbars';
 import { isEmpty, debounce, trim } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
@@ -126,6 +126,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   dialogContent: {
     padding: 20,
     minHeight: 380,
+    maxHeight: 380,
     '& h6': {
       fontSize: 14,
       fontWeight: 500,
@@ -159,7 +160,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingRight: 20,
   },
   dialogActions: {
-    padding: 20,
+    padding: '0 20px 10px 20px',
     paddingTop: 10,
     boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
     position: 'relative',
@@ -521,6 +522,7 @@ export const Symptoms: React.FC = (props) => {
               {
                 <div>
                   <div>
+                  <Scrollbars autoHide={true} style={{ height: '480px' }}>
                     <div className={classes.dialogContent}>
                       <div>
                         <h6>COMPLAINT</h6>
@@ -630,6 +632,7 @@ export const Symptoms: React.FC = (props) => {
                         </div>
                       </div>
                     </div>
+                  </Scrollbars>
                   </div>
                   <div className={classes.dialogActions}>
                     <AphButton
