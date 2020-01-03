@@ -218,9 +218,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       paddingLeft: 20,
     },
-    flexContainer: {
-      overflow: 'scroll',
-    },
   };
 });
 
