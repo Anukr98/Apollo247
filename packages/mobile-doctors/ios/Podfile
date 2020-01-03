@@ -11,7 +11,6 @@ target 'ApolloPatient' do
  pod 'Firebase/Auth'
  pod 'Firebase/Messaging'
  pod 'GoogleAppMeasurement'
- pod 'OpenTok', '~> 2.15.3'
   
   # pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
@@ -47,5 +46,7 @@ target 'ApolloPatient' do
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   # Pods for testing
+  pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   use_native_modules!
 end
