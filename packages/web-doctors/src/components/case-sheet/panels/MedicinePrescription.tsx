@@ -1047,7 +1047,7 @@ export const MedicinePrescription: React.FC = () => {
                   classes={{ root: classes.deleteSymptom }}
                   onClick={() => deletemedicine(index)}
                 >
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
               </div>
             );
