@@ -57,15 +57,29 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         context.doctorsDb
       );
+      const consultHours = await dashboardRepo.getTimePerConsult(doctor.id, args.summaryDate);
+      const unpaidFollowUpCount = await dashboardRepo.getFollowUpBookedCount(
+        doctor.id,
+        args.summaryDate,
+        '0'
+      );
+      const paidFollowUpCount = await dashboardRepo.getFollowUpBookedCount(
+        doctor.id,
+        args.summaryDate,
+        '1'
+      );
       const dashboardSummaryAttrs: Partial<SdDashboardSummary> = {
         doctorId: doctor.id,
-        doctorName: doctor.firstName,
+        doctorName: doctor.firstName + ' ' + doctor.lastName,
         totalConsultations,
         appointmentDateTime: args.summaryDate,
         audioConsultations: auidoCount,
         videoConsultations: videoCount,
         rescheduledByDoctor: reschduleCount,
         consultSlots: slotsCount,
+        timePerConsult: consultHours,
+        paidFollowUp: paidFollowUpCount,
+        unPaidFollowUp: unpaidFollowUpCount,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });
