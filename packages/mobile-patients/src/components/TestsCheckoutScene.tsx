@@ -256,7 +256,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
-    return;
     saveOrder(orderInfo)
       .then(({ data }) => {
         console.log('SaveDiagnosticOrder API\n', { data });
