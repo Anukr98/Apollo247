@@ -3,29 +3,35 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   ApploLogo,
   Chat,
+  ClosePopup,
   Notification,
   RoundIcon,
-  Up,
-  Cancel,
   Selected,
   UnSelected,
-  ClosePopup,
+  Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
+import { GET_PATIENT_LOG } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   getPatientLog,
-  getPatientLog_getPatientLog,
+  getPatientLog_getPatientLog_patientLog,
 } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
+import { patientLogSort, patientLogType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { GET_PATIENT_LOG } from '@aph/mobile-doctors/src/graphql/profiles';
-import { patientLogType, patientLogSort } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import moment, { duration } from 'moment';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -87,31 +93,47 @@ const styles = StyleSheet.create({
 export interface PatientsProps extends NavigationScreenProps {}
 
 export const Patients: React.FC<PatientsProps> = (props) => {
-  const tabsData = [{ title: 'All' }, { title: 'Follow up' }, { title: 'Regular' }];
+  const tabsData = [
+    { title: 'All', key: patientLogType.All },
+    { title: 'Follow up', key: patientLogType.FOLLOW_UP },
+    { title: 'Regular', key: patientLogType.REGULAR },
+  ];
   const sortingList = [
-    'Most Recent',
-    'Number of Consults',
-    'Patient Name: A to Z',
-    'Patient Name: Z to A',
+    {
+      title: 'Most Recent',
+      key: patientLogSort.MOST_RECENT,
+    },
+    {
+      title: 'Number of Consults',
+      key: patientLogSort.NUMBER_OF_CONSULTS,
+    },
+    {
+      title: 'Patient Name: A to Z',
+      key: patientLogSort.PATIENT_NAME_A_TO_Z,
+    },
+    {
+      title: 'Patient Name: Z to A',
+      key: patientLogSort.PATIENT_NAME_Z_TO_A,
+    },
   ];
 
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
   const [showSorting, setshowSorting] = useState(false);
-  const [selectedSorting, setselectedSorting] = useState(sortingList[0]);
+  const [selectedSorting, setselectedSorting] = useState(sortingList[0].key);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const client = useApolloClient();
-  const [activeTabIndex, setActiveTabIndex] = useState(true);
-  const [regular, setRegular] = useState(false);
-  const [followup, setFollowup] = useState(false);
-  const [allData, setAllData] = useState<any>([]);
-  const [filterdata, setFilterData] = useState(false);
-  const [selectedId, setSelectedId] = useState(true);
+  const [loadMoreSpinner, setloadMoreSpinner] = useState<boolean>(false);
+  const [allData, setAllData] = useState<(getPatientLog_getPatientLog_patientLog | null)[] | null>(
+    []
+  );
+  const [offset, setoffset] = useState<number>(0);
+  const [totalResultCount, settotalResultCount] = useState<number>();
 
   const [SelectableValue, setSelectableValue] = useState(patientLogType.All);
-  const [patientLogSortData, setPatientLogSortData] = useState(patientLogSort.PATIENT_NAME_A_TO_Z);
+  // const [patientLogSortData, setPatientLogSortData] = useState(patientLogSort.PATIENT_NAME_A_TO_Z);
+  const client = useApolloClient();
 
   useEffect(() => {
-    ShowAllTypeData(SelectableValue, patientLogSortData);
+    ShowAllTypeData(patientLogType.All, sortingList[0].key);
   }, []);
   const renderMainHeader = () => {
     return (
@@ -150,14 +172,14 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             <TabsComponent
               onChange={(title) => {
                 setSelectedTab(title);
-                ShowAllTypeData(
+                const selectedValue =
                   title === tabsData[0].title
                     ? patientLogType.All
                     : title === tabsData[1].title
                     ? patientLogType.FOLLOW_UP
-                    : patientLogType.REGULAR,
-                  patientLogSortData
-                );
+                    : patientLogType.REGULAR;
+                setSelectableValue(selectedValue);
+                ShowAllTypeData(selectedValue, selectedSorting);
               }}
               data={tabsData}
               selectedTab={selectedTab}
@@ -208,83 +230,137 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     );
   };
 
-  const ShowAllTypeData = (SelectableValue: patientLogType, patientLogSortData: patientLogSort) => {
-    console.log('patientLogSortData', patientLogSortData);
-    setshowSpinner(true);
-    client
-      .query<getPatientLog>({
-        query: GET_PATIENT_LOG,
-        variables: {
-          limit: 10,
-          offset: 0,
-          sortBy: patientLogSortData,
-          type: SelectableValue,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        console.log('getPatientLog', _data!);
-        setAllData(_data.data.getPatientLog);
-        setshowSpinner(false);
-      })
-      .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching Doctor profile', error);
-      });
+  const ShowAllTypeData = (
+    SelectableValue: patientLogType,
+    patientLogSortData: patientLogSort,
+    offset = 0
+  ) => {
+    console.log('patientLogSortData', patientLogSortData, SelectableValue, offset);
+    if (offset !== totalResultCount) {
+      !offset && setshowSpinner(true);
+      offset && setloadMoreSpinner(true);
+      client
+        .query<getPatientLog>({
+          query: GET_PATIENT_LOG,
+          variables: {
+            limit: 6,
+            offset: offset,
+            sortBy: patientLogSortData,
+            type: SelectableValue,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          if (data.getPatientLog) {
+            console.log('getPatientLog', data!);
+            setAllData(
+              offset === 0
+                ? data.getPatientLog.patientLog
+                : JSON.parse(JSON.stringify(allData)).concat(data.getPatientLog.patientLog)
+            );
+            setoffset(
+              data.getPatientLog.patientLog && allData
+                ? data.getPatientLog.patientLog.length + allData.length
+                : allData!.length
+            );
+            settotalResultCount(data.getPatientLog.totalResultCount || 0);
+            !offset ? setshowSpinner(false) : setloadMoreSpinner(false);
+          }
+        })
+        .catch((e) => {
+          setshowSpinner(false);
+          const error = JSON.parse(JSON.stringify(e));
+          console.log('Error occured while fetching patient log', error);
+        });
+    }
   };
-  const showDataSort = () => {
-    setSelectedId(!selectedId);
-    setPatientLogSortData(patientLogSort.MOST_RECENT);
+
+  const renderItemComponent = (
+    item: getPatientLog_getPatientLog_patientLog | null,
+    index: number
+  ) => {
+    return (
+      item &&
+      item.appointmentids && (
+        <PatientCard
+          containerStyle={index === 0 ? { marginTop: 30 } : {}}
+          doctorname={item.patientInfo!.firstName}
+          icon={
+            <View style={{ marginRight: 12 }}>
+              <Chat />
+            </View>
+          }
+          consults={item.consultscount}
+          lastconsult={moment(item.appointmentdatetime).format('DD/MM/YYYY')}
+          //typeValue={item.type}
+          onPress={() =>
+            props.navigation.push(AppRoutes.PatientDetailsPage, {
+              patientId:
+                item.appointmentids && item.appointmentids.length ? item.appointmentids[0] : '',
+              PatientInfo: item.patientInfo,
+            })
+          }
+        />
+      )
+    );
   };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[theme.viewStyles.container]}>
-        {renderMainHeader()}
-
-        <ScrollView
+        {/* <ScrollView
           bounces={false}
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}
           stickyHeaderIndices={[1]}
-        >
-          <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
-          {renderTabs()}
-          <View style={{ paddingTop: 14 }}>
-            {allData.length == 0 && !showSpinner ? (
-              <Text
-                style={{
-                  flex: 1,
-                  color: '#01475b',
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                }}
-              >
-                No Data
-              </Text>
-            ) : (
-              allData!.map((_doctor: getPatientLog_getPatientLog) => {
-                const dataeval = moment(_doctor.appointmentdatetime).format('DD/MM/YYYY');
-                return (
-                  <PatientCard
-                    doctorname={_doctor!.patientInfo!.firstName}
-                    icon={
-                      <View style={{ marginRight: 12 }}>
-                        <Chat />
-                      </View>
-                    }
-                    consults={_doctor.consultscount! + `Consults`}
-                    lastconsult={dataeval}
-                    //typeValue={_doctor.type}
-                    onPress={() =>
-                      props.navigation.push(AppRoutes.PatientDetailsPage, {
-                        Appointments: _doctor!.appointmentids[0],
-                      })
-                    }
-                  />
-                );
-              })
-            )}
-          </View>
-        </ScrollView>
+        > */}
+
+        {/* <View style={{ paddingTop: 14 }}> */}
+        {allData && allData.length == 0 && !showSpinner ? (
+          <Text
+            style={{
+              flex: 1,
+              color: '#01475b',
+              ...theme.fonts.IBMPlexSansMedium(14),
+            }}
+          >
+            No Data
+          </Text>
+        ) : (
+          <FlatList
+            contentContainerStyle={{ paddingBottom: 20 }}
+            removeClippedSubviews={false}
+            bounces={false}
+            data={allData}
+            onEndReachedThreshold={0.5}
+            onEndReached={(info) => {
+              console.log('onEndReached', info);
+              ShowAllTypeData(SelectableValue, selectedSorting, offset);
+            }}
+            stickyHeaderIndices={[0]}
+            renderItem={({ item, index }) => renderItemComponent(item, index)}
+            keyExtractor={(_, index) => index.toString()}
+            ListHeaderComponent={
+              <>
+                {renderMainHeader()}
+                <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+                {renderTabs()}
+              </>
+            }
+            ListFooterComponent={
+              loadMoreSpinner ? (
+                <View style={{ marginVertical: 20 }}>
+                  <ActivityIndicator animating={true} size="small" color="green" />
+                </View>
+              ) : null
+            }
+            // numColumns={1}
+            // keyboardShouldPersistTaps="always"
+            // keyboardDismissMode="on-drag"
+          />
+        )}
+        {/* </View> */}
+        {/* </ScrollView> */}
       </SafeAreaView>
 
       {showSorting && (
@@ -310,7 +386,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                     style={theme.viewStyles.text(
                       'SB',
                       14,
-                      theme.colors.darkBlueColor,
+                      theme.colors.SHARP_BLUE,
                       1,
                       undefined,
                       0.54
@@ -323,25 +399,29 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                   </TouchableOpacity>
                 </View>
                 <View style={{ marginVertical: 9 }}>
-                  {sortingList.map((title) => (
+                  {sortingList.map((obj) => (
                     <TouchableOpacity
                       activeOpacity={1}
                       style={{ flexDirection: 'row', marginVertical: 11 }}
-                      onPress={() => setselectedSorting(title)}
+                      onPress={() => {
+                        setshowSorting(false);
+                        setselectedSorting(obj.key);
+                        ShowAllTypeData(SelectableValue, obj.key);
+                      }}
                     >
-                      {selectedSorting === title ? <Selected /> : <UnSelected />}
+                      {selectedSorting === obj.key ? <Selected /> : <UnSelected />}
                       <Text
                         style={[
                           {
                             marginLeft: 20,
                             ...theme.viewStyles.text('S', 14, 'rgba(2, 71, 91, 0.3)'),
                           },
-                          selectedSorting === title
+                          selectedSorting === obj.key
                             ? { ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN) }
                             : {},
                         ]}
                       >
-                        {title}
+                        {obj.key}
                       </Text>
                     </TouchableOpacity>
                   ))}
