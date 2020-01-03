@@ -266,7 +266,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           showAphAlert!({
             unDismissable: true,
             title: `Uh oh.. :(`,
-            description: `Order failed, ${errorMessage}.`,
+            description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+            // description: `Order failed, ${errorMessage}.`,
           });
         } else {
           // Order-Success
@@ -284,8 +285,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         console.log('SaveDiagnosticOrder API Error\n', { error });
         showAphAlert!({
           unDismissable: true,
-          title: `Uh oh.. :(`,
-          description: `Order failed, something went wrong.`,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
         });
       })
       .finally(() => {
