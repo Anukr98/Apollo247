@@ -240,7 +240,7 @@ export class DoctorRepository extends Repository<Doctor> {
               onlineSlot = nextSlot;
               break;
             }
-            if (counter >= 2) {
+            if (counter >= 1) {
               onlineSlot = '';
               break;
             }
@@ -269,7 +269,7 @@ export class DoctorRepository extends Repository<Doctor> {
               physicalSlot = nextSlot;
               break;
             }
-            if (counter >= 2) {
+            if (counter >= 1) {
               physicalSlot = '';
               break;
             }
@@ -290,7 +290,7 @@ export class DoctorRepository extends Repository<Doctor> {
         }
 
         if (referenceSlot == '') {
-          referenceSlot = format(addDays(new Date(), 3), 'yyyy-MM-dd HH:mm');
+          referenceSlot = format(addDays(new Date(), 2), 'yyyy-MM-dd HH:mm');
         }
 
         const doctorSlot: DoctorSlotAvailability = {
