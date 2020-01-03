@@ -1147,6 +1147,9 @@ export const FavouriteMedicines: React.FC = () => {
         medicineName: selectedValue,
         medicineUnit: medicineUnit,
         medicineInstructions: medicineInstruction,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
       };
 
       const inputParams: any = {
@@ -1159,6 +1162,9 @@ export const FavouriteMedicines: React.FC = () => {
         selected: true,
         medicineUnit: medicineUnit,
         medicineInstructions: medicineInstruction,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
       };
       const medicineArray: any = selectedMedicinesArr;
       medicineArray.push(inputParamsArr);
@@ -1181,7 +1187,7 @@ export const FavouriteMedicines: React.FC = () => {
               medicineConsumptionDuration: '',
               medicineConsumptionDurationUnit: forOptions[0].id,
               medicineFormTypes: MEDICINE_FORM_TYPES.OTHERS,
-              medicineFrequency: dosageFrequency[0].id,
+              medicineFrequency: frequency,
               medicineConsumptionDurationInDays: Number(consumptionDuration),
               medicineDosage: String(tabletsCount),
               medicineTimings: daySlotsArr,
