@@ -3862,7 +3862,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       time = 'Consult is In-progress';
     } else {
       if (diffMin <= 0) {
-        time = appointmentData.status===STATUS.COMPLETED? `Consult is completed` : `Will be joining soon`;
+        time =
+          appointmentData.status === STATUS.COMPLETED
+            ? `Consult is completed`
+            : `Will be joining soon`;
       } else if (diffMin > 0 && diffHours <= 0) {
         time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours > 0 && diffDays <= 0) {
