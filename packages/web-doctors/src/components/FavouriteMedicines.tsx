@@ -26,6 +26,12 @@ import {
   UPDATE_DOCTOR_FAVOURITE_MEDICINE,
   REMOVE_FAVOURITE_MEDICINE,
 } from 'graphql/profiles';
+import {
+  MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FREQUENCY,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_UNIT,
+} from 'graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   SaveDoctorsFavouriteMedicine,
@@ -706,7 +712,7 @@ export const FavouriteMedicines: React.FC = () => {
   });
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>();
-  const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
+  const [medicineUnit, setMedicineUnit] = React.useState<MEDICINE_UNIT>(MEDICINE_UNIT.OTHERS);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -748,74 +754,74 @@ export const FavouriteMedicines: React.FC = () => {
     },
   ]);
   const OtherTypes = [
-    'SYRUP',
-    'DROPS',
-    'CAPSULE',
-    'INJECTION',
-    'TABLET',
-    'BOTTLE',
-    'SUSPENSION',
-    'ROTACAPS',
-    'SACHET',
-    'ML',
-    'OTHERS',
+    MEDICINE_UNIT.SYRUP,
+    MEDICINE_UNIT.DROPS,
+    MEDICINE_UNIT.CAPSULE,
+    MEDICINE_UNIT.INJECTION,
+    MEDICINE_UNIT.TABLET,
+    MEDICINE_UNIT.BOTTLE,
+    MEDICINE_UNIT.SUSPENSION,
+    MEDICINE_UNIT.ROTACAPS,
+    MEDICINE_UNIT.SACHET,
+    MEDICINE_UNIT.ML,
+    MEDICINE_UNIT.OTHERS,
   ];
   const gelLotionOintmentTypes = [
-    'POWDER',
-    'CREAM',
-    'SOAP',
-    'GEL',
-    'LOTION',
-    'SPRAY',
-    'OINTMENT',
-    'OTHERS',
-  ];
-  const dosageFrequency = [
-    {
-      id: 'ONCE_A_DAY',
-      value: 'Once a day',
-      selected: false,
-    },
-    {
-      id: 'TWICE_A_DAY',
-      value: 'Twice a day',
-      selected: false,
-    },
-    {
-      id: 'THRICE_A_DAY',
-      value: 'Thrice a day',
-      selected: false,
-    },
-    {
-      id: 'FOUR_TIMES_A_DAY',
-      value: 'Four times a day',
-      selected: false,
-    },
-    {
-      id: 'FIVE_TIMES_A_DAY',
-      value: 'Five times a day',
-      selected: false,
-    },
-    {
-      id: 'AS_NEEDED',
-      value: 'As Needed',
-      selected: false,
-    },
+    MEDICINE_UNIT.POWDER,
+    MEDICINE_UNIT.CREAM,
+    MEDICINE_UNIT.SOAP,
+    MEDICINE_UNIT.GEL,
+    MEDICINE_UNIT.LOTION,
+    MEDICINE_UNIT.SPRAY,
+    MEDICINE_UNIT.OINTMENT,
+    MEDICINE_UNIT.OTHERS,
   ];
   const forOptions = [
     {
-      id: 'DAYS',
+      id: MEDICINE_CONSUMPTION_DURATION.DAYS,
       value: 'Day(s)',
       selected: false,
     },
     {
-      id: 'WEEKS',
+      id: MEDICINE_CONSUMPTION_DURATION.WEEKS,
       value: 'Week(S)',
       selected: false,
     },
     {
-      id: 'MONTHS',
+      id: MEDICINE_CONSUMPTION_DURATION.MONTHS,
       value: 'Month(S)',
+      selected: false,
+    },
+  ];
+  const dosageFrequency = [
+    {
+      id: MEDICINE_FREQUENCY.ONCE_A_DAY,
+      value: 'Once a day',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.TWICE_A_DAY,
+      value: 'Twice a day',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.THRICE_A_DAY,
+      value: 'Thrice a day',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.FOUR_TIMES_A_DAY,
+      value: 'Four times a day',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.FIVE_TIMES_A_DAY,
+      value: 'Five times a day',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.AS_NEEDED,
+      value: 'As Needed',
       selected: false,
     },
   ];
@@ -823,11 +829,11 @@ export const FavouriteMedicines: React.FC = () => {
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
   const [medicine, setMedicine] = useState('');
-  const [frequency, setFrequency] = useState('ONCE_A_DAY');
-  const [forUnit, setforUnit] = useState('DAYS');
+  const [frequency, setFrequency] = useState(dosageFrequency[0].id);
+  const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
   const client = useApolloClient();
-  const [medicineForm, setMedicineForm] = useState<string>('OTHERS');
+  const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
   const getMedicineDetails = (suggestion: OptionType) => {
     const CancelToken = axios.CancelToken;
     setLoading(true);
@@ -859,10 +865,10 @@ export const FavouriteMedicines: React.FC = () => {
           OtherTypes.indexOf(result.data.productdp[0].PharmaOverview[0].Doseform) > -1
         ) {
           setMedicineUnit(result.data.productdp[0].PharmaOverview[0].Doseform);
-          setMedicineForm('OTHERS');
+          setMedicineForm(MEDICINE_FORM_TYPES.OTHERS);
         } else {
-          setMedicineUnit('OTHERS');
-          setMedicineForm('GEL_LOTION_OINTMENT');
+          setMedicineUnit(MEDICINE_UNIT.OTHERS);
+          setMedicineForm(MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT);
         }
         setShowDosage(true);
         setSelectedValue(suggestion.label);
@@ -1171,6 +1177,11 @@ export const FavouriteMedicines: React.FC = () => {
           mutation: SAVE_DOCTORS_FAVOURITE_MEDICINE,
           variables: {
             saveDoctorsFavouriteMedicineInput: {
+              //externalId: '32323',
+              medicineConsumptionDuration: '',
+              medicineConsumptionDurationUnit: forOptions[0].id,
+              medicineFormTypes: MEDICINE_FORM_TYPES.OTHERS,
+              medicineFrequency: dosageFrequency[0].id,
               medicineConsumptionDurationInDays: Number(consumptionDuration),
               medicineDosage: String(tabletsCount),
               medicineTimings: daySlotsArr,
@@ -1188,7 +1199,7 @@ export const FavouriteMedicines: React.FC = () => {
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount(0);
-      setMedicineUnit('OTHERS');
+      setMedicineUnit(MEDICINE_UNIT.OTHERS);
       setSelectedValue('');
       setSelectedId('');
     }
@@ -1291,14 +1302,19 @@ export const FavouriteMedicines: React.FC = () => {
           mutation: UPDATE_DOCTOR_FAVOURITE_MEDICINE,
           variables: {
             updateDoctorsFavouriteMedicineInput: {
+              externalId: '',
+              medicineConsumptionDuration: '',
+              medicineConsumptionDurationUnit: forOptions[0].id,
+              medicineFormTypes: MEDICINE_FORM_TYPES.OTHERS,
+              medicineFrequency: dosageFrequency[0].id,
               medicineConsumptionDurationInDays: Number(consumptionDuration),
               medicineDosage: String(tabletsCount),
+              medicineUnit: medicineUnit,
               medicineInstructions: medicineInstruction,
               medicineTimings: daySlotsArr,
               medicineToBeTaken: toBeTakenSlotsArr,
               medicineName: selectedValue,
               id: selectedId,
-              medicineUnit: medicineUnit,
             },
           },
         })
@@ -1309,7 +1325,7 @@ export const FavouriteMedicines: React.FC = () => {
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount(1);
-      setMedicineUnit('OTHERS');
+      setMedicineUnit(MEDICINE_UNIT.OTHERS);
       setSelectedValue('');
       setSelectedId('');
     }
@@ -1510,7 +1526,7 @@ export const FavouriteMedicines: React.FC = () => {
                     setIsDialogOpen(false);
                     setShowDosage(false);
                     setTabletsCount(1);
-                    setMedicineUnit('OTHERS');
+                    setMedicineUnit(MEDICINE_UNIT.OTHERS);
                     setConsumptionDuration('');
                     setMedicineInstruction('');
                     resetOptions();
@@ -1641,7 +1657,7 @@ export const FavouriteMedicines: React.FC = () => {
                                 },
                               }}
                               onChange={(e: any) => {
-                                setMedicineUnit(e.target.value as string);
+                                setMedicineUnit(e.target.value as MEDICINE_UNIT);
                               }}
                             >
                               {generateMedicineTypes}
@@ -1669,7 +1685,7 @@ export const FavouriteMedicines: React.FC = () => {
                                   },
                                 }}
                                 onChange={(e: any) => {
-                                  setFrequency(e.target.value as string);
+                                  setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                 }}
                               >
                                 {generateFrequency}
@@ -1720,7 +1736,7 @@ export const FavouriteMedicines: React.FC = () => {
                                 },
                               }}
                               onChange={(e: any) => {
-                                setforUnit(e.target.value as string);
+                                setforUnit(e.target.value as MEDICINE_CONSUMPTION_DURATION);
                               }}
                             >
                               {forOptionHtml}
@@ -1775,7 +1791,7 @@ export const FavouriteMedicines: React.FC = () => {
                         setIsDialogOpen(false);
                         setShowDosage(false);
                         setTabletsCount(1);
-                        setMedicineUnit('OTHERS');
+                        setMedicineUnit(MEDICINE_UNIT.OTHERS);
                         setConsumptionDuration('');
                         setMedicineInstruction('');
                         resetOptions();
