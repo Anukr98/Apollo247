@@ -22,6 +22,7 @@ import Scrollbars from 'react-custom-scrollbars';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -469,7 +470,50 @@ interface errorObject {
   durationErr: boolean;
   dosageErr: boolean;
 }
+interface PharmaOverview {
+  generic: string;
+  Doseform: any;
+  Unit: string;
+  Strength: string;
+  Strengh: string;
+  Overview:
+    | {
+        Caption: string;
+        CaptionDesc: string;
+      }[]
+    | string;
+}
+export interface MedicineProductDetails extends MedicineProduct {
+  PharmaOverview: PharmaOverview[];
+}
+export interface MedicineProduct {
+  description: string;
+  id: number;
+  category_id: string;
+  image: string | null;
+  is_in_stock: boolean;
+  is_prescription_required: '0' | '1'; //1 for required
+  name: string;
+  price: number;
+  special_price: number | string;
+  sku: string;
+  small_image?: string | null;
+  status: number;
+  thumbnail: string | null;
+  type_id: string;
+  mou: string;
+  manufacturer: string;
+  PharmaOverview: PharmaOverview[];
+}
+export interface MedicineProductDetailsResponse {
+  productdp: MedicineProductDetails[];
+  message?: string;
+}
 
+export interface MedicineProductsResponse {
+  product_count: number;
+  products: MedicineProduct[];
+}
 let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
@@ -492,7 +536,7 @@ export const MedicinePrescription: React.FC = () => {
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>();
-  const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
+  const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -514,6 +558,11 @@ export const MedicinePrescription: React.FC = () => {
       value: 'Night',
       selected: false,
     },
+    {
+      id: 'AS_NEEDED',
+      value: 'As Needed',
+      selected: false,
+    },
   ]);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -530,15 +579,141 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
+  const OtherTypes = [
+    'SYRUP',
+    'DROPS',
+    'CAPSULE',
+    'INJECTION',
+    'TABLET',
+    'BOTTLE',
+    'SUSPENSION',
+    'ROTACAPS',
+    'SACHET',
+    'ML',
+    'OTHERS',
+  ];
+  const gelLotionOintmentTypes = [
+    'POWDER',
+    'CREAM',
+    'SOAP',
+    'GEL',
+    'LOTION',
+    'SPRAY',
+    'OINTMENT',
+    'OTHERS',
+  ];
+  const dosageFrequency = [
+    {
+      id: 'ONCE_A_DAY',
+      value: 'Once a day',
+      selected: false,
+    },
+    {
+      id: 'TWICE_A_DAY',
+      value: 'Twice a day',
+      selected: false,
+    },
+    {
+      id: 'THRICE_A_DAY',
+      value: 'Thrice a day',
+      selected: false,
+    },
+    {
+      id: 'FOUR_TIMES_A_DAY',
+      value: 'Four times a day',
+      selected: false,
+    },
+    {
+      id: 'FIVE_TIMES_A_DAY',
+      value: 'Five times a day',
+      selected: false,
+    },
+    {
+      id: 'AS_NEEDED',
+      value: 'As Needed',
+      selected: false,
+    },
+  ];
+  const forOptions = [
+    {
+      id: 'DAYS',
+      value: 'Day(s)',
+      selected: false,
+    },
+    {
+      id: 'WEEKS',
+      value: 'Week(S)',
+      selected: false,
+    },
+    {
+      id: 'MONTHS',
+      value: 'Month(S)',
+      selected: false,
+    },
+  ];
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
 
   const [searchInput, setSearchInput] = useState('');
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
   const [medicine, setMedicine] = useState('');
+  const [frequency, setFrequency] = useState(dosageFrequency[0].id);
+  const [forUnit, setforUnit] = useState(forOptions[0].id);
 
   function getSuggestions(value: string) {
     return suggestions;
   }
+  const [medicineForm, setMedicineForm] = useState<string>('OTHERS');
+  const getMedicineDetails = (suggestion: OptionType) => {
+    const CancelToken = axios.CancelToken;
+    setLoading(true);
+    axios
+      .post(
+        apiDetails.medicineDatailsUrl,
+        { params: suggestion.sku },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+            Accept: '*/*',
+          },
+          cancelToken: new CancelToken(function executor(c) {
+            // An executor function receives a cancel function as a parameter
+            cancel = c;
+          }),
+        }
+      )
+      .then((result) => {
+        if (
+          result &&
+          result.data &&
+          result.data.productdp &&
+          result.data.productdp.length > 0 &&
+          result.data.productdp[0] &&
+          result.data.productdp[0].PharmaOverview &&
+          result.data.productdp[0].PharmaOverview.length > 0 &&
+          result.data.productdp[0].PharmaOverview[0].Doseform &&
+          OtherTypes.indexOf(result.data.productdp[0].PharmaOverview[0].Doseform) > -1
+        ) {
+          setMedicineUnit(result.data.productdp[0].PharmaOverview[0].Doseform);
+          setMedicineForm('OTHERS');
+        } else {
+          setMedicineUnit('OTHERS');
+          setMedicineForm('GEL_LOTION_OINTMENT');
+        }
+        setShowDosage(true);
+        setSelectedValue(suggestion.label);
+        setSelectedId(suggestion.sku);
+        setMedicine('');
+        setTabletsCount(1);
+        setLoading(false);
+        setConsumptionDuration('');
+      })
+      .catch((error) => {
+        if (error.toString().includes('404')) {
+          //setIsSuggestionFetched(false);
+          setLoading(false);
+        }
+      });
+  };
   const fetchMedicines = async (value: any) => {
     const CancelToken = axios.CancelToken;
     cancel && cancel();
@@ -612,17 +787,33 @@ export const MedicinePrescription: React.FC = () => {
       return slot;
     });
     setDaySlots(dayslots);
-
-    setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
-    setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
-    setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
-    setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
-    setSelectedValue(selectedMedicinesArr![idx].medicineName!);
-    setSelectedId(selectedMedicinesArr![idx].id!);
-    setIsDialogOpen(true);
-    setShowDosage(true);
-    setIsUpdate(true);
-    setIdx(idx);
+    if (selectedMedicinesArr && selectedMedicinesArr[idx]) {
+      setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
+      setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
+      setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
+      setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
+      setSelectedValue(selectedMedicinesArr![idx].medicineName!);
+      setSelectedId(selectedMedicinesArr![idx].id!);
+      setFrequency(
+        selectedMedicinesArr[idx].medicineFrequency!
+          ? selectedMedicinesArr[idx].medicineFrequency!
+          : dosageFrequency[0].id
+      );
+      setforUnit(
+        selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
+          ? selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
+          : forOptions[0].id
+      );
+      setMedicineForm(
+        selectedMedicinesArr[idx].medicineFormTypes!
+          ? selectedMedicinesArr[idx].medicineFormTypes!
+          : 'OTHERS'
+      );
+      setIsDialogOpen(true);
+      setShowDosage(true);
+      setIsUpdate(true);
+      setIdx(idx);
+    }
   };
   useEffect(() => {
     if (idx >= 0) {
@@ -687,12 +878,12 @@ export const MedicinePrescription: React.FC = () => {
     setDaySlots(slots);
   };
   const toBeTaken = (value: any) => {
-    const arry: any = [];
+    const tobeTakenObjectList: any = [];
     value.map((slot: any) => {
-      const x = slot.replace('_', ' ').toLowerCase();
-      arry.push(x);
+      const tobeTakenObject = slot.replace('_', ' ').toLowerCase();
+      tobeTakenObjectList.push(tobeTakenObject);
     });
-    return arry;
+    return tobeTakenObjectList;
   };
   const toBeTakenSlotsToggleAction = (slotId: string) => {
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
@@ -707,40 +898,51 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
-      const durations = Number(medicine.medicineConsumptionDurationInDays);
-      const duration = durations === 1 ? `${durations} day` : `${durations} days`;
-
+      const duration =
+        medicine.medicineConsumptionDurationInDays &&
+        ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
+          medicine.medicineConsumptionDurationUnit
+            ? medicine.medicineConsumptionDurationUnit.toLowerCase()
+            : 'day(s)'
+        } `;
       const whenString =
         medicine.medicineToBeTaken.length > 0
           ? toBeTaken(medicine.medicineToBeTaken)
               .join(', ')
               .toLowerCase()
           : '';
-      const unitHtmls =
-        medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
-          ? medicine.medicineUnit.toLowerCase()
-          : 'times';
+      const unitHtmls = medicine.medicineUnit.toLowerCase();
       const timesString =
         medicine.medicineTimings.length > 0
-          ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
+          ? 'in the ' + medicine.medicineTimings.join(' , ').toLowerCase()
           : '';
-      const dosageCount =
-        medicine.medicineTimings.length > 0
-          ? parseFloat(medicine.medicineDosage) *
-            medicine.medicineTimings.length *
-            medicine.medicineToBeTaken.length
-          : medicine.medicineDosage;
-
-      const unitHtml = dosageCount === 1 ? unitHtmls : `${unitHtmls}s`;
+      const dosageCount = medicine.medicineDosage;
+      const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
+      const unitHtml = `${unitHtmls}`;
       return (
         <div key={index} className={classes.medicineBox}>
           <div key={_uniqueId('med_id_')}>
             <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
-              {/*medicine.medicineTimings.length*/}
-              {dosageCount} {unitHtml} a day {timesString.length > 0 && timesString} for {duration}{' '}
-              {whenString.length > 0 && whenString}
+              {`${takeApplyHtml} ${
+                dosageCount && medicine.medicineFormTypes === 'OTHERS' ? dosageCount : ''
+              } ${unitHtml} ${
+                medicine.medicineFrequency
+                  ? medicine.medicineFrequency
+                      .split('_')
+                      .join(' ')
+                      .toLowerCase()
+                  : dosageFrequency[0].id
+                      .split('_')
+                      .join(' ')
+                      .toLowerCase()
+              } ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                timesString.length > 0 ? timesString : ''
+              }`}
             </div>
+            {medicine.Instructions && (
+              <div className={classes.medicineInfo}>{medicine.Instructions}</div>
+            )}
           </div>
           <div className={classes.actionGroup}>
             <AphButton key={_uniqueId('ok_')} onClick={() => updateMedicine(index)}>
@@ -783,107 +985,67 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: false,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: true,
-      });
-    } else if (
-      isEmpty(trim(consumptionDuration)) ||
-      isNaN(Number(consumptionDuration)) ||
-      Number(consumptionDuration) < 1
-    ) {
-      setErrorState({
-        ...errorState,
-        durationErr: true,
-        daySlotErr: false,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    } else if (daySlotsSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
+
+    setErrorState({
+      ...errorState,
+      durationErr: false,
+      daySlotErr: false,
+      tobeTakenErr: false,
+      dosageErr: false,
+    });
+    const inputParamsArr: any = {
+      medicineConsumptionDurationInDays: consumptionDuration,
+      medicineDosage: String(tabletsCount),
+      medicineInstructions: medicineInstruction,
+      medicineTimings: daySlotsArr,
+      medicineToBeTaken: toBeTakenSlotsArr,
+      medicineName: selectedValue,
+      medicineFrequency: frequency,
+      medicineConsumptionDurationUnit: forUnit,
+      medicineFormTypes: medicineForm,
+      id: selectedId,
+      medicineUnit: medicineUnit,
+    };
+
+    const inputParams: any = {
+      id: selectedId,
+      value: selectedValue,
+      name: selectedValue,
+      times: daySlotsSelected.length,
+      daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+      duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
+      selected: true,
+      medicineUnit: medicineUnit,
+      medicineFrequency: frequency,
+      medicineConsumptionDurationUnit: forUnit,
+      medicineFormTypes: medicineForm,
+    };
+    if (isUpdate) {
+      const xArr = selectedMedicinesArr;
+      xArr!.splice(idx, 1, inputParamsArr);
+      setSelectedMedicinesArr(xArr);
+      const x = selectedMedicines;
+      x.splice(idx, 1, inputParams);
+      setSelectedMedicines(x);
     } else {
-      setErrorState({
-        ...errorState,
-        durationErr: false,
-        daySlotErr: false,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-      const inputParamsArr: any = {
-        medicineConsumptionDurationInDays: consumptionDuration,
-        medicineDosage: String(tabletsCount),
-        medicineInstructions: medicineInstruction,
-        medicineTimings: daySlotsArr,
-        medicineToBeTaken: toBeTakenSlotsArr,
-        medicineName: selectedValue,
-        id: selectedId,
-        medicineUnit: medicineUnit,
-      };
-
-      const inputParams: any = {
-        id: selectedId,
-        value: selectedValue,
-        name: selectedValue,
-        times: daySlotsSelected.length,
-        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
-        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
-        selected: true,
-        medicineUnit: medicineUnit,
-      };
-      if (isUpdate) {
-        const xArr = selectedMedicinesArr;
-        xArr!.splice(idx, 1, inputParamsArr);
-        setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x.splice(idx, 1, inputParams);
-        setSelectedMedicines(x);
-      } else {
-        const xArr = selectedMedicinesArr;
-        xArr!.push(inputParamsArr);
-        setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x.push(inputParams);
-        setSelectedMedicines(x);
-      }
-      setIsDialogOpen(false);
-      setIsUpdate(false);
-      setShowDosage(false);
-      const slots = toBeTakenSlots.map((slot: SlotsObject) => {
-        slot.selected = false;
-        return slot;
-      });
-      setToBeTakenSlots(slots);
-
-      const dayslots = daySlots.map((slot: SlotsObject) => {
-        slot.selected = false;
-        return slot;
-      });
-      setDaySlots(dayslots);
-      setMedicineInstruction('');
-      setConsumptionDuration('');
-      setTabletsCount(0);
-      setSelectedValue('');
-      setSelectedId('');
-      setMedicineUnit('TABLET');
+      const xArr = selectedMedicinesArr;
+      xArr!.push(inputParamsArr);
+      setSelectedMedicinesArr(xArr);
+      const x = selectedMedicines;
+      x.push(inputParams);
+      setSelectedMedicines(x);
     }
+    setIsDialogOpen(false);
+    setIsUpdate(false);
+    setShowDosage(false);
+    resetOptions();
+
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setTabletsCount(1);
+    setSelectedValue('');
+    setSelectedId('');
+    setMedicineUnit('OTHERS');
   };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -940,7 +1102,78 @@ export const MedicinePrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+  const generateMedicineTypes =
+    medicineForm === 'OTHERS'
+      ? OtherTypes.map((value: string, index: number) => {
+          return (
+            <MenuItem
+              key={index.toString()}
+              classes={{
+                selected: classes.menuSelected,
+              }}
+              value={value}
+            >
+              {value.toLowerCase()}
+            </MenuItem>
+          );
+        })
+      : gelLotionOintmentTypes.map((value: string, index: number) => {
+          return (
+            <MenuItem
+              key={index.toString()}
+              classes={{
+                selected: classes.menuSelected,
+              }}
+              value={value}
+            >
+              {value.toLowerCase()}
+            </MenuItem>
+          );
+        });
 
+  const generateFrequency = dosageFrequency.map((dosageObj: SlotsObject, index: number) => {
+    return (
+      <MenuItem
+        key={index.toString()}
+        classes={{
+          selected: classes.menuSelected,
+        }}
+        value={dosageObj.id}
+      >
+        {dosageObj.value}
+      </MenuItem>
+    );
+  });
+  const forOptionHtml = forOptions.map((optionObj: SlotsObject, index: number) => {
+    return (
+      <MenuItem
+        key={index.toString()}
+        classes={{
+          selected: classes.menuSelected,
+        }}
+        value={optionObj.id}
+      >
+        {optionObj.value}
+      </MenuItem>
+    );
+  });
+
+  const resetOptions = () => {
+    setFrequency(dosageFrequency[0].id);
+    setforUnit(forOptions[0].id);
+    setMedicineForm('OTHERS');
+    const dayslots = daySlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+    setDaySlots(dayslots);
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+    setToBeTakenSlots(slots);
+  };
+  const horizontal = medicineForm ? 'right' : 'left';
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
@@ -994,48 +1227,7 @@ export const MedicinePrescription: React.FC = () => {
                       single: '',
                       popper: '',
                     });
-                    setShowDosage(true);
-                    setSelectedValue(suggestion.label);
-                    setSelectedId(suggestion.sku);
-                    setMedicine('');
-                    setLoading(false);
-                    setTabletsCount(0);
-                    setMedicineUnit('TABLET');
-                    setConsumptionDuration('');
-                    setDaySlots([
-                      {
-                        id: 'morning',
-                        value: 'Morning',
-                        selected: false,
-                      },
-                      {
-                        id: 'noon',
-                        value: 'Noon',
-                        selected: false,
-                      },
-                      {
-                        id: 'evening',
-                        value: 'Evening',
-                        selected: false,
-                      },
-                      {
-                        id: 'night',
-                        value: 'Night',
-                        selected: false,
-                      },
-                    ]);
-                    setToBeTakenSlots([
-                      {
-                        id: 'afterfood',
-                        value: 'After Food',
-                        selected: false,
-                      },
-                      {
-                        id: 'beforefood',
-                        value: 'Before Food',
-                        selected: false,
-                      },
-                    ]);
+                    getMedicineDetails(suggestion);
                   }}
                   {...autosuggestProps}
                   inputProps={{
@@ -1052,11 +1244,7 @@ export const MedicinePrescription: React.FC = () => {
                             single: '',
                             popper: '',
                           });
-                          setShowDosage(true);
-                          setSelectedValue(suggestions[0].label);
-                          setSelectedId(suggestions[0].sku);
-                          setLoading(false);
-                          setMedicine('');
+                          getMedicineDetails(suggestions[0]);
                         }
                       }
                     },
@@ -1102,32 +1290,34 @@ export const MedicinePrescription: React.FC = () => {
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
-                        <div className={classes.divCol}>
-                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Quantity (Per Dosage)*
-                          </div>
-                          <AphTextField
-                            autoFocus
-                            inputProps={{ maxLength: 6 }}
-                            value={tabletsCount === 0 ? '' : tabletsCount}
-                            onChange={(event: any) => {
-                              setTabletsCount(event.target.value);
-                            }}
-                            error={errorState.dosageErr}
-                          />
-                          {errorState.dosageErr && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
+                        {medicineForm === 'OTHERS' && (
+                          <div className={classes.divCol}>
+                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                              Take
+                            </div>
+                            <AphTextField
+                              autoFocus
+                              inputProps={{ maxLength: 6 }}
+                              value={tabletsCount === 0 ? '' : tabletsCount}
+                              onChange={(event: any) => {
+                                setTabletsCount(event.target.value);
+                              }}
                               error={errorState.dosageErr}
-                            >
-                              Please Enter Dosage(Number only)
-                            </FormHelperText>
-                          )}
-                        </div>
+                            />
+                            {errorState.dosageErr && (
+                              <FormHelperText
+                                className={classes.helpText}
+                                component="div"
+                                error={errorState.dosageErr}
+                              >
+                                Please Enter Dosage(Number only)
+                              </FormHelperText>
+                            )}
+                          </div>
+                        )}
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Units/Types*
+                            {medicineForm !== 'OTHERS' ? 'Apply' : ''}
                           </div>
                           <div className={classes.unitsSelect}>
                             <AphSelect
@@ -1149,64 +1339,78 @@ export const MedicinePrescription: React.FC = () => {
                                 setMedicineUnit(e.target.value as string);
                               }}
                             >
-                              <MenuItem value="TABLET" classes={{ selected: classes.menuSelected }}>
-                                tablet
-                              </MenuItem>
-                              <MenuItem
-                                value="CAPSULE"
-                                classes={{ selected: classes.menuSelected }}
-                              >
-                                capsule
-                              </MenuItem>
-                              <MenuItem value="ML" classes={{ selected: classes.menuSelected }}>
-                                ml
-                              </MenuItem>
-                              <MenuItem value="DROPS" classes={{ selected: classes.menuSelected }}>
-                                drops
-                              </MenuItem>
-                              <MenuItem
-                                value="OINTMENT"
-                                classes={{ selected: classes.menuSelected }}
-                              >
-                                ointment
-                              </MenuItem>
-                              <MenuItem value="OTHER" classes={{ selected: classes.menuSelected }}>
-                                other
-                              </MenuItem>
+                              {generateMedicineTypes}
                             </AphSelect>
                           </div>
                         </div>
                       </div>
-                      {/**
-                      <div className={classes.numberTablets}>
-                        <img
-                          src={require('images/ic_minus.svg')}
-                          alt="removeBtn"
-                          onClick={() => {
-                            if (tabletsCount > 1) {
-                              setTabletsCount(tabletsCount - 1);
-                            }
-                          }}
-                        />
-                        <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
-                        <img
-                          src={require('images/ic_plus.svg')}
-                          alt="addbtn"
-                          onClick={() => {
-                            if (tabletsCount > 0 && tabletsCount < 5) {
-                              setTabletsCount(tabletsCount + 1);
-                            }
-                          }}
-                        />
-                      </div>
-                      **/}
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            Duration (in days)*
+                            &nbsp;
                           </div>
+                          {/* <div className={classes.unitsSelect}> */}
+                          <AphSelect
+                            style={{ paddingTop: 3 }}
+                            value={frequency}
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: horizontal,
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: horizontal,
+                              },
+                            }}
+                            onChange={(e: any) => {
+                              setFrequency(e.target.value as string);
+                            }}
+                          >
+                            {generateFrequency}
+                          </AphSelect>
+                          {/* </div> */}
+                        </div>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            &nbsp;
+                          </div>
+                          {/* <div className={classes.unitsSelect}> */}
+                          <AphSelect
+                            style={{ paddingTop: 3 }}
+                            value={forUnit}
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 'left',
+                              },
+                            }}
+                            onChange={(e: any) => {
+                              setforUnit(e.target.value as string);
+                            }}
+                          >
+                            {forOptionHtml}
+                          </AphSelect>
+                          {/* </div> */}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.colGroup}>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>for</div>
                           <AphTextField
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
