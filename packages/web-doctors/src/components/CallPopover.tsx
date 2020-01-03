@@ -842,6 +842,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
   const [showAbandonment, setShowAbandonment] = React.useState(false);
@@ -2029,6 +2030,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     (!props.startAppointment && appointmentInfo!.status === STATUS.PENDING)) && (
                     <li
                       onClick={() => {
+                        setLoading(true);
+
                         handleCloseThreeDots();
                         const rescheduleCountByDoctor =
                           (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
@@ -2050,6 +2053,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                                     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
                                       .availableSlot || ''
                                   );
+                                  setDateSelected(
+                                    moment(
+                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                        .availableSlot
+                                    ).format('YYYY-MM-DD')
+                                  );
+
                                   setTimeSelected(
                                     moment(
                                       data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
@@ -2060,6 +2070,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               } catch (error) {
                                 setDoctorNextAvailableSlot('');
                                 alert(error);
+                              } finally {
+                                setLoading(false);
                               }
                             })
                             .catch((e) => console.log(e));
@@ -2099,7 +2111,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
               <div className={classes.tabBody}>
                 <p>The following slot will be suggested —</p>
-                {doctorNextAvailableSlot === '' ? (
+                {doctorNextAvailableSlot === '' || loading ? (
                   <CircularProgress />
                 ) : (
                   <div className={classes.dateField}>
