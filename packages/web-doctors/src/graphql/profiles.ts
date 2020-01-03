@@ -279,6 +279,7 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
         medicineConsumptionDuration
         medicineFormTypes
         medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
       otherInstructions {
@@ -346,6 +347,7 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
         medicineConsumptionDuration
         medicineFormTypes
         medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
       otherInstructions {
@@ -493,6 +495,7 @@ export const GET_CASESHEET_JRD = gql`
           medicineConsumptionDuration
           medicineFormTypes
           medicineFrequency
+          medicineConsumptionDurationUnit
         }
         otherInstructions {
           instruction
@@ -597,6 +600,7 @@ export const GET_CASESHEET_JRD = gql`
             medicineConsumptionDuration
             medicineFormTypes
             medicineFrequency
+            medicineConsumptionDurationUnit
           }
           otherInstructions {
             instruction
@@ -732,6 +736,7 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDuration
           medicineFormTypes
           medicineFrequency
+          medicineConsumptionDurationUnit
         }
         otherInstructions {
           instruction
@@ -792,6 +797,7 @@ export const GET_CASESHEET = gql`
             medicineConsumptionDuration
             medicineFormTypes
             medicineFrequency
+            medicineConsumptionDurationUnit
           }
           otherInstructions {
             instruction
@@ -1027,6 +1033,7 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDuration
         medicineFormTypes
         medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
       otherInstructions {

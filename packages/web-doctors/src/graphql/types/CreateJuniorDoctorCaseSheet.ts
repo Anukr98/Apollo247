@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: CreateJuniorDoctorCaseSheet
@@ -52,6 +52,7 @@ export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_medicin
   medicineConsumptionDuration: string | null;
   medicineFormTypes: MEDICINE_FORM_TYPES | null;
   medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_otherInstructions {
