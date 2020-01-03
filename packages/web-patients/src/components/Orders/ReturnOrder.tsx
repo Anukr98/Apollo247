@@ -106,11 +106,27 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ReturnOrder: React.FC = (props) => {
-  const classes = useStyles();
+type ReturnOrderProps = {
+  orderAutoId: number;
+  setIsReturnOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
+};
+
+export const ReturnOrder: React.FC<ReturnOrderProps> = (props) => {
+  const classes = useStyles({});
   const [name] = React.useState(1);
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [selectedReason, setSelectedReason] = React.useState<string>('');
+  // const returnOrder = useMutation(SAVE_ORDER_CANCEL_STATUS);
+
+  const returnReasonList = [
+    'Placed order by mistake',
+    'Higher discounts available on other app',
+    'Delay in delivery',
+    'Delay in order confirmation',
+    'Do not require medicines any longer',
+    'Already purchased',
+  ];
 
   return (
     <div className={classes.shadowHide}>
@@ -122,7 +138,8 @@ export const ReturnOrder: React.FC = (props) => {
                 <div className={classes.formGroup}>
                   <label>Why are you returning this order?</label>
                   <AphSelect
-                    value={name}
+                    value={selectedReason}
+                    onChange={(e) => setSelectedReason(e.target.value as string)}
                     MenuProps={{
                       classes: { paper: classes.menuPopover },
                       anchorOrigin: {
@@ -135,9 +152,11 @@ export const ReturnOrder: React.FC = (props) => {
                       },
                     }}
                   >
-                    <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
-                      Select reason for returning
-                    </MenuItem>
+                    {returnReasonList.map((reason) => (
+                      <MenuItem value={reason} classes={{ selected: classes.menuSelected }}>
+                        {reason}
+                      </MenuItem>
+                    ))}
                   </AphSelect>
                 </div>
                 <div className={classes.formGroup}>
@@ -150,7 +169,12 @@ export const ReturnOrder: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.dialogActions}>
-        <AphButton onClick={() => setIsPopoverOpen(true)} color="primary">
+        <AphButton
+          onClick={() => {
+            setIsPopoverOpen(true);
+          }}
+          color="primary"
+        >
           Submit Request
         </AphButton>
       </div>
@@ -172,7 +196,6 @@ export const ReturnOrder: React.FC = (props) => {
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            <CancelOrderNotification />
           </div>
         </div>
       </Popover>

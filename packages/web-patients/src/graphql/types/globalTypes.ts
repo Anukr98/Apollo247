@@ -332,6 +332,11 @@ export interface MedicinePaymentMqInput {
   bankTxnId?: string | null;
 }
 
+export interface OrderCancelInput {
+  orderNo?: number | null;
+  remarksCode?: string | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;

@@ -262,3 +262,12 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
     }
   }
 `;
+
+export const SAVE_ORDER_CANCEL_STATUS = gql`
+  mutation saveOrderCancelStatus($orderCancelInput: OrderCancelInput) {
+    saveOrderCancelStatus(orderCancelInput: $orderCancelInput) {
+      requestStatus
+      requestMessage
+    }
+  }
+`;
