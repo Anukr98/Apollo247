@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Connection, Between, Not } from 'typeorm';
+import { EntityRepository, Repository, Connection, Between } from 'typeorm';
 import {
   Appointment,
   AppointmentCallDetails,
