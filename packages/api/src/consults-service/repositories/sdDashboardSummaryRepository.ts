@@ -168,4 +168,41 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     }
   }
+
+  async getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
+    const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
+    const appointmentList = await Appointment.find({
+      where: {
+        doctorId,
+        appointmentDateTime: Between(startDate, endDate),
+      },
+    });
+    let apptIds = '',
+      duration = 0;
+    if (appointmentList.length > 0) {
+      appointmentList.map((appt) => {
+        apptIds = appt.id + ',';
+      });
+      console.log(apptIds, 'apptIds in ontime consultation');
+      apptIds = apptIds.substr(0, apptIds.length - 1);
+      const callDetails = await AppointmentCallDetails.createQueryBuilder(
+        'appointment_call_details'
+      )
+        .select([
+          'appointment_call_details."appointmentId" as "appointmentId"',
+          'sum(appointment_call_details."callDuration") as "totalDuration"',
+        ])
+        .andWhere('appointment_call_details.appointmentId in :apptids', { apptids: apptIds })
+        .andWhere('appointment_call_details.endTime is not null')
+        .groupBy('appointment_call_details."appointmentId"')
+        .getRawMany();
+      console.log(callDetails, 'callDetails');
+
+      if (callDetails.length > 0) {
+        duration = callDetails[0].callDuration;
+      }
+    }
+    return duration;
+  }
 }
