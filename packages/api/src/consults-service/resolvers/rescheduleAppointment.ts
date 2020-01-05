@@ -20,7 +20,11 @@ import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import {
+  sendReminderNotification,
+  NotificationType,
+  sendNotification,
+} from 'notifications-service/resolvers/notifications';
 import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
@@ -368,6 +372,21 @@ const bookRescheduleAppointment: Resolver<
         APPOINTMENT_STATE.RESCHEDULE
       );
     }
+
+    const notificationType = NotificationType.PATIENT_APPOINTMENT_RESCHEDULE;
+
+    // send notification
+    const pushNotificationInput = {
+      appointmentId: bookRescheduleAppointmentInput.appointmentId,
+      notificationType,
+    };
+    const notificationResult = sendReminderNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
+    console.log(notificationResult, 'notificationResult');
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
