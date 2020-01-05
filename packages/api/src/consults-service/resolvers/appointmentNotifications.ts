@@ -8,9 +8,8 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { format } from 'date-fns';
 import { CASESHEET_STATUS } from 'consults-service/entities';
-import { app } from 'firebase-admin';
 
-export const doctorCallNotificationTypeDefs = gql`
+export const appointmentNotificationTypeDefs = gql`
   type ApptReminderResult {
     status: Boolean
     currentTime: DateTime
@@ -66,7 +65,7 @@ const sendApptReminderNotification: Resolver<
   };
 };
 
-export const doctorCallNotificationResolvers = {
+export const appointmentNotificationResolvers = {
   Query: {
     sendApptReminderNotification,
   },
