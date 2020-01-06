@@ -884,6 +884,19 @@ export const FavouriteMedicines: React.FC = () => {
         ) {
           setMedicineUnit(result.data.productdp[0].PharmaOverview[0].Doseform);
           setMedicineForm(MEDICINE_FORM_TYPES.OTHERS);
+        } else if (
+          result &&
+          result.data &&
+          result.data.productdp &&
+          result.data.productdp.length > 0 &&
+          result.data.productdp[0] &&
+          result.data.productdp[0].PharmaOverview &&
+          result.data.productdp[0].PharmaOverview.length > 0 &&
+          result.data.productdp[0].PharmaOverview[0].Doseform &&
+          gelLotionOintmentTypes.indexOf(result.data.productdp[0].PharmaOverview[0].Doseform) > -1
+        ) {
+          setMedicineUnit(result.data.productdp[0].PharmaOverview[0].Doseform);
+          setMedicineForm(MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT);
         } else {
           setMedicineUnit(MEDICINE_UNIT.OTHERS);
           setMedicineForm(MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT);
