@@ -3,6 +3,7 @@ import { AppointmentCallDetails } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { differenceInMinutes } from 'date-fns';
+import { DOCTOR_CALL_TYPE } from 'notifications-service/resolvers/notifications';
 
 @EntityRepository(AppointmentCallDetails)
 export class AppointmentCallDetailsRepository extends Repository<AppointmentCallDetails> {
@@ -33,5 +34,17 @@ export class AppointmentCallDetailsRepository extends Repository<AppointmentCall
 
   findByAppointmentId(appointmentId: string) {
     return this.findOne({ where: { appointment: appointmentId } });
+  }
+
+  findJuniorAppointments(appointmentId: string) {
+    return this.find({
+      where: { appointment: appointmentId, doctorType: DOCTOR_CALL_TYPE.JUNIOR },
+    });
+  }
+
+  findSeniorAppointments(appointmentId: string) {
+    return this.find({
+      where: { appointment: appointmentId, doctorType: DOCTOR_CALL_TYPE.SENIOR },
+    });
   }
 }
