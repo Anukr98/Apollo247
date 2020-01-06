@@ -363,8 +363,8 @@ export const MedicineLanding: React.FC = (props) => {
           {!loading && (
             <div className={classes.allProductsList}>
               {list &&
-                list.map((item) => (
-                  <div className={classes.sliderSection}>
+                list.map((item, index) => (
+                  <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
                       {item.key === 'Shop by Brand' ? (
                         <>
