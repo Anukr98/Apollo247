@@ -1039,16 +1039,16 @@ export const MedicinePrescription: React.FC = () => {
                   classes={{ root: classes.updateSymptom }}
                   onClick={() => updateMedicine(index)}
                 >
-                  <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
+                  <img src={require('images/round_edit_24_px.svg')} alt="" />
                 </AphButton>}
-                {caseSheetEdit && 
+                {caseSheetEdit &&
                 <AphButton
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.deleteSymptom }}
                   onClick={() => deletemedicine(index)}
                 >
-                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                  <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>}
               </div>
             );
