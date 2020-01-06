@@ -727,14 +727,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                     props.navigation.push(AppRoutes.AddressBook);
                   })
                   .catch((e) => {
-                    const error = JSON.parse(JSON.stringify(e));
-                    const errorMessage = error && error.message;
-                    console.log(
-                      'Error occured while render Delete MedicalOrder',
-                      errorMessage,
-                      error
-                    );
-                    Alert.alert('Error', errorMessage);
+                    console.log('Error occured while render Delete MedicalOrder', { e });
+                    handleGraphQlError(e);
                   })
                   .finally(() => setshowSpinner(false));
               }}

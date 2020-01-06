@@ -26,6 +26,7 @@ import { ADD_NEW_PROFILE } from '@aph/mobile-patients/src/graphql/profiles';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -205,7 +206,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
         props.setdisplayoverlay(false);
       })
       .catch((e) => {
-        Alert.alert('Alert', e.message);
+        handleGraphQlError(e);
       })
       .finally(() => {
         setLoading!(false);

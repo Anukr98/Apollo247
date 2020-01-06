@@ -24,7 +24,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   APPOINTMENT_STATE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { divideSlots, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
@@ -245,14 +245,8 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                       navigateToView();
                     })
                     .catch((e: any) => {
-                      const error = JSON.parse(JSON.stringify(e));
-                      const errorMessage = error && error.message;
-                      console.log(
-                        'Error occured while BookFollowUpAppointment ',
-                        errorMessage,
-                        error
-                      );
-                      Alert.alert('Error', errorMessage);
+                      console.log('Error occured while BookFollowUpAppointment ', { e });
+                      handleGraphQlError(e);
                     });
                 } else {
                   setshowSpinner(true);

@@ -42,6 +42,7 @@ import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height } = Dimensions.get('window');
 
@@ -391,7 +392,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   {error
                     ? (setVerifyingPhoneNumber(false),
                       signOut(),
-                      Alert.alert('Apollo', error.message),
+                      handleGraphQlError(error),
                       console.log('updatePatient error', error),
                       AsyncStorage.setItem('userLoggedIn', 'false'),
                       AsyncStorage.setItem('multiSignUp', 'false'),

@@ -36,6 +36,7 @@ import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -426,7 +427,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               {error
                 ? (setVerifyingPhoneNumber(false),
                   signOut(),
-                  Alert.alert('Apollo', error.message),
+                  handleGraphQlError(error),
                   console.log('updatePatient error', error),
                   AsyncStorage.setItem('userLoggedIn', 'false'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
