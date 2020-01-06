@@ -107,7 +107,11 @@ type TrackOrdersProps = {
 
 export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
-  const orderStatus = props.orderDetailsData && props.orderDetailsData.medicineOrdersStatus;
+  const orderStatus =
+    props.orderDetailsData &&
+    props.orderDetailsData.medicineOrdersStatus &&
+    props.orderDetailsData.medicineOrdersStatus.length > 0 &&
+    props.orderDetailsData.medicineOrdersStatus[0];
   const orderItem = props.orderDetailsData && props.orderDetailsData.medicineOrderLineItems;
   const orderPayment =
     props.orderDetailsData &&
@@ -127,9 +131,7 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
         <div className={classes.headRow}>
           <label>Date/Time</label>
           <span>
-            {orderStatus &&
-              orderStatus.length > 0 &&
-              moment(new Date(orderStatus[0]!.statusDate)).format('DD MMM YYYY ,hh:mm a')}
+            {moment(new Date(orderStatus && orderStatus.statusDate)).format('DD MMM YYYY ,hh:mm a')}
           </span>
         </div>
       </div>
