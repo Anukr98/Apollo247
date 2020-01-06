@@ -1,6 +1,12 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
+import moment from 'moment';
+import {
+  GetMedicineOrderDetails,
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
+} from 'graphql/types/GetMedicineOrderDetails';
+import { CircularProgress } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -93,19 +99,32 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OrdersSummary: React.FC = (props) => {
-  const classes = useStyles();
+type TrackOrdersProps = {
+  orderDetailsData: orederDetails | null;
+  isLoading: boolean;
+};
 
-  return (
+export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
+  const classes = useStyles({});
+  const orderStatus = props.orderDetailsData && props.orderDetailsData.medicineOrdersStatus;
+  const orderItem = props.orderDetailsData && props.orderDetailsData.medicineOrderLineItems;
+
+  return props.isLoading ? (
+    <CircularProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.summaryHeader}>
         <div className={classes.headRow}>
           <label>Order ID</label>
-          <span>#A2472707936</span>
+          <span>#{props.orderDetailsData && props.orderDetailsData.orderAutoId}</span>
         </div>
         <div className={classes.headRow}>
           <label>Date/Time</label>
-          <span>9 Aug 2019, 6:30 PM</span>
+          <span>
+            {orderStatus &&
+              orderStatus.length > 0 &&
+              moment(new Date(orderStatus[0]!.statusDate)).format('DD MMM YYYY ,hh:mm a')}
+          </span>
         </div>
       </div>
       <div className={classes.summaryDetails}>
@@ -115,21 +134,15 @@ export const OrdersSummary: React.FC = (props) => {
             <div>QTY</div>
             <div>Charges</div>
           </div>
-          <div className={classes.tableRow}>
-            <div>Norflox - TZ (10 tabs)</div>
-            <div>1</div>
-            <div>Rs. 89</div>
-          </div>
-          <div className={classes.tableRow}>
-            <div>Corex Cough Syrup</div>
-            <div>1</div>
-            <div>Rs. 139</div>
-          </div>
-          <div className={classes.tableRow}>
-            <div>Metrogyl (30 tabs)</div>
-            <div>1</div>
-            <div>Rs. 38</div>
-          </div>
+          {orderItem &&
+            orderItem.length > 0 &&
+            orderItem.map((item, index) => (
+              <div key={index} className={classes.tableRow}>
+                <div>{item && item.medicineName}</div>
+                <div>{item && item.quantity}</div>
+                <div>Rs.{item && item.price}</div>
+              </div>
+            ))}
         </div>
       </div>
       <div className={classes.deliveryPromise}>2 Hour Delivery Promise!</div>
