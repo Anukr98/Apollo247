@@ -32,6 +32,36 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
+app.get('/getCmToken', (req, res) => {
+  axios.defaults.headers.common['authorization'] =
+    'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  axios
+    .get(
+      'https://auth.play.vitacloud.io/vitauser/vitatoken?appId=apollo_24_7&appUserId=' +
+        req.query.appUserId +
+        '&name=' +
+        req.query.userName +
+        '&gender=' +
+        req.query.gender
+    )
+    .then((response) => {
+      console.log('respose', response);
+      res.send({
+        status: 'success',
+        message: response.data.message,
+        vitaToken: response.data.vitaToken,
+      });
+    })
+    .catch((err) => {
+      console.log(err, 'error');
+      res.send({
+        status: 'failure',
+        message: '',
+        vitaToken: '',
+      });
+    });
+});
+
 app.get('/consulttransaction', (req, res) => {
   console.log(req.query.CompleteResponse, req.query.ORDERID);
   console.log(req.query.BANKTXNID);

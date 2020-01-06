@@ -68,6 +68,7 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         '1'
       );
+      const callDuration = await dashboardRepo.getOnTimeConsultations(doctor.id, args.summaryDate);
       const dashboardSummaryAttrs: Partial<SdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
@@ -80,6 +81,7 @@ const updateSdSummary: Resolver<
         timePerConsult: consultHours,
         paidFollowUp: paidFollowUpCount,
         unPaidFollowUp: unpaidFollowUpCount,
+        onTimeConsultations: callDuration,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });

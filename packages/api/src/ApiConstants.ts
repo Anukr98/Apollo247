@@ -13,6 +13,18 @@ export enum ApiConstants {
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
   CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the Consult Room',
 
+  //appointment reminder 15
+  APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
+  APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 15 mins. :)',
+
+  //appointment casesheet reminder 15
+  APPOINTMENT_CASESHEET_REMINDER_15_TITLE = 'Appointment reminder',
+  APPOINTMENT_CASESHEET_REMINDER_15_BODY = 'Hi {0}! We noticed you have not filled in your medical details yet. This is necessary for your consultation to begin. Click here to fill your details now',
+
+  //appointment casesheet reminder 15
+  PATIENT_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been reschedules',
+  PATIENT_APPOINTMENT_RESCHEDULE_BODY = 'Hi {0}!  Your appointment {1} with Dr. {2} has been rescheduled  to {3}. ',
+
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
   JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) {1} from Dr. {2}'s team is waiting to start your consultation prep. Please proceed to the Consult Room",

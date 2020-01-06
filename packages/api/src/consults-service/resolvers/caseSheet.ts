@@ -270,6 +270,7 @@ export const caseSheetTypeDefs = gql`
 
   type MedicinePrescription {
     id: String
+    externalId: String
     medicineConsumptionDuration: String
     medicineConsumptionDurationInDays: String
     medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION

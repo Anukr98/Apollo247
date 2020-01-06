@@ -93,6 +93,10 @@ import {
   sdDashboardSummaryTypeDefs,
   sdDashboardSummaryResolvers,
 } from 'consults-service/resolvers/sdDashboardSummary';
+import {
+  appointmentNotificationTypeDefs,
+  appointmentNotificationResolvers,
+} from 'consults-service/resolvers/appointmentNotifications';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 
@@ -218,6 +222,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: sdDashboardSummaryTypeDefs,
         resolvers: sdDashboardSummaryResolvers,
+      },
+      {
+        typeDefs: appointmentNotificationTypeDefs,
+        resolvers: appointmentNotificationResolvers,
       },
     ]),
     plugins: [
