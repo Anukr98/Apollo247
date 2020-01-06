@@ -88,7 +88,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
       {props.medicineList &&
         props.medicineList.length > 0 &&
         props.medicineList.map((product: MedicineProduct) => (
-          <Grid item xs={6} sm={6} md={4} lg={4}>
+          <Grid key={product.id} item xs={6} sm={6} md={4} lg={4}>
             <div className={classes.root}>
               <Link to={clientRoutes.medicineDetails(product.sku)}>
                 <div className={classes.bigAvatar}>

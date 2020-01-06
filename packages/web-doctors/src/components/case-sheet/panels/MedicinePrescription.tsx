@@ -1032,23 +1032,24 @@ export const MedicinePrescription: React.FC = () => {
                     ${whenString.length > 0 && whenString}`}
                   </h6>
                 </Paper>
-
+                {caseSheetEdit &&
                 <AphButton
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.updateSymptom }}
                   onClick={() => updateMedicine(index)}
                 >
-                  <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
+                  <img src={require('images/round_edit_24_px.svg')} alt="" />
+                </AphButton>}
+                {caseSheetEdit &&
                 <AphButton
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.deleteSymptom }}
                   onClick={() => deletemedicine(index)}
                 >
-                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
+                  <img src={require('images/ic_cancel_green.svg')} alt="" />
+                </AphButton>}
               </div>
             );
           })}
