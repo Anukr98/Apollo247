@@ -198,7 +198,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return 'Order Out for Delivery';
       case MEDICINE_ORDER_STATUS.DELIVERED:
-        return 'Order Deliverd';
+        return 'Order Delivered';
       case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
         return 'Order Payment Success';
       case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
@@ -236,6 +236,70 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       );
     }
   };
+
+
+  const getSlider = (status: (statusDetails | null)[]) => {
+    const sliderStatus = getOrderStatus(status);
+    switch (sliderStatus) {
+      case 'Order Placed':
+        return <AphTrackSlider
+          color="primary"
+          defaultValue={80}
+          getAriaValueText={valuetext}
+          min={0}
+          max={360}
+          valueLabelDisplay="off"
+        />
+      case 'Order Delivered':
+        return <AphDeliveredSlider
+          color="primary"
+          defaultValue={360}
+          getAriaValueText={valuetext}
+          min={0}
+          max={360}
+          valueLabelDisplay="off"
+        />
+      case 'Return Accepted':
+        return <AphTrackSlider
+          color="primary"
+          getAriaValueText={valuetext}
+          disabled
+          min={0}
+          max={360}
+          valueLabelDisplay="off"
+        />;
+      case 'Order Cancelled':
+        return <AphTrackSlider
+          color="primary"
+          getAriaValueText={valuetext}
+          disabled
+          min={0}
+          max={360}
+          valueLabelDisplay="off"
+        />;
+      case 'Order Verified':
+        return <AphTrackSlider
+          color="primary"
+          defaultValue={100}
+          getAriaValueText={valuetext}
+          min={0}
+          max={360}
+          valueLabelDisplay="off"
+        />;
+      case 'Order Initiated':
+        return <AphTrackSlider
+          color="primary"
+          defaultValue={60}
+          getAriaValueText={valuetext}
+          min={0}
+          max={360}
+          valueLabelDisplay="off"
+        />;
+      default:
+        return null;
+
+    }
+  }
 
   if (
     data &&
@@ -277,14 +341,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                         </div>
                       </div>
                       <div className={classes.orderTrackSlider}>
-                        <AphTrackSlider
-                          color="primary"
-                          defaultValue={80}
-                          getAriaValueText={valuetext}
-                          min={0}
-                          max={360}
-                          valueLabelDisplay="off"
-                        />
+                        {getSlider(orderInfo.medicineOrdersStatus)}
                       </div>
                       <div className={classes.orderStatusGroup}>
                         {orderInfo.medicineOrdersStatus && (
