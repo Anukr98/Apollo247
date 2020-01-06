@@ -13,7 +13,6 @@ import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import { isEmpty, trim, deburr } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import _uniqueId from 'lodash/uniqueId';
@@ -95,11 +94,11 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 6,
       },
     },
-    numberOfTimes:{
+    numberOfTimes: {
       width: '100%',
       margin: '0 0 20px 0',
     },
-    instructionsWrapper:{
+    instructionsWrapper: {
       padding: '0 0 8px 0 !important',
     },
     addBtn: {
@@ -378,8 +377,8 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
-    daysOfWeek:{
-      '& button:last-child':{
+    daysOfWeek: {
+      '& button:last-child': {
         border: '1px solid #e50000',
         color: '#e50000',
       },
@@ -395,12 +394,12 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 600,
       cursor: 'pointer',
     },
-    activeBtnRed:{
+    activeBtnRed: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
       fontWeight: 600,
       cursor: 'pointer',
-      '&:last-child':{
+      '&:last-child': {
         backgroundColor: '#e50000 !important',
         color: '#fff !important',
         border: '1px solid #e50000 !important',
@@ -667,12 +666,12 @@ export const MedicinePrescription: React.FC = () => {
     },
     {
       id: 'WEEKS',
-      value: 'Week(S)',
+      value: 'Week(s)',
       selected: false,
     },
     {
       id: 'MONTHS',
-      value: 'Month(S)',
+      value: 'Month(s)',
       selected: false,
     },
   ];
@@ -877,12 +876,9 @@ export const MedicinePrescription: React.FC = () => {
           selected: true,
           medicineUnit: res.medicineUnit,
         };
-        // const xArr = selectedMedicinesArr;
-        // xArr!.push(inputParamsArr);
-        // setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x!.push(inputParams);
-        setSelectedMedicines(x);
+        const medicineObj = selectedMedicines;
+        medicineObj!.push(inputParams);
+        setSelectedMedicines(medicineObj);
       });
     }
   }, [selectedMedicinesArr]);
@@ -1050,19 +1046,19 @@ export const MedicinePrescription: React.FC = () => {
       medicineFormTypes: medicineForm,
     };
     if (isUpdate) {
-      const xArr = selectedMedicinesArr;
-      xArr!.splice(idx, 1, inputParamsArr);
-      setSelectedMedicinesArr(xArr);
-      const x = selectedMedicines;
-      x.splice(idx, 1, inputParams);
-      setSelectedMedicines(x);
+      const medicineArray = selectedMedicinesArr;
+      medicineArray!.splice(idx, 1, inputParamsArr);
+      setSelectedMedicinesArr(medicineArray);
+      const medicineObj = selectedMedicines;
+      medicineObj.splice(idx, 1, inputParams);
+      setSelectedMedicines(medicineObj);
     } else {
-      const xArr = selectedMedicinesArr;
-      xArr!.push(inputParamsArr);
-      setSelectedMedicinesArr(xArr);
-      const x = selectedMedicines;
-      x.push(inputParams);
-      setSelectedMedicines(x);
+      const medicineArray = selectedMedicinesArr;
+      medicineArray!.push(inputParamsArr);
+      setSelectedMedicinesArr(medicineArray);
+      const medicineObj = selectedMedicines;
+      medicineObj.push(inputParams);
+      setSelectedMedicines(medicineObj);
     }
     setIsDialogOpen(false);
     setIsUpdate(false);
@@ -1372,41 +1368,41 @@ export const MedicinePrescription: React.FC = () => {
                             </AphSelect>
                           </div>
                         </div>
-                        {medicineForm !== 'OTHERS' &&
-                        <div className={classes.divCol}>
-                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                            &nbsp;
+                        {medicineForm !== 'OTHERS' && (
+                          <div className={classes.divCol}>
+                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                              &nbsp;
+                            </div>
+                            <AphSelect
+                              style={{ paddingTop: 3 }}
+                              value={frequency}
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: horizontal,
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: horizontal,
+                                },
+                              }}
+                              onChange={(e: any) => {
+                                setFrequency(e.target.value as string);
+                              }}
+                            >
+                              {generateFrequency}
+                            </AphSelect>
                           </div>
-                        <AphSelect
-                            style={{ paddingTop: 3 }}
-                            value={frequency}
-                            MenuProps={{
-                              classes: {
-                                paper: classes.menuPaper,
-                              },
-                              anchorOrigin: {
-                                vertical: 'bottom',
-                                horizontal: horizontal,
-                              },
-                              transformOrigin: {
-                                vertical: 'top',
-                                horizontal: horizontal,
-                              },
-                            }}
-                            onChange={(e: any) => {
-                              setFrequency(e.target.value as string);
-                            }}
-                          >
-                            {generateFrequency}
-                          </AphSelect>
-                          </div>
-                          }
+                        )}
                       </div>
                     </div>
-                    {medicineForm === 'OTHERS' &&
-                    <div className={classes.sectionGroup}>
-                          {/* <div className={classes.unitsSelect}> */}
-                          <div className={classes.numberOfTimes}>
+                    {medicineForm === 'OTHERS' && (
+                      <div className={classes.sectionGroup}>
+                        {/* <div className={classes.unitsSelect}> */}
+                        <div className={classes.numberOfTimes}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
                             value={frequency}
@@ -1430,11 +1426,12 @@ export const MedicinePrescription: React.FC = () => {
                             {generateFrequency}
                           </AphSelect>
                           {/* </div> */}
-                          </div>
-                    </div>}
+                        </div>
+                      </div>
+                    )}
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
-                      <div className={classes.divCol}>
+                        <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>for</div>
                           <AphTextField
                             placeholder=""
@@ -1455,7 +1452,7 @@ export const MedicinePrescription: React.FC = () => {
                             </FormHelperText>
                           )}
                         </div>
-                      <div className={classes.divCol}>
+                        <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             &nbsp;
                           </div>
@@ -1487,23 +1484,25 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                          <div className={classes.sectionTitle}>To be taken</div>
-                          <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
-                            {tobeTakenHtml}
-                          </div>
-                          {errorState.tobeTakenErr && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.tobeTakenErr}
-                            >
-                              Please select to be taken.
-                            </FormHelperText>
-                          )}
+                      <div className={classes.sectionTitle}>To be taken</div>
+                      <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
+                        {tobeTakenHtml}
+                      </div>
+                      {errorState.tobeTakenErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.tobeTakenErr}
+                        >
+                          Please select to be taken.
+                        </FormHelperText>
+                      )}
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day</div>
-                      <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>{daySlotsHtml}</div>
+                      <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
+                        {daySlotsHtml}
+                      </div>
                       {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
@@ -1515,7 +1514,9 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={`${classes.sectionTitle} ${classes.noPadding} ${classes.instructionsWrapper}`}>
+                      <div
+                        className={`${classes.sectionTitle} ${classes.noPadding} ${classes.instructionsWrapper}`}
+                      >
                         Instructions/Notes
                       </div>
                       <div className={classes.numberTablets}>
