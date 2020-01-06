@@ -31,6 +31,7 @@ import com.facebook.soloader.SoLoader;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage; // <-- Add this line
+import io.invertase.firebase.database.RNFirebaseDatabasePackage; // <-- Add this line
 
 import java.util.Arrays;
 import java.util.List;
@@ -68,7 +69,8 @@ public class MainApplication extends Application implements ReactApplication {
             new RNFirebaseAuthPackage(),
             new RNFirebaseMessagingPackage(),
             new RNFirebaseRemoteConfigPackage(),
-            new RNFirebaseNotificationsPackage()
+            new RNFirebaseNotificationsPackage(),
+            new RNFirebaseDatabasePackage()
       );
     }
 

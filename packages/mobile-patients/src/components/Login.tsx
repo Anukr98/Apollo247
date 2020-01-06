@@ -30,6 +30,8 @@ import {
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
+import { db } from '../strings/FirebaseConfig';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   container: {
@@ -90,6 +92,7 @@ const isPhoneNumberValid = (number: string) => {
 
 let otpString = '';
 let didBlurSubscription: NavigationEventSubscription;
+let dbChildKey: string = '';
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -210,10 +213,29 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const onClickOkay = () => {
-    // firebase.analytics().logEvent(AppRoutes.Login, {
-    //   Button_Action: 'Login clicked',
-    // });
     CommonLogEvent(AppRoutes.Login, 'Login clicked');
+
+    db.ref('ApolloPatients/')
+      .push({
+        mobileNumber: phoneNumber,
+        mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+        mobileNumberSuccess: '',
+        OTPEntered: '',
+        ResendOTP: '',
+        wrongOTP: '',
+        OTPEnteredSuccess: '',
+        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
+        mobileNumberFailed: '',
+      })
+      .then((data: any) => {
+        //success callback
+        // console.log('data ', data);
+        dbChildKey = data.path.pieces_[1];
+      })
+      .catch((error: Error) => {
+        //error callback
+        console.log('error ', error);
+      });
 
     Keyboard.dismiss();
     getNetStatus().then(async (status) => {
@@ -236,16 +258,29 @@ export const Login: React.FC<LoginProps> = (props) => {
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
                 CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
 
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                  });
+
                 console.log('confirmResult login', confirmResult);
 
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
                   phoneNumber: phoneNumber,
+                  dbChildKey,
                 });
               })
               .catch((error: RNFirebase.RnError) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
+
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    mobileNumberFailed: error && error.message,
+                  });
 
                 CommonLogEvent('OTP_SEND_FAIL', error.message);
                 CommonBugFender('OTP_SEND_FAIL', error);
