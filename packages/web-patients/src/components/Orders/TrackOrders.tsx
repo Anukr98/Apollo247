@@ -10,6 +10,7 @@ import { OrdersSummary } from 'components/Orders/OrderSummary';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
+import { GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails } from 'graphql/types/GetMedicineOrderDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -121,28 +122,42 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [tabValue, setTabValue] = useState<number>(0);
   const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
-  const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = React.useState<boolean>(false);
-
-  const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = React.useState<boolean>(false);
+  const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = useState<boolean>(false);
+  const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setMoreActionsDialog(event.currentTarget);
   };
-
+  const [orderDetailsData, setOrderDetailsData] = useState<orederDetails | null>(null);
   const orderDetails = useMutation(GET_MEDICINE_ORDER_DETAILS);
 
   useEffect(() => {
     if (props.orderAutoId) {
+      setIsLoading(true);
       orderDetails({
         variables: {
           patientId: currentPatient && currentPatient.id,
           orderAutoId:
-            typeof props.orderAutoId === 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
+            typeof props.orderAutoId == 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
         },
       })
-        .then((res) => console.log(res))
-        .catch((e) => console.log(e));
+        .then((res: any) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getMedicineOrderDetails &&
+            res.data.getMedicineOrderDetails.MedicineOrderDetails
+          ) {
+            setOrderDetailsData(res.data.getMedicineOrderDetails.MedicineOrderDetails);
+            setIsLoading(false);
+          }
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log(e);
+        });
     }
   }, [props.orderAutoId]);
 
@@ -200,7 +215,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
               <div className={classes.customScroll}>
-                <OrderStatusCard />
+                <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
               </div>
             </Scrollbars>
           </TabContainer>
@@ -209,7 +224,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
               <div className={classes.customScroll}>
-                <OrdersSummary />
+                <OrdersSummary orderDetailsData={orderDetailsData} isLoading={isLoading} />
               </div>
             </Scrollbars>
           </TabContainer>

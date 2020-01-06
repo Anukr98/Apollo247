@@ -109,6 +109,7 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
           id
           orderStatus
           statusDate
+          hideStatus
         }
       }
     }
@@ -250,6 +251,13 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           quantity
           isMedicine
           mou
+        }
+        medicineOrderPayments {
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
         }
       }
     }

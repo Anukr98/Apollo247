@@ -31,17 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
     },
     cardIcon: {
-      paddingLeft: 16,
-      width: '50%',
-      '& img': {
-        maxWidth: 120,
-      },
-    },
-    cardTitle: {
-      fontSize: 16,
-      fontWeight: 600,
-      color: '#01475b',
-      width: '50%',
+      width: '100%',
     },
     offerDetails: {
       position: 'absolute',
