@@ -10,7 +10,7 @@ import { SaveDoctorsFavouriteMedicineInput } from "./globalTypes";
 
 export interface SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine_medicineList {
   __typename: "DoctorFavouriteMedicine";
-  id: string;
+  id: string | null;
 }
 
 export interface SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine {

@@ -6,6 +6,10 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
+import {
+  sendDiagnosticOrderStatusNotification,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const saveDiagnosticOrderPaymentTypeDefs = gql`
   input DiagnosticPaymentInput {
@@ -137,6 +141,25 @@ const saveDiagnosticOrderPayment: Resolver<
     JSON.stringify(savePaymentDetails),
     ''
   );
+
+  //call far-eye api's if payment is success
+  if (diagnosticPaymentInput.paymentStatus == 'success') {
+    await diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
+
+    //send order payment success notification
+    sendDiagnosticOrderStatusNotification(
+      NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+      diagnosticOrder,
+      profilesDb
+    );
+  } else {
+    //send order payment failed notification
+    sendDiagnosticOrderStatusNotification(
+      NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED,
+      diagnosticOrder,
+      profilesDb
+    );
+  }
 
   if (!savePaymentDetails) {
     status = false;

@@ -7,17 +7,19 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import { Patient, MedicineOrders } from 'profiles-service/entities';
+import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { addMilliseconds, format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
+import { APPOINTMENT_TYPE } from 'consults-service/entities';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -101,6 +103,8 @@ export enum NotificationType {
   APPOINTMENT_REMINDER_15 = 'APPOINTMENT_REMINDER_15',
   APPOINTMENT_CASESHEET_REMINDER_15 = 'APPOINTMENT_CASESHEET_REMINDER_15',
   PATIENT_APPOINTMENT_RESCHEDULE = 'PATIENT_APPOINTMENT_RESCHEDULE',
+  DIAGNOSTIC_ORDER_SUCCESS = 'DIAGNOSTIC_ORDER_SUCCESS',
+  DIAGNOSTIC_ORDER_PAYMENT_FAILED = 'DIAGNOSTIC_ORDER_PAYMENT_FAILED',
 }
 
 export enum APPT_CALL_TYPE {
@@ -225,6 +229,7 @@ export async function sendCallsNotification(
       callType,
       appointmentCallId,
       doctorType,
+      content: notificationBody,
     },
   };
 
@@ -388,6 +393,30 @@ export async function sendNotification(
     );
   } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
     let content = ApiConstants.BOOK_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+    if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      content = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY.replace(
+        '{0}',
+        patientDetails.firstName
+      );
+      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+        if (facilityDets) {
+          content = content.replace(
+            '{4}',
+            facilityDets.name +
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.streetLine2 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
+          );
+        }
+      }
+    }
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
@@ -421,6 +450,24 @@ export async function sendNotification(
     data: {},
   };
 
+  if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Book_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
   if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     payload = {
       notification: {
@@ -434,6 +481,7 @@ export async function sendNotification(
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }
@@ -454,6 +502,7 @@ export async function sendNotification(
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }
@@ -553,10 +602,29 @@ export async function sendReminderNotification(
   };
   if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
-    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY.replace(
-      '{0}',
-      doctorDetails.firstName
-    );
+    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY;
+    if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+        if (facilityDets) {
+          notificationBody = notificationBody.replace(
+            '{1}',
+            facilityDets.name +
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.streetLine2 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
+          );
+        }
+      }
+    }
+    notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
     payload = {
       notification: {
         title: notificationTitle,
@@ -568,16 +636,18 @@ export async function sendReminderNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   } else if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
   ) {
     notificationTitle = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_TITLE;
-    notificationBody = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_BODY.replace(
-      '{0}',
-      patientDetails.firstName
-    );
+    notificationBody = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_BODY;
+    if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_CASESHEET_REMINDER_15_BODY;
+    }
+    notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
     payload = {
       notification: {
         title: notificationTitle,
@@ -589,6 +659,7 @@ export async function sendReminderNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   } else if (
@@ -617,6 +688,7 @@ export async function sendReminderNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }
@@ -1027,6 +1099,89 @@ export async function sendMedicineOrderStatusNotification(
       const logData = {
         patientId: patientDetails.id,
         orderAutoId: orderDetails.orderAutoId,
+        orderId: orderDetails.id,
+        multicastId: response.multicastId,
+      };
+      logNotificationResponse(notificationType, logData);
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotificationFailed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  console.log('push notifications sent');
+  return { status: true };
+}
+
+//Notification - Dignostic order Status
+export async function sendDiagnosticOrderStatusNotification(
+  notificationType: NotificationType,
+  orderDetails: DiagnosticOrders,
+  patientsDb: Connection
+) {
+  //get all the patient device tokens
+  let patientDeviceTokens: string[] = [];
+  const patientDetails = orderDetails.patient;
+  patientDeviceTokens = await getPatientDeviceTokens(patientDetails.mobileNumber, patientsDb);
+
+  if (patientDeviceTokens.length == 0) return;
+
+  let notificationTitle: string = '';
+  let notificationBody: string = '';
+  let payloadDataType: string = '';
+
+  switch (notificationType) {
+    case NotificationType.DIAGNOSTIC_ORDER_SUCCESS:
+      payloadDataType = 'Diagnostic_Order_Success';
+      notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_TITLE;
+      notificationBody = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_BODY;
+      break;
+    case NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED:
+      payloadDataType = 'Diagnostic_Order_Payment_Failed';
+      notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE;
+      notificationBody = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY;
+    default:
+      payloadDataType = 'Diagnostic_Order_Success';
+      notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_TITLE;
+      notificationBody = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_BODY;
+  }
+  //notification payload
+  const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
+  const orderNumber = orderDetails.displayId ? orderDetails.displayId.toString() : '';
+
+  notificationTitle = notificationTitle.toString();
+  notificationBody = notificationBody.replace('{0}', userName);
+
+  const payload = {
+    notification: {
+      title: notificationTitle,
+      body: notificationBody,
+    },
+    data: {
+      type: payloadDataType,
+      displayId: orderNumber,
+      orderId: orderDetails.id,
+      firstName: patientDetails.firstName,
+      content: notificationBody,
+    },
+  };
+
+  //notification options
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+
+  //initialize firebaseadmin
+  const admin = await getInitializedFirebaseAdmin();
+
+  admin
+    .messaging()
+    .sendToDevice(patientDeviceTokens, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      const logData = {
+        patientId: patientDetails.id,
+        displayId: orderNumber,
         orderId: orderDetails.id,
         multicastId: response.multicastId,
       };

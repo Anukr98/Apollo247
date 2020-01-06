@@ -15,30 +15,27 @@ import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import { isEmpty, debounce, trim, deburr } from 'lodash';
+import { isEmpty, trim } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
-import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_FAVOURITE_MEDICINE } from 'graphql/doctors';
 import {
-  GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList,
   GetDoctorFavouriteMedicineList,
   GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
 } from 'graphql/types/GetDoctorFavouriteMedicineList';
 import { useApolloClient } from 'react-apollo-hooks';
-import { relative } from 'path';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
   label: string;
   sku: string;
 }
-
 let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
@@ -291,6 +288,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 5,
         marginTop: 5,
         lineHeight: 'normal',
+        minHeight: 18,
       },
     },
     popupHeading: {
@@ -324,11 +322,18 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 'normal',
         borderRadius: 14,
         marginRight: 15,
+        cursor: 'pointer',
         color: '#00b38e',
         backgroundColor: '#fff',
         '&:focus': {
           outline: 'none',
         },
+      },
+    },
+    daysOfWeek: {
+      '& button:last-child': {
+        border: '1px solid #e50000 !important',
+        color: '#e50000',
       },
     },
     tabletcontent: {
@@ -340,6 +345,16 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
       fontWeight: 600,
+    },
+    activeBtnRed: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+      fontWeight: 600,
+      '&:last-child': {
+        backgroundColor: '#e50000 !important',
+        color: '#fff',
+        border: '1px solid #e50000 !important',
+      },
     },
     helpText: {
       paddingLeft: 0,
@@ -435,7 +450,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 'bold',
     },
     unitsSelect: {
-      marginTop: -7,
+      marginTop: 0,
     },
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
@@ -493,6 +508,50 @@ interface errorObject {
   durationErr: boolean;
   dosageErr: boolean;
 }
+interface PharmaOverview {
+  generic: string;
+  Doseform: any;
+  Unit: string;
+  Strength: string;
+  Strengh: string;
+  Overview:
+    | {
+        Caption: string;
+        CaptionDesc: string;
+      }[]
+    | string;
+}
+export interface MedicineProductDetails extends MedicineProduct {
+  PharmaOverview: PharmaOverview[];
+}
+export interface MedicineProduct {
+  description: string;
+  id: number;
+  category_id: string;
+  image: string | null;
+  is_in_stock: boolean;
+  is_prescription_required: '0' | '1'; //1 for required
+  name: string;
+  price: number;
+  special_price: number | string;
+  sku: string;
+  small_image?: string | null;
+  status: number;
+  thumbnail: string | null;
+  type_id: string;
+  mou: string;
+  manufacturer: string;
+  PharmaOverview: PharmaOverview[];
+}
+export interface MedicineProductDetailsResponse {
+  productdp: MedicineProductDetails[];
+  message?: string;
+}
+
+export interface MedicineProductsResponse {
+  product_count: number;
+  products: MedicineProduct[];
+}
 let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
@@ -544,7 +603,7 @@ export const MedicinePrescription: React.FC = () => {
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>();
-  const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
+  const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -566,6 +625,11 @@ export const MedicinePrescription: React.FC = () => {
       value: 'Night',
       selected: false,
     },
+    {
+      id: 'AS_NEEDED',
+      value: 'As Needed',
+      selected: false,
+    },
   ]);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -582,21 +646,146 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
+  const OtherTypes = [
+    'SYRUP',
+    'DROPS',
+    'CAPSULE',
+    'INJECTION',
+    'TABLET',
+    'BOTTLE',
+    'SUSPENSION',
+    'ROTACAPS',
+    'SACHET',
+    'ML',
+    'OTHERS',
+  ];
+  const gelLotionOintmentTypes = [
+    'POWDER',
+    'CREAM',
+    'SOAP',
+    'GEL',
+    'LOTION',
+    'SPRAY',
+    'OINTMENT',
+    'OTHERS',
+  ];
+  const dosageFrequency = [
+    {
+      id: 'ONCE_A_DAY',
+      value: 'Once a day',
+      selected: false,
+    },
+    {
+      id: 'TWICE_A_DAY',
+      value: 'Twice a day',
+      selected: false,
+    },
+    {
+      id: 'THRICE_A_DAY',
+      value: 'Thrice a day',
+      selected: false,
+    },
+    {
+      id: 'FOUR_TIMES_A_DAY',
+      value: 'Four times a day',
+      selected: false,
+    },
+    {
+      id: 'FIVE_TIMES_A_DAY',
+      value: 'Five times a day',
+      selected: false,
+    },
+    {
+      id: 'AS_NEEDED',
+      value: 'As Needed',
+      selected: false,
+    },
+  ];
+  const forOptions = [
+    {
+      id: 'DAYS',
+      value: 'Day(s)',
+      selected: false,
+    },
+    {
+      id: 'WEEKS',
+      value: 'Week(S)',
+      selected: false,
+    },
+    {
+      id: 'MONTHS',
+      value: 'Month(S)',
+      selected: false,
+    },
+  ];
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
   const [medicine, setMedicine] = useState('');
+  const [frequency, setFrequency] = useState(dosageFrequency[0].id);
+  const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
     return suggestions;
   }
-
+  const [medicineForm, setMedicineForm] = useState<string>('OTHERS');
+  const getMedicineDetails = (suggestion: OptionType) => {
+    const CancelToken = axios.CancelToken;
+    setLoading(true);
+    axios
+      .post(
+        apiDetails.medicineDatailsUrl,
+        { params: suggestion.sku },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+            Accept: '*/*',
+          },
+          cancelToken: new CancelToken(function executor(c) {
+            // An executor function receives a cancel function as a parameter
+            cancel = c;
+          }),
+        }
+      )
+      .then((result) => {
+        if (
+          result &&
+          result.data &&
+          result.data.productdp &&
+          result.data.productdp.length > 0 &&
+          result.data.productdp[0] &&
+          result.data.productdp[0].PharmaOverview &&
+          result.data.productdp[0].PharmaOverview.length > 0 &&
+          result.data.productdp[0].PharmaOverview[0].Doseform &&
+          OtherTypes.indexOf(result.data.productdp[0].PharmaOverview[0].Doseform) > -1
+        ) {
+          setMedicineUnit(result.data.productdp[0].PharmaOverview[0].Doseform);
+          setMedicineForm('OTHERS');
+        } else {
+          setMedicineUnit('OTHERS');
+          setMedicineForm('GEL_LOTION_OINTMENT');
+        }
+        setShowDosage(true);
+        setSelectedValue(suggestion.label);
+        setSelectedId(suggestion.sku);
+        setMedicine('');
+        setTabletsCount(1);
+        setLoading(false);
+        setConsumptionDuration('');
+      })
+      .catch((error) => {
+        if (error.toString().includes('404')) {
+          //setIsSuggestionFetched(false);
+          setLoading(false);
+        }
+      });
+  };
   const toBeTaken = (value: any) => {
-    const arry: any = [];
+    const tobeTakenObjectList: any = [];
     value.map((slot: any) => {
-      const x = slot.replace('_', ' ').toLowerCase();
-      arry.push(x);
+      const tobeTakenObject = slot.replace('_', ' ').toLowerCase();
+      tobeTakenObjectList.push(tobeTakenObject);
     });
-    return arry;
+    return tobeTakenObjectList;
   };
 
   const fetchMedicines = async (value: any) => {
@@ -665,20 +854,36 @@ export const MedicinePrescription: React.FC = () => {
 
     const dayslots = daySlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
-        if (selectedSlot.toLowerCase() === slot.id) {
+        if (selectedSlot.toLowerCase() === slot.id.toLowerCase()) {
           slot.selected = true;
         }
       });
       return slot;
     });
     setDaySlots(dayslots);
-
-    setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
-    setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
-    setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
-    setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
-    setSelectedValue(selectedMedicinesArr![idx].medicineName!);
-    setSelectedId(selectedMedicinesArr![idx].id!);
+    if (selectedMedicinesArr && selectedMedicinesArr[idx]) {
+      setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
+      setConsumptionDuration(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!);
+      setTabletsCount(Number(selectedMedicinesArr[idx].medicineDosage!));
+      setMedicineUnit(selectedMedicinesArr[idx].medicineUnit!);
+      setSelectedValue(selectedMedicinesArr[idx].medicineName!);
+      setSelectedId(selectedMedicinesArr[idx].id!);
+      setFrequency(
+        selectedMedicinesArr[idx].medicineFrequency!
+          ? selectedMedicinesArr[idx].medicineFrequency!
+          : dosageFrequency[0].id
+      );
+      setforUnit(
+        selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
+          ? selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
+          : forOptions[0].id
+      );
+      setMedicineForm(
+        selectedMedicinesArr[idx].medicineFormTypes!
+          ? selectedMedicinesArr[idx].medicineFormTypes!
+          : 'OTHERS'
+      );
+    }
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
@@ -691,6 +896,9 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineUnit(idx.medicineUnit);
     setConsumptionDuration(idx.medicineConsumptionDurationInDays);
     setMedicineInstruction(idx.medicineInstructions);
+    setFrequency(idx.medicineFrequency);
+    setforUnit(idx.medicineConsumptionDurationUnit);
+    setMedicineForm(idx.medicineFormTypes);
     toBeTakenSlots.map((slot: SlotsObject) => {
       idx.medicineToBeTaken.map((selectedSlot: any) => {
         const selectedValue = selectedSlot.replace('_', '');
@@ -702,7 +910,7 @@ export const MedicinePrescription: React.FC = () => {
     });
     daySlots.map((slot: SlotsObject) => {
       idx.medicineTimings.map((selectedSlot: any) => {
-        if (selectedSlot.toLowerCase() === slot.id) {
+        if (selectedSlot.toLowerCase() === slot.id.toLowerCase()) {
           slot.selected = true;
         }
       });
@@ -731,6 +939,11 @@ export const MedicinePrescription: React.FC = () => {
           medicineName: res.medicineName,
           medicineUnit: res.medicineUnit,
           id: res.id,
+          medicineFrequency: res.medicineFrequency ? res.medicineFrequency : dosageFrequency[0].id,
+          medicineConsumptionDurationUnit: res.medicineConsumptionDurationUnit
+            ? res.medicineConsumptionDurationUnit
+            : forOptions[0].id,
+          medicineFormTypes: res.medicineFormTypes ? res.medicineFormTypes : 'OTHERS',
         };
         const inputParams: any = {
           id: res.medicineName.trim(),
@@ -745,10 +958,12 @@ export const MedicinePrescription: React.FC = () => {
             .toLowerCase()}`,
           selected: true,
           medicineUnit: res.medicineUnit,
+          medicineFrequency: res.medicineFrequency ? res.medicineFrequency : dosageFrequency[0].id,
+          medicineConsumptionDurationUnit: res.medicineConsumptionDurationUnit
+            ? res.medicineConsumptionDurationUnit
+            : forOptions[0].id,
+          medicineFormTypes: res.medicineFormTypes ? res.medicineFormTypes : 'OTHERS',
         };
-        // const xArr = selectedMedicinesArr;
-        // xArr!.push(inputParamsArr);
-        // setSelectedMedicinesArr(xArr);
         const x = selectedMedicines;
         x!.push(inputParams);
         setSelectedMedicines(x);
@@ -786,7 +1001,7 @@ export const MedicinePrescription: React.FC = () => {
     return (
       <button
         key={daySlotitem.id}
-        className={daySlotitem.selected ? classes.activeBtn : ''}
+        className={daySlotitem.selected ? classes.activeBtnRed : ''}
         onClick={() => {
           daySlotsToggleAction(daySlotitem.id);
         }}
@@ -806,113 +1021,71 @@ export const MedicinePrescription: React.FC = () => {
     });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
-        daySlotsArr.push(slot.value.toUpperCase());
+        daySlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
-    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 0.5) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: false,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: true,
-      });
-    } else if (
-      isEmpty(trim(consumptionDuration)) ||
-      isNaN(Number(consumptionDuration)) ||
-      Number(consumptionDuration) < 1
-    ) {
-      setErrorState({
-        ...errorState,
-        durationErr: true,
-        daySlotErr: false,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
-    } else if (daySlotsSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
+    setErrorState({
+      ...errorState,
+      durationErr: false,
+      daySlotErr: false,
+      tobeTakenErr: false,
+      dosageErr: false,
+    });
+    const inputParamsArr: any = {
+      medicineConsumptionDurationInDays: String(consumptionDuration),
+      medicineDosage: String(tabletsCount),
+      medicineInstructions: medicineInstruction,
+      medicineTimings: daySlotsArr,
+      medicineToBeTaken: toBeTakenSlotsArr,
+      medicineName: selectedValue,
+      medicineFrequency: frequency,
+      medicineConsumptionDurationUnit: forUnit,
+      medicineFormTypes: medicineForm,
+      id: selectedId,
+      medicineUnit: medicineUnit,
+    };
+
+    const inputParams: any = {
+      id: selectedId,
+      value: selectedValue,
+      name: selectedValue,
+      times: daySlotsSelected.length,
+      daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+      duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
+      selected: true,
+      medicineUnit: medicineUnit,
+      medicineFrequency: frequency,
+      medicineConsumptionDurationUnit: forUnit,
+      medicineFormTypes: medicineForm,
+    };
+    if (isUpdate) {
+      const xArr = selectedMedicinesArr;
+      xArr!.splice(idx, 1, inputParamsArr);
+      setSelectedMedicinesArr(xArr);
+      const x = selectedMedicines;
+      x.splice(idx, 1, inputParams);
+      setSelectedMedicines(x);
     } else {
-      setErrorState({
-        ...errorState,
-        durationErr: false,
-        daySlotErr: false,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-      const inputParamsArr: any = {
-        medicineConsumptionDurationInDays: String(consumptionDuration),
-        medicineDosage: String(tabletsCount),
-        medicineInstructions: medicineInstruction,
-        medicineTimings: daySlotsArr,
-        medicineToBeTaken: toBeTakenSlotsArr,
-        medicineName: selectedValue,
-        id: selectedId,
-        medicineUnit: medicineUnit,
-      };
-
-      const inputParams: any = {
-        id: selectedId,
-        value: selectedValue,
-        name: selectedValue,
-        times: daySlotsSelected.length,
-        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
-        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
-        selected: true,
-        medicineUnit: medicineUnit,
-      };
-      if (isUpdate) {
-        const xArr = selectedMedicinesArr;
-        xArr!.splice(idx, 1, inputParamsArr);
-        setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x.splice(idx, 1, inputParams);
-        setSelectedMedicines(x);
-      } else {
-        const xArr = selectedMedicinesArr;
-        xArr!.push(inputParamsArr);
-        setSelectedMedicinesArr(xArr);
-        const x = selectedMedicines;
-        x.push(inputParams);
-        setSelectedMedicines(x);
-      }
-      setIsDialogOpen(false);
-      setIsEditFavMedicine(false);
-      setIsUpdate(false);
-      setShowDosage(false);
-      const slots = toBeTakenSlots.map((slot: SlotsObject) => {
-        slot.selected = false;
-        return slot;
-      });
-      setToBeTakenSlots(slots);
-
-      const dayslots = daySlots.map((slot: SlotsObject) => {
-        slot.selected = false;
-        return slot;
-      });
-      setDaySlots(dayslots);
-
-      setMedicineInstruction('');
-      setConsumptionDuration('');
-      setTabletsCount(0);
-      setMedicineUnit('TABLET');
-      setSelectedValue('');
-      setSelectedId('');
+      const xArr = selectedMedicinesArr;
+      xArr!.push(inputParamsArr);
+      setSelectedMedicinesArr(xArr);
+      const x = selectedMedicines;
+      x.push(inputParams);
+      setSelectedMedicines(x);
     }
+    setIsDialogOpen(false);
+    setIsEditFavMedicine(false);
+    setIsUpdate(false);
+    setShowDosage(false);
+    resetOptions();
+
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setTabletsCount(1);
+    setMedicineUnit('OTHERS');
+    setSelectedValue('');
+    setSelectedId('');
   };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -984,11 +1157,83 @@ export const MedicinePrescription: React.FC = () => {
     setDaySlots(dayslots);
     setMedicineInstruction('');
     setConsumptionDuration('');
-    setTabletsCount(0);
-    setMedicineUnit('TABLET');
+    setTabletsCount(1);
+    setMedicineUnit('OTHERS');
     setSelectedValue('');
     setSelectedId('');
   };
+  const generateMedicineTypes =
+    medicineForm === 'OTHERS'
+      ? OtherTypes.map((value: string, index: number) => {
+          return (
+            <MenuItem
+              key={index.toString()}
+              classes={{
+                selected: classes.menuSelected,
+              }}
+              value={value}
+            >
+              {value.toLowerCase()}
+            </MenuItem>
+          );
+        })
+      : gelLotionOintmentTypes.map((value: string, index: number) => {
+          return (
+            <MenuItem
+              key={index.toString()}
+              classes={{
+                selected: classes.menuSelected,
+              }}
+              value={value}
+            >
+              {value.toLowerCase()}
+            </MenuItem>
+          );
+        });
+
+  const generateFrequency = dosageFrequency.map((dosageObj: SlotsObject, index: number) => {
+    return (
+      <MenuItem
+        key={index.toString()}
+        classes={{
+          selected: classes.menuSelected,
+        }}
+        value={dosageObj.id}
+      >
+        {dosageObj.value}
+      </MenuItem>
+    );
+  });
+  const forOptionHtml = forOptions.map((optionObj: SlotsObject, index: number) => {
+    return (
+      <MenuItem
+        key={index.toString()}
+        classes={{
+          selected: classes.menuSelected,
+        }}
+        value={optionObj.id}
+      >
+        {optionObj.value}
+      </MenuItem>
+    );
+  });
+
+  const resetOptions = () => {
+    setFrequency(dosageFrequency[0].id);
+    setforUnit(forOptions[0].id);
+    setMedicineForm('OTHERS');
+    const dayslots = daySlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+    setDaySlots(dayslots);
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+      slot.selected = false;
+      return slot;
+    });
+    setToBeTakenSlots(slots);
+  };
+  const horizontal = medicineForm ? 'right' : 'left';
 
   return (
     <div className={classes.root}>
@@ -997,9 +1242,14 @@ export const MedicinePrescription: React.FC = () => {
           <div className={classes.medicineHeading}>Medicines</div>
           {selectedMedicinesArr!.map((_medicine: any, index: number) => {
             const medicine = _medicine!;
-
-            const durations = Number(medicine.medicineConsumptionDurationInDays);
-            const duration = durations === 1 ? ` ${durations} day ` : ` ${durations} days `;
+            //const durations = Number(medicine.medicineConsumptionDurationInDays);
+            const duration =
+              medicine.medicineConsumptionDurationInDays &&
+              ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
+                medicine.medicineConsumptionDurationUnit
+                  ? medicine.medicineConsumptionDurationUnit.toLowerCase()
+                  : 'day(s)'
+              } `;
 
             const whenString =
               medicine.medicineToBeTaken.length > 0
@@ -1007,48 +1257,64 @@ export const MedicinePrescription: React.FC = () => {
                     .join(', ')
                     .toLowerCase()
                 : '';
-            const unitHtmls =
-              medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
-                ? medicine.medicineUnit.toLowerCase()
-                : 'times';
+            const unitHtmls = medicine.medicineUnit.toLowerCase();
             const timesString =
               medicine.medicineTimings.length > 0
-                ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                ? 'in the ' +
+                  medicine.medicineTimings
+                    .join(' , ')
+                    .toLowerCase()
+                    .replace('_', ' ')
                 : '';
-            const dosageCount =
-              medicine.medicineTimings.length > 0
-                ? parseFloat(medicine.medicineDosage) *
-                  medicine.medicineTimings.length *
-                  medicine.medicineToBeTaken.length
-                : medicine.medicineDosage;
-            const unitHtml = dosageCount === 1 ? unitHtmls : `${unitHtmls}s`;
+            const dosageCount = medicine.medicineDosage;
+            const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
+            const unitHtml = `${unitHtmls}`;
+            //console.log(dosageCount, medicine.medicineFormTypes);
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
                   <h5>{medicine.medicineName}</h5>
                   <h6>
-                    {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
-                    ${duration}
-                    ${whenString.length > 0 && whenString}`}
+                    {`${takeApplyHtml} ${
+                      dosageCount && medicine.medicineFormTypes === 'OTHERS' ? dosageCount : ''
+                    } ${unitHtml} ${
+                      medicine.medicineFrequency
+                        ? medicine.medicineFrequency
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                        : dosageFrequency[0].id
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                    }
+                    ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                      timesString.length > 0 ? timesString : ''
+                    }
+                    `}
                   </h6>
+                  {medicine.Instructions && <h6>{medicine.Instructions}</h6>}
                 </Paper>
-
-                <AphButton
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.updateSymptom }}
-                  onClick={() => updateMedicine(index)}
-                >
-                  <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.deleteSymptom }}
-                  onClick={() => deletemedicine(index)}
-                >
-                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
+                {caseSheetEdit && (
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.updateSymptom }}
+                    onClick={() => updateMedicine(index)}
+                  >
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                )}
+                {caseSheetEdit && (
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.deleteSymptom }}
+                    onClick={() => deletemedicine(index)}
+                  >
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
+                )}
               </div>
             );
           })}
@@ -1067,50 +1333,57 @@ export const MedicinePrescription: React.FC = () => {
           <Grid item lg={6} xs={12}>
             <div className={classes.favmedicineHeading}>Favourite Medicines</div>
             <div className={classes.mediceneContainer}>
-              {favouriteMedicine.map((favMedicine: any, id, index) => {
-                const favDurations = Number(
-                  favMedicine && favMedicine.medicineConsumptionDurationInDays
-                );
-                const favDuration =
-                  favDurations === 1 ? `${favDurations} day` : `${favDurations} days`;
-
+              {favouriteMedicine.map((_favMedicine: any, id, index) => {
+                const favMedicine = _favMedicine!;
+                const favDurations =
+                  favMedicine.medicineConsumptionDurationInDays &&
+                  ` for ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
+                    favMedicine.medicineConsumptionDurationUnit
+                      ? favMedicine.medicineConsumptionDurationUnit.toLowerCase()
+                      : 'day(s)'
+                  } `;
                 const favWhenString =
-                  favMedicine &&
-                  favMedicine.medicineToBeTaken &&
                   favMedicine.medicineToBeTaken.length > 0
-                    ? toBeTaken(favMedicine && favMedicine.medicineToBeTaken)
+                    ? toBeTaken(favMedicine.medicineToBeTaken)
                         .join(', ')
                         .toLowerCase()
                     : '';
-                const favUnitHtmls =
-                  favMedicine && favMedicine.medicineUnit && favMedicine.medicineUnit !== 'NA'
-                    ? favMedicine &&
-                      favMedicine.medicineUnit &&
-                      favMedicine.medicineUnit.toLowerCase()
-                    : 'times';
+                const favUnitHtmls = favMedicine.medicineUnit.toLowerCase();
                 const favTimesString =
-                  favMedicine &&
-                  favMedicine.medicineTimings &&
                   favMedicine.medicineTimings.length > 0
-                    ? '(' + favMedicine.medicineTimings.join(' , ').toLowerCase() + ')'
+                    ? 'in the ' +
+                      favMedicine.medicineTimings
+                        .join(' , ')
+                        .toLowerCase()
+                        .replace('_', ' ')
                     : '';
-                const favDosageCount =
-                  favMedicine.medicineTimings.length > 0
-                    ? parseFloat(favMedicine.medicineDosage) *
-                      favMedicine.medicineTimings.length *
-                      favMedicine.medicineToBeTaken.length
-                    : favMedicine.medicineDosage;
-
-                const favUnitHtml = favDosageCount === 1 ? favUnitHtmls : `${favUnitHtmls}s`;
-                const favMedicineName = favMedicine && favMedicine.medicineName;
+                const favDosageCount = favMedicine.medicineDosage;
+                const favTakeApplyHtml =
+                  favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
+                const favUnitHtml = `${favUnitHtmls}`;
                 return (
                   <div className={classes.paper} key={id}>
                     <Paper className={classes.favMedBg}>
-                      <h5>{favMedicineName}</h5>
+                      <h5>{favMedicine.medicineName}</h5>
                       <h6>
-                        {favDosageCount} {favUnitHtml} a day{' '}
-                        {favTimesString.length > 0 && favTimesString} for {favDuration}{' '}
-                        {favWhenString.length > 0 && favWhenString}
+                        {`${favTakeApplyHtml} ${
+                          favDosageCount && favMedicine.medicineFormTypes === 'OTHERS'
+                            ? favDosageCount
+                            : ''
+                        } ${favUnitHtml} ${
+                          favMedicine.medicineFrequency
+                            ? favMedicine.medicineFrequency
+                                .split('_')
+                                .join(' ')
+                                .toLowerCase()
+                            : dosageFrequency[0].id
+                                .split('_')
+                                .join(' ')
+                                .toLowerCase()
+                        } ${favDurations} ${favWhenString.length > 0 ? favWhenString : ''} ${
+                          favTimesString.length > 0 ? favTimesString : ''
+                        }
+                    `}
                       </h6>
                     </Paper>
                     <AphButton
@@ -1160,30 +1433,33 @@ export const MedicinePrescription: React.FC = () => {
             </AphDialogTitle>
             <div>
               <div>
+              <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}> 
                 <div className={classes.dialogContent}>
                   <Grid container spacing={2}>
+                    {medicineForm === 'OTHERS' && (
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>Take</h6>
+                        <AphTextField
+                          autoFocus
+                          inputProps={{ maxLength: 6 }}
+                          value={tabletsCount === 0 ? '' : tabletsCount}
+                          onChange={(event: any) => {
+                            setTabletsCount(event.target.value);
+                          }}
+                        />
+                        {errorState.dosageErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.durationErr}
+                          >
+                            Please Enter Dosage(Number only)
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                    )}
                     <Grid item lg={6} md={6} xs={12}>
-                      <h6>Dosage*</h6>
-                      <AphTextField
-                        autoFocus
-                        inputProps={{ maxLength: 6 }}
-                        value={tabletsCount}
-                        onChange={(event: any) => {
-                          setTabletsCount(event.target.value);
-                        }}
-                      />
-                      {errorState.dosageErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.durationErr}
-                        >
-                          Please Enter Dosage(Number only)
-                        </FormHelperText>
-                      )}
-                    </Grid>
-                    <Grid item lg={6} md={6} xs={12}>
-                      <h6>Units*</h6>
+                      <h6>{medicineForm !== 'OTHERS' ? 'Apply' : ''}</h6>
                       <div className={classes.unitsSelect}>
                         <AphSelect
                           style={{ paddingTop: 3 }}
@@ -1205,26 +1481,44 @@ export const MedicinePrescription: React.FC = () => {
                             setMedicineUnit(e.target.value as string);
                           }}
                         >
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
-                            tablet
-                          </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
-                            capsule
-                          </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
-                            ml
-                          </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
-                            drops
-                          </MenuItem>
-                          <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
-                            NA
-                          </MenuItem>
+                          {generateMedicineTypes}
+                        </AphSelect>
+                      </div>
+                    </Grid>
+                    <Grid
+                      item
+                      lg={medicineForm === 'OTHERS' ? 12 : 6}
+                      md={medicineForm === 'OTHERS' ? 12 : 6}
+                      xs={12}
+                    >
+                      <h6>&nbsp;</h6>
+                      <div className={classes.unitsSelect}>
+                        <AphSelect
+                          style={{ paddingTop: 3 }}
+                          value={frequency}
+                          MenuProps={{
+                            classes: {
+                              paper: classes.menuPaper,
+                            },
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: horizontal,
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: horizontal,
+                            },
+                          }}
+                          onChange={(e: any) => {
+                            setFrequency(e.target.value as string);
+                          }}
+                        >
+                          {generateFrequency}
                         </AphSelect>
                       </div>
                     </Grid>
                     <Grid item lg={6} md={6} xs={12}>
-                      <h6>Duration of Consumption*</h6>
+                      <h6>For</h6>
                       <div className={classes.numberTablets}>
                         <AphTextField
                           placeholder=""
@@ -1247,7 +1541,34 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </Grid>
                     <Grid item lg={6} md={6} xs={12}>
-                      <h6>To be taken</h6>
+                      <h6>&nbsp;</h6>
+                      <div className={classes.unitsSelect}>
+                        <AphSelect
+                          style={{ paddingTop: 3 }}
+                          value={forUnit}
+                          MenuProps={{
+                            classes: {
+                              paper: classes.menuPaper,
+                            },
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'left',
+                            },
+                          }}
+                          onChange={(e: any) => {
+                            setforUnit(e.target.value as string);
+                          }}
+                        >
+                          {forOptionHtml}
+                        </AphSelect>
+                      </div>
+                    </Grid>
+                    <Grid item lg={6} md={6} xs={12}>
+                      <h6>&nbsp;</h6>
                       <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                       {errorState.tobeTakenErr && (
                         <FormHelperText
@@ -1260,8 +1581,10 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </Grid>
                     <Grid item lg={12} xs={12}>
-                      <h6>Time of the Day*</h6>
-                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      <h6>In The</h6>
+                      <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
+                        {daySlotsHtml}
+                      </div>
                       {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
@@ -1273,9 +1596,11 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </Grid>
                     <Grid item lg={12} xs={12}>
-                      <h6>Instructions (if any)</h6>
+                      <h6>Instructions/Notes</h6>
                       <div className={classes.numberTablets}>
                         <AphTextField
+                          multiline
+                          placeholder="Type here..."
                           value={medicineInstruction}
                           onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);
@@ -1285,6 +1610,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Grid>
                   </Grid>
                 </div>
+              </Scrollbars>
               </div>
               <div className={classes.dialogActions}>
                 <AphButton
@@ -1346,6 +1672,7 @@ export const MedicinePrescription: React.FC = () => {
           <div className={classes.shadowHide}>
             {!showDosage ? (
               <div>
+                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}> 
                 <div className={classes.dialogContent}>
                   <Autosuggest
                     onSuggestionSelected={(e, { suggestion }) => {
@@ -1353,48 +1680,7 @@ export const MedicinePrescription: React.FC = () => {
                         single: '',
                         popper: '',
                       });
-                      setShowDosage(true);
-                      setSelectedValue(suggestion.label);
-                      setSelectedId(suggestion.sku);
-                      setLoading(false);
-                      setMedicine('');
-                      setTabletsCount(0);
-                      setMedicineUnit('TABLET');
-                      setConsumptionDuration('');
-                      setDaySlots([
-                        {
-                          id: 'morning',
-                          value: 'Morning',
-                          selected: false,
-                        },
-                        {
-                          id: 'noon',
-                          value: 'Noon',
-                          selected: false,
-                        },
-                        {
-                          id: 'evening',
-                          value: 'Evening',
-                          selected: false,
-                        },
-                        {
-                          id: 'night',
-                          value: 'Night',
-                          selected: false,
-                        },
-                      ]);
-                      setToBeTakenSlots([
-                        {
-                          id: 'afterfood',
-                          value: 'After Food',
-                          selected: false,
-                        },
-                        {
-                          id: 'beforefood',
-                          value: 'Before Food',
-                          selected: false,
-                        },
-                      ]);
+                      getMedicineDetails(suggestion);
                     }}
                     {...autosuggestProps}
                     inputProps={{
@@ -1411,11 +1697,7 @@ export const MedicinePrescription: React.FC = () => {
                               single: '',
                               popper: '',
                             });
-                            setShowDosage(true);
-                            setSelectedValue(suggestions[0].label);
-                            setSelectedId(suggestions[0].sku);
-                            setLoading(false);
-                            setMedicine('');
+                            getMedicineDetails(suggestions[0]);
                           }
                         }
                       },
@@ -1460,35 +1742,39 @@ export const MedicinePrescription: React.FC = () => {
                   )}
                   {loading ? <CircularProgress className={classes.loader} /> : null}
                 </div>
+             </Scrollbars>
               </div>
             ) : (
               <div>
                 <div>
+                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>  
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
-                      <Grid item lg={6} md={6} xs={12}>
-                        <h6>Quantity (Per Dosage)*</h6>
-                        <AphTextField
-                          autoFocus
-                          inputProps={{ maxLength: 6 }}
-                          value={tabletsCount === 0 ? '' : tabletsCount}
-                          onChange={(event: any) => {
-                            setTabletsCount(event.target.value);
-                          }}
-                          error={errorState.dosageErr}
-                        />
-                        {errorState.dosageErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
+                      {medicineForm === 'OTHERS' && (
+                        <Grid item lg={6} md={6} xs={12}>
+                          <h6>Take</h6>
+                          <AphTextField
+                            autoFocus
+                            inputProps={{ maxLength: 6 }}
+                            value={tabletsCount === 0 ? '' : tabletsCount}
+                            onChange={(event: any) => {
+                              setTabletsCount(event.target.value);
+                            }}
                             error={errorState.dosageErr}
-                          >
-                            Please Enter Dosage(Number only)
-                          </FormHelperText>
-                        )}
-                      </Grid>
+                          />
+                          {errorState.dosageErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.dosageErr}
+                            >
+                              Please Enter Dosage(Number only)
+                            </FormHelperText>
+                          )}
+                        </Grid>
+                      )}
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Units/Types*</h6>
+                        <h6>{medicineForm !== 'OTHERS' ? 'Apply' : ''}</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
@@ -1510,26 +1796,46 @@ export const MedicinePrescription: React.FC = () => {
                               setMedicineUnit(e.target.value as string);
                             }}
                           >
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
-                              tablet
-                            </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
-                              capsule
-                            </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
-                              ml
-                            </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
-                              drops
-                            </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
-                              NA
-                            </MenuItem>
+                            {generateMedicineTypes}
                           </AphSelect>
                         </div>
                       </Grid>
+                      <Grid
+                        item
+                        lg={medicineForm === 'OTHERS' ? 12 : 6}
+                        md={medicineForm === 'OTHERS' ? 12 : 6}
+                        xs={12}
+                      >
+                        <h6>&nbsp;</h6>
+                        <div className={classes.unitsSelect}>
+                          <AphSelect
+                            style={{ paddingTop: 3 }}
+                            value={frequency}
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 'left',
+                              },
+                              
+                            }}
+                            onChange={(e: any) => {
+                              setFrequency(e.target.value as string);
+                            }}
+                          >
+                            {generateFrequency}
+                          </AphSelect>
+                        </div>
+                      </Grid>
+
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Duration (in days)*</h6>
+                        <h6>For</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
@@ -1552,7 +1858,34 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>To be taken</h6>
+                        <h6>&nbsp;</h6>
+                        <div className={classes.unitsSelect}>
+                          <AphSelect
+                            style={{ paddingTop: 3 }}
+                            value={forUnit}
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 'left',
+                              },
+                            }}
+                            onChange={(e: any) => {
+                              setforUnit(e.target.value as string);
+                            }}
+                          >
+                            {forOptionHtml}
+                          </AphSelect>
+                        </div>
+                      </Grid>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>&nbsp;</h6>
                         <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                         {errorState.tobeTakenErr && (
                           <FormHelperText
@@ -1565,8 +1898,10 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Time of the Day</h6>
-                        <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                        <h6>In the</h6>
+                        <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
+                          {daySlotsHtml}
+                        </div>
                         {errorState.daySlotErr && (
                           <FormHelperText
                             className={classes.helpText}
@@ -1578,10 +1913,11 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Instructions (if any)</h6>
+                        <h6>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
-                            placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
+                          multiline
+                            placeholder="Type here..."
                             value={medicineInstruction}
                             onChange={(event: any) => {
                               setMedicineInstruction(event.target.value);
@@ -1591,6 +1927,8 @@ export const MedicinePrescription: React.FC = () => {
                       </Grid>
                     </Grid>
                   </div>
+                
+                  </Scrollbars>
                 </div>
                 <div className={classes.dialogActions}>
                   <AphButton

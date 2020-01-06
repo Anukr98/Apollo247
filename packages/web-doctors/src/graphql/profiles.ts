@@ -276,6 +276,10 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
         medicineToBeTaken
         medicineName
         id
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
       otherInstructions {
@@ -340,6 +344,10 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
         medicineToBeTaken
         medicineName
         id
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
       otherInstructions {
@@ -484,6 +492,10 @@ export const GET_CASESHEET_JRD = gql`
           medicineTimings
           medicineUnit
           medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
         }
         otherInstructions {
           instruction
@@ -585,6 +597,10 @@ export const GET_CASESHEET_JRD = gql`
             medicineTimings
             medicineInstructions
             medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
           }
           otherInstructions {
             instruction
@@ -717,6 +733,10 @@ export const GET_CASESHEET = gql`
           medicineTimings
           medicineUnit
           medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
         }
         otherInstructions {
           instruction
@@ -774,6 +794,10 @@ export const GET_CASESHEET = gql`
             medicineTimings
             medicineInstructions
             medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
           }
           otherInstructions {
             instruction
@@ -798,6 +822,10 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
     getDoctorFavouriteMedicineList {
       medicineList {
         medicineConsumptionDurationInDays
+        medicineConsumptionDuration
+        medicineConsumptionDurationUnit
+        medicineFormTypes
+        medicineFrequency
         medicineDosage
         medicineUnit
         medicineInstructions
@@ -805,6 +833,7 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineToBeTaken
         medicineName
         id
+        externalId
       }
     }
   }
@@ -1006,6 +1035,10 @@ export const MODIFY_CASESHEET = gql`
         medicineTimings
         medicineUnit
         medicineInstructions
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
       otherInstructions {

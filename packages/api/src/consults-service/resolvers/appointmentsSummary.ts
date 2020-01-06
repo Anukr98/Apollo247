@@ -14,6 +14,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { STATUS } from 'consults-service/entities';
+import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/resolvers/notifications';
 
 export const appointmentsSummaryTypeDefs = gql`
   type summaryResult {
@@ -69,22 +70,25 @@ const appointmentsSummary: Resolver<
         }
         //new fields
         const JDDetails = await consultQueueRepo.findByAppointmentId(appt.id);
-        if (!JDDetails) {
-          console.log(2222);
-          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-        }
+        // if (!JDDetails) {
+        //   console.log(2222);
+        //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        // }
         console.log('JDDetails==', JDDetails);
-        const JDPhone = await doctorRepo.getDoctorProfileData(JDDetails.doctorId);
-        if (!JDPhone) {
-          console.log(333333);
-          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        let JDPhone;
+        if (JDDetails) {
+          JDPhone = await doctorRepo.getDoctorProfileData(JDDetails.doctorId);
+          // if (!JDPhone) {
+          //   console.log(333333);
+          //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+          // }
+          // console.log('JDPhone==', JDPhone.mobileNumber);
         }
-        console.log('JDPhone==', JDPhone.mobileNumber);
         const callDetails = await appointmentCallDetailsRepo.findByAppointmentId(appt.id);
-        if (!callDetails) {
-          console.log(444444);
-          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-        }
+        // if (!callDetails) {
+        //   console.log(444444);
+        //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        // }
         console.log('callDetails==', callDetails);
         const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(appt.id);
         console.log('rescheduleDetails==:::::', rescheduleDetails);
@@ -93,10 +97,10 @@ const appointmentsSummary: Resolver<
           addMilliseconds(appt.appointmentDateTime, 19800000),
           'yyyy-MM-dd HH:mm'
         );
-        const bookingDateTime = format(
-          addMilliseconds(appt.bookingDate, 19800000),
-          'yyyy-MM-dd HH:mm'
-        );
+        // const bookingDateTime = format(
+        //   addMilliseconds(appt.bookingDate, 19800000),
+        //   'yyyy-MM-dd HH:mm'
+        // );
         const followupCount = await apptRepo.followUpBookedCount(appt.id);
         let followUpBooked = false,
           prescriptionIssued = false,
@@ -114,6 +118,40 @@ const appointmentsSummary: Resolver<
         }
         // console.log('appointment details==', appt);
         // console.log('appointment id==', appt.id);
+        const callDetailsStartTime =
+          callDetails && callDetails.startTime
+            ? format(addMilliseconds(callDetails.startTime, 19800000), 'yyyy-MM-dd HH:mm')
+            : '';
+        const callDetailsEndTime =
+          callDetails && callDetails.endTime
+            ? format(addMilliseconds(callDetails.endTime, 19800000), 'yyyy-MM-dd HH:mm')
+            : '';
+        const numberOfCallsBySD = await appointmentCallDetailsRepo.findSeniorAppointments(appt.id);
+        const numberOfCallsByJD = await appointmentCallDetailsRepo.findJuniorAppointments(appt.id);
+        const numberOfAudioCallsBySD = [];
+        const numberOfVideoCallsBySD = [];
+        const numberOfAudioCallsByJD = [];
+        const numberOfVideoCallsByJD = [];
+        if (numberOfCallsBySD) {
+          numberOfCallsBySD.forEach((callDetails) => {
+            if (callDetails.callType === APPT_CALL_TYPE.AUDIO) {
+              numberOfAudioCallsBySD.push(callDetails);
+            }
+            if (callDetails.callType === APPT_CALL_TYPE.VIDEO) {
+              numberOfVideoCallsBySD.push(callDetails);
+            }
+          });
+        }
+        if (numberOfCallsByJD) {
+          numberOfCallsByJD.forEach((callDetails) => {
+            if (callDetails.callType === APPT_CALL_TYPE.AUDIO) {
+              numberOfAudioCallsByJD.push(callDetails);
+            }
+            if (callDetails.callType === APPT_CALL_TYPE.VIDEO) {
+              numberOfVideoCallsByJD.push(callDetails);
+            }
+          });
+        }
         row1 +=
           serialNo +
           '\t' +
@@ -137,7 +175,7 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          JDPhone.mobileNumber +
+          (JDPhone ? (JDPhone.mobileNumber ? JDPhone.mobileNumber : '') : '') +
           '\t' +
           doctorDetails.mobileNumber +
           '\t' +
@@ -153,53 +191,77 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          'NA' +
-          '\t' +
-          'NA' +
-          '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
-            ? callDetails.startTime
+          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR
+            ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
-            ? callDetails.endTime
+          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR
+            ? callDetailsEndTime
             : '') +
           '\t' +
-          'NA' +
-          '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
-            ? callDetails.startTime
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails.callType == APPT_CALL_TYPE.AUDIO
+            ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
-            ? callDetails.endTime
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails.callType == APPT_CALL_TYPE.AUDIO
+            ? callDetailsEndTime
             : '') +
           '\t' +
-          'NA' +
+          numberOfAudioCallsBySD.length +
           '\t' +
-          'NA' +
-          '\t' +
-          'NA' +
-          '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
-            ? callDetails.startTime
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails.callType == APPT_CALL_TYPE.VIDEO
+            ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
-            ? callDetails.endTime
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails.callType == APPT_CALL_TYPE.VIDEO
+            ? callDetailsEndTime
             : '') +
           '\t' +
-          'NA' +
+          numberOfVideoCallsBySD.length +
           '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
-            ? callDetails.startTime
+          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR
+            ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
-            ? callDetails.endTime
+          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR
+            ? callDetailsEndTime
             : '') +
           '\t' +
-          'NA' +
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails.callType == APPT_CALL_TYPE.AUDIO
+            ? callDetailsStartTime
+            : '') +
+          '\t' +
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails.callType == APPT_CALL_TYPE.AUDIO
+            ? callDetailsEndTime
+            : '') +
+          '\t' +
+          numberOfAudioCallsByJD.length +
+          '\t' +
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails.callType == APPT_CALL_TYPE.VIDEO
+            ? callDetailsStartTime
+            : '') +
+          '\t' +
+          (callDetails &&
+          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails.callType == APPT_CALL_TYPE.VIDEO
+            ? callDetailsEndTime
+            : '') +
+          '\t' +
+          numberOfVideoCallsByJD.length +
           '\t' +
           appt.isFollowUp +
           '\t' +
@@ -207,11 +269,11 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          (callDetails.callType == 'AUDIO' ? callDetails.id : '') +
+          (callDetails && callDetails.callType == APPT_CALL_TYPE.AUDIO ? callDetails.id : '') +
           '\t' +
-          (callDetails.callType == 'VIDEO' ? callDetails.id : '') +
+          (callDetails && callDetails.callType == APPT_CALL_TYPE.VIDEO ? callDetails.id : '') +
           '\t' +
-          'NA' +
+          caseSheetId +
           '\t' +
           caseSheetId +
           '\t' +

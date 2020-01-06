@@ -227,6 +227,38 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const dosageFrequency = [
+    {
+      id: 'ONCE_A_DAY',
+      value: 'Once a day',
+      selected: false,
+    },
+    {
+      id: 'TWICE_A_DAY',
+      value: 'Twice a day',
+      selected: false,
+    },
+    {
+      id: 'THRICE_A_DAY',
+      value: 'Thrice a day',
+      selected: false,
+    },
+    {
+      id: 'FOUR_TIMES_A_DAY',
+      value: 'Four times a day',
+      selected: false,
+    },
+    {
+      id: 'FIVE_TIMES_A_DAY',
+      value: 'Five times a day',
+      selected: false,
+    },
+    {
+      id: 'AS_NEEDED',
+      value: 'As Needed',
+      selected: false,
+    },
+  ];
   const client = useApolloClient();
 
   const getAge = (date: string) => {
@@ -273,7 +305,14 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         setLoader(false);
       });
   }, [callGetCasesheet]);
-
+  const toBeTaken = (value: any) => {
+    const tobeTakenObjectList: any = [];
+    value.map((slot: any) => {
+      const tobeTakenObject = slot.replace('_', ' ').toLowerCase();
+      tobeTakenObjectList.push(tobeTakenObject);
+    });
+    return tobeTakenObjectList;
+  };
   const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
       let timing = _toLower(medicineTiming);
@@ -314,30 +353,52 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
         index: number
       ) => {
-        const unitHtml =
-          prescription!.medicineUnit && prescription!.medicineUnit !== 'NA'
-            ? prescription.medicineUnit.toLowerCase()
-            : 'times';
-        const dosageCount =
-          prescription!.medicineTimings!.length > 0 && prescription!.medicineDosage
-            ? parseFloat(prescription!.medicineDosage) * prescription!.medicineTimings!.length
-            : prescription!.medicineDosage;
-        const duration = `for ${Number(prescription.medicineConsumptionDurationInDays)} days`;
+        const duration =
+          prescription.medicineConsumptionDurationInDays &&
+          ` for ${Number(prescription.medicineConsumptionDurationInDays)} ${
+            prescription.medicineConsumptionDurationUnit
+              ? prescription.medicineConsumptionDurationUnit.toLowerCase()
+              : 'day(s)'
+          } `;
+
+        const whenString =
+          prescription!.medicineToBeTaken!.length > 0
+            ? toBeTaken(prescription!.medicineToBeTaken)
+                .join(', ')
+                .toLowerCase()
+            : '';
+        const unitHtmls = prescription!.medicineUnit!.toLowerCase();
+        const timesString =
+          prescription!.medicineTimings!.length > 0
+            ? 'in the ' +
+              prescription!
+                .medicineTimings!.join(' , ')
+                .toLowerCase()
+                .replace('_', ' ')
+            : '';
+        const dosageCount = prescription!.medicineDosage;
+        const takeApplyHtml = prescription!.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
+        const unitHtml = `${unitHtmls}`;
+
         return (
           <li>
             {prescription.medicineName}
             <br />
             <span>
-              {`${dosageCount} ${unitHtml} a day ${
-                prescription.medicineTimings && prescription.medicineTimings.length > 0
-                  ? `(${prescription.medicineTimings.map((timing: any) => timing)})`
-                  : ''
-              } ${duration}${
-                prescription.medicineToBeTaken && prescription.medicineToBeTaken.length > 0
-                  ? `; ${prescription.medicineToBeTaken.map((timing: any) =>
-                      convertMedicineTobeTaken(timing)
-                    )}`
-                  : ''
+              {`${takeApplyHtml} ${
+                dosageCount && prescription!.medicineFormTypes === 'OTHERS' ? dosageCount : ''
+              } ${unitHtml} ${
+                prescription!.medicineFrequency
+                  ? prescription!.medicineFrequency
+                      .split('_')
+                      .join(' ')
+                      .toLowerCase()
+                  : dosageFrequency[0].id
+                      .split('_')
+                      .join(' ')
+                      .toLowerCase()
+              } ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                timesString.length > 0 ? timesString : ''
               }`}
             </span>
             {prescription.medicineInstructions &&

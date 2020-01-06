@@ -7,6 +7,7 @@ import {
   DiagnosticOrders,
   DiagnosticOrderLineItems,
   DIAGNOSTIC_ORDER_STATUS,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   Gender,
   DiagnosticOrdersStatus,
 } from 'profiles-service/entities';
@@ -22,6 +23,10 @@ import {
 } from 'types/diagnosticOrderTypes';
 import { format } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import {
+  sendDiagnosticOrderStatusNotification,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const saveDiagnosticOrderTypeDefs = gql`
   enum DIAGNOSTIC_ORDER_STATUS {
@@ -29,6 +34,13 @@ export const saveDiagnosticOrderTypeDefs = gql`
     PICKUP_CONFIRMED
     ORDER_FAILED
     ORDER_CANCELLED
+    PAYMENT_PENDING
+    ORDER_PLACED
+  }
+
+  enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
+    COD
+    ONLINE_PAYMENT
   }
 
   input DiagnosticOrderInput {
@@ -50,6 +62,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     centerCity: String!
     centerState: String!
     centerLocality: String!
+    paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     items: [DiagnosticLineItem]
   }
 
@@ -95,6 +108,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     orderType: String!
     displayId: Int!
     createdDate: DateTime!
+    paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     diagnosticOrderLineItems: [DiagnosticOrderLineItems]
     diagnosticOrdersStatus: [DiagnosticOrdersStatus]
   }
@@ -141,6 +155,7 @@ type DiagnosticOrderInput = {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE;
   items: [DiagnosticLineItem];
 };
 
@@ -221,7 +236,20 @@ const SaveDiagnosticOrder: Resolver<
     centerName: diagnosticOrderInput.centerName,
     centerLocality: diagnosticOrderInput.centerLocality,
     centerState: diagnosticOrderInput.centerState,
+    orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   };
+
+  if (
+    diagnosticOrderInput.paymentType &&
+    diagnosticOrderInput.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+  ) {
+    diagnosticOrderattrs.orderStatus =
+      diagnosticOrderInput.centerCode != ''
+        ? DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED
+        : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED;
+  } else {
+    diagnosticOrderattrs.orderStatus = DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING;
+  }
 
   const diagnosticOrdersRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
   const diagnosticRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
@@ -275,14 +303,31 @@ const SaveDiagnosticOrder: Resolver<
     const diagnosticDate = new Date(diagnosticOrderInput.diagnosticDate);
     //console.log(diagnosticDate, format(diagnosticDate, 'dd-MMM-yyyy hh:mm'), 'diagnostic date');
     //console.log(orderLineItems, 'line items');
+
+    //return the response if payment type is not COD
+
+    if (
+      diagnosticOrderInput.paymentType &&
+      diagnosticOrderInput.paymentType != DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+    ) {
+      return {
+        errorCode,
+        errorMessage,
+        orderId,
+        displayId,
+      };
+    }
+
     let patientDob = '10-Jan-1989';
     if (patientDetails.dateOfBirth != null) {
       patientDob = format(patientDetails.dateOfBirth, 'dd-MMM-yyyy');
     }
+
     let visitType = 'Home Collection';
     if (diagnosticOrderInput.centerCode != '') {
       visitType = 'Center Visit';
     }
+
     let patientGender = Gender.MALE;
     if (patientDetails.gender != null) {
       patientGender = patientDetails.gender;
@@ -533,11 +578,18 @@ const SaveDiagnosticOrder: Resolver<
         );
         const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
           diagnosticOrders: saveOrder,
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          orderStatus: diagnosticOrderattrs.orderStatus,
           statusDate: new Date(),
           hideStatus: false,
         };
         await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
+
+        //send order out for delivery notification
+        sendDiagnosticOrderStatusNotification(
+          NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+          saveOrder,
+          profilesDb
+        );
       }
     } else {
       await diagnosticOrdersRepo.updateDiagnosticOrder(
@@ -553,6 +605,13 @@ const SaveDiagnosticOrder: Resolver<
         hideStatus: false,
       };
       await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
+
+      //send order out for delivery notification
+      sendDiagnosticOrderStatusNotification(
+        NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+        saveOrder,
+        profilesDb
+      );
     }
   }
   return {
