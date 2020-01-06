@@ -302,11 +302,6 @@ const SaveDiagnosticOrder: Resolver<
 
     //return the response if payment type is not COD
 
-    console.log('==============', diagnosticOrderInput.paymentType);
-    console.log(
-      diagnosticOrderInput.paymentType &&
-        diagnosticOrderInput.paymentType != DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
-    );
     if (
       diagnosticOrderInput.paymentType &&
       diagnosticOrderInput.paymentType != DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
