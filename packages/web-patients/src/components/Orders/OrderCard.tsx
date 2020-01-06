@@ -257,7 +257,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               orderListData.length > 0 &&
               orderListData.map(
                 (orderInfo) =>
-                  orderInfo && (
+                  orderInfo && orderInfo.medicineOrdersStatus && getOrderStatus(orderInfo.medicineOrdersStatus) && (
                     <div
                       key={orderInfo.id}
                       className={classes.root}
