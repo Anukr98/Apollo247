@@ -58,6 +58,9 @@ import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
+import { CalendarView } from '@aph/mobile-doctors/src/components/ui/CalendarView';
+import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/ui/ReSchedulePopUp';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 //import ImagePicker from 'react-native-image-picker';
 
 const { height, width } = Dimensions.get('window');
@@ -120,7 +123,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-
+  const [showLoading, setShowLoading] = useState<boolean>(false);
   //console.log('hihihi', Appintmentdatetime);
   const [dropdownShow, setDropdownShow] = useState(false);
   const channel = props.navigation.getParam('AppId');
@@ -136,7 +139,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
-
+  const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(true);
   const [apiKey, setapiKey] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
@@ -2003,9 +2006,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               optionText: 'Reschedule Consult',
               onPress: () => {
                 setDropdownShow(false);
-                props.navigation.push(AppRoutes.ReschduleConsult, {
-                  AppointmentId: props.navigation.getParam('AppId'),
-                });
+                setDisplayReSchedulePopUp(true);
+                // props.navigation.push(AppRoutes.ReschduleConsult, {
+                //   AppointmentId: props.navigation.getParam('AppId'),
+                // });
               },
             },
           ]}
@@ -2018,11 +2022,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar hidden={hideStatusBar} />
       {showHeaderView()}
+      {displayReSchedulePopUp && (
+        <ReSchedulePopUp
+          doctorId={doctorId}
+          onClose={() => setDisplayReSchedulePopUp(false)}
+          date={moment()
+            .add(1, 'day')
+            .toString()}
+          loading={(val) => setShowLoading(val)}
+        />
+      )}
       {dropdownShow ? renderDropdown() : null}
       {renderTabPage()}
       {showPopUp && CallPopUp()}
       {isAudioCall && AudioCall()}
       {isCall && VideoCall()}
+      {showLoading && <Spinner />}
     </SafeAreaView>
   );
 };

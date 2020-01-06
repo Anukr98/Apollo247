@@ -1,5 +1,5 @@
 import moment from 'moment';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Calendar, DateObject, DayComponentProps } from 'react-native-calendars';
 import { theme } from '../../theme/theme';
@@ -18,17 +18,25 @@ interface CalendarRefType extends Calendar {
 export interface CalendarViewProps {
   date: Date;
   onPressDate: (date: Date) => void;
-  onWeekChanged?: (date: Date) => void;
+  // onWeekChanged?: (date: Date) => void;
   onMonthChanged?: (date: Date) => void;
   calendarType?: CALENDAR_TYPE;
   onCalendarTypeChanged?: (type: CALENDAR_TYPE) => void;
   minDate?: Date;
+  showWeekView?: boolean;
+  styles?: StyleProp<ViewStyle>;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = (props) => {
   const calendarRef = useRef<CalendarRefType | null>(null);
   const weekViewRef = useRef<{ getPreviousWeek: () => void; getNextWeek: () => void } | null>(null);
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+  const [calendarDate, setCalendarDate] = useState<Date>(props.date || new Date());
+
+  useEffect(() => {
+    if (props.date) {
+      setCalendarDate(props.date);
+    }
+  }, [props.date]);
 
   const renderCalendarMothYearAndControls = () => {
     return (
@@ -44,6 +52,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         }}
       >
         <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             props.calendarType == CALENDAR_TYPE.WEEK
               ? weekViewRef.current && weekViewRef.current.getPreviousWeek()
@@ -61,32 +70,39 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           <Text
             style={{
               ...theme.fonts.IBMPlexSansMedium(14),
-              color: '#02475b',
+              color: theme.colors.LIGHT_BLUE,
             }}
           >
-            {moment(calendarDate).format('MMMM')}
+            {moment(calendarDate).format('MMM YYYY')}
           </Text>
-          {/* {props.calendarType == CALENDAR_TYPE.WEEK ? (
-            <TouchableOpacity
-              onPress={() => {
-                setCalendarDate(props.date);
-                props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.MONTH);
-              }}
-            >
-              {/* <DropdownBlueUp /> */}
-          {/* </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={() => {
-                setCalendarDate(props.date);
-                props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.WEEK);
-              }}
-            >
-              <DropdownBlueDown />
-            </TouchableOpacity>
-          )} */}
+          {props.showWeekView && (
+            <>
+              {props.calendarType == CALENDAR_TYPE.WEEK ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setCalendarDate(props.date);
+                    props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.MONTH);
+                  }}
+                >
+                  <DropdownBlueDown />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setCalendarDate(props.date);
+                    props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.WEEK);
+                  }}
+                >
+                  <DropdownBlueUp />
+                </TouchableOpacity>
+              )}
+            </>
+          )}
         </View>
         <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             props.calendarType == CALENDAR_TYPE.WEEK
               ? weekViewRef.current && weekViewRef.current.getNextWeek()
@@ -130,20 +146,36 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
   const renderWeekCalendar = () => {
     return (
       <WeekView
-        ref={(ref) => {
+        ref={(ref: any) => {
           weekViewRef.current = ref;
         }}
-        date={props.date}
+        date={calendarDate}
         minDate={props.minDate}
-        onTapDate={(date: Date) => {
-          props.onPressDate(moment(date).toDate());
-          setCalendarDate(moment(date).toDate());
+        onTapDate={(selectedDate: Date) => {
+          console.log(selectedDate, 'onTapDate');
+          const isDiabled = props.minDate
+            ? moment(props.minDate).format('YYYY-MM-DD') > moment(selectedDate).format('YYYY-MM-DD')
+            : false;
+          if (!isDiabled) {
+            props.onPressDate(
+              moment(selectedDate)
+                .clone()
+                .toDate()
+            );
+            setCalendarDate(
+              moment(selectedDate)
+                .clone()
+                .toDate()
+            );
+          }
         }}
-        onWeekChanged={(date) => {
-          const weekDate = moment(date).toDate();
-          setCalendarDate(weekDate);
-          props.onWeekChanged && props.onWeekChanged(weekDate);
-        }}
+        // onWeekChanged={(date) => {
+        //   const weekDate = moment(date)
+        //     .clone()
+        //     .toDate();
+        //   setCalendarDate(weekDate);
+        //   props.onWeekChanged && props.onWeekChanged(weekDate);
+        // }}
       />
     );
   };
@@ -162,17 +194,17 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       borderRadius: 18,
       backgroundColor:
         day.state === 'disabled'
-          ? 'transparent'
+          ? theme.colors.CLEAR
           : isHighlightedDate
           ? theme.colors.APP_GREEN
-          : 'transparent',
+          : theme.colors.CLEAR,
       alignItems: 'center',
       justifyContent: 'center',
     };
     const dayTextStyle: StyleProp<TextStyle> =
       day.state === 'disabled'
         ? {
-            backgroundColor: 'transparent',
+            backgroundColor: theme.colors.CLEAR,
             ...theme.fonts.IBMPlexSansSemiBold(14),
             color: 'rgba(128,128,128, 0.3)',
           }
@@ -186,17 +218,18 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         : {
             ...theme.fonts.IBMPlexSansSemiBold(14),
             color: theme.colors.APP_GREEN,
-            backgroundColor: 'transparent',
+            backgroundColor: theme.colors.CLEAR,
           };
     return (
       <TouchableOpacity
+        activeOpacity={1}
         onPress={() => {
           if (day.state !== 'disabled') {
             props.onPressDate(dayDate);
             setCalendarDate(dayDate);
           }
         }}
-        activeOpacity={day.state === 'disabled' ? 1 : 0}
+        // activeOpacity={day.state === 'disabled' ? 1 : 0}
         style={dayViewStyle}
       >
         <Text style={dayTextStyle}>{dayDate.getDate()}</Text>
@@ -233,7 +266,6 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           style={{
             paddingBottom: 5,
             backgroundColor: theme.colors.CARD_BG,
-            borderRadius: 10,
             // marginHorizontal: 0
             // ...theme.viewStyles.cardContainer,
           }}
@@ -261,15 +293,21 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
 
   return (
     <View
-      style={{
-        ...theme.viewStyles.cardContainer,
-        backgroundColor: theme.colors.CARD_BG,
-        borderRadius: 10,
-      }}
+      style={[
+        {
+          ...theme.viewStyles.cardContainer,
+          backgroundColor: theme.colors.CARD_BG,
+        },
+        props.styles,
+      ]}
     >
       {renderCalendarMothYearAndControls()}
       {renderWeekDays()}
       {props.calendarType == CALENDAR_TYPE.WEEK ? renderWeekCalendar() : renderMonthCalendar()}
     </View>
   );
+};
+
+CalendarView.defaultProps = {
+  showWeekView: true,
 };
