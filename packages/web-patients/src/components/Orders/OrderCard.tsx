@@ -112,6 +112,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       lineHeight: '20px',
     },
+    orderStatusRejected: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: '#890000',
+      lineHeight: '20px',
+    },
     statusInfo: {
       fontSize: 12,
       fontWeight: 500,
@@ -237,69 +243,79 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-
   const getSlider = (status: (statusDetails | null)[]) => {
     const sliderStatus = getOrderStatus(status);
     switch (sliderStatus) {
       case 'Order Placed':
-        return <AphTrackSlider
-          color="primary"
-          defaultValue={80}
-          getAriaValueText={valuetext}
-          min={0}
-          max={360}
-          valueLabelDisplay="off"
-        />
+        return (
+          <AphTrackSlider
+            color="primary"
+            defaultValue={80}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
       case 'Order Delivered':
-        return <AphDeliveredSlider
-          color="primary"
-          defaultValue={360}
-          getAriaValueText={valuetext}
-          min={0}
-          max={360}
-          valueLabelDisplay="off"
-        />
+        return (
+          <AphDeliveredSlider
+            color="primary"
+            defaultValue={360}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
       case 'Return Accepted':
-        return <AphTrackSlider
-          color="primary"
-          getAriaValueText={valuetext}
-          disabled
-          min={0}
-          max={360}
-          valueLabelDisplay="off"
-        />;
+        return (
+          <AphTrackSlider
+            color="primary"
+            getAriaValueText={valuetext}
+            disabled
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
       case 'Order Cancelled':
-        return <AphTrackSlider
-          color="primary"
-          getAriaValueText={valuetext}
-          disabled
-          min={0}
-          max={360}
-          valueLabelDisplay="off"
-        />;
+        return (
+          <AphTrackSlider
+            color="primary"
+            getAriaValueText={valuetext}
+            disabled
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
       case 'Order Verified':
-        return <AphTrackSlider
-          color="primary"
-          defaultValue={100}
-          getAriaValueText={valuetext}
-          min={0}
-          max={360}
-          valueLabelDisplay="off"
-        />;
+        return (
+          <AphTrackSlider
+            color="primary"
+            defaultValue={100}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
       case 'Order Initiated':
-        return <AphTrackSlider
-          color="primary"
-          defaultValue={60}
-          getAriaValueText={valuetext}
-          min={0}
-          max={360}
-          valueLabelDisplay="off"
-        />;
+        return (
+          <AphTrackSlider
+            color="primary"
+            defaultValue={60}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
       default:
         return null;
-
     }
-  }
+  };
 
   if (
     data &&
@@ -322,7 +338,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               orderListData.length > 0 &&
               orderListData.map(
                 (orderInfo) =>
-                  orderInfo && orderInfo.medicineOrdersStatus && getOrderStatus(orderInfo.medicineOrdersStatus) && (
+                  orderInfo &&
+                  orderInfo.medicineOrdersStatus &&
+                  getOrderStatus(orderInfo.medicineOrdersStatus) && (
                     <div
                       key={orderInfo.id}
                       className={classes.root}
@@ -345,7 +363,13 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                       </div>
                       <div className={classes.orderStatusGroup}>
                         {orderInfo.medicineOrdersStatus && (
-                          <div className={classes.orderStatus}>
+                          <div
+                            className={
+                              getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
+                                ? `${classes.orderStatusRejected}`
+                                : `${classes.orderStatus}`
+                            }
+                          >
                             {getOrderStatus(orderInfo.medicineOrdersStatus)}
                           </div>
                         )}
