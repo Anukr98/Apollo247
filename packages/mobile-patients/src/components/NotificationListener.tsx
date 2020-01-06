@@ -66,7 +66,8 @@ type CustomNotificationType =
   | 'Reminder_Appointment_15'
   | 'Reminder_Appointment_Casesheet_15'
   | 'Diagnostic_Order_Success'
-  | 'Diagnostic_Order_Payment_Failed';
+  | 'Diagnostic_Order_Payment_Failed'
+  | 'Registration_Success';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -268,6 +269,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Diagnostic_Order_Payment_Failed':
         {
           showTestOrderStatusAlert(data, 'Diagnostic_Order_Payment_Failed');
+        }
+        break;
+
+      case 'Registration_Success':
+        {
+          showAphAlert!({
+            title: `Hi,`,
+            description: data.content,
+          });
         }
         break;
 
