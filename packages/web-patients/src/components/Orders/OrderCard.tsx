@@ -20,6 +20,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { SignIn } from 'components/SignIn';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -159,33 +160,29 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   useEffect(() => {
     if (!orderList) {
       setIsLoading(true);
-      currentPatient &&
-        orderListMutation()
-          .then((res) => {
-            if (
-              res &&
-              res.data &&
-              res.data.getMedicineOrdersList &&
-              res.data.getMedicineOrdersList.MedicineOrdersList &&
-              res.data.getMedicineOrdersList.MedicineOrdersList.length > 0
-            ) {
-              setOrderList(res.data.getMedicineOrdersList.MedicineOrdersList);
-              if (
-                res.data.getMedicineOrdersList.MedicineOrdersList! &&
-                res.data.getMedicineOrdersList.MedicineOrdersList[0]! &&
-                res.data.getMedicineOrdersList.MedicineOrdersList[0]!.orderAutoId!
-              ) {
-                props.setOrderAutoId(
-                  res.data.getMedicineOrdersList.MedicineOrdersList[0]!.orderAutoId!
-                );
-              }
-              setIsLoading(false);
+      orderListMutation()
+        .then((res) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getMedicineOrdersList &&
+            res.data.getMedicineOrdersList.MedicineOrdersList &&
+            res.data.getMedicineOrdersList.MedicineOrdersList.length > 0
+          ) {
+            const orderListData = res.data.getMedicineOrdersList.MedicineOrdersList;
+
+            setOrderList(orderListData);
+            const firstOrderInfo = orderListData[0];
+            if (firstOrderInfo && firstOrderInfo.orderAutoId) {
+              props.setOrderAutoId(firstOrderInfo.orderAutoId);
             }
-          })
-          .catch((e) => {
             setIsLoading(false);
-            console.log(e);
-          });
+          }
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log(e);
+        });
     }
   }, [orderList]);
 
@@ -239,20 +236,29 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         return 'Return Initiated';
       case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
         return 'Return Accepted';
+      default:
+        return 'Order Initiated';
     }
   };
 
   const getOrderStatus = (status: (statusDetails | null)[]) => {
     const sortedList = getSortedstatusList(status);
     if (sortedList && sortedList.length > 0) {
-      return getStatus(sortedList[0]!.orderStatus!);
+      const firstSortedData = sortedList[0];
+      if (firstSortedData && firstSortedData.orderStatus) {
+        return getStatus(firstSortedData.orderStatus);
+      }
     }
   };
 
   const getOrderDeliveryDate = (status: (statusDetails | null)[]) => {
     const sortedList = getSortedstatusList(status);
     if (sortedList && sortedList.length > 0) {
-      return sortedList[0]!.statusDate!;
+      const firstSortedData = sortedList[0];
+      return (
+        firstSortedData &&
+        moment(new Date(firstSortedData.statusDate)).format('DD MMM YYYY ,hh:mm a')
+      );
     }
   };
 
@@ -296,13 +302,12 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                       />
                     </div>
                     <div className={classes.orderStatusGroup}>
-                      <div className={classes.orderStatus}>
-                        {orderInfo.medicineOrdersStatus &&
-                          getOrderStatus(orderInfo.medicineOrdersStatus)}
-                      </div>
+                      {orderInfo.medicineOrdersStatus && (
+                        <div className={classes.orderStatus}>
+                          {getOrderStatus(orderInfo.medicineOrdersStatus)}
+                        </div>
+                      )}
                       <div className={classes.statusInfo}>
-                        {/* 9 Aug 19, 12:00 pm
-                         */}
                         {orderInfo.medicineOrdersStatus &&
                           getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
                       </div>
@@ -311,147 +316,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                 )
             )
           )}
-          {/* <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphDelayedSlider
-                color="primary"
-                defaultValue={200}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>Order Delayed</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphDeliveredSlider
-                color="primary"
-                defaultValue={360}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>Order Delivered</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                getAriaValueText={valuetext}
-                disabled
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={`${classes.orderStatus} ${classes.orderError}`}>Return Rejected</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={`${classes.root} ${classes.returnAccepted}`}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                getAriaValueText={valuetext}
-                disabled
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={`${classes.orderStatus}`}>Return Accepted</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                getAriaValueText={valuetext}
-                disabled
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={`${classes.orderStatus} ${classes.orderError}`}>Order Canceled</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-         */}
         </div>
       </Scrollbars>
     </div>

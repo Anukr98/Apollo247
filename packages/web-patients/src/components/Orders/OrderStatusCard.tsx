@@ -214,40 +214,6 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                 )
             )
           )}
-          {/* <div className={classes.cardGroup}>
-            <div
-              className={`${classes.statusCard} ${classes.orderStatusActive} ${classes.orderStatusCompleted}`}
-            >
-              Order Placed
-              <div className={classes.statusInfo}>
-                <span>9 Aug 2019</span>
-                <span>12:00 pm</span>
-              </div>
-            </div>
-          </div>
-          <div className={classes.cardGroup}>
-            <div
-              className={`${classes.statusCard} ${classes.orderStatusActive}`}
-            >
-              Order Verified
-              <div className={classes.statusInfo}>
-                <span>9 Aug 2019</span>
-                <span>12:33 pm</span>
-              </div>
-            </div>
-          </div>
-          <div className={classes.cardGroup}>
-            <div className={`${classes.statusCard}`}>Out For Delivery</div>
-          </div>
-          <div className={classes.cardGroup}>
-            <div className={`${classes.statusCard}`}>
-              Order Delivered
-              <div className={classes.statusInfo}>
-                <span>To Be Delivered Within — 2hrs</span>
-                <span></span>
-              </div>
-            </div>
-          </div> */}
         </div>
       </Grid>
     </Grid>
