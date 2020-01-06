@@ -36,7 +36,8 @@ import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -125,6 +126,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [backPressCount, setbackPressCount] = useState<number>(0);
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -411,17 +413,26 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('gotIt', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
                   setTimeout(() => {
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [
-                          NavigationActions.navigate({
-                            routeName: AppRoutes.ConsultRoom,
-                          }),
-                        ],
-                      })
-                    );
+                    showAphAlert!({
+                      title: `Hi ${g(currentPatient, 'firstName') || ''},`,
+                      description:
+                        'Welcome to Apollo24X7. We’re glad you’re here!\nConsult online with our top Apollo doctors now!',
+                      unDismissable: true,
+                      onPressOk: () => {
+                        hideAphAlert!();
+                        props.navigation.dispatch(
+                          StackActions.reset({
+                            index: 0,
+                            key: null,
+                            actions: [
+                              NavigationActions.navigate({
+                                routeName: AppRoutes.ConsultRoom,
+                              }),
+                            ],
+                          })
+                        );
+                      },
+                    });
                   }, 500))
                 : null}
               {error
