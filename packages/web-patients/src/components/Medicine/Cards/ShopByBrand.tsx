@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '14px 12px',
       display: 'flex',
       alignItems: 'center',
+      maxHeight: 60,
     },
     cardIcon: {
       textAlign: 'center',
@@ -33,6 +34,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         margin: 'auto',
         maxWidth: '100%',
+        maxHeight: 60,
+        padding: 5,
       },
     },
   };
