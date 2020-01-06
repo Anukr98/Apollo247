@@ -5,6 +5,7 @@ import moment from 'moment';
 import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderPayments as payments,
 } from 'graphql/types/GetMedicineOrderDetails';
 import { CircularProgress } from '@material-ui/core';
 
@@ -106,8 +107,17 @@ type TrackOrdersProps = {
 
 export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
-  const orderStatus = props.orderDetailsData && props.orderDetailsData.medicineOrdersStatus;
+  const orderStatus =
+    props.orderDetailsData &&
+    props.orderDetailsData.medicineOrdersStatus &&
+    props.orderDetailsData.medicineOrdersStatus.length > 0 &&
+    props.orderDetailsData.medicineOrdersStatus[0];
   const orderItem = props.orderDetailsData && props.orderDetailsData.medicineOrderLineItems;
+  const orderPayment =
+    props.orderDetailsData &&
+    props.orderDetailsData.medicineOrderPayments &&
+    props.orderDetailsData.medicineOrderPayments.length > 0 &&
+    props.orderDetailsData.medicineOrderPayments[0];
 
   return props.isLoading ? (
     <CircularProgress />
@@ -121,9 +131,7 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
         <div className={classes.headRow}>
           <label>Date/Time</label>
           <span>
-            {orderStatus &&
-              orderStatus.length > 0 &&
-              moment(new Date(orderStatus[0]!.statusDate)).format('DD MMM YYYY ,hh:mm a')}
+            {moment(new Date(orderStatus && orderStatus.statusDate)).format('DD MMM YYYY ,hh:mm a')}
           </span>
         </div>
       </div>
@@ -147,8 +155,8 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
       </div>
       <div className={classes.deliveryPromise}>2 Hour Delivery Promise!</div>
       <div className={classes.totalPaid}>
-        <span>Total Paid — Online</span>
-        <span className={classes.totalPrice}>Rs. 316</span>
+        <span>{`${'Total Paid -'} ${orderPayment && orderPayment.paymentType}`}</span>
+        <span className={classes.totalPrice}>Rs.{orderPayment && orderPayment.amountPaid}</span>
       </div>
       <div className={classes.disclaimerText}>
         Disclaimer: Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo
