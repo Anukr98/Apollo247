@@ -1032,7 +1032,7 @@ export const MedicinePrescription: React.FC = () => {
                     ${whenString.length > 0 && whenString}`}
                   </h6>
                 </Paper>
-
+                {caseSheetEdit &&
                 <AphButton
                   variant="contained"
                   color="primary"
@@ -1040,7 +1040,8 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => updateMedicine(index)}
                 >
                   <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
+                </AphButton>}
+                {caseSheetEdit && 
                 <AphButton
                   variant="contained"
                   color="primary"
@@ -1048,7 +1049,7 @@ export const MedicinePrescription: React.FC = () => {
                   onClick={() => deletemedicine(index)}
                 >
                   <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
+                </AphButton>}
               </div>
             );
           })}
