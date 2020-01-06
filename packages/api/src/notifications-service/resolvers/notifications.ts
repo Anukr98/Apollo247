@@ -225,6 +225,7 @@ export async function sendCallsNotification(
       callType,
       appointmentCallId,
       doctorType,
+      content: notificationBody,
     },
   };
 
@@ -434,6 +435,7 @@ export async function sendNotification(
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }
@@ -454,6 +456,7 @@ export async function sendNotification(
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }
@@ -568,6 +571,7 @@ export async function sendReminderNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   } else if (
@@ -589,6 +593,7 @@ export async function sendReminderNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   } else if (
@@ -617,6 +622,7 @@ export async function sendReminderNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }

@@ -6548,6 +6548,18 @@
             "deprecationReason": null
           },
           {
+            "name": "paymentType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "DIAGNOSTIC_ORDER_PAYMENT_TYPE",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "diagnosticOrderLineItems",
             "description": null,
             "args": [],
@@ -6613,6 +6625,41 @@
           },
           {
             "name": "ORDER_CANCELLED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYMENT_PENDING",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ORDER_PLACED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "DIAGNOSTIC_ORDER_PAYMENT_TYPE",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "COD",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ONLINE_PAYMENT",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -22419,6 +22466,16 @@
                 "name": "String",
                 "ofType": null
               }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "paymentType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "DIAGNOSTIC_ORDER_PAYMENT_TYPE",
+              "ofType": null
             },
             "defaultValue": null
           },
