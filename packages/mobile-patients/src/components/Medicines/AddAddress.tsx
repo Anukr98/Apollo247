@@ -1,15 +1,27 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
+  CommonLogEvent,
+  DeviceHelper,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DELETE_PATIENT_ADDRESS,
   SAVE_PATIENT_ADDRESS,
   UPDATE_PATIENT_ADDRESS,
-  DELETE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  deletePatientAddress,
+  deletePatientAddressVariables,
+} from '@aph/mobile-patients/src/graphql/types/deletePatientAddress';
 import {
   PatientAddressInput,
   PATIENT_ADDRESS_TYPE,
@@ -19,6 +31,10 @@ import {
   savePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
+  updatePatientAddress,
+  updatePatientAddressVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import {
   getPlaceInfoByPincode,
   pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -27,104 +43,31 @@ import {
   g,
   handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
-  View,
   TouchableOpacity,
-  Alert,
+  View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  updatePatientAddress,
-  updatePatientAddressVariables,
-} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  CommonLogEvent,
-  DeviceHelper,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { Remove, RemoveIcon, More } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
-import {
-  deletePatientAddress,
-  deletePatientAddressVariables,
-} from '@aph/mobile-patients/src/graphql/types/deletePatientAddress';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
 const styles = StyleSheet.create({
-  placeholderTextStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 7,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  textStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-    paddingVertical: 8,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  textViewStyle: {
-    borderBottomWidth: 1,
-    borderColor: '#dddddd',
-    marginHorizontal: 16,
-  },
-  inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    width: '80%',
-    color: theme.colors.INPUT_TEXT,
-    paddingBottom: 4,
-  },
-  inputTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.INPUT_TEXT,
-    paddingRight: 6,
-    lineHeight: 28,
-    paddingTop: Platform.OS === 'ios' ? 0 : 6,
-    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
-  },
-  inputValidView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    paddingBottom: 0,
-  },
-  inputView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    paddingBottom: 0,
-  },
   buttonViewStyle: {
     width: '30%',
     backgroundColor: 'white',
@@ -140,10 +83,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface AddAddressProps extends NavigationScreenProps {
-  KeyName?: any;
-  DataAddress?: any;
-}
+export interface AddAddressProps
+  extends NavigationScreenProps<{
+    KeyName?: any;
+    DataAddress?: any;
+    addOnly?: boolean;
+  }> {}
 
 type addressOptions = {
   name: PATIENT_ADDRESS_TYPE;
@@ -177,23 +122,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
-  const addOnly: boolean = props.navigation.state.params
-    ? props.navigation.state.params.addOnly
-    : false;
+  const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
-  const { addAddress: addA, setDeliveryAddressId: setD } = useDiagnosticsCart();
-  const { getPatientApiCall } = useAuth();
+  const {
+    addAddress: addDiagnosticAddress,
+    setDeliveryAddressId: setDiagnosticAddressId,
+  } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const { locationDetails } = useAppCommonData();
-
-  useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
 
   const isChanged =
     addressData &&
@@ -218,7 +156,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             console.log(position, 'position');
-            const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+            // const searchstring = position.coords.latitude + ',' + position.coords.longitude;
             const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
             //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
             Axios.get(url)
@@ -252,7 +190,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
                     setpincode(pincode || '');
 
-                    let val = city.concat(', ').concat(state);
+                    const val = city.concat(', ').concat(state);
 
                     setpincode(pincode || '');
                     //setcity(obj.data.results[0].formatted_address || '');
@@ -371,16 +309,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setshowSpinner(false);
         // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
-        addAddress && addAddress(address);
-        addA!(address);
+        addAddress!(address);
+        addDiagnosticAddress!(address);
 
         if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
-          setDeliveryAddressId && setDeliveryAddressId(address.id || '');
-          setD!(address.id || '');
+          setDeliveryAddressId!(address.id || '');
+          setDiagnosticAddressId!(address.id || '');
           props.navigation.goBack();
         } else {
-          setDeliveryAddressId && setDeliveryAddressId('');
-          setD!(address.id || '');
+          setDeliveryAddressId!('');
+          setDiagnosticAddressId!(address.id || '');
 
           showAphAlert!({
             title: 'Uh oh.. :(',
@@ -423,7 +361,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
               onPress={() => {
-                console.log(addressData.id, !displayoverlay);
+                // console.log(addressData.id);
                 // setdisplayoverlay(true);
                 setDeleteProfile(true);
               }}
@@ -699,8 +637,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               ? null
               : (city == '' || /^([a-zA-Z0-9.\s])+$/.test(city)) && setcity(city)
           }
+          maxLength={100}
           placeholder={'Enter area / locality name'}
-          multiline={true}
+          multiline={false}
         />
         <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginBottom: 8 }}>
           Address Type{' '}
@@ -716,7 +655,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   setOptionalAddress(optionalAddress)
             }
             placeholder={'Enter address type'}
-            multiline={true}
+            multiline={false}
           />
         )}
         {/* <TextInputComponent
@@ -772,6 +711,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 //deleteUserProfile();
+                setshowSpinner(true);
                 setDeleteProfile(false);
                 client
                   .mutate<deletePatientAddress, deletePatientAddressVariables>({
@@ -781,6 +721,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   })
                   .then((_data: any) => {
                     console.log(('dat', _data));
+                    setDeliveryAddressId!('');
+                    setDiagnosticAddressId!('');
+                    props.navigation.pop(2, { immediate: true });
                     props.navigation.push(AppRoutes.AddressBook);
                   })
                   .catch((e) => {
@@ -792,7 +735,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                       error
                     );
                     Alert.alert('Error', errorMessage);
-                  });
+                  })
+                  .finally(() => setshowSpinner(false));
               }}
             >
               <View
@@ -835,30 +779,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-
         <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
-          <ScrollView bounces={false}>{renderAddress()}</ScrollView>
-          {/* <StickyBottomComponent defaultBG> */}
-
-          {/* {displayoverlay ? (
-            <Button
-              title="Delete Address"
-              style={{
-                position: 'absolute',
-                width: 159,
-                height: 58,
-                backgroundColor: '#ffffff',
-                top: -5,
-                shadowColor: colors.SHADOW_GRAY,
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.8,
-                shadowRadius: 5,
-                marginLeft: width / 2,
-              }}
-              titleTextStyle={{ color: '#02475b', ...theme.fonts.IBMPlexSansMedium(18) }}
-              onPress={() => setdisplayoverlay(false)}
-            />
-          ) : null} */}
+          <ScrollView bounces={false}>
+            {renderAddress()}
+            <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
+          </ScrollView>
           <View
             style={{
               width: '100%',

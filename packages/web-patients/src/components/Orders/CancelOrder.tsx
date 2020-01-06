@@ -1,8 +1,15 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem } from '@material-ui/core';
-import React from 'react';
+import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
+import React, { useRef, useEffect } from 'react';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
+import {
+  saveOrderCancelStatus,
+  saveOrderCancelStatusVariables,
+} from 'graphql/types/saveOrderCancelStatus';
+import { SAVE_ORDER_CANCEL_STATUS } from 'graphql/profiles';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,12 +78,64 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
-export const CancelOrder: React.FC = (props) => {
-  const classes = useStyles();
+type CancelOrderProps = {
+  orderAutoId: number;
+  setIsCancelOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
+};
+
+export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
+  const classes = useStyles({});
   const [name] = React.useState(1);
+  const mascotRef = useRef(null);
+
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [selectedReason, setSelectedReason] = React.useState<string>('');
+  const [showLoader, setShowLoader] = React.useState<boolean>(false);
+
+  const cancelOrder = useMutation(SAVE_ORDER_CANCEL_STATUS);
+
+  const cancelReasonList = [
+    'Placed order by mistake',
+    'Higher discounts available on other app',
+    'Delay in delivery',
+    'Delay in order confirmation',
+    'Do not require medicines any longer',
+    'Already purchased',
+  ];
 
   return (
     <div className={classes.shadowHide}>
@@ -88,7 +147,8 @@ export const CancelOrder: React.FC = (props) => {
                 <div className={classes.formGroup}>
                   <label>Why are you cancelling this order?</label>
                   <AphSelect
-                    value={name}
+                    value={selectedReason}
+                    onChange={(e) => setSelectedReason(e.target.value as string)}
                     MenuProps={{
                       classes: { paper: classes.menuPopover },
                       anchorOrigin: {
@@ -101,9 +161,11 @@ export const CancelOrder: React.FC = (props) => {
                       },
                     }}
                   >
-                    <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
-                      Select reason for cancelling
-                    </MenuItem>
+                    {cancelReasonList.map((reason) => (
+                      <MenuItem value={reason} classes={{ selected: classes.menuSelected }}>
+                        {reason}
+                      </MenuItem>
+                    ))}
                   </AphSelect>
                 </div>
                 <div className={classes.formGroup}>
@@ -116,8 +178,62 @@ export const CancelOrder: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.dialogActions}>
-        <AphButton color="primary">Submit Request</AphButton>
+        <AphButton
+          onClick={() => {
+            setShowLoader(true);
+            cancelOrder({
+              variables: {
+                orderCancelInput: {
+                  orderNo:
+                    typeof props.orderAutoId === 'string'
+                      ? parseInt(props.orderAutoId)
+                      : props.orderAutoId,
+                  remarksCode: selectedReason,
+                },
+              },
+            })
+              .then(({ data }: any) => {
+                if (
+                  data &&
+                  data.saveOrderCancelStatus &&
+                  data.saveOrderCancelStatus.requestStatus === 'true'
+                ) {
+                  setShowLoader(false);
+                  setIsPopoverOpen(true);
+                }
+              })
+              .catch((e) => console.log(e));
+          }}
+          color="primary"
+        >
+          {showLoader ? <CircularProgress /> : 'Submit Request'}
+        </AphButton>
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <CancelOrderNotification
+              setIsCancelOrderDialogOpen={props.setIsCancelOrderDialogOpen}
+              setIsPopoverOpen={setIsPopoverOpen}
+            />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

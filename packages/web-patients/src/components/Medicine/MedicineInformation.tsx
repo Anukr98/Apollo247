@@ -1,14 +1,15 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
-import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
+import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -146,6 +147,14 @@ const useStyles = makeStyles((theme: Theme) => {
     medicinePack: {
       color: '#02475b',
       letterSpacing: 0.33,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    dropDown: {
+      width: 'calc(100% - 45px)',
+      '& > div': {
+        width: '100%',
+      },
     },
     medicineNoStock: {
       color: '#890000',
@@ -240,17 +249,16 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const subDrugsRef = useRef(null);
   const addToCartRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
-  const [isAddCartPopoverOpen, setIsAddCartPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
-  const [substitute, setSubstitute] = React.useState<MedicineProduct | null>(null);
   const { data } = props;
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
+  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
 
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprdsubt_api.php`,
+    url: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchprdsubt_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
     deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
@@ -270,7 +278,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then(({ data }) => {
         try {
           if (data) {
-            if (data.products && typeof data.products === 'object') {
+            if (data.products && data.products.length > 0) {
               setSubstitutes(data.products);
             }
           }
@@ -278,7 +286,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           console.log(error);
         }
       })
-      .catch((err) => console.log({ err }));
+      .catch((err) => alert({ err }));
   };
 
   const fetchDeliveryTime = async () => {
@@ -307,37 +315,42 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .catch((error: any) => alert(error));
   };
 
-  let options = Array.from(Array(20), (_, x) => x);
+  useEffect(() => {
+    if (!substitutes) {
+      fetchSubstitutes();
+    }
+  }, [substitutes]);
 
+  const applyCartOperations = (cartItem: MedicineCartItem) => {
+    const index = cartItems.findIndex((item) => item.id === cartItem.id);
+    if (index >= 0) {
+      updateCartItem && updateCartItem(cartItem);
+    } else {
+      addCartItem && addCartItem(cartItem);
+    }
+  };
+
+  const options = Array.from(Array(20), (_, x) => x);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 350px' }}>
+        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 375px' }}>
           <div className={classes.customScroll}>
-            <div className={classes.sectionTitle}>Substitute Drugs</div>
-            <div
-              className={classes.substitutes}
-              onClick={() => {
-                fetchSubstitutes();
-                setIsSubDrugsPopoverOpen(true);
-              }}
-              ref={subDrugsRef}
-            >
-              {!substitute ? (
-                <span>Pick from 9 available substitutes</span>
-              ) : (
-                <>
-                  <div className={classes.selectedDrugs}>
-                    <div>{substitute.name}</div>
-                    <div className={classes.price}>{`Rs. ${substitute.price}`}</div>
-                  </div>
-                  <div className={classes.dropDownArrow}>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
-                  </div>
-                </>
-              )}
-            </div>
-            {data.is_in_stock ? (
+            {substitutes && (
+              <>
+                <div className={classes.sectionTitle}>Substitute Drugs</div>
+                <div
+                  className={classes.substitutes}
+                  onClick={() => {
+                    setIsSubDrugsPopoverOpen(true);
+                  }}
+                  ref={subDrugsRef}
+                >
+                  <span>Pick from 9 available substitutes</span>
+                </div>
+              </>
+            )}
+            {data.is_in_stock && (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
@@ -365,44 +378,46 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   )}
                 </div>
               </>
-            ) : null}
+            )}
           </div>
         </Scrollbars>
       </div>
       <div className={classes.priceGroup}>
         <div className={classes.priceWrap}>
-          <div className={classes.leftGroup}>
-            {data.is_in_stock ? (
-              <div className={classes.medicinePack}>
-                QTY :
-                <AphCustomDropdown
-                  classes={{ selectMenu: classes.selectMenuItem }}
-                  value={medicineQty}
-                  onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                    setMedicineQty(parseInt(e.target.value))
-                  }
-                >
-                  {options.map((option) => (
-                    <MenuItem
-                      classes={{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={option}
+          {data.is_in_stock ? (
+            <>
+              <div className={classes.leftGroup}>
+                <div className={classes.medicinePack}>
+                  <div>QTY :</div>
+                  <div className={classes.dropDown}>
+                    <AphCustomDropdown
+                      classes={{ selectMenu: classes.selectMenuItem }}
+                      value={medicineQty}
+                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                        setMedicineQty(parseInt(e.target.value))
+                      }
                     >
-                      {option}
-                    </MenuItem>
-                  ))}
-                </AphCustomDropdown>
+                      {options.map((option) => (
+                        <MenuItem
+                          classes={{
+                            root: classes.menuRoot,
+                            selected: classes.menuSelected,
+                          }}
+                          value={option}
+                        >
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </AphCustomDropdown>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className={classes.medicineNoStock}>Out Of Stock</div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className={classes.medicineNoStock}>Out Of Stock</div>
+          )}
           <div className={classes.medicinePrice}>
-            {data.special_price && (
-              <span className={classes.regularPrice}> (Rs. {data.price}) </span>
-            )}
+            {data.special_price && <span className={classes.regularPrice}>(Rs. {data.price})</span>}
             Rs. {data.special_price || data.price}
           </div>
         </div>
@@ -410,8 +425,57 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={classes.bottomActions}>
         {data.is_in_stock ? (
           <>
-            <AphButton onClick={() => setIsAddCartPopoverOpen(true)}>Add To Cart</AphButton>
-            <AphButton color="primary">Buy Now</AphButton>
+            <AphButton
+              onClick={() => {
+                const cartItem: MedicineCartItem = {
+                  description: data.description,
+                  id: data.id,
+                  image: data.image,
+                  is_in_stock: data.is_in_stock,
+                  is_prescription_required: data.is_prescription_required,
+                  name: data.name,
+                  price: data.price,
+                  sku: data.sku,
+                  special_price: data.special_price,
+                  small_image: data.small_image,
+                  status: data.status,
+                  thumbnail: data.thumbnail,
+                  type_id: data.type_id,
+                  mou: data.mou,
+                  quantity: medicineQty,
+                };
+                applyCartOperations(cartItem);
+                window.location.href = clientRoutes.medicinesLandingViewCart();
+              }}
+            >
+              Add To Cart
+            </AphButton>
+            <AphButton
+              color="primary"
+              onClick={() => {
+                const cartItem: MedicineCartItem = {
+                  description: data.description,
+                  id: data.id,
+                  image: data.image,
+                  is_in_stock: data.is_in_stock,
+                  is_prescription_required: data.is_prescription_required,
+                  name: data.name,
+                  price: data.price,
+                  sku: data.sku,
+                  special_price: data.special_price,
+                  small_image: data.small_image,
+                  status: data.status,
+                  thumbnail: data.thumbnail,
+                  type_id: data.type_id,
+                  mou: data.mou,
+                  quantity: medicineQty,
+                };
+                applyCartOperations(cartItem);
+                window.location.href = clientRoutes.medicinesCart();
+              }}
+            >
+              Buy Now
+            </AphButton>
           </>
         ) : (
           <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
@@ -437,29 +501,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            <MedicineNotifyPopover />
-          </div>
-        </div>
-      </Popover>
-      <Popover
-        open={isAddCartPopoverOpen}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
-            </div>
-            <AddToCartPopover />
+            <MedicineNotifyPopover medicineName={data.name} setIsPopoverOpen={setIsPopoverOpen} />
           </div>
         </div>
       </Popover>
@@ -479,10 +521,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       >
         <SubstituteDrugsList
           data={substitutes}
-          setSubstitute={setSubstitute}
           setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
         />
       </Popover>
     </div>
   );
 };
+
+{
+  /* {substitute && (
+                ? (
+                <span>Pick from 9 available substitutes</span>
+              ) : (
+                <>
+                  <div className={classes.selectedDrugs}>
+                    <div>{substitute.name}</div>
+                    <div
+                      className={classes.price}
+                    >{`Rs. ${substitute.price}`}</div>
+                  </div>
+                  <div className={classes.dropDownArrow}>
+                    <img src={require("images/ic_dropdown_green.svg")} alt="" />
+                  </div>
+                </>
+              )}  */
+}

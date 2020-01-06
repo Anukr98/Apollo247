@@ -11,12 +11,18 @@ import _isEmpty from 'lodash/isEmpty';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, Platform } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { DEVICE_TYPE } from '../graphql/types/globalTypes';
+import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
+import { AppConfig } from '../strings/AppConfig';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+  return (promise.then(
+    (data: R) => [data, null],
+    (err: E) => [null, err]
+  ) as any) as [R, E];
 }
 
 export interface AuthContextProps {
@@ -215,9 +221,17 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const getPatientApiCall = async () => {
+    const versionInput = {
+      appVersion:
+        Platform.OS === 'ios'
+          ? AppConfig.Configuration.iOS_Version
+          : AppConfig.Configuration.Android_Version,
+      deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+    };
     await apolloClient
-      .query<GetCurrentPatients>({
+      .query<GetCurrentPatients, GetCurrentPatientsVariables>({
         query: GET_CURRENT_PATIENTS,
+        variables: versionInput,
         fetchPolicy: 'no-cache',
       })
       .then((data) => {

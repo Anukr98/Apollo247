@@ -54,16 +54,13 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       paddingTop: 20,
       '& button': {
-        width: 'calc(50% - 5px)',
         marginRight: 5,
         boxShadow: 'none',
         border: '2px solid #fcb715',
         borderRadius: 10,
         fontSize: 13,
         padding: 7,
-        '&:hover': {
-          backgroundColor: 'transparent',
-        },
+        backgroundColor: 'transparent',
       },
       '& a': {
         textTransform: 'uppercase',
@@ -138,6 +135,11 @@ const useStyles = makeStyles((theme: Theme) => {
     chatContainer: {
       paddingRight: 5,
     },
+    chatContainerScroll: {
+      '& > div': {
+        overflow: 'auto !important',
+      },
+    },
     callOverlay: {
       position: 'absolute',
       width: '100%',
@@ -163,10 +165,8 @@ const useStyles = makeStyles((theme: Theme) => {
     chatWindowFooter: {
       borderTop: 'solid 0.5px rgba(2,71,91,0.5)',
       paddingTop: 12,
-      marginTop: 15,
       position: 'relative',
-      marginLeft: 20,
-      marginRight: 20,
+      margin: '20px 20px 0 20px',
     },
     consultRoom: {
       paddingTop: 0,
@@ -239,26 +239,24 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
     },
     petient: {
-      color: '#0087ba',
+      color: '#fff',
       textAlign: 'left',
-      backgroundColor: '#fff',
       padding: 12,
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
-      borderRadius: 5,
+      borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
-      minWidth: 120,
+      backgroundColor: '#0087ba',
+      fontSize: 15,
+      maxWidth: 240,
+      margin: '0 0 10px 40px',
     },
     patientChat: {
-      display: 'block',
-      maxWidth: '50%',
-      margin: '5px 5px 10px 70px',
+      display: 'flex',
       position: 'relative',
-
       '& img': {
         position: 'absolute',
-        left: -50,
-        top: 5,
+        bottom: 0,
         width: 40,
         borderRadius: '50%',
       },
@@ -292,6 +290,16 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fcb716 !important',
       },
     },
+    chatTime: {
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'right',
+      color: 'rgba(255, 255, 255, 0.6)',
+      margin: '10px 0 0 0',
+    },
+    defaultChatTime: {
+      color: 'rgba(2, 71, 91, 0.6)',
+    },
     bottomPopover: {
       overflow: 'initial',
       backgroundColor: 'transparent',
@@ -322,6 +330,15 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         maxWidth: 80,
       },
+    },
+    scheduledText: {
+      padding: '0 0 10px 0',
+    },
+    scheduledTextTwo: {
+      padding: '10px 0',
+    },
+    dashedBorderBottom: {
+      borderBottom: '1px dashed rgba(255,255,255,0.5)',
     },
     actions: {
       padding: '0 20px 20px 20px',
@@ -849,18 +866,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const showPrescriptionCard = () => (
-    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+    <div className={`${classes.blueBubble} ${classes.petient}`}>
       {`Hello ${currentPatient &&
         currentPatient.firstName},\nHope your consultation went well… Here is your prescription.`}
       <div className={classes.bubbleActions}>
         <AphButton className={classes.viewButton}>Download</AphButton>
         <AphButton className={classes.viewButton}>View</AphButton>
       </div>
+      <div className={classes.chatTime}>6:20 PM</div>
     </div>
   );
 
   const getFollowupOrRescheduleCard = (rowData: MessagesObjectProps) => (
-    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+    <div className={`${classes.doctorChatBubble} ${classes.blueBubble} ${classes.petient}`}>
       {(rowData.message === autoMessageStrings.followupconsult &&
         rowData.transferInfo.folloupDateTime.length) > 0 ? (
         <div>
@@ -869,8 +887,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         </div>
       ) : (
         <div>
-          <div>I've rescheduled your appointment --</div>
-          <div>
+          <div className={`${classes.dashedBorderBottom} ${classes.scheduledText} `}>
+            I've rescheduled your appointment --
+          </div>
+          <div className={`${classes.dashedBorderBottom} ${classes.scheduledTextTwo} `}>
             {moment(rowData.transferInfo.transferDateTime).format('Do MMMM, dddd \nhh:mm a')}
           </div>
         </div>
@@ -886,6 +906,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           Reschedule
         </AphButton>
       </div>
+      <div className={classes.chatTime}>6:22 PM</div>
     </div>
   );
 
@@ -976,6 +997,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             ) : (
               <div>
                 <span>{rowData.message}</span>
+                <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>6:23 PM</div>
               </div>
             )}
           </div>
@@ -986,6 +1008,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       rightComponent++;
       return (
         <div className={rowData.duration ? classes.durattiocallMsg : classes.patientChat}>
+          {rightComponent == 1 && !rowData.duration && (
+            <Avatar
+              alt=""
+              src={require('images/doctordp_01.png')}
+              className={`${classes.avatar} ${classes.doctorImg}`}
+            />
+          )}
           <div
             className={
               rowData.duration
@@ -995,14 +1024,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 : classes.chatBubble
             }
           >
-            {rightComponent == 1 && !rowData.duration && (
-              <span className={classes.boldTxt}>
-                <img
-                  src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
-                  alt="img"
-                />
-              </span>
-            )}
+            {/* {rightComponent == 1 && !rowData.duration && (
+               <span className={classes.boldTxt}>
+                 <img
+                   src={
+                     profileImage !== null
+                       ? profileImage
+                       : "https://via.placeholder.com/328x138"
+                   }
+                   alt="img"
+                 />
+               </span>           
+              )} */}
 
             {/* show Prescription card */}
             {(rowData.message === autoMessageStrings.rescheduleconsult ||
@@ -1153,7 +1186,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
-              <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 346px' }}>
+              <Scrollbars
+                className={classes.chatContainerScroll}
+                autoHide={true}
+                style={{ height: 'calc(100vh - 360px' }}
+              >
                 <div className={classes.customScroll}>
                   {messagessHtml}
                   <span id="scrollDiv"></span>

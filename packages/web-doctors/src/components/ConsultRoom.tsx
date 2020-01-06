@@ -17,6 +17,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
+import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 
 const client = new AphStorageClient(
@@ -325,6 +326,7 @@ interface MessagesObjectProps {
   duration: string;
   url: string;
   messageDate: string;
+  sentBy: string;
 }
 
 interface ConsultRoomProps {
@@ -632,6 +634,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       id: doctorId,
       message: messageText,
       messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
     };
     setMessageText('');
     pubnub.publish(
@@ -672,6 +675,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
+      rowData.message !== stopConsult &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
@@ -774,6 +778,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
+      rowData.message !== stopConsult &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
@@ -866,6 +871,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
+      rowData.message !== stopConsult &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
@@ -978,125 +984,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
-  // const toggelChatVideo = () => {
-  //   setIsNewMsg(false);
-  //   setShowVideoChat(!showVideoChat);
-  //   srollToBottomAction();
-  // };
-  // const actionBtn = () => {
-  //   setShowVideo(true);
-  // };
-  // const stopAudioVideoCall = () => {
-  //   setIsCallAccepted(false);
-  //   setShowVideo(false);
-  //   setShowVideoChat(false);
-  //   const cookieStr = `action=`;
-  //   document.cookie = cookieStr + ';path=/;';
-  //   const text = {
-  //     id: doctorId,
-  //     message: stopcallMsg,
-  //     isTyping: true,
-  //messageDate: new Date(),
-  //   };
-  //   pubnub.publish(
-  //     {
-  //       channel: channel,
-  //       message: text,
-  //       storeInHistory: true,
-  //       sendByPost: true,
-  //     },
-  //     (status: any, response: any) => {
-  //       setMessageText('');
-  //     }
-  //   );
-  //   const stoptext = {
-  //     id: doctorId,
-  //     message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
-  //     duration: `${
-  //       timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-  //     } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
-  //     isTyping: true,
-  //messageDate: new Date(),
-  //   };
-  //   pubnub.publish(
-  //     {
-  //       channel: channel,
-  //       message: stoptext,
-  //       storeInHistory: true,
-  //       sendByPost: true,
-  //     },
-  //     (status: any, response: any) => {
-  //       setMessageText('');
-  //     }
-  //   );
-  //   stopIntervalTimer();
-  //   //setIsVideoCall(false);
-  // };
-  // const stopAudioVideoCallpatient = () => {
-  //   setIsCallAccepted(false);
-  //   setShowVideo(false);
-  //   setShowVideoChat(false);
-  //   const cookieStr = `action=`;
-  //   document.cookie = cookieStr + ';path=/;';
-  //   const text = {
-  //     id: doctorId,
-  //     message: stopcallMsg,
-  //     isTyping: true,
-  //messageDate: new Date(),
-  //   };
-  //   pubnub.publish(
-  //     {
-  //       channel: channel,
-  //       message: text,
-  //       storeInHistory: true,
-  //       sendByPost: true,
-  //     },
-  //     (status: any, response: any) => {
-  //       setMessageText('');
-  //     }
-  //   );
-  //   stopIntervalTimer();
-  // };
-  // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
-  // const covertVideoMsg = '^^convert`video^^';
-  // const covertAudioMsg = '^^convert`audio^^';
-  // const convertCall = () => {
-  //   setConvertVideo(!convertVideo);
-  //   setTimeout(() => {
-  //     pubnub.publish(
-  //       {
-  //         message: {
-  //           isTyping: true,
-  //           message: convertVideo ? covertVideoMsg : covertAudioMsg,
-  //messageDate: new Date(),
-  //         },
-  //         channel: channel,
-  //         storeInHistory: false,
-  //       },
-  //       (status: any, response: any) => {}
-  //     );
-  //   }, 10);
-  // };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
-        {/* {showVideo && (
-          <Consult
-            toggelChatVideo={() => toggelChatVideo()}
-            stopAudioVideoCall={() => stopAudioVideoCall()}
-            stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}
-            showVideoChat={showVideoChat}
-            isVideoCall={isVideoCall}
-            sessionId={props.sessionId}
-            token={props.token}
-            timerMinuts={timerMinuts}
-            timerSeconds={timerSeconds}
-            isCallAccepted={isCallAccepted}
-            isNewMsg={isNewMsg}
-            convertCall={() => convertCall()}
-          />
-        )} */}
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
@@ -1108,35 +999,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           )}
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>
-              {/* <div>
-                <Button className={classes.addImgBtn}>
-                  <img src={require('images/ic_add_circle.svg')} alt="" />
-                </Button>
-                <AphInput
-                  className={classes.inputWidth}
-                  inputProps={{ type: 'text' }}
-                  placeholder="Type here..."
-                  value={messageText}
-                  onKeyPress={(e: any) => {
-                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                      send();
-                    }
-                  }}
-                  onChange={(event: any) => {
-                    setMessageText(event.currentTarget.value);
-                  }}
-                />
-                <AphButton
-                  className={classes.sendBtn}
-                  onClick={() => {
-                    if (messageText.trim() !== '') {
-                      send();
-                    }
-                  }}
-                >
-                  <img src={require('images/ic_send.svg')} alt="" />
-                </AphButton>
-              </div> */}
               <div>
                 <Button
                   className={classes.addImgBtn}
@@ -1149,22 +1011,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     type="file"
                     style={{ display: 'none' }}
                     disabled={fileUploading}
-                    // onChange={async (e) => {
-                    //   setIsUploading(false);
-                    //   setUploadedFileUrl(null);
-                    //   const files = e.currentTarget.files;
-                    //   const file = files && files.length > 0 ? files[0] : null;
-                    //   if (file) {
-                    //     setIsUploading(true);
-                    //     const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
-                    //       throw error;
-                    //     });
-                    //     const url = client.getBlobUrl(aphBlob.name);
-                    //     console.log(aphBlob, url);
-                    //     setUploadedFileUrl(url);
-                    //     setIsUploading(false);
-                    //   }
-                    // }}
                     onChange={async (e) => {
                       const fileNames = e.target.files;
                       if (fileNames && fileNames.length > 0) {
@@ -1197,8 +1043,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                               url: url,
                               isTyping: true,
                               messageDate: new Date(),
+                              sentBy: REQUEST_ROLES.DOCTOR,
                             };
-                            console.log('aphBlob', aphBlob, url);
                             uploadfile(url);
                             sendMsg(uploadObject, true);
                             setFileUploading(false);
@@ -1239,28 +1085,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 >
                   <img src={require('images/ic_send.svg')} alt="" />
                 </AphButton>
-                {/* {props.disableChat && (
-              <Button className={classes.chatsendcircle} variant="contained" component="label">
-                <img src={require('images/ic_add_circle.svg')} alt="" />
-                <input
-                  type="file"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    const fileNames = e.target.files;
-                    if (fileNames && fileNames.length > 0) {
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        const dataURL = reader.result;
-                        setChatUploadFile(dataURL);
-                        mutationUploadChatDocument();
-                        // console.log(dataURL);
-                      };
-                      reader.readAsDataURL(fileNames[0]);
-                    }
-                  }}
-                />
-              </Button>
-            )} */}
               </div>
             </div>
           )}

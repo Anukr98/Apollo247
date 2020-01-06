@@ -74,7 +74,8 @@ export interface CalendarCardProps {
     PatientInfo: object,
     consultTime: string,
     appId: string,
-    appintmentdatetime: string
+    appintmentdatetime: string,
+    appointmentStatus: string
   ) => void;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
@@ -88,6 +89,7 @@ export interface CalendarCardProps {
   consultTime?: string;
   appId?: string;
   appintmentdatetime: string;
+  appointmentStatus: string;
 }
 
 export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
@@ -164,7 +166,8 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
           props.PatientInfo!,
           props.consultTime!,
           props.appId!,
-          props.appintmentdatetime!
+          props.appintmentdatetime!,
+          props.appointmentStatus
         )
       }
     >

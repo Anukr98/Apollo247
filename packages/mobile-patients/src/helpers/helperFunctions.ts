@@ -7,6 +7,8 @@ import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -44,6 +46,20 @@ export const aphConsole: AphConsole = {
   table: (...data: any[]) => {
     isDebugOn && console.table(...data);
   },
+};
+
+export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  // to resolve state value getting twice
+  const addrLine2 = [address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
@@ -94,8 +110,23 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
       break;
+    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      statusString = 'Payment Success';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      statusString = 'Order Initiated';
+      break;
   }
   return statusString;
+};
+
+export const getParameterByName = (name: string, url: string) => {
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+    results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
 
 export const getDateFormat = (_date: string /*"2019-08-08T20:30:00.000Z"*/) => {
@@ -184,22 +215,10 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
 
 export const handleGraphQlError = (
   error: any,
-  message: string = 'Uh oh! An Unknown Error Occurred.'
+  message: string = 'Oops! seems like we are having an issue. Please try again.'
 ) => {
   console.log({ error });
-
-  let formattedError = message;
-  if (typeof error == 'string') {
-    formattedError = error;
-  } else if (typeof error == 'object') {
-    try {
-      const graphqlErr = (error as GraphQLError).message;
-      formattedError = graphqlErr;
-    } catch (e) {
-      console.log({ e });
-    }
-  }
-  Alert.alert('Alert', formattedError);
+  Alert.alert('Uh oh.. :(', message);
 };
 
 export const timeTo12HrFormat = (time: string) => {
@@ -325,53 +344,73 @@ const findAddrComponents = (
     .long_name;
 };
 
+const getlocationData = (
+  resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
+  reject: (reason?: any) => void
+) => {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      getPlaceInfoByLatLng(latitude, longitude)
+        .then((response) => {
+          const addrComponents =
+            g(response, 'data', 'results', '0' as any, 'address_components') || [];
+          if (addrComponents.length == 0) {
+            reject('Unable to get location.');
+          } else {
+            const area = [
+              findAddrComponents('route', addrComponents),
+              findAddrComponents('sublocality_level_2', addrComponents),
+              findAddrComponents('sublocality_level_1', addrComponents),
+            ].filter((i) => i);
+            resolve({
+              displayName:
+                (area || []).pop() ||
+                findAddrComponents('locality', addrComponents) ||
+                findAddrComponents('administrative_area_level_2', addrComponents),
+              latitude,
+              longitude,
+              area: area.join(', '),
+              city:
+                findAddrComponents('locality', addrComponents) ||
+                findAddrComponents('administrative_area_level_2', addrComponents),
+              state: findAddrComponents('administrative_area_level_1', addrComponents),
+              country: findAddrComponents('country', addrComponents),
+              pincode: findAddrComponents('postal_code', addrComponents),
+              lastUpdated: new Date().getTime(),
+            });
+          }
+        })
+        .catch(() => {
+          reject('Unable to get location.');
+        });
+    },
+    (error) => {
+      reject('Unable to get location.');
+    },
+    { enableHighAccuracy: false, timeout: 2000 }
+  );
+};
+
 export const doRequestAndAccessLocation = (): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
         if (response === 'authorized') {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              getPlaceInfoByLatLng(latitude, longitude)
-                .then((response) => {
-                  const addrComponents =
-                    g(response, 'data', 'results', '0' as any, 'address_components') || [];
-                  if (addrComponents.length == 0) {
-                    reject('Unable to get location.');
-                  } else {
-                    const area = [
-                      findAddrComponents('route', addrComponents),
-                      findAddrComponents('sublocality_level_2', addrComponents),
-                      findAddrComponents('sublocality_level_1', addrComponents),
-                    ].filter((i) => i);
-                    resolve({
-                      displayName:
-                        (area || []).pop() ||
-                        (findAddrComponents('locality', addrComponents) ||
-                          findAddrComponents('administrative_area_level_2', addrComponents)),
-                      latitude,
-                      longitude,
-                      area: area.join(', '),
-                      city:
-                        findAddrComponents('locality', addrComponents) ||
-                        findAddrComponents('administrative_area_level_2', addrComponents),
-                      state: findAddrComponents('administrative_area_level_1', addrComponents),
-                      country: findAddrComponents('country', addrComponents),
-                      pincode: findAddrComponents('postal_code', addrComponents),
-                      lastUpdated: new Date().getTime(),
-                    });
-                  }
-                })
-                .catch(() => {
-                  reject('Unable to get location.');
-                });
-            },
-            (error) => {
-              reject('Unable to get location.');
-            },
-            { enableHighAccuracy: false, timeout: 2000 }
-          );
+          if (Platform.OS === 'android') {
+            RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+              interval: 10000,
+              fastInterval: 5000,
+            })
+              .then(() => {
+                getlocationData(resolve, reject);
+              })
+              .catch(() => {
+                reject('Unable to get location.');
+              });
+          } else {
+            getlocationData(resolve, reject);
+          }
         } else {
           reject('Unable to get location.');
         }
@@ -437,3 +476,8 @@ const { height } = Dimensions.get('window');
 export const isIphone5s = () => height === 568;
 export const statusBarHeight = () =>
   Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;
+
+export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
+
+export const isValidText = (value: string) =>
+  /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);

@@ -10,7 +10,10 @@ export const clientRoutes = {
   doctorsLanding: () => '/doctors',
   appointments: () => '/appointments',
   testsAndMedicine: () => '/tests-medicines',
-  medicines: () => '/medicines',
+  medicines: () => `/medicines`,
+  medicinesLandingViewCart: () => `/medicines/added-to-cart`,
+  medicinesCartInfo: (orderAutoId: string, orderStatus: string) =>
+    `/medicines/${orderAutoId}/${orderStatus}`,
   healthRecords: () => '/health-records',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
@@ -22,8 +25,9 @@ export const clientRoutes = {
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/view-all-brands',
-  medicineSearchByBrand: () => '/search-by-brand',
-  searchByMedicine: () => '/search-medicine',
+  medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
+  searchByMedicine: (searchMedicineType: string, searchText: string) =>
+    `/${searchMedicineType}/${searchText}`,
   medicineDetails: (sku: string) => `/medicine-details/${sku}`,
 };
 

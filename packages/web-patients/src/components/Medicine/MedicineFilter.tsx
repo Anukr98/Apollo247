@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { useParams } from 'hooks/routerHooks';
+import axios from 'axios';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -124,14 +127,100 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
+type priceFilter = { fromPrice: string; toPrice: string };
 
-export const MedicineFilter: React.FC = (props) => {
-  const classes = useStyles();
+interface MedicineFilterProps {
+  setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
+  setPriceFilter?: (priceFilter: priceFilter) => void;
+  setFilterData?: (filterData: []) => void;
+}
+
+type Params = { searchMedicineType: string; searchText: string };
+
+export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
+  const classes = useStyles({});
+  const apiDetails = {
+    url: process.env.PHARMACY_MED_SEARCH_URL,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+  const [selectedCatagerys, setSelectedCatagerys] = useState(['']);
+  const [selected, setSelected] = useState<boolean>(false);
+
+  const params = useParams<Params>();
+  const locationUrl = window.location.href;
+  const [subtxt, setSubtxt] = useState<string | null>(
+    params.searchMedicineType === 'search-medicines' ? params.searchText : null
+  );
+  const [fromPrice, setFromPrice] = useState();
+  const [toPrice, setToPrice] = useState();
+  useEffect(() => {
+    if (subtxt) {
+      onSearchMedicine(subtxt);
+    }
+  }, [subtxt]);
+
+  const onSearchMedicine = async (value: string | null) => {
+    await axios
+      .post(
+        apiDetails.url,
+        {
+          params: value,
+        },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        props.setMedicineList && props.setMedicineList(data.products);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  const filterByCatagery = (value: string) => {
+    let categoryList = selectedCatagerys;
+    if (categoryList.includes(value)) {
+      categoryList = categoryList.filter((category) => category !== value);
+    } else {
+      categoryList = value === '' ? [] : categoryList.filter((category) => category !== '');
+      categoryList.push(value);
+    }
+    setSelectedCatagerys(categoryList);
+    setSelected(true);
+  };
+
+  const filterByPriceAndCategory = () => {
+    const obj = {
+      fromPrice: fromPrice,
+      toPrice: toPrice,
+    };
+    if (!window.location.href.includes('search-by-brand')) {
+      props.setFilterData(selectedCatagerys);
+    }
+
+    props.setPriceFilter(obj);
+  };
+
+  useEffect(() => {
+    if (selected) {
+      setSelectedCatagerys(selectedCatagerys);
+      setSelected(false);
+    }
+  }, [selected]);
 
   return (
     <div className={classes.root}>
       <div className={classes.searchInput}>
-        <AphTextField placeholder="Search med, brands and more" />
+        <AphTextField
+          placeholder="Search med, brands and more"
+          onChange={(e) => {
+            setSubtxt(e.target.value);
+          }}
+          value={subtxt}
+        />
         <AphButton className={classes.refreshBtn}>
           <img src={require('images/ic_refresh.svg')} alt="" />
         </AphButton>
@@ -140,53 +229,139 @@ export const MedicineFilter: React.FC = (props) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
-              <div className={classes.filterType}>Categories</div>
-              <div className={classes.boxContent}>
-                <AphButton
-                  color="secondary"
-                  size="small"
-                  className={`${classes.button} ${classes.buttonActive}`}
-                >
-                  All
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Personal Care
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Mom &amp; Baby
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Nutrition
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Healthcare
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Special Offers
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Holland &amp; Barrett
-                </AphButton>
-                <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                  Apollo Products
-                </AphButton>
-              </div>
-            </div>
-            <div className={classes.filterBox}>
-              <div className={classes.filterType}>Discount</div>
-              <div className={classes.boxContent}>
-                <div className={classes.filterBy}>
-                  <AphTextField placeholder="0%" /> <span>TO</span>{' '}
-                  <AphTextField placeholder="100%" />
+              {locationUrl && locationUrl.includes('search-medicines') && (
+                <span>
+                  <div className={classes.filterType}>Categories</div>
+
+                  <div className={classes.boxContent}>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('');
+                      }}
+                    >
+                      All
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('14') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('14');
+                      }}
+                    >
+                      Personal Care
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('24') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('24');
+                      }}
+                    >
+                      Mom &amp; Baby
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('6') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('6');
+                      }}
+                    >
+                      Nutrition
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('71') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('71');
+                      }}
+                    >
+                      Healthcare
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('234') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('234');
+                      }}
+                    >
+                      Special Offers
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('97') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('97');
+                      }}
+                    >
+                      Holland &amp; Barrett
+                    </AphButton>
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={`${classes.button} ${
+                        selectedCatagerys.includes('680') ? classes.buttonActive : ''
+                      }`}
+                      onClick={(e) => {
+                        filterByCatagery('680');
+                      }}
+                    >
+                      Apollo Products
+                    </AphButton>
+                  </div>
+                </span>
+              )}
+              <div className={classes.filterBox}>
+                <div className={classes.filterType}>Discount</div>
+                <div className={classes.boxContent}>
+                  <div className={classes.filterBy}>
+                    <AphTextField placeholder="0%" /> <span>TO</span>{' '}
+                    <AphTextField placeholder="100%" />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={classes.filterBox}>
-              <div className={classes.filterType}>Price</div>
-              <div className={classes.boxContent}>
-                <div className={classes.filterBy}>
-                  <AphTextField placeholder="RS.500" /> <span>TO</span>{' '}
-                  <AphTextField placeholder="RS.3000" />
+              <div className={classes.filterBox}>
+                <div className={classes.filterType}>Price</div>
+                <div className={classes.boxContent}>
+                  <div className={classes.filterBy}>
+                    <AphTextField
+                      placeholder="RS.500"
+                      value={fromPrice}
+                      onChange={(e) => {
+                        setFromPrice(e.target.value);
+                      }}
+                    />{' '}
+                    <span>TO</span>{' '}
+                    <AphTextField
+                      placeholder="RS.3000"
+                      value={toPrice}
+                      onChange={(e) => {
+                        setToPrice(e.target.value);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -194,7 +369,12 @@ export const MedicineFilter: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.bottomActions}>
-        <AphButton color="primary" fullWidth>
+        <AphButton
+          color="primary"
+          disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
+          fullWidth
+          onClick={(e) => filterByPriceAndCategory()}
+        >
           Apply Filters
         </AphButton>
       </div>

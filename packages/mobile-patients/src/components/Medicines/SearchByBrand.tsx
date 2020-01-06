@@ -49,6 +49,7 @@ import {
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { isValidSearch } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -721,25 +722,27 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setsearchSate('load');
+      getMedicineSearchSuggestionsApi(_searchText)
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = data.products || [];
+          setMedicineList(products);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          // aphConsole.log({ e });
+          if (!Axios.isCancel(e)) {
+            setsearchSate('fail');
+          }
+        });
     }
-    setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
-      .then(({ data }) => {
-        // aphConsole.log({ data });
-        const products = data.products || [];
-        setMedicineList(products);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        // aphConsole.log({ e });
-        if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
-        }
-      });
   };
 
   const renderSearchResults = () => {

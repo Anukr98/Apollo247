@@ -37,6 +37,7 @@ import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { BottomPopUp } from './ui/BottomPopUp';
 
 const { height, width } = Dimensions.get('window');
 
@@ -80,6 +81,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     elevation: 20,
   },
+  gotItStyles: {
+    height: 60,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
   // webView: {
   //   marginTop: 0,
   //   marginLeft: 0,
@@ -112,6 +121,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
+  const [errorpopup, setErrorpopup] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
@@ -268,7 +278,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       StackActions.reset({
         index: 0,
         key: null,
-        actions: [NavigationActions.navigate({ routeName: routeName })],
+        actions: [
+          NavigationActions.navigate({
+            routeName: routeName,
+          }),
+        ],
       })
     );
     // props.navigation.replace(AppRoutes.ConsultRoom);
@@ -328,16 +342,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
         setTimeout(() => {
           verifyOtp(otp)
-            .then(() => {
+            .then((otp) => {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
+              CommonBugFender('OTP_ENTERED_SUCCESS', otp as Error);
+
               _removeFromStore();
               setOnOtpClick(true);
             })
             .catch((error) => {
               try {
-                console.log({ error });
+                console.log({
+                  error,
+                });
                 CommonBugFender('OTP_ENTERED_FAIL', error);
                 CommonLogEvent('OTP_ENTERED_FAIL', error);
+                // if (
+                //   error &&
+                //   error.message ===
+                //     'The sms code has expired. Please re-send the verification code to try again.'
+                // ) {
+                //   setshowSpinner(false);
+                //   setErrorpopup(true);
+                // }
                 setTimeout(() => {
                   if (isAuthChanged) {
                     _removeFromStore();
@@ -362,6 +388,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   }
                 }, 1000);
               } catch (error) {
+                setshowSpinner(false);
                 console.log(error);
               }
             });
@@ -446,9 +473,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
         sendOtp(phoneNumber, true)
           .then((confirmResult) => {
+            CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
+
             console.log('confirmResult login', confirmResult);
           })
           .catch((error) => {
+            CommonBugFender('OTP_RESEND_FAIL', error);
+
             Alert.alert('Error', 'The interaction was cancelled by the user.');
           });
       } else {
@@ -465,13 +496,27 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         <Header
           title={'Terms & Conditions'}
           leftIcon="close"
-          container={{ borderBottomWidth: 0 }}
+          container={{
+            borderBottomWidth: 0,
+          }}
           onPressLeftIcon={() => setonClickOpen(false)}
         />
-        <View style={{ flex: 1, overflow: 'hidden', backgroundColor: 'white' }}>
+        <View
+          style={{
+            flex: 1,
+            overflow: 'hidden',
+            backgroundColor: 'white',
+          }}
+        >
           <WebView
-            source={{ uri: 'https://www.apollo247.com/TnC.html' }}
-            style={{ flex: 1, backgroundColor: 'white' }}
+            source={{
+              uri: 'https://www.apollo247.com/TnC.html',
+            }}
+            style={{
+              flex: 1,
+              backgroundColor: 'white',
+            }}
+            useWebKit={true}
             onLoadStart={() => {
               console.log('onLoadStart');
               setshowSpinner(true);
@@ -504,10 +549,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
-        <View style={{ height: 56, justifyContent: 'center', paddingLeft: 20 }}>
+        <View
+          style={{
+            height: 56,
+            justifyContent: 'center',
+            paddingLeft: 20,
+          }}
+        >
           <TouchableOpacity
             activeOpacity={1}
-            style={{ height: 25, width: 25, justifyContent: 'center' }}
+            style={{
+              height: 25,
+              width: 25,
+              justifyContent: 'center',
+            }}
             onPress={() => {
               props.navigation.goBack();
               intervalId && clearInterval(intervalId);
@@ -519,12 +574,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         {invalidOtpCount === 3 && !isValidOTP ? (
           <Card
             key={1}
-            cardContainer={{ marginTop: 0, height: 290 }}
-            headingTextStyle={{ marginTop: 10 }}
+            cardContainer={{
+              marginTop: 0,
+              height: 290,
+            }}
+            headingTextStyle={{
+              marginTop: 10,
+            }}
             heading={string.login.oops}
             description={string.login.incorrect_otp_message}
             disableButton={isValidOTP ? false : true}
-            descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
+            descriptionTextStyle={{
+              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
+            }}
           >
             <View style={styles.inputView}>
               <OTPTextView
@@ -534,7 +596,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={'rgba(0, 179, 142, 0.4)'}
-                containerStyle={{ flex: 1 }}
+                containerStyle={{
+                  flex: 1,
+                }}
                 editable={false}
               />
             </View>
@@ -581,14 +645,21 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         ) : (
           <Card
             key={2}
-            cardContainer={{ marginTop: 0, height: 320 }}
-            headingTextStyle={{ marginTop: 10 }}
+            cardContainer={{
+              marginTop: 0,
+              height: 320,
+            }}
+            headingTextStyle={{
+              marginTop: 10,
+            }}
             heading={string.login.great}
             description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
             buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
             onClickButton={onClickOk}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
-            descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
+            descriptionTextStyle={{
+              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
+            }}
           >
             <View style={styles.inputView}>
               <OTPTextView
@@ -602,7 +673,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     ? theme.colors.INPUT_BORDER_FAILURE
                     : theme.colors.INPUT_BORDER_SUCCESS
                 }
-                containerStyle={{ flex: 1 }}
+                containerStyle={{
+                  flex: 1,
+                }}
               />
             </View>
             {showErrorMsg && (
@@ -651,6 +724,39 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
+      {errorpopup && (
+        <BottomPopUp
+          title={`Hi :(`}
+          description={
+            'The sms code has expired. Please re-send the verification code to try again.'
+          }
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <View
+              style={{
+                height: 60,
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setErrorpopup(false);
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };

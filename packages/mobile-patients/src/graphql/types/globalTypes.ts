@@ -54,6 +54,7 @@ export enum DIAGNOSTICS_TYPE {
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
+  ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_FAILED = "ORDER_FAILED",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
@@ -101,9 +102,11 @@ export enum MEDICINE_ORDER_STATUS {
   ITEMS_RETURNED = "ITEMS_RETURNED",
   ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
   PICKEDUP = "PICKEDUP",
   PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
   PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
@@ -118,6 +121,7 @@ export enum MEDICINE_ORDER_TYPE {
 }
 
 export enum MEDICINE_TIMINGS {
+  AS_NEEDED = "AS_NEEDED",
   EVENING = "EVENING",
   MORNING = "MORNING",
   NIGHT = "NIGHT",
@@ -130,10 +134,25 @@ export enum MEDICINE_TO_BE_TAKEN {
 }
 
 export enum MEDICINE_UNIT {
+  BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
+  CREAM = "CREAM",
   DROPS = "DROPS",
+  GEL = "GEL",
+  INJECTION = "INJECTION",
+  LOTION = "LOTION",
   ML = "ML",
   NA = "NA",
+  OINTMENT = "OINTMENT",
+  OTHERS = "OTHERS",
+  POWDER = "POWDER",
+  ROTACAPS = "ROTACAPS",
+  SACHET = "SACHET",
+  SOAP = "SOAP",
+  SOLUTION = "SOLUTION",
+  SPRAY = "SPRAY",
+  SUSPENSION = "SUSPENSION",
+  SYRUP = "SYRUP",
   TABLET = "TABLET",
 }
 
@@ -430,6 +449,7 @@ export interface MedicineCartInput {
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
+  orderTat?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -446,7 +466,7 @@ export interface MedicineCartItem {
   isMedicine?: string | null;
 }
 
-export interface MedicinePaymentInput {
+export interface MedicinePaymentMqInput {
   orderId: string;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
@@ -561,6 +581,21 @@ export interface SaveSearchInput {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
+}
+
+export interface UpdateDiagnosticOrderInput {
+  id?: string | null;
+  slotTimings: string;
+  employeeSlotId: number;
+  diagnosticEmployeeCode: string;
+  diagnosticBranchCode: string;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  centerName: string;
+  centerCode: string;
+  centerCity: string;
+  centerState: string;
+  centerLocality: string;
 }
 
 export interface UpdatePatientAddressInput {

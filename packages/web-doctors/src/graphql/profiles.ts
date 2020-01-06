@@ -287,6 +287,7 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
         since
         howOften
         severity
+        details
       }
     }
   }
@@ -350,6 +351,7 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
         since
         howOften
         severity
+        details
       }
     }
   }
@@ -467,6 +469,7 @@ export const GET_CASESHEET_JRD = gql`
           appointmentDateTime
           appointmentDocuments {
             documentPath
+            prismFileId
           }
           status
           appointmentState
@@ -490,6 +493,7 @@ export const GET_CASESHEET_JRD = gql`
           since
           howOften
           severity
+          details
         }
         diagnosis {
           name
@@ -571,6 +575,7 @@ export const GET_CASESHEET_JRD = gql`
             since
             howOften
             severity
+            details
           }
           followUpDate
           followUpAfterInDays
@@ -665,6 +670,7 @@ export const GET_CASESHEET = gql`
           appointmentDateTime
           appointmentDocuments {
             documentPath
+            prismFileId
           }
           status
           appointmentState
@@ -679,6 +685,7 @@ export const GET_CASESHEET = gql`
           lastName
           salutation
           registrationNumber
+          signature
           specialty {
             createdDate
             id
@@ -719,6 +726,7 @@ export const GET_CASESHEET = gql`
           since
           howOften
           severity
+          details
         }
         diagnosis {
           name
@@ -756,6 +764,7 @@ export const GET_CASESHEET = gql`
             since
             howOften
             severity
+            details
           }
           followUpDate
           followUpAfterInDays
@@ -808,6 +817,14 @@ export const GET_DOCTOR_FAVOURITE_TEST_LIST = gql`
         id
         itemname
       }
+    }
+  }
+`;
+
+export const DOWNLOAD_DOCUMENTS = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
     }
   }
 `;
@@ -1000,6 +1017,7 @@ export const MODIFY_CASESHEET = gql`
         since
         howOften
         severity
+        details
       }
       status
       sentToPatient
@@ -1116,6 +1134,7 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
   mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
+      blobName
     }
   }
 `;

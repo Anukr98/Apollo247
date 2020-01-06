@@ -224,6 +224,7 @@ const SaveMedicineOrderPayment: Resolver<
     ? process.env.PHARMACY_MED_PLACE_ORDERS
     : '';
   const placeOrderToken = process.env.PHARMACY_ORDER_TOKEN ? process.env.PHARMACY_ORDER_TOKEN : '';
+  console.log('placeOrderToken', placeOrderToken);
   if (placeOrderUrl == '' || placeOrderToken == '') {
     throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
   }
@@ -234,10 +235,32 @@ const SaveMedicineOrderPayment: Resolver<
     JSON.stringify(medicineOrderPharma),
     ''
   );
+  // const dummyUrl = 'http://dummy.restapiexample.com/api/v1/create';
+  // const dummyUrl2 = 'http://blue.phrdemo.com/ui/data/getauthtoken?mobile=8019677178';
+  // const pharmaResp = await fetch(dummyUrl2, {
+  //   method: 'GET',
+  //   //body: JSON.stringify({ name: 'testName', salary: '12345', age: '23' }),
+  //   //headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+  // }).catch((error) => {
+  //   console.log('pharma_payment_error', error);
+  //   throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_PAYMENT_ERROR);
+  // });
+
   const pharmaResp = await fetch(placeOrderUrl, {
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
     headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+    timeout: 50000,
+  }).catch((error) => {
+    console.log('pharma_payment_error', error);
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'SaveMedicineOrderPayment()->CATCH_BLOCK',
+      '',
+      JSON.stringify(error)
+    );
+    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_PAYMENT_ERROR);
   });
 
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {
@@ -251,7 +274,8 @@ const SaveMedicineOrderPayment: Resolver<
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
 
-  console.log(pharmaResp, 'pharmaResp');
+  console.log('pharmaResp', pharmaResp);
+
   const textRes = await pharmaResp.text();
   log(
     'profileServiceLogger',
@@ -260,9 +284,9 @@ const SaveMedicineOrderPayment: Resolver<
     textRes,
     ''
   );
+  errorMessage = textRes;
 
   const orderResp: PharmaResponse = JSON.parse(textRes);
-  console.log(orderResp, 'respp', orderResp.ordersResult.Message);
   if (orderResp.ordersResult.Status === false) {
     errorCode = -1;
     errorMessage = orderResp.ordersResult.Message;

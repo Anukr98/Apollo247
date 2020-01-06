@@ -1,6 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Location, NotificaitonAccounts } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Location,
+  NotificaitonAccounts,
+  ManageProfileIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -33,6 +37,7 @@ import {
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import DeviceInfo from 'react-native-device-info';
+import { AppConfig } from '../../strings/AppConfig';
 
 const { height, width } = Dimensions.get('window');
 
@@ -115,11 +120,23 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!currentPatient || !currentPatient.uhid) {
+    if (!currentPatient) {
       getPatientApiCall();
     }
+    // currentPatient && AsyncStorage.setItem('phoneNumber', currentPatient.mobileNumber.substring(3));
     currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
+
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      if (!currentPatient || !currentPatient.uhid) {
+        getPatientApiCall();
+      }
+    });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
+  }, [props.navigation]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -172,7 +189,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               <Text style={styles.doctorSpecializationStyles}>
                 {profileDetails.gender ? profileDetails.gender : '-'} |{' '}
                 {profileDetails.dateOfBirth
-                  ? Math.round(Moment().diff(profileDetails.dateOfBirth, 'years', true)) || '-'
+                  ? Moment()
+                      .diff(profileDetails.dateOfBirth, 'years')
+                      .toString() || '-'
                   : '-'}
               </Text>
             </View>
@@ -188,25 +207,25 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const handleScroll = () => {};
 
-  const onShare = async () => {
-    try {
-      const result = await Share.share({
-        message: profileDetails ? `${profileDetails.firstName} ${profileDetails.lastName}` : '',
-      });
+  // const onShare = async () => {
+  //   try {
+  //     const result = await Share.share({
+  //       message: profileDetails ? `${profileDetails.firstName} ${profileDetails.lastName}` : '',
+  //     });
 
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          // shared with activity type of result.activityType
-        } else {
-          // shared
-        }
-      } else if (result.action === Share.dismissedAction) {
-        // dismissed
-      }
-    } catch (error) {
-      // Alert(error.message);
-    }
-  };
+  //     if (result.action === Share.sharedAction) {
+  //       if (result.activityType) {
+  //         // shared with activity type of result.activityType
+  //       } else {
+  //         // shared
+  //       }
+  //     } else if (result.action === Share.dismissedAction) {
+  //       // dismissed
+  //     }
+  //   } catch (error) {
+  //     // Alert(error.message);
+  //   }
+  // };
 
   const onPressLogout = () => {
     signOut();
@@ -354,7 +373,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         <ListCard
           container={{ marginTop: 14 }}
           title={'Manage Profiles'}
-          leftIcon={<NotificaitonAccounts />}
+          leftIcon={<ManageProfileIcon />}
           onPress={() =>
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,
@@ -414,7 +433,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${DeviceInfo.getVersion()}.${DeviceInfo.getBuildNumber()}`}
+              {`${buildName()} - v ${
+                Platform.OS === 'ios'
+                  ? AppConfig.Configuration.iOS_Version
+                  : AppConfig.Configuration.Android_Version
+              }`}
             </Text>
           </View>
         </Animated.ScrollView>

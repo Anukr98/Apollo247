@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -31,17 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
     },
     cardIcon: {
-      paddingLeft: 16,
-      width: '50%',
-      '& img': {
-        maxWidth: 120,
-      },
-    },
-    cardTitle: {
-      fontSize: 16,
-      fontWeight: 600,
-      color: '#01475b',
-      width: '50%',
+      width: '100%',
     },
     offerDetails: {
       position: 'absolute',
@@ -93,17 +83,16 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         {props.data &&
           props.data.map((deal) => (
             <div className={classes.card}>
-              <Link className={classes.cardLink} to={clientRoutes.medicineSearchByBrand()}>
+              <Link
+                className={classes.cardLink}
+                to={clientRoutes.searchByMedicine('Deals-of-the-day', deal.category_id)}
+              >
                 <div className={classes.cardWrap}>
-                  <div className={classes.cardTitle}>
-                    Personal
-                    <br /> Care Products
-                  </div>
                   <div className={classes.cardIcon}>
-                    <img src={`${apiDetails.url}${deal.image_url}`} alt="" />
+                    <img src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" />
                   </div>
                 </div>
-                <div className={classes.offerDetails}>Upto 30% Off</div>
+                {/* <div className={classes.offerDetails}>Upto 30% Off</div> */}
               </Link>
             </div>
           ))}

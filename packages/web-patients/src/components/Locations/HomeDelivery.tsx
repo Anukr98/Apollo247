@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   AphRadio,
   AphButton,
@@ -8,6 +8,7 @@ import {
   AphDialogTitle,
   AphDialogClose,
 } from '@aph/web-ui-components';
+import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
 
@@ -15,9 +16,10 @@ import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
+  GetPatientAddressList_getPatientAddressList_addressList,
 } from 'graphql/types/GetPatientAddressList';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -96,89 +98,94 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface HomeDeliveryProps {
-  updateDeliveryAddress: (deliveryAddressId: string) => void;
-}
-
-export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
-  const classes = useStyles();
+export const HomeDelivery: React.FC = (props) => {
+  const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+  const {
+    setDeliveryAddressId,
+    deliveryAddressId,
+    deliveryAddresses,
+    setDeliveryAddresses,
+  } = useShoppingCart();
+  const { isSigningIn } = useAuth();
+  const client = useApolloClient();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
   );
-  const { currentPatient } = useAllCurrentPatients();
-  const { isSigningIn } = useAuth();
 
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
-
-  const { updateDeliveryAddress } = props;
-
-  const { data, loading, error } = useQueryWithSkip<
-    GetPatientAddressList,
-    GetPatientAddressListVariables
-  >(GET_PATIENT_ADDRESSES_LIST, {
-    variables: {
-      patientId: (currentPatient && currentPatient.id) || '',
-    },
-  });
-
-  if (loading) {
-    return <CircularProgress />;
-  }
-  if (error) {
-    return <></>;
-  }
-
-  const addressList =
-    data && data.getPatientAddressList && data.getPatientAddressList.addressList
-      ? data.getPatientAddressList.addressList
-      : [];
-
-  let showAddress = 0;
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
+  const getAddressDetails = () => {
+    client
+      .query<GetPatientAddressList, GetPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESSES_LIST,
+        variables: {
+          patientId: currentPatient && currentPatient.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        if (
+          _data.data &&
+          _data.data.getPatientAddressList &&
+          _data.data.getPatientAddressList.addressList
+        ) {
+          setDeliveryAddresses &&
+            setDeliveryAddresses(_data.data.getPatientAddressList.addressList.reverse());
+          setDeliveryAddressId &&
+            setDeliveryAddressId(_data.data.getPatientAddressList.addressList[0].id);
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor', e);
+      });
+  };
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      getAddressDetails();
+    }
+  }, [currentPatient, isAddAddressDialogOpen]);
 
   return (
     <div className={classes.root}>
-      {addressList.length > 0 ? (
+      {deliveryAddresses.length > 0 ? (
         <ul>
-          {addressList.map((addressDetails, index) => {
-            const addressId = addressDetails.id;
-            const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
-            showAddress++;
-            return showAddress < 3 ? (
-              <li key={index}>
-                <FormControlLabel
-                  checked={deliveryAddressId === addressId}
-                  className={classes.radioLabel}
-                  value={addressId}
-                  control={<AphRadio color="primary" />}
-                  label={address}
-                  onChange={() => {
-                    setDeliveryAddressId(addressId);
-                    updateDeliveryAddress(addressId);
-                  }}
-                />
-              </li>
-            ) : (
-              ''
-            );
-          })}
+          {deliveryAddresses.map(
+            (
+              deliveryAddress: GetPatientAddressList_getPatientAddressList_addressList,
+              index: number
+            ) => {
+              if (index < 2) {
+                const addressId = deliveryAddress.id;
+                const address = `${deliveryAddress.addressLine1} - ${deliveryAddress.zipcode}`;
+                return (
+                  <li key={index}>
+                    <FormControlLabel
+                      checked={deliveryAddressId === addressId}
+                      className={classes.radioLabel}
+                      value={addressId}
+                      control={<AphRadio color="primary" />}
+                      label={address}
+                      onChange={() => {
+                        setDeliveryAddressId && setDeliveryAddressId(addressId);
+                      }}
+                    />
+                  </li>
+                );
+              }
+            }
+          )}
         </ul>
       ) : (
-        <>
-          {!isSigningIn ? (
-            <div className={classes.noAddress}>
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
-              has been the industry's standard dummy text ever since the 1500s....
-            </div>
-          ) : null}
-        </>
+        <>{isLoading ? <CircularProgress /> : null}</>
       )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (
           <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
         ) : null}
-        {addressList.length > 0 ? (
+        {deliveryAddresses.length > 2 ? (
           <AphButton
             onClick={() => setIsViewAllAddressDialogOpen(true)}
             className={classes.viewAllBtn}
@@ -196,7 +203,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           </div>
           Add New Address
         </AphDialogTitle>
-        <AddNewAddress />
+        <AddNewAddress
+          setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
+          setRenderAddresses={setRenderAddresses}
+        />
       </AphDialog>
 
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
@@ -208,10 +218,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           Select Delivery Address
         </AphDialogTitle>
         <ViewAllAddress
-          addresses={addressList}
-          updateDeliveryAddress={(deliveryAddressId: string) =>
-            updateDeliveryAddress(deliveryAddressId)
-          }
+          addresses={deliveryAddresses}
+          setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
         />
       </AphDialog>
     </div>

@@ -42,10 +42,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import {
-  CommonScreenLog,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerText: {

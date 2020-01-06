@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '14px 12px',
       display: 'flex',
       alignItems: 'center',
+      maxHeight: 60,
     },
     cardIcon: {
       textAlign: 'center',
@@ -33,6 +34,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         margin: 'auto',
         maxWidth: '100%',
+        maxHeight: 60,
+        padding: 5,
       },
     },
   };
@@ -64,7 +67,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
           props.data.map((brand) => {
             return (
               <div className={classes.card}>
-                <Link to={clientRoutes.yourOrders()}>
+                <Link to={clientRoutes.searchByMedicine('search-by-brand', brand.category_id)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
                       <img

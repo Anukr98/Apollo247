@@ -13,6 +13,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -91,9 +92,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
   const renderRadioButtonList = () => {
     return addressList.map((address, i) => (
       <RadioSelectionItem
-        title={`${address.addressLine1}, ${address.addressLine2}\n${address.landmark}${
-          address.landmark ? ',\n' : ''
-        }${address.city}, ${address.state} - ${address.zipcode}`}
+        title={formatAddress(address)}
         isSelected={selectedId === address.id}
         onPress={() => {
           CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Select pincode and Id');

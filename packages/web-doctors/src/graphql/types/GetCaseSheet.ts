@@ -66,6 +66,7 @@ export interface GetCaseSheet_getCaseSheet_patientDetails {
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments {
   __typename: "AppointmentDocuments";
   documentPath: string | null;
+  prismFileId: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
@@ -116,6 +117,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   lastName: string | null;
   salutation: Salutation | null;
   registrationNumber: string | null;
+  signature: string | null;
   specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty;
   doctorHospital: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_doctorHospital[];
 }
@@ -143,6 +145,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms {
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
@@ -192,6 +195,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
   since: string | null;
   howOften: string | null;
   severity: string | null;
+  details: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription {

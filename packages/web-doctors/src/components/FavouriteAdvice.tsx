@@ -40,16 +40,13 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
-        },
-      },
+      // border: '1px solid #00b38e',
+      // borderRadius: 5,
+      padding: 16,
     },
     dialogContent: {
-      padding: 20,
-      minHeight: 400,
+      padding: 0,
+      minHeight: 300,
       position: 'relative',
       '& h6': {
         fontSize: 14,
@@ -77,8 +74,9 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontWeight: 500,
       marginBottom: 0,
+      // padding: '30px 20px',
       '& button': {
-        border: '1px solid #00b38e',
+        // border: '1px solid #00b38e',
         padding: '5px 10px',
         fontSize: 12,
         fontWeight: 'normal',
@@ -150,13 +148,13 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     popupHeadingCenter: {
-      padding: '20px 10px',
+      padding: 0,
+      backgroundColor: 'transparent',
       '& h6': {
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
-        padding: '0 25px',
         marginTop: 5,
       },
     },
@@ -189,6 +187,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     medicinePopup: {
@@ -197,7 +196,7 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
     },
     dialogActions: {
-      padding: 20,
+      padding: 10,
       paddingTop: 10,
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
@@ -227,6 +226,27 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    popupHeading: {
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'left',
+      },
+    },
+    headingName: {
+      display: 'inline-block',
+      width: '90%',
+      wordBreak: 'break-word',
+      textAlign: 'center',
+    },
+    cross: {
+      position: 'absolute',
+      right: -10,
+      top: -9,
+      fontSize: 18,
+      color: '#02475b',
+    },
   })
 );
 
@@ -247,6 +267,7 @@ export const FavouriteAdvice: React.FC = () => {
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
     setIdx(sum); */
+    setAdviceLoader(true);
 
     client
       .mutate<UpdateDoctorFavouriteAdvice, UpdateDoctorFavouriteAdviceVariables>({
@@ -256,8 +277,10 @@ export const FavouriteAdvice: React.FC = () => {
           instruction: item,
         },
       })
-      .then((data: any) => {
+      .then((data) => {
         console.log('data after mutation' + data);
+        setSelectedValues(data && data!.data!.updateDoctorFavouriteAdvice!.adviceList);
+        setAdviceLoader(false);
       });
   };
 
@@ -280,6 +303,7 @@ export const FavouriteAdvice: React.FC = () => {
   };
 
   const saveAdvice = (advice: string) => {
+    setAdviceLoader(true);
     client
       .mutate<AddDoctorFavouriteAdvice, AddDoctorFavouriteAdviceVariables>({
         mutation: ADD_DOCTOR_FAVOURITE_ADVICE,
@@ -288,17 +312,28 @@ export const FavouriteAdvice: React.FC = () => {
         },
       })
       .then((data) => {
-        console.log('data after mutation', data);
+        let temp = '';
+        if (
+          data &&
+          data.data &&
+          data.data.addDoctorFavouriteAdvice &&
+          data.data.addDoctorFavouriteAdvice.adviceList &&
+          data.data.addDoctorFavouriteAdvice.adviceList[0]!.id
+        ) {
+          temp = data!.data!.addDoctorFavouriteAdvice!.adviceList[0]!.id;
+        }
+
         if (advice.trim() !== '') {
           selectedValues &&
             selectedValues!.splice(idx, 0, {
               instruction: advice,
-              id: selectedValues[selectedValues.length - 1]!.id,
+              id: selectedValues.length > 0 ? selectedValues[selectedValues.length - 1]!.id! : temp,
               __typename: 'DoctorsFavouriteAdvice',
             });
           setSelectedValues(selectedValues);
           setIdx(selectedValues!.length + 1);
         }
+        setAdviceLoader(false);
       });
   };
   const client = useApolloClient();
@@ -311,7 +346,6 @@ export const FavouriteAdvice: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('_data ', _data);
         setSelectedValues(
           _data.data &&
             _data.data.getDoctorFavouriteAdviceList &&
@@ -370,6 +404,7 @@ export const FavouriteAdvice: React.FC = () => {
               onClick={() => {
                 setShowAddInputText(true);
                 setShowUpdatePopup(false);
+                setAdvice('');
               }}
             >
               <img src={require('images/ic_round-add.svg')} alt="" /> Add Advice
@@ -389,19 +424,38 @@ export const FavouriteAdvice: React.FC = () => {
             <div>
               <div>
                 <div className={classes.dialogContent}>
-                  <Grid container spacing={2}>
-                    <Grid item lg={12} xs={12}>
-                      <h6>FAVOURITE ADVICE</h6>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          value={advice}
-                          onChange={(event: any) => {
-                            setAdvice(event.target.value);
-                          }}
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
+                  <div>
+                    <AphDialogTitle className={classes.popupHeading}>
+                      <span className={classes.headingName}>FAVOURITE ADVICE</span>
+                      <Button
+                        className={classes.cross}
+                        onClick={() => {
+                          setShowAddInputText(false);
+                        }}
+                      >
+                        <img src={require('images/ic_cross.svg')} alt="" />
+                      </Button>
+                    </AphDialogTitle>
+                    <div className={classes.numberTablets}>
+                      <AphTextField
+                        autoFocus
+                        fullWidth
+                        multiline
+                        placeholder="Type your favourite advice"
+                        className={classes.textFieldColor}
+                        value={advice}
+                        onChange={(event: any) => {
+                          setAdvice(event.target.value);
+                        }}
+                      />
+
+                      {/* <AphTextField
+                        fullWidth
+                        className={classes.textFieldColor}
+                        placeholder="What you enter here won't be shown to the patient.."                       
+                      /> */}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className={classes.dialogActions}>

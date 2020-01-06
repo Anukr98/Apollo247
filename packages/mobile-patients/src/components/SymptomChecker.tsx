@@ -20,10 +20,7 @@ import Moment from 'moment';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StackActions } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  CommonScreenLog,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';

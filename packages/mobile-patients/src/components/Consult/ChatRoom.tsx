@@ -31,7 +31,6 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   DeviceHelper,
-  CommonScreenLog,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -80,7 +79,6 @@ import {
   AsyncStorage,
   Dimensions,
   FlatList,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   KeyboardEvent,
@@ -99,6 +97,7 @@ import {
   StyleSheet,
   AppState,
   AppStateStatus,
+  Image as ImageReact,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
@@ -121,6 +120,7 @@ import {
   addToConsultQueueWithAutomatedQuestions,
   endCallSessionAppointment,
   getAppointmentDataDetails,
+  getPrismUrls,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -137,6 +137,10 @@ import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '../../graphql/types/cancelAppointment';
+import { mimeType } from '../../helpers/mimeType';
+import { Image } from 'react-native-elements';
+import { RenderPdf } from '../ui/RenderPdf';
+import { colors } from '../../theme/colors';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -189,6 +193,52 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  mainView: {
+    backgroundColor: theme.colors.CARD_BG,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    ...theme.viewStyles.shadowStyle,
+  },
+  displayId: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SEARCH_EDUCATION_COLOR,
+    paddingBottom: 4,
+  },
+  separatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  doctorNameStyle: {
+    paddingTop: 8,
+    paddingBottom: 2,
+    textTransform: 'capitalize',
+    ...theme.fonts.IBMPlexSansSemiBold(23),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  timeStyle: {
+    paddingBottom: 20,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SKY_BLUE,
+  },
+  imageView: {
+    width: 80,
+    height: 80,
+    marginLeft: 20,
+    borderRadius: 40,
+    backgroundColor: theme.colors.CARD_BG,
+    ...theme.viewStyles.shadowStyle,
+  },
+  imageContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
+  },
+  doctorImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
 });
 
 export interface ChatRoomProps extends NavigationScreenProps {}
@@ -196,7 +246,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  const appointmentData = props.navigation.state.params!.data;
+  let appointmentData = props.navigation.state.params!.data;
 
   // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
@@ -315,7 +365,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     false,
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-
+  const [showPDF, setShowPDF] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -399,9 +449,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
     // requestToJrDoctor();
-    analytics.setAnalyticsCollectionEnabled(true);
-    CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
-
     // updateSessionAPI();
   }, []);
 
@@ -451,7 +498,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const setAnswerData = (value: { k: string; v: string[] }[]) => {
     let data = userAnswers || ({} as ConsultQueueInput);
-    value.map((item) => {
+    value.forEach((item) => {
       switch (item.k) {
         case 'height':
           data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
@@ -480,6 +527,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setSendAnswers(1);
           } catch (error) {}
           break;
+        case 'drug':
+          if (item.v[0] === 'No') {
+            data.drugAllergies = 'No';
+            try {
+              const text = {
+                id: patientId,
+                message: 'Medicine Allergy:\n' + 'No',
+                messageDate: new Date(),
+              };
+              setMessageText('');
+              !isSendAnswers[2] && sendAnswerMessage(text);
+              setSendAnswers(2);
+            } catch (error) {}
+          }
+          break;
         case 'drugAllergies':
           data.drugAllergies = item.v[0] || 'No';
           try {
@@ -492,6 +554,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             !isSendAnswers[2] && sendAnswerMessage(text);
             setSendAnswers(2);
           } catch (error) {}
+          break;
+        case 'dite':
+          if (item.v[0] === 'No') {
+            data.dietAllergies = 'No';
+            try {
+              const text = {
+                id: patientId,
+                message: 'Food Allergy:\n' + data.dietAllergies,
+                messageDate: new Date(),
+              };
+              setMessageText('');
+              !isSendAnswers[3] && sendAnswerMessage(text);
+              setSendAnswers(3);
+            } catch (error) {}
+          }
           break;
         case 'dietAllergies':
           data.dietAllergies = item.v[0] || 'No';
@@ -664,7 +741,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('nextAppState :' + nextAppState, abondmentStarted);
-      handleCallTheEdSessionAPI();
+      // handleCallTheEdSessionAPI();
     }
   };
 
@@ -672,6 +749,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('API not Called');
 
     if (abondmentStarted == true) {
+      if (appointmentData.status === STATUS.COMPLETED) return;
       console.log('API Called');
       endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
     }
@@ -1097,9 +1175,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
       timerId && clearInterval(timerId);
       intervalId && clearInterval(intervalId);
+      abondmentStarted = false;
       stopJoinTimer();
       stopCallAbondmentTimer();
       try {
+        AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       } catch (error) {}
     };
@@ -1186,22 +1266,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const APIForUpdateAppointmentData = (toStopTimer: boolean) => {
     getAppointmentDataDetails(client, appointmentData.id)
       .then(({ data }: any) => {
-        console.log(data, 'data APIForUpdateAppointmentData');
-        const appointmentSeniorDoctorStarted =
-          data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
-        console.log(
-          appointmentSeniorDoctorStarted,
-          'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
-        );
+        try {
+          console.log(data, 'data APIForUpdateAppointmentData');
+          const appointmentSeniorDoctorStarted =
+            data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
+          console.log(
+            appointmentSeniorDoctorStarted,
+            data.data.getAppointmentData.appointmentsHistory[0],
+            'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+          );
 
-        if (toStopTimer) {
-          if (appointmentSeniorDoctorStarted) {
-            stopCallAbondmentTimer();
-            abondmentStarted = false;
+          appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
+
+          if (toStopTimer) {
+            if (appointmentSeniorDoctorStarted) {
+              stopCallAbondmentTimer();
+              abondmentStarted = false;
+            }
+          } else {
+            callAbondmentMethod(appointmentSeniorDoctorStarted);
           }
-        } else {
-          callAbondmentMethod(appointmentSeniorDoctorStarted);
-        }
+        } catch (error) {}
       })
       .catch((e: string) => {
         abondmentStarted = false;
@@ -1269,7 +1354,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log('msgs', msgs);
 
           res.messages.forEach((element, index) => {
-            newmessage[newmessage.length] = element.entry;
+            let item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(client, patientId, item.prismId).then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              });
+            }
+            newmessage[newmessage.length] = item;
           });
           // console.log('newmessage', newmessage);
           setLoading(false);
@@ -1578,8 +1669,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
-        //addMessages(message);
         setShowFeedback(true);
+        abondmentStarted = false;
+        APIForUpdateAppointmentData(true);
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
         message.message.message === 'Audio call ended' ||
@@ -1878,6 +1970,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       .format('Do MMMM, dddd \nhh:mm a')}
                   </Text>
                   <TouchableOpacity
+                    activeOpacity={1}
                     onPress={() => {
                       CommonLogEvent(AppRoutes.ChatRoom, 'navigate to choose doctor');
                       props.navigation.navigate(AppRoutes.ChooseDoctor, {
@@ -2094,21 +2187,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         rowData.transferInfo.pdfUrl &&
                         rowData.transferInfo.pdfUrl.split('/').pop()
                     );
-
+                    const downloadPath =
+                      Platform.OS === 'ios'
+                        ? (dirs.DocumentDir || dirs.MainBundleDir) +
+                          '/' +
+                          (fileName || 'Apollo_Prescription.pdf')
+                        : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
                     setLoading(true);
                     RNFetchBlob.config({
                       fileCache: true,
-                      path:
-                        Platform.OS === 'ios'
-                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
-                            '/' +
-                            (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf'),
+                      path: downloadPath,
                       addAndroidDownloads: {
                         title: fileName,
                         useDownloadManager: true,
                         notification: true,
-                        mime: 'application/pdf',
+                        mime: mimeType(downloadPath),
+                        path: downloadPath,
                         description: 'File downloaded by download manager.',
                       },
                     })
@@ -2128,7 +2222,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         // }
                         Platform.OS === 'ios'
                           ? RNFetchBlob.ios.previewDocument(res.path())
-                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
                       })
                       .catch((err: Error) => {
                         console.log('error ', err);
@@ -2317,216 +2411,303 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <>
         <View
           style={{
-            width: 244,
-            // height: 130,
-            backgroundColor: '#0087ba',
-            marginLeft: 38,
+            backgroundColor: 'transparent',
+            width: 282,
             borderRadius: 10,
-            marginBottom: 4,
+            marginVertical: 2,
+            alignSelf: 'flex-start',
           }}
         >
-          <Text
-            style={{
-              lineHeight: 22,
-              color: 'white',
-              ...theme.fonts.IBMPlexSansMedium(15),
-              paddingHorizontal: 16,
-              paddingTop: 12,
-            }}
-          >
-            {
-              // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
-              //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
-              //   :
-              "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
-              // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
-            }
-          </Text>
-          <Text
-            style={{
-              color: '#ffffff',
-              marginLeft: 27,
-              textAlign: 'right',
-              ...theme.fonts.IBMPlexSansMedium(10),
-              lineHeight: 24,
-              letterSpacing: 0.04,
-              marginTop: 0,
-              marginRight: 16,
-            }}
-          >
-            {convertChatTime(rowData)}
-          </Text>
-        </View>
-        <View
-          style={{
-            width: 244,
-            height: 206,
-            backgroundColor: '#0087ba',
-            marginLeft: 38,
-            borderRadius: 10,
-            marginBottom: 4,
-          }}
-        >
-          <Text
-            style={{
-              color: 'white',
-              lineHeight: 22,
-              ...theme.fonts.IBMPlexSansMedium(15),
-              textAlign: 'left',
-              marginHorizontal: 16,
-              marginTop: 12,
-            }}
-          >
-            Next slot for {appointmentData.doctorInfo.displayName} is available on —
-          </Text>
+          {leftComponent === 1 && (
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
+              }}
+            >
+              <Mascot
+                style={{
+                  width: 32,
+                  height: 32,
+                  bottom: 0,
+                  position: 'absolute',
+                  left: 0,
+                }}
+              />
+            </View>
+          )}
           <View
             style={{
-              marginHorizontal: 16,
-              marginTop: 9,
-              opacity: 0.5,
-              height: 2,
-              borderStyle: 'dashed',
-              borderWidth: 1,
-              borderRadius: 1,
-              borderColor: '#ffffff',
-              overflow: 'hidden',
-            }}
-          />
-          <Text
-            style={{
-              marginHorizontal: 16,
-              marginTop: 9,
-              lineHeight: 22,
-              ...theme.fonts.IBMPlexSansSemiBold(15),
-              color: 'white',
+              width: 244,
+              // height: 130,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              marginBottom: 4,
             }}
           >
-            {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
-          </Text>
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 10,
-              opacity: 0.5,
-              height: 2,
-              borderStyle: 'dashed',
-              borderWidth: 1,
-              borderRadius: 1,
-              borderColor: '#ffffff',
-              overflow: 'hidden',
-            }}
-          />
-          <StickyBottomComponent
-            style={{
-              paddingHorizontal: 0,
-              backgroundColor: 'transparent',
-              shadowColor: 'transparent',
-              paddingTop: 13,
-            }}
-          >
-            <Button
-              title={'CHANGE SLOT'}
+            <Text
               style={{
-                flex: 0.6,
-                marginLeft: 16,
-                marginRight: 5,
-                backgroundColor: '#0087ba',
-                borderWidth: 2,
-                borderColor: '#fcb715',
+                lineHeight: 22,
+                color: 'white',
+                ...theme.fonts.IBMPlexSansMedium(15),
+                paddingHorizontal: 16,
+                paddingTop: 12,
               }}
-              titleTextStyle={{ color: 'white' }}
-              onPress={() => {
-                if (type === 'Followup' || type === 'Reschedule') {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
-                  rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
-                  setTransferData(rowData.transferInfo);
-                  setdisplayoverlay(true);
-                } else {
-                  // props.navigation.navigate(AppRoutes.DoctorDetails, {
-                  //   doctorId: rowData.transferInfo.doctorInfo.id,
-                  //   PatientId: patientId,
-                  //   appointmentType: appointmentData.appointmentType,
-                  //   appointmentId: appointmentData.id,
-                  //   showBookAppointment: true,
-                  // });
-                }
-              }}
-            />
-            <Button
-              title={'ACCEPT'}
+            >
+              {
+                // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
+                //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
+                //   :
+                "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
+                // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
+              }
+            </Text>
+            <Text
               style={{
-                flex: 0.4,
+                color: '#ffffff',
+                marginLeft: 27,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+                lineHeight: 24,
+                letterSpacing: 0.04,
+                marginTop: 0,
                 marginRight: 16,
-                marginLeft: 5,
               }}
-              onPress={() => {
-                try {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Accept button clicked');
-
-                  if (type === 'Followup') {
-                    const bookRescheduleInput = {
-                      appointmentId: rowData.transferInfo.appointmentId,
-                      doctorId: rowData.transferInfo.transferDateTime
-                        ? rowData.transferInfo.doctorInfo.id
-                        : rowData.transferInfo.doctorId,
-                      newDateTimeslot: nextSlotAvailable,
-                      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                      initiatedId: patientId,
-                      patientId: patientId,
-                      rescheduledId: '',
-                    };
-                    console.log('bookRescheduleInput', bookRescheduleInput);
-                    rescheduleAPI(rowData, bookRescheduleInput);
-                  } else if (type === 'Reschedule') {
-                    const bookRescheduleInput = {
-                      appointmentId: rowData.transferInfo.appointmentId,
-                      doctorId: rowData.transferInfo.transferDateTime
-                        ? rowData.transferInfo.doctorInfo.id
-                        : rowData.transferInfo.doctorId,
-                      newDateTimeslot: nextSlotAvailable,
-                      initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-                      initiatedId: patientId,
-                      patientId: patientId,
-                      rescheduledId: rowData.transferInfo.reschduleId,
-                    };
-                    console.log('bookRescheduleInput', bookRescheduleInput);
-                    rescheduleAPI(rowData, bookRescheduleInput);
-                  } else {
-                    let datettimeval = nextSlotAvailable;
-                    let transferdataid = rowData.transferInfo.transferId;
-
-                    const appointmentTransferInput: BookTransferAppointmentInput = {
-                      patientId: patientId,
-                      doctorId: rowData.transferInfo.doctorId,
-                      appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
-                      existingAppointmentId: channel,
-                      transferId: transferdataid, //rowData.transferInfo.transferId,
-                    };
-                    console.log(appointmentTransferInput, 'AcceptApi Input');
-
-                    transferAppointmentAPI(rowData, appointmentTransferInput);
-                  }
-                } catch (error) {}
-              }}
-            />
-          </StickyBottomComponent>
-          <Text
+            >
+              {convertChatTime(rowData)}
+            </Text>
+          </View>
+          <View
             style={{
-              color: '#ffffff',
-              marginLeft: 27,
-              textAlign: 'right',
-              ...theme.fonts.IBMPlexSansMedium(10),
-              lineHeight: 24,
-              letterSpacing: 0.04,
-              marginTop: 53,
-              marginRight: 16,
+              width: 244,
+              height: 206,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              marginBottom: 4,
             }}
           >
-            {convertChatTime(rowData)}
-          </Text>
+            <Text
+              style={{
+                color: 'white',
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+                marginHorizontal: 16,
+                marginTop: 12,
+              }}
+            >
+              Next slot for {appointmentData.doctorInfo.displayName} is available on —
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <Text
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansSemiBold(15),
+                color: 'white',
+              }}
+            >
+              {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 10,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <StickyBottomComponent
+              style={{
+                paddingHorizontal: 0,
+                backgroundColor: 'transparent',
+                shadowColor: 'transparent',
+                paddingTop: 13,
+              }}
+            >
+              <Button
+                title={'CHANGE SLOT'}
+                style={{
+                  flex: 0.6,
+                  marginLeft: 16,
+                  marginRight: 5,
+                  backgroundColor: '#0087ba',
+                  borderWidth: 2,
+                  borderColor: '#fcb715',
+                }}
+                titleTextStyle={{ color: 'white' }}
+                onPress={() => {
+                  if (type === 'Followup' || type === 'Reschedule') {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
+                    rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
+                    setTransferData(rowData.transferInfo);
+                    setdisplayoverlay(true);
+                  } else {
+                    // props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    //   doctorId: rowData.transferInfo.doctorInfo.id,
+                    //   PatientId: patientId,
+                    //   appointmentType: appointmentData.appointmentType,
+                    //   appointmentId: appointmentData.id,
+                    //   showBookAppointment: true,
+                    // });
+                  }
+                }}
+              />
+              <Button
+                title={'ACCEPT'}
+                style={{
+                  flex: 0.4,
+                  marginRight: 16,
+                  marginLeft: 5,
+                }}
+                onPress={() => {
+                  try {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Accept button clicked');
+
+                    if (type === 'Followup') {
+                      const bookRescheduleInput = {
+                        appointmentId: rowData.transferInfo.appointmentId,
+                        doctorId: rowData.transferInfo.transferDateTime
+                          ? rowData.transferInfo.doctorInfo.id
+                          : rowData.transferInfo.doctorId,
+                        newDateTimeslot: nextSlotAvailable,
+                        initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                        initiatedId: patientId,
+                        patientId: patientId,
+                        rescheduledId: '',
+                      };
+                      console.log('bookRescheduleInput', bookRescheduleInput);
+                      rescheduleAPI(rowData, bookRescheduleInput);
+                    } else if (type === 'Reschedule') {
+                      const bookRescheduleInput = {
+                        appointmentId: rowData.transferInfo.appointmentId,
+                        doctorId: rowData.transferInfo.transferDateTime
+                          ? rowData.transferInfo.doctorInfo.id
+                          : rowData.transferInfo.doctorId,
+                        newDateTimeslot: nextSlotAvailable,
+                        initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+                        initiatedId: patientId,
+                        patientId: patientId,
+                        rescheduledId: rowData.transferInfo.reschduleId,
+                      };
+                      console.log('bookRescheduleInput', bookRescheduleInput);
+                      rescheduleAPI(rowData, bookRescheduleInput);
+                    } else {
+                      let datettimeval = nextSlotAvailable;
+                      let transferdataid = rowData.transferInfo.transferId;
+
+                      const appointmentTransferInput: BookTransferAppointmentInput = {
+                        patientId: patientId,
+                        doctorId: rowData.transferInfo.doctorId,
+                        appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
+                        existingAppointmentId: channel,
+                        transferId: transferdataid, //rowData.transferInfo.transferId,
+                      };
+                      console.log(appointmentTransferInput, 'AcceptApi Input');
+
+                      transferAppointmentAPI(rowData, appointmentTransferInput);
+                    }
+                  } catch (error) {}
+                }}
+              />
+            </StickyBottomComponent>
+            <Text
+              style={{
+                color: '#ffffff',
+                marginLeft: 27,
+                textAlign: 'right',
+                ...theme.fonts.IBMPlexSansMedium(10),
+                lineHeight: 24,
+                letterSpacing: 0.04,
+                marginTop: 53,
+                marginRight: 16,
+              }}
+            >
+              {convertChatTime(rowData)}
+            </Text>
+          </View>
         </View>
       </>
     );
+  };
+
+  const openPopUp = (rowData: any) => {
+    setLoading(true);
+    if (rowData.url.match(/\.(pdf)$/)) {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch(() => setUrl(rowData.url))
+          .finally(() => {
+            setLoading(false);
+            setShowPDF(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setLoading(false);
+        setShowPDF(true);
+      }
+    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch(() => setUrl(rowData.url))
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setLoading(false);
+        setPatientImageshow(true);
+      }
+    } else {
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
+              console.error('An error occurred', err)
+            );
+          })
+          .catch(() =>
+            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err))
+          )
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(true);
+          });
+      } else {
+        setLoading(false);
+        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+      }
+    }
   };
 
   const messageView = (rowData: any, index: number) => {
@@ -2584,9 +2765,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
-                    setPatientImageshow(true);
-                    setUrl(rowData.url);
+                    openPopUp(rowData);
                   }}
+                  activeOpacity={1}
                 >
                   <View
                     style={{
@@ -2601,6 +2782,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }}
                   >
                     <Image
+                      placeholderStyle={{
+                        height: 180,
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                      }}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                       source={{ uri: rowData.url }}
                       style={{
                         resizeMode: 'stretch',
@@ -2613,21 +2801,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
+                  activeOpacity={1}
                   onPress={() => {
                     console.log('pdf', rowData.url);
+                    openPopUp(rowData);
                     // setShowWeb(true);
-                    setPatientImageshow(true);
-                    setUrl(rowData.url);
-                    // if ((Platform.OS = 'android')) {
-                    //   setShowWeb(true);
-                    //   setUrl(rowData.url);
-                    //   // Linking.openURL(rowData.url).catch((err) =>
-                    //   //   console.error('An error occurred', err)
-                    //   // );
-                    // } else {
-                    //   setShowWeb(true);
-                    //   setUrl(rowData.url);
-                    // }
+                    // setPatientImageshow(true);
                   }}
                 >
                   <View
@@ -2643,6 +2822,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }}
                   >
                     <Image
+                      placeholderStyle={{
+                        height: 180,
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                      }}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
                       source={{ uri: rowData.url }}
                       style={{
                         resizeMode: 'stretch',
@@ -3041,40 +3227,70 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: '#0087ba',
-          marginLeft: 38,
+          backgroundColor: 'transparent',
           borderRadius: 10,
-          marginBottom: 4,
+          marginVertical: 2,
+          alignSelf: 'flex-start',
         }}
       >
-        {rowData.automatedText ? (
-          <>
-            <Text
+        {leftComponent === 1 && (
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              bottom: 0,
+              position: 'absolute',
+              left: 0,
+            }}
+          >
+            <Mascot
               style={{
-                color: '#ffffff',
-                paddingTop: 8,
-                paddingBottom: 4,
-                paddingHorizontal: 16,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
               }}
-            >
-              {rowData.automatedText}
-            </Text>
-            <Text
-              style={{
-                color: '#ffffff',
-                paddingHorizontal: 16,
-                paddingVertical: 4,
-                textAlign: 'right',
-                ...theme.fonts.IBMPlexSansMedium(10),
-              }}
-            >
-              {convertChatTime(rowData)}
-            </Text>
-            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
-          </>
-        ) : null}
+            />
+          </View>
+        )}
+        <View
+          style={{
+            backgroundColor: '#0087ba',
+            marginLeft: 38,
+            borderRadius: 10,
+            marginBottom: 4,
+          }}
+        >
+          {rowData.automatedText ? (
+            <>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingTop: 8,
+                  paddingBottom: 4,
+                  paddingHorizontal: 16,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+            </>
+          ) : null}
+        </View>
       </View>
     );
   };
@@ -3083,47 +3299,84 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: '#0087ba',
-          marginLeft: 38,
+          backgroundColor: 'transparent',
           borderRadius: 10,
-          marginBottom: 4,
-          width: 244,
+          marginVertical: 2,
+          alignSelf: 'flex-start',
         }}
       >
-        {rowData.automatedText ? (
-          <>
-            <Text
+        {leftComponent === 1 && (
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              bottom: 0,
+              position: 'absolute',
+              left: 0,
+            }}
+          >
+            <Mascot
               style={{
-                color: '#ffffff',
-                paddingTop: 8,
-                paddingBottom: 4,
-                paddingHorizontal: 16,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
               }}
-            >
-              {rowData.automatedText}
-            </Text>
-            <Text
-              style={{
-                color: '#ffffff',
-                paddingHorizontal: 16,
-                paddingVertical: 4,
-                textAlign: 'right',
-                ...theme.fonts.IBMPlexSansMedium(10),
-              }}
-            >
-              {convertChatTime(rowData)}
-            </Text>
-            <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
-          </>
-        ) : null}
+            />
+          </View>
+        )}
+        <View
+          style={{
+            backgroundColor: '#0087ba',
+            marginLeft: 38,
+            borderRadius: 10,
+            marginBottom: 4,
+            width: 244,
+          }}
+        >
+          {rowData.automatedText ? (
+            <>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingTop: 8,
+                  paddingBottom: 4,
+                  paddingHorizontal: 16,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+              <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+            </>
+          ) : null}
+        </View>
       </View>
     );
   };
 
   const renderChatRow = (
-    rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
+    rowData: {
+      id: string;
+      message: string;
+      duration: string;
+      transferInfo: any;
+      prismId: any;
+      url: any;
+    },
     index: number
   ) => {
     if (
@@ -3143,7 +3396,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       leftComponent++;
       rightComponent = 0;
       return (
-        <View>
+        <View style={{ marginHorizontal: 20 }}>
           {leftComponent === 1 && (
             <View
               style={{
@@ -3183,7 +3436,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       leftComponent = 0;
       rightComponent++;
       return (
-        <View>
+        <View style={{ marginHorizontal: 20 }}>
           {rightComponent == 1 ? (
             <View
               style={{
@@ -3246,10 +3499,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View>
                   {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
                     <TouchableOpacity
+                      activeOpacity={1}
                       onPress={() => {
                         console.log('IMAGE', rowData.url);
-                        setPatientImageshow(true);
-                        setUrl(rowData.url);
+                        openPopUp(rowData);
                       }}
                     >
                       <View
@@ -3265,6 +3518,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         }}
                       >
                         <Image
+                          placeholderStyle={{
+                            height: 180,
+                            width: '100%',
+                            alignItems: 'center',
+                            backgroundColor: 'transparent',
+                          }}
+                          PlaceholderContent={
+                            <Spinner style={{ backgroundColor: 'transparent' }} />
+                          }
                           source={{ uri: rowData.url }}
                           style={{
                             resizeMode: 'stretch',
@@ -3277,17 +3539,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
+                      activeOpacity={1}
                       onPress={() => {
                         console.log('pdf', rowData.url);
-
-                        if ((Platform.OS = 'android')) {
-                          Linking.openURL(rowData.url).catch((err) =>
-                            console.error('An error occurred', err)
-                          );
-                        } else {
-                          setShowWeb(true);
-                          setUrl(rowData.url);
-                        }
+                        openPopUp(rowData);
                       }}
                     >
                       <View
@@ -3330,7 +3585,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         paddingTop: 8,
                         paddingBottom: 3,
                         paddingHorizontal: 16,
-                        textAlign: 'right',
+                        textAlign: 'left',
                         ...theme.fonts.IBMPlexSansMedium(16),
                       }}
                     >
@@ -3598,22 +3853,75 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
   };
 
-  const renderChatView = () => {
-    // console.log('renderChatView');
+  const renderChatHeader = () => {
+    let time = '';
+    const diffMin = moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes');
+    const diffHours = moment(appointmentData.appointmentDateTime).diff(moment(), 'hours');
+    const diffDays = moment(appointmentData.appointmentDateTime).diff(moment(), 'days');
+    if (doctorJoined) {
+      time = 'Consult is In-progress';
+    } else {
+      if (diffMin <= 0) {
+        time =
+          appointmentData.status === STATUS.COMPLETED
+            ? `Consult is completed`
+            : `Will be joining soon`;
+      } else if (diffMin > 0 && diffHours <= 0) {
+        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+      } else if (diffHours > 0 && diffDays <= 0) {
+        time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
+      } else {
+        time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+      }
+    }
+    return (
+      <View style={styles.mainView}>
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.displayId}>#{appointmentData.displayId}</Text>
+            <View style={styles.separatorStyle} />
+            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
+            <Text style={styles.timeStyle}>{time}</Text>
+          </View>
+          <View style={styles.imageView}>
+            <View style={styles.imageContainer}>
+              {appointmentData.doctorInfo.thumbnailUrl &&
+              appointmentData.doctorInfo.thumbnailUrl.match(
+                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+              ) ? (
+                <Image
+                  source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                  resizeMode={'contain'}
+                  style={styles.doctorImage}
+                />
+              ) : (
+                <DoctorPlaceholderImage style={styles.doctorImage} />
+              )}
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
+  const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
           style={{
-            // flexGrow: 1,
             flex: 1,
           }}
+          ListHeaderComponent={renderChatHeader()}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
-            marginHorizontal: 20,
+            // marginHorizontal: 20,
             marginTop: 0,
           }}
           bounces={false}
@@ -3624,6 +3932,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           numColumns={1}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={messages ? messages.length : 0}
         />
       </View>
     );
@@ -4575,12 +4884,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ) {
         console.log('item', item.base64);
         setLoading(true);
-        const textin = {
-          fileType: type == 'jpg' ? 'JPEG' : type.toUpperCase(), //type,
-          base64FileInput: item.base64, //resource.data,
-          appointmentId: channel,
-        };
-        console.log('textin', textin);
         client
           .mutate<uploadChatDocumentToPrism>({
             mutation: UPLOAD_CHAT_FILE_PRISM,
@@ -4589,37 +4892,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
               base64FileInput: item.base64, //resource.data,
               appointmentId: channel,
-              patientId: currentPatient && currentPatient.id,
+              patientId: patientId,
             },
           })
           .then((data) => {
             console.log('upload data', data);
             setLoading(false);
-
             if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
-              client
-                .query<downloadDocuments>({
-                  query: DOWNLOAD_DOCUMENT,
-                  fetchPolicy: 'no-cache',
-                  variables: {
-                    downloadDocumentsInput: {
-                      patientId: currentPatient && currentPatient.id,
-                      fileIds: data.data!.uploadChatDocumentToPrism.fileId,
-                    },
-                  },
-                })
-                .then(({ data }) => {
-                  console.log(data, 'DOWNLOAD_DOCUMENT');
-                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                  console.log(uploadUrlscheck![0], 'DOWNLOAD_DOCUMENTcmple');
+              const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
+              getPrismUrls(client, patientId, [prismFeildId])
+                .then((data: any) => {
+                  console.log('api call data', data);
                   const text = {
                     id: patientId,
                     message: imageconsult,
                     fileType: 'image',
-                    url: uploadUrlscheck![0],
+                    prismId: prismFeildId,
+                    url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
                   };
-
                   pubnub.publish(
                     {
                       channel: channel,
@@ -4640,23 +4931,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             } else {
               Alert.alert('Upload document failed');
             }
-            // const text = {
-            //   id: patientId,
-            //   message: imageconsult,
-            //   fileType: 'image',
-            //   url: data.data && data.data.uploadChatDocument.filePath,
-            // };
-
-            // pubnub.publish(
-            //   {
-            //     channel: channel,
-            //     message: text,
-            //     storeInHistory: true,
-            //     sendByPost: true,
-            //   },
-            //   (status, response) => {}
-            // );
-            // KeepAwake.activate();
           })
           .catch((e) => {
             setLoading(false);
@@ -4778,7 +5052,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           gallery: 'CHOOSE FROM\nGALLERY',
           prescription: 'UPLOAD\nFROM PHR',
         }}
-        hideTAndCs={false}
+        hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
         onResponse={(selectedType, response) => {
           console.log('res', response);
@@ -4804,109 +5078,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           } else {
-            console.log('sussess', 'ssss');
-            const ePresUrls = selectedEPres.map((item) => item!.prismPrescriptionFileId);
-            console.log('ePresUrls', ePresUrls);
-            let ePresAndPhysicalPresUrls = [...ePresUrls];
-            console.log(
-              'ePresAndPhysicalPresUrls',
-              ePresAndPhysicalPresUrls
-                .join(',')
-                .split(',')
-                .map((item) => item.trim())
-                .filter((i) => i)
-            );
-            if (ePresAndPhysicalPresUrls.length > 0) {
-              client
-                .query<downloadDocuments>({
-                  query: DOWNLOAD_DOCUMENT,
-                  fetchPolicy: 'no-cache',
-                  variables: {
-                    downloadDocumentsInput: {
-                      patientId: currentPatient && currentPatient.id,
-                      fileIds: ePresAndPhysicalPresUrls
-                        .join(',')
-                        .split(',')
-                        .map((item) => item.trim())
-                        .filter((i) => i),
+            selectedEPres.forEach((item) => {
+              console.log(item, 'from selected');
+
+              const url = item.uploadedUrl && item.uploadedUrl.split(',');
+              const prism = item.prismPrescriptionFileId && item.prismPrescriptionFileId.split(',');
+              url &&
+                url.map((item, index) => {
+                  const text = {
+                    id: patientId,
+                    message: imageconsult,
+                    fileType: 'image',
+                    prismId: (prism && prism[index]) || '',
+                    url: item,
+                    messageDate: new Date(),
+                  };
+                  pubnub.publish(
+                    {
+                      channel: channel,
+                      message: text,
+                      storeInHistory: true,
+                      sendByPost: true,
                     },
-                  },
-                })
-                .then(({ data }) => {
-                  console.log(data, 'DOWNLOAD_DOCUMENT');
-                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                  console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-                  if (uploadUrlscheck!.length > 0) {
-                    uploadUrlscheck!.map((item: any) => {
-                      //console.log(item, 'showitem');
-                      const text = {
-                        id: patientId,
-                        message: imageconsult,
-                        fileType: 'image',
-                        url: item,
-                        messageDate: new Date(),
-                      };
-
-                      pubnub.publish(
-                        {
-                          channel: channel,
-                          message: text,
-                          storeInHistory: true,
-                          sendByPost: true,
-                        },
-                        (status, response) => {}
-                      );
-                      KeepAwake.activate();
-                    });
-                  } else {
-                    Alert.alert('Images are not uploaded');
-                  }
-                })
-                .catch((e: string) => {
-                  console.log('Error occured', e);
-                })
-                .finally(() => {
-                  setLoading!(false);
+                    (status, response) => {}
+                  );
+                  KeepAwake.activate();
                 });
-            }
-            // setLoading(true);
-            // client
-            //   .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-            //     mutation: UPLOAD_CHAT_FILE,
-            //     fetchPolicy: 'no-cache',
-            //     variables: {
-            //       fileType: 'pdf',
-            //       base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
-            //       appointmentId: channel,
-            //     },
-            //   })
-            //   .then((data) => {
-            //     setLoading(false);
-            //     console.log('upload selectedEPres data', data);
-
-            //     const text = {
-            //       id: patientId,
-            //       message: imageconsult,
-            //       fileType: 'image',
-            //       url: data.data && data.data.uploadChatDocument.filePath,
-            //     };
-
-            //     pubnub.publish(
-            //       {
-            //         channel: channel,
-            //         message: text,
-            //         storeInHistory: true,
-            //         sendByPost: true,
-            //       },
-            //       (status, response) => {}
-            //     );
-            //     KeepAwake.activate();
-            //   })
-            //   .catch((e) => {
-            //     setLoading(false);
-            //     KeepAwake.activate();
-            //     console.log('upload data error', e);
-            //   });
+            });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
@@ -4931,7 +5129,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           marginTop: 30,
         }}
       >
-        <TouchableOpacity onPress={() => closeviews()}>
+        <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
       </View>
@@ -4962,7 +5160,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
         {renderCloseIcon()}
-        <Image
+        <ImageReact
           style={{
             flex: 1,
             resizeMode: 'contain',
@@ -5011,6 +5209,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             borderRadius: 10,
           }}
           source={{ uri: url }}
+          useWebKit={true}
         />
       </View>
     );
@@ -5091,6 +5290,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 height: 66,
                 backgroundColor: 'white',
                 bottom: isIphoneX() ? 36 : 0,
+                top: isIphoneX() ? 2 : 0,
               }}
             >
               <View style={{ flexDirection: 'row', width: width }}>
@@ -5316,6 +5516,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5355,6 +5556,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5392,6 +5594,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           >
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.claimStyles}
               onPress={() => {
                 setIsDoctorNoShow(false);
@@ -5401,6 +5604,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.rescheduletyles}
               onPress={() => {
                 NextAvailableSlot(appointmentData, 'Transfer', true);
@@ -5419,6 +5623,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5458,6 +5663,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -5502,6 +5708,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             <View style={{ height: 60 }}>
               <TouchableOpacity
+                activeOpacity={1}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setSucessPopup(false);
@@ -5574,6 +5781,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         isVisible={showFeedback}
       />
       {loading && <Spinner />}
+      {showPDF && (
+        <RenderPdf
+          uri={url}
+          title={
+            url
+              .split('/')
+              .pop()!
+              .split('=')
+              .pop() || 'Document'
+          }
+          isPopup={true}
+          setDisplayPdf={() => {
+            setShowPDF(false);
+            setUrl('');
+          }}
+          navigation={props.navigation}
+        />
+      )}
     </View>
   );
 };

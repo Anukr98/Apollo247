@@ -1,4 +1,4 @@
-import { aphConsole, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, formatAddress, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -7,12 +7,8 @@ import {
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  EPrescription,
-  PhysicalPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -27,7 +23,6 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  DOWNLOAD_DOCUMENT,
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
   SEARCH_DIAGNOSTICS,
@@ -49,6 +44,7 @@ import {
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
   Clinic,
   getPlaceInfoByLatLng,
@@ -63,7 +59,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -71,8 +66,6 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { downloadDocuments } from '../../graphql/types/downloadDocuments';
-import { uploadDocument } from '../../graphql/types/uploadDocument';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -89,7 +82,7 @@ const styles = StyleSheet.create({
   },
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
-    padding: 16,
+    paddingTop: 16,
   },
   blueTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -158,11 +151,6 @@ type TimeArray = {
   time: string;
 }[];
 
-type Profile = {
-  pid: string;
-  name: string;
-};
-
 export interface TestsCartProps extends NavigationScreenProps {
   isComingFromConsult: boolean;
 }
@@ -222,7 +210,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const client = useApolloClient();
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
-  const { setLoading, showAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
 
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>({
@@ -338,33 +326,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [testCentresLoaded]);
 
-  /*  useEffect(() => {
-      getCartInfo()
-        .then((cartInfo) => {
-          setcartDetails(cartInfo);
-          let cartStatus = {} as typeof medicineCardStatus;
-          cartInfo &&
-            cartInfo.items.forEach((item) => {
-              cartStatus[item.sku] = {
-                isAddedToCart: true,
-                isCardExpanded: true,
-                unit: item.qty,
-                price: item.price!,
-              };
-            });
-          setMedicineCardStatus({
-            ...medicineCardStatus,
-            ...cartStatus,
-          });
-          setMedicineList(cartInfo.items);
-          setshowSpinner(false);
-        })
-        .catch((e) => {
-          Alert.alert(JSON.stringify({ e }));
-          setshowSpinner(false);
-        });
-    }, []);*/
-
   const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
   };
@@ -440,7 +401,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          aphConsole.log('searchDiagnostics\n', { data });
+          console.log('searchDiagnostics\n', { data });
           const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
@@ -449,7 +410,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((e) => {
-          aphConsole.log({ e });
+          console.log({ e });
           errorAlert();
         })
         .finally(() => {
@@ -577,47 +538,54 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           query: GET_DIAGNOSTIC_SLOTS,
           fetchPolicy: 'no-cache',
           variables: {
-            patientId: currentPatient!.id,
+            patientId: g(currentPatient, 'id') || '',
             hubCode: 'HYD_HUB1', // not considering this field at backend
             selectedDate: moment(date).format('YYYY-MM-DD'),
             zipCode: parseInt(selectedAddress.zipcode!),
           },
         })
         .then(({ data }) => {
-          setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
-          setPinCode && setPinCode(selectedAddress.zipcode!);
-          aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
-          var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-          var t = finalaray!.slotInfo!.map((item) => {
-            return {
-              label: (item!.slot || '').toString(),
-              time: `${item!.startTime} - ${item!.endTime}`,
-            };
-          });
-          aphConsole.log(t, 'finalaray');
-          setDiagnosticSlot &&
-            setDiagnosticSlot({
-              employeeSlotId: finalaray!.slotInfo![0]!.slot!,
-              diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
-              diagnosticEmployeeCode: finalaray!.employeeCode || '',
-              slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
-              slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
-              city: selectedAddress!.city || '',
-              date: date.getTime(),
+          setDeliveryAddressId!(selectedAddress.id);
+          setPinCode!(selectedAddress.zipcode!);
+          console.log({ data, date }, 'GET_DIAGNOSTIC_SLOTS');
+          const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+          const t = finalaray!
+            .slotInfo!.filter((item) => item!.status != 'booked')
+            .filter((item) =>
+              moment(date)
+                .format('DMY')
+                .toString() ===
+              moment()
+                .format('DMY')
+                .toString()
+                ? parseInt(item!.startTime!.split(':')[0]) >= parseInt(moment().format('k'))
+                  ? parseInt(item!.startTime!.split(':')[1]) > moment().minute()
+                  : false
+                : true
+            )
+            .map((item) => {
+              return {
+                label: (item!.slot || '').toString(),
+                time: `${item!.startTime} - ${item!.endTime}`,
+              };
             });
+          console.log(t, 'finalaray');
           settimeArray(t);
-          setselectedTimeSlot(t[0].time);
+          setselectedTimeSlot(g(t, '0' as any, 'time')!);
+          setDisplaySchedule(true);
         })
         .catch((e) => {
-          aphConsole.log('Error occured', { e });
+          console.log('Error occured', { e });
           setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticSlot && setDiagnosticSlot(null);
           setPinCode && setPinCode('');
           setselectedTimeSlot('');
+          const noHubSlots = g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS';
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+            description: noHubSlots
+              ? 'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.'
+              : 'Oops! seems like we are having an issue. Please try again.',
           });
         })
         .finally(() => {
@@ -657,9 +625,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
-                item.landmark ? ',\n' : ''
-              }${item.city}, ${item.state} - ${item.zipcode}`}
+              title={formatAddress(item)}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
@@ -686,7 +652,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             />
           );
         })}
-        <View style={styles.rowSpaceBetweenStyle}>
+        <View style={[styles.rowSpaceBetweenStyle, { paddingBottom: 16 }]}>
           <Text
             style={styles.yellowTextStyle}
             onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
@@ -808,7 +774,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </Text>
         )}
 
-        {slicedStoreList.map((item, index) => (
+        {slicedStoreList.map((item, index, array) => (
           <RadioSelectionItem
             key={item.CentreCode}
             title={`${item.CentreName}\n${item.Locality},${item.City},${item.State}`}
@@ -819,7 +785,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               setClinicId && setClinicId(item.CentreCode);
             }}
             containerStyle={{ marginTop: 16 }}
-            hideSeparator={index == clinicDetails!.length - 1}
+            hideSeparator={index == array.length - 1}
           />
         ))}
         <View>
@@ -850,7 +816,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>
-          <Text style={styles.dateTextStyle}>{selectedTimeSlot ? selectedTimeSlot : ''}</Text>
+          <Text style={styles.dateTextStyle}>
+            {selectedTimeSlot ? selectedTimeSlot : 'No slot selected'}
+          </Text>
         </View>
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
@@ -935,8 +903,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             data={tabs}
             onChange={(selectedTab: string) => {
               setselectedTab(selectedTab);
-              // setClinicId!('');
-              // setDeliveryAddressId!('');
+              setClinicId!('');
+              setDeliveryAddressId!('');
               // setPinCode!('');
             }}
             selectedTab={selectedTab}
@@ -1449,14 +1417,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
         />
       )}
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         <ScrollView bounces={false}>

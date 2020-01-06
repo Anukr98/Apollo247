@@ -1,24 +1,27 @@
+import { addDiagonsisList, MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
-import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { SEARCH_DIAGNOSIS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  searchDiagnosis,
+  searchDiagnosisVariables,
+  searchDiagnosis_searchDiagnosis,
+} from '@aph/mobile-doctors/src/graphql/types/searchDiagnosis';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Keyboard,
   SafeAreaView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { searchMedicineApi, MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
-import { AxiosResponse } from 'axios';
 
 const styles = StyleSheet.create({
   container: {
@@ -33,6 +36,9 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [diagnosisList, setDiagnosisList] = useState<any>([]);
+  const client = useApolloClient();
+
   const showHeaderView = () => {
     return (
       <Header
@@ -50,7 +56,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>
@@ -60,7 +66,11 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
     Keyboard.dismiss();
     console.log('text', text); //remove this line later
     setDoctorSearchText(text);
-    setMedicineList([]);
+    addDiagonsisList({
+      name: text,
+      __typename: 'Diagnosis',
+    });
+
     props.navigation.pop();
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {
@@ -77,18 +87,18 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
   };
   const renderSuggestionCard = () => (
     <View style={{ marginTop: 2 }}>
-      {medicineList!.length > 0 ? (
+      {diagnosisList!.length > 0 ? (
         <ScrollView>
-          {medicineList!.map((item, i) => {
+          {diagnosisList!.map((item: searchDiagnosis_searchDiagnosis, i: any) => {
             const drName = ` ${item!.name}`;
             return (
               <TouchableOpacity
-                onPress={() => onPressDoctorSearchListItem(`Dr. ${item!.name}`)}
+                onPress={() => onPressDoctorSearchListItem(` ${item!.name}`)}
                 style={{ marginHorizontal: 16, marginTop: 8 }}
                 key={i}
               >
                 {formatSuggestionsText(drName, doctorSearchText)}
-                {i < medicineList!.length - 1 ? (
+                {i < diagnosisList!.length - 1 ? (
                   <View
                     style={{
                       marginTop: 10,
@@ -108,11 +118,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
       ) : null}
     </View>
   );
-  const showGenericALert = (e: { response: AxiosResponse }) => {
-    const error = e && e.response && e.response.data.message;
-    console.log({ errorResponse: e.response, error }); //remove this line later
-    Alert.alert('Error', error || 'Unknown error occurred.');
-  };
+
   const filterDoctors = (searchText: string) => {
     if (searchText != '' && !/^[A-Za-z .]+$/.test(searchText)) {
       return;
@@ -121,19 +127,30 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
     setDoctorSearchText(searchText);
     console.log(searchText);
     if (!(searchText && searchText.length > 2)) {
-      setMedicineList([]);
+      setDiagnosisList([]);
       return;
     }
     setIsLoading(true);
-    searchMedicineApi(searchText)
-      .then(({ data }) => {
-        console.log('medicineList', data);
+    // do api call
+    client
+      .query<searchDiagnosis, searchDiagnosisVariables>({
+        query: SEARCH_DIAGNOSIS,
+        variables: { searchString: searchText },
+      })
+
+      .then((_data) => {
+        console.log('flitered array', _data.data.searchDiagnosis!);
+
+        setDiagnosisList(_data.data.searchDiagnosis!);
         setIsLoading(false);
-        setMedicineList(data.products || []);
       })
       .catch((e) => {
+        console.log('Error occured while searching for searchDiagnosis', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while searching for searchDiagnosis', errorMessage, error);
         setIsLoading(false);
-        showGenericALert(e);
+        Alert.alert('Error', errorMessage);
       });
   };
 
@@ -192,6 +209,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
           </View>
         </View>
       </View>
+      {isLoading ? <Loader flex1 /> : null}
       <View style={{ marginTop: 10 }}>{renderSuggestionCard()}</View>
     </SafeAreaView>
   );

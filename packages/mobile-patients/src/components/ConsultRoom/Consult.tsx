@@ -10,6 +10,7 @@ import {
   PhysicalConsult,
   DoctorPlaceholderImage,
   DropdownGreen,
+  DoctorIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -41,12 +42,14 @@ import {
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { getDataFromTree } from 'react-apollo';
 import { AddProfile } from '../ui/AddProfile';
 import { ProfileList } from '../ui/ProfileList';
 import { useUIElements } from '../UIElementsProvider';
+import { TabsComponent } from '../ui/TabsComponent';
+import { colors } from '../../theme/colors';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -141,6 +144,7 @@ const styles = StyleSheet.create({
   doctorNameStyles: {
     paddingTop: 40,
     paddingLeft: 0,
+    textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SEARCH_DOCTOR_NAME,
   },
@@ -191,7 +195,8 @@ export interface ConsultProps extends NavigationScreenProps {
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
-  const [showMenu, setShowMenu] = useState<boolean>(false);
+  const tabs = [{ title: 'Upcoming' }, { title: 'Past' }];
+  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [userName, setuserName] = useState<string | number>('');
   const { analytics, getPatientApiCall } = useAuth();
 
@@ -279,12 +284,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
     currentPatient && setProfile(currentPatient!);
-    analytics.setAnalyticsCollectionEnabled(true);
-    analytics.setCurrentScreen(AppRoutes.Consult, AppRoutes.Consult);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.Consult, AppRoutes.Consult);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -356,80 +358,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         setLoading && setLoading(false);
       });
   };
-
-  const Popup = () => (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={{
-        paddingVertical: 9,
-        position: 'absolute',
-        width: width,
-        height: height,
-        flex: 1,
-        alignItems: 'flex-end',
-        zIndex: 3,
-        elevation: 5,
-        backgroundColor: 'transparent',
-      }}
-      onPress={() => setShowMenu(false)}
-    >
-      <View
-        style={{
-          width: 160,
-          borderRadius: 10,
-          backgroundColor: 'white',
-          marginRight: 56,
-          shadowColor: '#808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.8,
-          shadowRadius: 10,
-          elevation: 5,
-          paddingTop: 8,
-          paddingBottom: 16,
-          ...Platform.select({
-            android: {
-              marginTop: 94,
-            },
-            ios: {
-              marginTop: 94,
-            },
-          }),
-        }}
-      >
-        {allCurrentPatients &&
-          allCurrentPatients.map(
-            (profile: GetCurrentPatients_getCurrentPatients_patients, i: number) => (
-              <View style={styles.textViewStyle} key={i}>
-                <Text
-                  style={styles.textStyle}
-                  onPress={() => {
-                    setShowMenu(false);
-                  }}
-                >
-                  {profile.firstName
-                    ? profile.firstName
-                        .split(' ')[0]
-                        .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
-                    : ''}
-                </Text>
-              </View>
-            )
-          )}
-
-        {/* <Text
-          style={{
-            paddingTop: 20,
-            paddingBottom: 4,
-            paddingRight: 16,
-            textAlign: 'right',
-            ...theme.viewStyles.yellowTextStyle,
-          }}
-        >
-          ADD MEMBER
-        </Text> */}
-      </View>
-    </TouchableOpacity>
-  );
 
   const renderThingsToDo = () => {
     return (
@@ -540,9 +468,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
         // horizontal={true}
-        data={consultations}
+        data={
+          consultations
+          // selectedTab === tabs[0].title
+          //   ? consultations.filter((item) =>
+          //       moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+          //     )
+          //   : consultations.filter((item) =>
+          //       moment(item.appointmentDateTime).isBefore(moment(new Date()))
+          //     )
+        }
         bounces={false}
         showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={renderNoAppointments()}
         renderItem={({ item }) => {
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
@@ -630,7 +568,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
+                        {item.doctorInfo
+                          ? `${item.doctorInfo.salutation}. ${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
+                          : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text
@@ -863,9 +803,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderTopView = () => {
-    const todayConsults = consultations.filter(
-      (item) => item.appointmentDateTime.split('T')[0] === new Date().toISOString().split('T')[0]
-    );
+    // const todayConsults = consultations.filter(
+    //   (item) => item.appointmentDateTime.split('T')[0] === new Date().toISOString().split('T')[0]
+    // );
     return (
       <View style={{ width: '100%' }}>
         <View style={styles.viewName}>
@@ -993,48 +933,72 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ? 'Here are your recent and upcoming consultations'
               : string.consult_room.description}
           </Text>
-          <View
-            style={{
-              height:
-                consultations.length > 0
-                  ? Platform.OS === 'ios'
-                    ? 0 //84
-                    : 10 //94
-                  : Platform.OS === 'ios'
-                  ? 48
-                  : 58,
-            }}
-          />
-        </View>
-        <View style={styles.cardContainerStyle}>
-          {consultations.length > 0 ? null : ( // renderConsultations()
-            <View
-              style={{
-                marginLeft: 20,
-                marginTop: 20,
-              }}
-            >
-              <Button
-                title={string.home.consult_doctor}
-                style={styles.buttonStyles}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.Consult, ' SymptomChecker clicked');
-                  props.navigation.navigate(AppRoutes.SymptomChecker, { Consult: 'Consult' });
-                }}
-              />
-            </View>
-          )}
         </View>
       </View>
     );
   };
 
+  const renderNoAppointments = () => {
+    if (!loading) {
+      return (
+        <View
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            padding: 16,
+            marginTop: 20,
+            marginHorizontal: 12,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+        >
+          <View>
+            <Text style={{ ...theme.viewStyles.text('M', 16, '#02475b', 1, 24, 0) }}>
+              {string.home.book_appointment_question}
+            </Text>
+            <Button
+              title={string.home.book_appointment}
+              style={styles.buttonStyles}
+              titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.DoctorSearch);
+              }}
+            />
+          </View>
+          <DoctorIcon />
+        </View>
+      );
+    }
+  };
+  const renderTabSwitch = () => {
+    return (
+      <TabsComponent
+        height={43}
+        titleStyle={{ fontSize: 14 }}
+        selectedTitleStyle={{ fontSize: 14 }}
+        style={{
+          borderRadius: 0,
+
+          backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
+          shadowColor: colors.SHADOW_GRAY,
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.4,
+          shadowRadius: 8,
+          elevation: 4,
+        }}
+        data={tabs}
+        onChange={(selectedTab: string) => {
+          setselectedTab(selectedTab);
+        }}
+        selectedTab={selectedTab}
+      />
+    );
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {showMenu && Popup()}
           {renderTopView()}
+          {/* {renderTabSwitch()} */}
           <View
             style={
               {
@@ -1259,14 +1223,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         </BottomPopUp>
       )}
       {/* {loading && <Spinner />} */}
-      {/* {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )} */}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );

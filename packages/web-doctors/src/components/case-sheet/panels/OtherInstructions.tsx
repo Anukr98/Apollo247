@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) =>
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
       borderRadius: 5,
-      padding: 10,
+      padding: '0 10px',
     },
     othersBtnfav: {
       height: 'auto',
@@ -103,11 +103,18 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       color: '#02475b !important',
       padding: '5px 0',
+      position: 'relative',
       '& img': {
         float: 'right',
         border: '1px solid #00b38e',
         borderRadius: '50%',
         maxWidth: 24,
+        position: 'absolute',
+        top: 12,
+        right: 2,
+      },
+      '& div': {
+        height: 'auto',
       },
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
@@ -121,6 +128,8 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
+        paddingRight: 20,
       },
     },
     btnAddDoctor: {
@@ -213,6 +222,7 @@ export const OtherInstructions: React.FC = () => {
           {showAddInputText && (
             <Typography component="div" className={classes.textFieldWrapper}>
               <InputBase
+                autoFocus
                 fullWidth
                 className={classes.textFieldColor}
                 placeholder="Enter instruction here.."

@@ -4,9 +4,10 @@ import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.react.ReactApplication;
+import com.heanoria.library.reactnative.locationenabler.RNAndroidLocationEnablerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
-import org.wonday.pdf.RCTPdfView;
 import com.bugsnag.BugsnagReactNative;
+import org.wonday.pdf.RCTPdfView;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import io.fabric.sdk.android.Fabric;
 import io.github.mr03web.softinputmode.SoftInputModePackage;
@@ -29,6 +30,7 @@ import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
+import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage; // <-- Add this line
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,9 +47,10 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNAndroidLocationEnablerPackage(),
             new RNFetchBlobPackage(),
-            new RCTPdfView(),
             BugsnagReactNative.getPackage(),
+            new RCTPdfView(),
             new RNGestureHandlerPackage(),
             new SoftInputModePackage(),
             new PickerPackage(),
@@ -64,8 +67,8 @@ public class MainApplication extends Application implements ReactApplication {
             new RNFirebaseAnalyticsPackage(), // <-- Add this line
             new RNFirebaseAuthPackage(),
             new RNFirebaseMessagingPackage(),
-              new RNFirebaseNotificationsPackage()
-
+            new RNFirebaseRemoteConfigPackage(),
+            new RNFirebaseNotificationsPackage()
       );
     }
 

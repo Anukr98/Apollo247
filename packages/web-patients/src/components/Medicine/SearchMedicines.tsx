@@ -376,7 +376,7 @@ export const SearchMedicines: React.FC = (props) => {
                   <span className={classes.count}>04</span>
                 </div>
                 <div className={classes.pastSearches}>
-                  <MedicineCard />
+                  <MedicineCard medicineList={[]} />
                 </div>
               </>
             ) : null}

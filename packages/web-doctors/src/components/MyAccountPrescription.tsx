@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& li': {
           color: '#02475b',
           listStyleType: 'none',
-          padding: 10,
+          padding: '10px 50px 10px 10px',
           fontSize: 14,
           fontWeight: 500,
           position: 'relative',
@@ -103,19 +103,19 @@ export const MyAccountPrescription: React.FC = () => {
     <div className={classes.ProfileContainer}>
       <div>
         <Grid container spacing={2}>
-          <Grid sm={6} xs={12} key={5} item>
+          <Grid sm={6} xs={12} key={1} item>
             <div className={classes.faverite}>Favorite Medicines</div>
             <div className={classes.card}>
               <FavouriteMedicines></FavouriteMedicines>
             </div>
           </Grid>
-          <Grid sm={6} xs={12} key={5} item>
+          <Grid sm={6} xs={12} key={2} item>
             <div className={classes.faverite}>Favorite Tests</div>
             <div className={classes.card}>
               <Tests></Tests>
             </div>
           </Grid>
-          <Grid sm={6} xs={12} key={5} item>
+          <Grid sm={6} xs={12} key={3} item>
             <div className={classes.faverite}>Favorite Advice</div>
             <div className={classes.card}>
               <FavouriteAdvice></FavouriteAdvice>

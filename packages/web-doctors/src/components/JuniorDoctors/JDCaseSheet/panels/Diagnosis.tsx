@@ -22,6 +22,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       fullWidth
       InputProps={{
         inputRef: (node) => {
@@ -363,10 +364,12 @@ export const Diagnosis: React.FC = () => {
       {showAddCondition && (
         <Autosuggest
           onSuggestionSelected={(e, { suggestion }) => {
-            selectedValues!.push(suggestion);
+            selectedValues && selectedValues.push(suggestion);
             setSelectedValues(selectedValues);
             setShowAddCondition(false);
-            suggestions = suggestions.filter((val) => !selectedValues!.includes(val));
+            suggestions = suggestions.filter(
+              (val) => selectedValues && selectedValues.includes(val)
+            );
             setState({
               single: '',
               popper: '',
@@ -379,6 +382,20 @@ export const Diagnosis: React.FC = () => {
             placeholder: 'Search Condition',
             value: state.single,
             onChange: handleChange('single'),
+            onKeyPress: (e) => {
+              if (e.which == 13 || e.keyCode == 13) {
+                if (selectedValues && suggestions.length === 1) {
+                  selectedValues.push(suggestions[0]);
+                  setSelectedValues(selectedValues);
+                  setShowAddCondition(false);
+                  suggestions = suggestions.filter((val) => selectedValues.includes(val));
+                  setState({
+                    single: '',
+                    popper: '',
+                  });
+                }
+              }
+            },
           }}
           renderSuggestionsContainer={(options) => (
             <Paper {...options.containerProps} square className={classes.searchpopup}>

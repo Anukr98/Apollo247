@@ -158,6 +158,7 @@ export const Navigation: React.FC = (props) => {
         Medicines
       </Link>
       <div
+        id="cartId"
         onClick={() => setIsCartPopoverOpen(true)}
         onKeyPress={() => setIsCartPopoverOpen(true)}
         ref={cartPopoverRef}
@@ -199,7 +200,7 @@ export const Navigation: React.FC = (props) => {
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
               </div>
-              <div className={classes.itemsAdded}>2 Items</div>
+              <div className={classes.itemsAdded}>{`${cartItems.length} Items`}</div>
             </div>
           </Link>
           <Link className={classes.cartTypeGroup} to={clientRoutes.medicinesCart()}>

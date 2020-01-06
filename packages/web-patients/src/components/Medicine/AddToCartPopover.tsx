@@ -1,8 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -35,20 +34,33 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddToCartPopover: React.FC = (props) => {
+interface AddToCarProps {
+  setShowPopup: (showPopup: boolean) => void;
+  showPopup: boolean;
+}
+
+export const AddToCartPopover: React.FC<AddToCarProps> = (props) => {
   const classes = useStyles({});
 
-  return (
+  return props.showPopup ? (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">hi there! :)</Typography>
         <p>Your medicines have been added to your cart.</p>
       </div>
       <div className={classes.actions}>
-        <Link className={classes.viewCartBtn} to={clientRoutes.cartLanding()}>
+        <AphButton
+          className={classes.viewCartBtn}
+          onClick={() => {
+            if (document.getElementById('cartId')) {
+              document.getElementById('cartId')!.click();
+            }
+            props.setShowPopup(false);
+          }}
+        >
           View Cart
-        </Link>
+        </AphButton>
       </div>
     </div>
-  );
+  ) : null;
 };

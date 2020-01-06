@@ -59,7 +59,8 @@ export interface MedicineFilterProps {
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
   const { onClose, onApplyFilter, hideCategoryFilter } = props;
-
+  const discountarray = [{ from: 0, to: 20 }, { from: 20, to: 40 }, { from: 40, to: undefined }];
+  const priceArray = [{ from: 0, to: 250 }, { from: 250, to: 500 }, { from: 500, to: undefined }];
   const [discount, setdiscount] = useState<FilterRange>({
     from: 0,
     to: 100,
@@ -144,9 +145,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
       >
         <SectionHeaderComponent
           sectionTitle={'Categories'}
-          style={{ marginTop: 10, marginLeft: 0 }}
+          style={{ marginTop: 10, marginLeft: 0, marginBottom: 8 }}
         />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 0 }} />
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 0 }} />
         <View style={styles.optionsView}>
           {categories.map((item, idx) => (
             <Button
@@ -178,8 +179,27 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
     );
   };
 
-  const getDiscount = (text: string) => {
-    return text && !isNaN(parseInt(text)) ? parseInt(text) : undefined;
+  // const getDiscount = (text: string) => {
+  //   return text && !isNaN(parseInt(text)) ? parseInt(text) : undefined;
+  // };
+
+  const renderButton = (item: { from: number; to: number | undefined }, isDiscount: boolean) => {
+    const isSelected = isDiscount
+      ? item.from === discount.from && (item.to === undefined || item.to === discount.to)
+      : item.from === price.from && item.to === price.to;
+    return (
+      <Button
+        style={[
+          styles.buttonStyle,
+          isSelected ? { backgroundColor: theme.colors.APP_GREEN } : null,
+        ]}
+        titleTextStyle={[styles.buttonTextStyle, isSelected ? { color: theme.colors.WHITE } : null]}
+        title={`${item.from} ${item.to ? '- ' + item.to : '+'}`}
+        onPress={() =>
+          isDiscount ? setdiscount(item.to ? item : { from: item.from, to: 100 }) : setprice(item)
+        }
+      />
+    );
   };
 
   const renderDiscount = () => {
@@ -199,10 +219,15 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
       >
         <SectionHeaderComponent
           sectionTitle={'Discount'}
-          style={{ marginTop: 10, marginLeft: 0 }}
+          style={{ marginTop: 10, marginLeft: 0, marginBottom: 8 }}
         />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
-        <InputField
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 1 }} />
+        <View style={styles.optionsView}>
+          {discountarray.map((item) => {
+            return renderButton(item, true);
+          })}
+        </View>
+        {/* <InputField
           maxLength={3}
           fromPlaceholder={'Discount'}
           toPlaceholder={'Discount'}
@@ -220,7 +245,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
               to: getDiscount(text),
             });
           }}
-        />
+        /> */}
       </View>
     );
   };
@@ -240,9 +265,17 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           paddingRight: 20,
         }}
       >
-        <SectionHeaderComponent sectionTitle={'Price'} style={{ marginTop: 10, marginLeft: 0 }} />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
-        <InputField
+        <SectionHeaderComponent
+          sectionTitle={'Price'}
+          style={{ marginTop: 10, marginLeft: 0, marginBottom: 8 }}
+        />
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 1 }} />
+        <View style={styles.optionsView}>
+          {priceArray.map((item) => {
+            return renderButton(item, false);
+          })}
+        </View>
+        {/* <InputField
           fromPlaceholder={'Price'}
           toPlaceholder={'Price'}
           fromValue={`${price.from == undefined ? '' : price.from}`}
@@ -256,7 +289,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           onToChangeText={(text) => {
             setprice({ ...price, to: text && !isNaN(parseInt(text)) ? parseInt(text) : undefined });
           }}
-        />
+        /> */}
       </View>
     );
   };
@@ -276,8 +309,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           elevation: 4,
         }}
       >
-        <SectionHeaderComponent sectionTitle={'Sort By'} style={{ marginTop: 0, marginLeft: 0 }} />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
+        <SectionHeaderComponent
+          sectionTitle={'Sort By'}
+          style={{ marginTop: 0, marginLeft: 0, marginBottom: 8 }}
+        />
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 10 }} />
         <MaterialMenu
           options={['A-Z', 'Z-A', 'Price-H-L', 'Price-L-H'].map((item) => ({
             key: item!,
@@ -322,20 +358,20 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
   };
 
   const validateAndApplyFilter = () => {
-    if (typeof discount.from == 'number' && discount.to == undefined) {
-      Alert.alert('Uh oh.. :(', `Please provide maximum discount value.`);
-      return;
-    } else if (typeof discount.to == 'number' && discount.from == undefined) {
-      Alert.alert('Uh oh.. :(', `Please provide minimum discount value.`);
-      return;
-    } else if (
-      typeof discount.to == 'number' &&
-      typeof discount.from == 'number' &&
-      (discount.from > 100 || discount.to > 100)
-    ) {
-      Alert.alert('Uh oh.. :(', `Discount cannot be more than 100.`);
-      return;
-    }
+    // if (typeof discount.from == 'number' && discount.to == undefined) {
+    //   Alert.alert('Uh oh.. :(', `Please provide maximum discount value.`);
+    //   return;
+    // } else if (typeof discount.to == 'number' && discount.from == undefined) {
+    //   Alert.alert('Uh oh.. :(', `Please provide minimum discount value.`);
+    //   return;
+    // } else if (
+    //   typeof discount.to == 'number' &&
+    //   typeof discount.from == 'number' &&
+    //   (discount.from > 100 || discount.to > 100)
+    // ) {
+    //   Alert.alert('Uh oh.. :(', `Discount cannot be more than 100.`);
+    //   return;
+    // }
     onApplyFilter(discount, price, sortBy, categoryIds.filter((i) => i));
   };
 

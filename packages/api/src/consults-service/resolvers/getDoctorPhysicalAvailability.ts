@@ -65,7 +65,8 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         consultStartTime = new Date(st);
       }
       //console.log(consultStartTime, consultEndTime, 'conslt hours');
-      const duration = Math.floor(60 / timeSlot.consultDuration);
+      //const duration = Math.floor(60 / timeSlot.consultDuration);
+      const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
       console.log(duration, 'doctor duration');
       let slotsCount =
         (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
@@ -75,7 +76,6 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         slotsCount = Math.floor(slotsCount);
       }
       console.log(slotsCount, 'slot count', differenceInMinutes(consultEndTime, consultStartTime));
-      console.log(slotsCount, 'slots count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
       availableSlotsReturn = Array(slotsCount)
@@ -139,7 +139,8 @@ const getDoctorPhysicalAvailableSlots: Resolver<
   const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
     DoctorPhysicalAvailabilityInput.doctorId,
     DoctorPhysicalAvailabilityInput.availableDate,
-    doctorsDb
+    doctorsDb,
+    availableSlots
   );
   if (doctorBblockedSlots.length > 0) {
     availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));

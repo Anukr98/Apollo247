@@ -26,6 +26,12 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum CONSULTS_RX_SEARCH_FILTER {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+  PRESCRIPTION = "PRESCRIPTION",
+}
+
 export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -40,6 +46,11 @@ export enum ConsultType {
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
   IOS = "IOS",
+}
+
+export enum DiscountType {
+  AMOUNT = "AMOUNT",
+  PERCENT = "PERCENT",
 }
 
 export enum DoctorType {
@@ -73,15 +84,58 @@ export enum MEDICINE_ORDER_STATUS {
   ITEMS_RETURNED = "ITEMS_RETURNED",
   ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
   PICKEDUP = "PICKEDUP",
   PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
   PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
   QUOTE = "QUOTE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+}
+
+export enum MEDICINE_ORDER_TYPE {
+  CART_ORDER = "CART_ORDER",
+  UPLOAD_PRESCRIPTION = "UPLOAD_PRESCRIPTION",
+}
+
+export enum MEDICINE_TIMINGS {
+  AS_NEEDED = "AS_NEEDED",
+  EVENING = "EVENING",
+  MORNING = "MORNING",
+  NIGHT = "NIGHT",
+  NOON = "NOON",
+}
+
+export enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = "AFTER_FOOD",
+  BEFORE_FOOD = "BEFORE_FOOD",
+}
+
+export enum MEDICINE_UNIT {
+  BOTTLE = "BOTTLE",
+  CAPSULE = "CAPSULE",
+  CREAM = "CREAM",
+  DROPS = "DROPS",
+  GEL = "GEL",
+  INJECTION = "INJECTION",
+  LOTION = "LOTION",
+  ML = "ML",
+  NA = "NA",
+  OINTMENT = "OINTMENT",
+  OTHERS = "OTHERS",
+  POWDER = "POWDER",
+  ROTACAPS = "ROTACAPS",
+  SACHET = "SACHET",
+  SOAP = "SOAP",
+  SOLUTION = "SOLUTION",
+  SPRAY = "SPRAY",
+  SUSPENSION = "SUSPENSION",
+  SYRUP = "SYRUP",
+  TABLET = "TABLET",
 }
 
 export enum PATIENT_ADDRESS_TYPE {
@@ -126,6 +180,7 @@ export enum STATUS {
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
+  UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
 export enum Salutation {
@@ -234,6 +289,7 @@ export interface MedicineCartInput {
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
+  orderTat?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -263,6 +319,24 @@ export interface MedicinePaymentInput {
   bankTxnId?: string | null;
 }
 
+export interface MedicinePaymentMqInput {
+  orderId: string;
+  orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
+}
+
+export interface OrderCancelInput {
+  orderNo?: number | null;
+  remarksCode?: string | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
@@ -279,6 +353,13 @@ export interface PatientAddressInput {
 export interface PatientAppointmentsInput {
   patientId: string;
   appointmentDate: any;
+}
+
+export interface PatientConsultsAndOrdersInput {
+  patient: string;
+  filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
+  offset?: number | null;
+  limit?: number | null;
 }
 
 export interface Range {

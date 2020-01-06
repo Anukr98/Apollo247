@@ -101,34 +101,38 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-// const apolloPoints = [
-//   {
-//     value: 0,
-//     label: '0',
-//   },
-//   {
-//     value: 360,
-//     label: '360',
-//   },
-// ];
-
-// function valuetext(value: number) {
-//   return `${value}`;
-// }
+const apolloPoints = [
+  {
+    value: 0,
+    label: '0',
+  },
+  {
+    value: 360,
+    label: '360',
+  },
+];
 
 interface CheckOutProps {
   setPaymentMethod: (paymentMethod: string) => void;
 }
 
 export const Checkout: React.FC<CheckOutProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [sliderSelectedValue, setSliderSelectedValue] = useState<number>(0);
+
+  const valuetext = (value: number) => {
+    setSliderSelectedValue(value);
+    return `${value}`;
+  };
 
   return (
     <div className={classes.root}>
-      <div className={classes.sectionHeader}>How would you prefer to pay?</div>
-      <div className={classes.checkoutType}>
+      {/* <div className={classes.sectionHeader}>
+        Would you like to use Apollo Health Credits for this payment?
+      </div> */}
+      {/* <div className={classes.checkoutType}>
         <ul>
           <li>
             <FormControlLabel
@@ -146,12 +150,13 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
                     <img src={require('images/img_apolloone.png')} alt="" />
                   </span>
                   <span className={classes.creditesCount}>
-                    Available Health Credits<div className={classes.points}>2000</div>
+                    Available Health Credits
+                    <div className={classes.points}>2000</div>
                   </span>
                 </div>
               }
             />
-            {/* <div className={classes.slider}>
+            <div className={classes.slider}>
               <AphSlider
                 defaultValue={20}
                 getAriaValueText={valuetext}
@@ -166,12 +171,13 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
                 <span>Balance amount to pay</span>
                 <span className={classes.totalAmount}>Rs. 160</span>
               </div>
-            </div> */}
+            </div>
           </li>
         </ul>
-      </div>
+      </div> */}
 
-      <div className={classes.paymentsDisabled}>
+      <div>
+        <div className={classes.sectionHeader}>Pick a payment mode</div>
         <div className={classes.checkoutType}>
           <ul>
             <li>

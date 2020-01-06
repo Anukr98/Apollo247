@@ -19,7 +19,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { MedicineProduct, searchMedicineApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -226,25 +226,27 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
-    }
-    setShowMatchingMedicines(true);
-    setIsLoading(true);
-    searchMedicineApi(_searchText)
-      .then(async ({ data }) => {
-        const products = data.products || [];
-        setMedicineList(products);
-        setIsLoading(false);
-      })
-      .catch((e) => {
-        if (!axios.isCancel(e)) {
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setShowMatchingMedicines(true);
+      setIsLoading(true);
+      searchMedicineApi(_searchText)
+        .then(async ({ data }) => {
+          const products = data.products || [];
+          setMedicineList(products);
           setIsLoading(false);
-          showGenericALert(e);
-        }
-      });
+        })
+        .catch((e) => {
+          if (!axios.isCancel(e)) {
+            setIsLoading(false);
+            showGenericALert(e);
+          }
+        });
+    }
   };
 
   const savePastSeacrh = (sku: string, name: string) =>

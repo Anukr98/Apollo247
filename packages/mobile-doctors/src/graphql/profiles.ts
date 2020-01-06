@@ -92,76 +92,6 @@ export const GET_DOCTOR_DETAILS = gql`
     }
   }
 `;
-export const GET_DOCTOR_PROFILE = gql`
-  query GetDoctorProfile {
-    getDoctorProfile {
-      profile {
-        id
-        salutation
-        firstName
-        lastName
-        mobileNumber
-        experience
-        speciality
-        specialization
-        isStarDoctor
-        education
-        services
-        languages
-        city
-        awards
-        photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
-        package
-        inviteStatus
-        address
-      }
-      paymentDetails {
-        accountNumber
-        address
-      }
-      clinics {
-        name
-        image
-        addressLine1
-        addressLine2
-        addressLine3
-        city
-      }
-      starDoctorTeam {
-        id
-        salutation
-        firstName
-        lastName
-        experience
-        speciality
-        specialization
-        education
-        services
-        languages
-        city
-        awards
-        photoUrl
-        package
-        inviteStatus
-        address
-      }
-      consultationHours {
-        days
-        startTime
-        endTime
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        type
-      }
-    }
-  }
-`;
 
 export const GET_DOCTOR_APPOINTMENTS = gql`
   query GetDoctorAppointments($startDate: Date, $endDate: Date) {
@@ -190,51 +120,83 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
     }
   }
 `;
+export const GET_PATIENT_LOG = gql`
+  query getPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
+    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+      patientLog {
+        patientid
+        consultscount
+        appointmentids
+        appointmentdatetime
+        patientInfo {
+          firstName
+          dateOfBirth
+          id
+          emailAddress
+          mobileNumber
+          gender
+          uhid
+          photoUrl
+        }
+      }
+      totalResultCount
+    }
+  }
+`;
 
 export const CREATEAPPOINTMENTSESSION = gql`
   mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
     createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
       sessionId
       appointmentToken
+      doctorId
     }
   }
 `;
 
-/**
- * @returns {DoctorProfile}
- * @param {String} searchString
- */
-export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
-  query GetDoctorsForStarDoctorProgram($searchString: String!) {
-    getDoctorsForStarDoctorProgram(searchString: $searchString) {
-      profile {
+export const END_APPOINTMENT_SESSION = gql`
+  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
+    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
+  }
+`;
+
+export const MODIFY_CASESHEET = gql`
+  mutation modifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
+    modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
+      consultType
+      appointment {
         id
-        firstName
-        lastName
+      }
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        itemname
+      }
+      doctorId
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineName
+        medicineDosage
+        medicineTimings
+        medicineInstructions
+      }
+      notes
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+      }
+      otherInstructions {
+        instruction
       }
     }
-  }
-`;
-
-/**
- * @returns {boolean}
- * @param {String} starDoctorId
- * @param {String} doctorId
- */
-export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
-  mutation AddDoctorToStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    addDoctorToStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
-  }
-`;
-
-/**
- * @returns {boolean}
- * @param {String} starDoctorId
- * @param {String} doctorId
- */
-export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
-  mutation RemoveDoctorFromStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
 
@@ -277,7 +239,7 @@ export const REMOVE_DELEGATE_NUMBER = gql`
 `;
 
 export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
-  mutation RemoveTeamDoctorFromStarTeam($associatedDoctor: String!, $starDoctor: String!) {
+  mutation removeTeamDoctorFromStarTeam($associatedDoctor: String!, $starDoctor: String!) {
     removeTeamDoctorFromStarTeam(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor) {
       firstName
     }
@@ -310,6 +272,187 @@ export const UPDATE_DELEGATE_NUMBER = gql`
         name
         createdDate
         image
+      }
+    }
+  }
+`;
+
+export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
+  query GetJuniorDoctorCaseSheet($appointmentId: String!) {
+    getJuniorDoctorCaseSheet(appointmentId: $appointmentId) {
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      caseSheetDetails {
+        id
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          itemname
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+    }
+  }
+`;
+
+export const GET_CASESHEET = gql`
+  query GetCaseSheet($appointmentId: String!) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      caseSheetDetails {
+        id
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          itemname
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+      pastAppointments {
+        appointmentDateTime
+        appointmentState
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        caseSheet {
+          consultType
+          appointment {
+            id
+          }
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+          followUpDate
+          followUpAfterInDays
+          followUp
+          medicinePrescription {
+            medicineName
+            medicineName
+            medicineTimings
+            medicineInstructions
+            medicineConsumptionDurationInDays
+          }
+          otherInstructions {
+            instruction
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
+  mutation saveDoctorDeviceToken($SaveDoctorDeviceTokenInput: SaveDoctorDeviceTokenInput!) {
+    saveDoctorDeviceToken(SaveDoctorDeviceTokenInput: $SaveDoctorDeviceTokenInput) {
+      deviceToken {
+        id
+        deviceType
+        deviceOS
+        deviceToken
+        createdDate
+        updatedDate
       }
     }
   }
@@ -363,6 +506,82 @@ export const UPDATE_PATIENT = gql`
         dateOfBirth
         emailAddress
       }
+    }
+  }
+`;
+
+export const INITIATE_TRANSFER_APPONITMENT = gql`
+  mutation initiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
+    initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
+      transferAppointment {
+        id
+        transferStatus
+        transferReason
+        transferredDoctorId
+        transferredSpecialtyId
+      }
+      doctorNextSlot
+    }
+  }
+`;
+
+export const INITIATE_RESCHDULE_APPONITMENT = gql`
+  mutation initiateRescheduleAppointment($RescheduleAppointmentInput: RescheduleAppointmentInput!) {
+    initiateRescheduleAppointment(RescheduleAppointmentInput: $RescheduleAppointmentInput) {
+      rescheduleAppointment {
+        id
+        rescheduleStatus
+        rescheduleReason
+        rescheduledDateTime
+      }
+      rescheduleCount
+    }
+  }
+`;
+
+export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
+  query SearchDoctorAndSpecialtyByName($searchText: String!) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        specialty {
+          name
+          id
+        }
+        specialization
+        photoUrl
+        id
+        experience
+        doctorHospital {
+          facility {
+            id
+            name
+          }
+        }
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSIS = gql`
+  query searchDiagnosis($searchString: String!) {
+    searchDiagnosis(searchString: $searchString) {
+      name
+      id
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSTIC = gql`
+  query searchDiagnostic($searchString: String!) {
+    searchDiagnostic(searchString: $searchString) {
+      itemname
     }
   }
 `;

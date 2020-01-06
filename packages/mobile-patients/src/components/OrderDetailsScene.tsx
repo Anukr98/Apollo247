@@ -146,6 +146,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     GetMedicineOrderDetailsVariables
   >(GET_MEDICINE_ORDER_DETAILS, {
     variables: vars,
+    fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
   console.log({ order });
@@ -286,20 +287,25 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {orderStatusList.map((order, index, array) => {
-            return (
-              <OrderProgressCard
-                style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-                key={index}
-                description={''}
-                status={getOrderStatusText(order!.orderStatus!)}
-                date={getFormattedDate(order!.statusDate)}
-                time={getFormattedTime(order!.statusDate)}
-                isStatusDone={true}
-                nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
-              />
-            );
-          })}
+          {orderStatusList
+            .filter(
+              (item, idx, array) =>
+                array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+            )
+            .map((order, index, array) => {
+              return (
+                <OrderProgressCard
+                  style={index < array.length - 1 ? { marginBottom: 8 } : {}}
+                  key={index}
+                  description={''}
+                  status={getOrderStatusText(order!.orderStatus!)}
+                  date={getFormattedDate(order!.statusDate)}
+                  time={getFormattedTime(order!.statusDate)}
+                  isStatusDone={true}
+                  nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
+                />
+              );
+            })}
         </View>
         {isDelivered ? (
           <Button
@@ -620,7 +626,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         <TabsComponent
           style={styles.tabsContainer}
           onChange={(title) => {
-            setSelectedTab(title);
+            const isNonCartOrder = orderStatusList.find(
+              (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+            );
+            if (!isNonCartOrder) {
+              setSelectedTab(title);
+            }
           }}
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}

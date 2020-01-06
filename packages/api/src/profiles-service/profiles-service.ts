@@ -57,6 +57,10 @@ import {
   saveMedicineOrderPaymentResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrderPayment';
 import {
+  saveMedicineOrderPaymentMqTypeDefs,
+  saveMedicineOrderPaymentMqResolvers,
+} from 'profiles-service/resolvers/saveMedicineOrderPaymentmq';
+import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
@@ -103,6 +107,10 @@ import {
   pharmaOrderDeliveryResolvers,
 } from 'profiles-service/resolvers/pharmaOrderDelivered';
 import {
+  pharmaOrderPlacedTypeDefs,
+  pharmaOrderPlacedResolvers,
+} from 'profiles-service/resolvers/pharmaOrderPlaced';
+import {
   pharmaOrderCancelledTypeDefs,
   pharmaOrderCancelResolvers,
 } from 'profiles-service/resolvers/pharmaOrderCancelled';
@@ -127,6 +135,14 @@ import {
   saveDiagnosticOrderTypeDefs,
   saveDiagnosticOrderResolvers,
 } from 'profiles-service/resolvers/saveDiagnosticOrders';
+import {
+  saveDiagnosticOrderPaymentTypeDefs,
+  saveDiagnosticOrderPaymentResolvers,
+} from 'profiles-service/resolvers/saveDiagnosticOrderPayment';
+import {
+  cancelDiagnosticOrdersTypeDefs,
+  cancelDiagnosticOrdersResolvers,
+} from 'profiles-service/resolvers/cancelDiagnosticOrders';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -226,6 +242,10 @@ import { winstonLogger } from 'customWinstonLogger';
         resolvers: saveMedicineOrderPaymentResolvers,
       },
       {
+        typeDefs: saveMedicineOrderPaymentMqTypeDefs,
+        resolvers: saveMedicineOrderPaymentMqResolvers,
+      },
+      {
         typeDefs: getMedicineOrdersListTypeDefs,
         resolvers: getMedicineOrdersListResolvers,
       },
@@ -278,6 +298,10 @@ import { winstonLogger } from 'customWinstonLogger';
         resolvers: pharmaOrderDeliveryResolvers,
       },
       {
+        typeDefs: pharmaOrderPlacedTypeDefs,
+        resolvers: pharmaOrderPlacedResolvers,
+      },
+      {
         typeDefs: pharmaOrderCancelledTypeDefs,
         resolvers: pharmaOrderCancelResolvers,
       },
@@ -308,6 +332,14 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: saveDiagnosticOrderTypeDefs,
         resolvers: saveDiagnosticOrderResolvers,
+      },
+      {
+        typeDefs: saveDiagnosticOrderPaymentTypeDefs,
+        resolvers: saveDiagnosticOrderPaymentResolvers,
+      },
+      {
+        typeDefs: cancelDiagnosticOrdersTypeDefs,
+        resolvers: cancelDiagnosticOrdersResolvers,
       },
     ]),
     plugins: [

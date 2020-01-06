@@ -77,13 +77,30 @@ export enum DOCTOR_ONLINE_STATUS {
   AWAY = 'AWAY',
 }
 
+export enum MEDICINE_FORM_TYPES {
+  GEL_LOTION_OINTMENT = 'GEL_LOTION_OINTMENT',
+  OTHERS = 'OTHERS',
+}
+export enum MEDICINE_CONSUMPTION_DURATION {
+  DAYS = 'DAYS',
+  MONTHS = 'MONTHS',
+  WEEKS = 'WEEKS',
+}
+export enum MEDICINE_FREQUENCY {
+  AS_NEEDED = 'AS_NEEDED',
+  FIVE_TIMES_A_DAY = 'FIVE_TIMES_A_DAY',
+  FOUR_TIMES_A_DAY = 'FOUR_TIMES_A_DAY',
+  ONCE_A_DAY = 'ONCE_A_DAY',
+  THRICE_A_DAY = 'THRICE_A_DAY',
+  TWICE_A_DAY = 'TWICE_A_DAY',
+}
 export enum MEDICINE_TIMINGS {
+  AS_NEEDED = 'AS_NEEDED',
   EVENING = 'EVENING',
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
   NOON = 'NOON',
 }
-
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
   BEFORE_FOOD = 'BEFORE_FOOD',
@@ -178,6 +195,9 @@ export class ConsultHours extends BaseEntity {
 //doctor starts
 @Entity()
 export class Doctor extends BaseEntity {
+  @OneToMany((type) => AdminDoctorMapper, (admindoctormapper) => admindoctormapper.doctor)
+  admindoctormapper: AdminDoctorMapper[];
+
   @OneToMany((type) => DoctorBankAccounts, (bankAccount) => bankAccount.doctor)
   bankAccount: DoctorBankAccounts[];
 
@@ -224,6 +244,9 @@ export class Doctor extends BaseEntity {
   @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
   doctorHospital: DoctorAndHospital[];
 
+  @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
+  doctorSecretary: DoctorSecretary;
+
   @Column()
   doctorType: DoctorType;
 
@@ -236,6 +259,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   @Validate(EmailValidator)
   emailAddress: string;
+
+  @Column({ nullable: true })
+  externalId: string;
 
   @Column({ nullable: true })
   fullName: string;
@@ -300,8 +326,8 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   salutation: Salutation;
 
-  @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
-  doctorSecretary: DoctorSecretary;
+  @Column({ nullable: true, type: 'text' })
+  signature: string;
 
   @ManyToOne((type) => DoctorSpecialty, (specialty) => specialty.doctor)
   specialty: DoctorSpecialty;
@@ -422,6 +448,9 @@ export class DoctorSpecialty extends BaseEntity {
 
   @Column({ nullable: true })
   displayOrder: Number;
+
+  @Column({ nullable: true })
+  externalId: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -607,9 +636,14 @@ export class DoctorDeviceTokens extends BaseEntity {
 export enum AdminType {
   ADMIN = 'ADMIN',
   JDADMIN = 'JDADMIN',
+  QAADMIN = 'QAADMIN',
+  SUPERADMIN = 'SUPERADMIN',
 }
 @Entity()
 export class AdminUsers extends BaseEntity {
+  @OneToMany((type) => AdminDoctorMapper, (admindoctormapper) => admindoctormapper.adminuser)
+  admindoctormapper: AdminDoctorMapper[];
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -618,6 +652,18 @@ export class AdminUsers extends BaseEntity {
 
   @Column({ default: true })
   isActive: Boolean;
+
+  @Column({ default: true })
+  userName: string;
+
+  @Column({ default: true })
+  password: string;
+
+  @Column({ nullable: true })
+  email: string;
+
+  @Column({ nullable: true })
+  description: string;
 
   @Column()
   @Validate(MobileNumberValidator)
@@ -716,7 +762,19 @@ export class DoctorsFavouriteMedicine extends BaseEntity {
   medicineConsumptionDurationInDays: Number;
 
   @Column({ nullable: true })
+  medicineConsumptionDuration: string;
+
+  @Column({ nullable: true })
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION;
+
+  @Column({ nullable: true })
   medicineDosage: string;
+
+  @Column({ nullable: true })
+  medicineFormTypes: MEDICINE_FORM_TYPES;
+
+  @Column({ nullable: true })
+  medicineFrequency: MEDICINE_FREQUENCY;
 
   @Column({ nullable: true })
   medicineUnit: string;
@@ -792,3 +850,24 @@ export class DoctorsFavouriteAdvice extends BaseEntity {
   }
 }
 //doctors favoutite advice ends
+
+// admin_doctor_mapper starts
+
+@Entity()
+export class AdminDoctorMapper extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @ManyToOne((type) => Doctor, (doctor) => doctor.admindoctormapper)
+  doctor: Doctor;
+
+  @ManyToOne((type) => AdminUsers, (adminuser) => adminuser.admindoctormapper)
+  adminuser: AdminUsers;
+}
+// admin_doctors ends

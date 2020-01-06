@@ -33,7 +33,7 @@ import {
   UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, isValidSearch, isValidText } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -136,14 +136,14 @@ const charactersList = {
   _SLASH_: '/',
 };
 
-const replaceStringWithChar = (str: string) => {
-  const ss = str;
-  Object.entries(charactersList).forEach(([key, value]) => {
-    ss.replace(key, value);
-  });
+// const replaceStringWithChar = (str: string) => {
+//   const ss = str;
+//   Object.entries(charactersList).forEach(([key, value]) => {
+//     ss.replace(key, value);
+//   });
 
-  return ss.toLowerCase();
-};
+//   return ss.toLowerCase();
+// };
 
 export const MedicalTest: RecordTypeType[] = [
   { value: 'gm', key: MedicalTestUnit.GM },
@@ -169,7 +169,7 @@ export interface AddRecordProps extends NavigationScreenProps {}
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
-  const { width, height } = Dimensions.get('window');
+  const { width } = Dimensions.get('window');
   const [showImages, setshowImages] = useState<boolean>(true);
   const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
@@ -184,15 +184,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [medicalRecordParameters, setmedicalRecordParameters] = useState<
     AddMedicalRecordParametersInput[]
   >([MedicalRecordInitialValues]);
-  const [showRecordTypePopup, setshowRecordTypePopup] = useState<boolean>(false);
+  // const [showRecordTypePopup, setshowRecordTypePopup] = useState<boolean>(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
-  const [selectedUnitIndex, setselectedUnitIndex] = useState<number>();
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  // const [selectedUnitIndex, setselectedUnitIndex] = useState<number>();
+  const { showAphAlert } = useUIElements();
 
   const [Images, setImages] = useState<PickerImage>(
-    props.navigation.state.params ? props.navigation.state.params!.images : []
+    props.navigation.state.params ? props.navigation.state.params.images : []
   );
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -231,10 +231,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               base64FileInput: item.data,
               category: 'HealthChecks',
               fileType:
-                item.path!.substring(item.path!.lastIndexOf('.') + 1) == 'jpg'
+                item.path.substring(item.path.lastIndexOf('.') + 1) == 'jpg'
                   ? 'JPEG'
-                  : item.path!.substring(item.path!.lastIndexOf('.') + 1).toUpperCase(),
-              patientId: currentPatient && currentPatient!.id,
+                  : item.path.substring(item.path.lastIndexOf('.') + 1).toUpperCase(),
+              patientId: currentPatient && currentPatient.id,
             },
           },
         })
@@ -359,7 +359,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 prismFileIds: filtered.map((item) => item!.fileId).join(','),
               };
               console.log('in', inputData);
-              if (uploadUrlscheck!.length > 0) {
+              if (uploadUrlscheck.length > 0) {
                 client
                   .mutate<addPatientMedicalRecord>({
                     mutation: ADD_MEDICAL_RECORD,
@@ -388,14 +388,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             } else {
               setshowSpinner(false);
               showAphAlert!({
-                title: `Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`,
+                title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
                 description: 'Your upload images are failed ',
               });
             }
           })
           .catch((e) => {
             showAphAlert!({
-              title: `Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`,
+              title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
               description: 'Your upload images are failed ',
             });
             setshowSpinner(false);
@@ -449,7 +449,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderImagesRow = (data: PickerImage, i: number) => {
     var base64Icon = 'data:image/png;base64,';
-    fin = base64Icon.concat(data.data!);
+    fin = base64Icon.concat(data.data);
     return (
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
@@ -488,9 +488,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           </View>
           <View style={{ flex: 1 }}>
             <Text>
-              {data!
-                .path!.split('\\')!
-                .pop()!
+              {data.path
+                .split('\\')
+                .pop()
                 .split('/')
                 .pop()}
             </Text>
@@ -522,7 +522,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <CollapseCard
           heading="IMAGES UPLOADED"
           collapse={showImages}
-          onPress={() => (CommonLogEvent('ADD_RECORD', 'Show Images'), setshowImages(!showImages))}
+          onPress={() => {
+            CommonLogEvent('ADD_RECORD', 'Show Images');
+            setshowImages(!showImages);
+          }}
         >
           <View style={[styles.cardViewStyle, { paddingHorizontal: 8 }]}>
             <FlatList
@@ -534,9 +537,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             />
             <Text
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
-              onPress={() => (
-                CommonLogEvent('ADD_RECORD', 'Display order popup'), setdisplayOrderPopup(true)
-              )}
+              onPress={() => {
+                CommonLogEvent('ADD_RECORD', 'Display order popup');
+                setdisplayOrderPopup(true);
+              }}
             >
               ADD DOCUMENT
             </Text>
@@ -552,9 +556,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <CollapseCard
           heading="RECORD DETAILS"
           collapse={showRecordDetails}
-          onPress={() => (
-            CommonLogEvent('ADD_RECORD', 'RECORD DETAILS'), setshowRecordDetails(!showRecordDetails)
-          )}
+          onPress={() => {
+            CommonLogEvent('ADD_RECORD', 'RECORD DETAILS');
+            setshowRecordDetails(!showRecordDetails);
+          }}
         >
           <View style={[styles.cardViewStyle, { paddingTop: 6, paddingBottom: 5 }]}>
             {/* <TextInputComponent
@@ -573,7 +578,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               options={RecordType}
               selectedText={typeofRecord}
               onPress={(data) => {
-                setshowRecordTypePopup(false);
+                // setshowRecordTypePopup(false);
                 settypeofRecord(data.key as MedicalRecordType);
               }}
               // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
@@ -622,7 +627,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               label={'Name Of Test'}
               value={testName}
               placeholder={'Enter name of test'}
-              onChangeText={(testName) => settestName(testName)}
+              onChangeText={(testName) => {
+                if (isValidText(testName)) {
+                  settestName(testName);
+                }
+              }}
             />
             <TextInputComponent
               label={'Date Of Test'}
@@ -643,7 +652,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <Text
                   style={[
                     styles.placeholderTextStyle,
-                    ,
                     dateOfTest !== '' ? null : styles.placeholderStyle,
                   ]}
                 >
@@ -721,7 +729,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                     label={'Name Of Parameter'}
                     placeholder={'Enter name'}
                     value={item.parameterName || ''}
-                    onChangeText={(value) => setParametersData('parameterName', value, i)}
+                    onChangeText={(value) => {
+                      if (isValidText(value)) {
+                        setParametersData('parameterName', value, i);
+                      }
+                    }}
                   />
                   <View style={{ flexDirection: 'row' }}>
                     <View style={{ flex: 1, marginRight: 8 }}>
@@ -745,7 +757,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                         selectedText={typeofRecord}
                         onPress={(data) => {
                           setParametersData('unit', data.key as MedicalTestUnit, i);
-                          setselectedUnitIndex(i);
+                          // setselectedUnitIndex(i);
                         }}
                         // setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
                         // setSelectedOption={(value: MedicalTestUnit) => {
@@ -851,19 +863,31 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   label={'Referring Doctor'}
                   placeholder={'Enter name'}
                   value={referringDoctor}
-                  onChangeText={(referringDoctor) => setreferringDoctor(referringDoctor)}
+                  onChangeText={(referringDoctor) => {
+                    if (isValidText(referringDoctor)) {
+                      setreferringDoctor(referringDoctor);
+                    }
+                  }}
                 />
                 <TextInputComponent
                   label={'Observations / Impressions'}
                   placeholder={'Enter observations'}
                   value={observations}
-                  onChangeText={(observations) => setobservations(observations)}
+                  onChangeText={(observations) => {
+                    if (isValidText(observations)) {
+                      setobservations(observations);
+                    }
+                  }}
                 />
                 <TextInputComponent
                   label={'Additional Notes'}
                   placeholder={'Enter notes'}
                   value={additionalNotes}
-                  onChangeText={(additionalNotes) => setadditionalNotes(additionalNotes)}
+                  onChangeText={(additionalNotes) => {
+                    if (isValidText(additionalNotes)) {
+                      setadditionalNotes(additionalNotes);
+                    }
+                  }}
                 />
               </View>
             </View>
@@ -959,7 +983,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       {showSpinner && <Spinner />}
       {showPopUp && (
         <BottomPopUp
-          title={`Hi ${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''},`}
+          title={`Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`}
           description={'Please select images first'}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>

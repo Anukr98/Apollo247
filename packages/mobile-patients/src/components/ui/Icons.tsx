@@ -39,6 +39,10 @@ export const Mascot: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_mascot.png')} />
 );
 
+export const DoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_doctor.png')} />
+);
+
 export const More: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_more.png')} />
 );
@@ -696,4 +700,8 @@ export const EditIcon: React.FC<IconProps> = (props) => (
 
 export const EditProfilePlaceHolder: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_profile_placeholder.png')} />
+);
+
+export const ManageProfileIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_manageprofile.png')} />
 );

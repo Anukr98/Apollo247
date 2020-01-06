@@ -7,6 +7,8 @@ import {
   DiagnosticOrders,
   DiagnosticOrderLineItems,
   DIAGNOSTIC_ORDER_STATUS,
+  Gender,
+  DiagnosticOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -26,6 +28,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     PICKUP_REQUESTED
     PICKUP_CONFIRMED
     ORDER_FAILED
+    ORDER_CANCELLED
   }
 
   input DiagnosticOrderInput {
@@ -93,6 +96,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     displayId: Int!
     createdDate: DateTime!
     diagnosticOrderLineItems: [DiagnosticOrderLineItems]
+    diagnosticOrdersStatus: [DiagnosticOrdersStatus]
   }
 
   type DiagnosticOrderLineItems {
@@ -101,6 +105,12 @@ export const saveDiagnosticOrderTypeDefs = gql`
     price: Float
     quantity: Int
     diagnostics: Diagnostics
+  }
+
+  type DiagnosticOrdersStatus {
+    id: ID!
+    orderStatus: DIAGNOSTIC_ORDER_STATUS
+    createdDate: DateTime
   }
 
   extend type Mutation {
@@ -273,69 +283,71 @@ const SaveDiagnosticOrder: Resolver<
     if (diagnosticOrderInput.centerCode != '') {
       visitType = 'Center Visit';
     }
-    const preBookingInput = [
-      {
-        UserName: 'ASKAPOLLO',
-        Password: '3HAQbAb9wrsykr8TMLnV',
-        InterfaceClient: 'ASKAPOLLO',
-        Patient_ID: patientDetails.id.toString(),
-        Title: 'Mr.',
-        PName: patientDetails.firstName + '' + patientDetails.lastName,
-        House_No: '',
-        LocalityID: '0',
-        Locality: '',
-        CityID: '',
-        City: '',
-        StateID: '',
-        State: '',
-        PinCode: addressZipcode,
-        Mobile: patientDetails.mobileNumber.substr(3),
-        Email: patientDetails.emailAddress,
-        DOB: patientDob,
-        Gender: '',
-        VisitType: visitType,
-        PatientIDProof: '',
-        PatientIDProofNo: '',
-        Remarks: '',
-        PaymentMode: 'Cash',
-        PaymentModeID: '1',
-        SampleCollectionDateTime: format(diagnosticDate, 'dd-MMM-yyyy hh:mm'),
-        LabReferenceNo: diagnosticOrderInput.centerCode,
-        tests: orderLineItems,
-        Attachments: [],
-        GrossAmt: '0',
-        DiscAmt: '0',
-        NetAmt: '0',
-        PaymentRefNo: '',
-        PayUTransactionID: '',
-        PayUPaymentId: '',
-        CouponCode: '',
-        IsFirstCustomer: '',
-        id: 8152197921,
-        mode: 'NB',
-        status: 'success',
-        unmappedstatus: 'captured',
-        key: 'JnQwXs',
-        txnid: '',
-        productinfo: 'Apollo',
-        hash:
-          'e02266c5a83cc2c2e5b5166e43d275e326f7596f2be556b12001874f965e03ff35822f0e3677986f3ffab080cf2cf8fbd630375a3f29e200620dab0362baeb3d',
-        field8: 'Success',
-        field9: 'Transaction Completed Successfully',
-        payment_source: 'payu',
-        PG_TYPE: 'AIRNB',
-        bank_ref_no: '',
-        ibibo_code: 'AIRNB',
-        error_code: 'E000',
-        Error_Message: 'No Error',
-        is_seamless: 2,
-        surl: 'https://payu.herokuapp.com/success',
-        furl: 'https://payu.herokuapp.com/failure',
-        PGAggregatorName: 'PayU',
-        DoctorID: '',
-        OtherDoctor: '',
-      },
-    ];
+    let patientGender = Gender.MALE;
+    if (patientDetails.gender != null) {
+      patientGender = patientDetails.gender;
+    }
+    const preBookingInput = {
+      UserName: 'ASKAPOLLO',
+      Password: '3HAQbAb9wrsykr8TMLnV',
+      InterfaceClient: 'ASKAPOLLO',
+      Patient_ID: patientDetails.id.toString(),
+      Title: 'Mr.',
+      PName: patientDetails.firstName + '' + patientDetails.lastName,
+      House_No: '',
+      LocalityID: '0',
+      Locality: '',
+      CityID: '',
+      City: '',
+      StateID: '',
+      State: '',
+      PinCode: addressZipcode,
+      Mobile: patientDetails.mobileNumber.substr(3),
+      Email: patientDetails.emailAddress == null ? '' : patientDetails.emailAddress,
+      DOB: patientDob,
+      Gender: patientGender,
+      VisitType: visitType,
+      PatientIDProof: '',
+      PatientIDProofNo: '',
+      Remarks: '',
+      PaymentMode: 'Cash',
+      PaymentModeID: '1',
+      SampleCollectionDateTime: format(diagnosticDate, 'dd-MMM-yyyy hh:mm'),
+      LabReferenceNo: diagnosticOrderInput.centerCode,
+      tests: orderLineItems,
+      Attachments: [],
+      GrossAmt: '0',
+      DiscAmt: '0',
+      NetAmt: '0',
+      PaymentRefNo: '',
+      PayUTransactionID: '',
+      PayUPaymentId: '',
+      CouponCode: '',
+      IsFirstCustomer: '',
+      id: 8152197921,
+      mode: 'NB',
+      status: 'success',
+      unmappedstatus: 'captured',
+      key: 'JnQwXs',
+      txnid: '',
+      productinfo: 'Apollo',
+      hash:
+        'e02266c5a83cc2c2e5b5166e43d275e326f7596f2be556b12001874f965e03ff35822f0e3677986f3ffab080cf2cf8fbd630375a3f29e200620dab0362baeb3d',
+      field8: 'Success',
+      field9: 'Transaction Completed Successfully',
+      payment_source: 'payu',
+      PG_TYPE: 'AIRNB',
+      bank_ref_no: '',
+      ibibo_code: 'AIRNB',
+      error_code: 'E000',
+      Error_Message: 'No Error',
+      is_seamless: 2,
+      surl: 'https://payu.herokuapp.com/success',
+      furl: 'https://payu.herokuapp.com/failure',
+      PGAggregatorName: 'PayU',
+      DoctorID: '',
+      OtherDoctor: '',
+    };
     const preBookingUrl = process.env.DIAGNOSTIC_PREBOOKING_URL
       ? process.env.DIAGNOSTIC_PREBOOKING_URL
       : '';
@@ -347,7 +359,7 @@ const SaveDiagnosticOrder: Resolver<
       JSON.stringify(preBookingInput),
       ''
     );
-
+    console.log(preBookingInput, preBookingUrl, 'preBookingInput');
     const preBookingResp = await fetch(preBookingUrl, {
       method: 'POST',
       body: JSON.stringify(preBookingInput),
@@ -386,7 +398,7 @@ const SaveDiagnosticOrder: Resolver<
             sex: patientDetails.gender == null ? 'Male' : patientDetails.gender,
             address: patientAddress,
             pincode: addressZipcode,
-            email_address: patientDetails.emailAddress,
+            email_address: patientDetails.emailAddress == null ? '' : patientDetails.emailAddress,
             investigation: itdosLineItems,
             discount: '0',
             remarks: 'remarks',
@@ -468,7 +480,7 @@ const SaveDiagnosticOrder: Resolver<
               branchCode: diagnosticOrderInput.diagnosticBranchCode,
               employeeCode: diagnosticOrderInput.diagnosticEmployeeCode,
               slot: diagnosticOrderInput.employeeSlotId.toString(),
-              scheduleDate: diagnosticOrderInput.diagnosticDate,
+              scheduleDate: format(diagnosticOrderInput.diagnosticDate, 'yyyy-MM-dd'),
             },
           ],
         },
@@ -519,6 +531,13 @@ const SaveDiagnosticOrder: Resolver<
           addProceResp.successList[0],
           DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
         );
+        const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+          diagnosticOrders: saveOrder,
+          orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          statusDate: new Date(),
+          hideStatus: false,
+        };
+        await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
       }
     } else {
       await diagnosticOrdersRepo.updateDiagnosticOrder(
@@ -527,6 +546,13 @@ const SaveDiagnosticOrder: Resolver<
         '',
         DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
       );
+      const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+        diagnosticOrders: saveOrder,
+        orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+        statusDate: new Date(),
+        hideStatus: false,
+      };
+      await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
     }
   }
   return {

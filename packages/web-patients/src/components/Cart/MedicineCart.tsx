@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
@@ -12,17 +11,24 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT_RESULT } from 'graphql/medicines';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
 import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
-  SaveMedicineOrderPayment,
-  SaveMedicineOrderPaymentVariables,
-} from 'graphql/types/SaveMedicineOrderPayment';
-import { Mutation } from 'react-apollo';
-import { MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
+  SaveMedicineOrderPaymentMqVariables,
+  SaveMedicineOrderPaymentMq_SaveMedicineOrderPaymentMq,
+} from 'graphql/types/SaveMedicineOrderPaymentMq';
+import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
+import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
+import { LocationContext } from 'components/LocationProvider';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
+} from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -363,6 +369,36 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       marginLeft: 'auto',
     },
+    followUpWrapper: {
+      backgroundColor: '#fff',
+      margin: '0 0 0 8px',
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      width: '100%',
+      padding: 10,
+    },
+    fileInfo: {
+      display: 'flex',
+      margin: '10px 0 0 0',
+    },
+    doctorName: {
+      fontSize: 16,
+      fontWeight: 500,
+      color: '#01475b',
+    },
+    patientHistory: {
+      opacity: 0.6,
+      fontSize: 12,
+      fontWeight: 500,
+      lineHeight: 1.67,
+      color: '#02475b',
+      '& span': {
+        margin: '0 5px 0 0',
+      },
+    },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
   };
 });
 
@@ -376,16 +412,16 @@ export interface PrescriptionFormat {
 }
 
 export const MedicineCart: React.FC = (props) => {
-  const classes = useStyles();
-
+  const classes = useStyles({});
   const defPresObject = {
     name: '',
     imageUrl: '',
   };
+  const { storePickupPincode, deliveryAddressId, clearCartInfo } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
@@ -397,18 +433,39 @@ export const MedicineCart: React.FC = (props) => {
   const [prescriptions, setPrescriptions] = React.useState<PrescriptionFormat[]>([]);
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
+  const { currentPincode } = useContext(LocationContext);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [phrPrescriptionData, setPhrPrescriptionData] = React.useState<Prescription[] | null>(null);
+  const [medicineOrderData, setMedicineOrderData] = React.useState<MedicineOrder[] | null>(null);
 
-  const removePrescription = (fileName: string) => {
+  const removeImagePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
   };
 
+  const removePrescription = (id: string, type: string) => {
+    switch (type) {
+      case 'consults':
+        phrPrescriptionData &&
+          phrPrescriptionData.length > 0 &&
+          setPhrPrescriptionData(phrPrescriptionData.filter((data) => data.id !== id));
+        break;
+      case 'medicineOrder':
+        medicineOrderData &&
+          medicineOrderData.length > 0 &&
+          setMedicineOrderData(medicineOrderData.filter((data) => data.id !== id));
+        break;
+      default:
+        break;
+    }
+  };
+
   useEffect(() => {
-    if (prescriptionUploaded.name !== '') {
+    if (prescriptionUploaded && prescriptionUploaded.name !== '') {
       setPrescriptions((prevValues) => [...prevValues, prescriptionUploaded]);
     }
   }, [prescriptionUploaded]);
 
-  const { cartTotal, cartItems } = useShoppingCart();
+  const { cartItems, cartTotal } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const { authToken } = useAuth();
 
@@ -443,6 +500,63 @@ export const MedicineCart: React.FC = (props) => {
         })
       : [];
 
+  const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
+    SAVE_MEDICINE_ORDER,
+    {
+      variables: {
+        medicineCartInput: {
+          quoteId: '',
+          patientId: currentPatient ? currentPatient.id : '',
+          shopId: deliveryMode === 'HOME' ? '' : deliveryAddressId,
+          patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
+          medicineDeliveryType:
+            deliveryMode === 'HOME'
+              ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+              : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          estimatedAmount: parseFloat(totalAmount),
+          devliveryCharges: 0,
+          prescriptionImageUrl: Array.prototype.map
+            .call(prescriptions, (presDetails) => presDetails.imageUrl)
+            .toString(),
+          items: cartItemsForApi,
+        },
+      },
+    }
+  );
+
+  const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
+
+  const placeOrder = (orderId: string, orderAutoId: number) => {
+    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+      medicinePaymentMqInput: {
+        orderId: orderId,
+        orderAutoId: orderAutoId,
+        amountPaid: parseFloat(totalAmount),
+        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+
+    savePayment({ variables: paymentInfo })
+      .then(({ data }: any) => {
+        if (data && data.SaveMedicineOrderPaymentMq) {
+          const { errorCode, errorMessage } = data.SaveMedicineOrderPaymentMq;
+          if (errorCode || (errorMessage && errorMessage.length > 0)) {
+            window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
+            return;
+          }
+          setCheckoutDialogOpen(false);
+          clearCartInfo && clearCartInfo();
+          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
+        }
+      })
+      .catch((e) => {
+        window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
+      });
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -464,26 +578,45 @@ export const MedicineCart: React.FC = (props) => {
             </div>
             {cartItems.length > 0 ? (
               <>
-                <MedicineStripCard medicines={cartItems} />
+                <MedicineListingCard />
                 {uploadPrescriptionRequired >= 0 ? (
                   <>
                     <div className={classes.sectionHeader}>Upload Prescription</div>
-                    {prescriptions.length > 0 ? (
+                    {prescriptions.length > 0 ||
+                    (phrPrescriptionData && phrPrescriptionData.length > 0) ||
+                    (medicineOrderData && medicineOrderData.length > 0) ? (
                       <div className={classes.uploadedPreList}>
-                        {prescriptions.map((prescriptionDetails, index) => {
-                          const fileName = prescriptionDetails.name;
-                          const imageUrl = prescriptionDetails.imageUrl;
-                          return (
-                            <PrescriptionCard
-                              fileName={fileName || ''}
-                              imageUrl={imageUrl || ''}
-                              removePrescription={(fileName: string) =>
-                                removePrescription(fileName)
-                              }
-                              key={index}
+                        {prescriptions.length > 0 &&
+                          prescriptions.map((prescriptionDetails, index) => {
+                            const fileName = prescriptionDetails.name;
+                            const imageUrl = prescriptionDetails.imageUrl;
+                            return (
+                              <PrescriptionCard
+                                fileName={fileName || ''}
+                                imageUrl={imageUrl || ''}
+                                removePrescription={(fileName: string) =>
+                                  removeImagePrescription(fileName)
+                                }
+                                key={index}
+                              />
+                            );
+                          })}
+                        {phrPrescriptionData &&
+                          phrPrescriptionData.length > 0 &&
+                          phrPrescriptionData.map((prescription) => (
+                            <EPrescriptionCard
+                              prescription={prescription}
+                              removePrescription={removePrescription}
                             />
-                          );
-                        })}
+                          ))}
+                        {medicineOrderData &&
+                          medicineOrderData.length > 0 &&
+                          medicineOrderData.map((medicineOrder) => (
+                            <EPrescriptionCard
+                              medicineOrder={medicineOrder}
+                              removePrescription={removePrescription}
+                            />
+                          ))}
                         <div className={classes.uploadMore}>
                           <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>
                             Upload More
@@ -532,27 +665,32 @@ export const MedicineCart: React.FC = (props) => {
               <div className={classes.deliveryAddress}>
                 <Tabs
                   value={tabValue}
-                  classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                  classes={{
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
+                  }}
                   onChange={(e, newValue) => {
                     setTabValue(newValue);
                   }}
                 >
                   <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
                     label="Home Delivery"
                   />
                   <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
                     label="Store Pick Up"
                   />
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    <HomeDelivery
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
-                      }
-                    />
+                    <HomeDelivery />
                     <div className={classes.deliveryTimeGroup}>
                       <div className={classes.deliveryTimeGroupWrap}>
                         <span className={classes.deliveryTime}>Delivery Time</span>
@@ -564,10 +702,11 @@ export const MedicineCart: React.FC = (props) => {
                 {tabValue === 1 && (
                   <TabContainer>
                     <StorePickUp
-                      updateDeliveryAddress={(deliveryAddressId) =>
-                        setDeliveryAddressId(deliveryAddressId)
+                      pincode={
+                        storePickupPincode && storePickupPincode.length === 6
+                          ? storePickupPincode
+                          : currentPincode
                       }
-                      pincode={localStorage.getItem('dp') || ''}
                     />
                   </TabContainer>
                 )}
@@ -588,7 +727,6 @@ export const MedicineCart: React.FC = (props) => {
                   <span className={classes.linkText}>Apply Coupon</span>
                   <span className={classes.rightArrow}>
                     <img src={require('images/ic_arrow_right.svg')} alt="" />
-                    <img src={require('images/ic_tickmark.svg')} alt="" />
                   </span>
                 </div>
               ) : (
@@ -597,6 +735,9 @@ export const MedicineCart: React.FC = (props) => {
                     <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
                   </span>
                   <span className={classes.linkText}>Coupon Applied</span>
+                  <span className={classes.rightArrow}>
+                    <img src={require('images/ic_tickmark.svg')} alt="" />
+                  </span>
                 </div>
               )}
             </div>
@@ -655,58 +796,38 @@ export const MedicineCart: React.FC = (props) => {
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <Mutation<SaveMedicineOrder, SaveMedicineOrderVariables>
-              mutation={SAVE_MEDICINE_ORDER}
-              variables={{
-                medicineCartInput: {
-                  quoteId: '',
-                  shopId: deliveryMode === 'HOME' ? '' : deliveryAddressId,
-                  estimatedAmount: parseFloat(totalAmount),
-                  patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
-                  devliveryCharges: 0,
-                  prescriptionImageUrl: Array.prototype.map
-                    .call(prescriptions, (presDetails) => presDetails.imageUrl)
-                    .toString(),
-                  medicineDeliveryType:
-                    deliveryMode === 'HOME'
-                      ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-                      : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-                  patientId: currentPatient ? currentPatient.id : '',
-                  items: cartItemsForApi,
-                },
+            <AphButton
+              onClick={(e) => {
+                setMutationLoading(true);
+                paymentMutation()
+                  .then((res) => {
+                    if (res && res.data && res.data.SaveMedicineOrder) {
+                      const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
+                      const currentPatiendId = currentPatient ? currentPatient.id : '';
+                      if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
+                        clearCartInfo && clearCartInfo();
+                        const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
+                        window.location.href = pgUrl;
+                      } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
+                        setOrderAutoId(orderAutoId);
+                        setAmountPaid(amountPaid);
+                        placeOrder(orderId, orderAutoId);
+                        setMutationLoading(false);
+                      }
+                    }
+                  })
+                  .catch((e) => {
+                    alert(e);
+                    setMutationLoading(false);
+                  });
               }}
-              onCompleted={(apiResponse) => {
-                const orderAutoId = apiResponse.SaveMedicineOrder.orderAutoId;
-                const currentPatiendId = currentPatient ? currentPatient.id : '';
-                // redirect to payment Gateway
-                if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                  const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
-                  window.location.href = pgUrl;
-                } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                  setOrderAutoId(orderAutoId);
-                  setAmountPaid(amountPaid);
-                }
-              }}
-              onError={(errorResponse) => {
-                alert(errorResponse);
-                setMutationLoading(false);
-              }}
+              color="primary"
+              fullWidth
+              disabled={disablePayButton}
+              className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
             >
-              {(mutate) => (
-                <AphButton
-                  onClick={(e) => {
-                    setMutationLoading(true);
-                    mutate();
-                  }}
-                  color="primary"
-                  fullWidth
-                  disabled={disablePayButton}
-                  className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
-                >
-                  {mutationLoading ? <CircularProgress /> : `Pay - RS. ${totalAmount}`}
-                </AphButton>
-              )}
-            </Mutation>
+              {mutationLoading ? <CircularProgress /> : `Pay - RS. ${totalAmount}`}
+            </AphButton>
           </div>
         </div>
       </AphDialog>
@@ -721,6 +842,7 @@ export const MedicineCart: React.FC = (props) => {
           closeDialog={() => {
             setIsUploadPreDialogOpen(false);
           }}
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
         />
       </AphDialog>
 
@@ -728,11 +850,24 @@ export const MedicineCart: React.FC = (props) => {
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
         <ApplyCoupon
-          setCouponCode={(couponCode: string) => setCouponCode(couponCode)}
+          setCouponCode={setCouponCode}
+          couponCode={couponCode}
           close={(isApplyCouponDialogOpen: boolean) => {
             setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
           }}
           cartValue={cartTotal}
+        />
+      </AphDialog>
+
+      <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
+        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          setPhrPrescriptionData={setPhrPrescriptionData}
+          setMedicineOrderData={setMedicineOrderData}
+          phrPrescriptionData={phrPrescriptionData}
+          medicineOrderData={medicineOrderData}
         />
       </AphDialog>
     </div>

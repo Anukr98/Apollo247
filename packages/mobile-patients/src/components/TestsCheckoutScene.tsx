@@ -4,21 +4,15 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  Check,
-  CheckUnselectedIcon,
-  MedicineIcon,
-  OneApollo,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
+  TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  SAVE_DIAGNOSTIC_ORDER,
-  SAVE_MEDICINE_ORDER_PAYMENT,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { SAVE_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   DiagnosticLineItem,
   DiagnosticOrderInput,
@@ -27,9 +21,8 @@ import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveDiagnosticOrder';
-import { SaveMedicineOrder } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
-import { SaveMedicineOrderPaymentVariables } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPayment';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -43,9 +36,8 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { Slider } from 'react-native-elements';
-import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
-import { g } from '../helpers/helperFunctions';
+// import { Slider } from 'react-native-elements';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -161,48 +153,33 @@ const styles = StyleSheet.create({
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
 export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
+  const [isCashOnDelivery, setCashOnDelivery] = useState(false);
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
-  const [isCashOnDelivery, setCashOnDelivery] = useState(true);
-  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
-  const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  // const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
   // const [orderInfo, setOrderInfo] = useState({
   //   pickupStoreName: '',
   //   pickupStoreAddress: '',
   //   orderId: '',
   //   displayId: '',
   // });
-  const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
+  // const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
+  const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
     deliveryAddressId,
-    clinicId,
     grandTotal,
-    deliveryCharges,
     cartItems,
-    deliveryType,
     clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
-
     diagnosticSlot,
     diagnosticClinic,
   } = useDiagnosticsCart();
-
   const { locationForDiagnostics } = useAppCommonData();
-
-  const { currentPatient } = useAllCurrentPatients();
-  const { getPatientApiCall } = useAuth();
-
-  useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
-
-  const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
+  const MAX_SLIDER_VALUE = grandTotal;
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -210,11 +187,13 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       variables: { diagnosticOrderInput: orderInfo },
     });
 
-  const savePayment = (paymentInfo: SaveMedicineOrderPaymentVariables) =>
-    client.mutate<SaveMedicineOrder, SaveMedicineOrderPaymentVariables>({
-      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
-      variables: paymentInfo,
+  const redirectToPaymentGateway = (orderId: string, displayId: string) => {
+    props.navigation.navigate(AppRoutes.TestPayment, {
+      orderId,
+      displayId,
+      price: grandTotal,
     });
+  };
 
   const initiateOrder = async () => {
     setShowSpinner(true);
@@ -225,7 +204,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       employeeSlotId,
       date,
       diagnosticEmployeeCode,
-      city, // ignore city for now from this and take from "locationForDiagnostics" context
+      // city, // ignore city for now from this and take from "locationForDiagnostics" context
       diagnosticBranchCode,
     } = diagnosticSlot || {};
 
@@ -236,23 +215,25 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     console.log(physicalPrescriptions, 'physical prescriptions');
 
     const orderInfo: DiagnosticOrderInput = {
-      // for home collection order
+      // <- for home collection order
       diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
       diagnosticEmployeeCode: diagnosticEmployeeCode || '',
       employeeSlotId: employeeSlotId! || 0,
       slotTimings: slotTimings,
-      diagnosticDate: moment(date).format('YYYY-MM-DD'),
       patientAddressId: deliveryAddressId!,
-      city: (locationForDiagnostics || {}).city!,
-      state: (locationForDiagnostics || {}).state!,
-      stateId: `${(locationForDiagnostics || {}).stateId!}`,
-      cityId: `${(locationForDiagnostics || {}).cityId!}`,
-      // for clinic order
+      // for home collection order ->
+      // <- for clinic order
       centerName: CentreName || '',
       centerCode: CentreCode || '',
       centerCity: City || '',
       centerState: State || '',
       centerLocality: Locality || '',
+      // for clinic order ->
+      city: (locationForDiagnostics || {}).city!,
+      state: (locationForDiagnostics || {}).state!,
+      stateId: `${(locationForDiagnostics || {}).stateId!}`,
+      cityId: `${(locationForDiagnostics || {}).cityId!}`,
+      diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -274,15 +255,12 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
-    console.log('orderInfo\n', { orderInfo });
+    console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
     saveOrder(orderInfo)
       .then(({ data }) => {
-        console.log('\nOrder-Success\n', { data });
+        console.log('SaveDiagnosticOrder API\n', { data });
         const { orderId, displayId, errorCode, errorMessage } =
           g(data, 'SaveDiagnosticOrder')! || {};
-        // if (isCashOnDelivery) {
-        // only CashOnDelivery supported as of now
-        setShowSpinner(false);
         if (errorCode || errorMessage) {
           // Order-failed
           showAphAlert!({
@@ -292,24 +270,26 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           });
         } else {
           // Order-Success
-          // Show popup here & clear info
-          clearCartInfo && clearCartInfo();
-          // setOrderInfo({
-          //   orderId: `${orderId}`,
-          //   displayId: `${displayId || orderId}`,
-          //   pickupStoreAddress: '',
-          //   pickupStoreName: '',
-          // });
-          handleOrderSuccess(`${orderId}`, `${displayId}`);
+          if (!isCashOnDelivery) {
+            // PG order, redirect to web page
+            redirectToPaymentGateway(orderId!, displayId!);
+            return;
+          }
+          // COD order, show popup here & clear cart info
+          clearCartInfo!();
+          handleOrderSuccess(orderId!, displayId!);
         }
       })
       .catch((error) => {
-        setShowSpinner(false);
+        console.log('SaveDiagnosticOrder API Error\n', { error });
         showAphAlert!({
           unDismissable: true,
           title: `Uh oh.. :(`,
           description: `Order failed, something went wrong.`,
         });
+      })
+      .finally(() => {
+        setShowSpinner(false);
       });
   };
 
@@ -341,6 +321,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     );
   };
 
+  /*
   const renderOneApollo = (
     <View style={styles.healthCreditsRowStyle}>
       <TouchableOpacity
@@ -363,7 +344,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       </View>
     </View>
   );
-
   const renderOneApolloAndHealthCreditsCard = () => {
     const oneApolloCheckBoxAndCredits = (
       <View style={[styles.healthCreditsRowStyle, { paddingHorizontal: 16 }]}>
@@ -443,7 +423,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       { paddingHorizontal: 0 }
     );
   };
-
+*/
   const renderPaymentModesCard = () => {
     const payUsingPaytmOption = (
       <TouchableOpacity
@@ -467,7 +447,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           CommonLogEvent(AppRoutes.TestsCheckoutScene, 'Cash on delivery');
-          // setCashOnDelivery(!isCashOnDelivery);
+          setCashOnDelivery(!isCashOnDelivery);
           setCashOnDelivery(true);
         }}
       >
@@ -480,7 +460,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     const content = (
       <View>
-        {/* {payUsingPaytmOption} */}
+        {payUsingPaytmOption}
         {cashOnDeliveryOption}
       </View>
     );
@@ -558,10 +538,11 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               alignItems: 'center',
             }}
           >
-            <MedicineIcon />
+            <TestsIcon />
             <Text
               style={{
                 flex: 1,
+                marginLeft: 2,
                 ...theme.fonts.IBMPlexSansMedium(17),
                 lineHeight: 24,
                 color: '#01475b',

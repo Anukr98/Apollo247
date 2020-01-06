@@ -19,6 +19,7 @@ import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { ApiConstants } from 'ApiConstants';
 
 export const savePrescriptionMedicineOrderTypeDefs = gql`
   input PrescriptionMedicineInput {
@@ -160,8 +161,8 @@ const SavePrescriptionMedicineOrder: Resolver<
         orderPrescriptionUrl.push(url);
       });
     }
-    let selShopId = '15288';
-    if (saveOrder.shopId != '' && saveOrder.shopId != null) {
+    let selShopId = ApiConstants.PHARMA_DEFAULT_SHOPID.toString();
+    if (saveOrder.shopId != '' && saveOrder.shopId != null && saveOrder.shopId != '0') {
       selShopId = saveOrder.shopId;
     }
     let patientAge = 30;
@@ -174,7 +175,7 @@ const SavePrescriptionMedicineOrder: Resolver<
         ShopId: selShopId,
         ShippingMethod: saveOrder.deliveryType.replace('_', ' '),
         RequestType: PHARMA_CART_TYPE.NONCART,
-        PaymentMethod: MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS,
+        PaymentMethod: MEDICINE_ORDER_PAYMENT_TYPE.COD,
         VendorName: '*****',
         DotorName: 'Apollo',
         OrderType: 'Pharma',

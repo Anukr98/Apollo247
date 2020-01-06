@@ -9,6 +9,8 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_CASESHEET } from 'graphql/profiles';
+import { isEmpty, trim } from 'lodash';
+import { CircularProgress } from '@material-ui/core';
 
 import {
   GetCaseSheet,
@@ -33,6 +35,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       color: '#02475b',
     },
+    loader: {
+      left: '50%',
+      top: 60,
+      position: 'relative',
+    },
     prescriptionPreview: {
       backgroundColor: '#fff',
       display: 'inline-block',
@@ -46,6 +53,20 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInformation: {
       marginLeft: 'auto',
+      width: 198,
+      '& h3': {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: 0,
+        '& span': {
+          fontWeight: 'normal',
+          fontSize: 10,
+        },
+      },
+    },
+    signInformation: {
+      marginRight: 'auto',
       width: 198,
       '& h3': {
         fontSize: 12,
@@ -158,14 +179,20 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       color: '#02475b',
       fontWeight: 500,
+      '& img': {
+        maxWidth: 200,
+        height: 70,
+      },
     },
     labelBlue: {
       color: '#02475b',
     },
   };
 });
-
-export const CasesheetView: React.FC = (props) => {
+interface savingProps {
+  saving: boolean;
+}
+export const CasesheetView: React.FC<savingProps> = (props) => {
   const classes = useStyles();
   const {
     patientDetails,
@@ -181,7 +208,7 @@ export const CasesheetView: React.FC = (props) => {
     followUpDate,
     followUpConsultType,
   } = useContext(CaseSheetContext);
-
+  const [callGetCasesheet, setCallGetCasesheet] = useState<boolean>(true);
   const [loader, setLoader] = useState<boolean>(true);
   let doctorFacilityDetails = null;
   if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
@@ -209,6 +236,9 @@ export const CasesheetView: React.FC = (props) => {
       ).toString();
     }
   };
+  setTimeout(() => {
+    if (callGetCasesheet) setCallGetCasesheet(!callGetCasesheet);
+  }, 3000);
 
   useEffect(() => {
     client
@@ -242,7 +272,7 @@ export const CasesheetView: React.FC = (props) => {
       .finally(() => {
         setLoader(false);
       });
-  }, []);
+  }, [callGetCasesheet]);
 
   const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
@@ -310,11 +340,31 @@ export const CasesheetView: React.FC = (props) => {
                   : ''
               }`}
             </span>
+            {prescription.medicineInstructions &&
+              !isEmpty(trim(prescription.medicineInstructions)) && (
+                <>
+                  <br />
+                  <span>{prescription.medicineInstructions}</span>
+                </>
+              )}
           </li>
         );
       }
     );
-  return (
+  const generateSymptomsHtml = (symptom: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms) => {
+    {
+      `Since: ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`;
+    }
+    const symptomArray = [];
+    symptom && symptom.since && symptomArray.push(`Since: ${symptom.since}`);
+    symptom && symptom.howOften && symptomArray.push(`How often: ${symptom.howOften}`);
+    symptom && symptom.severity && symptomArray.push(`Severity: ${symptom.severity}`);
+    symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
+    return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
+  };
+  return callGetCasesheet ? (
+    <CircularProgress className={classes.loader} />
+  ) : (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
       <div className={classes.prescriptionPreview}>
@@ -425,9 +475,7 @@ export const CasesheetView: React.FC = (props) => {
                 {symptoms.map((symptom) => (
                   <div className={classes.complaintsInfoRow}>
                     <div className={classes.complaintsLabel}>{symptom.symptom}</div>
-                    <div className={classes.labelContent}>
-                      {`Since: ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
-                    </div>
+                    <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
                   </div>
                 ))}
               </div>
@@ -486,6 +534,27 @@ export const CasesheetView: React.FC = (props) => {
                   <div className={classes.followUpContent}>{getFollowUpData()}</div>
                 </>
               ) : null}
+            </>
+          )}
+          {isPageContentFull() ? null : (
+            <>
+              {createdDoctorProfile && createdDoctorProfile.signature && (
+                <>
+                  <div className={classes.sectionHeader}>Prescribed by</div>
+                  <div className={classes.followUpContent}>
+                    <img src={createdDoctorProfile.signature} />
+                  </div>
+                  <div className={classes.signInformation}>
+                    <h3 className={classes.followUpContent}>
+                      {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                      <br />
+                      <span>{`${
+                        createdDoctorProfile.specialty.specialistSingularTerm
+                      } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
+                    </h3>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>

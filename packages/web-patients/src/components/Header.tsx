@@ -17,6 +17,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { AppLocations } from './AppLocations';
 import { LocationProvider } from 'components/LocationProvider';
+import { MedicinesCartProvider, MedicinesCartContext } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -108,7 +109,9 @@ export const Header: React.FC = (props) => {
           <AppLocations />
         </LocationProvider>
       )}
-      {isSignedIn && <Navigation />}
+      {isSignedIn && (
+        <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
+      )}
       <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup, isProtected }) => (

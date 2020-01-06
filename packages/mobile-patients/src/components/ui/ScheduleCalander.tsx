@@ -184,25 +184,41 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+        const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+        const t = finalaray!
+          .slotInfo!.filter((item) => item!.status != 'booked')
+          .filter((item) =>
+            moment(selectedDate)
+              .format('DMY')
+              .toString() ===
+            moment()
+              .format('DMY')
+              .toString()
+              ? parseInt(item!.startTime!.split(':')[0]) >= parseInt(moment().format('k'))
+                ? parseInt(item!.startTime!.split(':')[1]) > moment().minute()
+                : false
+              : true
+          )
+          .map((item) => {
+            return {
+              label: (item!.slot || '').toString(),
+              time: `${item!.startTime} - ${item!.endTime}`,
+            };
+          });
+
+        console.log('ARRAY', { t });
+
+        setDropArray(t);
         setDiagnosticSlot &&
           setDiagnosticSlot({
-            diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
-            employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+            employeeSlotId: parseInt(t[0].label),
+            diagnosticBranchCode: data.getDiagnosticSlots.diagnosticBranchCode!,
             diagnosticEmployeeCode: finalaray!.employeeCode || '',
-            slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
-            slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+            slotStartTime: t[0].time.split('-')[0].trim(),
+            slotEndTime: t[0].time.split('-')[1].trim(),
             city: selectedAddress!.city || '',
             date: date.getTime(),
           });
-
-        var t = finalaray!.slotInfo!.map((item) => {
-          return {
-            label: (item!.slot || '').toString(),
-            time: `${item!.startTime} - ${item!.endTime}`,
-          };
-        });
-        setDropArray(t);
         props.setDropArray && props.setDropArray(t);
         if (selectedTime) {
           setSelectedDrop(t.find((value) => value.time === selectedTime));
@@ -240,13 +256,14 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
     const timeOptionsArray = dropArray.map((item) => {
       return { key: item.label, value: item.time };
     });
+    console.log('renderDropTimings', { timeOptionsArray, dropArray, selectedDrop });
     return (
       <View>
         <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 16 }}>Slot</Text>
         <View style={styles.optionsView}>
           <MaterialMenu
             options={timeOptionsArray}
-            selectedText={selectedDrop && selectedDrop!.label}
+            selectedText={selectedDrop && selectedDrop.label}
             menuContainerStyle={{
               alignItems: 'flex-end',
               marginTop: 24,
@@ -265,10 +282,14 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                   style={[
                     styles.placeholderTextStyle,
                     ,
-                    selectedDrop !== undefined ? null : styles.placeholderStyle,
+                    selectedDrop ? null : styles.placeholderStyle,
                   ]}
                 >
-                  {selectedDrop !== undefined ? selectedDrop.time : 'Select Time'}
+                  {timeOptionsArray.length
+                    ? selectedDrop && selectedDrop.time
+                    : showSpinner
+                    ? 'Loading...'
+                    : 'No slots available'}
                 </Text>
                 <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                   <DropdownGreen />
@@ -364,6 +385,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       >
         <Button
           title={`Done`}
+          disabled={!dropArray.length}
           onPress={() => {
             setDiagnosticSlot &&
               setDiagnosticSlot({
@@ -371,6 +393,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                 slotStartTime: selectedDrop!.time.split('-')[0].trim(),
                 slotEndTime: selectedDrop!.time.split('-')[1].trim(),
                 date: date.getTime(),
+                employeeSlotId: parseInt(selectedDrop!.label),
               });
             props.setDate(date);
             props.setdisplayoverlay(false);

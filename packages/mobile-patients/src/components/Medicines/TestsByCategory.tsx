@@ -1,11 +1,26 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon, SearchSendIcon, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_SEARCH, SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import { DIAGNOSTICS_TYPE, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
@@ -25,19 +40,6 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
-import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-  searchDiagnostics_searchDiagnostics_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -105,6 +107,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
   const { locationForDiagnostics } = useAppCommonData();
+  const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -125,15 +128,41 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       },
     });
 
-  const onAddCartItem = ({
-    itemId,
-    collectionType,
-    itemName,
-    rate,
-  }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+  const errorAlert = () => {
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Unable to fetch pakage details.',
+    });
+  };
+
+  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
+    setGlobalLoading!(true);
+    getPackageData(id)
+      .then(({ data }) => {
+        console.log('getPackageData\n', { data });
+        const product = g(data, 'data');
+        if (product && product.length) {
+          func && func(product);
+        } else {
+          errorAlert();
+        }
+      })
+      .catch((e) => {
+        console.log({ e });
+        errorAlert();
+      })
+      .finally(() => {
+        setGlobalLoading!(false);
+      });
+  };
+
+  const onAddCartItem = (
+    { itemId, collectionType, itemName, rate }: searchDiagnostics_searchDiagnostics_diagnostics,
+    testsIncluded: number
+  ) => {
     addCartItem!({
       id: `${itemId}`,
-      mou: 1,
+      mou: testsIncluded,
       name: itemName,
       price: rate,
       thumbnail: '',
@@ -391,6 +420,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     ];
     const foundMedicineInCart = cartItems.find((item) => item.id == `${medicine.itemId}`);
     const price = medicine.rate;
+    const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
     // const specialPrice = medicine.special_price
     //   ? typeof medicine.special_price == 'string'
     //     ? parseInt(medicine.special_price)
@@ -428,7 +458,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         unit={1}
         onPressAdd={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Add item to cart');
-          onAddCartItem(medicine);
+          fetchPackageInclusion(`${medicine.itemId}`, (product) => {
+            onAddCartItem(medicine, product.length);
+          });
         }}
         onPressRemove={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Remove item from cart');
@@ -437,7 +469,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         onChangeUnit={() => {}}
         isCardExpanded={!!foundMedicineInCart}
         isInStock={true}
-        packOfCount={parseInt('1') || undefined}
+        packOfCount={testsIncluded}
         isPrescriptionRequired={false}
         subscriptionStatus={'unsubscribed'}
         onChangeSubscription={() => {}}
@@ -506,34 +538,36 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    setSearchText(_searchText);
-    if (!(_searchText && _searchText.length > 2)) {
-      setMedicineList([]);
-      return;
+    if (isValidSearch(_searchText)) {
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        return;
+      }
+      setsearchSate('load');
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: _searchText,
+            city: locationForDiagnostics && locationForDiagnostics.city,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          // aphConsole.log({ e });
+          if (!Axios.isCancel(e)) {
+            setsearchSate('fail');
+          }
+        });
     }
-    setsearchSate('load');
-    client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
-        variables: {
-          searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city,
-          patientId: (currentPatient && currentPatient.id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        // aphConsole.log({ data });
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        // aphConsole.log({ e });
-        if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
-        }
-      });
   };
 
   const renderSearchResults = () => {

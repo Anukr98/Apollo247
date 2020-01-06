@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, Typography, Tabs, Tab } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
@@ -7,6 +7,9 @@ import { OrderStatusCard } from 'components/Orders/OrderStatusCard';
 import { CancelOrder } from 'components/Orders/CancelOrder';
 import { ReturnOrder } from 'components/Orders/ReturnOrder';
 import { OrdersSummary } from 'components/Orders/OrderSummary';
+import { useMutation } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -109,24 +112,45 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const TrackOrders: React.FC = (props) => {
-  const classes = useStyles();
+type TrackOrdersProps = {
+  orderAutoId: number;
+};
+
+export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
+  const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
   const [tabValue, setTabValue] = useState<number>(0);
-  const currentPath = window.location.pathname;
   const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
   const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = React.useState<boolean>(false);
+
   const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = React.useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
 
-  function handleClick(event: React.MouseEvent<HTMLElement>) {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setMoreActionsDialog(event.currentTarget);
-  }
+  };
+
+  const orderDetails = useMutation(GET_MEDICINE_ORDER_DETAILS);
+
+  useEffect(() => {
+    if (props.orderAutoId) {
+      orderDetails({
+        variables: {
+          patientId: currentPatient && currentPatient.id,
+          orderAutoId:
+            typeof props.orderAutoId === 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
+        },
+      })
+        .then((res) => console.log(res))
+        .catch((e) => console.log(e));
+    }
+  }, [props.orderAutoId]);
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         <div className={classes.orderId}>
-          <span>ORDER #A2472707936</span>
+          <span>ORDER #{props.orderAutoId}</span>
         </div>
         <div className={classes.headerActions}>
           <AphButton onClick={handleClick} className={classes.moreBtn}>
@@ -149,6 +173,7 @@ export const TrackOrders: React.FC = (props) => {
           >
             <div className={classes.menuBtnGroup}>
               <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>Cancel Order</AphButton>
+
               <AphButton onClick={() => setIsReturnOrderDialogOpen(true)}>Return Order</AphButton>
             </div>
           </Popover>
@@ -193,12 +218,18 @@ export const TrackOrders: React.FC = (props) => {
       <AphDialog open={isCancelOrderDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} />
         <AphDialogTitle>Cancel Order</AphDialogTitle>
-        <CancelOrder />
+        <CancelOrder
+          setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
+          orderAutoId={props.orderAutoId}
+        />
       </AphDialog>
       <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
         <AphDialogTitle>Return Order</AphDialogTitle>
-        <ReturnOrder />
+        <ReturnOrder
+          setIsReturnOrderDialogOpen={setIsReturnOrderDialogOpen}
+          orderAutoId={props.orderAutoId}
+        />
       </AphDialog>
     </div>
   );

@@ -118,6 +118,7 @@ export const getDoctorDetailsTypeDefs = gql`
     qualification: String
     registrationNumber: String!
     salutation: Salutation
+    signature: String
     specialization: String
     state: String
     streetLine1: String
@@ -218,6 +219,7 @@ export const getDoctorDetailsTypeDefs = gql`
     photoUrl: String
     qualification: String
     salutation: Salutation
+    signature: String
     state: String
     streetLine1: String
     streetLine2: String

@@ -20,6 +20,8 @@ import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/com
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { getParameterByName } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -48,6 +50,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const orderId = props.navigation.getParam('orderId');
   const authToken = props.navigation.getParam('token');
+  const deliveryTime = props.navigation.getParam('deliveryTime');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
@@ -106,7 +109,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     showAphAlert!({
       // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-      description: 'Your order has been placed successfully.',
+      description:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
       children: (
         <View
           style={{
@@ -147,20 +151,35 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
               {`#${orderAutoId}`}
             </Text>
           </View>
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 7.5,
-              marginTop: 15.5,
-            }}
-          />
+          {moment(deliveryTime).isValid() && (
+            <>
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: '#02475b',
+                  opacity: 0.1,
+                  marginBottom: 7.5,
+                  marginTop: 15.5,
+                }}
+              />
+              <View>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                  }}
+                >
+                  {deliveryTime &&
+                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm a')}`}
+                </Text>
+              </View>
+            </>
+          )}
           {/* <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                marginTop: 7.5
               }}
             >
               <Text
@@ -176,16 +195,16 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
               <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
                 {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
               </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                height: 1,
-                backgroundColor: '#02475b',
-                opacity: 0.1,
-                marginBottom: 15.5,
-                marginTop: 7.5,
-              }}
-            /> */}
+            </View> */}
+          <View
+            style={{
+              height: 1,
+              backgroundColor: '#02475b',
+              opacity: 0.1,
+              marginBottom: 15.5,
+              marginTop: 7.5,
+            }}
+          />
           <View style={styles.popupButtonStyle}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateToOrderDetails(true)}>
               <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
@@ -206,17 +225,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     props.navigation.goBack();
     showAphAlert!({
       title: 'Uh oh.. :(',
-      description: `Payment failed.`,
+      description: `We're sorry but the payment failed.`,
     });
-  };
-
-  const getParameterByName = (name: string, url: string) => {
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-      results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
   };
 
   const onWebViewStateChange = (data: NavState) => {

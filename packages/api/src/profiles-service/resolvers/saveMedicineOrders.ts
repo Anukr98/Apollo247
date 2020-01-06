@@ -18,6 +18,8 @@ import { PatientAddressRepository } from 'profiles-service/repositories/patientA
 export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
+    PAYMENT_SUCCESS
+    ORDER_INITIATED
     ORDER_PLACED
     ORDER_VERIFIED
     DELIVERED
@@ -54,6 +56,7 @@ export const saveMedicineOrderTypeDefs = gql`
     devliveryCharges: Float
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
+    orderTat: String
     items: [MedicineCartItem]
   }
 
@@ -92,6 +95,7 @@ type MedicineCartInput = {
   devliveryCharges: number;
   prescriptionImageUrl: string;
   prismPrescriptionFileId: string;
+  orderTat: string;
   items: MedicineCartItem[];
 };
 
@@ -156,6 +160,7 @@ const SaveMedicineOrder: Resolver<
     prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
     prismPrescriptionFileId: MedicineCartInput.prismPrescriptionFileId,
     currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
+    orderTat: MedicineCartInput.orderTat,
     patientAddressId: MedicineCartInput.patientAddressId,
   };
 

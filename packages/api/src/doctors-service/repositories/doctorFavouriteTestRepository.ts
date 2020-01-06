@@ -16,7 +16,7 @@ export class DoctorFavouriteTestRepository extends Repository<DoctorsFavouriteTe
   }
 
   getDoctorFavouriteTestList(doctorId: string) {
-    return this.find({ where: { doctorId } }).catch((favouriteTestError) => {
+    return this.find({ where: { doctor: doctorId } }).catch((favouriteTestError) => {
       throw new AphError(AphErrorMessages.GET_DOCTOR_FAVOURITE_TEST_ERROR, undefined, {
         favouriteTestError,
       });
@@ -24,7 +24,7 @@ export class DoctorFavouriteTestRepository extends Repository<DoctorsFavouriteTe
   }
 
   getDoctorFavouriteTestById(doctorId: string, id: string) {
-    return this.find({ where: { doctorId, id } }).catch((favouriteTestError) => {
+    return this.find({ where: { doctor: doctorId, id } }).catch((favouriteTestError) => {
       throw new AphError(AphErrorMessages.GET_DOCTOR_FAVOURITE_TEST_ERROR, undefined, {
         favouriteTestError,
       });

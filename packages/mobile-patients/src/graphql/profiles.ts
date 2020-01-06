@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 
 export const GET_CURRENT_PATIENTS = gql`
-  query GetCurrentPatients {
-    getCurrentPatients {
+  query GetCurrentPatients($appVersion: String, $deviceType: DEVICE_TYPE) {
+    getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
       patients {
         id
         mobileNumber
@@ -682,6 +682,16 @@ export const DELETE_PATIENT_ADDRESS = gql`
   }
 `;
 
+export const GET_PATIENT_ADDRESS_BY_ID = gql`
+  query getPatientAddressById($id: String) {
+    getPatientAddressById(id: $id) {
+      patientAddress {
+        zipcode
+      }
+    }
+  }
+`;
+
 // export const GET_PATIENTS_MOBILE = gql`
 //   query getPatientByMobileNumber($mobileNumber: String) {
 //     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
@@ -914,8 +924,8 @@ export const SAVE_MEDICINE_ORDER = gql`
 `;
 
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
-  mutation SaveMedicineOrderPayment($medicinePaymentInput: MedicinePaymentInput!) {
-    SaveMedicineOrderPayment(medicinePaymentInput: $medicinePaymentInput) {
+  mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
+    SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
       errorCode
       errorMessage
       # orderId
@@ -1100,6 +1110,22 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const CANCEL_DIAGNOSTIC_ORDER = gql`
+  mutation cancelDiagnosticOrder($diagnosticOrderId: Int) {
+    cancelDiagnosticOrder(diagnosticOrderId: $diagnosticOrderId) {
+      message
+    }
+  }
+`;
+
+export const UPDATE_DIAGNOSTIC_ORDER = gql`
+  mutation updateDiagnosticOrder($updateDiagnosticOrderInput: UpdateDiagnosticOrderInput) {
+    updateDiagnosticOrder(updateDiagnosticOrderInput: $updateDiagnosticOrderInput) {
+      message
     }
   }
 `;

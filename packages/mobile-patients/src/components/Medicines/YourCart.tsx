@@ -1,4 +1,9 @@
-import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  aphConsole,
+  formatAddress,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -9,7 +14,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -18,14 +23,20 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
+  getDeliveryTime,
   getPlaceInfoByLatLng,
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
+  Store,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -36,10 +47,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -56,7 +64,8 @@ const styles = StyleSheet.create({
   },
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
-    padding: 16,
+    paddingTop: 16,
+    paddingBottom: 7,
   },
   blueTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -75,6 +84,24 @@ const styles = StyleSheet.create({
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  deliveryContainerStyle: {
+    backgroundColor: colors.CARD_BG,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 11.5,
+    marginBottom: 16,
+    borderRadius: 5,
+  },
+  deliveryStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
+  },
+  deliveryTimeStyle: {
+    ...theme.fonts.IBMPlexSansBold(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
   },
 });
 
@@ -118,6 +145,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { showAphAlert, setLoading } = useUIElements();
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+  const [deliveryTime, setdeliveryTime] = useState<string>('');
+  const [deliveryError, setdeliveryError] = useState<string>('');
+  const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const { locationDetails } = useAppCommonData();
 
   useEffect(() => {
@@ -138,7 +168,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   const _pincode = (
                     addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
                   ).long_name;
-                  fetchStorePickup(_pincode || '');
+                  !pinCode && fetchStorePickup(_pincode || '');
                 }
               } catch {}
             })
@@ -153,7 +183,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       );
       console.log('pincode');
     } else {
-      fetchStorePickup(locationDetails.pincode);
+      !pinCode && fetchStorePickup(locationDetails.pincode);
     }
   }, []);
 
@@ -212,6 +242,67 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   useEffect(() => {
     onFinishUpload();
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
+
+  useEffect(() => {
+    if (deliveryAddressId && cartItems.length > 0) {
+      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
+      setdeliveryTime('...');
+      setshowDeliverySpinner(true);
+      const lookUp = cartItems.map((item) => {
+        return { sku: item.id, qty: item.quantity };
+      });
+      if (selectedAddress) {
+        getDeliveryTime({
+          postalcode: selectedAddress.zipcode || '',
+          ordertype: 'pharma',
+          lookup: lookUp,
+        })
+          .then((res) => {
+            setdeliveryTime('');
+            try {
+              console.log('resresres', res);
+              if (res && res.data) {
+                if (
+                  typeof res.data === 'object' &&
+                  Array.isArray(res.data.tat) &&
+                  res.data.tat.length
+                ) {
+                  let tatItems = res.data.tat;
+                  tatItems.sort(({ deliverydate: item1 }, { deliverydate: item2 }) => {
+                    return moment(item1, 'D-MMM-YYYY HH:mm a') > moment(item2, 'D-MMM-YYYY HH:mm a')
+                      ? -1
+                      : moment(item1, 'D-MMM-YYYY HH:mm a') < moment(item2, 'D-MMM-YYYY HH:mm a')
+                      ? 1
+                      : 0;
+                  });
+                  setdeliveryTime(
+                    moment(tatItems[0].deliverydate, 'D-MMM-YYYY HH:mm a').toString()
+                  );
+                } else if (typeof res.data === 'string') {
+                  setdeliveryError(res.data);
+                } else if (typeof res.data.errorMSG === 'string') {
+                  setdeliveryError(res.data.errorMSG);
+                }
+              }
+            } catch (error) {
+              console.log(error);
+            }
+            setshowDeliverySpinner(false);
+          })
+          .catch((err) => {
+            if (!Axios.isCancel(err)) {
+              setdeliveryTime('');
+              showAphAlert &&
+                showAphAlert({
+                  title: 'Uh oh.. :(',
+                  description: 'Something went wrong, Unable to fetch delivery time',
+                });
+              setshowDeliverySpinner(false);
+            }
+          });
+      }
+    }
+  }, [deliveryAddressId, cartItems]);
 
   const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
     if (!(unit < 1)) {
@@ -300,12 +391,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             index == 0 ? { marginTop: 20 } : {},
             index == array.length - 1 ? { marginBottom: 20 } : {},
           ];
-          const imageUrl =
-            medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-              ? medicine.thumbnail.startsWith('http')
-                ? medicine.thumbnail
-                : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
-              : '';
+          const imageUrl = medicine.prescriptionRequired
+            ? ''
+            : medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
+            ? medicine.thumbnail.startsWith('http')
+              ? medicine.thumbnail
+              : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
+            : '';
 
           return (
             <MedicineCard
@@ -321,8 +413,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   title: medicine.name,
                 });
               }}
-              medicineName={medicine.name!}
-              price={medicine.price!}
+              medicineName={medicine.name}
+              price={medicine.price}
               specialPrice={medicine.specialPrice}
               unit={medicine.quantity}
               imageUrl={imageUrl}
@@ -353,6 +445,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [checkingServicability, setCheckingServicability] = useState(false);
 
   const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    setdeliveryTime('');
+    setdeliveryError('');
+    setshowDeliverySpinner(false);
     setCheckingServicability(true);
     pinCodeServiceabilityApi(address.zipcode!)
       .then(({ data: { Availability } }) => {
@@ -375,14 +470,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderHomeDelivery = () => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
-    const addressListLength = addresses.length;
-    const spliceStartIndex =
-      selectedAddressIndex == addressListLength - 1
-        ? selectedAddressIndex - 1
-        : selectedAddressIndex;
-    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
@@ -401,13 +488,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <ActivityIndicator size="large" color="green" />
           </View>
         ) : null}
-        {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
+        {slicedAddressList.map((item, index, array) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
-                item.landmark ? ',\n' : ''
-              }${item.city}, ${item.state} - ${item.zipcode}`}
+              title={formatAddress(item)}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
@@ -439,6 +524,27 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             )}
           </View>
         </View>
+        {deliveryTime || deliveryError ? (
+          <View>
+            <View style={styles.separatorStyle} />
+            <View style={styles.deliveryContainerStyle}>
+              {showDeliverySpinner ? (
+                <ActivityIndicator animating={true} size={'small'} color="green" />
+              ) : (
+                <View style={styles.rowSpaceBetweenStyle}>
+                  <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
+                  <Text style={styles.deliveryTimeStyle}>
+                    {moment(deliveryTime).isValid()
+                      ? moment(deliveryTime).format('D MMM YYYY  | hh:mm a')
+                      : '...' || deliveryError}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        ) : (
+          <View style={{ height: 9 }} />
+        )}
       </View>
     );
   };
@@ -455,6 +561,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           .then(({ data: { Stores, stores_count } }) => {
             setStorePickUpLoading(false);
             setStores && setStores(stores_count > 0 ? Stores : []);
+            setSlicedStoreList(stores_count > 0 ? Stores.slice(0, 2) : []);
+            setStoreId && setStoreId('');
           })
           .catch((e) => {
             setStorePickUpLoading(false);
@@ -466,14 +574,53 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
-  const renderStorePickup = () => {
+  const [slicedStoreList, setSlicedStoreList] = useState<Store[]>([]);
+  const [slicedAddressList, setSlicedAddressList] = useState<
+    savePatientAddress_savePatientAddress_patientAddress[]
+  >([]);
+
+  const updateStoreSelection = () => {
     const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
     const storesLength = stores.length;
     const spliceStartIndex =
       selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    const _slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    setSlicedStoreList(_slicedStoreList);
+  };
 
+  const updateAddressSelection = () => {
+    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+    const addressListLength = addresses.length;
+    const spliceStartIndex =
+      selectedAddressIndex == addressListLength - 1
+        ? selectedAddressIndex - 1
+        : selectedAddressIndex;
+    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
+    const _slicedAddressList = [...addresses].slice(startIndex, startIndex + 2);
+    setSlicedAddressList(_slicedAddressList);
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
+      updateStoreSelection();
+      updateAddressSelection();
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
+      updateStoreSelection();
+      updateAddressSelection();
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, [stores, storeId, addresses, deliveryAddressId]);
+
+  useEffect(() => {
+    pinCode.length !== 6 && setSlicedStoreList([]);
+  }, [pinCode]);
+
+  const renderStorePickup = () => {
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
         <TextInputComponent
@@ -552,6 +699,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             data={tabs}
             onChange={(selectedTab: string) => {
               setselectedTab(selectedTab);
+              setStoreId!('');
+              setDeliveryAddressId!('');
+              // delivery time related
+              setdeliveryTime('');
+              setdeliveryError('');
+              setshowDeliverySpinner(false);
             }}
             selectedTab={selectedTab}
           />
@@ -565,7 +718,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
-        <ListCard
+        {/* <ListCard
           container={{ marginTop: 16, marginBottom: 4 }}
           leftIcon={<CouponIcon />}
           rightIcon={<ArrowRight />}
@@ -579,12 +732,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                     'Coupon is applicable only on Rx medicines. To apply coupon add atleast one Rx medicine to cart.',
                 });
           }}
-        />
+        /> */}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
-            marginTop: 4,
+            marginTop: 16,
             marginBottom: 12,
             padding: 16,
           }}
@@ -784,7 +937,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else if (
       physicalPrescriptions.length == 0 &&
       ePrescriptions.length > 0 &&
@@ -792,7 +945,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length > 0 &&
@@ -802,14 +955,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     }
   };
 
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();

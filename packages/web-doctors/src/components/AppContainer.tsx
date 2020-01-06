@@ -10,11 +10,13 @@ import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
 import { MyAccount } from 'components/profileDetails';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { PatientLogDetailsPage } from 'components/PatientLog/PatientLogDetailsPage';
 import { Calendar } from 'components/Calendar';
 import { PatientLog } from 'components/PatientLog/PatientLog';
 import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
+import DateFnsUtils from '@date-io/date-fns';
 import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
@@ -135,7 +137,9 @@ const AppContainer: React.FC = () => {
     <BrowserRouter>
       <AuthProvider>
         <AphThemeProvider theme={theme}>
-          <App />
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <App />
+          </MuiPickersUtilsProvider>
         </AphThemeProvider>
       </AuthProvider>
     </BrowserRouter>

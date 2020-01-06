@@ -32,6 +32,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      autoFocus
       fullWidth
       InputProps={{
         inputRef: (node) => {
@@ -169,7 +170,7 @@ const useStyles = makeStyles((theme: Theme) =>
     favTestContainer: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
-      padding: '10px 20px 10px 10px',
+      padding: '0px 20px 0px 5px',
       borderRadius: 5,
     },
     othersBtn: {
@@ -193,6 +194,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     othersBtnFav: {
@@ -216,6 +218,7 @@ const useStyles = makeStyles((theme: Theme) =>
         textAlign: 'left',
         whiteSpace: 'normal',
         padding: 10,
+        wordBreak: 'break-word',
       },
     },
     textFieldColor: {
@@ -519,10 +522,12 @@ export const DiagnosticPrescription: React.FC = () => {
             {showAddCondition && !showAddOtherTests && (
               <Autosuggest
                 onSuggestionSelected={(e, { suggestion }) => {
-                  selectedValues!.push(suggestion);
+                  selectedValues && selectedValues.push(suggestion);
                   setSelectedValues(selectedValues);
                   setShowAddCondition(false);
-                  suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));
+                  suggestions = suggestions.filter(
+                    (val) => selectedValues && selectedValues.includes(val!)
+                  );
                   setState({
                     single: '',
                     popper: '',
@@ -536,6 +541,21 @@ export const DiagnosticPrescription: React.FC = () => {
                   placeholder: 'Search Tests',
                   value: state.single,
                   onChange: handleChange('single'),
+                  onKeyPress: (e) => {
+                    if (e.which == 13 || e.keyCode == 13) {
+                      if (selectedValues && suggestions.length === 1) {
+                        selectedValues.push(suggestions[0]);
+                        setSelectedValues(selectedValues);
+                        setShowAddCondition(false);
+                        suggestions = suggestions.filter((val) => selectedValues.includes(val!));
+                        setState({
+                          single: '',
+                          popper: '',
+                        });
+                        setOtherDiagnostic('');
+                      }
+                    }
+                  },
                 }}
                 theme={{
                   container: classes.container,

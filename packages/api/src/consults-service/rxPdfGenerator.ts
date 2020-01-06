@@ -9,6 +9,8 @@ import {
   CaseSheetDiagnosis,
   CaseSheetDiagnosisPrescription,
   CaseSheetSymptom,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_TIMINGS,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
@@ -43,31 +45,53 @@ export const convertCaseSheetToRxPdfData = async (
     prescriptions = caseSheetMedicinePrescription.map((csRx) => {
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
-      const dosageTimingCount =
-        csRx.medicineTimings !== undefined ? csRx.medicineTimings.length : 0;
-      const medicineDosage =
-        dosageTimingCount == 0
-          ? csRx.medicineDosage
-          : Number(csRx.medicineDosage) * dosageTimingCount;
-      const timings =
-        csRx.medicineTimings !== undefined
-          ? '(' + csRx.medicineTimings.map(_capitalize).join(', ') + ')'
-          : '';
+      let frequency;
+      if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
+        frequency = 'Apply';
+        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+      } else {
+        frequency = 'Take';
+        if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
+        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+      }
+      if (csRx.medicineConsumptionDuration) {
+        frequency = frequency + ' for';
+        frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
+        if (csRx.medicineConsumptionDurationUnit)
+          frequency = frequency + ' ' + csRx.medicineConsumptionDurationUnit;
+      }
 
-      const medicineUnit =
-        csRx.medicineUnit === undefined || csRx.medicineUnit === 'NA'
-          ? ''
-          : csRx.medicineUnit.toLowerCase();
-      let frequency = `${medicineDosage} ${medicineUnit} ${timings} for ${csRx.medicineConsumptionDurationInDays} days`;
-      if (csRx.medicineToBeTaken !== undefined && csRx.medicineToBeTaken.length > 0)
+      if (csRx.medicineFrequency)
+        frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
+
+      if (csRx.medicineToBeTaken)
         frequency =
           frequency +
-          '; ' +
+          ' ' +
           csRx.medicineToBeTaken
-            .map(_capitalize)
             .join(', ')
             .split('_')
             .join(' ');
+
+      if (csRx.medicineTimings) {
+        if (
+          csRx.medicineTimings.length == 1 &&
+          csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
+        ) {
+          frequency = frequency + csRx.medicineTimings[0];
+        } else {
+          frequency = frequency + ' in the';
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineTimings
+              .join(', ')
+              .split('_')
+              .join(' ');
+        }
+      }
+      frequency = _capitalize(frequency);
+
       const instructions = csRx.medicineInstructions;
       return { name, ingredients, frequency, instructions } as PrescriptionData;
     });
@@ -102,6 +126,7 @@ export const convertCaseSheetToRxPdfData = async (
     qualifications: '',
     registrationNumber: '',
     specialty: '',
+    signature: '',
   };
 
   let hospitalAddress = {
@@ -186,6 +211,7 @@ export const convertCaseSheetToRxPdfData = async (
         qualifications: doctordata.qualification,
         registrationNumber: doctordata.registrationNumber,
         specialty: doctordata.specialty.name,
+        signature: doctordata.signature,
       };
     }
   }
@@ -392,6 +418,16 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .text(`${textArray.join('  |  ')}`, margin + 15)
         .moveDown(0.8);
 
+      if (prescription.details) {
+        doc
+          .fontSize(12)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#000000')
+          .opacity(0.6)
+          .text(`${prescription.details}`, margin + 15)
+          .moveDown(0.8);
+      }
+
       if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
@@ -419,6 +455,16 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .opacity(0.6)
         .text(`${prescription.frequency} `, margin + 30)
         .moveDown(0.8);
+
+      if (prescription.instructions !== undefined) {
+        doc
+          .fontSize(10)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#000000')
+          .opacity(0.6)
+          .text(`${prescription.instructions} `, margin + 30)
+          .moveDown(0.8);
+      }
     });
   };
 
@@ -535,6 +581,50 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(`${followUpData}`, margin + 15)
+        .moveDown(0.3);
+    }
+  };
+
+  const renderDoctorData = async (doctorInfo: RxPdfData['doctorInfo']) => {
+    if (doctorInfo) {
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
+      drawHorizontalDivider(doc.y);
+      doc.moveDown(0.5);
+
+      doc
+        .opacity(0.6)
+        .fontSize(12)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#000000')
+        .text('Prescribed by', margin + 15)
+        .moveDown(0.5);
+
+      if (doctorInfo.signature) {
+        const request = require('sync-request');
+        const res = request('GET', doctorInfo.signature);
+        doc.image(res.body, margin + 15, doc.y, { height: 72, width: 200 });
+        doc.moveDown(0.5);
+      }
+
+      //Doctor Details
+      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+      const specialty = doctorInfo.specialty;
+      const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
+
+      doc
+        .opacity(1)
+        .fontSize(12)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(nameLine, margin + 15);
+      doc
+
+        .fontSize(10)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(`${specialty} | ${registrationLine}`, margin + 15)
         .moveDown(0.5);
     }
   };
@@ -579,6 +669,11 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   if (!_isEmpty(rxPdfData.followUpDetails)) {
     renderFollowUp(rxPdfData.followUpDetails);
+    doc.moveDown(1.5);
+  }
+
+  if (!_isEmpty(rxPdfData.doctorInfo)) {
+    renderDoctorData(rxPdfData.doctorInfo);
     doc.moveDown(1.5);
   }
 

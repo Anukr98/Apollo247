@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
@@ -11,17 +11,13 @@ import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
-} from 'graphql/types/GetMedicineOrdersList';
-import { useMutation } from 'react-apollo-hooks';
-import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
+import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
+import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -201,18 +197,47 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fc9916',
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 
 export const MedicineLanding: React.FC = (props) => {
-  const classes = useStyles();
-  const queryParams = new URLSearchParams(location.search);
+  const classes = useStyles({});
   const mascotRef = useRef(null);
+  const addToCartRef = useRef(null);
 
-  const orderId = queryParams.get('orderAutoId') || '';
-  const orderStatus = queryParams.get('status') || '';
-
-  if (parseInt(orderId, 10) > 0 && orderStatus === 'success') {
+  const params = useParams<{ orderAutoId: string; orderStatus: string }>();
+  if (params.orderStatus === 'success') {
     localStorage.removeItem('cartItems');
     localStorage.removeItem('dp');
   }
@@ -221,9 +246,14 @@ export const MedicineLanding: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
-
+  const [showPopup, setShowPopup] = React.useState<boolean>(
+    window.location.pathname === '/medicines/added-to-cart'
+  );
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
+    params.orderStatus && params.orderStatus.length > 0 ? true : false
+  );
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_UAT_URL}/apollo_24x7_api.php`,
+    url: `${process.env.PHARMACY_MED_PROD_URL}/apollo_24x7_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
   };
@@ -251,30 +281,10 @@ export const MedicineLanding: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (apiDetails.url != null) {
+    if (apiDetails.url != null && !data) {
       getMedicinePageProducts();
     }
-  }, []);
-
-  //   const medicineData = useMutation<
-  //   GetMedicineOrdersList,
-  //   GetMedicineOrdersListVariables
-  // >(GET_MEDICINE_ORDERS_LIST, {
-  //   variables: { patientId: currentPatient && currentPatient.id },
-  //   fetchPolicy: 'no-cache',
-  // });
-
-  // useEffect(() => {
-  //   medicineData().then((res) => {
-  //     console.log(res);
-  //     if(res && res.data && res.data.getMedicineOrdersList){
-  //       setData(res.data.getMedicineOrdersList.MedicineOrdersList);
-  //     }
-
-  //   }).catch((e: ApolloError) => {
-  //     alert(e);
-  //   })
-  // });
+  }, [data]);
 
   const list = data && [
     {
@@ -360,7 +370,7 @@ export const MedicineLanding: React.FC = (props) => {
                         <>
                           <span>{item.key}</span>
                           <div className={classes.viewAllLink}>
-                            <Link to={clientRoutes.yourOrders()}>View All</Link>
+                            <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
                           </div>
                         </>
                       ) : (
@@ -374,6 +384,54 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
+      <Popover
+        open={showPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={showOrderPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <OrderPlaced
+              orderAutoId={params.orderAutoId}
+              orderStatus={params.orderStatus}
+              setShowOrderPopup={setShowOrderPopup}
+            />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import '@aph/universal/dist/global';
 import {
+  AdminDoctorMapper,
   ConsultHours,
   Doctor,
   DoctorAndHospital,
@@ -37,11 +38,13 @@ import {
   PatientMedicalHistory,
   Diagnostics,
   DiagnosticOrderLineItems,
+  DiagnosticOrderPayments,
   DiagnosticOrders,
   DiagnosticHotSellers,
   DiagnosticOrgans,
   DiagnosticPincodeHubs,
   PatientFeedback,
+  DiagnosticOrdersStatus,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -57,6 +60,7 @@ import {
   AppointmentCallDetails,
   DoctorNextAvaialbleSlots,
   AppointmentNoShow,
+  SdDashboardSummary,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -83,10 +87,12 @@ export const connect = async () => {
         Diagnostics,
         DiagnosticOrderLineItems,
         DiagnosticOrders,
+        DiagnosticOrderPayments,
         DiagnosticHotSellers,
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
         PatientFeedback,
+        DiagnosticOrdersStatus,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -100,6 +106,7 @@ export const connect = async () => {
     {
       name: 'doctors-db',
       entities: [
+        AdminDoctorMapper,
         Doctor,
         DoctorSpecialty,
         StarTeam,
@@ -139,6 +146,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         DoctorNextAvaialbleSlots,
         AppointmentNoShow,
+        SdDashboardSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

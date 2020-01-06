@@ -26,7 +26,6 @@ import {
   SaveMedicineOrder,
   SaveMedicineOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
-import { SaveMedicineOrderPaymentVariables } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPayment';
 import {
   aphConsole,
   g,
@@ -34,7 +33,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   SafeAreaView,
@@ -48,6 +47,11 @@ import {
 import { Slider } from 'react-native-elements';
 import firebase from 'react-native-firebase';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import {
+  SaveMedicineOrderPaymentMq,
+  SaveMedicineOrderPaymentMqVariables,
+} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -163,6 +167,7 @@ const styles = StyleSheet.create({
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
 export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
+  const deliveryTime = props.navigation.getParam('deliveryTime');
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
@@ -197,16 +202,16 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       variables: orderInfo,
     });
 
-  const savePayment = (paymentInfo: SaveMedicineOrderPaymentVariables) =>
-    client.mutate<SaveMedicineOrder, SaveMedicineOrderPaymentVariables>({
+  const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
+    client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
       mutation: SAVE_MEDICINE_ORDER_PAYMENT,
       variables: paymentInfo,
     });
 
   const placeOrder = (orderId: string, orderAutoId: number) => {
     console.log('placeOrder\t', { orderId, orderAutoId });
-    const paymentInfo: SaveMedicineOrderPaymentVariables = {
-      medicinePaymentInput: {
+    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+      medicinePaymentMqInput: {
         orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: grandTotal,
@@ -220,7 +225,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     savePayment(paymentInfo)
       .then(({ data }) => {
-        const { errorCode, errorMessage } = (g(data, 'SaveMedicineOrder') || {})!;
+        const { errorCode, errorMessage } = g(data, 'SaveMedicineOrderPaymentMq') || {};
         console.log({ data });
         console.log({ errorCode, errorMessage });
         setShowSpinner(false);
@@ -260,6 +265,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       orderAutoId,
       token,
       amount: grandTotal,
+      deliveryTime,
     });
   };
 
@@ -288,6 +294,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         ].join(','),
+        orderTat: deliveryAddressId && moment(deliveryTime).isValid ? deliveryTime : '',
         items: cartItems.map(
           (item) =>
             ({
@@ -360,7 +367,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     showAphAlert!({
       // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-      description: 'Your order has been placed successfully.',
+      description:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
       children: (
         <View
           style={{
@@ -401,20 +409,35 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               {`#${orderAutoId}`}
             </Text>
           </View>
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 7.5,
-              marginTop: 15.5,
-            }}
-          />
+          {moment(deliveryTime).isValid() && (
+            <>
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: '#02475b',
+                  opacity: 0.1,
+                  marginBottom: 7.5,
+                  marginTop: 15.5,
+                }}
+              />
+              <View>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                  }}
+                >
+                  {deliveryTime &&
+                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm a')}`}
+                </Text>
+              </View>
+            </>
+          )}
           {/* <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                marginTop: 7.5
               }}
             >
               <Text
@@ -429,16 +452,16 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
                 {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
               </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                height: 1,
-                backgroundColor: '#02475b',
-                opacity: 0.1,
-                marginBottom: 15.5,
-                marginTop: 7.5,
-              }}
-            /> */}
+            </View> */}
+          <View
+            style={{
+              height: 1,
+              backgroundColor: '#02475b',
+              opacity: 0.1,
+              marginBottom: 15.5,
+              marginTop: 7.5,
+            }}
+          />
           <View style={styles.popupButtonStyle}>
             <TouchableOpacity
               style={{ flex: 1 }}

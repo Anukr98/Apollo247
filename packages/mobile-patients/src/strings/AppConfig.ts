@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const PharmaApiConfig = {
   dev: {
@@ -24,7 +24,7 @@ const PharmaApiConfig = {
     SHOP_BY_CITY: [apolloUatBaseUrl],
     IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
-      'http://tpuat.apollopharmacy.org:9090/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
@@ -73,6 +73,10 @@ const ConfigurationDev = {
   CONSULT_PG_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
@@ -83,6 +87,8 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
+  iOS_Version: '1.7',
+  Android_Version: '1.71',
 };
 
 // QA
@@ -90,12 +96,16 @@ const ConfigurationQA = {
   LOG_ENVIRONMENT: 'release',
   ANALYTICAL_ENIVRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   CONSULT_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
@@ -106,6 +116,8 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
+  iOS_Version: '1.7',
+  Android_Version: '1.16',
 };
 
 //Production
@@ -119,6 +131,10 @@ const ConfigurationProd = {
   CONSULT_PG_BASE_URL: 'https://pmt.apollo247.com',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://pmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
@@ -129,6 +145,8 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
+  iOS_Version: '1.7',
+  Android_Version: '1.16',
 };
 
 const Configuration =
@@ -301,20 +319,6 @@ export const TestsFeedBackData = {
 
 export const NeedHelp = [
   {
-    category: 'Virtual Consult',
-    options: [
-      'Delay in consult',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
-      'Application issues (bandwidth & payment errors)',
-      'Doctor not available',
-      'No past / Upcoming consultation details',
-      'How to consult virtually – demo video',
-    ],
-  },
-  {
     category: 'Pharmacy',
     options: [
       'Payment Issues in online pharmacy payments',
@@ -329,6 +333,33 @@ export const NeedHelp = [
       'Inappropriate Attitude and Behavior of Pharmacy staff',
       'Updates in Order delivery or status of the order',
       'Software - Not User Friendly',
+    ],
+  },
+  {
+    category: 'Virtual Consult',
+    options: [
+      'Delay in consult',
+      'No updates on delays, reschedules or cancellations of the consult',
+      'Payment issues',
+      'Delayed Prescription',
+      'Behavior and Attitude of the doctor',
+      'Application issues (bandwidth & payment errors)',
+      'Doctor not available',
+      'No past / Upcoming consultation details',
+      'How to consult virtually – demo video',
+    ],
+  },
+  {
+    category: 'Health Records',
+    options: [
+      'Incomplete health records',
+      'Delay in responses to Queries',
+      'Personal details are not editable',
+      'Unable to see my reports',
+      'No / Wrong UHID',
+      'Add multiple UHID’s linked to other mobile numbers',
+      'No records available for linked UHID',
+      'Issues in downloading the records',
     ],
   },
   {
@@ -347,24 +378,25 @@ export const NeedHelp = [
     ],
   },
   {
-    category: 'Health Records',
-    options: [
-      'Incomplete health records',
-      'Delay in responses to Queries',
-      'Personal details are not editable',
-      'Unable to see my reports',
-      'No / Wrong UHID',
-      'Add multiple UHID’s linked to other mobile numbers',
-      'No records available for linked UHID',
-      'Issues in downloading the records',
-    ],
-  },
-  {
     category: 'Feedback',
     options: [
       'Feedback on Consultation',
       'Feedback on Health Records',
       'Feedback on Medicine Deliver',
+    ],
+  },
+  {
+    category: 'Diagnostics',
+    options: [
+      'Payment Issues while ordering',
+      'Sample pick up related',
+      'Excess amount related',
+      'Issues in Order confirmation',
+      'Pickup cancelled without any information',
+      'Pickup Cancelled, No Refund',
+      'Report not received',
+      'Wrong report received',
+      'Sample pick up staff related',
     ],
   },
 ];

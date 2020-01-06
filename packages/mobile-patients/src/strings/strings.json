@@ -43,6 +43,8 @@
     "doctors_label": "Doctors",
     "patients_enrolled_label": "Patients Enrolled",
     "need_help": "Need Help?",
+    "book_appointment": "BOOK AN APPOINTMENT",
+    "book_appointment_question": "Want to book an appointment?",
     "arrayTest": [
       {
         "id": 1,

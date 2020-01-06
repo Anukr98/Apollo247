@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
+import { Script } from 'vm';
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -88,7 +89,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
 }));
-
 export const LifeStyle: React.FC = () => {
   const classes = useStyles();
   const {
@@ -216,6 +216,16 @@ export const LifeStyle: React.FC = () => {
         input.focus();
       }, 100);
   };
+  const moveCursorToEnd = (element: any) => {
+    if (typeof element.selectionStart == 'number') {
+      element.selectionStart = element.selectionEnd = element.value.length;
+    } else if (typeof element.createTextRange != 'undefined') {
+      element.focus();
+      var range = element.createTextRange();
+      range.collapse(false);
+      range.select();
+    }
+  };
 
   return loading && !patientDetails ? (
     <div></div>
@@ -228,6 +238,7 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline
@@ -300,7 +311,9 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
+              id="drugAllergies"
               fullWidth
               multiline
               defaultValue={drugAllergies}
@@ -336,6 +349,7 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline
@@ -372,6 +386,7 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline
@@ -409,6 +424,7 @@ export const LifeStyle: React.FC = () => {
             </Typography>
             <Typography component="div" className={classes.content}>
               <AphTextField
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 disabled={!caseSheetEdit}
                 fullWidth
                 multiline
@@ -446,6 +462,7 @@ export const LifeStyle: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline

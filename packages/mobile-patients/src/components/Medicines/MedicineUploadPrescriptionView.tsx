@@ -82,6 +82,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     return (
       <UploadPrescriprionPopup
         isVisible={showPopup}
+        hideTAndCs={isTest}
         disabledOption={'NONE'}
         heading={'Upload Prescription(s)'}
         instructionHeading={'Instructions For Uploading Prescriptions'}

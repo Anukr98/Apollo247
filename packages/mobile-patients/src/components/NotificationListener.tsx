@@ -67,7 +67,8 @@ type CustomNotificationType =
   | 'Cart_Ready'
   | 'call_started'
   | 'chat_room'
-  | 'Order_Delivered';
+  | 'Order_Delivered'
+  | 'Order_Out_For_Delivery';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -162,6 +163,32 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             'D MMM YYYY'
           )}`;
           setmedFeedback({ title, subtitle, transactionId: orderId, visible: true });
+        }
+        break;
+      case 'Order_Out_For_Delivery':
+        {
+          const orderAutoId: string = data.orderAutoId;
+          // data.orderId, data.deliveredDate
+          showAphAlert!({
+            title: 'Hi :(',
+            description: `Your order #${orderAutoId} is out for delivery.`,
+            CTAs: [
+              {
+                text: 'DISMISS',
+                onPress: () => hideAphAlert!(),
+              },
+              {
+                text: 'VIEW DETAILS',
+                onPress: () => {
+                  hideAphAlert!();
+                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+                    goToHomeOnBack: true,
+                    orderAutoId: orderAutoId,
+                  });
+                },
+              },
+            ],
+          });
         }
         break;
 

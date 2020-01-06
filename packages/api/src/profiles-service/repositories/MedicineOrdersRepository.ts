@@ -53,6 +53,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
+      relations: ['patient', 'medicineOrderLineItems'],
     });
   }
 
@@ -99,6 +100,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderById(patient: string, orderAutoId: number) {
     return this.findOne({
       where: { patient, orderAutoId },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
+  getPaymentMedicineOrders() {
+    return this.find({
+      where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
       relations: [
         'medicineOrderLineItems',
         'medicineOrderPayments',

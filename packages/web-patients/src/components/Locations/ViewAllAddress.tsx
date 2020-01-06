@@ -4,6 +4,7 @@ import React from 'react';
 import { AphRadio, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,16 +72,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ViewAllAddressProps {
   addresses: GetPatientAddressList_getPatientAddressList_addressList[];
-  updateDeliveryAddress: (deliveryAddressId: string) => void;
+  setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const { deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
 
   const { addresses } = props;
-  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
-
-  const { updateDeliveryAddress } = props;
 
   const disableSubmit = deliveryAddressId === '';
 
@@ -92,7 +91,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <ul>
-                  {addresses.map((addressDetails, index) => {
+                  {addresses.map((addressDetails) => {
                     const addressId = addressDetails.id;
                     const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
                     return (
@@ -104,8 +103,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                           control={<AphRadio color="primary" />}
                           label={address}
                           onChange={() => {
-                            setDeliveryAddressId(addressId);
-                            updateDeliveryAddress(addressId);
+                            setDeliveryAddressId && setDeliveryAddressId(addressId);
                           }}
                         />
                       </li>
@@ -123,6 +121,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           fullWidth
           disabled={disableSubmit}
           className={disableSubmit ? classes.buttonDisable : ''}
+          onClick={() => props.setIsViewAllAddressDialogOpen(false)}
         >
           Done
         </AphButton>

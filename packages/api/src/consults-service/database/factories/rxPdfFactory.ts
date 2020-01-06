@@ -20,6 +20,7 @@ export const buildRxPdfData = (): RxPdfData => {
     qualifications: _capitalize(faker.lorem.words(_random(2, 10))),
     registrationNumber: faker.random.alphaNumeric(8).toUpperCase(),
     specialty: '',
+    signature: '',
   };
 
   const hospitalAddress = {
@@ -43,7 +44,7 @@ export const buildRxPdfData = (): RxPdfData => {
   const vitals = { height: '', weight: '', temperature: '', bp: '' };
   const appointmentDetails = { displayId: '', consultDate: '', consultType: '' };
   const diagnosesTests = [{ itemname: '' }];
-  const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '' }];
+  const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];
   const followUpDetails = '';
 
   return {

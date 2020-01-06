@@ -11,8 +11,10 @@ import {
   AppointmentCallDetails,
   DoctorNextAvaialbleSlots,
   AppointmentNoShow,
+  SdDashboardSummary,
 } from 'consults-service/entities';
 import {
+  AdminDoctorMapper,
   ConsultHours,
   Doctor,
   DoctorAndHospital,
@@ -52,10 +54,12 @@ import {
   Diagnostics,
   DiagnosticOrderLineItems,
   DiagnosticOrders,
+  DiagnosticOrderPayments,
   DiagnosticHotSellers,
   DiagnosticOrgans,
   DiagnosticPincodeHubs,
   PatientFeedback,
+  DiagnosticOrdersStatus,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -73,6 +77,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         DoctorNextAvaialbleSlots,
         AppointmentNoShow,
+        SdDashboardSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -85,6 +90,7 @@ export const connect = async () => {
     {
       name: 'doctors-db',
       entities: [
+        AdminDoctorMapper,
         Doctor,
         DoctorSpecialty,
         StarTeam,
@@ -132,10 +138,12 @@ export const connect = async () => {
         Diagnostics,
         DiagnosticOrderLineItems,
         DiagnosticOrders,
+        DiagnosticOrderPayments,
         DiagnosticHotSellers,
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
         PatientFeedback,
+        DiagnosticOrdersStatus,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

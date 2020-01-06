@@ -29,6 +29,7 @@ import {
 } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
+import { useUIElements } from './UIElementsProvider';
 
 const styles = StyleSheet.create({
   container: {
@@ -93,16 +94,18 @@ let didBlurSubscription: NavigationEventSubscription;
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { analytics, sendOtp, isSendingOtp, signOut } = useAuth();
+  const { sendOtp, isSendingOtp, signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const { setLoading } = useUIElements();
 
   useEffect(() => {
-    firebase.analytics().setAnalyticsCollectionEnabled(true);
-    analytics.setCurrentScreen(AppRoutes.Login, AppRoutes.Login);
-    fireBaseFCM();
-    signOut();
-  }, [, analytics, signOut]);
+    try {
+      fireBaseFCM();
+      signOut();
+      setLoading && setLoading(false);
+    } catch (error) {}
+  }, [signOut]);
 
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();
@@ -231,6 +234,8 @@ export const Login: React.FC<LoginProps> = (props) => {
             sendOtp(phoneNumber)
               .then((confirmResult) => {
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
+                CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
+
                 console.log('confirmResult login', confirmResult);
 
                 props.navigation.navigate(AppRoutes.OTPVerification, {

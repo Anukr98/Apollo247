@@ -49,14 +49,18 @@ const getDoctorAvailableSlots: Resolver<
       const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlot.endTime.toString()}`;
       let consultStartTime = new Date(st);
       const consultEndTime = new Date(ed);
-      //console.log(consultStartTime, consultEndTime);
+      console.log('consults timings', consultStartTime, consultEndTime);
       let previousDate: Date = DoctorAvailabilityInput.availableDate;
       if (consultEndTime < consultStartTime) {
         previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
         consultStartTime = new Date(st);
       }
-      const duration = Math.floor(60 / timeSlot.consultDuration);
+      // let duration = Math.floor(60 / timeSlot.consultDuration);
+      // if (timeSlot.consultDuration > 40) {
+      //   duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
+      // }
+      const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
       console.log(duration, 'doctor duration');
       let slotsCount =
         (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
@@ -128,7 +132,8 @@ const getDoctorAvailableSlots: Resolver<
   const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
     DoctorAvailabilityInput.doctorId,
     DoctorAvailabilityInput.availableDate,
-    doctorsDb
+    doctorsDb,
+    availableSlots
   );
   if (doctorBblockedSlots.length > 0) {
     availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
