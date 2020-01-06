@@ -172,7 +172,9 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
       case 'late night':
         return parseInt(timeStringArray[0], 10) > 12
           ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
-          : '';
+          : `${parseInt(timeStringArray[0] === '00' ? '12' : timeStringArray[0], 10)}:${
+              timeStringArray[1]
+            } am`;
       default:
         return formattedHour;
     }
