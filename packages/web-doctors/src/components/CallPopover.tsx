@@ -662,7 +662,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span': {
         display: 'inline-block',
         textAlign: 'right',
-      }
+      },
     },
     consultGroup: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
@@ -2118,7 +2118,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     {dateSelected && timeSelected
                       ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
                           'ddd, DD/MM/YYYY'
-                        )+
+                        ) +
                         ' ' +
                         moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
                       : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY') +

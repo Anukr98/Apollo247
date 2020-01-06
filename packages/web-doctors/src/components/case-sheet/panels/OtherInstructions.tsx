@@ -103,11 +103,18 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       color: '#02475b !important',
       padding: '5px 0',
+      position: 'relative',
       '& img': {
         float: 'right',
         border: '1px solid #00b38e',
         borderRadius: '50%',
         maxWidth: 24,
+        position: 'absolute',
+        top: 12,
+        right: 2,
+      },
+      '& div': {
+        height: 'auto',
       },
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
@@ -122,6 +129,7 @@ const useStyles = makeStyles((theme: Theme) =>
         whiteSpace: 'normal',
         padding: 10,
         wordBreak: 'break-word',
+        paddingRight: 20,
       },
     },
     btnAddDoctor: {

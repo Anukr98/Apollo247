@@ -370,7 +370,7 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   endTime: Date;
 
-  @Column('decimal', { precision: 5, scale: 2, default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   callDuration: number;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)

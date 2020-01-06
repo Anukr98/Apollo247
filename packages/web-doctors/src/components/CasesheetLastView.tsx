@@ -91,6 +91,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       '& img': {
         maxWidth: 200,
+        height: 70,
       },
     },
   };

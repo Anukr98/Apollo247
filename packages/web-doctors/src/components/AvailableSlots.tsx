@@ -242,6 +242,7 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
       ? moment(new Date()).format('YYYY-MM-DD')
       : props.dateSelected;
 
+  const earlyMorningTime = getIstTimestamp(new Date(apiDateFormat), '06:01');
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
@@ -348,7 +349,7 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
     const slotTime = new Date(slot).getTime();
     const currentTime = new Date(new Date().toISOString()).getTime();
     if (slotTime > currentTime) {
-      if (slotTime < morningTime) morningSlots.push(slotTime);
+      if (slotTime >= earlyMorningTime && slotTime < morningTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
       else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
       else lateNightSlots.push(slotTime);
