@@ -23,6 +23,10 @@ import {
 } from 'types/diagnosticOrderTypes';
 import { format } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import {
+  sendDignosticOrderStatusNotification,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const saveDiagnosticOrderTypeDefs = gql`
   enum DIAGNOSTIC_ORDER_STATUS {
@@ -579,6 +583,13 @@ const SaveDiagnosticOrder: Resolver<
           hideStatus: false,
         };
         await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
+
+        //send order out for delivery notification
+        sendDignosticOrderStatusNotification(
+          NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+          saveOrder,
+          profilesDb
+        );
       }
     } else {
       await diagnosticOrdersRepo.updateDiagnosticOrder(
@@ -594,6 +605,13 @@ const SaveDiagnosticOrder: Resolver<
         hideStatus: false,
       };
       await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
+
+      //send order out for delivery notification
+      sendDignosticOrderStatusNotification(
+        NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+        saveOrder,
+        profilesDb
+      );
     }
   }
   return {
