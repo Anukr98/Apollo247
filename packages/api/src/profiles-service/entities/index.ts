@@ -136,6 +136,12 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
   ORDER_FAILED = 'ORDER_FAILED',
   ORDER_CANCELLED = 'ORDER_CANCELLED',
+  PAYMENT_PENDING = 'PAYMENT_PENDING',
+  ORDER_PLACED = 'ORDER_PLACED',
+}
+export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
+  COD = 'COD',
+  ONLINE_PAYMENT = 'ONLINE_PAYMENT',
 }
 
 export enum FEEDBACKTYPE {
@@ -1140,6 +1146,9 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column({ nullable: true })
   preBookingId: string;
+
+  @Column({ nullable: true })
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE;
 
   @Column({ default: TEST_COLLECTION_TYPE.HC })
   orderType: TEST_COLLECTION_TYPE;

@@ -1,6 +1,12 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Grid } from '@material-ui/core';
+import { Theme, Grid, CircularProgress } from '@material-ui/core';
+import {
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus as statusDetails,
+} from 'graphql/types/GetMedicineOrderDetails';
+import moment from 'moment';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -98,45 +104,116 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OrderStatusCard: React.FC = (props) => {
-  const classes = useStyles();
+type OrderStatusCardProps = {
+  orderDetailsData: orederDetails | null;
+  isLoading: boolean;
+};
+
+export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
+  const classes = useStyles({});
+
+  const getSortedstatusList = (statusList: (statusDetails | null)[]) => {
+    if (statusList && statusList.length > 0) {
+      const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+      return filteredStatusList.sort(
+        (a, b) =>
+          moment(b && b.statusDate)
+            .toDate()
+            .getTime() -
+          moment(a && a.statusDate)
+            .toDate()
+            .getTime()
+      );
+    }
+  };
+
+  const orderStatusList =
+    props.orderDetailsData &&
+    getSortedstatusList(props.orderDetailsData.medicineOrdersStatus || []);
+
+  const statusArray = [
+    'CANCELLED',
+    'CANCEL_REQUEST',
+    'DELIVERED',
+    'ITEMS_RETURNED',
+    'ORDER_CONFIRMED',
+    'ORDER_FAILED',
+    'ORDER_INITIATED',
+    'ORDER_PLACED',
+    'ORDER_VERIFIED',
+    'OUT_FOR_DELIVERY',
+    'PAYMENT_SUCCESS',
+    'PICKEDUP',
+    'PRESCRIPTION_CART_READY',
+    'PRESCRIPTION_UPLOADED',
+    'RETURN_ACCEPTED',
+    'RETURN_INITIATED',
+  ];
+
+  const getStatus = (status: MEDICINE_ORDER_STATUS) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+        return 'Order Initiated';
+      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+        return 'Order Placed';
+      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+        return 'Order Verified';
+      case MEDICINE_ORDER_STATUS.ORDER_FAILED:
+        return 'Order Failed';
+      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
+        return 'Order Confirmed';
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+        return 'Order Cancelled';
+      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+        return 'Order Cancel Requested';
+      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+        return 'Order Out for Delivery';
+      case MEDICINE_ORDER_STATUS.DELIVERED:
+        return 'Order Deliverd';
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+        return 'Order Payment Success';
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+        return 'Prescription Uploaded';
+      case MEDICINE_ORDER_STATUS.PICKEDUP:
+        return 'Order Picked up';
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
+        return 'Prescription Cart Ready';
+      case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+        return 'Return Initiated';
+      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+        return 'Return Accepted';
+    }
+  };
 
   return (
     <Grid container spacing={2}>
       <Grid item sm={12}>
         <div className={classes.orderStatusGroup}>
-          <div className={classes.cardGroup}>
-            <div
-              className={`${classes.statusCard} ${classes.orderStatusActive} ${classes.orderStatusCompleted}`}
-            >
-              Order Placed
-              <div className={classes.statusInfo}>
-                <span>9 Aug 2019</span>
-                <span>12:00 pm</span>
-              </div>
-            </div>
-          </div>
-          <div className={classes.cardGroup}>
-            <div className={`${classes.statusCard} ${classes.orderStatusActive}`}>
-              Order Verified
-              <div className={classes.statusInfo}>
-                <span>9 Aug 2019</span>
-                <span>12:33 pm</span>
-              </div>
-            </div>
-          </div>
-          <div className={classes.cardGroup}>
-            <div className={`${classes.statusCard}`}>Out For Delivery</div>
-          </div>
-          <div className={classes.cardGroup}>
-            <div className={`${classes.statusCard}`}>
-              Order Delivered
-              <div className={classes.statusInfo}>
-                <span>To Be Delivered Within — 2hrs</span>
-                <span></span>
-              </div>
-            </div>
-          </div>
+          {props.isLoading ? (
+            <CircularProgress />
+          ) : (
+              orderStatusList &&
+              orderStatusList.map(
+                (statusInfo) =>
+                  statusInfo && (
+                    <div id={statusInfo.id} className={classes.cardGroup}>
+                      <div
+                        className={`${classes.statusCard} ${
+                          statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
+                            ? classes.orderStatusActive
+                            : null
+                          } ${classes.orderStatusCompleted}`}
+                      >
+                        {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
+                        <div className={classes.statusInfo}>
+                          <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
+                          <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+              )
+            )}
         </div>
       </Grid>
     </Grid>

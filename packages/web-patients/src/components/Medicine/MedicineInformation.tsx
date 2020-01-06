@@ -397,8 +397,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         setMedicineQty(parseInt(e.target.value))
                       }
                     >
-                      {options.map((option) => (
+                      {options.map((option, index) => (
                         <MenuItem
+                          key={index}
                           classes={{
                             root: classes.menuRoot,
                             selected: classes.menuSelected,

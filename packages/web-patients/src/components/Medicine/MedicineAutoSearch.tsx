@@ -186,7 +186,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
             <div className={classes.searchList}>
               <ul>
                 {searchMedicines.map((medicine) => (
-                  <li>
+                  <li key={medicine.id}>
                     <Link to={clientRoutes.medicineDetails(medicine.sku)}>
                       <div className={classes.medicineImg}>
                         {medicine.is_prescription_required ? (

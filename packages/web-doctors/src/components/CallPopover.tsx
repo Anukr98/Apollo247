@@ -1606,12 +1606,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       callInitiateReschedule(false);
     }
   };
+
+  const initiateRescheduleMutation = useMutation(INITIATE_RESCHDULE_APPONITMENT);
   // flag: true is for missed call reschedule & false for normal
   const callInitiateReschedule = (flag: boolean) => {
     const today = moment();
     const hours = timeSelected.split(':');
     const momentDate = moment(dateSelected).hours();
     unSubscribeBrowserButtonsListener();
+
     const rescheduleParam = flag
       ? {
           appointmentId: props.appointmentId,
@@ -1629,30 +1632,32 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
           rescheduleInitiatedId: props.doctorId,
           //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
-          rescheduledDateTime: dateSelected + 'T' + timeSelected + ':00.000Z',
+          rescheduledDateTime:
+            moment
+              .utc(dateSelected + 'T' + timeSelected + ':00.000Z')
+              .local()
+              .format('YYYY-MM-DDTHH:mm') + ':00.000Z',
           autoSelectSlot: 0,
         };
 
-    client
-      .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
-        mutation: INITIATE_RESCHDULE_APPONITMENT,
-        variables: {
-          RescheduleAppointmentInput: rescheduleParam,
-        },
-      })
-      .then((_data) => {
+    initiateRescheduleMutation({
+      variables: {
+        RescheduleAppointmentInput: rescheduleParam,
+      },
+    })
+      .then(({ data }: any) => {
         let rescheduledDateTime = '';
         let rescheduleCount = 0;
         let reschduleId = '';
-        if (_data && _data.data && _data.data.initiateRescheduleAppointment) {
-          if (_data.data.initiateRescheduleAppointment.rescheduleAppointment) {
+        if (data && data.initiateRescheduleAppointment) {
+          if (data.initiateRescheduleAppointment.rescheduleAppointment) {
             rescheduledDateTime =
-              _data.data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime ||
-              '';
-            reschduleId = _data.data.initiateRescheduleAppointment.rescheduleAppointment.id || '';
+              data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime || '';
+            reschduleId = data.initiateRescheduleAppointment.rescheduleAppointment.id || '';
           }
-          rescheduleCount = _data.data.initiateRescheduleAppointment.rescheduleCount || 0;
+          rescheduleCount = data.initiateRescheduleAppointment.rescheduleCount || 0;
         }
+
         const reschduleObject: any = {
           appointmentId: props.appointmentId,
           transferDateTime: rescheduledDateTime,
@@ -1661,8 +1666,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           doctorInfo: currentPatient,
           reschduleId: reschduleId,
         };
-        setIsPopoverOpen(false);
-        setDisableOnCancel(true);
         pubnub.publish(
           {
             message: {
@@ -1680,6 +1683,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             navigateToCalendar();
           }
         );
+        setIsPopoverOpen(false);
+        setDisableOnCancel(true);
       })
       .catch((e) => {
         //setIsLoading(false);

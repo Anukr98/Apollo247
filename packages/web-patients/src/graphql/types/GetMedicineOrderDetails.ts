@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { MEDICINE_ORDER_STATUS } from "./globalTypes";
+import { MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetMedicineOrderDetails
@@ -26,6 +26,15 @@ export interface GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDe
   mou: number | null;
 }
 
+export interface GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderPayments {
+  __typename: "MedicineOrderPayments";
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid: number | null;
+  paymentRefId: string | null;
+  paymentStatus: string | null;
+  paymentDateTime: any | null;
+}
+
 export interface GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails {
   __typename: "MedicineOrders";
   id: string;
@@ -35,6 +44,7 @@ export interface GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDe
   prescriptionImageUrl: string | null;
   medicineOrdersStatus: (GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus | null)[] | null;
   medicineOrderLineItems: (GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems | null)[] | null;
+  medicineOrderPayments: (GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderPayments | null)[] | null;
 }
 
 export interface GetMedicineOrderDetails_getMedicineOrderDetails {

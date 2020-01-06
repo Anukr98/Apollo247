@@ -13,6 +13,7 @@ export interface GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_
   id: string;
   orderStatus: MEDICINE_ORDER_STATUS | null;
   statusDate: any | null;
+  hideStatus: boolean | null;
 }
 
 export interface GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList {
