@@ -25,7 +25,11 @@ import {
   BookAppointmentInput,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  g,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -220,11 +224,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               props.navigation.navigate(AppRoutes.Consult);
             })
             .catch((e: any) => {
-              try {
-                const error = JSON.parse(JSON.stringify(e));
-                const errorMessage = error && error.message;
-                Alert.alert('Error', errorMessage);
-              } catch {}
+              handleGraphQlError(e);
             });
         } else {
           onSubmitBookAppointment();
