@@ -329,6 +329,12 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+    daysOfWeek: {
+      '& button:last-child': {
+        border: '1px solid #e50000 !important',
+        color: '#e50000',
+      },
+    },
     tabletcontent: {
       margin: '0 10px',
       position: 'relative',
@@ -338,6 +344,11 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
       fontWeight: 600,
+      '&:last-child': {
+        backgroundColor: '#e50000 !important',
+        color: '#fff',
+        border: '1px solid #e50000 !important',
+      },
     },
     helpText: {
       paddingLeft: 0,
@@ -1564,7 +1575,9 @@ export const MedicinePrescription: React.FC = () => {
                     </Grid>
                     <Grid item lg={12} xs={12}>
                       <h6>In The</h6>
-                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
+                        {daySlotsHtml}
+                      </div>
                       {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
@@ -1874,7 +1887,9 @@ export const MedicinePrescription: React.FC = () => {
                       </Grid>
                       <Grid item lg={12} xs={12}>
                         <h6>In the</h6>
-                        <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                        <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
+                          {daySlotsHtml}
+                        </div>
                         {errorState.daySlotErr && (
                           <FormHelperText
                             className={classes.helpText}
