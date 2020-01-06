@@ -64,6 +64,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Keyboard,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 
@@ -106,38 +107,6 @@ const styles = StyleSheet.create({
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  optionsView: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingBottom: 16,
-  },
-  buttonStyle: {
-    width: 'auto',
-    marginRight: 8,
-    marginTop: 12,
-    backgroundColor: theme.colors.WHITE,
-  },
-  buttonTextStyle: {
-    paddingHorizontal: 12,
-    color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansMedium(15),
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 6,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  placeholderTextStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
   },
 });
 
@@ -252,7 +221,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     clinics.length == 0 && fetchStorePickup();
     if (clinicId) {
-      filterClinics(clinicId, true);
+      slicedStoreList.length == 0 && filterClinics(clinicId, true, true);
     }
   }, [clinicId]);
 
@@ -685,6 +654,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    if (pinCode.length !== 6) {
+      setSlicedStoreList([]);
+      setClinicId!('');
+    }
+  }, [pinCode]);
+
   const fetchStorePickup = () => {
     setStorePickUpLoading(true);
     searchClinicApi()
@@ -693,23 +669,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         aphConsole.log('clinic response', data.data.data, data);
         setClinics && setClinics(data.data.data);
         setTestCentresLoaded(true);
+        updateClinicSelection();
       })
       .catch((e) => {
         setStorePickUpLoading(false);
       });
   };
 
-  const filterClinics = (key: string, isId?: boolean) => {
+  const filterClinics = (key: string, isId?: boolean, hideLoader?: boolean) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
       aphConsole.log('iid filer=', data);
-      filterClinics(pinCode);
+      filterClinics(pinCode, false, true);
       setClinicDetails(data);
     } else {
       if (isValidPinCode(key)) {
         setPinCode && setPinCode(key);
         if (key.length == 6) {
-          setStorePickUpLoading(true);
+          Keyboard.dismiss();
+          !hideLoader && setStorePickUpLoading(true);
           getPlaceInfoByPincode(key)
             .then((data) => {
               aphConsole.log('locaion data', data);
@@ -727,6 +705,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               aphConsole.log('cityName data', filterArray);
 
               setClinicDetails(filterArray || []);
+              setSlicedStoreList((filterArray || []).slice(0, 2));
             })
             .catch(() => {
               setClinicDetails([]);
@@ -739,15 +718,33 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const renderStorePickup = () => {
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
+      updateClinicSelection();
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
+      updateClinicSelection();
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, [clinics, clinicId, clinicDetails]);
+
+  const [slicedStoreList, setSlicedStoreList] = useState<Clinic[]>([]);
+
+  const updateClinicSelection = () => {
     const selectedStoreIndex =
       clinicDetails && clinicDetails.findIndex(({ CentreCode }) => CentreCode == clinicId);
     const storesLength = clinicDetails && clinicDetails.length;
     const spliceStartIndex =
       selectedStoreIndex == storesLength! - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const slicedStoreList = [...clinicDetails!].slice(startIndex, startIndex! + 2);
+    const _slicedStoreList = [...clinicDetails!].slice(startIndex, startIndex! + 2);
+    setSlicedStoreList(_slicedStoreList);
+  };
 
+  const renderStorePickup = () => {
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
         <TextInputComponent
@@ -759,7 +756,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           placeholder={'Enter Pincode'}
         />
         {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-        {!storePickUpLoading && pinCode.length == 6 && clinicDetails!.length == 0 && (
+        {!storePickUpLoading && pinCode.length == 6 && slicedStoreList!.length == 0 && (
           <Text
             style={{
               paddingTop: 10,
