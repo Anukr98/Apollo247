@@ -450,6 +450,24 @@ export async function sendNotification(
     data: {},
   };
 
+  if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Book_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
   if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     payload = {
       notification: {
