@@ -52,41 +52,41 @@ const appointmentsSummary: Resolver<
   function getAppointments() {
     return new Promise(async (resolve, reject) => {
       if (apptsList.length == 0) {
+        console.log('no recs.....');
         resolve(row1);
       }
-      console.log(apptsList, serialNo);
+      console.log(apptsList, serialNo, 'list----------');
       await apptsList.map(async (appt) => {
+        // console.log('appt=', appt);
         const patientDetails = await patientRepo.findById(appt.patientId);
         if (!patientDetails) {
           throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
         }
         const doctorDetails = await doctorRepo.findById(appt.doctorId);
         if (!doctorDetails) {
+          console.log(11111);
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
         //new fields
-        const JDDetails = await consultQueueRepo.findByAppointmentId(
-          'ab37ca8f-7fbe-4a3a-a4b2-785405a62044'
-        );
+        const JDDetails = await consultQueueRepo.findByAppointmentId(appt.id);
         if (!JDDetails) {
+          console.log(2222);
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
         console.log('JDDetails==', JDDetails);
         const JDPhone = await doctorRepo.getDoctorProfileData(JDDetails.doctorId);
         if (!JDPhone) {
+          console.log(333333);
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
         console.log('JDPhone==', JDPhone.mobileNumber);
-        const callDetails = await appointmentCallDetailsRepo.findByAppointmentId(
-          'ab37ca8f-7fbe-4a3a-a4b2-785405a62044'
-        );
+        const callDetails = await appointmentCallDetailsRepo.findByAppointmentId(appt.id);
         if (!callDetails) {
+          console.log(444444);
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
         console.log('callDetails==', callDetails);
-        const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(
-          'ab37ca8f-7fbe-4a3a-a4b2-785405a62045'
-        );
+        const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(appt.id);
         console.log('rescheduleDetails==:::::', rescheduleDetails);
         //end
         const istDateTime = format(
