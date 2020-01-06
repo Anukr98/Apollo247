@@ -16,11 +16,10 @@ import {
 } from 'graphql/types/GetMedicineOrdersList';
 
 import moment from 'moment';
-import { useMutation } from 'react-apollo-hooks';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
-import { SignIn } from 'components/SignIn';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -145,46 +144,21 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
 
-  const [orderList, setOrderList] = useState<(ordersList | null)[] | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const orderListMutation = useMutation<GetMedicineOrdersList, GetMedicineOrdersListVariables>(
-    GET_MEDICINE_ORDERS_LIST,
-    {
-      variables: {
-        patientId: currentPatient && currentPatient.id,
-      },
-    }
-  );
-
-  useEffect(() => {
-    if (!orderList) {
-      setIsLoading(true);
-      orderListMutation()
-        .then((res) => {
-          if (
-            res &&
-            res.data &&
-            res.data.getMedicineOrdersList &&
-            res.data.getMedicineOrdersList.MedicineOrdersList &&
-            res.data.getMedicineOrdersList.MedicineOrdersList.length > 0
-          ) {
-            const orderListData = res.data.getMedicineOrdersList.MedicineOrdersList;
-
-            setOrderList(orderListData);
-            const firstOrderInfo = orderListData[0];
-            if (firstOrderInfo && firstOrderInfo.orderAutoId) {
-              props.setOrderAutoId(firstOrderInfo.orderAutoId);
-            }
-            setIsLoading(false);
-          }
-        })
-        .catch((e) => {
-          setIsLoading(false);
-          console.log(e);
-        });
-    }
-  }, [orderList]);
+  const { data, error, loading } = useQueryWithSkip<
+    GetMedicineOrdersList,
+    GetMedicineOrdersListVariables
+  >(GET_MEDICINE_ORDERS_LIST, {
+    variables: {
+      patientId: currentPatient && currentPatient.id,
+    },
+  });
+  if (loading)
+    return (
+      <div>
+        <CircularProgress />
+      </div>
+    );
+  if (error) return <div>Error :(</div>;
 
   const getSortedstatusList = (statusList: (statusDetails | null)[]) => {
     if (statusList && statusList.length > 0) {
@@ -262,62 +236,73 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  return (
-    <div className={classes.orderListing}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
-        <div className={classes.customScroll}>
-          {isLoading ? (
-            <CircularProgress />
-          ) : (
-            orderList &&
-            orderList.length > 0 &&
-            orderList.map(
-              (orderInfo) =>
-                orderInfo && (
-                  <div
-                    key={orderInfo.id}
-                    className={classes.root}
-                    onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
-                  >
-                    <div className={classes.orderedItem}>
-                      <div className={classes.itemImg}>
-                        <img src={require('images/ic_tablets.svg')} alt="" />
+  if (
+    data &&
+    data.getMedicineOrdersList &&
+    data.getMedicineOrdersList.MedicineOrdersList &&
+    data.getMedicineOrdersList.MedicineOrdersList.length > 0
+  ) {
+    const orderListData = data.getMedicineOrdersList.MedicineOrdersList;
+
+    const firstOrderInfo = orderListData[0];
+    if (firstOrderInfo && firstOrderInfo.orderAutoId) {
+      props.setOrderAutoId(firstOrderInfo.orderAutoId);
+    }
+
+    return (
+      <div className={classes.orderListing}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
+          <div className={classes.customScroll}>
+            {orderListData &&
+              orderListData.length > 0 &&
+              orderListData.map(
+                (orderInfo) =>
+                  orderInfo && (
+                    <div
+                      key={orderInfo.id}
+                      className={classes.root}
+                      onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
+                    >
+                      <div className={classes.orderedItem}>
+                        <div className={classes.itemImg}>
+                          <img src={require('images/ic_tablets.svg')} alt="" />
+                        </div>
+                        <div className={classes.itemSection}>
+                          <div className={classes.itemName}>Medicines</div>
+                          <div className={classes.deliveryType}>
+                            <span>{orderInfo.deliveryType}</span>
+                            <span>#{orderInfo.orderAutoId}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className={classes.itemSection}>
-                        <div className={classes.itemName}>Medicines</div>
-                        <div className={classes.deliveryType}>
-                          <span>{orderInfo.deliveryType}</span>
-                          <span>#{orderInfo.orderAutoId}</span>
+                      <div className={classes.orderTrackSlider}>
+                        <AphTrackSlider
+                          color="primary"
+                          defaultValue={80}
+                          getAriaValueText={valuetext}
+                          min={0}
+                          max={360}
+                          valueLabelDisplay="off"
+                        />
+                      </div>
+                      <div className={classes.orderStatusGroup}>
+                        {orderInfo.medicineOrdersStatus && (
+                          <div className={classes.orderStatus}>
+                            {getOrderStatus(orderInfo.medicineOrdersStatus)}
+                          </div>
+                        )}
+                        <div className={classes.statusInfo}>
+                          {orderInfo.medicineOrdersStatus &&
+                            getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
                         </div>
                       </div>
                     </div>
-                    <div className={classes.orderTrackSlider}>
-                      <AphTrackSlider
-                        color="primary"
-                        defaultValue={80}
-                        getAriaValueText={valuetext}
-                        min={0}
-                        max={360}
-                        valueLabelDisplay="off"
-                      />
-                    </div>
-                    <div className={classes.orderStatusGroup}>
-                      {orderInfo.medicineOrdersStatus && (
-                        <div className={classes.orderStatus}>
-                          {getOrderStatus(orderInfo.medicineOrdersStatus)}
-                        </div>
-                      )}
-                      <div className={classes.statusInfo}>
-                        {orderInfo.medicineOrdersStatus &&
-                          getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
-                      </div>
-                    </div>
-                  </div>
-                )
-            )
-          )}
-        </div>
-      </Scrollbars>
-    </div>
-  );
+                  )
+              )}
+          </div>
+        </Scrollbars>
+      </div>
+    );
+  }
+  return <p>No Data Found</p>;
 };

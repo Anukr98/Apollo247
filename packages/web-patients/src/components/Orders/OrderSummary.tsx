@@ -136,8 +136,8 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
           </div>
           {orderItem &&
             orderItem.length > 0 &&
-            orderItem.map((item) => (
-              <div className={classes.tableRow}>
+            orderItem.map((item, index) => (
+              <div key={index} className={classes.tableRow}>
                 <div>{item && item.medicineName}</div>
                 <div>{item && item.quantity}</div>
                 <div>Rs.{item && item.price}</div>
