@@ -24,7 +24,7 @@ export enum ApiConstants {
   PHYSICAL_APPOINTMENT_CASESHEET_REMINDER_15_BODY = 'Hi {0}! We noticed you have not filled in your medical details yet. This is necessary for your consultation to begin. Click here to fill your details now',
 
   //appointment casesheet reminder 15
-  PATIENT_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been reschedules',
+  PATIENT_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
   PATIENT_APPOINTMENT_RESCHEDULE_BODY = 'Hi {0}!  Your appointment {1} with Dr. {2} has been rescheduled  to {3}. ',
 
   //initiate junior doctor session
