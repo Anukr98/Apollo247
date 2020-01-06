@@ -288,6 +288,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 5,
         marginTop: 5,
         lineHeight: 'normal',
+        minHeight: 18,
       },
     },
     popupHeading: {
@@ -432,7 +433,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 'bold',
     },
     unitsSelect: {
-      marginTop: -7,
+      marginTop: 0,
     },
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
@@ -836,7 +837,7 @@ export const MedicinePrescription: React.FC = () => {
 
     const dayslots = daySlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
-        if (selectedSlot.toLowerCase() === slot.id) {
+        if (selectedSlot.toLowerCase() === slot.id.toLowerCase()) {
           slot.selected = true;
         }
       });
@@ -860,8 +861,6 @@ export const MedicinePrescription: React.FC = () => {
           ? selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
           : forOptions[0].id
       );
-
-      console.log(selectedMedicinesArr[idx]);
       setMedicineForm(
         selectedMedicinesArr[idx].medicineFormTypes!
           ? selectedMedicinesArr[idx].medicineFormTypes!
@@ -894,7 +893,7 @@ export const MedicinePrescription: React.FC = () => {
     });
     daySlots.map((slot: SlotsObject) => {
       idx.medicineTimings.map((selectedSlot: any) => {
-        if (selectedSlot.toLowerCase() === slot.id) {
+        if (selectedSlot.toLowerCase() === slot.id.toLowerCase()) {
           slot.selected = true;
         }
       });
@@ -1005,7 +1004,7 @@ export const MedicinePrescription: React.FC = () => {
     });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
-        daySlotsArr.push(slot.value.toUpperCase());
+        daySlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
@@ -1244,7 +1243,11 @@ export const MedicinePrescription: React.FC = () => {
             const unitHtmls = medicine.medicineUnit.toLowerCase();
             const timesString =
               medicine.medicineTimings.length > 0
-                ? 'in the ' + medicine.medicineTimings.join(' , ').toLowerCase()
+                ? 'in the ' +
+                  medicine.medicineTimings
+                    .join(' , ')
+                    .toLowerCase()
+                    .replace('_', ' ')
                 : '';
             const dosageCount = medicine.medicineDosage;
             const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
@@ -1331,7 +1334,11 @@ export const MedicinePrescription: React.FC = () => {
                 const favUnitHtmls = favMedicine.medicineUnit.toLowerCase();
                 const favTimesString =
                   favMedicine.medicineTimings.length > 0
-                    ? 'in the ' + favMedicine.medicineTimings.join(' , ').toLowerCase()
+                    ? 'in the ' +
+                      favMedicine.medicineTimings
+                        .join(' , ')
+                        .toLowerCase()
+                        .replace('_', ' ')
                     : '';
                 const favDosageCount = favMedicine.medicineDosage;
                 const favTakeApplyHtml =
@@ -1569,9 +1576,10 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </Grid>
                     <Grid item lg={12} xs={12}>
-                      <h6>Instructions (if any)</h6>
+                      <h6>Instructions/Notes</h6>
                       <div className={classes.numberTablets}>
                         <AphTextField
+                          multiline
                           value={medicineInstruction}
                           onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);
