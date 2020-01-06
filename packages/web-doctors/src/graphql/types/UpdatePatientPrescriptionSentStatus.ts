@@ -9,6 +9,7 @@
 export interface UpdatePatientPrescriptionSentStatus_updatePatientPrescriptionSentStatus {
   __typename: "PatientPrescriptionSentResponse";
   success: boolean | null;
+  blobName: string | null;
 }
 
 export interface UpdatePatientPrescriptionSentStatus {

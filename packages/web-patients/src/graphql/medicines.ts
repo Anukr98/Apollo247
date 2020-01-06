@@ -21,3 +21,14 @@ export const SAVE_MEDICINE_ORDER_PAYMENT_RESULT = gql`
     }
   }
 `;
+
+export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
+  mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
+    SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
+      errorCode
+      errorMessage
+      # orderId
+      # orderAutoId
+    }
+  }
+`;

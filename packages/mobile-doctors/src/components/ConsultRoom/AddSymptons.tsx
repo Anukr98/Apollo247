@@ -3,7 +3,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, View, Alert } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { addSysmptonsList } from '@aph/mobile-doctors/src/components/ApiCall';
 
@@ -15,9 +15,10 @@ const styles = StyleSheet.create({
   medicineText: {
     color: 'rgba(2, 71, 91, 0.6)',
     ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 0,
+    marginBottom: 4,
     marginLeft: 16,
     marginTop: 16,
+    letterSpacing: 0.02,
   },
   footerButtonsContainer: {
     // zIndex: -1,
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   buttonendStyle: {
     width: '45%',
     height: 40,
-    backgroundColor: '#fc9916',
+    backgroundColor: '#fcb716',
     shadowOffset: {
       height: 2,
       width: 0,
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
   buttonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
-    color: '#890000',
+    color: '#fc9916',
   },
 });
 
@@ -84,7 +85,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="ADD SYMPTONS"
+        headerText="Add Symptom"
       ></Header>
     );
   };
@@ -121,75 +122,80 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           borderRadius: 10,
         }}
       >
-        <Text style={styles.medicineText}>Sympton</Text>
+        <Text style={styles.medicineText}>Symptom</Text>
         <TextInput
           style={{
             marginLeft: 16,
             marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
+            ...theme.fonts.IBMPlexSansBold(16),
             width: '90%',
             borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
+            borderBottomWidth: 1,
             marginBottom: 16,
 
-            color: '#01475b',
+            color: '#02475b',
           }}
           onChangeText={(symptons) => setSymptons(symptons)}
           maxLength={20}
           value={symptons}
         />
+        <View style={{ marginLeft: 40 }}>
+          <Text style={styles.medicineText}>Since?</Text>
+          <TextInput
+            style={{
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 1,
+              marginBottom: 16,
 
-        <Text style={styles.medicineText}>Since?</Text>
-        <TextInput
-          style={{
-            marginLeft: 16,
-            marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
-            width: '90%',
-            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
-            marginBottom: 16,
+              color: '#01475b',
+            }}
+            onChangeText={(since) => setSince(since)}
+            maxLength={20}
+            value={since}
+          />
+        </View>
+        <View style={{ marginLeft: 40 }}>
+          <Text style={styles.medicineText}>How often?</Text>
+          <TextInput
+            style={{
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 1,
+              marginBottom: 16,
 
-            color: '#01475b',
-          }}
-          onChangeText={(since) => setSince(since)}
-          maxLength={20}
-          value={since}
-        />
-        <Text style={styles.medicineText}>How Often?</Text>
-        <TextInput
-          style={{
-            marginLeft: 16,
-            marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
-            width: '90%',
-            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
-            marginBottom: 16,
+              color: '#01475b',
+            }}
+            onChangeText={(howOften) => setHowOffen(howOften)}
+            maxLength={20}
+            value={howOften}
+          />
+        </View>
+        <View style={{ marginLeft: 40 }}>
+          <Text style={styles.medicineText}>Severity?</Text>
+          <TextInput
+            style={{
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 1,
+              marginBottom: 16,
 
-            color: '#01475b',
-          }}
-          onChangeText={(howOften) => setHowOffen(howOften)}
-          maxLength={20}
-          value={howOften}
-        />
-        <Text style={styles.medicineText}>Severity?</Text>
-        <TextInput
-          style={{
-            marginLeft: 16,
-            marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
-            width: '90%',
-            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
-            marginBottom: 16,
-
-            color: '#01475b',
-          }}
-          onChangeText={(severity) => setSeverity(severity)}
-          maxLength={20}
-          value={severity}
-        />
+              color: '#01475b',
+            }}
+            onChangeText={(severity) => setSeverity(severity)}
+            maxLength={20}
+            value={severity}
+          />
+        </View>
       </View>
       <View style={styles.footerButtonsContainer}>
         <Button
@@ -197,19 +203,33 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           titleTextStyle={styles.buttonTextStyle}
           variant="white"
           style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+          onPress={() => props.navigation.pop()}
         />
         <Button
           title="ADD SYMPTOM"
           style={styles.buttonendStyle}
           onPress={() => {
-            addSysmptonsList({
-              id: '3',
-              firstName: 'ABCD ',
-              secondName: '7days ',
-              thirdName: 'Night',
-              fourthName: 'High',
-            });
-            props.navigation.pop();
+            if (
+              symptons == '' ||
+              symptons.trim() == '' ||
+              since == '' ||
+              since.trim() == '' ||
+              howOften == '' ||
+              howOften.trim() == '' ||
+              severity == '' ||
+              severity.trim() == ''
+            ) {
+              Alert.alert('Please enter all fields');
+            } else {
+              addSysmptonsList({
+                __typename: 'SymptomList',
+                symptom: symptons,
+                since: since,
+                howOften: howOften,
+                severity: severity,
+              });
+              props.navigation.pop();
+            }
           }}
         />
       </View>

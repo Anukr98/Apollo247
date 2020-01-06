@@ -1134,6 +1134,7 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
   mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
+      blobName
     }
   }
 `;

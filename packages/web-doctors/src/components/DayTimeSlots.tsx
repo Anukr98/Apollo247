@@ -1,8 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
-import React, { useState } from 'react';
+import { Theme, Tabs, Tab, Typography, CircularProgress } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
+import Scrollbars from 'react-custom-scrollbars';
 
 // import { getTime } from 'date-fns/esm';
 
@@ -73,14 +74,17 @@ interface DayTimeSlotsProps {
   latenightSlots: number[];
   doctorName: string;
   timeSelected: (timeSelected: string) => void;
+  selectedTime: string;
 }
 
 // this must be moved into common utils later.
 const getTimeFromTimestamp = (today: Date, slotTime: number) => {
   const hours = new Date(slotTime).getHours();
+  const hoursFormat = hours > 9 ? hours : `0${hours}`;
   const minutes = new Date(slotTime).getMinutes();
+
   const minutesFormat = minutes > 9 ? minutes : `0${minutes}`;
-  return `${hours}:${minutesFormat}`;
+  return `${hoursFormat}:${minutesFormat}`;
 };
 
 const TabContainer: React.FC = (props) => {
@@ -89,7 +93,8 @@ const TabContainer: React.FC = (props) => {
 
 export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
   const classes = useStyles({});
-  const [selectedTime, setTimeSelected] = useState<string>('');
+  const [selectedTime, setTimeSelected] = useState<string>(props.selectedTime);
+  const [selectedFlag, setSelectedFlag] = useState<boolean>(false);
 
   const {
     morningSlots,
@@ -167,7 +172,9 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
       case 'late night':
         return parseInt(timeStringArray[0], 10) > 12
           ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
-          : '';
+          : `${parseInt(timeStringArray[0] === '00' ? '12' : timeStringArray[0], 10)}:${
+              timeStringArray[1]
+            } am`;
       default:
         return formattedHour;
     }
@@ -212,19 +219,31 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
       {tabs.map((tab) =>
         tab.tabValue === tabValue ? (
           <TabContainer>
+            {/* <Scrollbars> */}
             <div className={classes.timeSlotActions}>
               {tab.slots.length > 0
-                ? tab.slots.map((slotTime: number) => {
+                ? tab.slots.map((slotTime: number, idx) => {
                     const timeString = getTimeFromTimestamp(today, slotTime);
                     const timeStringArray = timeString.split(':');
                     const formattedHour = getTwelveHour(tab.message, timeStringArray);
+
                     if (formattedHour !== '') {
                       return (
                         <AphButton
                           color="secondary"
                           value={timeString}
-                          className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
+                          className={
+                            selectedTime === timeString ||
+                            (!selectedTime &&
+                              !selectedFlag &&
+                              idx === 0 &&
+                              (idx === 0 && !selectedFlag && setTimeSelected(timeString),
+                              timeSelected(timeString)))
+                              ? `${classes.buttonActive}`
+                              : ''
+                          }
                           onClick={(e) => {
+                            setSelectedFlag(true);
                             setTimeSelected(e.currentTarget.value);
                             timeSelected(e.currentTarget.value);
                           }}
@@ -237,6 +256,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                   })
                 : noSlotsMessage(tab.message)}
             </div>
+            {/* </Scrollbars> */}
           </TabContainer>
         ) : null
       )}

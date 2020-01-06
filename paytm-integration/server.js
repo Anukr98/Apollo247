@@ -32,6 +32,81 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
+app.get('/invokeApptReminder', (req, res) => {
+  console.log(req.query.inNextMin, 'inn ext mins');
+  const requestJSON = {
+    query:
+      'query { sendApptReminderNotification(inNextMin:' +
+      req.query.inNextMin +
+      '){status apptsListCount }}',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data, 'notifications response is....');
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
+app.get('/invokePhysicalApptReminder', (req, res) => {
+  const requestJSON = {
+    query:
+      'query { sendPhysicalApptReminderNotification(inNextMin:' +
+      req.query.inNextMin +
+      ' ){status apptsListCount }}',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data, 'notifications response is....');
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
+app.get('/getCmToken', (req, res) => {
+  axios.defaults.headers.common['authorization'] =
+    'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  axios
+    .get(
+      'https://auth.play.vitacloud.io/vitauser/vitatoken?appId=apollo_24_7&appUserId=' +
+        req.query.appUserId +
+        '&name=' +
+        req.query.userName +
+        '&gender=' +
+        req.query.gender
+    )
+    .then((response) => {
+      console.log('respose', response);
+      res.send({
+        status: 'success',
+        message: response.data.message,
+        vitaToken: response.data.vitaToken,
+      });
+    })
+    .catch((err) => {
+      console.log(err, 'error');
+      res.send({
+        status: 'failure',
+        message: '',
+        vitaToken: '',
+      });
+    });
+});
+
 app.get('/consulttransaction', (req, res) => {
   console.log(req.query.CompleteResponse, req.query.ORDERID);
   console.log(req.query.BANKTXNID);
@@ -301,7 +376,7 @@ app.post('/paymed-response', (req, res) => {
   /* never execute a transaction if the payment status is failed */
   if (transactionStatus === 'failed') {
     if (reqSource === 'web') {
-      const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+      const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
       res.redirect(redirectUrl);
     } else {
       res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
@@ -338,7 +413,7 @@ app.post('/paymed-response', (req, res) => {
     .then((response) => {
       console.log(response, 'response is....');
       if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
         res.redirect(redirectUrl);
       } else {
         res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
@@ -347,7 +422,7 @@ app.post('/paymed-response', (req, res) => {
     .catch((error) => {
       console.log('error', error);
       if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
         res.redirect(redirectUrl);
       } else {
         res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);

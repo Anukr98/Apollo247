@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cardTitle: {
-      fontSize: 14,
+      fontSize: 12,
       fontWeight: 500,
       color: '#01475b',
     },
@@ -69,7 +69,7 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
           props.data.map((category) => {
             const formattedTitle = _replace(_lowerCase(category.title), ' ', '-');
             return (
-              <div className={classes.card}>
+              <div key={category.category_id} className={classes.card}>
                 <Link to={clientRoutes.searchByMedicine(formattedTitle, category.category_id)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>

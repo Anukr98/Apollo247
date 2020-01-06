@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
 import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
 import {
   Range,
@@ -214,12 +214,13 @@ export class DoctorRepository extends Repository<Doctor> {
     //const nextSlotRepo = consultsDb.getCustomRepository(DoctorNextAvaialbleSlotsRepository);
     const doctorAvailalbeSlots: DoctorSlotAvailability[] = [];
 
+    const consultHrsRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+
     function slots(doctorId: string) {
       return new Promise<DoctorSlotAvailability>(async (resolve) => {
         let onlineSlot: string = '';
         let physicalSlot: string = '';
 
-        const consultHrsRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
         const consultHrsOnline = await consultHrsRepo.checkByDoctorAndConsultMode(
           doctorId,
           'ONLINE'
@@ -227,21 +228,7 @@ export class DoctorRepository extends Repository<Doctor> {
         if (consultHrsOnline > 0) {
           //if the slot is empty check for next day
           let nextDate = new Date();
-          // const doctorNextSlotDetails = await nextSlotRepo.getDoctorSlot(doctorId);
-          // console.log(doctorNextSlotDetails, 'doctorNextSlotDetails');
-          // if (doctorNextSlotDetails) {
-          //   console.log(doctorNextSlotDetails.onlineSlot.toString(), 'online slot', doctorId);
-          //   if (doctorNextSlotDetails.onlineSlot != null)
-          //     onlineSlot =
-          //       format(doctorNextSlotDetails.onlineSlot, 'yyyy-MM-dd') +
-          //       'T' +
-          //       format(doctorNextSlotDetails.onlineSlot, 'HH:mm');
-          //   if (doctorNextSlotDetails.physicalSlot != null)
-          //     physicalSlot =
-          //       format(doctorNextSlotDetails.physicalSlot, 'yyyy-MM-dd') +
-          //       'T' +
-          //       format(doctorNextSlotDetails.physicalSlot, 'HH:mm');
-          // }
+          let counter = 0;
           while (true) {
             const nextSlot = await appts.getDoctorNextSlotDate(
               doctorId,
@@ -253,7 +240,13 @@ export class DoctorRepository extends Repository<Doctor> {
               onlineSlot = nextSlot;
               break;
             }
+            if (counter >= 1) {
+              onlineSlot = '';
+              break;
+            }
+
             nextDate = addDays(nextDate, 1);
+            counter++;
           }
         }
 
@@ -264,6 +257,7 @@ export class DoctorRepository extends Repository<Doctor> {
         if (consultHrsPhysical > 0) {
           //if the slot is empty check for next day
           let nextDate = new Date();
+          let counter = 0;
           while (true) {
             const nextSlot = await appts.getDoctorNextSlotDate(
               doctorId,
@@ -275,7 +269,12 @@ export class DoctorRepository extends Repository<Doctor> {
               physicalSlot = nextSlot;
               break;
             }
+            if (counter >= 1) {
+              physicalSlot = '';
+              break;
+            }
             nextDate = addDays(nextDate, 1);
+            counter++;
           }
         }
 
@@ -288,6 +287,10 @@ export class DoctorRepository extends Repository<Doctor> {
           if (onlineSlot == '' && physicalSlot != '') referenceSlot = physicalSlot;
           else if (physicalSlot == '' && onlineSlot != '') referenceSlot = onlineSlot;
           else referenceSlot = onlineSlot < physicalSlot ? onlineSlot : physicalSlot;
+        }
+
+        if (referenceSlot == '') {
+          referenceSlot = format(addDays(new Date(), 2), 'yyyy-MM-dd HH:mm');
         }
 
         const doctorSlot: DoctorSlotAvailability = {
@@ -671,5 +674,9 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
     return this.update(id, { nextAvailableSlot });
+  }
+
+  getAllDoctors() {
+    return this.find({ where: { isActive: true, doctorType: Not('JUNIOR') } });
   }
 }

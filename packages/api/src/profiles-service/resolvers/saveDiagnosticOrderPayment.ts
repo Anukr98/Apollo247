@@ -138,6 +138,11 @@ const saveDiagnosticOrderPayment: Resolver<
     ''
   );
 
+  //call far-eye api's if payment is success
+  if (diagnosticPaymentInput.paymentStatus == 'success') {
+    await diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
+  }
+
   if (!savePaymentDetails) {
     status = false;
     //throw new AphError(AphErrorMessages.SAVE_DIAGNOSTIC_ORDER_ERROR, undefined, {});

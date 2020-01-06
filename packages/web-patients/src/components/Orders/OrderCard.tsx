@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
-import React from 'react';
+import { Theme, CircularProgress } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
 import {
   AphTrackSlider,
   AphOnHoldSlider,
@@ -8,6 +8,18 @@ import {
   AphDeliveredSlider,
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList as ordersList,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus as statusDetails,
+} from 'graphql/types/GetMedicineOrdersList';
+
+import moment from 'moment';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -124,211 +136,174 @@ function valuetext(value: number) {
   return `${value}`;
 }
 
-export const OrderCard: React.FC = (props) => {
-  const classes = useStyles();
+type OrderCardProps = {
+  setOrderAutoId: (orderAutoId: number) => void;
+  orderAutoId: number;
+};
 
-  return (
-    <div className={classes.orderListing}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
-        <div className={classes.customScroll}>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                defaultValue={80}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>Order Placed</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
+export const OrderCard: React.FC<OrderCardProps> = (props) => {
+  const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+
+  const { data, error, loading } = useQueryWithSkip<
+    GetMedicineOrdersList,
+    GetMedicineOrdersListVariables
+  >(GET_MEDICINE_ORDERS_LIST, {
+    variables: {
+      patientId: currentPatient && currentPatient.id,
+    },
+  });
+  if (loading)
+    return (
+      <div>
+        <CircularProgress />
+      </div>
+    );
+  if (error) return <div>Error :(</div>;
+
+  const getSortedstatusList = (statusList: (statusDetails | null)[]) => {
+    if (statusList && statusList.length > 0) {
+      const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+      return (
+        filteredStatusList.sort(
+          (a, b) =>
+            moment(b && b.statusDate)
+              .toDate()
+              .getTime() -
+            moment(a && a.statusDate)
+              .toDate()
+              .getTime()
+        ) || []
+      );
+    }
+    return null;
+  };
+
+  const getStatus = (status: MEDICINE_ORDER_STATUS) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+        return 'Order Initiated';
+      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+        return 'Order Placed';
+      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+        return 'Order Verified';
+      case MEDICINE_ORDER_STATUS.ORDER_FAILED:
+        return 'Order Failed';
+      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
+        return 'Order Confirmed';
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+        return 'Order Cancelled';
+      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+        return 'Order Cancel Requested';
+      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+        return 'Order Out for Delivery';
+      case MEDICINE_ORDER_STATUS.DELIVERED:
+        return 'Order Deliverd';
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+        return 'Order Payment Success';
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+        return 'Prescription Uploaded';
+      case MEDICINE_ORDER_STATUS.PICKEDUP:
+        return 'Order Picked up';
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
+        return 'Prescription Cart Ready';
+      case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+        return 'Return Initiated';
+      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+        return 'Return Accepted';
+      default:
+        return 'Order Initiated';
+    }
+  };
+
+  const getOrderStatus = (status: (statusDetails | null)[]) => {
+    const sortedList = getSortedstatusList(status);
+    if (sortedList && sortedList.length > 0) {
+      const firstSortedData = sortedList[0];
+      if (firstSortedData && firstSortedData.orderStatus) {
+        return getStatus(firstSortedData.orderStatus);
+      }
+    }
+  };
+
+  const getOrderDeliveryDate = (status: (statusDetails | null)[]) => {
+    const sortedList = getSortedstatusList(status);
+    if (sortedList && sortedList.length > 0) {
+      const firstSortedData = sortedList[0];
+      return (
+        firstSortedData &&
+        moment(new Date(firstSortedData.statusDate)).format('DD MMM YYYY ,hh:mm a')
+      );
+    }
+  };
+
+  if (
+    data &&
+    data.getMedicineOrdersList &&
+    data.getMedicineOrdersList.MedicineOrdersList &&
+    data.getMedicineOrdersList.MedicineOrdersList.length > 0
+  ) {
+    const orderListData = data.getMedicineOrdersList.MedicineOrdersList;
+
+    const firstOrderInfo = orderListData[0];
+    if (!props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
+      props.setOrderAutoId(firstOrderInfo.orderAutoId);
+    }
+
+    return (
+      <div className={classes.orderListing}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
+          <div className={classes.customScroll}>
+            {orderListData &&
+              orderListData.length > 0 &&
+              orderListData.map(
+                (orderInfo) =>
+                  orderInfo && orderInfo.medicineOrdersStatus && getOrderStatus(orderInfo.medicineOrdersStatus) && (
+                    <div
+                      key={orderInfo.id}
+                      className={classes.root}
+                      onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
+                    >
+                      <div className={classes.orderedItem}>
+                        <div className={classes.itemImg}>
+                          <img src={require('images/ic_tablets.svg')} alt="" />
+                        </div>
+                        <div className={classes.itemSection}>
+                          <div className={classes.itemName}>Medicines</div>
+                          <div className={classes.deliveryType}>
+                            <span>{orderInfo.deliveryType}</span>
+                            <span>#{orderInfo.orderAutoId}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={classes.orderTrackSlider}>
+                        <AphTrackSlider
+                          color="primary"
+                          defaultValue={80}
+                          getAriaValueText={valuetext}
+                          min={0}
+                          max={360}
+                          valueLabelDisplay="off"
+                        />
+                      </div>
+                      <div className={classes.orderStatusGroup}>
+                        {orderInfo.medicineOrdersStatus && (
+                          <div className={classes.orderStatus}>
+                            {getOrderStatus(orderInfo.medicineOrdersStatus)}
+                          </div>
+                        )}
+                        <div className={classes.statusInfo}>
+                          {orderInfo.medicineOrdersStatus &&
+                            getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
+                        </div>
+                      </div>
+                    </div>
+                  )
+              )}
           </div>
-          <div className={`${classes.root} ${classes.cardSelected}`}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphOnHoldSlider
-                color="primary"
-                defaultValue={150}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>On Hold</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphDelayedSlider
-                color="primary"
-                defaultValue={200}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>Order Delayed</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphDeliveredSlider
-                color="primary"
-                defaultValue={360}
-                getAriaValueText={valuetext}
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={classes.orderStatus}>Order Delivered</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                getAriaValueText={valuetext}
-                disabled
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={`${classes.orderStatus} ${classes.orderError}`}>Return Rejected</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={`${classes.root} ${classes.returnAccepted}`}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                getAriaValueText={valuetext}
-                disabled
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={`${classes.orderStatus}`}>Return Accepted</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-          <div className={classes.root}>
-            <div className={classes.orderedItem}>
-              <div className={classes.itemImg}>
-                <img src={require('images/ic_tablets.svg')} alt="" />
-              </div>
-              <div className={classes.itemSection}>
-                <div className={classes.itemName}>Medicines</div>
-                <div className={classes.deliveryType}>
-                  <span>Home Delivery</span>
-                  <span>#A2472707936</span>
-                </div>
-              </div>
-            </div>
-            <div className={classes.orderTrackSlider}>
-              <AphTrackSlider
-                color="primary"
-                getAriaValueText={valuetext}
-                disabled
-                min={0}
-                max={360}
-                valueLabelDisplay="off"
-              />
-            </div>
-            <div className={classes.orderStatusGroup}>
-              <div className={`${classes.orderStatus} ${classes.orderError}`}>Order Canceled</div>
-              <div className={classes.statusInfo}>9 Aug 19, 12:00 pm</div>
-            </div>
-          </div>
-        </div>
-      </Scrollbars>
-    </div>
-  );
+        </Scrollbars>
+      </div>
+    );
+  }
+  return <p>No Data Found</p>;
 };

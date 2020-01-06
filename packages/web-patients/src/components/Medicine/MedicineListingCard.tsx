@@ -129,7 +129,7 @@ export const MedicineListingCard: React.FC = (props) => {
       {/** medice card normal state */}
       {cartItems &&
         cartItems.map((item, index) => (
-          <div className={classes.medicineStrip}>
+          <div key={item.id} className={classes.medicineStrip}>
             <div className={classes.medicineStripWrap}>
               <div className={classes.medicineInformation}>
                 <div className={classes.medicineIcon}>
@@ -177,8 +177,9 @@ export const MedicineListingCard: React.FC = (props) => {
                         })
                       }
                     >
-                      {options.map((option) => (
+                      {options.map((option, index) => (
                         <MenuItem
+                          key={index}
                           classes={{
                             root: classes.menuRoot,
                             selected: classes.menuSelected,

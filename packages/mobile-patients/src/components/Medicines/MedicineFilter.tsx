@@ -145,9 +145,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
       >
         <SectionHeaderComponent
           sectionTitle={'Categories'}
-          style={{ marginTop: 10, marginLeft: 0 }}
+          style={{ marginTop: 10, marginLeft: 0, marginBottom: 8 }}
         />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 0 }} />
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 0 }} />
         <View style={styles.optionsView}>
           {categories.map((item, idx) => (
             <Button
@@ -219,9 +219,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
       >
         <SectionHeaderComponent
           sectionTitle={'Discount'}
-          style={{ marginTop: 10, marginLeft: 0 }}
+          style={{ marginTop: 10, marginLeft: 0, marginBottom: 8 }}
         />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 1 }} />
         <View style={styles.optionsView}>
           {discountarray.map((item) => {
             return renderButton(item, true);
@@ -265,8 +265,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           paddingRight: 20,
         }}
       >
-        <SectionHeaderComponent sectionTitle={'Price'} style={{ marginTop: 10, marginLeft: 0 }} />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
+        <SectionHeaderComponent
+          sectionTitle={'Price'}
+          style={{ marginTop: 10, marginLeft: 0, marginBottom: 8 }}
+        />
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 1 }} />
         <View style={styles.optionsView}>
           {priceArray.map((item) => {
             return renderButton(item, false);
@@ -306,8 +309,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
           elevation: 4,
         }}
       >
-        <SectionHeaderComponent sectionTitle={'Sort By'} style={{ marginTop: 0, marginLeft: 0 }} />
-        <View style={{ backgroundColor: '#02475b', opacity: 0.5, height: 1, marginBottom: 10 }} />
+        <SectionHeaderComponent
+          sectionTitle={'Sort By'}
+          style={{ marginTop: 0, marginLeft: 0, marginBottom: 8 }}
+        />
+        <View style={{ backgroundColor: '#02475b', opacity: 0.3, height: 1, marginBottom: 10 }} />
         <MaterialMenu
           options={['A-Z', 'Z-A', 'Price-H-L', 'Price-L-H'].map((item) => ({
             key: item!,

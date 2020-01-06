@@ -99,6 +99,7 @@ function renderSuggestion(
           </span>
         ))}
       </div>
+      <img src={require('images/ic_dark_plus.svg')} alt="" />
     </MenuItem>
   );
 }
@@ -124,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) =>
     suggestion: {
       display: 'block',
       overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      // borderBottom: '1px solid rgba(2,71,91,0.1)',
       '& div': {
         paddingLeft: 0,
       },
@@ -272,7 +273,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
     },
     dialogActions: {
-      padding: 20,
+      padding: 10,
       paddingTop: 10,
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
@@ -312,7 +313,7 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: 'hidden',
     },
     dialogContent: {
-      padding: 20,
+      padding: '20px 0',
       minHeight: 300,
       position: 'relative',
       '& h6': {
@@ -323,6 +324,9 @@ const useStyles = makeStyles((theme: Theme) =>
         marginTop: 5,
         lineHeight: 'normal',
       },
+    },
+    dialogNewMedicine: {
+      padding: 20,
     },
     popupHeading: {
       '& h6': {
@@ -383,9 +387,9 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     loader: {
-      left: '50%',
-      top: 41,
-      position: 'relative',
+      left: '45%',
+      top: '45%',
+      position: 'absolute',
     },
     faverite: {
       fontSize: 16,
@@ -463,6 +467,33 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     inputRoot: {
       paddingRight: 35,
+      margin: '0 20px',
+      width: 'auto',
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 15,
+        fontWeight: 500,
+        color: '#02475b !important',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
+    },
+    inputRootNew: {
+      paddingRight: 35,
+      margin: 0,
+      width: 'auto',
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -518,6 +549,73 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '90%',
       wordBreak: 'break-word',
       textAlign: 'center',
+    },
+    searchpopup: {
+      borderRadius: 'none',
+      boxShadow: 'none',
+      '& ul': {
+        padding: 0,
+        margin: 0,
+        overflow: 'hidden',
+        '& li': {
+          padding: 0,
+          listStyleType: 'none',
+          position: 'relative',
+          '&:after': {
+            content: '""',
+            height: 1,
+            left: 20,
+            right: 20,
+            bottom: 0,
+            position: 'absolute',
+            backgroundColor: 'rgba(2, 71, 91, 0.15)',
+          },
+          '& >div': {
+            padding: '10px 62px 10px 20px',
+            fontSize: 18,
+            fontWeight: 500,
+            color: '#02475b',
+            '&:hover': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '&:focus': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '& span:nth-child(2)': {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+            '& img': {
+              position: 'absolute',
+              right: 20,
+              display: 'none',
+            },
+          },
+          '&:first-child': {
+            borderRadius: 0,
+          },
+          '&:last-child': {
+            borderRadius: 0,
+            '&:after': {
+              display: 'none',
+            },
+          },
+          '&:hover': {
+            '&:first-child': {
+              borderRadius: 0,
+            },
+            '&:last-child': {
+              borderRadius: 0,
+            },
+            '& >div': {
+              '& img': {
+                display: 'block',
+              },
+            },
+          },
+        },
+      },
     },
   })
 );
@@ -1388,7 +1486,7 @@ export const FavouriteMedicines: React.FC = () => {
                       }}
                       renderSuggestionsContainer={(options) => (
                         <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
-                          <Paper {...options.containerProps} square>
+                          <Paper {...options.containerProps} square className={classes.searchpopup}>
                             {options.children}
                           </Paper>
                         </Scrollbars>
@@ -1424,7 +1522,7 @@ export const FavouriteMedicines: React.FC = () => {
               ) : (
                 <div>
                   <div>
-                    <div className={classes.dialogContent}>
+                    <div className={`${classes.dialogContent} ${classes.dialogNewMedicine}`}>
                       <Grid container spacing={2}>
                         <Grid item lg={6} md={6} xs={12}>
                           <h6>Dosage*</h6>
@@ -1437,7 +1535,7 @@ export const FavouriteMedicines: React.FC = () => {
                             }}
                             InputProps={{
                               classes: {
-                                root: classes.inputRoot,
+                                root: classes.inputRootNew,
                               },
                             }}
                           />

@@ -375,7 +375,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       top: 5,
-      right: 0,
+      right: 21,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
@@ -458,6 +458,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#02475b',
         margin: 0,
         fontSize: 12,
+        fontWeight: 'normal',
       },
     },
   })
@@ -1026,20 +1027,31 @@ export const MedicinePrescription: React.FC = () => {
                 <Paper className={classes.medicineCard}>
                   <h5>{medicine.medicineName}</h5>
                   <h6>
-                    {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
+                    {`${dosageCount} ${unitHtml} a day ${timesString.length > 0 && timesString} for
                     ${duration}
                     ${whenString.length > 0 && whenString}`}
                   </h6>
                 </Paper>
-
-                <AphButton
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.updateSymptom }}
-                  onClick={() => updateMedicine(index)}
-                >
-                  <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
+                {caseSheetEdit && (
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.updateSymptom }}
+                    onClick={() => updateMedicine(index)}
+                  >
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                )}
+                {caseSheetEdit && (
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.deleteSymptom }}
+                    onClick={() => deletemedicine(index)}
+                  >
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
+                )}
               </div>
             );
           })}

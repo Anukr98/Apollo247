@@ -37,8 +37,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CancelOrderNotification: React.FC = (props) => {
-  const classes = useStyles();
+type CancelOrderNotificationProps = {
+  setIsCancelOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
+  setIsPopoverOpen: (isPopoverOpen: boolean) => void;
+};
+
+export const CancelOrderNotification: React.FC<CancelOrderNotificationProps> = (props) => {
+  const classes = useStyles({});
 
   return (
     <div className={classes.root}>
@@ -49,7 +54,15 @@ export const CancelOrderNotification: React.FC = (props) => {
         </p>
       </div>
       <div className={classes.actions}>
-        <AphButton type="submit" color="primary" classes={{ root: classes.button }}>
+        <AphButton
+          type="submit"
+          color="primary"
+          classes={{ root: classes.button }}
+          onClick={() => {
+            props.setIsCancelOrderDialogOpen(false);
+            props.setIsPopoverOpen(false);
+          }}
+        >
           Ok, Got It
         </AphButton>
       </div>

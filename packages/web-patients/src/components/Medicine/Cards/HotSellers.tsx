@@ -39,6 +39,8 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       paddingTop: 8,
       minHeight: 70,
+      maxHeight: 70,
+      overflow: 'hidden',
     },
     bottomSection: {
       borderTop: 'solid 0.5px rgba(2, 71, 91, 0.3)',
@@ -123,7 +125,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         {props.data &&
           props.data.products &&
           props.data.products.map((hotSeller) => (
-            <div className={classes.card}>
+            <div key={hotSeller.sku} className={classes.card}>
               <div className={classes.cardWrap}>
                 <div className={classes.offerPrice}>
                   <span>-30%</span>

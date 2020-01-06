@@ -109,6 +109,7 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
           id
           orderStatus
           statusDate
+          hideStatus
         }
       }
     }
@@ -224,6 +225,50 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           id
         }
       }
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDER_DETAILS = gql`
+  query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      MedicineOrderDetails {
+        id
+        orderAutoId
+        devliveryCharges
+        estimatedAmount
+        prescriptionImageUrl
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
+        }
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          quantity
+          isMedicine
+          mou
+        }
+        medicineOrderPayments {
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+        }
+      }
+    }
+  }
+`;
+
+export const SAVE_ORDER_CANCEL_STATUS = gql`
+  mutation saveOrderCancelStatus($orderCancelInput: OrderCancelInput) {
+    saveOrderCancelStatus(orderCancelInput: $orderCancelInput) {
+      requestStatus
+      requestMessage
     }
   }
 `;

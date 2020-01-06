@@ -74,6 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
+      padding: '0 10px 0 0',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 20,
@@ -111,9 +112,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     customScroll: {
-      paddingLeft: 20,
-      paddingRight: 17,
-      paddingBottom: 10,
+      padding: '0 7px 0 20px',
     },
     productInformation: {
       backgroundColor: theme.palette.common.white,
@@ -136,6 +135,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#02475b',
       lineHeight: '22px',
+      fontWeight: 500,
       '& p': {
         margin: '5px 0',
       },
@@ -156,7 +156,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 0,
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      marginTop: 5,
+      margin: '5px 0 0 0',
+      '& svg': {
+        color: '#02475b',
+      },
     },
     tabRoot: {
       fontSize: 14,
@@ -171,6 +174,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 'auto',
       minHeight: 'auto',
       flexBasis: 'auto',
+      margin: '0 15px 0 0',
     },
     tabSelected: {
       opacity: 1,
@@ -193,6 +197,9 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '22px',
       '& p': {
         margin: '5px 0',
+      },
+      '& ul': {
+        padding: '0 0 0 20px',
       },
     },
     prescriptionBox: {
@@ -318,8 +325,12 @@ export const MedicineDetails: React.FC = (props) => {
             if (x.key === 'Precautions') {
               x.value = `${x.value}
               ${getHeader(v.Caption)}: \n
-              ${stripHtml(v.CaptionDesc)} \n
-              `;
+              ${v.CaptionDesc.split('&amp;lt')
+                .join('<')
+                .split('&amp;gt;')
+                .join('>')
+                .replace(/(<([^>]+)>)/gi, '')}; \n
+                `;
             }
           });
         } else if (v.Caption === 'DRUGS WARNINGS') {
@@ -346,8 +357,10 @@ export const MedicineDetails: React.FC = (props) => {
       return data.map(
         (item, index) =>
           tabValue === index && (
-            <div className={classes.tabContainer}>
-              <p>{item.value}</p>
+            <div key={index} className={classes.tabContainer}>
+              {item.value.split(';').map((data, idx) => {
+                return <p key={idx}>{data}</p>;
+              })}
             </div>
           )
       );
@@ -357,8 +370,9 @@ export const MedicineDetails: React.FC = (props) => {
 
   const renderOverviewTabs = (overView: MedicineOverView) => {
     const data = getData(overView);
-    return data.map((item) => (
+    return data.map((item, index) => (
       <Tab
+        key={index}
         classes={{
           root: classes.tabRoot,
           selected: classes.tabSelected,
@@ -402,7 +416,7 @@ export const MedicineDetails: React.FC = (props) => {
                 {medicineDetails && (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
-                      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+                      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 215px'}>
                         <div className={classes.customScroll}>
                           <div className={classes.productInformation}>
                             <MedicineImageGallery data={medicineDetails} />
@@ -441,7 +455,8 @@ export const MedicineDetails: React.FC = (props) => {
                                 <>
                                   <Tabs
                                     value={tabValue}
-                                    variant="fullWidth"
+                                    variant="scrollable"
+                                    scrollButtons="auto"
                                     classes={{
                                       root: classes.tabsRoot,
                                       indicator: classes.tabsIndicator,
@@ -459,8 +474,8 @@ export const MedicineDetails: React.FC = (props) => {
                                   <div className={classes.productInfo}>Product Information</div>
                                   <div className={classes.productDescription}>
                                     {description &&
-                                      description.split('rn').map((data) => {
-                                        return <div>{data}</div>;
+                                      description.split('rn').map((data, index) => {
+                                        return <p key={index}>{data}</p>;
                                       })}
                                   </div>
                                 </div>
