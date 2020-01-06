@@ -32,6 +32,51 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
+app.get('/invokeApptReminder', (req, res) => {
+  console.log(req.query.inNextMin, 'inn ext mins');
+  const requestJSON = {
+    query:
+      'query { sendApptReminderNotification(inNextMin:' +
+      req.query.inNextMin +
+      '){status apptsListCount }}',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data, 'notifications response is....');
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
+app.get('/invokePhysicalApptReminder', (req, res) => {
+  const requestJSON = {
+    query:
+      'query { sendPhysicalApptReminderNotification(inNextMin:' +
+      req.query.inNextMin +
+      ' ){status apptsListCount }}',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data, 'notifications response is....');
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
 app.get('/getCmToken', (req, res) => {
   axios.defaults.headers.common['authorization'] =
     'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
