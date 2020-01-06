@@ -188,8 +188,11 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE = gql`
   query GetDoctorFavouriteMedicineList {
     getDoctorFavouriteMedicineList {
       medicineList {
-        externalId
         medicineConsumptionDurationInDays
+        medicineConsumptionDuration
+        medicineConsumptionDurationUnit
+        medicineFormTypes
+        medicineFrequency
         medicineDosage
         medicineUnit
         medicineInstructions
@@ -197,6 +200,7 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE = gql`
         medicineToBeTaken
         medicineName
         id
+        externalId
       }
     }
   }

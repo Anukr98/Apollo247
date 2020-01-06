@@ -822,6 +822,10 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
     getDoctorFavouriteMedicineList {
       medicineList {
         medicineConsumptionDurationInDays
+        medicineConsumptionDuration
+        medicineConsumptionDurationUnit
+        medicineFormTypes
+        medicineFrequency
         medicineDosage
         medicineUnit
         medicineInstructions
