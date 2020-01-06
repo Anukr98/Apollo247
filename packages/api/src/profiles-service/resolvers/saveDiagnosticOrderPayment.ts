@@ -7,7 +7,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import {
-  sendDignosticOrderStatusNotification,
+  sendDiagnosticOrderStatusNotification,
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
 
@@ -147,14 +147,14 @@ const saveDiagnosticOrderPayment: Resolver<
     await diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
 
     //send order payment success notification
-    sendDignosticOrderStatusNotification(
+    sendDiagnosticOrderStatusNotification(
       NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
       diagnosticOrder,
       profilesDb
     );
   } else {
     //send order payment failed notification
-    sendDignosticOrderStatusNotification(
+    sendDiagnosticOrderStatusNotification(
       NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED,
       diagnosticOrder,
       profilesDb

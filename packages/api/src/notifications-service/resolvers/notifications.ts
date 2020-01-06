@@ -1096,7 +1096,7 @@ export async function sendMedicineOrderStatusNotification(
 }
 
 //Notification - Dignostic order Status
-export async function sendDignosticOrderStatusNotification(
+export async function sendDiagnosticOrderStatusNotification(
   notificationType: NotificationType,
   orderDetails: DiagnosticOrders,
   patientsDb: Connection

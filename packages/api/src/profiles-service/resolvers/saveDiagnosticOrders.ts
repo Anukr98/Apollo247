@@ -24,7 +24,7 @@ import {
 import { format } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import {
-  sendDignosticOrderStatusNotification,
+  sendDiagnosticOrderStatusNotification,
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
 
@@ -585,7 +585,7 @@ const SaveDiagnosticOrder: Resolver<
         await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
 
         //send order out for delivery notification
-        sendDignosticOrderStatusNotification(
+        sendDiagnosticOrderStatusNotification(
           NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
           saveOrder,
           profilesDb
@@ -607,7 +607,7 @@ const SaveDiagnosticOrder: Resolver<
       await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
 
       //send order out for delivery notification
-      sendDignosticOrderStatusNotification(
+      sendDiagnosticOrderStatusNotification(
         NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
         saveOrder,
         profilesDb
