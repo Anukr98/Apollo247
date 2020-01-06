@@ -1048,6 +1048,7 @@ export async function sendMedicineOrderStatusNotification(
       payloadDataType = 'Order_Confirmed';
       notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
       notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY:
       payloadDataType = 'Order_Out_For_Delivery';
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
