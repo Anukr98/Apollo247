@@ -12,6 +12,8 @@ import { sendNotification, NotificationType } from 'notifications-service/resolv
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -128,7 +130,31 @@ const cancelAppointment: Resolver<
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
   const apptTime = format(istDateTime, 'hh:mm');
   const patientName = appointment.patientName;
-  const mailContent = `Appointment booked on Apollo 247 by ${patientName} on ${apptDate} at ${apptTime} has been cancelled`;
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  let docName = '';
+  let hospitalName = '';
+  if (doctorDetails) {
+    docName = doctorDetails.firstName + '' + doctorDetails.lastName;
+  }
+
+  if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+    const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+    const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+    if (facilityDets) {
+      hospitalName =
+        facilityDets.name +
+        ' ' +
+        facilityDets.streetLine1 +
+        ' ' +
+        facilityDets.streetLine2 +
+        ' ' +
+        facilityDets.city +
+        ' ' +
+        facilityDets.state;
+    }
+  }
+  const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${patientName}<br>Appointment Date Time: ${apptDate}  ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||

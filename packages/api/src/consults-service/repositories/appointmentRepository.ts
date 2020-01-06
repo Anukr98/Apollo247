@@ -1107,7 +1107,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getSpecificMinuteAppointments(nextMin: number) {
+  getSpecificMinuteAppointments(nextMin: number, appointmentType: APPOINTMENT_TYPE) {
     const apptDateTime = addMinutes(new Date(), nextMin);
     const formatDateTime =
       format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
@@ -1115,6 +1115,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .where('(appointment.bookingDate = :fromDate)', {
         fromDate: formatDateTime,
+      })
+      .andWhere('appointment.appointmentType = :appointmentType', {
+        appointmentType: appointmentType,
       })
       .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,

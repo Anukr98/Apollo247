@@ -14,10 +14,12 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { addMilliseconds, format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
+import { APPOINTMENT_TYPE } from 'consults-service/entities';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -388,6 +390,30 @@ export async function sendNotification(
     );
   } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
     let content = ApiConstants.BOOK_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+    if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      content = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY.replace(
+        '{0}',
+        patientDetails.firstName
+      );
+      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+        if (facilityDets) {
+          content = content.replace(
+            '{4}',
+            facilityDets.name +
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.streetLine2 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
+          );
+        }
+      }
+    }
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
@@ -553,10 +579,29 @@ export async function sendReminderNotification(
   };
   if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
-    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY.replace(
-      '{0}',
-      doctorDetails.firstName
-    );
+    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY;
+    if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+        if (facilityDets) {
+          notificationBody = notificationBody.replace(
+            '{1}',
+            facilityDets.name +
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.streetLine2 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
+          );
+        }
+      }
+    }
+    notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
     payload = {
       notification: {
         title: notificationTitle,
@@ -574,10 +619,11 @@ export async function sendReminderNotification(
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
   ) {
     notificationTitle = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_TITLE;
-    notificationBody = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_BODY.replace(
-      '{0}',
-      patientDetails.firstName
-    );
+    notificationBody = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_BODY;
+    if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_CASESHEET_REMINDER_15_BODY;
+    }
+    notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
     payload = {
       notification: {
         title: notificationTitle,
