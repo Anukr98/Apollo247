@@ -374,6 +374,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 });
                 CommonBugFender('OTP_ENTERED_FAIL', error);
                 CommonLogEvent('OTP_ENTERED_FAIL', error);
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    OTPFailedReason: error,
+                  });
                 // if (
                 //   error &&
                 //   error.message ===

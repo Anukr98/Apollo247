@@ -313,7 +313,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     fetchData();
     getNetStatus().then((status) => {
       if (status) {
-        //fetchAppointments();
+        fetchAppointments();
       } else {
         setLoading && setLoading(false);
         setshowOfflinePopup(true);

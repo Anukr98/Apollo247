@@ -88,7 +88,7 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   iOS_Version: '1.7',
-  Android_Version: '1.71',
+  Android_Version: '1.72',
 };
 
 // QA
@@ -117,7 +117,7 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   iOS_Version: '1.7',
-  Android_Version: '1.16',
+  Android_Version: '1.22',
 };
 
 //Production
