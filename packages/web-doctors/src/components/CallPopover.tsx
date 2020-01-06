@@ -1876,7 +1876,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.createSessionAction();
                     setCaseSheetEdit(true);
                     isConsultStarted = true;
-                    callIntervalTimer(180);
+                    //callIntervalTimer(180);
                   }}
                 >
                   <svg
