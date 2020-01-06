@@ -88,11 +88,19 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 500,
       letterSpacing: 0.02,
       paddingBottom: 5,
+      minHeight: 18,
     },
     sectionBody: {
       '& >div:last-child': {
         marginBottom: 6,
       },
+    },
+    numberOfTimes:{
+      width: '100%',
+      margin: '0 0 20px 0',
+    },
+    instructionsWrapper:{
+      padding: '0 0 8px 0 !important',
     },
     addBtn: {
       backgroundColor: 'transparent',
@@ -370,6 +378,12 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+    daysOfWeek:{
+      '& button:last-child':{
+        border: '1px solid #e50000',
+        color: '#e50000',
+      },
+    },
     tabletcontent: {
       margin: '0 10px',
       position: 'relative',
@@ -380,6 +394,11 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#fff !important',
       fontWeight: 600,
       cursor: 'pointer',
+      '&:last-child':{
+        backgroundColor: '#e50000 !important',
+        color: '#fff',
+        border: '1px solid #e50000 !important',
+      },
     },
     helpText: {
       paddingLeft: 0,
@@ -517,7 +536,7 @@ export interface MedicineProductsResponse {
 let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     medicinePrescription: selectedMedicinesArr,
     setMedicinePrescription: setSelectedMedicinesArr,
@@ -780,7 +799,7 @@ export const MedicinePrescription: React.FC = () => {
 
     const dayslots = daySlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
-        if (selectedSlot.toLowerCase() === slot.id) {
+        if (selectedSlot.toLowerCase() === slot.id.toLowerCase()) {
           slot.selected = true;
         }
       });
@@ -817,7 +836,6 @@ export const MedicinePrescription: React.FC = () => {
   };
   useEffect(() => {
     if (idx >= 0) {
-      console.log(11111111111111);
       setSelectedMedicines(selectedMedicines);
       setSelectedMedicinesArr(selectedMedicinesArr);
     }
@@ -914,7 +932,11 @@ export const MedicinePrescription: React.FC = () => {
       const unitHtmls = medicine.medicineUnit.toLowerCase();
       const timesString =
         medicine.medicineTimings.length > 0
-          ? 'in the ' + medicine.medicineTimings.join(' , ').toLowerCase()
+          ? 'in the ' +
+            medicine.medicineTimings
+              .join(' , ')
+              .toLowerCase()
+              .replace('_', ' ')
           : '';
       const dosageCount = medicine.medicineDosage;
       const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
@@ -981,7 +1003,8 @@ export const MedicinePrescription: React.FC = () => {
     });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
-        daySlotsArr.push(slot.value.toUpperCase());
+        //daySlotsArr.push(slot.value.toUpperCase());
+        daySlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
@@ -1343,15 +1366,41 @@ export const MedicinePrescription: React.FC = () => {
                             </AphSelect>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className={classes.sectionGroup}>
-                      <div className={classes.colGroup}>
+                        {medicineForm !== 'OTHERS' &&
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             &nbsp;
                           </div>
+                        <AphSelect
+                            style={{ paddingTop: 3 }}
+                            value={frequency}
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: horizontal,
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: horizontal,
+                              },
+                            }}
+                            onChange={(e: any) => {
+                              setFrequency(e.target.value as string);
+                            }}
+                          >
+                            {generateFrequency}
+                          </AphSelect>
+                          </div>
+                          }
+                      </div>
+                    </div>
+                    {medicineForm === 'OTHERS' &&
+                    <div className={classes.sectionGroup}>
                           {/* <div className={classes.unitsSelect}> */}
+                          <div className={classes.numberOfTimes}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
                             value={frequency}
@@ -1375,8 +1424,32 @@ export const MedicinePrescription: React.FC = () => {
                             {generateFrequency}
                           </AphSelect>
                           {/* </div> */}
+                          </div>
+                    </div>}
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.colGroup}>
+                      <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>for</div>
+                          <AphTextField
+                            placeholder=""
+                            inputProps={{ maxLength: 6 }}
+                            value={consumptionDuration}
+                            onChange={(event: any) => {
+                              setConsumptionDuration(event.target.value);
+                            }}
+                            error={errorState.durationErr}
+                          />
+                          {errorState.durationErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Duration in days(Number only)
+                            </FormHelperText>
+                          )}
                         </div>
-                        <div className={classes.divCol}>
+                      <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             &nbsp;
                           </div>
@@ -1408,29 +1481,6 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.colGroup}>
-                        <div className={classes.divCol}>
-                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>for</div>
-                          <AphTextField
-                            placeholder=""
-                            inputProps={{ maxLength: 6 }}
-                            value={consumptionDuration}
-                            onChange={(event: any) => {
-                              setConsumptionDuration(event.target.value);
-                            }}
-                            error={errorState.durationErr}
-                          />
-                          {errorState.durationErr && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.durationErr}
-                            >
-                              Please Enter Duration in days(Number only)
-                            </FormHelperText>
-                          )}
-                        </div>
-                        <div className={classes.divCol}>
                           <div className={classes.sectionTitle}>To be taken</div>
                           <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
                             {tobeTakenHtml}
@@ -1444,12 +1494,10 @@ export const MedicinePrescription: React.FC = () => {
                               Please select to be taken.
                             </FormHelperText>
                           )}
-                        </div>
-                      </div>
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day</div>
-                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>{daySlotsHtml}</div>
                       {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
@@ -1461,11 +1509,12 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                        Instructions (if any)
+                      <div className={`${classes.sectionTitle} ${classes.noPadding} ${classes.instructionsWrapper}`}>
+                        Instructions/Notes
                       </div>
                       <div className={classes.numberTablets}>
                         <AphTextField
+                          multiline
                           placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
                           value={medicineInstruction}
                           onChange={(event: any) => {
