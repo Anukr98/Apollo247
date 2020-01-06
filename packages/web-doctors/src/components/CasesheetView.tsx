@@ -370,7 +370,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         const unitHtmls = prescription!.medicineUnit!.toLowerCase();
         const timesString =
           prescription!.medicineTimings!.length > 0
-            ? 'in the ' + prescription!.medicineTimings!.join(' , ').toLowerCase()
+            ? 'in the ' +
+              prescription!
+                .medicineTimings!.join(' , ')
+                .toLowerCase()
+                .replace('_', ' ')
             : '';
         const dosageCount = prescription!.medicineDosage;
         const takeApplyHtml = prescription!.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
