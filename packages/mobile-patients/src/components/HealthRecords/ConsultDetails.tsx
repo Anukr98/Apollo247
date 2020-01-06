@@ -50,6 +50,7 @@ import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceH
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '../UIElementsProvider';
 import { mimeType } from '../../helpers/mimeType';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -407,7 +408,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .catch((e) => {
         setLoading && setLoading(false);
         console.log({ e });
-        Alert.alert('Alert', 'Oops! Something went wrong.');
+        handleGraphQlError(e);
       });
   };
 

@@ -26,7 +26,11 @@ import {
   MedicineProduct,
   MedicineProductDetails,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole, isEmptyObject } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  isEmptyObject,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -449,7 +453,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       })
       .catch((err) => {
         aphConsole.log('fetchDeliveryTime err\n', { err });
-        Alert.alert('Something went wrong');
+        handleGraphQlError(err);
         setshowDeliverySpinner(false);
       });
   };
