@@ -192,28 +192,28 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
           {props.isLoading ? (
             <CircularProgress />
           ) : (
-            orderStatusList &&
-            orderStatusList.map(
-              (statusInfo) =>
-                statusInfo && (
-                  <div id={statusInfo.id} className={classes.cardGroup}>
-                    <div
-                      className={`${classes.statusCard} ${
-                        statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
-                          ? classes.orderStatusActive
-                          : null
-                      } ${classes.orderStatusCompleted}`}
-                    >
-                      {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
-                      <div className={classes.statusInfo}>
-                        <span>9 Aug 2019</span>
-                        <span>12:00 pm</span>
+              orderStatusList &&
+              orderStatusList.map(
+                (statusInfo) =>
+                  statusInfo && (
+                    <div id={statusInfo.id} className={classes.cardGroup}>
+                      <div
+                        className={`${classes.statusCard} ${
+                          statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
+                            ? classes.orderStatusActive
+                            : null
+                          } ${classes.orderStatusCompleted}`}
+                      >
+                        {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
+                        <div className={classes.statusInfo}>
+                          <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
+                          <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-            )
-          )}
+                  )
+              )
+            )}
         </div>
       </Grid>
     </Grid>

@@ -1279,24 +1279,24 @@ export const MedicinePrescription: React.FC = () => {
                   {medicine.Instructions && <h6>{medicine.Instructions}</h6>}
                 </Paper>
                 {caseSheetEdit && (
-                  <>
-                    <AphButton
-                      variant="contained"
-                      color="primary"
-                      classes={{ root: classes.updateSymptom }}
-                      onClick={() => updateMedicine(index)}
-                    >
-                      <img src={require('images/round_edit_24_px.svg')} alt="" />
-                    </AphButton>
-                    <AphButton
-                      variant="contained"
-                      color="primary"
-                      classes={{ root: classes.deleteSymptom }}
-                      onClick={() => deletemedicine(index)}
-                    >
-                      <img width="16" src={require('images/ic_cancel_green.svg')} alt="" />
-                    </AphButton>
-                  </>
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.updateSymptom }}
+                    onClick={() => updateMedicine(index)}
+                  >
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                )}
+                {caseSheetEdit && (
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.deleteSymptom }}
+                    onClick={() => deletemedicine(index)}
+                  >
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
                 )}
               </div>
             );
