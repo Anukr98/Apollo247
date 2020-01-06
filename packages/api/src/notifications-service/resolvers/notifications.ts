@@ -450,6 +450,24 @@ export async function sendNotification(
     data: {},
   };
 
+  if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Book_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
   if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     payload = {
       notification: {
@@ -1030,6 +1048,7 @@ export async function sendMedicineOrderStatusNotification(
       payloadDataType = 'Order_Confirmed';
       notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
       notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY:
       payloadDataType = 'Order_Out_For_Delivery';
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
@@ -1122,6 +1141,7 @@ export async function sendDiagnosticOrderStatusNotification(
       payloadDataType = 'Diagnostic_Order_Payment_Failed';
       notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE;
       notificationBody = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY;
+      break;
     default:
       payloadDataType = 'Diagnostic_Order_Success';
       notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_TITLE;
