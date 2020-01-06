@@ -1141,6 +1141,7 @@ export async function sendDiagnosticOrderStatusNotification(
       payloadDataType = 'Diagnostic_Order_Payment_Failed';
       notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE;
       notificationBody = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY;
+      break;
     default:
       payloadDataType = 'Diagnostic_Order_Success';
       notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_TITLE;
