@@ -434,27 +434,31 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         </View>
 
                         <Text style={styles.dataTextStyle}>
-                          {item.medicineTimings!.length *
+                          {item.medicineFormTypes === 'OTHERS'
+                            ? 'Take ' + item!.medicineDosage! &&
+                              parseFloat(item!.medicineDosage!) +
+                                ' ' +
+                                item!.medicineUnit!.toLowerCase() +
+                                '  '
+                            : 'Apply ' + item!.medicineUnit!.toLowerCase() + '  '}
+                          {/* {item.medicineTimings!.length *
                             parseFloat(item!.medicineConsumptionDurationInDays!) *
                             item.medicineToBeTaken!.length *
                             parseFloat(item!.medicineDosage!) +
                             ` ` +
-                            item.medicineUnit}
+                            item.medicineUnit} */}
                           {/* parseInt(item.medicineDosage || '1') > 1 */}
-                          {item.medicineTimings!.length > 1 &&
+                          {/* {item.medicineTimings!.length > 1 &&
                           (item.medicineUnit == MEDICINE_UNIT.TABLET ||
                             item.medicineUnit == MEDICINE_UNIT.CAPSULE)
                             ? 'S'
-                            : ''}
-                          {item.medicineTimings
-                            ? `\n${
-                                item.medicineTimings.length
-                              } times a day (${item.medicineTimings
-                                .join(', ')
-                                .toLowerCase()}) for ${
-                                item.medicineConsumptionDurationInDays
-                              } days\n`
-                            : ''}
+                            : ''} */}
+                          {/* {item.medicineTimings
+                            ? `\n${item.medicineTimings.length} times a day  for ${item.medicineConsumptionDurationInDays} days\n`
+                            : ''} */}
+                          {item!.medicineFrequency! &&
+                            item!.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
+                              ' '}
                           {item.medicineToBeTaken
                             ? item.medicineToBeTaken
                                 .map(
@@ -467,6 +471,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                                 )
                                 .join(', ')
                             : ''}
+                          {' in the ' +
+                            item!
+                              .medicineTimings!.join(', ')
+                              .replace(/[^a-zA-Z ]/g, ' ')
+                              .toLowerCase()}
                           {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
                         </Text>
                       </View>

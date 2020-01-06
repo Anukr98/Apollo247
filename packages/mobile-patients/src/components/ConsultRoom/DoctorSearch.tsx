@@ -248,52 +248,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  // const fetchSpecialities = () => {
-  //   client
-  //     .query<getAllSpecialties>({
-  //       query: GET_ALL_SPECIALTIES,
-  //       fetchPolicy: 'no-cache',
-  //     })
-  //     .then(({ data }) => {
-  //       try {
-  //         if (data && data.getAllSpecialties && Specialities !== data.getAllSpecialties) {
-  //           setSpecialities(data.getAllSpecialties);
-  //           setshowSpinner(false);
-  //         }
-  //       } catch {}
-  //     })
-  //     .catch((e: string) => {
-  //       setshowSpinner(false);
-  //       console.log('Error occured', e);
-  //     });
-  // };
-
-  // const fetchPastSearches = () => {
-  //   client
-  //     .query<getPatientPastSearches>({
-  //       query: GET_PATIENT_PAST_SEARCHES,
-  //       variables: {
-  //         patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-  //       },
-  //       fetchPolicy: 'no-cache',
-  //     })
-  //     .then(({ data }) => {
-  //       try {
-  //         if (data && data.getPatientPastSearches) {
-  //           // console.log('fetchPastSearches', data.getPatientPastSearches);
-  //           setPastSearches(data.getPatientPastSearches);
-  //         }
-  //       } catch {}
-  //     })
-  //     .catch((e: string) => {
-  //       console.log('Error occured', e);
-  //     })
-  //     .finally(() => {
-  //       fetchSpecialities();
-  //       !!searchText && fetchSearchData();
-  //     });
-  // };
-
   const fetchSpecialities = () => {
     console.log('fetchSpecialities');
 

@@ -100,6 +100,10 @@
 
         <meta-data android:name="com.bugsnag.android.API_KEY" android:value="7839e425f4acbd8e6ff3f907281addca"/>
 
+        <meta-data
+            android:name="firebase_crash_collection_enabled"
+            android:value="${analytics_deactivated}"/>
+
     </application>
 
 </manifest>

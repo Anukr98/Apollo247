@@ -38,6 +38,8 @@ import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { BottomPopUp } from './ui/BottomPopUp';
+import { db } from '../strings/FirebaseConfig';
+import moment from 'moment';
 
 const { height, width } = Dimensions.get('window');
 
@@ -108,7 +110,9 @@ export interface OTPVerificationProps
   extends NavigationScreenProps<{
     otpString: string;
     phoneNumber: string;
+    dbChildKey: string;
   }> {}
+
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
@@ -128,6 +132,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
+
+  const dbChildKey = props.navigation.state.params!.dbChildKey;
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -340,11 +346,23 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log('otp OTPVerification', otp, otp.length, 'length');
         setshowSpinner(true);
 
+        db.ref('ApolloPatients/')
+          .child(dbChildKey)
+          .update({
+            OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+          });
+
         setTimeout(() => {
           verifyOtp(otp)
             .then((otp) => {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
               CommonBugFender('OTP_ENTERED_SUCCESS', otp as Error);
+
+              db.ref('ApolloPatients/')
+                .child(dbChildKey)
+                .update({
+                  OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                });
 
               _removeFromStore();
               setOnOtpClick(true);
@@ -368,6 +386,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   if (isAuthChanged) {
                     _removeFromStore();
                     setOnOtpClick(true);
+                    db.ref('ApolloPatients/')
+                      .child(dbChildKey)
+                      .update({
+                        OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                      });
                   } else {
                     setOnOtpClick(false);
                     setshowSpinner(false);
@@ -385,6 +408,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     }
                     setInvalidOtpCount(invalidOtpCount + 1);
                     // setOtp('');
+                    db.ref('ApolloPatients/')
+                      .child(dbChildKey)
+                      .update({
+                        wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                      });
                   }
                 }, 1000);
               } catch (error) {
@@ -463,6 +491,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickResend = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
+    db.ref('ApolloPatients/')
+      .child(dbChildKey)
+      .update({
+        ResendOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+      });
+
     getNetStatus().then((status) => {
       if (status) {
         setIsresent(true);

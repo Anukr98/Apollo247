@@ -318,13 +318,17 @@ export interface RescheduleAppointmentInput {
 
 export interface SaveDoctorsFavouriteMedicineInput {
   externalId?: string | null;
+  medicineConsumptionDuration?: string | null;
   medicineConsumptionDurationInDays: number;
+  medicineConsumptionDurationUnit?: MEDICINE_CONSUMPTION_DURATION | null;
   medicineDosage: string;
-  medicineUnit: string;
+  medicineFormTypes?: MEDICINE_FORM_TYPES | null;
+  medicineFrequency?: MEDICINE_FREQUENCY | null;
   medicineInstructions?: string | null;
+  medicineName: string;
   medicineTimings: (MEDICINE_TIMINGS | null)[];
   medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
-  medicineName: string;
+  medicineUnit: MEDICINE_UNIT;
 }
 
 export interface SymptomInput {
@@ -347,14 +351,18 @@ export interface TransferAppointmentInput {
 
 export interface UpdateDoctorsFavouriteMedicineInput {
   externalId?: string | null;
+  id: string;
+  medicineConsumptionDuration?: string | null;
   medicineConsumptionDurationInDays?: number | null;
+  medicineConsumptionDurationUnit?: MEDICINE_CONSUMPTION_DURATION | null;
   medicineDosage?: string | null;
-  medicineUnit?: string | null;
+  medicineFormTypes?: MEDICINE_FORM_TYPES | null;
+  medicineFrequency?: MEDICINE_FREQUENCY | null;
   medicineInstructions?: string | null;
+  medicineName: string;
   medicineTimings: (MEDICINE_TIMINGS | null)[];
   medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
-  medicineName: string;
-  id: string;
+  medicineUnit?: MEDICINE_UNIT | null;
 }
 
 export interface UpdatePatientInput {
