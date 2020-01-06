@@ -64,7 +64,9 @@ type CustomNotificationType =
   | 'Order_Placed'
   | 'Order_Confirmed'
   | 'Reminder_Appointment_15'
-  | 'Reminder_Appointment_Casesheet_15';
+  | 'Reminder_Appointment_Casesheet_15'
+  | 'Diagnostic_Order_Success'
+  | 'Diagnostic_Order_Payment_Failed';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -81,14 +83,25 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     transactionId: '',
   });
 
-  const showOrderStatusAlert = (_: string, orderAutoId: string, description: string) => {
+  const showMedOrderStatusAlert = (
+    data: {
+      content: string;
+      orderAutoId: string;
+      orderId: string;
+      firstName: string;
+      statusDate: string;
+    },
+    type?: CustomNotificationType
+  ) => {
+    aphConsole.log(`CustomNotificationType:: ${type}`);
     showAphAlert!({
-      title: `Hi :)`,
-      description,
+      title: `Hi,`,
+      description: data.content,
       CTAs: [
         {
           text: 'DISMISS',
           onPress: () => hideAphAlert!(),
+          type: 'white-button',
         },
         {
           text: 'VIEW DETAILS',
@@ -96,7 +109,41 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             hideAphAlert!();
             props.navigation.navigate(AppRoutes.OrderDetailsScene, {
               goToHomeOnBack: true,
-              orderAutoId: orderAutoId,
+              orderAutoId: data.orderAutoId,
+            });
+          },
+        },
+      ],
+    });
+  };
+
+  const showTestOrderStatusAlert = (
+    data: {
+      content: string;
+      orderId: string;
+      displayId: string;
+      firstName: string;
+      statusDate: string;
+    },
+    type?: CustomNotificationType
+  ) => {
+    aphConsole.log(`CustomNotificationType:: ${type}`);
+    showAphAlert!({
+      title: `Hi,`,
+      description: data.content,
+      CTAs: [
+        {
+          text: 'DISMISS',
+          onPress: () => hideAphAlert!(),
+          type: 'white-button',
+        },
+        {
+          text: 'VIEW DETAILS',
+          onPress: () => {
+            hideAphAlert!();
+            props.navigation.navigate(AppRoutes.TestOrderDetails, {
+              goToHomeOnBack: true,
+              orderId: data.orderId,
             });
           },
         },
@@ -200,11 +247,27 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Order_Out_For_Delivery':
         {
-          const orderAutoId: string = data.orderAutoId;
-          const firstName: string = data.firstName;
-          const description: string = data.content;
-          // data.orderId, data.statusDate
-          showOrderStatusAlert(firstName, orderAutoId, description);
+          showMedOrderStatusAlert(data, 'Order_Out_For_Delivery');
+        }
+        break;
+      case 'Order_Placed':
+        {
+          showMedOrderStatusAlert(data, 'Order_Placed');
+        }
+        break;
+      case 'Order_Confirmed':
+        {
+          showMedOrderStatusAlert(data, 'Order_Confirmed');
+        }
+        break;
+      case 'Diagnostic_Order_Success':
+        {
+          showTestOrderStatusAlert(data, 'Diagnostic_Order_Success');
+        }
+        break;
+      case 'Diagnostic_Order_Payment_Failed':
+        {
+          showTestOrderStatusAlert(data, 'Diagnostic_Order_Payment_Failed');
         }
         break;
 
