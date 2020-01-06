@@ -46,7 +46,6 @@ import {
   RemoveFavouriteMedicine,
   RemoveFavouriteMedicineVariables,
 } from 'graphql/types/RemoveFavouriteMedicine';
-
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from 'graphql/types/GetDoctorFavouriteMedicineList';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -322,6 +321,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '20px 0',
       minHeight: 300,
       position: 'relative',
+      
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
@@ -329,6 +329,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 5,
         marginTop: 5,
         lineHeight: 'normal',
+        minHeight: 9,
       },
     },
     dialogNewMedicine: {
@@ -372,6 +373,12 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+    daysOfWeek:{
+      '& button:last-child':{
+        border: '1px solid #e50000',
+        color: '#e50000',
+      },
+    },
     tabletcontent: {
       margin: '0 10px',
       position: 'relative',
@@ -381,6 +388,11 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
       fontWeight: 600,
+      '&:last-child':{
+        backgroundColor: '#e50000 !important',
+        color: '#fff',
+        border: '1px solid #e50000 !important',
+      },
     },
     helpText: {
       paddingLeft: 0,
@@ -548,7 +560,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 'bold',
     },
     unitsSelect: {
-      marginTop: -7,
+      marginTop: 0,
     },
     headingName: {
       display: 'inline-block',
@@ -1548,7 +1560,7 @@ export const FavouriteMedicines: React.FC = () => {
                         suggestion: classes.suggestion,
                       }}
                       renderSuggestionsContainer={(options) => (
-                        <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                        <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
                           <Paper {...options.containerProps} square className={classes.searchpopup}>
                             {options.children}
                           </Paper>
@@ -1585,6 +1597,7 @@ export const FavouriteMedicines: React.FC = () => {
               ) : (
                 <div>
                   <div>
+                  <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
                     <div className={`${classes.dialogContent} ${classes.dialogNewMedicine}`}>
                       <Grid container spacing={2}>
                         {medicineForm === 'OTHERS' && (
@@ -1735,7 +1748,7 @@ export const FavouriteMedicines: React.FC = () => {
                         </Grid>
                         <Grid item lg={12} xs={12}>
                           <h6>Time of the Day*</h6>
-                          <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                          <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>{daySlotsHtml}</div>
                           {errorState.daySlotErr && (
                             <FormHelperText
                               className={classes.helpText}
@@ -1750,6 +1763,7 @@ export const FavouriteMedicines: React.FC = () => {
                           <h6>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
+                              multiline
                               value={medicineInstruction}
                               onChange={(event: any) => {
                                 setMedicineInstruction(event.target.value);
@@ -1759,6 +1773,7 @@ export const FavouriteMedicines: React.FC = () => {
                         </Grid>
                       </Grid>
                     </div>
+                    </Scrollbars>
                   </div>
                   <div className={classes.dialogActions}>
                     <AphButton
