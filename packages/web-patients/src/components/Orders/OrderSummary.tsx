@@ -5,6 +5,7 @@ import moment from 'moment';
 import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderPayments as payments,
 } from 'graphql/types/GetMedicineOrderDetails';
 import { CircularProgress } from '@material-ui/core';
 
@@ -108,53 +109,57 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
   const orderStatus = props.orderDetailsData && props.orderDetailsData.medicineOrdersStatus;
   const orderItem = props.orderDetailsData && props.orderDetailsData.medicineOrderLineItems;
-  const orderPayment = props.orderDetailsData && props.orderDetailsData.medicineOrderPayments;
+  const orderPayment =
+    props.orderDetailsData &&
+    props.orderDetailsData.medicineOrderPayments &&
+    props.orderDetailsData.medicineOrderPayments.length > 0 &&
+    props.orderDetailsData.medicineOrderPayments[0];
 
   return props.isLoading ? (
     <CircularProgress />
   ) : (
-      <div className={classes.root}>
-        <div className={classes.summaryHeader}>
-          <div className={classes.headRow}>
-            <label>Order ID</label>
-            <span>#{props.orderDetailsData && props.orderDetailsData.orderAutoId}</span>
-          </div>
-          <div className={classes.headRow}>
-            <label>Date/Time</label>
-            <span>
-              {orderStatus &&
-                orderStatus.length > 0 &&
-                moment(new Date(orderStatus[0]!.statusDate)).format('DD MMM YYYY ,hh:mm a')}
-            </span>
-          </div>
+    <div className={classes.root}>
+      <div className={classes.summaryHeader}>
+        <div className={classes.headRow}>
+          <label>Order ID</label>
+          <span>#{props.orderDetailsData && props.orderDetailsData.orderAutoId}</span>
         </div>
-        <div className={classes.summaryDetails}>
-          <div className={classes.detailsTable}>
-            <div className={`${classes.tableRow} ${classes.rowHead}`}>
-              <div>Consult Detail</div>
-              <div>QTY</div>
-              <div>Charges</div>
-            </div>
-            {orderItem &&
-              orderItem.length > 0 &&
-              orderItem.map((item, index) => (
-                <div key={index} className={classes.tableRow}>
-                  <div>{item && item.medicineName}</div>
-                  <div>{item && item.quantity}</div>
-                  <div>Rs.{item && item.price}</div>
-                </div>
-              ))}
-          </div>
+        <div className={classes.headRow}>
+          <label>Date/Time</label>
+          <span>
+            {orderStatus &&
+              orderStatus.length > 0 &&
+              moment(new Date(orderStatus[0]!.statusDate)).format('DD MMM YYYY ,hh:mm a')}
+          </span>
         </div>
-        <div className={classes.deliveryPromise}>2 Hour Delivery Promise!</div>
-        <div className={classes.totalPaid}>
-          <span>{`${'Total Paid -'} ${orderPayment && orderPayment[0]!.paymentType}`}</span>
-          <span className={classes.totalPrice}>Rs.{orderPayment && orderPayment[0]!.amountPaid}</span>
-        </div>
-        <div className={classes.disclaimerText}>
-          Disclaimer: Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo
-          minus quod.
       </div>
+      <div className={classes.summaryDetails}>
+        <div className={classes.detailsTable}>
+          <div className={`${classes.tableRow} ${classes.rowHead}`}>
+            <div>Consult Detail</div>
+            <div>QTY</div>
+            <div>Charges</div>
+          </div>
+          {orderItem &&
+            orderItem.length > 0 &&
+            orderItem.map((item, index) => (
+              <div key={index} className={classes.tableRow}>
+                <div>{item && item.medicineName}</div>
+                <div>{item && item.quantity}</div>
+                <div>Rs.{item && item.price}</div>
+              </div>
+            ))}
+        </div>
       </div>
-    );
+      <div className={classes.deliveryPromise}>2 Hour Delivery Promise!</div>
+      <div className={classes.totalPaid}>
+        <span>{`${'Total Paid -'} ${orderPayment && orderPayment.paymentType}`}</span>
+        <span className={classes.totalPrice}>Rs.{orderPayment && orderPayment.amountPaid}</span>
+      </div>
+      <div className={classes.disclaimerText}>
+        Disclaimer: Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo
+        minus quod.
+      </div>
+    </div>
+  );
 };
