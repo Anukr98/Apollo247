@@ -316,49 +316,59 @@ export const Patients: React.FC<PatientsProps> = (props) => {
         > */}
 
         {/* <View style={{ paddingTop: 14 }}> */}
-        {allData && allData.length == 0 && !showSpinner ? (
-          <Text
-            style={{
-              flex: 1,
-              color: '#01475b',
-              ...theme.fonts.IBMPlexSansMedium(14),
-            }}
-          >
-            No Data
-          </Text>
-        ) : (
-          <FlatList
-            contentContainerStyle={{ paddingBottom: 20 }}
-            removeClippedSubviews={false}
-            bounces={false}
-            data={allData}
-            onEndReachedThreshold={0.5}
-            onEndReached={(info) => {
-              console.log('onEndReached', info);
-              ShowAllTypeData(SelectableValue, selectedSorting, offset);
-            }}
-            stickyHeaderIndices={[0]}
-            renderItem={({ item, index }) => renderItemComponent(item, index)}
-            keyExtractor={(_, index) => index.toString()}
-            ListHeaderComponent={
-              <>
-                {renderMainHeader()}
-                <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
-                {renderTabs()}
-              </>
-            }
-            ListFooterComponent={
-              loadMoreSpinner ? (
-                <View style={{ marginVertical: 20 }}>
-                  <ActivityIndicator animating={true} size="small" color="green" />
+
+        <FlatList
+          contentContainerStyle={{ paddingBottom: 20 }}
+          removeClippedSubviews={false}
+          bounces={false}
+          data={allData}
+          onEndReachedThreshold={0.5}
+          onEndReached={(info) => {
+            console.log('onEndReached', info);
+            ShowAllTypeData(SelectableValue, selectedSorting, offset);
+          }}
+          stickyHeaderIndices={[0]}
+          renderItem={({ item, index }) => renderItemComponent(item, index)}
+          keyExtractor={(_, index) => index.toString()}
+          ListHeaderComponent={
+            <>
+              {renderMainHeader()}
+              <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+              {renderTabs()}
+              {allData && allData.length == 0 && !showSpinner && (
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      marginTop: 50,
+                      flex: 1,
+                      color: '#01475b',
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      textAlign: 'center',
+                    }}
+                  >
+                    No Data
+                  </Text>
                 </View>
-              ) : null
-            }
-            // numColumns={1}
-            // keyboardShouldPersistTaps="always"
-            // keyboardDismissMode="on-drag"
-          />
-        )}
+              )}
+            </>
+          }
+          ListFooterComponent={
+            loadMoreSpinner ? (
+              <View style={{ marginVertical: 20 }}>
+                <ActivityIndicator animating={true} size="small" color="green" />
+              </View>
+            ) : null
+          }
+          // numColumns={1}
+          // keyboardShouldPersistTaps="always"
+          // keyboardDismissMode="on-drag"
+        />
         {/* </View> */}
         {/* </ScrollView> */}
       </SafeAreaView>

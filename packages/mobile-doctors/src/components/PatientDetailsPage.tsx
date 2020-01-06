@@ -7,7 +7,11 @@ import {
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
-import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_patientDetails,
+  GetCaseSheet_getCaseSheet_pastAppointments,
+} from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
@@ -15,6 +19,7 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -96,8 +101,13 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
 
   const [familyValues, setFamilyValues] = useState<any>([]);
   const [lifeStyleData, setLifeStyleData] = useState<any>([]);
+  const [patientDetails, setPatientDetails] = useState<GetCaseSheet_getCaseSheet_patientDetails>();
   const [allergiesData, setAllergiesData] = useState<string>('');
-  const [pastList, setPastList] = useState<any>([]);
+
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [pastList, setPastList] = useState<
+    (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
+  >([]);
 
   const PatientInfo = props.navigation.getParam('PatientInfo');
   const dateOfBirth = moment(PatientInfo.dateOfBirth).format('YYYY');
@@ -117,12 +127,14 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
 
           if (result) {
             if (result.patientDetails) {
+              setPatientDetails(result.patientDetails);
               setFamilyValues(result.patientDetails.familyHistory!);
               setAllergiesData(result.patientDetails.allergies!);
               setLifeStyleData(result.patientDetails.lifeStyle);
             }
             setPastList(result.pastAppointments!);
           }
+          setshowSpinner(false);
         } catch (e) {
           console.log('e', e);
         }
@@ -188,21 +200,21 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       </View>
     );
   };
-  const renderPatientHistoryLifestyle = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="Patient History & Lifestyle"
-          collapse={patientHistoryshow}
-          onPress={() => setpatientHistoryshow(!patientHistoryshow)}
-        >
-          {renderFamilyDetails()}
-          {renderAllergiesView()}
-          {renderLifeStylesHabits()}
-        </CollapseCard>
-      </View>
-    );
-  };
+  // const renderPatientHistoryLifestyle = () => {
+  //   return (
+  //     <View>
+  //       <CollapseCard
+  //         heading="Patient History & Lifestyle"
+  //         collapse={patientHistoryshow}
+  //         onPress={() => setpatientHistoryshow(!patientHistoryshow)}
+  //       >
+  //         {renderFamilyDetails()}
+  //         {renderAllergiesView()}
+  //         {renderLifeStylesHabits()}
+  //       </CollapseCard>
+  //     </View>
+  //   );
+  // };
   const renderLeftTimeLineView = (
     status: Appointments['timeslottype'],
     showTop: boolean,
@@ -354,41 +366,42 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   // };
 
   return (
-    <SafeAreaView style={[theme.viewStyles.container]}>
-      <ScrollView bounces={false}>
-        <PatientPlaceHolderImage />
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={[theme.viewStyles.container]}>
+        <ScrollView bounces={false}>
+          <PatientPlaceHolderImage />
 
-        <View style={{ top: -150, marginLeft: 20 }}>
-          <TouchableOpacity onPress={() => props.navigation.pop()}>
-            <BackArrow />
-          </TouchableOpacity>
-        </View>
-        <View style={[styles.shadowview, { marginTop: -20 }]}>
-          <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 20 }}>
-            <View style={{ flex: 1 }}>
+          <View style={{ top: -150, marginLeft: 20 }}>
+            <TouchableOpacity onPress={() => props.navigation.pop()}>
+              <BackArrow />
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.shadowview, { marginTop: -20 }]}>
+            <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 20 }}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansSemiBold(18),
+                    color: theme.colors.SHARP_BLUE,
+                    marginBottom: 2,
+                    marginRight: 15,
+                  }}
+                >
+                  {PatientInfo.firstName}
+                </Text>
+              </View>
               <Text
                 style={{
-                  ...theme.fonts.IBMPlexSansSemiBold(18),
-                  color: theme.colors.SHARP_BLUE,
-                  marginBottom: 2,
-                  marginRight: 15,
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                  color: 'rgba(2, 71, 91, 0.8)',
+                  marginLeft: 14,
+                  marginBottom: 8,
                 }}
               >
-                {PatientInfo.firstName}
+                UHID: {PatientInfo.uhid}
               </Text>
-            </View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(12),
-                color: 'rgba(2, 71, 91, 0.8)',
-                marginLeft: 14,
-                marginBottom: 8,
-              }}
-            >
-              UHID: {PatientInfo.uhid}
-            </Text>
 
-            {/* <View
+              {/* <View
               style={{
                 height: 16,
                 borderWidth: 0.5,
@@ -406,19 +419,19 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             >
               {todayYear - dateOfBirth}, {PatientInfo.gender}
             </Text> */}
-          </View>
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(12),
-              color: theme.colors.LIGHT_BLUE,
-              marginBottom: 12,
-              marginLeft: 20,
-            }}
-          >
-            {todayYear - dateOfBirth}, {PatientInfo.gender.charAt(0)},
-          </Text>
+            </View>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(12),
+                color: theme.colors.LIGHT_BLUE,
+                marginBottom: 12,
+                marginLeft: 20,
+              }}
+            >
+              {todayYear - dateOfBirth}, {PatientInfo.gender.charAt(0)},
+            </Text>
 
-          {/* <View
+            {/* <View
             style={{
               borderRadius: 5,
               backgroundColor: '#f0f4f5',
@@ -512,20 +525,24 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
               </Text>
             </View>
           </View> */}
-        </View>
-        <View>
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(17),
-              lineHeight: 24,
-              color: '#01475b',
-              margin: 16,
-            }}
-          >
-            Past Consultations
-          </Text>
-          <PastConsultCard data={pastList} navigation={props.navigation} />
-          {/* <ScrollView bounces={false}>
+          </View>
+          <View>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(17),
+                lineHeight: 24,
+                color: '#01475b',
+                margin: 16,
+              }}
+            >
+              Past Consultations
+            </Text>
+            <PastConsultCard
+              data={pastList}
+              navigation={props.navigation}
+              patientDetails={patientDetails}
+            />
+            {/* <ScrollView bounces={false}>
             {pastList.map((apmnt: any, i: any) => {
               return (
                 <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
@@ -533,7 +550,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 </View>
               );
             })} */}
-          {/* {_data!.map((_doctor, i, array) => {
+            {/* {_data!.map((_doctor, i, array) => {
               return (
                 <View
                   style={{
@@ -553,9 +570,11 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 </View>
               );
             })} */}
-          {/* </ScrollView> */}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            {/* </ScrollView> */}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      {showSpinner && <Spinner />}
+    </View>
   );
 };

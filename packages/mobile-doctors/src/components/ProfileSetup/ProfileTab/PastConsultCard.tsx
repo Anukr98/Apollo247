@@ -1,4 +1,11 @@
-import { ArrowRight, Audio, MissedAppointmentIcon, NextAppointmentIcon, PastAppointmentIcon, UpComingIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import {
+  ArrowRight,
+  Audio,
+  MissedAppointmentIcon,
+  NextAppointmentIcon,
+  PastAppointmentIcon,
+  UpComingIcon,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import { STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
@@ -7,6 +14,7 @@ import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -24,6 +32,7 @@ const styles = StyleSheet.create({
 
 export interface PastConsultCardProps extends NavigationScreenProps {
   data: [];
+  patientDetails: {};
 }
 
 export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
@@ -135,6 +144,12 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                     flex: 1,
                     justifyContent: 'space-between',
                   }}
+                  onPress={() =>
+                    props.navigation.navigate(AppRoutes.CaseSheetDetails, {
+                      consultDetails: i,
+                      patientDetails: props.patientDetails,
+                    })
+                  }
                 >
                   <Text
                     style={{
@@ -143,8 +158,12 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                   >
                     {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
                   </Text>
-                  <Audio />
-                  <ArrowRight />
+                  <View style={{ flexDirection: 'row' }}>
+                    <View style={{ marginRight: 24 }}>
+                      <Audio />
+                    </View>
+                    <ArrowRight />
+                  </View>
                 </TouchableOpacity>
               </View>
             </>
