@@ -39,6 +39,8 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       paddingTop: 8,
       minHeight: 70,
+      maxHeight: 70,
+      overflow: 'hidden',
     },
     bottomSection: {
       borderTop: 'solid 0.5px rgba(2, 71, 91, 0.3)',

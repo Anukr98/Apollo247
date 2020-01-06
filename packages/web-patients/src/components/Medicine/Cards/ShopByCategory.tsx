@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cardTitle: {
-      fontSize: 14,
+      fontSize: 12,
       fontWeight: 500,
       color: '#01475b',
     },
