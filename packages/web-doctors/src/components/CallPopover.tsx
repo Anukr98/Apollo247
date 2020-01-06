@@ -253,8 +253,8 @@ const useStyles = makeStyles((theme: Theme) => {
     cross: {
       position: 'absolute',
       right: 0,
-      top: '10px',
-      fontSize: '18px',
+      top: 8,
+      fontSize: 18,
       color: '#02475b',
     },
     container: {
@@ -432,7 +432,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         letterSpacing: '0.5px',
         color: '#01475b',
-        padding: '15px',
+        padding: '18px 15px 15px 15px',
       },
     },
     tabFooter: {
@@ -655,8 +655,14 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
       color: '#fc9916',
-      width: '98%',
-      paddingTop: 15,
+      width: '100%',
+      paddingTop: 0,
+      paddingBottom: 0,
+      boxShadow: 'none',
+      '& span': {
+        display: 'inline-block',
+        textAlign: 'right',
+      },
     },
     consultGroup: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
@@ -703,6 +709,15 @@ const useStyles = makeStyles((theme: Theme) => {
           outline: 'none',
         },
       },
+    },
+    dateField: {
+      borderBottom: '1px solid rgba(2,71,91,0.02)',
+      paddingBottom: 10,
+      paddingTop: 15,
+      fontSize: 15,
+      color: '#01475b',
+      fontWeight: 500,
+      marginBottom: 15,
     },
   };
 });
@@ -827,6 +842,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
   const [showAbandonment, setShowAbandonment] = React.useState(false);
@@ -2014,6 +2030,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     (!props.startAppointment && appointmentInfo!.status === STATUS.PENDING)) && (
                     <li
                       onClick={() => {
+                        setLoading(true);
+
                         handleCloseThreeDots();
                         const rescheduleCountByDoctor =
                           (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
@@ -2035,6 +2053,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                                     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
                                       .availableSlot || ''
                                   );
+                                  setDateSelected(
+                                    moment(
+                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                        .availableSlot
+                                    ).format('YYYY-MM-DD')
+                                  );
+
                                   setTimeSelected(
                                     moment(
                                       data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
@@ -2045,6 +2070,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               } catch (error) {
                                 setDoctorNextAvailableSlot('');
                                 alert(error);
+                              } finally {
+                                setLoading(false);
                               }
                             })
                             .catch((e) => console.log(e));
@@ -2084,10 +2111,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
               <div className={classes.tabBody}>
                 <p>The following slot will be suggested —</p>
-                {doctorNextAvailableSlot === '' ? (
+                {doctorNextAvailableSlot === '' || loading ? (
                   <CircularProgress />
                 ) : (
-                  <p>
+                  <div className={classes.dateField}>
                     {dateSelected && timeSelected
                       ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
                           'ddd, DD/MM/YYYY'
@@ -2097,7 +2124,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY') +
                         ' ' +
                         moment(doctorNextAvailableSlot).format('h:mm a')}
-                  </p>
+                  </div>
                   // <form noValidate>
                   //   <TextField
                   //     id="datetime-local"
@@ -2121,7 +2148,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </AphButton>
               </div>
               <div className={classes.tabBody}>
-                <p>Why do you want to reschedule this consult?</p>
+                <p>Why do you want to reschedule?</p>
 
                 <AphSelect
                   value={reason}

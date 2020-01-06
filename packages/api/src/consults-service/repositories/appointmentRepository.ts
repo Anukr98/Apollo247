@@ -1107,6 +1107,27 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getSpecificMinuteAppointments(nextMin: number) {
+    const apptDateTime = addMinutes(new Date(), nextMin);
+    const formatDateTime =
+      format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .where('(appointment.bookingDate = :fromDate)', {
+        fromDate: formatDateTime,
+      })
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+      })
+      .getMany();
+  }
+  /*return this.find({
+      where: { appointmentDateTime: formatDateTime, status: Not(STATUS.CANCELLED) },
+      order: { bookingDate: 'ASC' },
+    });*/
+
   updateConsultStarted(id: string, status: Boolean) {
     return this.update(id, { isConsultStarted: status });
   }
