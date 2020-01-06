@@ -148,13 +148,13 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
 
   const params = useParams<Params>();
   const locationUrl = window.location.href;
-  const [subtxt, setSubtxt] = useState<string | null>(
-    params.searchMedicineType === 'search-medicines' ? params.searchText : null
+  const [subtxt, setSubtxt] = useState<string>(
+    params.searchMedicineType === 'search-medicines' ? params.searchText : ''
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
   useEffect(() => {
-    if (subtxt) {
+    if (subtxt.length > 0) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);

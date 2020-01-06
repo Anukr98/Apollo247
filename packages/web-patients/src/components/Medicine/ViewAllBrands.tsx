@@ -263,8 +263,8 @@ export const ViewAllBrands: React.FC = (props) => {
             ) : (
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 212px)'}>
                 <div className={classes.customScroll}>
-                  {alphabets.map((alpha: string) => (
-                    <div className={classes.brandRow}>
+                  {alphabets.map((alpha: string, index: number) => (
+                    <div key={index} className={classes.brandRow}>
                       <div id={alpha} className={classes.brandType}>
                         {alpha.toUpperCase()}
                       </div>
