@@ -357,9 +357,9 @@ export const MedicineDetails: React.FC = (props) => {
       return data.map(
         (item, index) =>
           tabValue === index && (
-            <div className={classes.tabContainer}>
-              {item.value.split(';').map((data) => {
-                return <p>{data}</p>;
+            <div key={index} className={classes.tabContainer}>
+              {item.value.split(';').map((data, idx) => {
+                return <p key={idx}>{data}</p>;
               })}
             </div>
           )
@@ -370,8 +370,9 @@ export const MedicineDetails: React.FC = (props) => {
 
   const renderOverviewTabs = (overView: MedicineOverView) => {
     const data = getData(overView);
-    return data.map((item) => (
+    return data.map((item, index) => (
       <Tab
+        key={index}
         classes={{
           root: classes.tabRoot,
           selected: classes.tabSelected,
@@ -473,8 +474,8 @@ export const MedicineDetails: React.FC = (props) => {
                                   <div className={classes.productInfo}>Product Information</div>
                                   <div className={classes.productDescription}>
                                     {description &&
-                                      description.split('rn').map((data) => {
-                                        return <p>{data}</p>;
+                                      description.split('rn').map((data, index) => {
+                                        return <p key={index}>{data}</p>;
                                       })}
                                   </div>
                                 </div>
