@@ -205,7 +205,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     getNetStatus().then((status) => {
       if (status) {
         // fetchCurrentLocation();
-        // fetchSpecialityFilterData(filterMode, FilterData);
+        fetchSpecialityFilterData(filterMode, FilterData);
       } else {
         setshowSpinner(false);
         setshowOfflinePopup(true);
@@ -218,8 +218,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     // };
 
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      setshowSpinner(true);
-      fetchSpecialityFilterData();
+      //setshowSpinner(true);
+      //fetchSpecialityFilterData();
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
     });
 
