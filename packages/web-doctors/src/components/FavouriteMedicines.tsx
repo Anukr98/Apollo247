@@ -368,6 +368,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 15,
         color: '#00b38e',
         backgroundColor: '#fff',
+        cursor: 'pointer',
         '&:focus': {
           outline: 'none',
         },
@@ -385,6 +386,12 @@ const useStyles = makeStyles((theme: Theme) =>
       top: -5,
     },
     activeBtn: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+      fontWeight: 600,
+
+    },
+    activeBtnRed: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
       fontWeight: 600,
@@ -1124,7 +1131,7 @@ export const FavouriteMedicines: React.FC = () => {
     return (
       <button
         key={daySlotitem.id}
-        className={daySlotitem.selected ? classes.activeBtn : ''}
+        className={daySlotitem.selected ? classes.activeBtnRed : ''}
         onClick={() => {
           daySlotsToggleAction(daySlotitem.id);
         }}

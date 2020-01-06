@@ -322,6 +322,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 'normal',
         borderRadius: 14,
         marginRight: 15,
+        cursor: 'pointer',
         color: '#00b38e',
         backgroundColor: '#fff',
         '&:focus': {
@@ -341,6 +342,11 @@ const useStyles = makeStyles((theme: Theme) =>
       top: -5,
     },
     activeBtn: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+      fontWeight: 600,
+    },
+    activeBtnRed: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
       fontWeight: 600,
@@ -995,7 +1001,7 @@ export const MedicinePrescription: React.FC = () => {
     return (
       <button
         key={daySlotitem.id}
-        className={daySlotitem.selected ? classes.activeBtn : ''}
+        className={daySlotitem.selected ? classes.activeBtnRed : ''}
         onClick={() => {
           daySlotsToggleAction(daySlotitem.id);
         }}
@@ -1427,6 +1433,7 @@ export const MedicinePrescription: React.FC = () => {
             </AphDialogTitle>
             <div>
               <div>
+              <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}> 
                 <div className={classes.dialogContent}>
                   <Grid container spacing={2}>
                     {medicineForm === 'OTHERS' && (
@@ -1603,6 +1610,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Grid>
                   </Grid>
                 </div>
+              </Scrollbars>
               </div>
               <div className={classes.dialogActions}>
                 <AphButton
@@ -1664,6 +1672,7 @@ export const MedicinePrescription: React.FC = () => {
           <div className={classes.shadowHide}>
             {!showDosage ? (
               <div>
+                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}> 
                 <div className={classes.dialogContent}>
                   <Autosuggest
                     onSuggestionSelected={(e, { suggestion }) => {
@@ -1733,10 +1742,12 @@ export const MedicinePrescription: React.FC = () => {
                   )}
                   {loading ? <CircularProgress className={classes.loader} /> : null}
                 </div>
+             </Scrollbars>
               </div>
             ) : (
               <div>
                 <div>
+                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>  
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       {medicineForm === 'OTHERS' && (
@@ -1806,12 +1817,13 @@ export const MedicinePrescription: React.FC = () => {
                               },
                               anchorOrigin: {
                                 vertical: 'bottom',
-                                horizontal: horizontal,
+                                horizontal: 'left',
                               },
                               transformOrigin: {
                                 vertical: 'top',
-                                horizontal: horizontal,
+                                horizontal: 'left',
                               },
+                              
                             }}
                             onChange={(e: any) => {
                               setFrequency(e.target.value as string);
@@ -1904,6 +1916,7 @@ export const MedicinePrescription: React.FC = () => {
                         <h6>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
+                          multiline
                             placeholder="Type here..."
                             value={medicineInstruction}
                             onChange={(event: any) => {
@@ -1914,6 +1927,8 @@ export const MedicinePrescription: React.FC = () => {
                       </Grid>
                     </Grid>
                   </div>
+                
+                  </Scrollbars>
                 </div>
                 <div className={classes.dialogActions}>
                   <AphButton
