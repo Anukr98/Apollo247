@@ -7,7 +7,7 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import { Patient, MedicineOrders } from 'profiles-service/entities';
+import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
@@ -103,6 +103,8 @@ export enum NotificationType {
   APPOINTMENT_REMINDER_15 = 'APPOINTMENT_REMINDER_15',
   APPOINTMENT_CASESHEET_REMINDER_15 = 'APPOINTMENT_CASESHEET_REMINDER_15',
   PATIENT_APPOINTMENT_RESCHEDULE = 'PATIENT_APPOINTMENT_RESCHEDULE',
+  DIAGNOSTIC_ORDER_SUCCESS = 'DIAGNOSTIC_ORDER_SUCCESS',
+  DIAGNOSTIC_ORDER_PAYMENT_FAILED = 'DIAGNOSTIC_ORDER_PAYMENT_FAILED',
 }
 
 export enum APPT_CALL_TYPE {
@@ -447,6 +449,24 @@ export async function sendNotification(
     },
     data: {},
   };
+
+  if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Book_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
 
   if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     payload = {
@@ -1028,6 +1048,7 @@ export async function sendMedicineOrderStatusNotification(
       payloadDataType = 'Order_Confirmed';
       notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
       notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY:
       payloadDataType = 'Order_Out_For_Delivery';
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
@@ -1079,6 +1100,90 @@ export async function sendMedicineOrderStatusNotification(
       const logData = {
         patientId: patientDetails.id,
         orderAutoId: orderDetails.orderAutoId,
+        orderId: orderDetails.id,
+        multicastId: response.multicastId,
+      };
+      logNotificationResponse(notificationType, logData);
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotificationFailed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  console.log('push notifications sent');
+  return { status: true };
+}
+
+//Notification - Dignostic order Status
+export async function sendDiagnosticOrderStatusNotification(
+  notificationType: NotificationType,
+  orderDetails: DiagnosticOrders,
+  patientsDb: Connection
+) {
+  //get all the patient device tokens
+  let patientDeviceTokens: string[] = [];
+  const patientDetails = orderDetails.patient;
+  patientDeviceTokens = await getPatientDeviceTokens(patientDetails.mobileNumber, patientsDb);
+
+  if (patientDeviceTokens.length == 0) return;
+
+  let notificationTitle: string = '';
+  let notificationBody: string = '';
+  let payloadDataType: string = '';
+
+  switch (notificationType) {
+    case NotificationType.DIAGNOSTIC_ORDER_SUCCESS:
+      payloadDataType = 'Diagnostic_Order_Success';
+      notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_TITLE;
+      notificationBody = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_BODY;
+      break;
+    case NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED:
+      payloadDataType = 'Diagnostic_Order_Payment_Failed';
+      notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE;
+      notificationBody = ApiConstants.DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY;
+      break;
+    default:
+      payloadDataType = 'Diagnostic_Order_Success';
+      notificationTitle = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_TITLE;
+      notificationBody = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_BODY;
+  }
+  //notification payload
+  const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
+  const orderNumber = orderDetails.displayId ? orderDetails.displayId.toString() : '';
+
+  notificationTitle = notificationTitle.toString();
+  notificationBody = notificationBody.replace('{0}', userName);
+
+  const payload = {
+    notification: {
+      title: notificationTitle,
+      body: notificationBody,
+    },
+    data: {
+      type: payloadDataType,
+      displayId: orderNumber,
+      orderId: orderDetails.id,
+      firstName: patientDetails.firstName,
+      content: notificationBody,
+    },
+  };
+
+  //notification options
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+
+  //initialize firebaseadmin
+  const admin = await getInitializedFirebaseAdmin();
+
+  admin
+    .messaging()
+    .sendToDevice(patientDeviceTokens, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      const logData = {
+        patientId: patientDetails.id,
+        displayId: orderNumber,
         orderId: orderDetails.id,
         multicastId: response.multicastId,
       };
