@@ -69,22 +69,25 @@ const appointmentsSummary: Resolver<
         }
         //new fields
         const JDDetails = await consultQueueRepo.findByAppointmentId(appt.id);
-        if (!JDDetails) {
-          console.log(2222);
-          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-        }
+        // if (!JDDetails) {
+        //   console.log(2222);
+        //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        // }
         console.log('JDDetails==', JDDetails);
-        const JDPhone = await doctorRepo.getDoctorProfileData(JDDetails.doctorId);
-        if (!JDPhone) {
-          console.log(333333);
-          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        let JDPhone;
+        if (JDDetails) {
+          JDPhone = await doctorRepo.getDoctorProfileData(JDDetails.doctorId);
+          // if (!JDPhone) {
+          //   console.log(333333);
+          //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+          // }
+          // console.log('JDPhone==', JDPhone.mobileNumber);
         }
-        console.log('JDPhone==', JDPhone.mobileNumber);
         const callDetails = await appointmentCallDetailsRepo.findByAppointmentId(appt.id);
-        if (!callDetails) {
-          console.log(444444);
-          throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-        }
+        // if (!callDetails) {
+        //   console.log(444444);
+        //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+        // }
         console.log('callDetails==', callDetails);
         const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(appt.id);
         console.log('rescheduleDetails==:::::', rescheduleDetails);
@@ -93,10 +96,10 @@ const appointmentsSummary: Resolver<
           addMilliseconds(appt.appointmentDateTime, 19800000),
           'yyyy-MM-dd HH:mm'
         );
-        const bookingDateTime = format(
-          addMilliseconds(appt.bookingDate, 19800000),
-          'yyyy-MM-dd HH:mm'
-        );
+        // const bookingDateTime = format(
+        //   addMilliseconds(appt.bookingDate, 19800000),
+        //   'yyyy-MM-dd HH:mm'
+        // );
         const followupCount = await apptRepo.followUpBookedCount(appt.id);
         let followUpBooked = false,
           prescriptionIssued = false,
@@ -137,7 +140,7 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          JDPhone.mobileNumber +
+          (JDPhone ? JDPhone.mobileNumber : '') +
           '\t' +
           doctorDetails.mobileNumber +
           '\t' +
@@ -157,21 +160,21 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
+          (callDetails && callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.startTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
+          (callDetails && callDetails.doctorType == 'SENIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.endTime
             : '') +
           '\t' +
           'NA' +
           '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
+          (callDetails && callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.startTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
+          (callDetails && callDetails.doctorType == 'SENIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.endTime
             : '') +
           '\t' +
@@ -181,21 +184,21 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
+          (callDetails && callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.startTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
+          (callDetails && callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'AUDIO'
             ? callDetails.endTime
             : '') +
           '\t' +
           'NA' +
           '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
+          (callDetails && callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.startTime
             : '') +
           '\t' +
-          (callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
+          (callDetails && callDetails.doctorType == 'JUNIOR' && callDetails.callType == 'VIDEO'
             ? callDetails.endTime
             : '') +
           '\t' +
@@ -207,9 +210,9 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          (callDetails.callType == 'AUDIO' ? callDetails.id : '') +
+          (callDetails && callDetails.callType == 'AUDIO' ? callDetails.id : '') +
           '\t' +
-          (callDetails.callType == 'VIDEO' ? callDetails.id : '') +
+          (callDetails && callDetails.callType == 'VIDEO' ? callDetails.id : '') +
           '\t' +
           'NA' +
           '\t' +
