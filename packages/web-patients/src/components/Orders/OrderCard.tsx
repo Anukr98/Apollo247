@@ -138,6 +138,7 @@ function valuetext(value: number) {
 
 type OrderCardProps = {
   setOrderAutoId: (orderAutoId: number) => void;
+  orderAutoId: number;
 };
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
@@ -245,7 +246,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     const orderListData = data.getMedicineOrdersList.MedicineOrdersList;
 
     const firstOrderInfo = orderListData[0];
-    if (firstOrderInfo && firstOrderInfo.orderAutoId) {
+    if (!props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
       props.setOrderAutoId(firstOrderInfo.orderAutoId);
     }
 
