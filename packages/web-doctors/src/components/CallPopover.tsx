@@ -1614,6 +1614,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const hours = timeSelected.split(':');
     const momentDate = moment(dateSelected).hours();
     unSubscribeBrowserButtonsListener();
+
     const rescheduleParam = flag
       ? {
           appointmentId: props.appointmentId,
@@ -1631,7 +1632,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
           rescheduleInitiatedId: props.doctorId,
           //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
-          rescheduledDateTime: dateSelected + 'T' + timeSelected + ':00.000Z',
+          rescheduledDateTime:
+            moment
+              .utc(dateSelected + 'T' + timeSelected + ':00.000Z')
+              .local()
+              .format('YYYY-MM-DDTHH:mm') + ':00.000Z',
           autoSelectSlot: 0,
         };
 
@@ -1652,6 +1657,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           }
           rescheduleCount = data.initiateRescheduleAppointment.rescheduleCount || 0;
         }
+
         const reschduleObject: any = {
           appointmentId: props.appointmentId,
           transferDateTime: rescheduledDateTime,
