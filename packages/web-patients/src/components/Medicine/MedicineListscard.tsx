@@ -151,7 +151,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
       <div className={classes.root}>
         {props.medicineList && props.medicineList.length > 0 ? (
           props.medicineList.map((medicine: MedicineProduct, idx: number) => (
-            <div className={classes.medicineStrip}>
+            <div key={medicine.id} className={classes.medicineStrip}>
               <div className={classes.medicineStripWrap}>
                 <Link to={clientRoutes.medicineDetails(medicine.sku)}>
                   <div className={classes.medicineInformation}>
@@ -198,8 +198,9 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                 });
                             }}
                           >
-                            {options.map((option) => (
+                            {options.map((option, index) => (
                               <MenuItem
+                                key={index}
                                 classes={{
                                   root: classes.menuRoot,
                                   selected: classes.menuSelected,

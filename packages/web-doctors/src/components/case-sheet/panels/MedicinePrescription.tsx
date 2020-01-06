@@ -1279,24 +1279,24 @@ export const MedicinePrescription: React.FC = () => {
                   {medicine.Instructions && <h6>{medicine.Instructions}</h6>}
                 </Paper>
                 {caseSheetEdit && (
-                  <>
-                    <AphButton
-                      variant="contained"
-                      color="primary"
-                      classes={{ root: classes.updateSymptom }}
-                      onClick={() => updateMedicine(index)}
-                    >
-                      <img src={require('images/round_edit_24_px.svg')} alt="" />
-                    </AphButton>
-                    <AphButton
-                      variant="contained"
-                      color="primary"
-                      classes={{ root: classes.deleteSymptom }}
-                      onClick={() => deletemedicine(index)}
-                    >
-                      <img width="16" src={require('images/ic_cancel_green.svg')} alt="" />
-                    </AphButton>
-                  </>
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.updateSymptom }}
+                    onClick={() => updateMedicine(index)}
+                  >
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                )}
+                {caseSheetEdit && (
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.deleteSymptom }}
+                    onClick={() => deletemedicine(index)}
+                  >
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
                 )}
               </div>
             );
@@ -1500,7 +1500,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </Grid>
                     <Grid item lg={6} md={6} xs={12}>
-                      <h6>for</h6>
+                      <h6>For</h6>
                       <div className={classes.numberTablets}>
                         <AphTextField
                           placeholder=""
@@ -1550,7 +1550,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </Grid>
                     <Grid item lg={6} md={6} xs={12}>
-                      <h6>To be taken</h6>
+                      <h6>&nbsp;</h6>
                       <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                       {errorState.tobeTakenErr && (
                         <FormHelperText
@@ -1563,7 +1563,7 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </Grid>
                     <Grid item lg={12} xs={12}>
-                      <h6>Time of the Day</h6>
+                      <h6>In The</h6>
                       <div className={classes.numberTablets}>{daySlotsHtml}</div>
                       {errorState.daySlotErr && (
                         <FormHelperText
@@ -1580,6 +1580,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.numberTablets}>
                         <AphTextField
                           multiline
+                          placeholder="Type here..."
                           value={medicineInstruction}
                           onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);
@@ -1809,7 +1810,7 @@ export const MedicinePrescription: React.FC = () => {
                       </Grid>
 
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>for</h6>
+                        <h6>For</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
@@ -1859,7 +1860,7 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>To be taken</h6>
+                        <h6>&nbsp;</h6>
                         <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                         {errorState.tobeTakenErr && (
                           <FormHelperText
@@ -1872,7 +1873,7 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Time of the Day</h6>
+                        <h6>In the</h6>
                         <div className={classes.numberTablets}>{daySlotsHtml}</div>
                         {errorState.daySlotErr && (
                           <FormHelperText
@@ -1885,10 +1886,10 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Instructions (if any)</h6>
+                        <h6>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
-                            placeholder="Eg. Route of Administration, Gaps in Dosage, etc."
+                            placeholder="Type here..."
                             value={medicineInstruction}
                             onChange={(event: any) => {
                               setMedicineInstruction(event.target.value);

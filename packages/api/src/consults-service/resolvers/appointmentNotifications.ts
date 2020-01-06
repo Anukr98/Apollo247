@@ -7,7 +7,7 @@ import {
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { format } from 'date-fns';
-import { CASESHEET_STATUS } from 'consults-service/entities';
+import { CASESHEET_STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 
 export const appointmentNotificationTypeDefs = gql`
   type ApptReminderResult {
@@ -18,6 +18,7 @@ export const appointmentNotificationTypeDefs = gql`
 
   extend type Query {
     sendApptReminderNotification(inNextMin: Int): ApptReminderResult!
+    sendPhysicalApptReminderNotification(inNextMin: Int): ApptReminderResult!
   }
 `;
 
@@ -34,7 +35,51 @@ const sendApptReminderNotification: Resolver<
   ApptReminderResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const apptsList = await apptRepo.getSpecificMinuteAppointments(args.inNextMin);
+  const apptsList = await apptRepo.getSpecificMinuteAppointments(
+    args.inNextMin,
+    APPOINTMENT_TYPE.ONLINE
+  );
+  console.log(apptsList);
+  if (apptsList.length > 0) {
+    apptsList.map((appt) => {
+      const pushNotificationInput = {
+        appointmentId: appt.id,
+        notificationType: NotificationType.APPOINTMENT_REMINDER_15,
+      };
+      if (
+        appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
+        appt.caseSheet[0].doctorType == 'JUNIOR'
+      ) {
+        pushNotificationInput.notificationType = NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
+      }
+      const notificationResult = sendReminderNotification(
+        pushNotificationInput,
+        patientsDb,
+        consultsDb,
+        doctorsDb
+      );
+      console.log(notificationResult, 'appt notification');
+    });
+  }
+
+  return {
+    status: true,
+    currentTime: format(new Date(), 'yyyy-MM-dd hh:mm'),
+    apptsListCount: apptsList.length,
+  };
+};
+
+const sendPhysicalApptReminderNotification: Resolver<
+  null,
+  { inNextMin: number },
+  ConsultServiceContext,
+  ApptReminderResult
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptsList = await apptRepo.getSpecificMinuteAppointments(
+    args.inNextMin,
+    APPOINTMENT_TYPE.PHYSICAL
+  );
   console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
@@ -68,5 +113,6 @@ const sendApptReminderNotification: Resolver<
 export const appointmentNotificationResolvers = {
   Query: {
     sendApptReminderNotification,
+    sendPhysicalApptReminderNotification,
   },
 };

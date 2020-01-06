@@ -83,7 +83,7 @@ export const YourOrders: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.sectionHeader}>Your Orders</div>
-        <OrderCard setOrderAutoId={setOrderAutoId} />
+        <OrderCard orderAutoId={orderAutoId} setOrderAutoId={setOrderAutoId} />
       </div>
       <div className={classes.rightSection}>
         <TrackOrders orderAutoId={orderAutoId} />

@@ -91,11 +91,11 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <ul>
-                  {addresses.map((addressDetails) => {
+                  {addresses.map((addressDetails, index) => {
                     const addressId = addressDetails.id;
                     const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
                     return (
-                      <li>
+                      <li key={index}>
                         <FormControlLabel
                           checked={deliveryAddressId === addressId}
                           className={classes.radioLabel}
