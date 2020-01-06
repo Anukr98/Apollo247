@@ -180,7 +180,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
 
-    setPastDataLoader(true);
+    // setPastDataLoader(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -245,7 +245,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const fetchData = useCallback(() => {
-    setMedicalRecordsLoader(true);
+    // setMedicalRecordsLoader(true);
     client
       .query<getPatientMedicalRecords>({
         query: GET_MEDICAL_RECORD,
@@ -267,7 +267,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   const fetchTestData = useCallback(() => {
-    setPrismdataLoader(true);
+    // setPrismdataLoader(true);
     client
       .query<getPatientPrismMedicalRecords>({
         query: GET_MEDICAL_PRISM_RECORD,
@@ -293,6 +293,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    setPastDataLoader(true);
+    setMedicalRecordsLoader(true);
+    setPrismdataLoader(true);
     fetchPastData();
     fetchData();
     fetchTestData();

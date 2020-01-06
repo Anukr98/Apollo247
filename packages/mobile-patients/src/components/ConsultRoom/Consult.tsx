@@ -231,8 +231,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      setLoading && setLoading(true);
-      setconsultations([]);
+      // setLoading && setLoading(true);
+      //setconsultations([]);
       getNetStatus().then((status) => {
         if (status) {
           fetchAppointments();
@@ -291,6 +291,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log('No current patients available');
       getPatientApiCall();
     }
+    setLoading && setLoading(true);
     fetchAppointments();
   }, [currentPatient]);
 
@@ -312,7 +313,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     fetchData();
     getNetStatus().then((status) => {
       if (status) {
-        fetchAppointments();
+        //fetchAppointments();
       } else {
         setLoading && setLoading(false);
         setshowOfflinePopup(true);
@@ -328,7 +329,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   // console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
-    setLoading && setLoading(true);
+    // setLoading && setLoading(true);
     console.log('inputdata', inputData);
     client
       .query<getPatinetAppointments>({

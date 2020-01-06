@@ -356,6 +356,8 @@ const getlocationData = (
           const addrComponents =
             g(response, 'data', 'results', '0' as any, 'address_components') || [];
           if (addrComponents.length == 0) {
+            console.log('er78h98r');
+
             reject('Unable to get location.');
           } else {
             const area = [
@@ -381,14 +383,18 @@ const getlocationData = (
             });
           }
         })
-        .catch(() => {
+        .catch((_) => {
+          console.log('erryug', _);
+
           reject('Unable to get location.');
         });
     },
     (error) => {
+      console.log('err5', error);
+
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: false, timeout: 2000 }
+    { enableHighAccuracy: false, timeout: 5000 }
   );
 };
 
