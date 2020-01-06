@@ -16,6 +16,7 @@ import { SAVE_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles
 import {
   DiagnosticLineItem,
   DiagnosticOrderInput,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveDiagnosticOrder,
@@ -238,6 +239,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
       ].join(','),
+      paymentType: isCashOnDelivery
+        ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+        : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
       // prismPrescriptionFileId: [
       //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
       //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
