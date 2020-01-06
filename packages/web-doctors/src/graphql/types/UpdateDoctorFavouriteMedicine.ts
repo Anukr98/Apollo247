@@ -10,7 +10,7 @@ import { UpdateDoctorsFavouriteMedicineInput } from "./globalTypes";
 
 export interface UpdateDoctorFavouriteMedicine_updateDoctorFavouriteMedicine_medicineList {
   __typename: "DoctorFavouriteMedicine";
-  id: string;
+  id: string | null;
 }
 
 export interface UpdateDoctorFavouriteMedicine_updateDoctorFavouriteMedicine {

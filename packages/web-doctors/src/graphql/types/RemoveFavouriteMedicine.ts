@@ -8,7 +8,7 @@
 
 export interface RemoveFavouriteMedicine_removeFavouriteMedicine_medicineList {
   __typename: "DoctorFavouriteMedicine";
-  id: string;
+  id: string | null;
 }
 
 export interface RemoveFavouriteMedicine_removeFavouriteMedicine {
