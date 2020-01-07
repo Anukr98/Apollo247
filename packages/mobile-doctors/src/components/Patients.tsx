@@ -431,7 +431,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                             : {},
                         ]}
                       >
-                        {obj.key}
+                        {obj.title}
                       </Text>
                     </TouchableOpacity>
                   ))}

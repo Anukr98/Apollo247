@@ -58,7 +58,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
           style={[
             styles.verticalLine,
             {
-              backgroundColor: showTop ? '#0087ba' : '#f7f7f7',
+              backgroundColor: showTop ? theme.colors.SHARP_BLUE : '#f7f7f7',
             },
           ]}
         />
@@ -67,7 +67,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
           style={[
             styles.verticalLine,
             {
-              backgroundColor: showBottom ? '#0087ba' : '#f7f7f7',
+              backgroundColor: showBottom ? theme.colors.SHARP_BLUE : '#f7f7f7',
             },
           ]}
         />
@@ -134,7 +134,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                   style={{
                     flexDirection: 'row',
                     borderRadius: 10,
-                    backgroundColor: theme.colors.APP_GREEN,
+                    backgroundColor: theme.colors.WHITE,
                     height: 50,
                     alignItems: 'center',
                     paddingRight: 10,
@@ -153,7 +153,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                 >
                   <Text
                     style={{
-                      ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 12),
+                      ...theme.viewStyles.text('M', 12, theme.colors.darkBlueColor(0.6), 1, 12),
                     }}
                   >
                     {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}

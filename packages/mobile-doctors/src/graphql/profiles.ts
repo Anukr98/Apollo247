@@ -137,6 +137,9 @@ export const GET_PATIENT_LOG = gql`
           gender
           uhid
           photoUrl
+          addressList {
+            city
+          }
         }
       }
       totalResultCount

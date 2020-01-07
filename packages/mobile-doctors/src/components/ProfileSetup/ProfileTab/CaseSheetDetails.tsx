@@ -31,18 +31,13 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
 
   const consultDetails = props.navigation.getParam('consultDetails');
   const patientDetails = props.navigation.getParam('patientDetails');
+  const { patientMedicalHistory } = patientDetails;
 
   const caseSheet = consultDetails.caseSheet.filter(
     (item: any) => item.doctorType !== DoctorType.JUNIOR
   );
 
   const renderHeader = () => {
-    console.log(
-      props.navigation.getParam('consultDetails'),
-      props.navigation.getParam('patientDetails'),
-      'patientDetails'
-    );
-
     return (
       <Header
         headerText="CONSULT ROOM"
@@ -59,12 +54,10 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   };
 
   const renderChiefComplaints = () => {
-    console.log(showCF, 'showCF');
     // const data = consultDetails.caseSheet.filter(
     //   (item: any) => item.doctorType !== DoctorType.JUNIOR
     // );
     const symptoms = caseSheet.length ? caseSheet[0].symptoms : null;
-    console.log(caseSheet, 'data', symptoms, 'symptoms');
     if (symptoms)
       return (
         <CollapseCard
@@ -88,37 +81,39 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   };
 
   const renderVitals = () => {
-    const data = [
-      {
-        label: 'Height',
-        desc: '160 cms',
-      },
-      {
-        label: 'Weight',
-        desc: '67 Kgs',
-      },
-      {
-        label: 'BP',
-        desc: '120/80 mm Hg',
-      },
-      {
-        label: 'Temperature',
-        desc: '-',
-      },
-    ];
+    if (patientMedicalHistory) {
+      const data = [
+        {
+          label: 'Height',
+          desc: patientMedicalHistory.height,
+        },
+        {
+          label: 'Weight',
+          desc: patientMedicalHistory.weight,
+        },
+        {
+          label: 'BP',
+          desc: patientMedicalHistory.bp,
+        },
+        {
+          label: 'Temperature',
+          desc: patientMedicalHistory.temperature,
+        },
+      ];
 
-    return (
-      <CollapseCard
-        heading="Vitals"
-        collapse={showVital}
-        onPress={() => setshowVital(!showVital)}
-        containerStyle={{ marginVertical: 10 }}
-      >
-        <View style={{ marginHorizontal: 16 }}>
-          {data.map(({ label, desc }) => renderLabelDesc(label, desc))}
-        </View>
-      </CollapseCard>
-    );
+      return (
+        <CollapseCard
+          heading="Vitals"
+          collapse={showVital}
+          onPress={() => setshowVital(!showVital)}
+          containerStyle={{ marginVertical: 10 }}
+        >
+          <View style={{ marginHorizontal: 16 }}>
+            {data.map(({ label, desc }) => renderLabelDesc(label, desc ? desc : '-'))}
+          </View>
+        </CollapseCard>
+      );
+    }
   };
 
   const renderLabelDesc = (label?: string, description?: string) => (
@@ -143,27 +138,34 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
     const data = [
       {
         label: 'Medication History',
-        desc: 'She has been on BP medication for the past 1 year',
+        desc: patientMedicalHistory ? patientMedicalHistory.pastMedicalHistory : '-',
       },
       {
         label: 'Drug Allergies',
-        desc: 'None',
+        desc: patientMedicalHistory ? patientMedicalHistory.drugAllergies : '-',
       },
       {
         label: 'Diet Allergies/Restrictions',
-        desc: 'Dairy. Dust',
+        desc: patientMedicalHistory ? patientMedicalHistory.dietAllergies : '-',
       },
       {
         label: 'Lifestyle and Habits',
-        desc: 'Patient doesn’t smoke, She recovered from chickenpox 6 months ago',
+        desc:
+          patientDetails && patientDetails.lifeStyle && patientDetails.lifeStyle.description
+            ? patientDetails.lifeStyle.description
+            : '-',
       },
       {
         label: 'Menstrual History',
-        desc: 'Regular cycles;  Last period was on 16th Sep',
+        desc: patientMedicalHistory ? patientMedicalHistory.menstrualHistory : '-',
       },
       {
         label: 'Family Medical History',
-        desc: 'Father: Cardiac patient\nMother: Severely diabetic',
+        desc:
+          patientDetails.familyHistory &&
+          patientDetails.familyHistory
+            .map((item) => `${item.relation}: ${item.description}`)
+            .join('\n'), //'Father: Cardiac patient\nMother: Severely diabetic',
       },
     ];
     return (

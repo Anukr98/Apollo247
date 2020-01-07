@@ -428,7 +428,11 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 marginLeft: 20,
               }}
             >
-              {todayYear - dateOfBirth}, {PatientInfo.gender.charAt(0)},
+              {todayYear - dateOfBirth}
+              {PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
+              {PatientInfo.addressList && PatientInfo.addressList.length > 0
+                ? `, ${PatientInfo.addressList[0].city}`
+                : ''}
             </Text>
 
             {/* <View
