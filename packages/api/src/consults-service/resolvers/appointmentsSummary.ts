@@ -15,6 +15,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { STATUS } from 'consults-service/entities';
 import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/resolvers/notifications';
+import _isEmpty from 'lodash/isEmpty';
 
 export const appointmentsSummaryTypeDefs = gql`
   type summaryResult {
@@ -84,12 +85,12 @@ const appointmentsSummary: Resolver<
           // }
           // console.log('JDPhone==', JDPhone.mobileNumber);
         }
-        const callDetails = await appointmentCallDetailsRepo.findByAppointmentId(appt.id);
+        const callDetails = await appointmentCallDetailsRepo.findAllByAppointmentId(appt.id);
         // if (!callDetails) {
         //   console.log(444444);
         //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         // }
-        console.log('callDetails==', callDetails);
+        console.log('callDetails==', callDetails, _isEmpty(callDetails));
         const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(appt.id);
         console.log('rescheduleDetails==:::::', rescheduleDetails);
         //end
@@ -119,12 +120,15 @@ const appointmentsSummary: Resolver<
         // console.log('appointment details==', appt);
         // console.log('appointment id==', appt.id);
         const callDetailsStartTime =
-          callDetails && callDetails.startTime
-            ? format(addMilliseconds(callDetails.startTime, 19800000), 'yyyy-MM-dd HH:mm')
+          !_isEmpty(callDetails) && callDetails[0].startTime
+            ? format(addMilliseconds(callDetails[0].startTime, 19800000), 'yyyy-MM-dd HH:mm')
             : '';
         const callDetailsEndTime =
-          callDetails && callDetails.endTime
-            ? format(addMilliseconds(callDetails.endTime, 19800000), 'yyyy-MM-dd HH:mm')
+          !_isEmpty(callDetails) && callDetails[callDetails.length - 1].endTime
+            ? format(
+                addMilliseconds(callDetails[callDetails.length - 1].endTime, 19800000),
+                'yyyy-MM-dd HH:mm'
+              )
             : '';
         const numberOfCallsBySD = await appointmentCallDetailsRepo.findSeniorAppointments(appt.id);
         const numberOfCallsByJD = await appointmentCallDetailsRepo.findJuniorAppointments(appt.id);
@@ -154,8 +158,6 @@ const appointmentsSummary: Resolver<
         }
         row1 +=
           serialNo +
-          '\t' +
-          'NA' +
           '\t' +
           appt.id +
           '\t' +
@@ -191,73 +193,73 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR
+          (!_isEmpty(callDetails) && callDetails[0].doctorType == DOCTOR_CALL_TYPE.SENIOR
             ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR
+          (!_isEmpty(callDetails) && callDetails[0].doctorType == DOCTOR_CALL_TYPE.SENIOR
             ? callDetailsEndTime
             : '') +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
-          callDetails.callType == APPT_CALL_TYPE.AUDIO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.AUDIO
             ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
-          callDetails.callType == APPT_CALL_TYPE.AUDIO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.AUDIO
             ? callDetailsEndTime
             : '') +
           '\t' +
           numberOfAudioCallsBySD.length +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
-          callDetails.callType == APPT_CALL_TYPE.VIDEO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.VIDEO
             ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.SENIOR &&
-          callDetails.callType == APPT_CALL_TYPE.VIDEO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.SENIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.VIDEO
             ? callDetailsEndTime
             : '') +
           '\t' +
           numberOfVideoCallsBySD.length +
           '\t' +
-          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR
+          (!_isEmpty(callDetails) && callDetails[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR
             ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails && callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR
+          (!_isEmpty(callDetails) && callDetails[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR
             ? callDetailsEndTime
             : '') +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
-          callDetails.callType == APPT_CALL_TYPE.AUDIO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.AUDIO
             ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
-          callDetails.callType == APPT_CALL_TYPE.AUDIO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.AUDIO
             ? callDetailsEndTime
             : '') +
           '\t' +
           numberOfAudioCallsByJD.length +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
-          callDetails.callType == APPT_CALL_TYPE.VIDEO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.VIDEO
             ? callDetailsStartTime
             : '') +
           '\t' +
-          (callDetails &&
-          callDetails.doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
-          callDetails.callType == APPT_CALL_TYPE.VIDEO
+          (!_isEmpty(callDetails) &&
+          callDetails[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR &&
+          callDetails[0].callType == APPT_CALL_TYPE.VIDEO
             ? callDetailsEndTime
             : '') +
           '\t' +
@@ -269,9 +271,13 @@ const appointmentsSummary: Resolver<
           '\t' +
           'NA' +
           '\t' +
-          (callDetails && callDetails.callType == APPT_CALL_TYPE.AUDIO ? callDetails.id : '') +
+          (!_isEmpty(callDetails) && callDetails[0].callType == APPT_CALL_TYPE.AUDIO
+            ? callDetails[0].id
+            : '') +
           '\t' +
-          (callDetails && callDetails.callType == APPT_CALL_TYPE.VIDEO ? callDetails.id : '') +
+          (!_isEmpty(callDetails) && callDetails[0].callType == APPT_CALL_TYPE.VIDEO
+            ? callDetails[0].id
+            : '') +
           '\t' +
           caseSheetId +
           '\t' +
@@ -297,8 +303,6 @@ const appointmentsSummary: Resolver<
     const writeStream = fs.createWriteStream(assetsDir + '/' + fileName);
     const header =
       'Sl No' +
-      '\t' +
-      'Date' +
       '\t' +
       'Consult id' +
       '\t' +
