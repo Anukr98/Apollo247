@@ -124,9 +124,9 @@ export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [priceFilter, setPriceFilter] = useState();
   const [filterData, setFilterData] = useState();
-  const [catageryFilterData, setCatageryFilterData] = useState<MedicineProduct[] | null>([]);
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const getTitle = () => {
     return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
@@ -145,11 +145,34 @@ export const SearchByMedicine: React.FC = (props) => {
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
 
+  const onSearchMedicine = async () => {
+    setIsLoading(true);
+    await axios
+      .post(
+        apiDetailsText.url,
+        {
+          params: paramSearchText,
+        },
+        {
+          headers: {
+            Authorization: apiDetailsText.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        setMedicineList(data.products);
+        setMedicineListFiltered(data.products);
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        console.log(e);
+        setIsLoading(false);
+      });
+  };
+
   useEffect(() => {
-    if (
-      !medicineListFiltered ||
-      (medicineListFiltered && medicineListFiltered.length < 1 && Number(paramSearchText) > 0)
-    ) {
+    if (!medicineList && Number(paramSearchText) > 0) {
+      setIsLoading(true);
       axios
         .post(
           apiDetails.url,
@@ -167,106 +190,94 @@ export const SearchByMedicine: React.FC = (props) => {
         .then((res) => {
           if (res && res.data && res.data.products) {
             setMedicineList(res.data.products);
-            setMedicineListFiltered(res.data.products);
+            setIsLoading(false);
           }
         })
-        .catch((e) => {});
-    } else if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
+        .catch((e) => {
+          setIsLoading(false);
+        });
+    } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
+    } else {
+      setMedicineListFiltered(medicineList);
     }
-  }, [medicineListFiltered]);
-  const onSearchMedicine = async () => {
-    await axios
-      .post(
-        apiDetailsText.url,
-        {
-          params: paramSearchText,
-        },
-        {
-          headers: {
-            Authorization: apiDetailsText.authToken,
-          },
-        }
-      )
-      .then(({ data }) => {
-        setMedicineList(data.products);
-        setMedicineListFiltered(data.products);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  };
+  }, [medicineList]);
 
   useEffect(() => {
-    if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
+    let priceFilterArray: MedicineProduct[] = [];
+    if (
+      priceFilter &&
+      !priceFilter.fromPrice &&
+      !priceFilter.toPrice &&
+      filterData &&
+      filterData[0] === ''
+    ) {
+      setMedicineListFiltered(medicineList);
+      return;
+    } else if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
       if (priceFilter.fromPrice && priceFilter.toPrice) {
-        let filterArray: MedicineProduct[] = [];
-        medicineListFiltered &&
-          medicineListFiltered.map((value) => {
+        medicineList &&
+          medicineList.map((value) => {
             if (Number(priceFilter.fromPrice) <= value.price) {
               if (value.price <= Number(priceFilter.toPrice)) {
-                filterArray.push(value);
+                priceFilterArray.push(value);
               }
             }
           });
-        setMedicineList(filterArray);
-        setCatageryFilterData(filterArray);
       } else if (priceFilter.fromPrice) {
-        let filterArray: MedicineProduct[] = [];
-        medicineListFiltered &&
-          medicineListFiltered.map((value) => {
+        medicineList &&
+          medicineList.map((value) => {
             if (Number(priceFilter.fromPrice) <= value.price) {
-              filterArray.push(value);
+              priceFilterArray.push(value);
             }
           });
-        setMedicineList(filterArray);
-        setCatageryFilterData(filterArray);
       } else if (priceFilter.toPrice) {
-        let filterArray: MedicineProduct[] = [];
-        medicineListFiltered &&
-          medicineListFiltered.map((value) => {
+        medicineList &&
+          medicineList.map((value) => {
             if (value.price <= Number(priceFilter.toPrice)) {
-              filterArray.push(value);
+              priceFilterArray.push(value);
             }
           });
-        setMedicineList(filterArray);
-        setCatageryFilterData(filterArray);
       }
-      if (filterData && filterData.length > 0) {
-        if (filterData[0] !== '') {
-          let filterArray: MedicineProduct[] = [];
-          if (catageryFilterData && catageryFilterData.length > 0) {
-            filterData &&
-              filterData.map((filter: string) => {
-                catageryFilterData &&
-                  catageryFilterData.map((value) => {
-                    if (value.category_id === filter) {
-                      filterArray.push(value);
-                    }
-                  });
-              });
-            setMedicineList(filterArray);
-          }
-        }
-      }
-    } else if (filterData && filterData.length > 0) {
+    }
+    if (filterData && filterData.length > 0) {
       if (filterData[0] !== '') {
-        let filterArray: MedicineProduct[] = [];
+        const categoryFilterArray: MedicineProduct[] = [];
+        const filteredArray = priceFilterArray.length > 0 ? priceFilterArray : medicineList;
         filterData &&
           filterData.map((filter: string) => {
-            medicineListFiltered &&
-              medicineListFiltered.map((value) => {
+            filteredArray &&
+              filteredArray.map((value) => {
                 if (value.category_id === filter) {
-                  filterArray.push(value);
+                  categoryFilterArray.push(value);
                 }
               });
           });
-        setMedicineList(filterArray);
-      } else {
-        setMedicineListFiltered([]);
+        priceFilterArray = categoryFilterArray;
       }
-    } else {
-      setMedicineListFiltered([]);
+    }
+    setMedicineListFiltered(priceFilterArray);
+  }, [priceFilter, filterData]);
+
+  useEffect(() => {
+    if (
+      priceFilter &&
+      !priceFilter.fromPrice &&
+      !priceFilter.toPrice &&
+      filterData &&
+      filterData[0] !== ''
+    ) {
+      let filterArray: MedicineProduct[] = [];
+      filterData &&
+        filterData.map((filter: string) => {
+          medicineList &&
+            medicineList.map((value) => {
+              if (value.category_id === filter) {
+                filterArray.push(value);
+              }
+            });
+        });
+      setMedicineListFiltered(filterArray);
     }
   }, [priceFilter, filterData]);
 
@@ -286,7 +297,7 @@ export const SearchByMedicine: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            {getTitle()}({medicineList && medicineList.length})
+            {getTitle()}({medicineListFiltered && medicineListFiltered.length})
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter
@@ -300,9 +311,12 @@ export const SearchByMedicine: React.FC = (props) => {
                   <MedicinesCartContext.Consumer>
                     {() =>
                       params.searchMedicineType === 'search-by-brand' ? (
-                        <MedicineCard medicineList={medicineList} />
+                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
                       ) : (
-                        <MedicineListscard medicineList={medicineList} />
+                        <MedicineListscard
+                          medicineList={medicineListFiltered}
+                          isLoading={isLoading}
+                        />
                       )
                     }
                   </MedicinesCartContext.Consumer>

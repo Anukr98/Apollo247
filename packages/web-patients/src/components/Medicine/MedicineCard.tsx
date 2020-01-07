@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Grid } from '@material-ui/core';
+import { Theme, Grid, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -73,6 +73,7 @@ export interface products {
 }
 type MedicineInformationProps = {
   medicineList: MedicineProduct[] | null;
+  isLoading?: boolean;
 };
 export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
@@ -85,8 +86,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
 
   return (
     <Grid container spacing={2}>
-      {props.medicineList &&
-        props.medicineList.length > 0 &&
+      {props.medicineList && props.medicineList.length > 0 ? (
         props.medicineList.map((product: MedicineProduct) => (
           <Grid key={product.id} item xs={6} sm={6} md={4} lg={4}>
             <div className={classes.root}>
@@ -138,7 +138,12 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
               )}
             </div>
           </Grid>
-        ))}
+        ))
+      ) : props.isLoading ? (
+        <CircularProgress />
+      ) : (
+        'No Data Found'
+      )}
     </Grid>
   );
 };
