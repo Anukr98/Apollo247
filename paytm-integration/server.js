@@ -87,7 +87,11 @@ app.get('/getCmToken', (req, res) => {
         '&name=' +
         req.query.userName +
         '&gender=' +
-        req.query.gender
+        req.query.gender +
+        '&emailId=' +
+        req.query.emailId +
+        '&phoneNumber=' +
+        req.query.phoneNumber
     )
     .then((response) => {
       console.log('respose', response);
