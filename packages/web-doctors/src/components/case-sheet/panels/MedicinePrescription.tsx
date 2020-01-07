@@ -669,7 +669,7 @@ export const MedicinePrescription: React.FC = () => {
     'OINTMENT',
     'OTHERS',
   ];
-  const dosageFrequency = [
+  let dosageFrequency = [
     {
       id: 'ONCE_A_DAY',
       value: 'Once a day',
@@ -701,7 +701,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ];
-  const forOptions = [
+  let forOptions = [
     {
       id: 'DAYS',
       value: 'Day(s)',
@@ -784,6 +784,7 @@ export const MedicinePrescription: React.FC = () => {
         setTabletsCount(1);
         setLoading(false);
         setConsumptionDuration('');
+        resetFrequencyFor();
       })
       .catch((error) => {
         if (error.toString().includes('404')) {
@@ -791,6 +792,18 @@ export const MedicinePrescription: React.FC = () => {
           setLoading(false);
         }
       });
+  };
+  const resetFrequencyFor = () => {
+    setFrequency(dosageFrequency[0].id);
+    setforUnit(forOptions[0].id);
+    dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
+      dosageObj.selected = false;
+      return dosageObj;
+    });
+    forOptions = forOptions.map((forObj: SlotsObject) => {
+      forObj.selected = false;
+      return forObj;
+    });
   };
   const toBeTaken = (value: any) => {
     const tobeTakenObjectList: any = [];
@@ -1156,6 +1169,7 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const handleClearRequested = () => {
+    resetFrequencyFor();
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       slot.selected = false;
       return slot;
@@ -1232,8 +1246,7 @@ export const MedicinePrescription: React.FC = () => {
   });
 
   const resetOptions = () => {
-    setFrequency(dosageFrequency[0].id);
-    setforUnit(forOptions[0].id);
+    resetFrequencyFor();
     setMedicineForm('OTHERS');
     const dayslots = daySlots.map((slot: SlotsObject) => {
       slot.selected = false;
@@ -1271,18 +1284,25 @@ export const MedicinePrescription: React.FC = () => {
                     .toLowerCase()
                 : '';
             const unitHtmls = medicine.medicineUnit.toLowerCase();
-            const timesString =
+            const isInDuration =
+              medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
+                ? ''
+                : 'in the ';
+            let timesString =
               medicine.medicineTimings.length > 0
-                ? 'in the ' +
+                ? isInDuration +
                   medicine.medicineTimings
                     .join(' , ')
                     .toLowerCase()
                     .replace('_', ' ')
                 : '';
+            if (timesString && timesString !== '') {
+              timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+            }
+            console.log(timesString);
             const dosageCount = medicine.medicineDosage;
             const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
             const unitHtml = `${unitHtmls}`;
-            //console.log(dosageCount, medicine.medicineFormTypes);
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
@@ -1306,7 +1326,7 @@ export const MedicinePrescription: React.FC = () => {
                     }
                     `}
                   </h6>
-                  {medicine.Instructions && <h6>{medicine.Instructions}</h6>}
+                  {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
                 </Paper>
                 {caseSheetEdit && (
                   <AphButton
@@ -1362,9 +1382,14 @@ export const MedicinePrescription: React.FC = () => {
                         .toLowerCase()
                     : '';
                 const favUnitHtmls = favMedicine.medicineUnit.toLowerCase();
+                const isInDuration =
+                  favMedicine.medicineTimings.length === 1 &&
+                  favMedicine.medicineTimings[0] === 'AS_NEEDED'
+                    ? ''
+                    : 'in the ';
                 const favTimesString =
                   favMedicine.medicineTimings.length > 0
-                    ? 'in the ' +
+                    ? isInDuration +
                       favMedicine.medicineTimings
                         .join(' , ')
                         .toLowerCase()

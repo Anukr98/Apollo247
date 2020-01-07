@@ -83,6 +83,8 @@ const useStyles = makeStyles((theme: Theme) =>
         margin: 0,
         marginLeft: 12,
         maxWidth: 20,
+        width: '100%',
+        height: 20,
       },
     },
     autoSuggestBox: {
@@ -159,7 +161,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const OtherInstructions: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
     CaseSheetContextJrd
   );

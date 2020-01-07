@@ -178,6 +178,7 @@ const useStyles = makeStyles((theme: Theme) => {
     showTimeSlot: {
       display: 'inline-block',
       paddingTop: 0,
+      margin:'0 0 70px 0',
     },
     circlularProgress: {
       display: 'flex',

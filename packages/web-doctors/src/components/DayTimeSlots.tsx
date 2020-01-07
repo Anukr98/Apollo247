@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
         margin: '5px 4px',
         textTransform: 'none',
-        padding: '9px 13px',
+        padding: '10px',
       },
     },
     noSlotsAvailable: {

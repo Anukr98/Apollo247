@@ -368,14 +368,24 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 .toLowerCase()
             : '';
         const unitHtmls = prescription!.medicineUnit!.toLowerCase();
-        const timesString =
+        const isInDuration =
+          prescription &&
+          prescription!.medicineTimings &&
+          prescription!.medicineTimings!.length === 1 &&
+          prescription!.medicineTimings[0] === 'AS_NEEDED'
+            ? ''
+            : 'in the ';
+        let timesString =
           prescription!.medicineTimings!.length > 0
-            ? 'in the ' +
+            ? isInDuration +
               prescription!
                 .medicineTimings!.join(' , ')
                 .toLowerCase()
                 .replace('_', ' ')
             : '';
+        if (timesString && timesString !== '') {
+          timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+        }
         const dosageCount = prescription!.medicineDosage;
         const takeApplyHtml = prescription!.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
         const unitHtml = `${unitHtmls}`;
