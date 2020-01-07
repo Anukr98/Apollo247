@@ -226,6 +226,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         OTPEnteredSuccess: '',
         plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
         mobileNumberFailed: '',
+        OTPFailedReason: '',
       })
       .then((data: any) => {
         //success callback

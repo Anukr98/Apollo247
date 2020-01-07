@@ -201,6 +201,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
         bounces={false}
         useWebKit={true}
         source={{ uri: url }}
+        domStorageEnabled={true}
         onNavigationStateChange={onWebViewStateChange}
       />
     );

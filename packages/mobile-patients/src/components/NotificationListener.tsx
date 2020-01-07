@@ -85,13 +85,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   });
 
   const showMedOrderStatusAlert = (
-    data: {
-      content: string;
-      orderAutoId: string;
-      orderId: string;
-      firstName: string;
-      statusDate: string;
-    },
+    data:
+      | {
+          content: string;
+          orderAutoId: string;
+          orderId: string;
+          firstName: string;
+          statusDate: string;
+        }
+      | any,
     type?: CustomNotificationType
   ) => {
     aphConsole.log(`CustomNotificationType:: ${type}`);
@@ -119,13 +121,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   };
 
   const showTestOrderStatusAlert = (
-    data: {
-      content: string;
-      orderId: string;
-      displayId: string;
-      firstName: string;
-      statusDate: string;
-    },
+    data:
+      | {
+          content: string;
+          orderId: string;
+          displayId: string;
+          firstName: string;
+          statusDate: string;
+        }
+      | any,
     type?: CustomNotificationType
   ) => {
     aphConsole.log(`CustomNotificationType:: ${type}`);
@@ -153,7 +157,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   };
 
   const showChatRoomAlert = (
-    data: { content: string; appointmentId: string },
+    data: { content: string; appointmentId: string } | any,
     notificationType: CustomNotificationType
   ) => {
     const description = data.content;
