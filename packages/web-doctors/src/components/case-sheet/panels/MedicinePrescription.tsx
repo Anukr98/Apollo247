@@ -784,16 +784,7 @@ export const MedicinePrescription: React.FC = () => {
         setTabletsCount(1);
         setLoading(false);
         setConsumptionDuration('');
-        setFrequency(dosageFrequency[0].id);
-        setforUnit(forOptions[0].id);
-        dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
-          dosageObj.selected = false;
-          return dosageObj;
-        });
-        forOptions = forOptions.map((forObj: SlotsObject) => {
-          forObj.selected = false;
-          return forObj;
-        });
+        resetFrequencyFor();
       })
       .catch((error) => {
         if (error.toString().includes('404')) {
@@ -802,7 +793,18 @@ export const MedicinePrescription: React.FC = () => {
         }
       });
   };
-  const resetFrequencyFor = () => {};
+  const resetFrequencyFor = () => {
+    setFrequency(dosageFrequency[0].id);
+    setforUnit(forOptions[0].id);
+    dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
+      dosageObj.selected = false;
+      return dosageObj;
+    });
+    forOptions = forOptions.map((forObj: SlotsObject) => {
+      forObj.selected = false;
+      return forObj;
+    });
+  };
   const toBeTaken = (value: any) => {
     const tobeTakenObjectList: any = [];
     value.map((slot: any) => {
@@ -1167,14 +1169,7 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const handleClearRequested = () => {
-    dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
-      dosageObj.selected = false;
-      return dosageObj;
-    });
-    forOptions = forOptions.map((forObj: SlotsObject) => {
-      forObj.selected = false;
-      return forObj;
-    });
+    resetFrequencyFor();
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       slot.selected = false;
       return slot;
@@ -1193,8 +1188,6 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineUnit('OTHERS');
     setSelectedValue('');
     setSelectedId('');
-    setFrequency(dosageFrequency[0].id);
-    setforUnit(forOptions[0].id);
   };
   const generateMedicineTypes =
     medicineForm === 'OTHERS'
@@ -1253,8 +1246,7 @@ export const MedicinePrescription: React.FC = () => {
   });
 
   const resetOptions = () => {
-    setFrequency(dosageFrequency[0].id);
-    setforUnit(forOptions[0].id);
+    resetFrequencyFor();
     setMedicineForm('OTHERS');
     const dayslots = daySlots.map((slot: SlotsObject) => {
       slot.selected = false;
@@ -1266,14 +1258,6 @@ export const MedicinePrescription: React.FC = () => {
       return slot;
     });
     setToBeTakenSlots(slots);
-    dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
-      dosageObj.selected = false;
-      return dosageObj;
-    });
-    forOptions = forOptions.map((forObj: SlotsObject) => {
-      forObj.selected = false;
-      return forObj;
-    });
   };
   const horizontal = medicineForm ? 'right' : 'left';
 
@@ -1304,7 +1288,7 @@ export const MedicinePrescription: React.FC = () => {
               medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
                 ? ''
                 : 'in the ';
-            const timesString =
+            let timesString =
               medicine.medicineTimings.length > 0
                 ? isInDuration +
                   medicine.medicineTimings
@@ -1312,10 +1296,13 @@ export const MedicinePrescription: React.FC = () => {
                     .toLowerCase()
                     .replace('_', ' ')
                 : '';
+            if (timesString && timesString !== '') {
+              timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+            }
+            console.log(timesString);
             const dosageCount = medicine.medicineDosage;
             const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
             const unitHtml = `${unitHtmls}`;
-            //console.log(dosageCount, medicine.medicineFormTypes);
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
@@ -1339,7 +1326,7 @@ export const MedicinePrescription: React.FC = () => {
                     }
                     `}
                   </h6>
-                  {medicine.Instructions && <h6>{medicine.Instructions}</h6>}
+                  {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
                 </Paper>
                 {caseSheetEdit && (
                   <AphButton
