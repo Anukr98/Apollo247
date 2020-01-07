@@ -1653,10 +1653,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           rescheduleInitiatedId: props.doctorId,
           //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
           rescheduledDateTime:
-            moment
-              .utc(dateSelected + 'T' + timeSelected + ':00.000Z')
-              .local()
-              .format('YYYY-MM-DDTHH:mm') + ':00.000Z',
+            moment(
+              new Date(
+                new Date(new Date(dateSelected + 'T' + timeSelected + ':00')).getTime() +
+                  new Date(
+                    new Date(dateSelected + 'T' + timeSelected + ':00')
+                  ).getTimezoneOffset() *
+                    60000
+              )
+            ).format('YYYY-MM-DDTHH:mm') + ':00.000Z',
           autoSelectSlot: 0,
         };
 
@@ -1664,6 +1669,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       variables: {
         RescheduleAppointmentInput: rescheduleParam,
       },
+      fetchPolicy: 'no-cache',
     })
       .then(({ data }: any) => {
         let rescheduledDateTime = '';
