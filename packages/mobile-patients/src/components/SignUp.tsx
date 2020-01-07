@@ -42,6 +42,8 @@ import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { height } = Dimensions.get('window');
 
@@ -122,6 +124,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [backPressCount, setbackPressCount] = useState<number>(0);
 
   const { signOut, getPatientApiCall } = useAuth();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -374,24 +377,33 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('gotIt', 'false'),
                       CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       setTimeout(() => {
-                        props.navigation.dispatch(
-                          StackActions.reset({
-                            index: 0,
-                            key: null,
-                            actions: [
-                              NavigationActions.navigate({
-                                routeName: AppRoutes.ConsultRoom,
-                              }),
-                            ],
-                          })
-                        );
+                        showAphAlert!({
+                          title: `Hi ${g(currentPatient, 'firstName') || ''},`,
+                          description:
+                            'Welcome to Apollo24X7. We’re glad you’re here!\nConsult online with our top Apollo doctors now!',
+                          unDismissable: true,
+                          onPressOk: () => {
+                            hideAphAlert!();
+                            props.navigation.dispatch(
+                              StackActions.reset({
+                                index: 0,
+                                key: null,
+                                actions: [
+                                  NavigationActions.navigate({
+                                    routeName: AppRoutes.ConsultRoom,
+                                  }),
+                                ],
+                              })
+                            );
+                          },
+                        });
                       }, 500))
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                   {error
                     ? (setVerifyingPhoneNumber(false),
                       signOut(),
-                      Alert.alert('Apollo', error.message),
+                      handleGraphQlError(error),
                       console.log('updatePatient error', error),
                       AsyncStorage.setItem('userLoggedIn', 'false'),
                       AsyncStorage.setItem('multiSignUp', 'false'),

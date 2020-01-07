@@ -851,14 +851,18 @@ export const GET_CASESHEET_DETAILS = gql`
         doctorType
         id
         medicinePrescription {
-          medicineConsumptionDurationInDays
+          id
+          medicineName
           medicineDosage
+          medicineToBeTaken
           medicineInstructions
           medicineTimings
-          medicineToBeTaken
-          medicineName
-          id
           medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
         }
         notes
         otherInstructions {

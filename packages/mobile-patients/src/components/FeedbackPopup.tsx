@@ -18,7 +18,12 @@ import {
   addPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/addPatientFeedback';
 import { FEEDBACKTYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { aphConsole, g, isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  g,
+  isIphone5s,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   ConsultFeedBackData,
@@ -114,7 +119,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
       })
       .catch((e) => {
         aphConsole.log({ e });
-        Alert.alert('Uh oh.. :(', 'Something went wrong, please try later.');
+        handleGraphQlError(e);
       })
       .finally(() => {
         setLoading!(false);

@@ -1,4 +1,9 @@
 import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOrderSummaryView';
+import {
+  SlotInfo,
+  TestScheduleOverlay,
+  TestScheduleType,
+} from '@aph/mobile-patients/src/components/Tests/TestScheduleOverlay';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -13,6 +18,10 @@ import {
   UPDATE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
+  cancelDiagnosticOrder,
+  cancelDiagnosticOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrder';
+import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
@@ -21,6 +30,10 @@ import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import {
+  updateDiagnosticOrder,
+  updateDiagnosticOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -28,22 +41,9 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  cancelDiagnosticOrder,
-  cancelDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrder';
-import {
-  updateDiagnosticOrder,
-  updateDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
 import { OrderCancelOverlay } from './OrderCancelOverlay';
-import {
-  SlotInfo,
-  TestScheduleOverlay,
-  TestScheduleType,
-} from '@aph/mobile-patients/src/components/Tests/TestScheduleOverlay';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -61,12 +61,6 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     backgroundColor: theme.colors.CARD_BG,
     borderBottomColor: 'rgba(2, 71, 91, 0.3)',
-  },
-  dropdownOverlayStyle: {
-    padding: 0,
-    margin: 0,
-    height: 'auto',
-    borderRadius: 10,
   },
 });
 

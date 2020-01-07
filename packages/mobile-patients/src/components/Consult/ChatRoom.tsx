@@ -366,6 +366,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const [showPDF, setShowPDF] = useState<boolean>(false);
+  const [textChange, setTextChange] = useState(false);
+
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -845,6 +847,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('input', input);
 
       setDoctorJoined(true);
+      setTextChange(true);
 
       setTimeout(() => {
         setApiCalled(true);
@@ -1105,12 +1108,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
-        console.log('presenceEvent', presenceEvent);
+        // console.log('presenceEvent', presenceEvent);
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
         const diff = moment.duration(moment(appointmentData.appointmentDateTime).diff(new Date()));
-        let diffInMins = diff.asMinutes();
-        console.log('diffInMins', diffInMins);
+        const diffInMins = diff.asMinutes();
+        // console.log('diffInMins', diffInMins);
 
         pubnub
           .hereNow({
@@ -1118,7 +1121,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             includeUUIDs: true,
           })
           .then((response: HereNowResponse) => {
-            console.log('hereNowresponse', response);
+            // console.log('hereNowresponse', response);
 
             const data: any = response.channels[appointmentData.id].occupants;
 
@@ -1129,20 +1132,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const startConsultResult = insertText.filter((obj: any) => {
               return obj.message === startConsultMsg;
             });
-            console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
+            // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
             if (diffInMins < 15) {
               if (response.totalOccupancy >= 2) {
                 if (callAbandonmentStoppedTimer == 200) return;
                 if (callAbandonmentStoppedTimer < 200) {
-                  console.log('calljoined');
+                  // console.log('calljoined');
                   APIForUpdateAppointmentData(true);
                 }
               } else {
                 if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-                  console.log('abondmentStarted -------> ', abondmentStarted);
+                  // console.log('abondmentStarted -------> ', abondmentStarted);
 
                   if (abondmentStarted == false) {
-                    console.log('callAbondmentMethod', abondmentStarted);
+                    // console.log('callAbondmentMethod', abondmentStarted);
                     if (startConsultResult.length > 0) {
                       APIForUpdateAppointmentData(false);
                       abondmentStarted = true;
@@ -1234,10 +1237,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callAbandonmentStoppedTimer = timer;
         setCallAbundantCallTime(timer);
 
-        console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+        // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
 
         if (timer < 1) {
-          console.log('call Abundant', appointmentData);
+          // console.log('call Abundant', appointmentData);
           endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
 
           if (isCallAbandment) {
@@ -1672,6 +1675,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setShowFeedback(true);
         abondmentStarted = false;
         APIForUpdateAppointmentData(true);
+        setTextChange(false);
+
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
         message.message.message === 'Audio call ended' ||
@@ -2406,7 +2411,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const reschduleLoadView = (rowData: any, index: number, type: string) => {
-    // console.log('reschduleLoadView', appointmentData.doctorInfo.displayName);
+    // console.log('reschduleLoadView', rowData);
     return (
       <>
         <View
@@ -2525,7 +2530,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 color: 'white',
               }}
             >
-              {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+              {moment(
+                type === 'Followup'
+                  ? rowData.transferInfo.folloupDateTime
+                  : rowData.transferInfo.transferDateTime
+              ).format('Do MMMM, dddd \nhh:mm a')}
+
+              {/* {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
+              {/* {moment(rowData.transferDateTime ? rowData.transferDateTime : nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
             </Text>
             <View
               style={{
@@ -2593,7 +2605,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         doctorId: rowData.transferInfo.transferDateTime
                           ? rowData.transferInfo.doctorInfo.id
                           : rowData.transferInfo.doctorId,
-                        newDateTimeslot: nextSlotAvailable,
+                        newDateTimeslot: rowData.transferInfo.folloupDateTime,
                         initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
                         initiatedId: patientId,
                         patientId: patientId,
@@ -2607,7 +2619,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         doctorId: rowData.transferInfo.transferDateTime
                           ? rowData.transferInfo.doctorInfo.id
                           : rowData.transferInfo.doctorId,
-                        newDateTimeslot: nextSlotAvailable,
+                        newDateTimeslot: rowData.transferInfo.transferDateTime,
                         initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
                         initiatedId: patientId,
                         patientId: patientId,
@@ -2616,8 +2628,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       console.log('bookRescheduleInput', bookRescheduleInput);
                       rescheduleAPI(rowData, bookRescheduleInput);
                     } else {
-                      let datettimeval = nextSlotAvailable;
-                      let transferdataid = rowData.transferInfo.transferId;
+                      const datettimeval = rowData.transferInfo.transferDateTime;
+                      const transferdataid = rowData.transferInfo.transferId;
 
                       const appointmentTransferInput: BookTransferAppointmentInput = {
                         patientId: patientId,
@@ -3855,10 +3867,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const renderChatHeader = () => {
     let time = '';
-    const diffMin = moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes');
-    const diffHours = moment(appointmentData.appointmentDateTime).diff(moment(), 'hours');
-    const diffDays = moment(appointmentData.appointmentDateTime).diff(moment(), 'days');
-    if (doctorJoined) {
+    const diffMin = Math.ceil(
+      moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true)
+    );
+    const diffHours = Math.ceil(
+      moment(appointmentData.appointmentDateTime).diff(moment(), 'hours', true)
+    );
+    const diffDays = Math.ceil(
+      moment(appointmentData.appointmentDateTime).diff(moment(), 'days', true)
+    );
+    if (textChange) {
       time = 'Consult is In-progress';
     } else {
       if (diffMin <= 0) {

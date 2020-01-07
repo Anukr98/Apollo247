@@ -49,7 +49,7 @@ import {
   getPatientMedicalRecords,
   getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
 } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientMedicalRecord,
   deletePatientMedicalRecordVariables,
@@ -180,7 +180,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
 
-    setPastDataLoader(true);
+    // setPastDataLoader(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -245,7 +245,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const fetchData = useCallback(() => {
-    setMedicalRecordsLoader(true);
+    // setMedicalRecordsLoader(true);
     client
       .query<getPatientMedicalRecords>({
         query: GET_MEDICAL_RECORD,
@@ -267,7 +267,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   const fetchTestData = useCallback(() => {
-    setPrismdataLoader(true);
+    // setPrismdataLoader(true);
     client
       .query<getPatientPrismMedicalRecords>({
         query: GET_MEDICAL_PRISM_RECORD,
@@ -287,12 +287,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         console.log('Error occured', { error });
-        //Alert.alert('Error', error.message);
+        handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
   }, [currentPatient]);
 
   useEffect(() => {
+    setPastDataLoader(true);
+    setMedicalRecordsLoader(true);
+    setPrismdataLoader(true);
     fetchPastData();
     fetchData();
     fetchTestData();
@@ -322,10 +325,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setmedicalRecords(newRecords);
       })
       .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while render Delete MedicalOrder', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        console.log('Error occured while render Delete MedicalOrder', { e });
+        handleGraphQlError(e);
       });
   };
   const renderTopView = () => {

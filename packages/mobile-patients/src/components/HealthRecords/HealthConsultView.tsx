@@ -23,7 +23,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -461,7 +461,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               .catch((e) => {
                                 setLoading(false);
                                 console.log({ e });
-                                Alert.alert('Alert', 'Oops! Something went wrong.');
+                                handleGraphQlError(e);
                               });
 
                             // const medicines: ShoppingCartItem[] =
