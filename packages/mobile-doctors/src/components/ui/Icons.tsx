@@ -703,6 +703,7 @@ export const InpersonIcon: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/round_clinic_consult_24_px.png')}
   />
 );
+
 export const PhysicalIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 20, width: 20 }}
@@ -710,10 +711,47 @@ export const PhysicalIcon: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/round_video_consult_24_px.png')}
   />
 );
+
 export const Green: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 20, width: 20 }}
     {...props}
     source={require('../../images/icons/ic_add_green.png')}
   />
+);
+
+export const Morning: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_morning.png')} />
+);
+
+export const Afternoon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_afternoon.png')} />
+);
+
+export const Evening: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_evening.png')} />
+);
+
+export const Night: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_night.png')} />
+);
+
+export const MorningUnselected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_morning_unselected.png')} />
+);
+
+export const AfternoonUnselected: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('../../images/icons/ic_afternoon_unselected.png')}
+  />
+);
+
+export const EveningUnselected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_evening_unselected.png')} />
+);
+
+export const NightUnselected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_night_unselected.png')} />
 );

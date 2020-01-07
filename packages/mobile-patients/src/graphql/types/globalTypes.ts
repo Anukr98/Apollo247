@@ -53,9 +53,16 @@ export enum DIAGNOSTICS_TYPE {
   TEST = "TEST",
 }
 
+export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
+  COD = "COD",
+  ONLINE_PAYMENT = "ONLINE_PAYMENT",
+}
+
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_FAILED = "ORDER_FAILED",
+  ORDER_PLACED = "ORDER_PLACED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
 }
@@ -237,6 +244,7 @@ export enum STATUS {
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
+  UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
 export enum Salutation {
@@ -391,6 +399,7 @@ export interface DiagnosticOrderInput {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
 }
 
