@@ -36,6 +36,10 @@ export class AppointmentCallDetailsRepository extends Repository<AppointmentCall
     return this.findOne({ where: { appointment: appointmentId } });
   }
 
+  findAllByAppointmentId(appointmentId: string) {
+    return this.find({ where: { appointment: appointmentId } });
+  }
+
   findJuniorAppointments(appointmentId: string) {
     return this.find({
       where: { appointment: appointmentId, doctorType: DOCTOR_CALL_TYPE.JUNIOR },

@@ -11,6 +11,7 @@ import {
   FormHelperText,
   TextField,
   Grid,
+  Typography,
 } from '@material-ui/core';
 import { AphCalendar } from 'components/AphCalendar';
 import { Prompt, Link } from 'react-router-dom';
@@ -718,6 +719,25 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       fontWeight: 500,
       marginBottom: 15,
+    },
+    dateAndTieWrapper: {
+      display: 'flex',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      padding: '0 0 12px 0',
+      margin: '0 0 8px 0',
+    },
+    flexGrow: {
+      flexGrow: 1,
+    },
+    header: {
+      color: 'rgba(2,71,91,0.6)',
+      margin: '16px 0 8px 0',
+      fontSize: 12,
+    },
+    data: {
+      fontSize: 15,
+      fontWeight: 500,
+      color: '#01475b',
     },
   };
 });
@@ -2119,17 +2139,31 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 {doctorNextAvailableSlot === '' || loading ? (
                   <CircularProgress />
                 ) : (
-                  <div className={classes.dateField}>
-                    {dateSelected && timeSelected
-                      ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
-                          'ddd, DD/MM/YYYY'
-                        ) +
-                        ' ' +
-                        moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
-                      : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY') +
-                        ' ' +
-                        moment(doctorNextAvailableSlot).format('h:mm a')}
+                  <div className={classes.dateAndTieWrapper}>
+                    <div className={classes.flexGrow}>
+                      <Typography component="h5" variant="h5" className={classes.header}>
+                        Date
+                      </Typography>
+                      <div className={classes.data}>
+                        {dateSelected && timeSelected
+                          ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
+                              'ddd, DD/MM/YYYY'
+                            )
+                          : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY')}
+                      </div>
+                    </div>
+                    <div className={classes.flexGrow}>
+                      <Typography component="h5" variant="h5" className={classes.header}>
+                        Time
+                      </Typography>
+                      <div className={classes.data}>
+                        {dateSelected && timeSelected
+                          ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
+                          : moment(doctorNextAvailableSlot).format('h:mm a')}
+                      </div>
+                    </div>
                   </div>
+
                   // <form noValidate>
                   //   <TextField
                   //     id="datetime-local"

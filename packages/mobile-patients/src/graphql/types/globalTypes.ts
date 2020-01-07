@@ -53,9 +53,16 @@ export enum DIAGNOSTICS_TYPE {
   TEST = "TEST",
 }
 
+export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
+  COD = "COD",
+  ONLINE_PAYMENT = "ONLINE_PAYMENT",
+}
+
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_FAILED = "ORDER_FAILED",
+  ORDER_PLACED = "ORDER_PLACED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
 }
@@ -84,9 +91,29 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum MEDICINE_CONSUMPTION_DURATION {
+  DAYS = "DAYS",
+  MONTHS = "MONTHS",
+  WEEKS = "WEEKS",
+}
+
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = "HOME_DELIVERY",
   STORE_PICKUP = "STORE_PICKUP",
+}
+
+export enum MEDICINE_FORM_TYPES {
+  GEL_LOTION_OINTMENT = "GEL_LOTION_OINTMENT",
+  OTHERS = "OTHERS",
+}
+
+export enum MEDICINE_FREQUENCY {
+  AS_NEEDED = "AS_NEEDED",
+  FIVE_TIMES_A_DAY = "FIVE_TIMES_A_DAY",
+  FOUR_TIMES_A_DAY = "FOUR_TIMES_A_DAY",
+  ONCE_A_DAY = "ONCE_A_DAY",
+  THRICE_A_DAY = "THRICE_A_DAY",
+  TWICE_A_DAY = "TWICE_A_DAY",
 }
 
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -217,6 +244,7 @@ export enum STATUS {
   NO_SHOW = "NO_SHOW",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
+  UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
 export enum Salutation {
@@ -371,6 +399,7 @@ export interface DiagnosticOrderInput {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
 }
 

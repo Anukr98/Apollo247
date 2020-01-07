@@ -180,7 +180,6 @@ export const OtherInstructions: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log('GET_DOCTOR_FAVOURITE_ADVICE_LIST ', data);
         setAdviceList(
           data.data.getDoctorFavouriteAdviceList &&
             data.data.getDoctorFavouriteAdviceList.adviceList

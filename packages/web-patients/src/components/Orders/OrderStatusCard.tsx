@@ -117,10 +117,10 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
       return filteredStatusList.sort(
         (a, b) =>
-          moment(b && b.statusDate)
+          moment(a && a.statusDate)
             .toDate()
             .getTime() -
-          moment(a && a.statusDate)
+          moment(b && b.statusDate)
             .toDate()
             .getTime()
       );
@@ -149,6 +149,8 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     'RETURN_ACCEPTED',
     'RETURN_INITIATED',
   ];
+
+  const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
 
   const getStatus = (status: MEDICINE_ORDER_STATUS) => {
     switch (status) {
@@ -192,28 +194,29 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
           {props.isLoading ? (
             <CircularProgress />
           ) : (
-              orderStatusList &&
-              orderStatusList.map(
-                (statusInfo) =>
-                  statusInfo && (
-                    <div id={statusInfo.id} className={classes.cardGroup}>
-                      <div
-                        className={`${classes.statusCard} ${
-                          statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
-                            ? classes.orderStatusActive
-                            : null
-                          } ${classes.orderStatusCompleted}`}
-                      >
-                        {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
-                        <div className={classes.statusInfo}>
-                          <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
-                          <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
-                        </div>
+            orderStatusList &&
+            orderStatusList.map(
+              (statusInfo) =>
+                statusInfo && (
+                  <div id={statusInfo.id} className={classes.cardGroup}>
+                    <div
+                      className={`${classes.statusCard} ${
+                        statusInfo.orderStatus &&
+                        completedStatusArray.includes(statusInfo.orderStatus)
+                          ? `${classes.orderStatusCompleted}${classes.orderStatusActive}`
+                          : classes.orderStatusActive
+                      }`}
+                    >
+                      {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
+                      <div className={classes.statusInfo}>
+                        <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
+                        <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
                       </div>
                     </div>
-                  )
-              )
-            )}
+                  </div>
+                )
+            )
+          )}
         </div>
       </Grid>
     </Grid>

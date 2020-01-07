@@ -368,9 +368,16 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 .toLowerCase()
             : '';
         const unitHtmls = prescription!.medicineUnit!.toLowerCase();
+        const isInDuration =
+          prescription &&
+          prescription!.medicineTimings &&
+          prescription!.medicineTimings!.length === 1 &&
+          prescription!.medicineTimings[0] === 'AS_NEEDED'
+            ? ''
+            : 'in the ';
         const timesString =
           prescription!.medicineTimings!.length > 0
-            ? 'in the ' +
+            ? isInDuration +
               prescription!
                 .medicineTimings!.join(' , ')
                 .toLowerCase()

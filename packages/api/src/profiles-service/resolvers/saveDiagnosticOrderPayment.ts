@@ -144,7 +144,7 @@ const saveDiagnosticOrderPayment: Resolver<
 
   //call far-eye api's if payment is success
   if (diagnosticPaymentInput.paymentStatus == 'success') {
-    await diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
+    diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
 
     //send order payment success notification
     sendDiagnosticOrderStatusNotification(

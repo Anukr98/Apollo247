@@ -75,6 +75,7 @@ type AphAlertParams = {
   title?: string;
   description?: string;
   CTAs?: AphAlertCTAs[];
+  ctaContainerStyle?: StyleProp<ViewStyle>;
   // Note: CTAs will be rendered at end of the popup.
   // If CTAs are passed, `OK, GOT IT` will not be rendered.
   children?: React.ReactNode;
@@ -130,7 +131,7 @@ export const UIElementsProvider: React.FC = (props) => {
 
     const renderCTAs = () =>
       !!g(alertParams, 'CTAs', 'length') && (
-        <View style={styles.aphAlertCtaViewStyle}>
+        <View style={[styles.aphAlertCtaViewStyle, alertParams.ctaContainerStyle]}>
           {alertParams.CTAs!.map((item, index, array) =>
             item.type == 'orange-link' ? (
               <Text

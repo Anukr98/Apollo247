@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_UNIT } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getCaseSheet
@@ -35,14 +35,18 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescripti
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
   __typename: "MedicinePrescription";
-  medicineConsumptionDurationInDays: string | null;
+  id: string | null;
+  medicineName: string | null;
   medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineInstructions: string | null;
   medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
-  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
-  medicineName: string | null;
-  id: string | null;
   medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {

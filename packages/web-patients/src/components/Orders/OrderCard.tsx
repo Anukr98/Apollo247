@@ -112,6 +112,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       lineHeight: '20px',
     },
+    orderStatusRejected: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: '#890000',
+      lineHeight: '20px',
+    },
     statusInfo: {
       fontSize: 12,
       fontWeight: 500,
@@ -198,7 +204,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return 'Order Out for Delivery';
       case MEDICINE_ORDER_STATUS.DELIVERED:
-        return 'Order Deliverd';
+        return 'Order Delivered';
       case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
         return 'Order Payment Success';
       case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
@@ -237,6 +243,70 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
+  const getSlider = (status: (statusDetails | null)[]) => {
+    const sliderStatus = getOrderStatus(status);
+    switch (sliderStatus) {
+      case 'Order Placed':
+        return (
+          <AphTrackSlider
+            color="primary"
+            defaultValue={80}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
+      case 'Order Delivered':
+        return (
+          <AphDeliveredSlider
+            color="primary"
+            defaultValue={360}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
+      case 'Return Accepted' || 'Order Cancelled':
+        return (
+          <AphTrackSlider
+            color="primary"
+            getAriaValueText={valuetext}
+            disabled
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
+
+      case 'Order Verified':
+        return (
+          <AphTrackSlider
+            color="primary"
+            defaultValue={100}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
+      case 'Order Initiated':
+        return (
+          <AphTrackSlider
+            color="primary"
+            defaultValue={60}
+            getAriaValueText={valuetext}
+            min={0}
+            max={360}
+            valueLabelDisplay="off"
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   if (
     data &&
     data.getMedicineOrdersList &&
@@ -254,56 +324,59 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       <div className={classes.orderListing}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
           <div className={classes.customScroll}>
-            {orderListData &&
-              orderListData.length > 0 &&
-              orderListData.map(
-                (orderInfo) =>
-                  orderInfo && orderInfo.medicineOrdersStatus && getOrderStatus(orderInfo.medicineOrdersStatus) && (
-                    <div
-                      key={orderInfo.id}
-                      className={classes.root}
-                      onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
-                    >
-                      <div className={classes.orderedItem}>
-                        <div className={classes.itemImg}>
-                          <img src={require('images/ic_tablets.svg')} alt="" />
+            {orderListData && orderListData.length > 0
+              ? orderListData.map(
+                  (orderInfo) =>
+                    orderInfo &&
+                    orderInfo.medicineOrdersStatus &&
+                    getOrderStatus(orderInfo.medicineOrdersStatus) && (
+                      <div
+                        key={orderInfo.id}
+                        className={`${classes.root} ${
+                          orderInfo.orderAutoId === props.orderAutoId ? classes.cardSelected : ''
+                        }`}
+                        onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
+                      >
+                        <div className={classes.orderedItem}>
+                          <div className={classes.itemImg}>
+                            <img src={require('images/ic_tablets.svg')} alt="" />
+                          </div>
+                          <div className={classes.itemSection}>
+                            <div className={classes.itemName}>Medicines</div>
+                            <div className={classes.deliveryType}>
+                              <span>{orderInfo.deliveryType}</span>
+                              <span>#{orderInfo.orderAutoId}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className={classes.itemSection}>
-                          <div className={classes.itemName}>Medicines</div>
-                          <div className={classes.deliveryType}>
-                            <span>{orderInfo.deliveryType}</span>
-                            <span>#{orderInfo.orderAutoId}</span>
+                        <div className={classes.orderTrackSlider}>
+                          {getSlider(orderInfo.medicineOrdersStatus)}
+                        </div>
+                        <div className={classes.orderStatusGroup}>
+                          {orderInfo.medicineOrdersStatus && (
+                            <div
+                              className={
+                                getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
+                                  ? `${classes.orderStatusRejected}`
+                                  : `${classes.orderStatus}`
+                              }
+                            >
+                              {getOrderStatus(orderInfo.medicineOrdersStatus)}
+                            </div>
+                          )}
+                          <div className={classes.statusInfo}>
+                            {orderInfo.medicineOrdersStatus &&
+                              getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
                           </div>
                         </div>
                       </div>
-                      <div className={classes.orderTrackSlider}>
-                        <AphTrackSlider
-                          color="primary"
-                          defaultValue={80}
-                          getAriaValueText={valuetext}
-                          min={0}
-                          max={360}
-                          valueLabelDisplay="off"
-                        />
-                      </div>
-                      <div className={classes.orderStatusGroup}>
-                        {orderInfo.medicineOrdersStatus && (
-                          <div className={classes.orderStatus}>
-                            {getOrderStatus(orderInfo.medicineOrdersStatus)}
-                          </div>
-                        )}
-                        <div className={classes.statusInfo}>
-                          {orderInfo.medicineOrdersStatus &&
-                            getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
-                        </div>
-                      </div>
-                    </div>
-                  )
-              )}
+                    )
+                )
+              : 'No Orders Found'}
           </div>
         </Scrollbars>
       </div>
     );
   }
-  return <p>No Data Found</p>;
+  return <p>No Orders Found</p>;
 };

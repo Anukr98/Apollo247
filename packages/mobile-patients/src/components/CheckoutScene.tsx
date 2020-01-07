@@ -232,8 +232,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         if (errorCode || errorMessage) {
           // Order-failed
           showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Order failed, ${errorMessage}.`,
+            title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+            description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+            // description: `Order failed, ${errorMessage}.`,
           });
         } else {
           // Order-Success, Show popup here & clear cart info
@@ -251,8 +252,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         setShowSpinner(false);
         aphConsole.log({ e });
         showAphAlert!({
-          title: `Uh oh.. :(`,
-          description: `Something went wrong, unable to place order.`,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `Your order failed due to some temporary issue :( Please submit the order again.`,
         });
       });
   };
@@ -618,7 +619,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           CommonLogEvent(AppRoutes.CheckoutScene, 'Pay online');
-          setCashOnDelivery(!isCashOnDelivery);
+          setCashOnDelivery(false);
         }}
       >
         <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
@@ -635,7 +636,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           CommonLogEvent(AppRoutes.CheckoutScene, 'Cash on delivery');
-          setCashOnDelivery(!isCashOnDelivery);
+          setCashOnDelivery(true);
         }}
       >
         <View style={[styles.paymentModeRowStyle]}>

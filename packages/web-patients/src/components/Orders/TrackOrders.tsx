@@ -126,6 +126,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
+  const [noOrderDetails, setNoOrderDetails] = useState<boolean>(false);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setMoreActionsDialog(event.currentTarget);
@@ -150,7 +151,13 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             res.data.getMedicineOrderDetails &&
             res.data.getMedicineOrderDetails.MedicineOrderDetails
           ) {
-            setOrderDetailsData(res.data.getMedicineOrderDetails.MedicineOrderDetails);
+            const medicineOrderDetails = res.data.getMedicineOrderDetails.MedicineOrderDetails;
+            if (medicineOrderDetails) {
+              setOrderDetailsData(medicineOrderDetails);
+              setNoOrderDetails(false);
+            } else {
+              setNoOrderDetails(true);
+            }
             setIsLoading(false);
           }
         })
@@ -164,50 +171,67 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
-        <div className={classes.orderId}>
-          <span>ORDER #{props.orderAutoId}</span>
-        </div>
-        <div className={classes.headerActions}>
-          <AphButton onClick={handleClick} className={classes.moreBtn}>
-            <img src={require('images/ic_more.svg')} alt="" />
-          </AphButton>
-          <Popover
-            anchorEl={moreActionsDialog}
-            keepMounted
-            open={moreActionsopen}
-            onClick={() => setMoreActionsDialog(null)}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.menuPopover }}
-          >
-            <div className={classes.menuBtnGroup}>
-              <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>Cancel Order</AphButton>
-
-              <AphButton onClick={() => setIsReturnOrderDialogOpen(true)}>Return Order</AphButton>
+        {props.orderAutoId !== 0 && props.orderAutoId > 0 && (
+          <>
+            <div className={classes.orderId}>
+              <span>ORDER #{props.orderAutoId}</span>
             </div>
-          </Popover>
-        </div>
+            <div className={classes.headerActions}>
+              <AphButton onClick={handleClick} className={classes.moreBtn}>
+                <img src={require('images/ic_more.svg')} alt="" />
+              </AphButton>
+              <Popover
+                anchorEl={moreActionsDialog}
+                keepMounted
+                open={moreActionsopen}
+                onClick={() => setMoreActionsDialog(null)}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                classes={{ paper: classes.menuPopover }}
+              >
+                <div className={classes.menuBtnGroup}>
+                  <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>
+                    Cancel Order
+                  </AphButton>
+
+                  <AphButton onClick={() => setIsReturnOrderDialogOpen(true)}>
+                    Return Order
+                  </AphButton>
+                </div>
+              </Popover>
+            </div>
+          </>
+        )}
       </div>
       <div className={classes.orderTrackCrads}>
         <Tabs
           value={tabValue}
-          classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+          classes={{
+            root: classes.tabsRoot,
+            indicator: classes.tabsIndicator,
+          }}
           onChange={(e, newValue) => {
             setTabValue(newValue);
           }}
         >
           <Tab
-            classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+            classes={{
+              root: classes.tabRoot,
+              selected: classes.tabSelected,
+            }}
             label="Track Order"
           />
           <Tab
-            classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+            classes={{
+              root: classes.tabRoot,
+              selected: classes.tabSelected,
+            }}
             label="Order Summary"
           />
         </Tabs>
@@ -215,7 +239,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
               <div className={classes.customScroll}>
-                <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                {noOrderDetails ? (
+                  'No Order is Found'
+                ) : (
+                  <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                )}
               </div>
             </Scrollbars>
           </TabContainer>
@@ -224,7 +252,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           <TabContainer>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
               <div className={classes.customScroll}>
-                <OrdersSummary orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                {noOrderDetails ? (
+                  'No Order is Found'
+                ) : (
+                  <OrdersSummary orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                )}
               </div>
             </Scrollbars>
           </TabContainer>
