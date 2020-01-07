@@ -1037,67 +1037,84 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-
-    setErrorState({
-      ...errorState,
-      durationErr: false,
-      daySlotErr: false,
-      tobeTakenErr: false,
-      dosageErr: false,
-    });
-    const inputParamsArr: any = {
-      medicineConsumptionDurationInDays: consumptionDuration,
-      medicineDosage: String(tabletsCount),
-      medicineInstructions: medicineInstruction,
-      medicineTimings: daySlotsArr,
-      medicineToBeTaken: toBeTakenSlotsArr,
-      medicineName: selectedValue,
-      medicineFrequency: frequency,
-      medicineConsumptionDurationUnit: forUnit,
-      medicineFormTypes: medicineForm,
-      id: selectedId,
-      medicineUnit: medicineUnit,
-    };
-
-    const inputParams: any = {
-      id: selectedId,
-      value: selectedValue,
-      name: selectedValue,
-      times: daySlotsSelected.length,
-      daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
-      duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
-      selected: true,
-      medicineUnit: medicineUnit,
-      medicineFrequency: frequency,
-      medicineConsumptionDurationUnit: forUnit,
-      medicineFormTypes: medicineForm,
-    };
-    if (isUpdate) {
-      const medicineArray = selectedMedicinesArr;
-      medicineArray!.splice(idx, 1, inputParamsArr);
-      setSelectedMedicinesArr(medicineArray);
-      const medicineObj = selectedMedicines;
-      medicineObj.splice(idx, 1, inputParams);
-      setSelectedMedicines(medicineObj);
+    if (tabletsCount && isNaN(Number(tabletsCount))) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (consumptionDuration && isNaN(Number(consumptionDuration))) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else {
-      const medicineArray = selectedMedicinesArr;
-      medicineArray!.push(inputParamsArr);
-      setSelectedMedicinesArr(medicineArray);
-      const medicineObj = selectedMedicines;
-      medicineObj.push(inputParams);
-      setSelectedMedicines(medicineObj);
-    }
-    setIsDialogOpen(false);
-    setIsUpdate(false);
-    setShowDosage(false);
-    resetOptions();
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+      const inputParamsArr: any = {
+        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineDosage: String(tabletsCount),
+        medicineInstructions: medicineInstruction,
+        medicineTimings: daySlotsArr,
+        medicineToBeTaken: toBeTakenSlotsArr,
+        medicineName: selectedValue,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
+        id: selectedId,
+        medicineUnit: medicineUnit,
+      };
 
-    setMedicineInstruction('');
-    setConsumptionDuration('');
-    setTabletsCount(1);
-    setSelectedValue('');
-    setSelectedId('');
-    setMedicineUnit('OTHERS');
+      const inputParams: any = {
+        id: selectedId,
+        value: selectedValue,
+        name: selectedValue,
+        times: daySlotsSelected.length,
+        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
+        selected: true,
+        medicineUnit: medicineUnit,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
+      };
+      if (isUpdate) {
+        const medicineArray = selectedMedicinesArr;
+        medicineArray!.splice(idx, 1, inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineObj = selectedMedicines;
+        medicineObj.splice(idx, 1, inputParams);
+        setSelectedMedicines(medicineObj);
+      } else {
+        const medicineArray = selectedMedicinesArr;
+        medicineArray!.push(inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineObj = selectedMedicines;
+        medicineObj.push(inputParams);
+        setSelectedMedicines(medicineObj);
+      }
+      setIsDialogOpen(false);
+      setIsUpdate(false);
+      setShowDosage(false);
+      resetOptions();
+
+      setMedicineInstruction('');
+      setConsumptionDuration('');
+      setTabletsCount(1);
+      setSelectedValue('');
+      setSelectedId('');
+      setMedicineUnit('OTHERS');
+    }
   };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -1362,7 +1379,7 @@ export const MedicinePrescription: React.FC = () => {
                                 component="div"
                                 error={errorState.dosageErr}
                               >
-                                Please Enter Dosage(Number only)
+                                Please enter valid number
                               </FormHelperText>
                             )}
                           </div>
@@ -1475,7 +1492,7 @@ export const MedicinePrescription: React.FC = () => {
                               component="div"
                               error={errorState.durationErr}
                             >
-                              Please Enter Duration in days(Number only)
+                              Please enter valid number
                             </FormHelperText>
                           )}
                         </div>

@@ -905,7 +905,7 @@ export const FavouriteMedicines: React.FC = () => {
         setSelectedValue(suggestion.label);
         setSelectedId(suggestion.sku);
         setMedicine('');
-        setTabletsCount(0);
+        setTabletsCount(1);
         setLoading(false);
       })
       .catch((error) => {
@@ -1168,79 +1168,96 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-
-    const inputParamsArr: any = {
-      medicineConsumptionDurationInDays: consumptionDuration,
-      medicineDosage: String(tabletsCount),
-      medicineTimings: daySlotsArr,
-      medicineToBeTaken: toBeTakenSlotsArr,
-      medicineName: selectedValue,
-      medicineUnit: medicineUnit,
-      medicineInstructions: medicineInstruction,
-      medicineFrequency: frequency,
-      medicineConsumptionDurationUnit: forUnit,
-      medicineFormTypes: medicineForm,
-    };
-
-    const inputParams: any = {
-      id: selectedId,
-      value: selectedValue,
-      name: selectedValue,
-      times: daySlotsSelected.length,
-      daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
-      duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
-      selected: true,
-      medicineUnit: medicineUnit,
-      medicineInstructions: medicineInstruction,
-      medicineFrequency: frequency,
-      medicineConsumptionDurationUnit: forUnit,
-      medicineFormTypes: medicineForm,
-    };
-    const medicineArray: any = selectedMedicinesArr;
-    medicineArray.push(inputParamsArr);
-    setSelectedMedicinesArr(medicineArray);
-    const medicineSelected = selectedMedicines;
-    medicineSelected.push(inputParams);
-    setSelectedMedicines(medicineSelected);
-
-    setIsDialogOpen(false);
-    setIsUpdate(false);
-    setShowDosage(false);
-    resetOptions();
-
-    client
-      .mutate<SaveDoctorsFavouriteMedicine, SaveDoctorsFavouriteMedicineVariables>({
-        mutation: SAVE_DOCTORS_FAVOURITE_MEDICINE,
-        variables: {
-          saveDoctorsFavouriteMedicineInput: {
-            externalId: selectedId,
-            medicineConsumptionDuration: '',
-            medicineConsumptionDurationUnit: forUnit,
-            medicineFormTypes:
-              medicineForm === 'OTHERS'
-                ? MEDICINE_FORM_TYPES.OTHERS
-                : MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT,
-            medicineFrequency: frequency,
-            medicineConsumptionDurationInDays: Number(consumptionDuration),
-            medicineDosage: tabletsCount ? String(tabletsCount) : '',
-            medicineTimings: daySlotsArr,
-            medicineToBeTaken: toBeTakenSlotsArr,
-            medicineName: selectedValue,
-            medicineUnit: medicineUnit,
-            medicineInstructions: String(medicineInstruction),
-          },
-        },
-      })
-      .then((data) => {
-        getMedicineData();
+    if (tabletsCount && isNaN(Number(tabletsCount))) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
       });
+    } else if (consumptionDuration && isNaN(Number(consumptionDuration))) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else {
+      const inputParamsArr: any = {
+        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineDosage: String(tabletsCount),
+        medicineTimings: daySlotsArr,
+        medicineToBeTaken: toBeTakenSlotsArr,
+        medicineName: selectedValue,
+        medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
+      };
 
-    setMedicineInstruction('');
-    setConsumptionDuration('');
-    setTabletsCount(0);
-    setMedicineUnit(MEDICINE_UNIT.OTHERS);
-    setSelectedValue('');
-    setSelectedId('');
+      const inputParams: any = {
+        id: selectedId,
+        value: selectedValue,
+        name: selectedValue,
+        times: daySlotsSelected.length,
+        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
+        selected: true,
+        medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
+      };
+      const medicineArray: any = selectedMedicinesArr;
+      medicineArray.push(inputParamsArr);
+      setSelectedMedicinesArr(medicineArray);
+      const medicineSelected = selectedMedicines;
+      medicineSelected.push(inputParams);
+      setSelectedMedicines(medicineSelected);
+
+      setIsDialogOpen(false);
+      setIsUpdate(false);
+      setShowDosage(false);
+      resetOptions();
+
+      client
+        .mutate<SaveDoctorsFavouriteMedicine, SaveDoctorsFavouriteMedicineVariables>({
+          mutation: SAVE_DOCTORS_FAVOURITE_MEDICINE,
+          variables: {
+            saveDoctorsFavouriteMedicineInput: {
+              externalId: selectedId,
+              medicineConsumptionDuration: '',
+              medicineConsumptionDurationUnit: forUnit,
+              medicineFormTypes:
+                medicineForm === 'OTHERS'
+                  ? MEDICINE_FORM_TYPES.OTHERS
+                  : MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT,
+              medicineFrequency: frequency,
+              medicineConsumptionDurationInDays: Number(consumptionDuration),
+              medicineDosage: tabletsCount ? String(tabletsCount) : '',
+              medicineTimings: daySlotsArr,
+              medicineToBeTaken: toBeTakenSlotsArr,
+              medicineName: selectedValue,
+              medicineUnit: medicineUnit,
+              medicineInstructions: String(medicineInstruction),
+            },
+          },
+        })
+        .then((data) => {
+          getMedicineData();
+        });
+
+      setMedicineInstruction('');
+      setConsumptionDuration('');
+      setTabletsCount(1);
+      setMedicineUnit(MEDICINE_UNIT.OTHERS);
+      setSelectedValue('');
+      setSelectedId('');
+    }
   };
   const addUpdateMedicines = () => {
     const toBeTakenSlotsArr: any = [];
@@ -1257,83 +1274,100 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-
-    const inputParamsArr: any = {
-      medicineConsumptionDurationInDays: Number(consumptionDuration),
-      medicineDosage: String(tabletsCount),
-      medicineInstructions: medicineInstruction,
-      medicineTimings: daySlotsArr,
-      medicineToBeTaken: toBeTakenSlotsArr,
-      medicineName: selectedValue,
-      id: selectedId,
-      medicineUnit: medicineUnit,
-    };
-
-    const inputParams: any = {
-      id: selectedId,
-      value: selectedValue,
-      name: selectedValue,
-      times: daySlotsSelected.length,
-      daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
-      duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
-      selected: true,
-      medicineUnit: medicineUnit,
-      medicineInstructions: medicineInstruction,
-    };
-    if (isUpdate) {
-      const medicineArray = selectedMedicinesArr;
-      medicineArray!.splice(idx, 1, inputParamsArr);
-      setSelectedMedicinesArr(medicineArray);
-      const medicineSelected = selectedMedicines;
-      medicineSelected.splice(idx, 1, inputParams);
-      setSelectedMedicines(medicineSelected);
-    } else {
-      const medicineArray: any = selectedMedicinesArr;
-      medicineArray!.push(inputParamsArr);
-      setSelectedMedicinesArr(medicineArray);
-      const medicineSelected = selectedMedicines;
-      medicineSelected.push(inputParams);
-      setSelectedMedicines(medicineSelected);
-    }
-    setIsDialogOpen(false);
-    setIsUpdate(false);
-    setShowDosage(false);
-    resetOptions();
-
-    client
-      .mutate<UpdateDoctorFavouriteMedicine, UpdateDoctorFavouriteMedicineVariables>({
-        mutation: UPDATE_DOCTOR_FAVOURITE_MEDICINE,
-        variables: {
-          updateDoctorsFavouriteMedicineInput: {
-            externalId: selectedExternalId,
-            medicineConsumptionDuration: '',
-            medicineConsumptionDurationUnit: forUnit,
-            medicineFormTypes:
-              medicineForm === 'OTHERS'
-                ? MEDICINE_FORM_TYPES.OTHERS
-                : MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT,
-            medicineFrequency: dosageFrequency[0].id,
-            medicineConsumptionDurationInDays: Number(consumptionDuration),
-            medicineDosage: tabletsCount ? String(tabletsCount) : '',
-            medicineUnit: medicineUnit,
-            medicineInstructions: medicineInstruction,
-            medicineTimings: daySlotsArr,
-            medicineToBeTaken: toBeTakenSlotsArr,
-            medicineName: selectedValue,
-            id: selectedId,
-          },
-        },
-      })
-      .then((data) => {
-        console.log('data after mutation' + data);
+    if (tabletsCount && isNaN(Number(tabletsCount))) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
       });
+    } else if (consumptionDuration && isNaN(Number(consumptionDuration))) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else {
+      const inputParamsArr: any = {
+        medicineConsumptionDurationInDays: Number(consumptionDuration),
+        medicineDosage: String(tabletsCount),
+        medicineInstructions: medicineInstruction,
+        medicineTimings: daySlotsArr,
+        medicineToBeTaken: toBeTakenSlotsArr,
+        medicineName: selectedValue,
+        id: selectedId,
+        medicineUnit: medicineUnit,
+      };
 
-    setMedicineInstruction('');
-    setConsumptionDuration('');
-    setTabletsCount(1);
-    setMedicineUnit(MEDICINE_UNIT.OTHERS);
-    setSelectedValue('');
-    setSelectedId('');
+      const inputParams: any = {
+        id: selectedId,
+        value: selectedValue,
+        name: selectedValue,
+        times: daySlotsSelected.length,
+        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
+        selected: true,
+        medicineUnit: medicineUnit,
+        medicineInstructions: medicineInstruction,
+      };
+      if (isUpdate) {
+        const medicineArray = selectedMedicinesArr;
+        medicineArray!.splice(idx, 1, inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineSelected = selectedMedicines;
+        medicineSelected.splice(idx, 1, inputParams);
+        setSelectedMedicines(medicineSelected);
+      } else {
+        const medicineArray: any = selectedMedicinesArr;
+        medicineArray!.push(inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineSelected = selectedMedicines;
+        medicineSelected.push(inputParams);
+        setSelectedMedicines(medicineSelected);
+      }
+      setIsDialogOpen(false);
+      setIsUpdate(false);
+      setShowDosage(false);
+      resetOptions();
+
+      client
+        .mutate<UpdateDoctorFavouriteMedicine, UpdateDoctorFavouriteMedicineVariables>({
+          mutation: UPDATE_DOCTOR_FAVOURITE_MEDICINE,
+          variables: {
+            updateDoctorsFavouriteMedicineInput: {
+              externalId: selectedExternalId,
+              medicineConsumptionDuration: '',
+              medicineConsumptionDurationUnit: forUnit,
+              medicineFormTypes:
+                medicineForm === 'OTHERS'
+                  ? MEDICINE_FORM_TYPES.OTHERS
+                  : MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT,
+              medicineFrequency: dosageFrequency[0].id,
+              medicineConsumptionDurationInDays: Number(consumptionDuration),
+              medicineDosage: tabletsCount ? String(tabletsCount) : '',
+              medicineUnit: medicineUnit,
+              medicineInstructions: medicineInstruction,
+              medicineTimings: daySlotsArr,
+              medicineToBeTaken: toBeTakenSlotsArr,
+              medicineName: selectedValue,
+              id: selectedId,
+            },
+          },
+        })
+        .then((data) => {
+          console.log('data after mutation' + data);
+        });
+
+      setMedicineInstruction('');
+      setConsumptionDuration('');
+      setTabletsCount(1);
+      setMedicineUnit(MEDICINE_UNIT.OTHERS);
+      setSelectedValue('');
+      setSelectedId('');
+    }
   };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -1621,7 +1655,7 @@ export const FavouriteMedicines: React.FC = () => {
                         <Grid container spacing={2}>
                           {medicineForm === 'OTHERS' && (
                             <Grid item lg={6} md={6} xs={12}>
-                              <h6>Take*</h6>
+                              <h6>Take</h6>
                               <AphTextField
                                 autoFocus
                                 inputProps={{ maxLength: 6 }}
@@ -1634,14 +1668,15 @@ export const FavouriteMedicines: React.FC = () => {
                                     root: classes.inputRootNew,
                                   },
                                 }}
+                                error={errorState.dosageErr}
                               />
                               {errorState.dosageErr && (
                                 <FormHelperText
                                   className={classes.helpText}
                                   component="div"
-                                  error={errorState.durationErr}
+                                  error={errorState.dosageErr}
                                 >
-                                  Please Enter Dosage(Number only)
+                                  Please enter valid number
                                 </FormHelperText>
                               )}
                             </Grid>
@@ -1720,7 +1755,7 @@ export const FavouriteMedicines: React.FC = () => {
                                   component="div"
                                   error={errorState.durationErr}
                                 >
-                                  Please Enter Duration in days(Number only)
+                                  Please enter valid number
                                 </FormHelperText>
                               )}
                             </div>
