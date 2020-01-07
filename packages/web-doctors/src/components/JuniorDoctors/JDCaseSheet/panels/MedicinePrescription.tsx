@@ -949,7 +949,7 @@ export const MedicinePrescription: React.FC = () => {
         medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
           ? ''
           : 'in the ';
-      const timesString =
+      let timesString =
         medicine.medicineTimings.length > 0
           ? isInDuration +
             medicine.medicineTimings
@@ -957,6 +957,9 @@ export const MedicinePrescription: React.FC = () => {
               .toLowerCase()
               .replace('_', ' ')
           : '';
+      if (timesString && timesString !== '') {
+        timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+      }
       const dosageCount = medicine.medicineDosage;
       const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
       const unitHtml = `${unitHtmls}`;
@@ -981,8 +984,8 @@ export const MedicinePrescription: React.FC = () => {
                 timesString.length > 0 ? timesString : ''
               }`}
             </div>
-            {medicine.Instructions && (
-              <div className={classes.medicineInfo}>{medicine.Instructions}</div>
+            {medicine.medicineInstructions && (
+              <div className={classes.medicineInfo}>{medicine.medicineInstructions}</div>
             )}
           </div>
           <div className={classes.actionGroup}>
