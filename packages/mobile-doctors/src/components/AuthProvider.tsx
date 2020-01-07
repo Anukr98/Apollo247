@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import firebase, { RNFirebase } from 'react-native-firebase';
+import fetch from 'node-fetch';
 
 export interface AuthContextProps {
   analytics: RNFirebase.Analytics | null;
@@ -51,7 +52,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const buildApolloClient = (authToken: string) => {
     console.log('authToken in buildApolloClient', authToken);
-    const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
+    const httpLink = createHttpLink({ uri: apiRoutes.graphql(), fetch: fetch });
     const authLink = new ApolloLink((operation, forward) => {
       // Get the authentication token from context if it exists
       // Use the setContext method to set the HTTP headers.

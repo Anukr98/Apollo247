@@ -189,7 +189,9 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           variables: {
             RescheduleAppointmentInput: {
               appointmentId: props.appointmentId,
-              rescheduleReason: reasons.find((i) => i.key === selectedReason)?.value || 'Other',
+              rescheduleReason: reasons.find((i) => i.key === selectedReason)
+                ? reasons.find((i) => i.key === selectedReason)!.value
+                : 'Other',
               rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
               rescheduleInitiatedId: props.doctorId,
               rescheduledDateTime: selectedTimeSlot,
