@@ -559,7 +559,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>();
+  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {

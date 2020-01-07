@@ -729,7 +729,7 @@ export const FavouriteMedicines: React.FC = () => {
     dosageErr: false,
   });
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>();
+  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [medicineUnit, setMedicineUnit] = React.useState<MEDICINE_UNIT>(MEDICINE_UNIT.OTHERS);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
