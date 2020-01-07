@@ -165,7 +165,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     medicinePopup: {
       width: 480,
-      margin: '30px auto 0 auto',
+      margin: '60px auto 0 auto',
       boxShadow: 'none',
     },
     activeCard: {
@@ -1503,7 +1503,7 @@ export const MedicinePrescription: React.FC = () => {
             </AphDialogTitle>
             <div>
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       {medicineForm === 'OTHERS' && (
@@ -1743,7 +1743,7 @@ export const MedicinePrescription: React.FC = () => {
           <div className={classes.shadowHide}>
             {!showDosage ? (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
                   <div className={classes.dialogContent}>
                     <Autosuggest
                       onSuggestionSelected={(e, { suggestion }) => {

@@ -177,7 +177,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     medicinePopup: {
       width: 480,
-      margin: '30px auto 0 auto',
+      margin: '60px auto 0 auto',
       boxShadow: 'none',
     },
     activeCard: {
@@ -1613,7 +1613,7 @@ export const FavouriteMedicines: React.FC = () => {
                         suggestion: classes.suggestion,
                       }}
                       renderSuggestionsContainer={(options) => (
-                        <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
+                        <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
                           <Paper {...options.containerProps} square className={classes.searchpopup}>
                             {options.children}
                           </Paper>
@@ -1650,7 +1650,7 @@ export const FavouriteMedicines: React.FC = () => {
               ) : (
                 <div>
                   <div>
-                    <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
+                    <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
                       <div className={`${classes.dialogContent} ${classes.dialogNewMedicine}`}>
                         <Grid container spacing={2}>
                           {medicineForm === 'OTHERS' && (
