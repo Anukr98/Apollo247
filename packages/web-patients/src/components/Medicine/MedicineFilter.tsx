@@ -153,8 +153,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
+
   useEffect(() => {
-    if (subtxt.length > 0) {
+    if (subtxt.length > 0 && subtxt !== params.searchText) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);

@@ -127,6 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface MedicineListscardProps {
   medicineList: MedicineProduct[] | null;
+  isLoading: boolean;
 }
 
 export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
@@ -262,7 +263,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
               </div>
             </div>
           ))
-        ) : !props.medicineList ? (
+        ) : props.isLoading ? (
           <CircularProgress />
         ) : (
           'No Data Found'
