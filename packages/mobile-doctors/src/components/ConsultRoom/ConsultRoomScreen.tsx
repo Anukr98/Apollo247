@@ -2026,9 +2026,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         <ReSchedulePopUp
           doctorId={doctorId}
           onClose={() => setDisplayReSchedulePopUp(false)}
-          date={moment()
-            .add(1, 'day')
-            .toString()}
+          date={Appintmentdatetime}
           loading={(val) => setShowLoading(val)}
         />
       )}
