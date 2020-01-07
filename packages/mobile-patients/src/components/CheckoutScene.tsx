@@ -619,7 +619,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           CommonLogEvent(AppRoutes.CheckoutScene, 'Pay online');
-          setCashOnDelivery(!isCashOnDelivery);
+          setCashOnDelivery(false);
         }}
       >
         <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
@@ -636,7 +636,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           CommonLogEvent(AppRoutes.CheckoutScene, 'Cash on delivery');
-          setCashOnDelivery(!isCashOnDelivery);
+          setCashOnDelivery(true);
         }}
       >
         <View style={[styles.paymentModeRowStyle]}>
