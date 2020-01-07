@@ -324,7 +324,7 @@ export class DoctorRepository extends Repository<Doctor> {
       return doctor.availableInMinutes <= 60;
     });
     const bookNowDoctorSlots = doctorNextAvailSlots.filter((doctor) => {
-      return doctor.availableInMinutes > 60;
+      return doctor.availableInMinutes > 60 || isNaN(doctor.availableInMinutes);
     });
     //create key-pair object to map with doctors data object
     const timeSortedConsultNowDoctorSlots: DoctorSlotAvailabilityObject = {};
