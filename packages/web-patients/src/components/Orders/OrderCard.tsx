@@ -324,57 +324,59 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       <div className={classes.orderListing}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
           <div className={classes.customScroll}>
-            {orderListData &&
-              orderListData.length > 0 &&
-              orderListData.map(
-                (orderInfo) =>
-                  orderInfo &&
-                  orderInfo.medicineOrdersStatus &&
-                  getOrderStatus(orderInfo.medicineOrdersStatus) && (
-                    <div
-                      key={orderInfo.id}
-                      className={classes.root}
-                      onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
-                    >
-                      <div className={classes.orderedItem}>
-                        <div className={classes.itemImg}>
-                          <img src={require('images/ic_tablets.svg')} alt="" />
+            {orderListData && orderListData.length > 0
+              ? orderListData.map(
+                  (orderInfo) =>
+                    orderInfo &&
+                    orderInfo.medicineOrdersStatus &&
+                    getOrderStatus(orderInfo.medicineOrdersStatus) && (
+                      <div
+                        key={orderInfo.id}
+                        className={`${classes.root} ${
+                          orderInfo.orderAutoId === props.orderAutoId ? classes.cardSelected : ''
+                        }`}
+                        onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
+                      >
+                        <div className={classes.orderedItem}>
+                          <div className={classes.itemImg}>
+                            <img src={require('images/ic_tablets.svg')} alt="" />
+                          </div>
+                          <div className={classes.itemSection}>
+                            <div className={classes.itemName}>Medicines</div>
+                            <div className={classes.deliveryType}>
+                              <span>{orderInfo.deliveryType}</span>
+                              <span>#{orderInfo.orderAutoId}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className={classes.itemSection}>
-                          <div className={classes.itemName}>Medicines</div>
-                          <div className={classes.deliveryType}>
-                            <span>{orderInfo.deliveryType}</span>
-                            <span>#{orderInfo.orderAutoId}</span>
+                        <div className={classes.orderTrackSlider}>
+                          {getSlider(orderInfo.medicineOrdersStatus)}
+                        </div>
+                        <div className={classes.orderStatusGroup}>
+                          {orderInfo.medicineOrdersStatus && (
+                            <div
+                              className={
+                                getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
+                                  ? `${classes.orderStatusRejected}`
+                                  : `${classes.orderStatus}`
+                              }
+                            >
+                              {getOrderStatus(orderInfo.medicineOrdersStatus)}
+                            </div>
+                          )}
+                          <div className={classes.statusInfo}>
+                            {orderInfo.medicineOrdersStatus &&
+                              getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
                           </div>
                         </div>
                       </div>
-                      <div className={classes.orderTrackSlider}>
-                        {getSlider(orderInfo.medicineOrdersStatus)}
-                      </div>
-                      <div className={classes.orderStatusGroup}>
-                        {orderInfo.medicineOrdersStatus && (
-                          <div
-                            className={
-                              getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
-                                ? `${classes.orderStatusRejected}`
-                                : `${classes.orderStatus}`
-                            }
-                          >
-                            {getOrderStatus(orderInfo.medicineOrdersStatus)}
-                          </div>
-                        )}
-                        <div className={classes.statusInfo}>
-                          {orderInfo.medicineOrdersStatus &&
-                            getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
-                        </div>
-                      </div>
-                    </div>
-                  )
-              )}
+                    )
+                )
+              : 'No Orders Found'}
           </div>
         </Scrollbars>
       </div>
     );
   }
-  return <p>No Data Found</p>;
+  return <p>No Orders Found</p>;
 };
