@@ -105,7 +105,7 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 71
+        versionCode 22
         versionName "1.0"
         multiDexEnabled true
         ndk {
@@ -195,7 +195,7 @@ dependencies {
     implementation "com.google.firebase:firebase-core:16.0.9"
     implementation "com.google.firebase:firebase-auth:17.0.0"
     implementation "com.google.firebase:firebase-config:17.0.0"
-
+    implementation "com.google.firebase:firebase-database:17.0.0"
 
     implementation "com.google.firebase:firebase-messaging:18.0.0"
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android

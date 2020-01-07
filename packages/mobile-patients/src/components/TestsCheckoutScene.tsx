@@ -16,6 +16,7 @@ import { SAVE_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles
 import {
   DiagnosticLineItem,
   DiagnosticOrderInput,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveDiagnosticOrder,
@@ -238,6 +239,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
       ].join(','),
+      paymentType: isCashOnDelivery
+        ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+        : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
       // prismPrescriptionFileId: [
       //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
       //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
@@ -266,7 +270,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           showAphAlert!({
             unDismissable: true,
             title: `Uh oh.. :(`,
-            description: `Order failed, ${errorMessage}.`,
+            description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+            // description: `Order failed, ${errorMessage}.`,
           });
         } else {
           // Order-Success
@@ -284,8 +289,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         console.log('SaveDiagnosticOrder API Error\n', { error });
         showAphAlert!({
           unDismissable: true,
-          title: `Uh oh.. :(`,
-          description: `Order failed, something went wrong.`,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
         });
       })
       .finally(() => {
