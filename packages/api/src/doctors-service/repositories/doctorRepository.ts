@@ -278,7 +278,7 @@ export class DoctorRepository extends Repository<Doctor> {
           }
         }
 
-        let referenceSlot;
+        let referenceSlot = '';
         if (consultModeFilter == ConsultMode.ONLINE) {
           referenceSlot = onlineSlot;
         } else if (consultModeFilter == ConsultMode.PHYSICAL) {
@@ -289,9 +289,9 @@ export class DoctorRepository extends Repository<Doctor> {
           else referenceSlot = onlineSlot < physicalSlot ? onlineSlot : physicalSlot;
         }
 
-        if (referenceSlot == '') {
-          referenceSlot = format(addDays(new Date(), 2), 'yyyy-MM-dd HH:mm');
-        }
+        // if (referenceSlot == '') {
+        //   referenceSlot = format(addDays(new Date(), 2), 'yyyy-MM-dd HH:mm');
+        // }
 
         const doctorSlot: DoctorSlotAvailability = {
           doctorId,
