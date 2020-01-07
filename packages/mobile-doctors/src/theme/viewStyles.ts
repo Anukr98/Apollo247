@@ -50,4 +50,15 @@ export const viewStyles = {
     opacity: 0.5,
   },
   text: getTextStyle,
+  lightSeparatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  shadowStyle: {
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 16,
+  },
 };

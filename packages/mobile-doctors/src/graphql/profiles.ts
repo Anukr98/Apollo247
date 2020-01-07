@@ -585,3 +585,23 @@ export const SEARCH_DIAGNOSTIC = gql`
     }
   }
 `;
+
+export const NEXT_AVAILABLE_SLOT = gql`
+  query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput!) {
+    getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
+      doctorAvailalbeSlots {
+        availableSlot
+        doctorId
+        physicalAvailableSlot
+      }
+    }
+  }
+`;
+
+export const GET_AVAILABLE_SLOTS = gql`
+  query getDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput!) {
+    getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
+      availableSlots
+    }
+  }
+`;
