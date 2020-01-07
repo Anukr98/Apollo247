@@ -37,7 +37,15 @@ import { getNextAvailableSlots } from '@aph/mobile-doctors/src/helpers/clientCal
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import { getDoctorAvailableSlots } from '@aph/mobile-doctors/src/graphql/types/getDoctorAvailableSlots';
-import { GET_AVAILABLE_SLOTS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  GET_AVAILABLE_SLOTS,
+  INITIATE_RESCHDULE_APPONITMENT,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  initiateRescheduleAppointment,
+  initiateRescheduleAppointmentVariables,
+} from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 const { height, width } = Dimensions.get('window');
 
@@ -87,6 +95,7 @@ type TimeArray = {
 export interface ReSchedulePopUpProps {
   onClose: () => void;
   doctorId: string;
+  appointmentId: string;
   date: string;
   loading: (val: boolean) => void;
 }
@@ -171,7 +180,32 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
     }
   }, [NextAvailableSlot, timeArray]);
 
-  const reschduleCall = () => {};
+  const reschduleCall = () => {
+    if (selectedTimeSlot && selectedReason) {
+      props.loading && props.loading(true);
+      client
+        .mutate<initiateRescheduleAppointment, initiateRescheduleAppointmentVariables>({
+          mutation: INITIATE_RESCHDULE_APPONITMENT,
+          variables: {
+            RescheduleAppointmentInput: {
+              appointmentId: props.appointmentId,
+              rescheduleReason: reasons.find((i) => i.key === selectedReason)?.value || 'Other',
+              rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+              rescheduleInitiatedId: props.doctorId,
+              rescheduledDateTime: selectedTimeSlot,
+            },
+          },
+        })
+        .then(() => {})
+        .catch((e) => {
+          console.log('Error occured while searching for Initiate reschdule apppointment', e);
+        })
+        .finally(() => {
+          props.loading && props.loading(false);
+        });
+    }
+  };
+
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     console.log(availableSlots, 'setTimeArrayData availableSlots');
     setselectedtiming(timeArray[0].label);

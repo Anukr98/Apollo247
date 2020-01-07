@@ -1,46 +1,38 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, {
-  useRef,
-  useImperativeHandle,
-  forwardRef,
-  ForwardRefExoticComponent,
-  PropsWithoutRef,
-  RefAttributes,
-} from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import CalendarStrip from 'react-native-calendar-strip';
 import GestureRecognizer from 'react-native-swipe-gestures';
 
 const styles = StyleSheet.create({
   calendarStripStyle: {
-    backgroundColor: theme.colors.CARD_BG,
-    paddingHorizontal: 5,
-    paddingBottom: 7,
-    height: 48,
+    height: 54,
+    backgroundColor: 'white',
   },
   viewStyle: {
-    width: '100%',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 0,
-    backgroundColor: theme.colors.CARD_BG,
+    paddingVertical: 8,
+    // paddingRight: 2,
+    // height: 48,
+    width: 44,
+    backgroundColor: theme.colors.WHITE,
   },
-  unSelectedDateStyle: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: theme.colors.APP_GREEN,
-    backgroundColor: theme.colors.CLEAR,
+  highlightedViewStyle: {
+    // width: 48,
+    backgroundColor: '#00b38e',
+  },
+  textStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    letterSpacing: 0.3,
+    color: 'rgba(101, 143, 155, 0.6)',
   },
   textStyleToday: {
-    backgroundColor: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
+    backgroundColor: '#00b38e',
+    ...theme.fonts.IBMPlexSansBold(14),
     letterSpacing: 0.35,
     color: theme.colors.WHITE,
-  },
-  disabledTextStyle: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: 'rgba(128,128,128, 0.3)',
-    backgroundColor: theme.colors.CLEAR,
   },
 });
 
@@ -52,113 +44,78 @@ interface CalendarStripRefType extends CalendarStrip {
 export interface WeekViewProps {
   date: Date;
   onTapDate: (date: Date) => void;
-  // onWeekChanged: (date: Date) => void;
-  minDate?: Date;
+  onWeekChanged: (date: Date) => void;
 }
 
-export const WeekView: ForwardRefExoticComponent<PropsWithoutRef<WeekViewProps> &
-  RefAttributes<{ getPreviousWeek: () => void; getNextWeek: () => void }>> = forwardRef(
-  (props, ref) => {
-    const calendarStripRef = useRef<CalendarStripRefType | null>(null);
+export const WeekView: React.FC<WeekViewProps> = (props) => {
+  const calendarStripRef = useRef<CalendarStrip | null>(null);
 
-    useImperativeHandle(ref, () => ({
-      // To expose this functions to parent through ref
-      getPreviousWeek() {
-        onSwipeRight();
-      },
-      getNextWeek() {
-        onSwipeLeft();
-      },
-    }));
+  const renderDayComponent = (item: Date) => {
+    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const isHighlitedDate =
+      props.date.getDate() == item.getDate() &&
+      props.date.getMonth() == item.getMonth() &&
+      props.date.getFullYear() == item.getFullYear();
 
-    const renderDayComponent = (item: Date) => {
-      // const days = ['S', 'M', 'T ', 'W', 'T', 'F', 'S'];
-      const isHighlitedDate =
-        props.date.getDate() == item.getDate() &&
-        props.date.getMonth() == item.getMonth() &&
-        props.date.getFullYear() == item.getFullYear();
-
-      const isDiabled = props.minDate
-        ? moment(props.minDate).format('YYYY-MM-DD') > moment(new Date(item)).format('YYYY-MM-DD')
-        : false;
-
-      return (
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => props.onTapDate(item)}
-          style={[styles.viewStyle]}
-        >
-          <View
-            style={{
-              height: 32,
-              width: 32,
-              borderRadius: 18,
-              backgroundColor: isDiabled
-                ? theme.colors.CLEAR
-                : isHighlitedDate
-                ? theme.colors.APP_GREEN
-                : theme.colors.CLEAR,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text
-              numberOfLines={1}
-              style={
-                isDiabled
-                  ? styles.disabledTextStyle
-                  : isHighlitedDate
-                  ? styles.textStyleToday
-                  : styles.unSelectedDateStyle
-              }
-            >
-              {moment(item).format('D')}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      );
-    };
-
-    const onSwipeRight = () => {
-      calendarStripRef.current && calendarStripRef.current.getPreviousWeek();
-    };
-
-    const onSwipeLeft = () => {
-      calendarStripRef.current && calendarStripRef.current.getNextWeek();
-    };
-
-    const config = {
-      velocityThreshold: 0.3,
-      directionalOffsetThreshold: 80,
-    };
-    console.log(props.date, 'props.date weekview');
+    const now = new Date();
+    const isTodaysDate =
+      now.getDate() == item.getDate() &&
+      now.getMonth() == item.getMonth() &&
+      now.getFullYear() == item.getFullYear();
 
     return (
-      <GestureRecognizer onSwipeLeft={onSwipeLeft} onSwipeRight={onSwipeRight} config={config}>
-        <CalendarStrip
-          showMonth={false}
-          minDate={props.minDate}
-          onDateSelected={(date) => {
-            props.onTapDate(date);
-          }}
-          selectedDate={props.date}
-          // onWeekChanged={(date) => props.onWeekChanged(date)}
-          style={styles.calendarStripStyle}
-          ref={(ref) => {
-            calendarStripRef.current = ref as CalendarStripRefType;
-          }}
-          showDayName={false}
-          iconLeft={null}
-          iconRight={null}
-          iconStyle={{
-            width: 0,
-            height: 0,
-          }}
-          dayComponent={(dayComponentProps) => {
-            return renderDayComponent(new Date(dayComponentProps.date.toISOString()));
-          }}
-        />
-      </GestureRecognizer>
+      <TouchableOpacity
+        onPress={() => props.onTapDate(item)}
+        style={[styles.viewStyle, isHighlitedDate ? styles.highlightedViewStyle : {}]}
+      >
+        <Text
+          numberOfLines={1}
+          style={[isHighlitedDate ? styles.textStyleToday : styles.textStyle, { marginBottom: 6 }]}
+        >
+          {isTodaysDate ? 'today' : days[item.getDay()]}
+        </Text>
+        <Text numberOfLines={1} style={isHighlitedDate ? styles.textStyleToday : styles.textStyle}>
+          {moment(item).format('DD')}
+        </Text>
+      </TouchableOpacity>
     );
-  }
-);
+  };
+
+  const onSwipeRight = () => {
+    ((calendarStripRef.current &&
+      calendarStripRef.current) as CalendarStripRefType).getPreviousWeek();
+  };
+
+  const onSwipeLeft = () => {
+    ((calendarStripRef.current && calendarStripRef.current) as CalendarStripRefType).getNextWeek();
+  };
+
+  const config = {
+    velocityThreshold: 0.3,
+    directionalOffsetThreshold: 80,
+  };
+
+  return (
+    <GestureRecognizer onSwipeLeft={onSwipeLeft} onSwipeRight={onSwipeRight} config={config}>
+      <CalendarStrip
+        showMonth={false}
+        onDateSelected={(date) => props.onTapDate(date)}
+        selectedDate={props.date}
+        onWeekChanged={(date) => props.onWeekChanged(date)}
+        style={styles.calendarStripStyle}
+        ref={(ref) => {
+          calendarStripRef.current = ref;
+        }}
+        iconLeft={null}
+        iconRight={null}
+        // dateNameStyle={styles.textStyle}
+        // dateNumberStyle={styles.textStyle}
+        // highlightDateNameStyle={[styles.textStyleToday, {}]}
+        // highlightDateNumberStyle={[styles.textStyleToday, {}]}
+        dayComponent={(dayComponentProps) => {
+          return renderDayComponent(new Date(dayComponentProps.date.toISOString()));
+        }}
+      />
+    </GestureRecognizer>
+  );
+};

@@ -59,7 +59,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { CalendarView } from '@aph/mobile-doctors/src/components/ui/CalendarView';
-import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/ui/ReSchedulePopUp';
+import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 //import ImagePicker from 'react-native-image-picker';
 
@@ -2025,6 +2025,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {displayReSchedulePopUp && (
         <ReSchedulePopUp
           doctorId={doctorId}
+          appointmentId={AppId}
           onClose={() => setDisplayReSchedulePopUp(false)}
           date={Appintmentdatetime}
           loading={(val) => setShowLoading(val)}

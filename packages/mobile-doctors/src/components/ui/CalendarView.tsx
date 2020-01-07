@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Calendar, DateObject, DayComponentProps } from 'react-native-calendars';
 import { theme } from '../../theme/theme';
-import { WeekView } from '@aph/mobile-doctors/src/components/Appointments/WeekView';
+import { WeekViewCalendar } from '@aph/mobile-doctors/src/components/ui/WeekViewCalendar';
 import { ArrowLeft, ArrowRight, DropdownBlueDown, DropdownBlueUp } from './Icons';
 
 export enum CALENDAR_TYPE {
@@ -145,7 +145,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
 
   const renderWeekCalendar = () => {
     return (
-      <WeekView
+      <WeekViewCalendar
         ref={(ref: any) => {
           weekViewRef.current = ref;
         }}
