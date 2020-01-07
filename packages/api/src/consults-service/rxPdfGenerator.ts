@@ -52,13 +52,13 @@ export const convertCaseSheetToRxPdfData = async (
       } else {
         frequency = 'Take';
         if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
-        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit + '(s)';
       }
       if (csRx.medicineConsumptionDuration) {
         frequency = frequency + ' for';
         frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
         if (csRx.medicineConsumptionDurationUnit)
-          frequency = frequency + ' ' + csRx.medicineConsumptionDurationUnit;
+          frequency = frequency + ' ' + csRx.medicineConsumptionDurationUnit.replace('S', '(s)');
       }
 
       if (csRx.medicineFrequency)
@@ -86,6 +86,7 @@ export const convertCaseSheetToRxPdfData = async (
             ' ' +
             csRx.medicineTimings
               .join(', ')
+              .replace(/,(?=[^,]*$)/, ' and')
               .split('_')
               .join(' ');
         }
