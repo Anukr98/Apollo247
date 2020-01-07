@@ -489,6 +489,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
         zIndex: 5,
+        elevation: 500,
       }}
     >
       <View
@@ -526,7 +527,6 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
             ...theme.viewStyles.cardContainer,
             backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
             borderRadius: 10,
-            minHeight: '60%',
             maxHeight: '85%',
           }}
         >

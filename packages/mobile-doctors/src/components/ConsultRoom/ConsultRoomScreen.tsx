@@ -139,7 +139,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
-  const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(true);
+  const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
   const [apiKey, setapiKey] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
