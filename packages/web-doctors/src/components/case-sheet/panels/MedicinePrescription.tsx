@@ -669,7 +669,7 @@ export const MedicinePrescription: React.FC = () => {
     'OINTMENT',
     'OTHERS',
   ];
-  const dosageFrequency = [
+  let dosageFrequency = [
     {
       id: 'ONCE_A_DAY',
       value: 'Once a day',
@@ -701,7 +701,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ];
-  const forOptions = [
+  let forOptions = [
     {
       id: 'DAYS',
       value: 'Day(s)',
@@ -784,6 +784,16 @@ export const MedicinePrescription: React.FC = () => {
         setTabletsCount(1);
         setLoading(false);
         setConsumptionDuration('');
+        setFrequency(dosageFrequency[0].id);
+        setforUnit(forOptions[0].id);
+        dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
+          dosageObj.selected = false;
+          return dosageObj;
+        });
+        forOptions = forOptions.map((forObj: SlotsObject) => {
+          forObj.selected = false;
+          return forObj;
+        });
       })
       .catch((error) => {
         if (error.toString().includes('404')) {
@@ -792,6 +802,7 @@ export const MedicinePrescription: React.FC = () => {
         }
       });
   };
+  const resetFrequencyFor = () => {};
   const toBeTaken = (value: any) => {
     const tobeTakenObjectList: any = [];
     value.map((slot: any) => {
@@ -1156,6 +1167,14 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const handleClearRequested = () => {
+    dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
+      dosageObj.selected = false;
+      return dosageObj;
+    });
+    forOptions = forOptions.map((forObj: SlotsObject) => {
+      forObj.selected = false;
+      return forObj;
+    });
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       slot.selected = false;
       return slot;
@@ -1174,6 +1193,8 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineUnit('OTHERS');
     setSelectedValue('');
     setSelectedId('');
+    setFrequency(dosageFrequency[0].id);
+    setforUnit(forOptions[0].id);
   };
   const generateMedicineTypes =
     medicineForm === 'OTHERS'
@@ -1245,6 +1266,14 @@ export const MedicinePrescription: React.FC = () => {
       return slot;
     });
     setToBeTakenSlots(slots);
+    dosageFrequency = dosageFrequency.map((dosageObj: SlotsObject) => {
+      dosageObj.selected = false;
+      return dosageObj;
+    });
+    forOptions = forOptions.map((forObj: SlotsObject) => {
+      forObj.selected = false;
+      return forObj;
+    });
   };
   const horizontal = medicineForm ? 'right' : 'left';
 
@@ -1271,9 +1300,13 @@ export const MedicinePrescription: React.FC = () => {
                     .toLowerCase()
                 : '';
             const unitHtmls = medicine.medicineUnit.toLowerCase();
+            const isInDuration =
+              medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
+                ? ''
+                : 'in the ';
             const timesString =
               medicine.medicineTimings.length > 0
-                ? 'in the ' +
+                ? isInDuration +
                   medicine.medicineTimings
                     .join(' , ')
                     .toLowerCase()
@@ -1362,9 +1395,14 @@ export const MedicinePrescription: React.FC = () => {
                         .toLowerCase()
                     : '';
                 const favUnitHtmls = favMedicine.medicineUnit.toLowerCase();
+                const isInDuration =
+                  favMedicine.medicineTimings.length === 1 &&
+                  favMedicine.medicineTimings[0] === 'AS_NEEDED'
+                    ? ''
+                    : 'in the ';
                 const favTimesString =
                   favMedicine.medicineTimings.length > 0
-                    ? 'in the ' +
+                    ? isInDuration +
                       favMedicine.medicineTimings
                         .join(' , ')
                         .toLowerCase()

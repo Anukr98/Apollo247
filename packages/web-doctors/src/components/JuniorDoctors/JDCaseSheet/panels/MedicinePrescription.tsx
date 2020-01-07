@@ -945,9 +945,13 @@ export const MedicinePrescription: React.FC = () => {
               .toLowerCase()
           : '';
       const unitHtmls = medicine.medicineUnit.toLowerCase();
+      const isInDuration =
+        medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
+          ? ''
+          : 'in the ';
       const timesString =
         medicine.medicineTimings.length > 0
-          ? 'in the ' +
+          ? isInDuration +
             medicine.medicineTimings
               .join(' , ')
               .toLowerCase()
