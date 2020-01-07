@@ -927,6 +927,10 @@ export const MedicinePrescription: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
+  const term = (value: string, char: string) => {
+    let changedString = value.substring(0, value.length - 1);
+    return changedString + char;
+  };
   // console.log(selectedMedicines);
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
@@ -935,7 +939,7 @@ export const MedicinePrescription: React.FC = () => {
         medicine.medicineConsumptionDurationInDays &&
         ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
           medicine.medicineConsumptionDurationUnit
-            ? medicine.medicineConsumptionDurationUnit.toLowerCase()
+            ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
             : 'day(s)'
         } `;
       const whenString =
@@ -944,7 +948,10 @@ export const MedicinePrescription: React.FC = () => {
               .join(', ')
               .toLowerCase()
           : '';
-      const unitHtmls = medicine.medicineUnit.toLowerCase();
+      const unitHtmls =
+        medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
+          ? term(medicine.medicineUnit.toLowerCase(), '(s)')
+          : medicine.medicineUnit.toLowerCase() + '(s)';
       const isInDuration =
         medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
           ? ''

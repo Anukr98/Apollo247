@@ -1244,7 +1244,10 @@ export const MedicinePrescription: React.FC = () => {
       </MenuItem>
     );
   });
-
+  const term = (value: string, char: string) => {
+    let changedString = value.substring(0, value.length - 1);
+    return changedString + char;
+  };
   const resetOptions = () => {
     resetFrequencyFor();
     setMedicineForm('OTHERS');
@@ -1273,7 +1276,7 @@ export const MedicinePrescription: React.FC = () => {
               medicine.medicineConsumptionDurationInDays &&
               ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
                 medicine.medicineConsumptionDurationUnit
-                  ? medicine.medicineConsumptionDurationUnit.toLowerCase()
+                  ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
                   : 'day(s)'
               } `;
 
@@ -1283,7 +1286,10 @@ export const MedicinePrescription: React.FC = () => {
                     .join(', ')
                     .toLowerCase()
                 : '';
-            const unitHtmls = medicine.medicineUnit.toLowerCase();
+            const unitHtmls =
+              medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
+                ? term(medicine.medicineUnit.toLowerCase(), '(s)')
+                : medicine.medicineUnit.toLowerCase() + '(s)';
             const isInDuration =
               medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
                 ? ''
@@ -1299,7 +1305,6 @@ export const MedicinePrescription: React.FC = () => {
             if (timesString && timesString !== '') {
               timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
             }
-            console.log(timesString);
             const dosageCount = medicine.medicineDosage;
             const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
             const unitHtml = `${unitHtmls}`;
@@ -1372,7 +1377,7 @@ export const MedicinePrescription: React.FC = () => {
                   favMedicine.medicineConsumptionDurationInDays &&
                   ` for ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
                     favMedicine.medicineConsumptionDurationUnit
-                      ? favMedicine.medicineConsumptionDurationUnit.toLowerCase()
+                      ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
                       : 'day(s)'
                   } `;
                 const favWhenString =
@@ -1381,13 +1386,18 @@ export const MedicinePrescription: React.FC = () => {
                         .join(', ')
                         .toLowerCase()
                     : '';
-                const favUnitHtmls = favMedicine.medicineUnit.toLowerCase();
+                //const favUnitHtmls = favMedicine.medicineUnit.toLowerCase();
+                const favUnitHtmls =
+                  favMedicine.medicineUnit[favMedicine.medicineUnit.length - 1].toLowerCase() ===
+                  's'
+                    ? term(favMedicine.medicineUnit.toLowerCase(), '(s)')
+                    : favMedicine.medicineUnit.toLowerCase() + '(s)';
                 const isInDuration =
                   favMedicine.medicineTimings.length === 1 &&
                   favMedicine.medicineTimings[0] === 'AS_NEEDED'
                     ? ''
                     : 'in the ';
-                const favTimesString =
+                let favTimesString =
                   favMedicine.medicineTimings.length > 0
                     ? isInDuration +
                       favMedicine.medicineTimings
@@ -1395,6 +1405,10 @@ export const MedicinePrescription: React.FC = () => {
                         .toLowerCase()
                         .replace('_', ' ')
                     : '';
+
+                if (favTimesString && favTimesString !== '') {
+                  favTimesString = favTimesString.replace(/,(?=[^,]*$)/, 'and');
+                }
                 const favDosageCount = favMedicine.medicineDosage;
                 const favTakeApplyHtml =
                   favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
