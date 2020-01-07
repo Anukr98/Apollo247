@@ -1298,7 +1298,7 @@ export const MedicinePrescription: React.FC = () => {
                     container: classes.autoSuggestBox,
                   }}
                   renderSuggestionsContainer={(options) => (
-                    <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                    <Scrollbars autoHide={true} style={{ height: 'calc(50vh' }}>
                       <Paper {...options.containerProps} square className={classes.searchpopup}>
                         {options.children}
                         {loading ? (
@@ -1331,7 +1331,7 @@ export const MedicinePrescription: React.FC = () => {
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(50vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
