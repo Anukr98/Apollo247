@@ -165,7 +165,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     medicinePopup: {
       width: 480,
-      margin: '30px auto 0 auto',
+      margin: '60px auto 0 auto',
       boxShadow: 'none',
       '&:focus': {
         outline: 'none',
@@ -1322,7 +1322,7 @@ export const MedicinePrescription: React.FC = () => {
                     container: classes.autoSuggestBox,
                   }}
                   renderSuggestionsContainer={(options) => (
-                    <Scrollbars autoHide={true} style={{ height: 'calc(50vh' }}>
+                    <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
                       <Paper {...options.containerProps} square className={classes.searchpopup}>
                         {options.children}
                         {loading ? (
@@ -1355,7 +1355,7 @@ export const MedicinePrescription: React.FC = () => {
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(50vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
