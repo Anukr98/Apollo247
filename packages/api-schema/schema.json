@@ -4481,6 +4481,24 @@
         "interfaces": null,
         "enumValues": [
           {
+            "name": "TEST_REPORT",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "CONSULTATION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PRESCRIPTION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "EHR",
             "description": null,
             "isDeprecated": false,
