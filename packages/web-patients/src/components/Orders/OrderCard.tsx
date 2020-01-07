@@ -268,7 +268,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             valueLabelDisplay="off"
           />
         );
-      case 'Return Accepted':
+      case 'Return Accepted' || 'Order Cancelled':
         return (
           <AphTrackSlider
             color="primary"
@@ -279,17 +279,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             valueLabelDisplay="off"
           />
         );
-      case 'Order Cancelled':
-        return (
-          <AphTrackSlider
-            color="primary"
-            getAriaValueText={valuetext}
-            disabled
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-          />
-        );
+
       case 'Order Verified':
         return (
           <AphTrackSlider
