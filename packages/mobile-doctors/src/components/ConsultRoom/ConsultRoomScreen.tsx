@@ -61,6 +61,7 @@ import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { CalendarView } from '@aph/mobile-doctors/src/components/ui/CalendarView';
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 //import ImagePicker from 'react-native-image-picker';
 
 const { height, width } = Dimensions.get('window');
@@ -98,6 +99,7 @@ const typingMsg = '^^#typing';
 const endCallMsg = '^^callme`stop^^';
 const covertVideoMsg = '^^convert`video^^';
 const covertAudioMsg = '^^convert`audio^^';
+const rescheduleconsult = '^^#rescheduleconsult';
 const patientId = 'Sai';
 // const channel = 'Channel7';
 
@@ -216,6 +218,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [callTimer, setCallTimer] = useState<number>(0);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
+
+  const { doctorDetails } = useAuth();
+
+  const consultTime =
+    doctorDetails?.consultHours?.filter(
+      (item) =>
+        item?.weekDay ===
+        moment(Appintmentdatetime)
+          .format('dddd')
+          .toUpperCase()
+    )[0]?.consultDuration || 15;
+  const isAfter = moment(Appintmentdatetime).isAfter(moment().add(-consultTime, 'minutes'));
 
   const startInterval = (timer: number) => {
     setConsultStarted(true);
@@ -1953,11 +1967,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
           {
             icon: (
-              <View style={{ marginTop: 0 }}>
+              <View style={{ marginTop: 0, opacity: isAfter ? 1 : 0.5 }}>
                 <DotIcon />
               </View>
             ),
-            onPress: () => setDropdownShow(!dropdownShow),
+            onPress: () => isAfter && setDropdownShow(!dropdownShow),
           },
         ]}
       />
@@ -1968,8 +1982,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       <View
         style={{
           position: 'absolute',
-          top: 50,
-          width: '100%',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
           alignItems: 'flex-end',
           overflow: 'hidden',
           ...Platform.select({
@@ -1983,37 +1999,45 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }),
         }}
       >
-        <DropDown
-          containerStyle={{ marginRight: 20 }}
-          options={[
-            {
-              optionText: 'Share Case Sheet',
-              onPress: () => {
-                setDropdownShow(false);
-                props.navigation.push(AppRoutes.ShareConsult);
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{ width: '100%', height: '100%', alignItems: 'flex-end' }}
+          onPress={() => {
+            setDropdownShow(false);
+          }}
+        >
+          <DropDown
+            containerStyle={{ width: '50%', marginRight: 20, marginTop: 40 }}
+            options={[
+              {
+                optionText: 'Share Case Sheet',
+                onPress: () => {
+                  setDropdownShow(false);
+                  props.navigation.push(AppRoutes.ShareConsult);
+                },
               },
-            },
-            {
-              optionText: 'Transfer Consult',
-              onPress: () => {
-                setDropdownShow(false);
-                props.navigation.push(AppRoutes.TransferConsult, {
-                  AppointmentId: props.navigation.getParam('AppId'),
-                });
+              {
+                optionText: 'Transfer Consult',
+                onPress: () => {
+                  setDropdownShow(false);
+                  props.navigation.push(AppRoutes.TransferConsult, {
+                    AppointmentId: props.navigation.getParam('AppId'),
+                  });
+                },
               },
-            },
-            {
-              optionText: 'Reschedule Consult',
-              onPress: () => {
-                setDropdownShow(false);
-                setDisplayReSchedulePopUp(true);
-                // props.navigation.push(AppRoutes.ReschduleConsult, {
-                //   AppointmentId: props.navigation.getParam('AppId'),
-                // });
+              {
+                optionText: 'Reschedule Consult',
+                onPress: () => {
+                  setDropdownShow(false);
+                  setDisplayReSchedulePopUp(true);
+                  // props.navigation.push(AppRoutes.ReschduleConsult, {
+                  //   AppointmentId: props.navigation.getParam('AppId'),
+                  // });
+                },
               },
-            },
-          ]}
-        />
+            ]}
+          />
+        </TouchableOpacity>
       </View>
     );
   };
@@ -2029,6 +2053,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           onClose={() => setDisplayReSchedulePopUp(false)}
           date={Appintmentdatetime}
           loading={(val) => setShowLoading(val)}
+          onDone={(reschduleObject) => {
+            pubnub.publish(
+              {
+                message: {
+                  id: doctorId,
+                  message: rescheduleconsult,
+                  transferInfo: reschduleObject,
+                },
+                channel: AppId,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+            props.navigation.goBack();
+          }}
         />
       )}
       {dropdownShow ? renderDropdown() : null}

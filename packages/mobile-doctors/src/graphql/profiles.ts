@@ -39,6 +39,9 @@ export const GET_DOCTOR_DETAILS = gql`
         startTime
         endTime
         weekDay
+        isActive
+        consultDuration
+        consultBuffer
       }
       packages {
         name
