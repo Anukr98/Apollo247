@@ -23,6 +23,9 @@ export const addPatientMedicalRecordTypeDefs = gql`
   }
 
   enum MedicalRecordType {
+    TEST_REPORT
+    CONSULTATION
+    PRESCRIPTION
     EHR
     PHYSICAL_EXAMINATION
     OPERATIVE_REPORT
