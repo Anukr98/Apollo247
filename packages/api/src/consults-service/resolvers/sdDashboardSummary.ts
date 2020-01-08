@@ -10,26 +10,31 @@ import { SdDashboardSummaryRepository } from 'consults-service/repositories/sdDa
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 
 export const sdDashboardSummaryTypeDefs = gql`
-  type dashboardSummaryResult {
+  type DashboardSummaryResult {
     doctorId: String
     doctorName: String
     appointmentDateTime: Date
     totalConsultation: Int
   }
 
+  type FeedbackSummaryResult {
+    ratingRowsCount: Int
+  }
+
   extend type Mutation {
-    updateSdSummary(summaryDate: Date): dashboardSummaryResult!
+    updateSdSummary(summaryDate: Date): DashboardSummaryResult!
+    updateConsultRating(summaryDate: Date): FeedbackSummaryResult
   }
 `;
 
-type dashboardSummaryResult = {
+type DashboardSummaryResult = {
   doctorId: string;
   doctorName: string;
   appointmentDateTime: Date;
   totalConsultation: number;
 };
 
-type feedbackSummaryResult = {
+type FeedbackSummaryResult = {
   ratingRowsCount: number;
 };
 
@@ -43,14 +48,14 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   patRepo: patientsDb.getCustomRepository(PatientRepository),
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
   dashboardRepo: consultsDb.getCustomRepository(SdDashboardSummaryRepository),
-  feedbackRepo: consultsDb.getCustomRepository(PatientFeedbackRepository),
+  feedbackRepo: patientsDb.getCustomRepository(PatientFeedbackRepository),
 });
 
 const updateConsultRating: Resolver<
   null,
   { summaryDate: Date },
   ConsultServiceContext,
-  feedbackSummaryResult
+  FeedbackSummaryResult
 > = async (parent, args, context) => {
   const { feedbackRepo, dashboardRepo } = getRepos(context);
   const feedbackData: FeedbackCounts[] = await feedbackRepo.getFeedbackByDate(
@@ -90,7 +95,7 @@ const updateSdSummary: Resolver<
   null,
   { summaryDate: Date },
   ConsultServiceContext,
-  dashboardSummaryResult
+  DashboardSummaryResult
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors();
