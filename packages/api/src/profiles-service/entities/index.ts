@@ -180,6 +180,9 @@ export class MedicineOrders extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: 0 })
+  isEprescription: number;
+
   @PrimaryGeneratedColumn({ type: 'bigint' })
   orderAutoId: number;
 
@@ -1494,6 +1497,22 @@ export class PatientFeedback extends BaseEntity {
 
   @Column({ nullable: true })
   doctorId: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 
 @Entity()
