@@ -3,7 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Mascot, Check, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -122,9 +122,10 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [backPressCount, setbackPressCount] = useState<number>(0);
-
+  const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const [referredBy, setReferredBy] = useState<string>();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -289,6 +290,36 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
+          <View
+            style={{
+              backgroundColor: theme.colors.SKY_BLUE,
+              marginHorizontal: -20,
+              paddingVertical: 20,
+              marginTop: 20,
+            }}
+          >
+            <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
+              <Mascot style={{ marginRight: 20 }} />
+              <TextInputComponent
+                label={
+                  referredBy
+                    ? `${referredBy} Has Sent You A Referral Code!`
+                    : 'Do You Have A Referral Code? (Optional)'
+                }
+                labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
+                placeholder={'Enter referral code'}
+                placeholderTextColor={'rgba(255,255,255,0.6)'}
+                inputStyle={{
+                  borderColor: theme.colors.WHITE,
+                  color: theme.colors.WHITE,
+                }}
+                conatinerstyles={{ width: '78%' }}
+                value={referral}
+                onChangeText={(text) => setReferral(text)}
+                icon={referredBy ? <Check /> : null}
+              />
+            </View>
+          </View>
         </Card>
       </View>
     );

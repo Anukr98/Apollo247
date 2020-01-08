@@ -717,3 +717,19 @@ export const EditIconNew: React.FC<IconProps> = (props) => (
 export const HomeIcon: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 32, width: 32 }} {...props} source={require('./icons/ic_home.png')} />
 );
+
+export const Ambulance: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ambulance.png')} />
+);
+
+export const Diabetes: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_diabetes.png')} />
+);
+
+export const Symptomtracker: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_symptomtracker.png')} />
+);
+
+export const PrescriptionMenu: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_prescription_menu.png')} />
+);
