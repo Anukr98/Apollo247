@@ -89,7 +89,9 @@ export const SelectableButton: React.FC<SelectableButtonProps> = (props) => {
             marginTop: 12,
             marginBottom: 12,
             marginLeft: 20,
-            marginRight: 12,
+            marginRight: props.icon ? 12 : 0,
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {props.icon}

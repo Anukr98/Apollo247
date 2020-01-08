@@ -269,6 +269,21 @@ export interface SaveDoctorDeviceTokenInput {
   doctorId: string;
 }
 
+export interface SaveDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDuration?: string | null;
+  medicineConsumptionDurationInDays: number;
+  medicineConsumptionDurationUnit?: MEDICINE_CONSUMPTION_DURATION | null;
+  medicineDosage: string;
+  medicineFormTypes?: MEDICINE_FORM_TYPES | null;
+  medicineFrequency?: MEDICINE_FREQUENCY | null;
+  medicineInstructions?: string | null;
+  medicineName: string;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineUnit: MEDICINE_UNIT;
+}
+
 export interface SymptomInput {
   symptom?: string | null;
   since?: string | null;
@@ -285,6 +300,22 @@ export interface TransferAppointmentInput {
   transferNotes?: string | null;
   transferInitiatedBy?: TRANSFER_INITIATED_TYPE | null;
   transferInitiatedId: string;
+}
+
+export interface UpdateDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  id: string;
+  medicineConsumptionDuration?: string | null;
+  medicineConsumptionDurationInDays?: number | null;
+  medicineConsumptionDurationUnit?: MEDICINE_CONSUMPTION_DURATION | null;
+  medicineDosage?: string | null;
+  medicineFormTypes?: MEDICINE_FORM_TYPES | null;
+  medicineFrequency?: MEDICINE_FREQUENCY | null;
+  medicineInstructions?: string | null;
+  medicineName: string;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineUnit?: MEDICINE_UNIT | null;
 }
 
 export interface UpdatePatientInput {
