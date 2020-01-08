@@ -338,6 +338,7 @@ export const NeedHelp = [
   {
     category: 'Virtual Consult',
     options: [
+      'Require Reschedule',
       'Delay in consult',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
@@ -365,6 +366,7 @@ export const NeedHelp = [
   {
     category: 'Physical Consult',
     options: [
+      'Require Reschedule',
       'Long Waiting time for Physical consult',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
@@ -388,6 +390,7 @@ export const NeedHelp = [
   {
     category: 'Diagnostics',
     options: [
+      'Require Reschedule',
       'Payment Issues while ordering',
       'Sample pick up related',
       'Excess amount related',
