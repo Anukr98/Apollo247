@@ -40,7 +40,7 @@ type FeedbackSummaryResult = {
 
 type FeedbackCounts = {
   rating: string;
-  ratingCount: number;
+  ratingcount: number;
 };
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
@@ -66,16 +66,19 @@ const updateConsultRating: Resolver<
     okRating = 0,
     poorRating = 0,
     greatRating = 0;
+  console.log(feedbackData, 'feedback ata');
   if (feedbackData.length > 0) {
     feedbackData.forEach((record) => {
+      console.log(record, 'record');
+      console.log(record.rating, record.ratingcount, 'rating');
       if (record.rating == 'GOOD') {
-        goodRating = record.ratingCount;
-      } else if (record.rating == 'OK') {
-        okRating = record.ratingCount;
+        goodRating = record.ratingcount;
+      } else if (record.rating == 'OKAY') {
+        okRating = record.ratingcount;
       } else if (record.rating == 'GREAT') {
-        greatRating = record.ratingCount;
+        greatRating = record.ratingcount;
       } else if (record.rating == 'POOR') {
-        poorRating = record.ratingCount;
+        poorRating = record.ratingcount;
       }
     });
     const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
