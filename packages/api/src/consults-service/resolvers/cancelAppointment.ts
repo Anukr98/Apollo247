@@ -123,6 +123,14 @@ const cancelAppointment: Resolver<
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
+  if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
+    const pushNotificationInput = {
+      appointmentId: appointment.id,
+      notificationType: NotificationType.PATIENT_CANCEL_APPOINTMENT,
+    };
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
+  }
+
   const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
 
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
