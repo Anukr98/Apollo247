@@ -194,6 +194,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '30px auto 0 auto',
       boxShadow: 'none',
+      outline: '0 !important'
     },
     dialogActions: {
       padding: 10,
@@ -348,8 +349,8 @@ export const FavouriteAdvice: React.FC = () => {
       .then((_data) => {
         setSelectedValues(
           _data.data &&
-            _data.data.getDoctorFavouriteAdviceList &&
-            _data.data.getDoctorFavouriteAdviceList.adviceList
+          _data.data.getDoctorFavouriteAdviceList &&
+          _data.data.getDoctorFavouriteAdviceList.adviceList
         );
         setAdviceLoader(false);
       })
@@ -366,37 +367,37 @@ export const FavouriteAdvice: React.FC = () => {
           {adviceLoader ? (
             <CircularProgress className={classes.loader} />
           ) : (
-            selectedValues &&
-            selectedValues.length > 0 &&
-            selectedValues!.map(
-              (item, idx) =>
-                item &&
-                item.instruction!.trim() !== '' && (
-                  <li key={idx}>
-                    {item!.instruction}
-                    <span className={classes.iconRight}>
-                      <img
-                        width="16"
-                        src={require('images/round_edit_24_px.svg')}
-                        onClick={() => {
-                          setShowUpdatePopup(true);
-                          setUpdateAdviceId(item.id);
-                          setAdvice(item.instruction);
-                          setShowAddInputText(true);
-                        }}
-                        alt=""
-                      />
-                      <img
-                        width="16"
-                        src={require('images/ic_cancel_green.svg')}
-                        onClick={() => handleDelete(item, idx, item.id)}
-                        alt=""
-                      />
-                    </span>
-                  </li>
-                )
-            )
-          )}
+              selectedValues &&
+              selectedValues.length > 0 &&
+              selectedValues!.map(
+                (item, idx) =>
+                  item &&
+                  item.instruction!.trim() !== '' && (
+                    <li key={idx}>
+                      {item!.instruction}
+                      <span className={classes.iconRight}>
+                        <img
+                          width="16"
+                          src={require('images/round_edit_24_px.svg')}
+                          onClick={() => {
+                            setShowUpdatePopup(true);
+                            setUpdateAdviceId(item.id);
+                            setAdvice(item.instruction);
+                            setShowAddInputText(true);
+                          }}
+                          alt=""
+                        />
+                        <img
+                          width="16"
+                          src={require('images/ic_cancel_green.svg')}
+                          onClick={() => handleDelete(item, idx, item.id)}
+                          alt=""
+                        />
+                      </span>
+                    </li>
+                  )
+              )
+            )}
 
           <li>
             <Button
@@ -481,18 +482,18 @@ export const FavouriteAdvice: React.FC = () => {
                     Update Advice
                   </AphButton>
                 ) : (
-                  <AphButton
-                    color="primary"
-                    className={classes.updateBtn}
-                    onClick={() => {
-                      saveAdvice(advice);
-                      console.log('save advice');
-                      setShowAddInputText(false);
-                    }}
-                  >
-                    Add Advice
+                    <AphButton
+                      color="primary"
+                      className={classes.updateBtn}
+                      onClick={() => {
+                        saveAdvice(advice);
+                        console.log('save advice');
+                        setShowAddInputText(false);
+                      }}
+                    >
+                      Add Advice
                   </AphButton>
-                )}
+                  )}
               </div>
             </div>
           </AphDialogTitle>
