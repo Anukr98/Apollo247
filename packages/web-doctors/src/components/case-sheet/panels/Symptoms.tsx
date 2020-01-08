@@ -116,8 +116,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     boxShadow: 'none',
     outline: 'none',
     focus: {
-      outline: '0 !important'
-    }
+      outline: '0 !important',
+    },
   },
   cross: {
     position: 'absolute',
@@ -422,7 +422,10 @@ export const Symptoms: React.FC = (props) => {
                           classes={{ root: classes.deleteSymptom }}
                           onClick={() => deleteSymptom(idx)}
                         >
-                          <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                          <img
+                            src={caseSheetEdit && require('images/ic_cancel_green.svg')}
+                            alt=""
+                          />
                         </AphButton>
                         <Fragment>
                           <List>
@@ -483,8 +486,8 @@ export const Symptoms: React.FC = (props) => {
                 )}
             </List>
           ) : (
-              <div className={classes.nodatafound}>No data Found</div>
-            )}
+            <div className={classes.nodatafound}>No data Found</div>
+          )}
 
           {caseSheetEdit && (
             <AphButton
@@ -498,7 +501,7 @@ export const Symptoms: React.FC = (props) => {
             >
               <img src={require('images/ic_dark_plus.svg')} alt="" />
               ADD COMPLAINT
-          </AphButton>
+            </AphButton>
           )}
           <div tabIndex={-1}>
             <Modal
@@ -510,7 +513,7 @@ export const Symptoms: React.FC = (props) => {
               <Paper className={classes.medicinePopup}>
                 <AphDialogTitle className={classes.popupHeadingCenter}>
                   ADD COMPLAINT
-              <Button className={classes.cross}>
+                  <Button className={classes.cross}>
                     <img
                       src={require('images/ic_cross.svg')}
                       alt=""
@@ -528,7 +531,7 @@ export const Symptoms: React.FC = (props) => {
                       <div>
                         <Scrollbars autoHide={true} style={{ height: '480px' }}>
                           <div className={classes.dialogContent}>
-                            <div >
+                            <div>
                               <h6>COMPLAINT</h6>
                               <div className={classes.numberTablets}>
                                 <AphTextField
@@ -548,7 +551,7 @@ export const Symptoms: React.FC = (props) => {
                                     error={errorState.symptomError}
                                   >
                                     Please Enter Complaint(two complaint names can't be same)
-                              </FormHelperText>
+                                  </FormHelperText>
                                 )}
                               </div>
                             </div>
@@ -571,7 +574,7 @@ export const Symptoms: React.FC = (props) => {
                                     error={errorState.sinceError}
                                   >
                                     Please Enter Since
-                              </FormHelperText>
+                                  </FormHelperText>
                                 )}
                               </div>
                             </div>
@@ -594,7 +597,7 @@ export const Symptoms: React.FC = (props) => {
                                     error={errorState.howOfftenError}
                                   >
                                     Please Enter How Often
-                              </FormHelperText>
+                                  </FormHelperText>
                                 )}
                               </div>
                             </div>
@@ -617,7 +620,7 @@ export const Symptoms: React.FC = (props) => {
                                     error={errorState.severityError}
                                   >
                                     Please Enter Severity
-                              </FormHelperText>
+                                  </FormHelperText>
                                 )}
                               </div>
                             </div>
@@ -649,7 +652,7 @@ export const Symptoms: React.FC = (props) => {
                           }}
                         >
                           Cancel
-                    </AphButton>
+                        </AphButton>
                         <AphButton
                           color="primary"
                           onClick={() => {
