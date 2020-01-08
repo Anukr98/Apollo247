@@ -50,7 +50,7 @@ import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineL
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -412,7 +412,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     loader: {
       left: '45%',
-      top: '45%',
+      top: '20%',
       position: 'absolute',
     },
     faverite: {
@@ -649,6 +649,16 @@ interface SlotsObject {
   value: string;
   selected: boolean;
 }
+interface FrequencyType {
+  id: MEDICINE_FREQUENCY;
+  value: string;
+  selected: boolean;
+}
+interface DurationType {
+  id: MEDICINE_CONSUMPTION_DURATION;
+  value: string;
+  selected: boolean;
+}
 interface MedicineObject {
   id: string;
   value: string;
@@ -794,7 +804,7 @@ export const FavouriteMedicines: React.FC = () => {
     MEDICINE_UNIT.OINTMENT,
     MEDICINE_UNIT.OTHERS,
   ];
-  const forOptions = [
+  let forOptions = [
     {
       id: MEDICINE_CONSUMPTION_DURATION.DAYS,
       value: 'Day(s)',
@@ -811,7 +821,7 @@ export const FavouriteMedicines: React.FC = () => {
       selected: false,
     },
   ];
-  const dosageFrequency = [
+  let dosageFrequency = [
     {
       id: MEDICINE_FREQUENCY.ONCE_A_DAY,
       value: 'Once a day',
@@ -936,19 +946,15 @@ export const FavouriteMedicines: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        const temp: any =
+        if (
+          _data &&
           _data.data &&
           _data.data.getDoctorFavouriteMedicineList &&
-          _data.data.getDoctorFavouriteMedicineList.medicineList;
-
-        const medicineList: any = temp;
-        // temp.map((data1: any) => {
-        //   if (data1) {
-        //     selectedMedicinesArr!.push(data1);
-        //   }
-        // });
-
-        setSelectedMedicinesArr(medicineList);
+          _data.data.getDoctorFavouriteMedicineList.medicineList
+        ) {
+          const temp: any = _data.data.getDoctorFavouriteMedicineList.medicineList;
+          setSelectedMedicinesArr(temp);
+        }
         setMedicineLoader(false);
       })
       .catch((e) => {
@@ -1075,6 +1081,21 @@ export const FavouriteMedicines: React.FC = () => {
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
     setSelectedId(selectedMedicinesArr![idx].id!);
     setSelectedExternalId(selectedMedicinesArr![idx].externalId!);
+    setFrequency(
+      selectedMedicinesArr![idx].medicineFrequency!
+        ? selectedMedicinesArr![idx].medicineFrequency!
+        : dosageFrequency[0].id
+    );
+    setforUnit(
+      selectedMedicinesArr![idx].medicineConsumptionDurationUnit!
+        ? selectedMedicinesArr![idx].medicineConsumptionDurationUnit!
+        : forOptions[0].id
+    );
+    setMedicineForm(
+      selectedMedicinesArr![idx].medicineFormTypes!
+        ? selectedMedicinesArr![idx].medicineFormTypes!
+        : 'OTHERS'
+    );
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
@@ -1117,7 +1138,19 @@ export const FavouriteMedicines: React.FC = () => {
       setSuggestions(getSuggestions(searchInput));
     }
   }, [searchInput]);
+  const resetFrequencyFor = () => {
+    setFrequency(dosageFrequency[0].id);
+    setforUnit(forOptions[0].id);
+    dosageFrequency = dosageFrequency.map((dosageObj: FrequencyType) => {
+      dosageObj.selected = false;
+      return dosageObj;
+    });
 
+    forOptions = forOptions.map((forObj: DurationType) => {
+      forObj.selected = false;
+      return forObj;
+    });
+  };
   const daySlotsToggleAction = (slotId: string) => {
     const slots = daySlots.map((slot: SlotsObject) => {
       if (slot && slotId === slot.id) {
@@ -1257,6 +1290,7 @@ export const FavouriteMedicines: React.FC = () => {
       setMedicineUnit(MEDICINE_UNIT.OTHERS);
       setSelectedValue('');
       setSelectedId('');
+      resetFrequencyFor();
     }
   };
   const addUpdateMedicines = () => {
@@ -1291,6 +1325,7 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false,
       });
     } else {
+      setMedicineLoader(true);
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: Number(consumptionDuration),
         medicineDosage: String(tabletsCount),
@@ -1359,6 +1394,7 @@ export const FavouriteMedicines: React.FC = () => {
         })
         .then((data) => {
           console.log('data after mutation' + data);
+          setMedicineLoader(false);
         });
 
       setMedicineInstruction('');
@@ -1367,6 +1403,7 @@ export const FavouriteMedicines: React.FC = () => {
       setMedicineUnit(MEDICINE_UNIT.OTHERS);
       setSelectedValue('');
       setSelectedId('');
+      resetFrequencyFor();
     }
   };
 
@@ -1454,7 +1491,7 @@ export const FavouriteMedicines: React.FC = () => {
           );
         });
 
-  const generateFrequency = dosageFrequency.map((dosageObj: SlotsObject, index: number) => {
+  const generateFrequency = dosageFrequency.map((dosageObj: FrequencyType, index: number) => {
     return (
       <MenuItem
         key={index.toString()}
@@ -1467,7 +1504,7 @@ export const FavouriteMedicines: React.FC = () => {
       </MenuItem>
     );
   });
-  const forOptionHtml = forOptions.map((optionObj: SlotsObject, index: number) => {
+  const forOptionHtml = forOptions.map((optionObj: DurationType, index: number) => {
     return (
       <MenuItem
         key={index.toString()}
@@ -1492,6 +1529,7 @@ export const FavouriteMedicines: React.FC = () => {
       return slot;
     });
     setToBeTakenSlots(slots);
+    resetFrequencyFor();
   };
   return (
     <div className={classes.ProfileContainer}>
