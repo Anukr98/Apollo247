@@ -666,7 +666,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         }}
       >
         {scrollVal && renderHeaderScroll()}
-        <ScrollView bounces={false} style={{ flex: 1 }} onScroll={handleScroll}>
+        <ScrollView
+          bounces={false}
+          style={{ flex: 1 }}
+          onScroll={handleScroll}
+          scrollEventThrottle={20}
+        >
           {renderAnimatedHeader()}
           {profileDetails && renderDetails()}
           {renderRows()}
