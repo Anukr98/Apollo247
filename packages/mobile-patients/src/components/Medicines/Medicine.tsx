@@ -246,7 +246,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   // console.log('ORDERS\n', { _orders });
 
-  // Common Views
+  // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
@@ -280,17 +280,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isVisible={ShowPopop}
         disabledOption="NONE"
         type="nonCartFlow"
-        heading={'Upload Prescription(s)'}
-        instructionHeading={'Instructions For Uploading Prescriptions'}
+        heading={'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
         instructions={[
-          'Take clear picture of your entire prescription.',
-          'Doctor details & date of the prescription should be clearly visible.',
-          'Medicines will be dispensed as per prescription.',
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
         ]}
         optionTexts={{
-          camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE\nFROM GALLERY',
-          prescription: 'SELECT FROM\nE-PRESCRIPTION',
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+          prescription: 'SELECT FROM\nE-PRESCRIPTION',
         }}
         onClickClose={() => setShowPopop(false)}
         onResponse={(selectedType, response) => {
@@ -315,7 +315,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     else if (offerBannerImage)
       return (
         <Image
-          // PlaceholderContent={renderSectionLoader(imgHeight)}
+          // PlaceholderContent={renderSectionLoader(imgHeight)}
           placeholderStyle={styles.imagePlaceholderStyle}
           onLoad={(value) => {
             const { height, width } = value.nativeEvent.source;
@@ -339,7 +339,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               paddingBottom: 12,
             }}
           >
-            Have a prescription ready?
+            Have a prescription ready?
           </Text>
           <Button
             onPress={() => {
@@ -349,7 +349,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             titleTextStyle={{
               ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
             }}
-            title={'UPLOAD PRESCRIPTION'}
+            title={'UPLOAD PRESCRIPTION'}
           />
         </View>
         <FileBig style={{ height: 60, width: 40 }} />
@@ -366,7 +366,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             paddingBottom: 8,
           }}
         >
-          Don’t have a prescription? Don’t worry!
+          Don’t have a prescription? Don’t worry!
         </Text>
         <Text
           onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
@@ -374,7 +374,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
           }}
         >
-          CONSULT A DOCTOR
+          CONSULT A DOCTOR
         </Text>
       </View>
     );
@@ -505,7 +505,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (healthAreas.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
+        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -538,7 +538,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'DEALS OF THE DAY'} />
+        <SectionHeader leftText={'DEALS OF THE DAY'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -552,7 +552,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
-                    title: 'DEALS OF THE DAY',
+                    title: 'DEALS OF THE DAY',
                   });
                 }}
               >
@@ -612,10 +612,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
           {!!specialPrice && (
             <Text style={[styles.discountedPriceText, { marginRight: 4 }]}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
           )}
-          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
+          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
         </View>
       );
     };
@@ -658,7 +658,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
             onPress={data.onAddOrRemoveCartItem}
           >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -719,7 +719,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (hotSellers.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
+        <SectionHeader leftText={'HOT SELLERS'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -736,7 +736,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (shopByCategory.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY CATEGORY'} />
+        <SectionHeader leftText={'SHOP BY CATEGORY'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -1137,7 +1137,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
@@ -1223,6 +1223,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           bounces={false}
           stickyHeaderIndices={[1]}
           onScroll={handleScroll}
+          scrollEventThrottle={20}
           // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},

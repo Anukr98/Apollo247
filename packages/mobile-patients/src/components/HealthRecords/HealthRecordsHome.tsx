@@ -332,7 +332,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
-    setScrollOffset(event.nativeEvent.contentOffset.y);
+    const offset = event.nativeEvent.contentOffset.y;
+    if (!(offset > 1 && scrollOffset > 1)) {
+      setScrollOffset(event.nativeEvent.contentOffset.y);
+    }
   };
 
   const renderTopView = () => {
@@ -556,6 +559,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           bounces={false}
           stickyHeaderIndices={[1]}
           onScroll={handleScroll}
+          scrollEventThrottle={20}
         >
           {renderProfileChangeView()}
           {renderTabSwitch()}
