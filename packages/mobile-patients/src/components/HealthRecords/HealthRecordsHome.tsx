@@ -337,13 +337,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const renderTopView = () => {
     const containerStyle: ViewStyle =
-      scrollOffset > 1
+      scrollOffset > 134
         ? {
             shadowColor: '#808080',
             shadowOffset: { width: 0, height: 0 },
-            zIndex: 1,
             shadowOpacity: 0.4,
-            shadowRadius: 5,
+            shadowRadius: 10,
             elevation: 5,
           }
         : {};
