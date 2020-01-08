@@ -102,7 +102,6 @@ const updateSdSummary: Resolver<
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors();
-
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
@@ -115,26 +114,26 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         'ONLINE'
       );
-      const auidoCount = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
-      const videoCount = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
-      const reschduleCount = await dashboardRepo.getRescheduleCount(doctor.id, args.summaryDate);
+      const auidoCount = 0; //await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
+      const videoCount = 0; //await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
+      const reschduleCount = 0; //await dashboardRepo.getRescheduleCount(doctor.id, args.summaryDate);
       const slotsCount = await dashboardRepo.getDoctorSlots(
         doctor.id,
         args.summaryDate,
         context.doctorsDb
       );
-      const consultHours = await dashboardRepo.getTimePerConsult(doctor.id, args.summaryDate);
-      const unpaidFollowUpCount = await dashboardRepo.getFollowUpBookedCount(
-        doctor.id,
-        args.summaryDate,
-        '0'
-      );
-      const paidFollowUpCount = await dashboardRepo.getFollowUpBookedCount(
-        doctor.id,
-        args.summaryDate,
-        '1'
-      );
-      const callDuration = await dashboardRepo.getOnTimeConsultations(doctor.id, args.summaryDate);
+      const consultHours = 0; //await dashboardRepo.getTimePerConsult(doctor.id, args.summaryDate);
+      const unpaidFollowUpCount = 0; //await dashboardRepo.getFollowUpBookedCount(
+      //   doctor.id,
+      //   args.summaryDate,
+      //   '0'
+      // );
+      const paidFollowUpCount = 0; //await dashboardRepo.getFollowUpBookedCount(
+      //   doctor.id,
+      //   args.summaryDate,
+      //   '1'
+      // );
+      const callDuration = 0; //await dashboardRepo.getOnTimeConsultations(doctor.id, args.summaryDate);
       const dashboardSummaryAttrs: Partial<SdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,

@@ -220,7 +220,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           'appointment_call_details."appointmentId" as "appointmentId"',
           'sum(appointment_call_details."callDuration") as "totalDuration"',
         ])
-        .andWhere('appointment_call_details.appointmentId in (:...apptIds)', { apptIds })
+        .andWhere('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
         .andWhere('appointment_call_details.endTime is not null')
         .groupBy('appointment_call_details."appointmentId"')
         .getRawMany();

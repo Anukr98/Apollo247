@@ -27,6 +27,7 @@ import {
 } from 'notifications-service/resolvers/notifications';
 import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -496,7 +497,31 @@ const bookRescheduleAppointment: Resolver<
     messageContent: mailContent,
   };
   sendMail(emailContent);
+  //send mail to doctor admin start
+  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
+    const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
+    const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
+    console.log(adminDetails, 'adminDetails');
+    if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
 
+    const listOfEmails: string[] = [];
+
+    adminDetails.length > 0 &&
+      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
+    console.log('listOfEmails', listOfEmails);
+    listOfEmails.forEach(async (adminemail) => {
+      const adminEmailContent: EmailMessage = {
+        ccEmail: ccEmailIds.toString(),
+        toEmail: adminemail.toString(),
+        subject: mailSubject.toString(),
+        fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
+        fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
+        messageContent: mailContent,
+      };
+      sendMail(adminEmailContent);
+    });
+  }
+  //send mail to doctor admin end
   const appointmentDetails = await appointmentRepo.findById(finalAppointmentId);
   if (!appointmentDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
