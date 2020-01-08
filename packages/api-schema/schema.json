@@ -19930,6 +19930,16 @@
             "defaultValue": null
           },
           {
+            "name": "isEprescription",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "payment",
             "description": null,
             "type": {
