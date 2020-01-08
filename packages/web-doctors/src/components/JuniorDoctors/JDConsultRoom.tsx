@@ -12,6 +12,10 @@ import {
 } from 'graphql/types/CreateAppointmentSession';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from 'graphql/types/EndCallNotification';
+import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET_JRD,
   CREATE_CASESHEET_FOR_JRD,
@@ -29,7 +33,6 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
@@ -57,7 +60,7 @@ import {
   RemoveFromConsultQueue,
   RemoveFromConsultQueueVariables,
 } from 'graphql/types/RemoveFromConsultQueue';
-import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
+import { REMOVE_FROM_CONSULT_QUEUE, END_CALL_NOTIFICATION } from 'graphql/consults';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -80,13 +83,6 @@ import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
-
-// interface SymptomObject {
-//   symptom: string;
-//   severity: string;
-//   howOften: string;
-//   since: string;
-// }
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -394,7 +390,6 @@ export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  // const [isAutoSubmitDialogOpened, setIsAutoSubmitDialogOpened] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
   const [notesJrd, setNotesJrd] = React.useState('');
@@ -475,7 +470,9 @@ export const JDConsultRoom: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [callId, setcallId] = useState<string>('');
+  const [chatRecordId, setChatRecordId] = useState<string>('');
   const [documentArray, setDocumentArray] = useState();
+
   /* case sheet data*/
   let assignedDoctorFirstName = '',
     assignedDoctorLastName = '',
@@ -834,18 +831,13 @@ export const JDConsultRoom: React.FC = () => {
   // if this function triggered it implies that Jrd has not performed any action on popup.
   const triggerAutoEndConsult = () => {
     setJrdNoFillDialog(false);
-
     // trigger auto close sheet action and pass it to conext for sending out chat message.
     setAutoCloseCaseSheet(true);
-
     // end consult automatically.
     endConsultAutoAction();
-
-    // redirect back to consults.
-    // window.location.href = clientRoutes.juniorDoctor();
   };
 
-  const sendCallNotificationFn = (callType: APPT_CALL_TYPE) => {
+  const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -863,11 +855,13 @@ export const JDConsultRoom: React.FC = () => {
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
-          setcallId(_data.data.sendCallNotification.callDetails.id);
+          isCall
+            ? setcallId(_data.data.sendCallNotification.callDetails.id)
+            : setChatRecordId(_data.data.sendCallNotification.callDetails.id);
         }
       })
       .catch((error: ApolloError) => {
-        alert('An error occurred while sending notification to Client.');
+        console.log('An error occurred while sending notification to Client.');
       });
   };
 
@@ -911,7 +905,6 @@ export const JDConsultRoom: React.FC = () => {
       });
     }
 
-    // if (diagnosis || flag) {
     setSaving(true);
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -946,6 +939,7 @@ export const JDConsultRoom: React.FC = () => {
       .then((_data) => {
         setSaving(false);
         if (!flag) {
+          endCallNotificationAction(false);
           setIsDialogOpen(true);
         }
       })
@@ -955,7 +949,6 @@ export const JDConsultRoom: React.FC = () => {
         alert(errorMessage);
         setSaving(false);
       });
-    //}
   };
 
   const endConsultAction = () => {
@@ -966,24 +959,19 @@ export const JDConsultRoom: React.FC = () => {
 
   // this will trigger end consult automatically after one minute
   const endConsultAutoAction = () => {
+    endCallNotificationAction(false);
     saveCasesheetAction(true, true);
     mutationRemoveConsult().then(() => {
-      //window.location.href = clientRoutes.juniorDoctor();
       if (document.getElementById('homeId')) {
         document.getElementById('homeId')!.click();
       }
     });
-    // savePatientAllergiesMutation();
-    // savePatientFamilyHistoryMutation();
-    // savePatientLifeStyleMutation();
-    // trigger auto submit popup
-    // setIsAutoSubmitDialogOpened(true);
   };
 
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
-
+  const jdChatStartAction = () => {};
   const createSessionAction = () => {
     setSaving(true);
     client
@@ -999,7 +987,7 @@ export const JDConsultRoom: React.FC = () => {
       .then((_data: any) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        //setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
+        sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
         setError('');
         setSaving(false);
       })
@@ -1014,7 +1002,7 @@ export const JDConsultRoom: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO);
+      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
     }, 10);
   };
 
@@ -1044,9 +1032,27 @@ export const JDConsultRoom: React.FC = () => {
       ? true
       : false;
   };
-
+  const endCallNotificationAction = (isCall: boolean) => {
+    client
+      .query<EndCallNotification, EndCallNotificationVariables>({
+        query: END_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentCallId: isCall ? callId : chatRecordId,
+        },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+      });
+  };
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
+  const assignedDoctor = {
+    assignedDoctorSalutation: assignedDoctorSalutation,
+    assignedDoctorFirstName: assignedDoctorFirstName,
+    assignedDoctorLastName: assignedDoctorLastName,
+    assignedDoctorDisplayName: assignedDoctorDisplayName,
+  };
   return !loaded ? (
     <LinearProgress />
   ) : (
@@ -1116,7 +1122,6 @@ export const JDConsultRoom: React.FC = () => {
             familyHistory,
             menstrualHistory,
             gender,
-
             setPastMedicalHistory,
             setPastSurgicalHistory,
             setDietAllergies,
@@ -1230,14 +1235,13 @@ export const JDConsultRoom: React.FC = () => {
                     saving={saving}
                     startAppointment={startAppointment}
                     startAppointmentClick={startAppointmentClick}
-                    assignedDoctorSalutation={assignedDoctorSalutation}
-                    assignedDoctorFirstName={assignedDoctorFirstName}
-                    assignedDoctorLastName={assignedDoctorLastName}
-                    assignedDoctorDisplayName={assignedDoctorDisplayName}
+                    assignedDoctor={assignedDoctor}
                     isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
                       setIsAuditoVideoCall(isAudioVideoCall);
                     }}
-                    callId={callId}
+                    endCallNotificationAction={(callId: boolean) =>
+                      endCallNotificationAction(callId)
+                    }
                   />
                 )}
                 <div className={classes.contentGroup}>

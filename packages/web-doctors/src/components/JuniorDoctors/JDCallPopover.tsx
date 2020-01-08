@@ -11,7 +11,7 @@ import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetail
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
-import { END_CALL_NOTIFICATION, REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
+import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
 import { REQUEST_ROLES, STATUS, DoctorType } from 'graphql/types/globalTypes';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import {
@@ -21,21 +21,15 @@ import {
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
-import {
-  EndCallNotification,
-  EndCallNotificationVariables,
-} from 'graphql/types/EndCallNotification';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
   event.returnValue = '';
 };
-
 const subscribeBrowserButtonsListener = () => {
   window.addEventListener('beforeunload', handleBrowserUnload);
 };
-
 const unSubscribeBrowserButtonsListener = () => {
   window.removeEventListener('beforeunload', handleBrowserUnload);
 };
@@ -598,6 +592,12 @@ interface errorObject {
 interface errorObjectReshedule {
   otherError: boolean;
 }
+interface assignedDoctorType {
+  assignedDoctorSalutation: string;
+  assignedDoctorFirstName: string;
+  assignedDoctorLastName: string;
+  assignedDoctorDisplayName: string;
+}
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
@@ -614,13 +614,11 @@ interface CallPopoverProps {
   saving: boolean;
   startAppointmentClick: (startAppointment: boolean) => void;
   startAppointment: boolean;
-  assignedDoctorSalutation: string;
-  assignedDoctorFirstName: string;
-  assignedDoctorLastName: string;
-  assignedDoctorDisplayName: string;
+  assignedDoctor: assignedDoctorType;
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
-  callId: string;
+  endCallNotificationAction: (callId: boolean) => void;
 }
+
 let intervalId: any;
 let stoppedTimer: number;
 let transferObject: any = {
@@ -777,23 +775,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
     stopIntervalTimer();
-    sendStopCallNotificationFn();
+    props.endCallNotificationAction(true);
   };
-  const sendStopCallNotificationFn = () => {
-    client
-      .query<EndCallNotification, EndCallNotificationVariables>({
-        query: END_CALL_NOTIFICATION,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentCallId: props.callId,
-        },
-      })
-      .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
-        alert('An error occurred while sending notification to Client.');
-      });
-  };
-
   const autoSend = (callType: string) => {
     const text = {
       id: props.doctorId,
@@ -997,7 +980,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           ' ' +
           patientDetails!.lastName +
           '! ' +
-          props.assignedDoctorDisplayName +
+          props.assignedDoctor.assignedDoctorDisplayName +
           ', will be with you at your booked consultation time.',
         messageDate: new Date(),
         sentBy: REQUEST_ROLES.JUNIOR,
@@ -1103,9 +1086,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         ' ' +
         patientDetails!.lastName +
         '! :) I am from ' +
-        props.assignedDoctorDisplayName +
+        props.assignedDoctor.assignedDoctorDisplayName +
         "'s team. Sorry that you aren’t in the best state. We'll do our best to make things better. Let's get a few quick questions out of the way before " +
-        props.assignedDoctorDisplayName +
+        props.assignedDoctor.assignedDoctorDisplayName +
         ' starts the consultation.',
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.JUNIOR,
@@ -1150,7 +1133,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         ' ' +
         patientDetails!.lastName +
         '! ' +
-        props.assignedDoctorDisplayName +
+        props.assignedDoctor.assignedDoctorDisplayName +
         ', will be with you at your booked consultation time.',
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.JUNIOR,
