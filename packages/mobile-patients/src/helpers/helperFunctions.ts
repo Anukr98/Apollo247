@@ -466,7 +466,7 @@ export const getUserCurrentPosition = async () => {
                 reject(null);
               },
               (error) => console.log(JSON.stringify(error)),
-              { enableHighAccuracy: false, timeout: 2000 }
+              { enableHighAccuracy: false, timeout: 20000 }
             );
           }
         })

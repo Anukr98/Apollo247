@@ -179,6 +179,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '60px auto 0 auto',
       boxShadow: 'none',
+      outline: '0 !important',
     },
     activeCard: {
       // border: '1px solid #00b38e',
@@ -1591,9 +1592,9 @@ export const FavouriteMedicines: React.FC = () => {
               className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
             >
               {showDosage && (
-                <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+                <Button className={classes.backArrow} onClick={() => setShowDosage(false)}>
                   <img src={require('images/ic_back.svg')} alt="" />
-                </div>
+                </Button>
               )}
               <span className={classes.headingName}>
                 {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}

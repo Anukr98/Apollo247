@@ -2489,7 +2489,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               width: 244,
-              height: 206,
+              height: 235,
               backgroundColor: '#0087ba',
               marginLeft: 38,
               borderRadius: 10,
@@ -2506,7 +2506,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginTop: 12,
               }}
             >
-              Next slot for {appointmentData.doctorInfo.displayName} is available on —
+              {appointmentData.doctorInfo.displayName} has suggested the below slot for rescheduling
+              this appointment
+              {/* Next slot for {appointmentData.doctorInfo.displayName} is available on — */}
             </Text>
             <View
               style={{
@@ -2557,7 +2559,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 paddingHorizontal: 0,
                 backgroundColor: 'transparent',
                 shadowColor: 'transparent',
-                paddingTop: 13,
+                paddingTop: 3,
               }}
             >
               <Button
@@ -2654,7 +2656,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(10),
                 lineHeight: 24,
                 letterSpacing: 0.04,
-                marginTop: 53,
+                marginTop: 55,
                 marginRight: 16,
               }}
             >
@@ -3876,6 +3878,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffDays = Math.ceil(
       moment(appointmentData.appointmentDateTime).diff(moment(), 'days', true)
     );
+    const diffMonths = Math.ceil(
+      moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
+    );
+    console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
+
     if (textChange) {
       time = 'Consult is In-progress';
     } else {
@@ -3884,13 +3891,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           appointmentData.status === STATUS.COMPLETED
             ? `Consult is completed`
             : `Will be joining soon`;
-      } else if (diffMin > 0 && diffHours <= 0) {
-        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
-      } else if (diffHours > 0 && diffDays <= 0) {
-        time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
-      } else {
-        time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
-      }
+      }else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
+ time = `Joining in ${diffMin} minute${diffMin === 1 ? "" : "s"}`;
+} else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
+ time = `Joining in ${diffHours} hour${diffHours === 1 ? "" : "s"}`;
+} else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
+ time = `Joining in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+} else {
+ time = `Joining in ${diffMonths} month${diffMonths === 1 ? "" : "s"}`;
+}
     }
     return (
       <View style={styles.mainView}>

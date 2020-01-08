@@ -438,7 +438,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               },
               {
                 text: 'CONSULT ROOM',
-                type: 'white-button',
+                type: 'orange-button',
                 onPress: () => {
                   aphConsole.log('data.appointmentId', data.appointmentId);
                   aphConsole.log('data.callType', data.callType);

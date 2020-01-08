@@ -6,6 +6,7 @@ import {
   FormHelperText,
   Modal,
   MenuItem,
+  Button,
   createStyles,
   CircularProgress,
 } from '@material-ui/core';
@@ -67,7 +68,7 @@ function renderSuggestion(
           {part.text}
         </span>
       ))}
-      <img src={require('images/ic-add.svg')} alt="" />
+      <img src={require('images/ic_dark_plus.svg')} alt="" />
     </MenuItem>
   );
 }
@@ -120,7 +121,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       position: 'absolute',
-      top: 20,
+      top: 11,
       right: 20,
       padding: 0,
       minWidth: 'auto',
@@ -214,7 +215,7 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: 'hidden',
       borderRadius: 10,
       '& >div:first-child': {
-        padding: 20,
+        padding: '15px 20px 0 20px',
         paddingBottom: 0,
       },
       '& input': {
@@ -351,7 +352,6 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
-        textAlign: 'left',
       },
     },
     numberTablets: {
@@ -1267,9 +1267,9 @@ export const MedicinePrescription: React.FC = () => {
         <Paper className={classes.medicinePopup}>
           <AphDialogTitle className={!showDosage ? classes.popupHeading : classes.dialogTitle}>
             {showDosage && (
-              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+              <Button onClick={() => setShowDosage(false)} className={classes.backArrow}>
                 <img src={require('images/ic_back.svg')} alt="" />
-              </div>
+              </Button>
             )}
             {showDosage ? (
               <div className={classes.selectedMedicine}>{selectedValue.toUpperCase()}</div>

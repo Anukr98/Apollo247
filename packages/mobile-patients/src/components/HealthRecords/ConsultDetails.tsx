@@ -439,6 +439,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                               parseFloat(item!.medicineDosage!) +
                                 ' ' +
                                 item!.medicineUnit!.toLowerCase() +
+                                ' (s)' +
                                 '  '
                             : 'Apply ' + item!.medicineUnit!.toLowerCase() + '  '}
                           {/* {item.medicineTimings!.length *
@@ -477,6 +478,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                               .replace(/[^a-zA-Z ]/g, ' ')
                               .toLowerCase()}
                           {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
+                          {item!.medicineConsumptionDurationInDays! &&
+                          item!.medicineConsumptionDurationInDays!.length === 1
+                            ? ' for ' + item!.medicineConsumptionDurationInDays! + ' day'
+                            : ' for ' + item!.medicineConsumptionDurationInDays! + ' days'}
                         </Text>
                       </View>
                     );
