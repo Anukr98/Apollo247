@@ -656,6 +656,50 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  /*
+  const uploadPrescriptionCTA = () => {
+    return (
+      <View
+        style={[
+          {
+            ...theme.viewStyles.card(),
+            marginTop: 20,
+            marginBottom: 0,
+          },
+          medicineList.length > 0 && searchText
+            ? {
+                elevation: 0,
+              }
+            : {},
+        ]}
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 16, '#02475b', 1, 24, 0),
+                paddingBottom: 12,
+              }}
+            >
+              Have a prescription ready?
+            </Text>
+            <Button
+              onPress={() => {
+                // setShowPopop(true);
+              }}
+              style={{ width: 'auto' }}
+              titleTextStyle={{
+                ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
+              }}
+              title={'UPLOAD PRESCRIPTION'}
+            />
+          </View>
+          <FileBig style={{ height: 60, width: 40 }} />
+        </View>
+      </View>
+    );
+  };
+*/
   const renderYourOrders = () => {
     // if (ordersLoading) return renderSectionLoader(70);
     return (
@@ -1688,6 +1732,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {renderBanner()}
+        {/* {uploadPrescriptionCTA()} */}
         {renderYourOrders()}
         <>
           {renderHotSellers()}
