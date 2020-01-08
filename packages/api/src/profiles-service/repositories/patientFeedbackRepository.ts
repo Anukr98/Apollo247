@@ -18,7 +18,7 @@ export class PatientFeedbackRepository extends Repository<PatientFeedback> {
 
   getFeedbackByDate(feedbackDate: Date, feedbackType: FEEDBACKTYPE) {
     return this.createQueryBuilder('patientfeedback')
-      .select(['patientfeedback.rating', 'count(rating) as ratingCount'])
+      .select(['patientfeedback.rating as rating', 'count(rating) as ratingCount'])
       .where('patientfeedback.feedbackType = :feedbackType', {
         feedbackType,
       })
