@@ -27,6 +27,7 @@ import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useUIElements } from './UIElementsProvider';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 const styles = StyleSheet.create({
@@ -162,11 +163,9 @@ const styles = StyleSheet.create({
 });
 export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   const Consult = props.navigation.state.params ? props.navigation.state.params.Consult : '';
-
   console.log(Consult, 'Consultval');
   const onSubmitClick = async () => {
     CommonLogEvent(AppRoutes.SymptomChecker, 'Show doctors clicked');
-
     const ss = await $Generator({ type: 'showSpeciality' });
 
     let specialities = [];
@@ -209,6 +208,8 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const [showList, setShowList] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -217,6 +218,34 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
       currentPatient && setProfile(currentPatient!);
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    showAlert();
+  }, []);
+
+  const showAlert = () => {
+    showAphAlert!({
+      title: 'Hi!',
+      description: 'who is the patient today?',
+      ctaContainerStyle: { marginTop: 50 },
+      CTAs: [
+        {
+          text: 'MYSELF',
+          onPress: () => {
+            hideAphAlert!();
+          },
+        },
+        {
+          type: 'white-button',
+          text: 'SOMWONE ELSE',
+          onPress: () => {
+            setShowList(true);
+            hideAphAlert!();
+          },
+        },
+      ],
+    });
+  };
 
   const navigateToPrev = async () => {
     console.log('navigateToPrev hardwareBackPress');
@@ -282,6 +311,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
           )}
           titleComponent={
             <ProfileList
+              showList={showList}
               unsetloaderDisplay={true}
               navigation={props.navigation}
               listContainerStyle={{ marginLeft: 0 }}
