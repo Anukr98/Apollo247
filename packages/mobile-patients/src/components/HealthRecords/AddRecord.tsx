@@ -115,20 +115,28 @@ type RecordTypeType = {
 };
 type PickerImage = any;
 
+export enum MedicRecordType {
+  TEST_REPORT = 'TEST_REPORT',
+  CONSULTATION = 'CONSULTATION',
+  PRESCRIPTION = 'PRESCRIPTION',
+}
 const RecordType: RecordTypeType[] = [
-  { value: MedicalRecordType.EHR.toLowerCase().replace('_', ' '), key: MedicalRecordType.EHR },
   {
-    value: MedicalRecordType.OPERATIVE_REPORT.toLowerCase().replace('_', ' '),
-    key: MedicalRecordType.OPERATIVE_REPORT,
+    value: MedicRecordType.TEST_REPORT.toLowerCase().replace('_', ' '),
+    key: MedicRecordType.TEST_REPORT,
   },
   {
-    value: MedicalRecordType.PATHOLOGY_REPORT.toLowerCase().replace('_', ' '),
-    key: MedicalRecordType.PATHOLOGY_REPORT,
+    value: MedicRecordType.CONSULTATION.toLowerCase().replace('_', ' '),
+    key: MedicRecordType.CONSULTATION,
   },
   {
-    value: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
-    key: MedicalRecordType.PHYSICAL_EXAMINATION,
+    value: MedicRecordType.PRESCRIPTION.toLowerCase().replace('_', ' '),
+    key: MedicRecordType.PRESCRIPTION,
   },
+  // {
+  //   value: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
+  //   key: MedicalRecordType.PHYSICAL_EXAMINATION,
+  // },
 ];
 
 const charactersList = {
