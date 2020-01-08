@@ -1074,28 +1074,30 @@ export const FavouriteMedicines: React.FC = () => {
       return slot;
     });
     setDaySlots(dayslots);
-    setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
-    setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
-    setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
-    setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
-    setSelectedValue(selectedMedicinesArr![idx].medicineName!);
-    setSelectedId(selectedMedicinesArr![idx].id!);
-    setSelectedExternalId(selectedMedicinesArr![idx].externalId!);
-    setFrequency(
-      selectedMedicinesArr![idx].medicineFrequency!
-        ? selectedMedicinesArr![idx].medicineFrequency!
-        : dosageFrequency[0].id
-    );
-    setforUnit(
-      selectedMedicinesArr![idx].medicineConsumptionDurationUnit!
-        ? selectedMedicinesArr![idx].medicineConsumptionDurationUnit!
-        : forOptions[0].id
-    );
-    setMedicineForm(
-      selectedMedicinesArr![idx].medicineFormTypes!
-        ? selectedMedicinesArr![idx].medicineFormTypes!
-        : 'OTHERS'
-    );
+    if (selectedMedicinesArr) {
+      setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
+      setConsumptionDuration(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!);
+      setTabletsCount(Number(selectedMedicinesArr[idx].medicineDosage!));
+      setMedicineUnit(selectedMedicinesArr[idx].medicineUnit!);
+      setSelectedValue(selectedMedicinesArr[idx].medicineName!);
+      setSelectedId(selectedMedicinesArr[idx].id!);
+      setSelectedExternalId(selectedMedicinesArr[idx].externalId!);
+      setFrequency(
+        selectedMedicinesArr[idx].medicineFrequency!
+          ? selectedMedicinesArr[idx].medicineFrequency!
+          : dosageFrequency[0].id
+      );
+      setforUnit(
+        selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
+          ? selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
+          : forOptions[0].id
+      );
+      setMedicineForm(
+        selectedMedicinesArr[idx].medicineFormTypes!
+          ? selectedMedicinesArr[idx].medicineFormTypes!
+          : 'OTHERS'
+      );
+    }
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
