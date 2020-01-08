@@ -198,7 +198,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      right: '0',
+      right: 0,
       top: '0px',
       padding: 0,
       marginTop: 12,
