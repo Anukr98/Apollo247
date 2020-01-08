@@ -244,7 +244,7 @@ export const AuthProvider: React.FC = (props) => {
         const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
         const item = JSON.parse(retrievedItem);
         setAllPatients(item);
-        setSignInError(true);
+        setSignInError(false);
         console.log('getPatientApiCallerror', error);
       });
   };
