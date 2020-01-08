@@ -1591,9 +1591,9 @@ export const FavouriteMedicines: React.FC = () => {
               className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
             >
               {showDosage && (
-                <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+                <Button className={classes.backArrow} onClick={() => setShowDosage(false)}>
                   <img src={require('images/ic_back.svg')} alt="" />
-                </div>
+                </Button>
               )}
               <span className={classes.headingName}>
                 {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
