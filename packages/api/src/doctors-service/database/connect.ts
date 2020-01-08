@@ -60,6 +60,7 @@ import {
   DiagnosticPincodeHubs,
   PatientFeedback,
   DiagnosticOrdersStatus,
+  PatientHelpTickets,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -149,6 +150,7 @@ export const connect = async () => {
         DiagnosticPincodeHubs,
         PatientFeedback,
         DiagnosticOrdersStatus,
+        PatientHelpTickets,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

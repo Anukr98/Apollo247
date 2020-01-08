@@ -59,6 +59,9 @@ export enum ApiConstants {
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',
 
+  PATIENT_CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
+  PATIENT_CANCEL_APPT_BODY = 'Hi {0}! As per your request, your appointment {1} with Dr. {2} scheduled for {3} has been cancelled. Click here to book a new appointment with our top Apollo doctors.',
+
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",

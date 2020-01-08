@@ -105,6 +105,7 @@ export enum NotificationType {
   PATIENT_APPOINTMENT_RESCHEDULE = 'PATIENT_APPOINTMENT_RESCHEDULE',
   DIAGNOSTIC_ORDER_SUCCESS = 'DIAGNOSTIC_ORDER_SUCCESS',
   DIAGNOSTIC_ORDER_PAYMENT_FAILED = 'DIAGNOSTIC_ORDER_PAYMENT_FAILED',
+  PATIENT_CANCEL_APPOINTMENT = 'PATIENT_CANCEL_APPOINTMENT',
 }
 
 export enum APPT_CALL_TYPE {
@@ -327,7 +328,21 @@ export async function sendNotification(
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
-  if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
+  const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+  const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
+  if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
+    notificationTitle = ApiConstants.PATIENT_CANCEL_APPT_TITLE;
+    notificationBody = ApiConstants.PATIENT_CANCEL_APPT_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace('{1}', appointment.displayId.toString());
+    notificationBody = notificationBody.replace(
+      '{2}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
+  } else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.CANCEL_APPT_BODY.replace('{0}', patientDetails.firstName);
     notificationBody = notificationBody.replace(
@@ -419,8 +434,6 @@ export async function sendNotification(
     }
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
     content = content.replace('{3}', apptDate.toString());
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = content;
