@@ -198,7 +198,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      left: '414px',
+      right: 0,
       top: '0px',
       padding: 0,
       marginTop: 12,
@@ -296,7 +296,6 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
-        textAlign: 'left',
       },
     },
     popupHeadingCenter: {
