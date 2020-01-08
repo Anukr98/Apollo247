@@ -1,4 +1,4 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -6,13 +6,11 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  CartIcon,
   DropdownGreen,
   FileBig,
   InjectionIcon,
   MedicineIcon,
   MedicineRxIcon,
-  NotificationIcon,
   SearchSendIcon,
   SyrupBottleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -20,6 +18,7 @@ import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { GET_MEDICINE_ORDERS_LIST, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
@@ -29,6 +28,7 @@ import {
   GetMedicineOrdersListVariables,
   GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   Doseform,
@@ -43,8 +43,9 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import Axios from 'axios';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
@@ -52,7 +53,6 @@ import {
   ListRenderItemInfo,
   SafeAreaView,
   ScrollView,
-  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -60,27 +60,9 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import moment from 'moment';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
-  labelView: {
-    position: 'absolute',
-    top: -3,
-    right: -3,
-    backgroundColor: '#ff748e',
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelText: {
-    ...theme.fonts.IBMPlexSansBold(9),
-    color: theme.colors.WHITE,
-  },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
     opacity: 0.5,
@@ -268,55 +250,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
-  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
-    return (
-      <View style={[styles.labelView, containerStyle]}>
-        <Text style={styles.labelText}>{count}</Text>
-      </View>
-    );
-  };
-
   const renderTopView = () => {
-    return (
-      <View
-        style={{
-          justifyContent: 'space-between',
-          flexDirection: 'row',
-          paddingTop: 16,
-          paddingHorizontal: 20,
-          backgroundColor: theme.colors.WHITE,
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          // onPress={() => props.navigation.popToTop()}
-          onPress={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
-          }}
-        >
-          <ApolloLogo />
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() =>
-              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
-            }
-            style={{ right: 20 }}
-          >
-            <CartIcon style={{}} />
-            {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
-          </TouchableOpacity>
-          <NotificationIcon />
-        </View>
-      </View>
-    );
+    return <TabHeader navigation={props.navigation} />;
   };
 
   const renderEPrescriptionModal = () => {
@@ -482,7 +417,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         container={{ marginBottom: 24 }}
-        title={'Your Orders'}
+        title={'My Orders'}
         leftIcon={<MedicineIcon />}
       />
       // )) ||
@@ -1043,7 +978,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
       containerStyle: {
         marginBottom: 19,
-        marginTop: 18,
+        marginTop: 4,
       },
     });
 
