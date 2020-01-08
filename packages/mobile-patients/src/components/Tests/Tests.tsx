@@ -1,4 +1,3 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -14,6 +13,7 @@ import {
   SearchSendIcon,
   TestsIcon,
   ShieldIcon,
+  HomeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -614,6 +614,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           justifyContent: 'space-between',
           flexDirection: 'row',
           paddingTop: 16,
+          paddingBottom: 12,
           paddingHorizontal: 20,
           backgroundColor: theme.colors.WHITE,
         }}
@@ -635,7 +636,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             );
           }}
         >
-          <ApolloLogo />
+          <HomeIcon />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
           {renderLocation()}
@@ -674,7 +675,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           marginBottom: 24,
           marginTop: 20,
         }}
-        title={'Your Orders'}
+        title={'My Orders'}
         leftIcon={<TestsIcon />}
       />
       // )) || <View style={{ height: 24 }} />
@@ -1438,7 +1439,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       containerStyle: {
         marginBottom: 19,
-        marginTop: 18,
+        marginTop: 4,
       },
     });
 
