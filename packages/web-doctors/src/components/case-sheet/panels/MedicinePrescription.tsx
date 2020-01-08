@@ -1722,9 +1722,9 @@ export const MedicinePrescription: React.FC = () => {
             className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
           >
             {showDosage && (
-              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+              <Button onClick={() => setShowDosage(false)} className={classes.backArrow}>
                 <img src={require('images/ic_back.svg')} alt="" />
-              </div>
+              </Button>
             )}
             {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
             <Button className={classes.cross}>

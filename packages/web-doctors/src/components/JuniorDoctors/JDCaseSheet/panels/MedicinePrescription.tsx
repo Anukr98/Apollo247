@@ -1266,9 +1266,9 @@ export const MedicinePrescription: React.FC = () => {
         <Paper className={classes.medicinePopup}>
           <AphDialogTitle className={!showDosage ? classes.popupHeading : classes.dialogTitle}>
             {showDosage && (
-              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+              <Button onClick={() => setShowDosage(false)} className={classes.backArrow}>
                 <img src={require('images/ic_back.svg')} alt="" />
-              </div>
+              </Button>
             )}
             {showDosage ? (
               <div className={classes.selectedMedicine}>{selectedValue.toUpperCase()}</div>
