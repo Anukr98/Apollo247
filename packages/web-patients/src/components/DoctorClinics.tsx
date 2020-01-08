@@ -179,33 +179,15 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
         ? doctorDetails.getDoctorDetailsById.consultHours
         : [];
 
-    const { firstName, qualification, awards } = doctorDetails.getDoctorDetailsById;
+    const { firstName } = doctorDetails.getDoctorDetailsById;
 
     return clinics.length > 0 ? (
       <>
         <div className={classes.sectionGroup}>
           <div className={classes.sectionHeader}>
-            <span>Basic Information</span>
-          </div>
-          <div className={classes.infoRow}>
-            <div className={classes.iconType}>
-              <img src={require('images/ic-edu.svg')} alt="" />
-            </div>
-            <div className={classes.details}>{qualification}</div>
-          </div>
-          <div className={classes.infoRow}>
-            <div className={classes.iconType}>
-              <img src={require('images/ic-awards.svg')} alt="" />
-            </div>
-            <div className={classes.details}>{awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}</div>
-          </div>
-        </div>
-        <div className={classes.sectionGroup}>
-          <div className={classes.sectionHeader}>
-            <span>Dr. {firstName}'s Clinic</span>
-            <span className={classes.count}>
-              {clinics.length < 10 ? `0${clinics.length}` : clinics.length}
-            </span>
+            <span>{`Dr. ${firstName}'s Clinic (${
+              clinics.length < 10 ? `0${clinics.length}` : clinics.length
+            })`}</span>
           </div>
           <Grid className={classes.gridContainer} container spacing={2}>
             {_map(clinics, (clinicDetails) => {
