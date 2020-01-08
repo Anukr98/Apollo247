@@ -721,3 +721,14 @@ export const Symptomtracker: React.FC<IconProps> = (props) => (
 export const PrescriptionMenu: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_prescription_menu.png')} />
 );
+export const CartIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_cart_white.png')} />
+);
+
+export const EditIconNew: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_edit_new.png')} />
+);
+
+export const HomeIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 32, width: 32 }} {...props} source={require('./icons/ic_home.png')} />
+);
