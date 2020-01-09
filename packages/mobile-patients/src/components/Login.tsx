@@ -26,12 +26,19 @@ import {
   Text,
   TextInput,
   View,
+  WebView,
+  Dimensions,
 } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import HyperLink from 'react-native-hyperlink';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -70,16 +77,27 @@ const styles = StyleSheet.create({
   bottomDescription: {
     lineHeight: 24,
     color: theme.colors.INPUT_FAILURE_TEXT,
-    opacity: 0.6,
-    paddingVertical: 10,
+    paddingTop: 8,
+    paddingBottom: 12,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
   bottomValidDescription: {
     lineHeight: 24,
     color: theme.colors.INPUT_SUCCESS_TEXT,
     opacity: 0.6,
-    paddingVertical: 10,
+    paddingTop: 8,
+    paddingBottom: 12,
     ...theme.fonts.IBMPlexSansMedium(12),
+  },
+  viewWebStyles: {
+    position: 'absolute',
+    width: width,
+    height: height,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 20,
   },
 });
 
@@ -100,6 +118,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   const { sendOtp, isSendingOtp, signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
+
   const { setLoading } = useUIElements();
 
   useEffect(() => {
@@ -298,12 +318,59 @@ export const Login: React.FC<LoginProps> = (props) => {
     });
   };
 
+  const openWebView = () => {
+    CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
+    Keyboard.dismiss();
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          title={'Terms & Conditions'}
+          leftIcon="close"
+          container={{
+            borderBottomWidth: 0,
+          }}
+          onPressLeftIcon={() => setonClickOpen(false)}
+        />
+        <View
+          style={{
+            flex: 1,
+            overflow: 'hidden',
+            backgroundColor: 'white',
+          }}
+        >
+          <WebView
+            source={{
+              uri: 'https://www.apollo247.com/TnC.html',
+            }}
+            style={{
+              flex: 1,
+              backgroundColor: 'white',
+            }}
+            useWebKit={true}
+            // onLoadStart={() => {
+            //   console.log('onLoadStart');
+            //   setshowSpinner(true);
+            // }}
+            // onLoadEnd={() => {
+            //   console.log('onLoadEnd');
+            //   setshowSpinner(false);
+            // }}
+            // onLoad={() => {
+            //   console.log('onLoad');
+            //   setshowSpinner(false);
+            // }}
+          />
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <View style={{ height: 56 }} />
         <Card
-          cardContainer={{ marginTop: 0, height: 270 }}
+          cardContainer={{ marginTop: 0, paddingBottom: 12 }}
           heading={string.login.hello}
           description={string.login.please_enter_no}
           buttonIcon={
@@ -318,7 +385,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <View
             style={[
-              { paddingTop: Platform.OS === 'ios' ? 20 : 15 },
+              { paddingTop: Platform.OS === 'ios' ? 22 : 15 },
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
@@ -343,7 +410,38 @@ export const Login: React.FC<LoginProps> = (props) => {
               ? string.login.otp_sent_to
               : string.login.wrong_number}
           </Text>
+
+          <View
+            style={{
+              marginRight: 32,
+            }}
+          >
+            <HyperLink
+              linkStyle={{
+                color: '#02475b',
+                ...fonts.IBMPlexSansBold(10),
+                lineHeight: 16,
+                letterSpacing: 0,
+              }}
+              linkText={(url) =>
+                url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+              }
+              onPress={(url, text) => setonClickOpen(true)}
+            >
+              <Text
+                style={{
+                  color: '#02475b',
+                  ...fonts.IBMPlexSansMedium(10),
+                  lineHeight: 16,
+                  letterSpacing: 0,
+                }}
+              >
+                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+              </Text>
+            </HyperLink>
+          </View>
         </Card>
+        {onClickOpen && openWebView()}
       </SafeAreaView>
       {isSendingOtp ? <Spinner /> : null}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
