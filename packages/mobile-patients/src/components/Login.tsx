@@ -279,13 +279,12 @@ export const Login: React.FC<LoginProps> = (props) => {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
 
-            loginAPI(client, phoneNumber)
-              .then((confirmResult) => {
+            loginAPI(client, '+91' + phoneNumber)
+              .then((confirmResult: any) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);
 
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-                //  CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
 
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
@@ -299,9 +298,10 @@ export const Login: React.FC<LoginProps> = (props) => {
                   otpString,
                   phoneNumber: phoneNumber,
                   dbChildKey,
+                  loginId: confirmResult.loginId,
                 });
               })
-              .catch((error: RNFirebase.RnError) => {
+              .catch((error) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
                 setShowSpinner(false);
@@ -357,18 +357,18 @@ export const Login: React.FC<LoginProps> = (props) => {
               backgroundColor: 'white',
             }}
             useWebKit={true}
-            // onLoadStart={() => {
-            //   console.log('onLoadStart');
-            //   setshowSpinner(true);
-            // }}
-            // onLoadEnd={() => {
-            //   console.log('onLoadEnd');
-            //   setshowSpinner(false);
-            // }}
-            // onLoad={() => {
-            //   console.log('onLoad');
-            //   setshowSpinner(false);
-            // }}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setShowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setShowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setShowSpinner(false);
+            }}
           />
         </View>
       </View>
