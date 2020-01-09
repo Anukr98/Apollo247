@@ -116,7 +116,7 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.7',
+  iOS_Version: '1.8',
   Android_Version: '1.22',
 };
 
