@@ -300,7 +300,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     // } else {
     setMenuViewOptions([1, 2, 3, 5]);
     // }
-    props.navigation.navigate(AppRoutes.MultiSignup);
   }, []);
 
   useEffect(() => {
