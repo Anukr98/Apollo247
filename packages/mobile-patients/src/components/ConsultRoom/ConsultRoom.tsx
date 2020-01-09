@@ -60,6 +60,7 @@ import {
   AppStateStatus,
   StyleProp,
   ViewStyle,
+  ImageBackground,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
@@ -74,6 +75,8 @@ import { AppConfig } from '../../strings/AppConfig';
 import { ListCard } from '../ui/ListCard';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useShoppingCart } from '../ShoppingCartProvider';
+import { getAppointments } from '../../helpers/clientCalls';
+import moment from 'moment';
 import { apiRoutes } from '../../helpers/apiRoutes';
 
 const { width, height } = Dimensions.get('window');
@@ -255,6 +258,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
+  const [currentAppointments, setCurrentAppointments] = useState<string>('0');
+  const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const menuOptions = [
     {
       id: 1,
@@ -297,9 +302,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     // if (token.data.message === 'VitaToken Obtained Successfully') {
-    //   setMenuViewOptions([1, 2, 3, 4, 5, 6]);
+    setMenuViewOptions([1, 2, 3, 4, 5, 6]);
     // } else {
-    setMenuViewOptions([1, 2, 3, 5]);
+    // setMenuViewOptions([1, 2, 3, 5]);
     // }
   }, []);
 
@@ -326,6 +331,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     currentPatient && setshowSpinner(false);
     if (!currentPatient) {
       getPatientApiCall();
+    } else {
+      setAppointmentLoading(true);
+      getAppointments(client, currentPatient.id)
+        .then((data: any) => {
+          const appointments = data.patinetAppointments.filter((item: any) =>
+            moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+          );
+          setCurrentAppointments(appointments.length);
+        })
+        .finally(() => {
+          setAppointmentLoading(false);
+        });
     }
     AppState.addEventListener('change', _handleAppStateChange);
   }, [currentPatient, analytics, props.navigation.state.params]);
@@ -765,8 +782,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               flexDirection: 'row',
               paddingRight: 8,
               borderRightWidth: 0,
+              paddingTop: 80,
+              marginTop: 30,
               borderRightColor: 'rgba(2, 71, 91, 0.2)',
-              backgroundColor: theme.colors.WHITE,
+              backgroundColor: theme.colors.CLEAR,
             }}
           >
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
@@ -793,7 +812,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ListCard
           container={{ marginTop: 14 }}
           title={'Upcoming Appointments'}
-          leftIcon={renderListCount(5)}
+          leftIcon={renderListCount(currentAppointments)}
           onPress={() => props.navigation.navigate('CONSULT ROOM')}
         />
         {/* <ListCard
@@ -806,7 +825,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderListCount = (count: number) => {
+  const renderListCount = (count: string) => {
     return (
       <View
         style={{
@@ -818,9 +837,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           borderRadius: 5,
         }}
       >
-        <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
-          {count}
-        </Text>
+        {appointmentLoading ? (
+          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+        ) : (
+          <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
+            {count}
+          </Text>
+        )}
       </View>
     );
   };
@@ -928,11 +951,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           flexDirection: 'row',
           paddingTop: 16,
           paddingHorizontal: 20,
-          backgroundColor: theme.colors.WHITE,
+          backgroundColor: theme.colors.CLEAR,
         }}
       >
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <ApolloLogo />
+          <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
@@ -964,8 +987,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View style={{ width: '100%' }}>
             <View style={styles.viewName}>
-              {renderTopIcons()}
-              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              <ImageBackground
+                style={{ width: '100%' }}
+                imageStyle={{ width: width }}
+                source={require('@aph/mobile-patients/src/images/apollo/img_doctorimage.png')}
+              >
+                {renderTopIcons()}
+                <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              </ImageBackground>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
               {renderMenuOptions()}
               {renderEmergencyCallBanner()}

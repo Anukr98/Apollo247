@@ -10,6 +10,7 @@ import {
   CartIconWhite,
   CartIcon,
   HomeIcon,
+  Invoice,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -39,10 +40,14 @@ import {
   StackActions,
   ScrollView,
 } from 'react-navigation';
-import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, statusBarHeight, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { useApolloClient } from 'react-apollo-hooks';
-import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import {
+  DELETE_DEVICE_TOKEN,
+  GET_DIAGNOSTIC_ORDER_LIST,
+  GET_MEDICINE_ORDERS_LIST,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
@@ -60,6 +65,14 @@ import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { TabHeader } from '../ui/TabHeader';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+} from '../../graphql/types/getDiagnosticOrdersList';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+} from '../../graphql/types/GetMedicineOrdersList';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -178,6 +191,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         return '';
     }
   };
+
+  const {
+    data: orders,
+    error: ordersError,
+    loading: ordersLoading,
+    refetch: ordersRefetch,
+  } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
+    variables: { patientId: currentPatient && currentPatient.id },
+    fetchPolicy: 'cache-first',
+  });
 
   useEffect(() => {
     if (!currentPatient) {
@@ -586,7 +609,25 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Location />}
           onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
         />
-        {/* <ListCard title={'Invoices'} leftIcon={<Invoice />} /> */}
+        <ListCard
+          title={'My Orders'}
+          leftIcon={<Invoice />}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.YourOrdersScene, {
+              orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+                (item) =>
+                  !(
+                    (item!.medicineOrdersStatus || []).length == 1 &&
+                    (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+                  )
+              ),
+              header: 'MY ORDERS',
+              refetch: ordersRefetch,
+              error: ordersError,
+              loading: ordersLoading,
+            })
+          }
+        />
         <ListCard
           // container={{ marginBottom: 32 }}
           container={{ marginTop: 4 }}
