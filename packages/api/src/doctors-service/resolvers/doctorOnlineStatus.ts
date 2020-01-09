@@ -10,7 +10,7 @@ import {
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { differenceInHours, format, differenceInSeconds } from 'date-fns';
+import { differenceInSeconds } from 'date-fns';
 import { LoginHistoryRepository } from 'doctors-service/repositories/loginSessionRepository';
 
 export const doctorOnlineStatusTypeDefs = gql`
