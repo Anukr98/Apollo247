@@ -61,6 +61,7 @@ import {
   PatientFeedback,
   DiagnosticOrdersStatus,
   PatientHelpTickets,
+  LoginOtp,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -151,6 +152,7 @@ export const connect = async () => {
         PatientFeedback,
         DiagnosticOrdersStatus,
         PatientHelpTickets,
+        LoginOtp,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
