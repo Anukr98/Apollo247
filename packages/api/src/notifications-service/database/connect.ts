@@ -62,6 +62,7 @@ import {
   PatientFeedback,
   DiagnosticOrdersStatus,
   PatientHelpTickets,
+  LoginOtp,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -148,6 +149,7 @@ export const connect = async () => {
         PatientFeedback,
         DiagnosticOrdersStatus,
         PatientHelpTickets,
+        LoginOtp,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
