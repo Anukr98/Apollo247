@@ -1601,20 +1601,19 @@ export const FavouriteMedicines: React.FC = () => {
               <span className={classes.headingName}>
                 {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
               </span>
-              <Button className={classes.cross}>
-                <img
-                  src={require('images/ic_cross.svg')}
-                  alt=""
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    setShowDosage(false);
-                    setTabletsCount(1);
-                    setMedicineUnit(MEDICINE_UNIT.OTHERS);
-                    setConsumptionDuration('');
-                    setMedicineInstruction('');
-                    resetOptions();
-                  }}
-                />
+              <Button
+                className={classes.cross}
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setShowDosage(false);
+                  setTabletsCount(1);
+                  setMedicineUnit(MEDICINE_UNIT.OTHERS);
+                  setConsumptionDuration('');
+                  setMedicineInstruction('');
+                  resetOptions();
+                }}
+              >
+                <img src={require('images/ic_cross.svg')} alt="" />
               </Button>
             </AphDialogTitle>
             <div className={classes.shadowHide}>

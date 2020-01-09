@@ -1279,15 +1279,14 @@ export const MedicinePrescription: React.FC = () => {
             ) : (
               'ADD MEDICINE'
             )}
-            <AphButton className={classes.dialogClose}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  setShowDosage(false);
-                }}
-              />
+            <AphButton
+              className={classes.dialogClose}
+              onClick={() => {
+                setIsDialogOpen(false);
+                setShowDosage(false);
+              }}
+            >
+              <img src={require('images/ic_cross.svg')} alt="" />
             </AphButton>
           </AphDialogTitle>
           <div className={classes.shadowHide}>
