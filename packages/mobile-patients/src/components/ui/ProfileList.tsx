@@ -59,6 +59,7 @@ export interface ProfileListProps {
   addStringValue?: string;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   unsetloaderDisplay?: boolean;
+  showList?: boolean;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -220,6 +221,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const renderPicker = () => {
     return (
       <MaterialMenu
+        showMenu={props.showList}
         options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}

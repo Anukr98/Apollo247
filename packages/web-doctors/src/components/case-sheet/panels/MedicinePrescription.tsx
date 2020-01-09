@@ -29,7 +29,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -167,6 +167,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '60px auto 0 auto',
       boxShadow: 'none',
+      outline: 'none',
     },
     activeCard: {
       // border: '1px solid #00b38e',
@@ -198,7 +199,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      left: '414px',
+      right: 0,
       top: '0px',
       padding: 0,
       marginTop: 12,
@@ -296,7 +297,6 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
-        textAlign: 'left',
       },
     },
     popupHeadingCenter: {
@@ -1723,9 +1723,9 @@ export const MedicinePrescription: React.FC = () => {
             className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
           >
             {showDosage && (
-              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+              <Button onClick={() => setShowDosage(false)} className={classes.backArrow}>
                 <img src={require('images/ic_back.svg')} alt="" />
-              </div>
+              </Button>
             )}
             {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
             <Button className={classes.cross}>
