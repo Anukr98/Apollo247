@@ -809,18 +809,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     ...theme.viewStyles.cardViewStyle,
                     flexDirection: 'row',
                     minHeight: 59,
-                    minWidth: width / 2 - 28,
+                    width: width / 2 - 28,
                     marginRight: 12,
                     marginBottom: 12,
                   }}
                 >
                   <View
-                    style={{ alignItems: 'center', justifyContent: 'center', marginHorizontal: 10 }}
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginHorizontal: 10,
+                      flex: 0.5,
+                    }}
                   >
                     {item.image}
                   </View>
-                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)}>
+                  <View
+                    style={{
+                      alignItems: 'flex-start',
+                      justifyContent: 'center',
+                      marginRight: 10,
+                      flex: 1,
+                    }}
+                  >
+                    <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
                       {item.title}
                     </Text>
                   </View>
