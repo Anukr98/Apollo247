@@ -82,6 +82,8 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -1464,27 +1466,54 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
+    setScrollOffset(event.nativeEvent.contentOffset.y);
+  };
+
   const renderSearchBar = () => {
+    const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
+
     const styles = StyleSheet.create({
       inputStyle: {
         minHeight: 29,
         ...theme.fonts.IBMPlexSansMedium(18),
       },
-      inputContainerStyle: {
-        borderBottomColor: '#00b38e',
-        borderBottomWidth: 2,
-        marginHorizontal: 10,
-      },
-      rightIconContainerStyle: {
-        height: 24,
-      },
-      style: {
-        paddingBottom: 18.5,
-      },
-      containerStyle: {
-        marginBottom: 19,
-        marginTop: 4,
-      },
+      inputContainerStyle: isFocusedStyle
+        ? {
+            borderBottomColor: '#00b38e',
+            borderBottomWidth: 2,
+            marginHorizontal: 10,
+          }
+        : {
+            borderRadius: 5,
+            backgroundColor: '#f7f8f5',
+            marginHorizontal: 10,
+            paddingHorizontal: 16,
+            borderBottomWidth: 0,
+          },
+      rightIconContainerStyle: isFocusedStyle
+        ? {
+            height: 24,
+          }
+        : {},
+      style: isFocusedStyle
+        ? {
+            paddingBottom: 18.5,
+          }
+        : { borderRadius: 5 },
+      containerStyle: isFocusedStyle
+        ? {
+            marginBottom: 20,
+            marginTop: 8,
+          }
+        : {
+            marginBottom: 20,
+            marginTop: 12,
+            alignSelf: 'center',
+          },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -1535,7 +1564,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             onSearchMedicine(value);
           }}
           autoCorrect={false}
-          rightIcon={rigthIconView}
+          rightIcon={isSearchFocused ? rigthIconView : <View />}
           placeholder="Search tests &amp; packages"
           selectionColor={itemsNotFound ? '#890000' : '#00b38e'}
           underlineColorAndroid="transparent"
@@ -1767,6 +1796,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
+          onScroll={handleScroll}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
