@@ -1,19 +1,15 @@
 import React, { useState, useRef, Fragment, useEffect, useContext } from 'react';
-import { makeStyles, ThemeProvider } from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
   Button,
   Modal,
   MenuItem,
-  InputBase,
   Popover,
   Paper,
   FormHelperText,
-  TextField,
-  Grid,
   Typography,
 } from '@material-ui/core';
-import { AphCalendar } from 'components/AphCalendar';
 import { Prompt, Link } from 'react-router-dom';
 import moment from 'moment';
 import { createMuiTheme } from '@material-ui/core';
@@ -27,12 +23,7 @@ import { useParams } from 'hooks/routerHooks';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import { Consult } from 'components/Consult';
-import { DayTimeSlots } from 'components/DayTimeSlots';
 import { CircularProgress } from '@material-ui/core';
-import {
-  InitiateRescheduleAppointment,
-  InitiateRescheduleAppointmentVariables,
-} from 'graphql/types/InitiateRescheduleAppointment';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
@@ -46,11 +37,6 @@ import {
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { END_CALL_NOTIFICATION } from 'graphql/consults';
-import {
-  EndCallNotification,
-  EndCallNotificationVariables,
-} from 'graphql/types/EndCallNotification';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
@@ -800,7 +786,7 @@ interface CallPopoverProps {
   sentToPatient: boolean;
   isAppointmentEnded: boolean;
   setIsPdfPageOpen: (flag: boolean) => void;
-  callId: string;
+  endCallNotificationAction: (callId: boolean) => void;
   pubnub: any;
   lastMsg: any;
   presenceEventObject: any;
@@ -886,7 +872,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   //get Doctor's next availability slot
-
   const getNextAvailabityMutation = useMutation<
     GetDoctorNextAvailableSlot,
     GetDoctorNextAvailableSlotVariables
@@ -968,11 +953,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }, 1000);
   };
   const noShowAction = (status: STATUS) => {
-    console.log(
-      window.location.pathname.indexOf('Consulttabs') ||
-        window.location.pathname.indexOf('consulttabs'),
-      'pagename'
-    );
     if (
       window.location.pathname.indexOf('Consulttabs') > -1 ||
       window.location.pathname.indexOf('consulttabs') > -1
@@ -1065,7 +1045,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
-    //srollToBottomAction();
   };
   useEffect(() => {
     if (isCallAccepted) {
@@ -1104,18 +1083,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {
-        //setMessageText('');
-      }
+      (status: any, response: any) => {}
     );
     const stoptext = {
       id: props.doctorId,
-      //message: `Audio call ended`,
       message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
-      //duration: `10:00`,
       isTyping: true,
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
@@ -1127,28 +1102,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {
-        //setMessageText('');
-      }
+      (status: any, response: any) => {}
     );
-    //setIsVideoCall(false);
     stopIntervalTimer();
-    sendStopCallNotificationFn();
-  };
-  const sendStopCallNotificationFn = () => {
-    const doctorCallId = getCookieValue('doctorCallId');
-    client
-      .query<EndCallNotification, EndCallNotificationVariables>({
-        query: END_CALL_NOTIFICATION,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentCallId: doctorCallId,
-        },
-      })
-      .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
-        alert('An error occurred while sending notification to Client.');
-      });
+    props.endCallNotificationAction(true);
   };
   const getCookieValue = (id: string) => {
     const name = id + '=';

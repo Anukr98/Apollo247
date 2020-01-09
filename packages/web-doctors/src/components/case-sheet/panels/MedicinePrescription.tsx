@@ -167,6 +167,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '60px auto 0 auto',
       boxShadow: 'none',
+      outline: 'none',
     },
     activeCard: {
       // border: '1px solid #00b38e',
