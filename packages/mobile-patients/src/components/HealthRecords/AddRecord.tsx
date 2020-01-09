@@ -362,6 +362,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               const inputData = {
                 patientId: currentPatient ? currentPatient.id : '',
                 testName: testName,
+                issuingDoctor: docName,
+                location: locationName,
                 testDate:
                   dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
                 recordType: typeofRecord,
