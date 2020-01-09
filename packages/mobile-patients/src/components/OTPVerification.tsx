@@ -32,6 +32,7 @@ import {
   WebView,
   AppState,
   AppStateStatus,
+  TextInput,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     height: 56,
-    marginBottom: 8,
+    // marginBottom: 8,
     paddingTop: 2,
   },
   errorText: {
@@ -67,11 +68,14 @@ const styles = StyleSheet.create({
   },
   codeInputStyle: {
     borderBottomWidth: 2,
-    width: '14%',
+    width: '100%',
     margin: 0,
     height: 48,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.LIGHT_BLUE,
+    letterSpacing: 28,
+    paddingLeft: 12,
   },
   viewWebStyles: {
     position: 'absolute',
@@ -126,6 +130,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
+  const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
@@ -133,7 +138,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
 
-  const dbChildKey = props.navigation.state.params!.dbChildKey;
+  const dbChildKey = props.navigation.state.params && props.navigation.state.params.dbChildKey;
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -487,12 +492,18 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     _removeFromStore();
   };
 
+  const onStopResendTimer = () => {
+    setShowResentTimer(false);
+  };
+
   const isOtpValid = (otp: string) => {
-    setOtp(otp);
-    if (otp.length === 6) {
-      setIsValidOTP(true);
-    } else {
-      setIsValidOTP(false);
+    if (otp.match(/[0-9]/) || otp === '') {
+      setOtp(otp);
+      if (otp.length === 6) {
+        setIsValidOTP(true);
+      } else {
+        setIsValidOTP(false);
+      }
     }
   };
 
@@ -515,7 +526,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         sendOtp(phoneNumber, true)
           .then((confirmResult) => {
             CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
-
+            setShowResentTimer(true);
             console.log('confirmResult login', confirmResult);
           })
           .catch((error) => {
@@ -576,6 +587,40 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
+  const renderHyperLink = () => {
+    return (
+      <View
+        style={{
+          marginRight: 32,
+          marginTop: 12,
+        }}
+      >
+        <Hyperlink
+          linkStyle={{
+            color: '#02475b',
+            ...fonts.IBMPlexSansBold(10),
+            lineHeight: 16,
+            letterSpacing: 0,
+          }}
+          linkText={(url) =>
+            url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+          }
+          onPress={(url, text) => setonClickOpen(true)}
+        >
+          <Text
+            style={{
+              color: '#02475b',
+              ...fonts.IBMPlexSansMedium(10),
+              lineHeight: 16,
+              letterSpacing: 0,
+            }}
+          >
+            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+          </Text>
+        </Hyperlink>
+      </View>
+    );
+  };
   // const renderTime = () => {
   //   console.log(remainingTime, 'remainingTime', timer, 'timer');
 
@@ -617,7 +662,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             key={1}
             cardContainer={{
               marginTop: 0,
-              height: 290,
+              // height: 290,
+              paddingBottom: 12,
             }}
             headingTextStyle={{
               marginTop: 10,
@@ -630,7 +676,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }}
           >
             <View style={styles.inputView}>
-              <OTPTextView
+              <TextInput
+                style={[styles.codeInputStyle, { borderColor: 'rgba(0, 179, 142, 0.4)' }]}
+                value={otp}
+                onChangeText={(otp: string) => setOtp(otp)}
+                editable={false}
+                textContentType={'oneTimeCode'}
+              />
+              {/* <OTPTextView
                 handleTextChange={(otp: string) => setOtp(otp)}
                 inputCount={6}
                 keyboardType="numeric"
@@ -641,7 +694,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   flex: 1,
                 }}
                 editable={false}
-              />
+              /> */}
             </View>
 
             <Text style={[styles.errorText]}>
@@ -652,43 +705,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 onStopTimer={onStopTimer}
               />
             </Text>
-
-            <View
-              style={{
-                marginRight: 32,
-              }}
-            >
-              <Hyperlink
-                linkStyle={{
-                  color: '#02475b',
-                  ...fonts.IBMPlexSansBold(11),
-                  lineHeight: 16,
-                  letterSpacing: 0,
-                }}
-                linkText={(url) =>
-                  url === 'https://www.apollo247.com/TnC.html' ? 'terms & conditions' : url
-                }
-                onPress={(url, text) => setonClickOpen(true)}
-              >
-                <Text
-                  style={{
-                    color: '#02475b',
-                    ...fonts.IBMPlexSansRegular(11),
-                    lineHeight: 16,
-                    letterSpacing: 0,
-                  }}
-                >
-                  By signing up, I agree to https://www.apollo247.com/TnC.html of Apollo24x7
-                </Text>
-              </Hyperlink>
-            </View>
+            {renderHyperLink()}
           </Card>
         ) : (
           <Card
             key={2}
             cardContainer={{
               marginTop: 0,
-              height: 320,
+              // height: 260,
+              paddingBottom: 12,
             }}
             headingTextStyle={{
               marginTop: 10,
@@ -703,7 +728,24 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }}
           >
             <View style={styles.inputView}>
-              <OTPTextView
+              <TextInput
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor:
+                      otp.length != 6 && invalidOtpCount >= 1
+                        ? theme.colors.INPUT_BORDER_FAILURE
+                        : theme.colors.INPUT_BORDER_SUCCESS,
+                  },
+                ]}
+                value={otp}
+                onChangeText={isOtpValid}
+                keyboardType="numeric"
+                textContentType={'oneTimeCode'}
+                autoFocus
+                maxLength={6}
+              />
+              {/* <OTPTextView
                 handleTextChange={isOtpValid}
                 inputCount={6}
                 keyboardType="numeric"
@@ -717,7 +759,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 containerStyle={{
                   flex: 1,
                 }}
-              />
+              /> */}
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
@@ -726,39 +768,24 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               </Text>
             )}
             {
-              <TouchableOpacity activeOpacity={1} onPress={onClickResend}>
-                <Text style={styles.bottomDescription}>{string.login.resend_opt}</Text>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={showResentTimer ? () => {} : onClickResend}
+              >
+                <Text style={[styles.bottomDescription, showResentTimer ? { opacity: 0.5 } : {}]}>
+                  {string.login.resend_opt}
+                  {showResentTimer && ' '}
+                  {showResentTimer && (
+                    <CountDownTimer
+                      timer={30}
+                      style={{ color: theme.colors.LIGHT_BLUE }}
+                      onStopTimer={onStopResendTimer}
+                    />
+                  )}
+                </Text>
               </TouchableOpacity>
             }
-            <View
-              style={{
-                marginRight: 32,
-              }}
-            >
-              <Hyperlink
-                linkStyle={{
-                  color: '#02475b',
-                  ...fonts.IBMPlexSansBold(11),
-                  lineHeight: 16,
-                  letterSpacing: 0,
-                }}
-                linkText={(url) =>
-                  url === 'https://www.apollo247.com/TnC.html' ? 'terms & conditions' : url
-                }
-                onPress={(url, text) => setonClickOpen(true)}
-              >
-                <Text
-                  style={{
-                    color: '#02475b',
-                    ...fonts.IBMPlexSansRegular(11),
-                    lineHeight: 16,
-                    letterSpacing: 0,
-                  }}
-                >
-                  By signing up, I agree to https://www.apollo247.com/TnC.html of Apollo24x7
-                </Text>
-              </Hyperlink>
-            </View>
+            {renderHyperLink()}
           </Card>
         )}
         {onClickOpen && openWebView()}
