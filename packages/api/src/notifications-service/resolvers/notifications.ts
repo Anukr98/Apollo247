@@ -743,28 +743,31 @@ export async function sendReminderNotification(
     .sendToDevice(registrationToken, payload, options)
     .then((response: PushNotificationSuccessMessage) => {
       notificationResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
+      //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+      const fileName =
+        process.env.NODE_ENV +
+        '_callremindernotification_' +
+        format(new Date(), 'yyyyMMdd') +
+        '.txt';
+      let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+      if (process.env.NODE_ENV != 'local') {
+        assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
       }
+      let content =
+        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        '\n apptid: ' +
+        pushNotificationInput.appointmentId +
+        '\n multicastId: ';
+      content +=
+        response.multicastId.toString() +
+        '\n------------------------------------------------------------------------------------\n';
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+        if (err) {
+          console.log('file saving error', err);
+        }
+        console.log('notification results saved');
+      });
+      //}
     })
     .catch((error: JSON) => {
       console.log('PushNotification Failed::' + error);

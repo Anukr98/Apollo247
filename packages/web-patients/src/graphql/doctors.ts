@@ -219,7 +219,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
 `;
 
 export const PATIENT_APPOINTMENT_HISTORY = gql`
-  query AppointmentHistory($appointmentHistoryInput: AppointmentHistoryInput) {
+  query getAppointmentHistory($appointmentHistoryInput: AppointmentHistoryInput) {
     getAppointmentHistory(appointmentHistoryInput: $appointmentHistoryInput) {
       appointmentsHistory {
         id
@@ -230,6 +230,7 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
         hospitalId
         status
         bookingDate
+        isSeniorConsultStarted
       }
     }
   }
@@ -302,6 +303,7 @@ export const GET_DOCTOR_NEXT_AVAILABILITY = gql`
       doctorAvailalbeSlots {
         doctorId
         availableSlot
+        physicalAvailableSlot
       }
     }
   }

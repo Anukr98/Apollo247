@@ -153,6 +153,18 @@ export enum FEEDBACKTYPE {
   DIAGNOSTICS = 'DIAGNOSTICS',
 }
 
+export enum LOGIN_TYPE {
+  PATIENT = 'PATIENT',
+  DOCTOR = 'DOCTOR',
+}
+
+export enum OTP_STATUS {
+  NOT_VERIFIED = 'NOT_VERIFIED',
+  VERIFIED = 'VERIFIED',
+  EXPIRED = 'EXPIRED',
+  BLOCKED = 'BLOCKED',
+}
+
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
@@ -179,6 +191,9 @@ export class MedicineOrders extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ default: 0 })
+  isEprescription: number;
 
   @PrimaryGeneratedColumn({ type: 'bigint' })
   orderAutoId: number;
@@ -1494,6 +1509,22 @@ export class PatientFeedback extends BaseEntity {
 
   @Column({ nullable: true })
   doctorId: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 
 @Entity()
@@ -1528,4 +1559,31 @@ export class PatientHelpTickets extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+}
+
+@Entity()
+export class LoginOtp extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  loginType: LOGIN_TYPE;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  otp: string;
+
+  @Column({ default: OTP_STATUS.NOT_VERIFIED })
+  status: string;
+
+  @Column({ default: 0 })
+  incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
 }

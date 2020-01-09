@@ -179,6 +179,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '60px auto 0 auto',
       boxShadow: 'none',
+      outline: '0 !important',
     },
     activeCard: {
       // border: '1px solid #00b38e',
@@ -1447,9 +1448,10 @@ export const FavouriteMedicines: React.FC = () => {
   ) => {
     setMedicine(newValue);
     setLoading(false);
-    if (newValue.length > 2) {
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchMedicines(newValue);
     }
+
     setState({
       ...state,
       [name]: newValue,
@@ -1598,20 +1600,19 @@ export const FavouriteMedicines: React.FC = () => {
               <span className={classes.headingName}>
                 {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
               </span>
-              <Button className={classes.cross}>
-                <img
-                  src={require('images/ic_cross.svg')}
-                  alt=""
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    setShowDosage(false);
-                    setTabletsCount(1);
-                    setMedicineUnit(MEDICINE_UNIT.OTHERS);
-                    setConsumptionDuration('');
-                    setMedicineInstruction('');
-                    resetOptions();
-                  }}
-                />
+              <Button
+                className={classes.cross}
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setShowDosage(false);
+                  setTabletsCount(1);
+                  setMedicineUnit(MEDICINE_UNIT.OTHERS);
+                  setConsumptionDuration('');
+                  setMedicineInstruction('');
+                  resetOptions();
+                }}
+              >
+                <img src={require('images/ic_cross.svg')} alt="" />
               </Button>
             </AphDialogTitle>
             <div className={classes.shadowHide}>

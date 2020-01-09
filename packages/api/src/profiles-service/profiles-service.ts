@@ -143,6 +143,12 @@ import {
   cancelDiagnosticOrdersTypeDefs,
   cancelDiagnosticOrdersResolvers,
 } from 'profiles-service/resolvers/cancelDiagnosticOrders';
+import { loginTypeDefs, loginResolvers } from 'profiles-service/resolvers/login';
+import {
+  verifyLoginOtpTypeDefs,
+  verifyLoginOtpResolvers,
+} from 'profiles-service/resolvers/verifyLoginOtp';
+
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -340,6 +346,14 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: cancelDiagnosticOrdersTypeDefs,
         resolvers: cancelDiagnosticOrdersResolvers,
+      },
+      {
+        typeDefs: loginTypeDefs,
+        resolvers: loginResolvers,
+      },
+      {
+        typeDefs: verifyLoginOtpTypeDefs,
+        resolvers: verifyLoginOtpResolvers,
       },
     ]),
     plugins: [
