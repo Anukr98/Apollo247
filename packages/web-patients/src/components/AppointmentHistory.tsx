@@ -4,9 +4,9 @@ import React from 'react';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { PATIENT_APPOINTMENT_HISTORY } from 'graphql/doctors';
 import {
-  AppointmentHistory as TypeAppointmentHistory,
-  AppointmentHistoryVariables,
-} from 'graphql/types/AppointmentHistory';
+  getAppointmentHistory as PatientAppointmentHistory,
+  getAppointmentHistoryVariables as AppointmentHistoryVariables,
+} from 'graphql/types/getAppointmentHistory';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import _uniqueId from 'lodash/uniqueId';
 import { getTime } from 'date-fns/esm';
@@ -147,15 +147,17 @@ const getTimestamp = (today: Date, slotTime: string) => {
 };
 
 export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const { doctorId, patientId } = props;
 
   const { data, loading, error } = useQueryWithSkip<
-    TypeAppointmentHistory,
+    PatientAppointmentHistory,
     AppointmentHistoryVariables
   >(PATIENT_APPOINTMENT_HISTORY, {
-    variables: { appointmentHistoryInput: { patientId: patientId, doctorId: doctorId } },
+    variables: {
+      appointmentHistoryInput: { patientId: patientId, doctorId: doctorId },
+    },
   });
 
   if (loading) {
@@ -173,33 +175,15 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
         {previousAppointments.length > 0 ? (
           <>
             <div className={classes.sectionHeader}>
-              <span>Appointment History</span>
-              <span className={classes.count}>
-                {(previousAppointments && previousAppointments.length) || ''}
-              </span>
+              <span>{`Appointment History (${(previousAppointments &&
+                previousAppointments.length) ||
+                0})`}</span>
             </div>
             <Grid className={classes.gridContainer} container spacing={2}>
               {previousAppointments.map((appointment) => {
-                // const aptArray = appointment.appointmentDateTime.split('T');
-                // const appointmentDate = format(
-                //   getTimestamp(
-                //     new Date(appointment.appointmentDateTime),
-                //     aptArray[1].substring(0, 5)
-                //   ),
-                //   'MMMM dd, yyyy'
-                // );
-                // const appointmentTime = format(
-                //   new Date(
-                //     getTimestamp(
-                //       new Date(appointment.appointmentDateTime),
-                //       aptArray[1].substring(0, 5)
-                //     )
-                //   ),
-                //   'h:mm a'
-                // );
                 const appointmentDate = format(
                   new Date(appointment.appointmentDateTime),
-                  'MMMM dd, yyyy'
+                  'dd MMM, yyyy'
                 );
                 const appointmentTime = format(new Date(appointment.appointmentDateTime), 'h:mm a');
                 return (

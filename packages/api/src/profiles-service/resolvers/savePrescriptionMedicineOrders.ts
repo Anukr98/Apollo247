@@ -31,6 +31,7 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
     prescriptionImageUrl: String!
     prismPrescriptionFileId: String!
     appointmentId: String
+    isEprescription: Int
     payment: PrescriptionMedicinePaymentDetails
   }
 
@@ -66,6 +67,7 @@ type PrescriptionMedicineInput = {
   prescriptionImageUrl: string;
   prismPrescriptionFileId: string;
   appointmentId: string;
+  isEprescription: number;
   payment?: PrescriptionMedicinePaymentDetails;
 };
 
@@ -115,6 +117,7 @@ const SavePrescriptionMedicineOrder: Resolver<
     devliveryCharges: 0.0,
     patientAddressId: prescriptionMedicineInput.patinetAddressId,
     currentStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+    isEprescription: prescriptionMedicineInput.isEprescription,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);

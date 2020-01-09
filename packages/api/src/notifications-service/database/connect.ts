@@ -12,6 +12,7 @@ import {
   DoctorNextAvaialbleSlots,
   AppointmentNoShow,
   SdDashboardSummary,
+  FeedbackDashboardSummary,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -79,6 +80,7 @@ export const connect = async () => {
         DoctorNextAvaialbleSlots,
         AppointmentNoShow,
         SdDashboardSummary,
+        FeedbackDashboardSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
