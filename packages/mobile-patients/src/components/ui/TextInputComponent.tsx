@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import {
   Platform,
   StyleProp,
@@ -36,11 +36,18 @@ const styles = StyleSheet.create({
   textview: {
     flexDirection: 'row',
   },
+  iconStyle: {
+    position: 'absolute',
+    right: 0,
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
 });
 
 export interface TextInputComponentProps {
   conatinerstyles?: StyleProp<ViewStyle>;
   label?: string;
+  labelStyle?: StyleProp<TextStyle>;
   noInput?: boolean;
   placeholder?: string;
   value?: string;
@@ -57,6 +64,7 @@ export interface TextInputComponentProps {
   textInputprops?: TextInputProps;
   maxLength?: TextInputProps['maxLength'];
   keyboardType?: TextInputProps['keyboardType'];
+  icon?: ReactNode;
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -64,7 +72,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
     <View style={[styles.mainveiw, props.conatinerstyles]}>
       {props.label && (
         <View style={styles.textview}>
-          <Text style={styles.labelStyle}>{props.label}</Text>
+          <Text style={[styles.labelStyle, props.labelStyle]}>{props.label}</Text>
         </View>
       )}
       {props.noInput ? null : (
@@ -74,7 +82,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           style={[styles.textInputStyle, props.inputStyle]}
           multiline={props.multiline}
           numberOfLines={props.numberOfLines}
-          placeholderTextColor={theme.colors.placeholderTextColor || props.placeholderTextColor}
+          placeholderTextColor={props.placeholderTextColor || theme.colors.placeholderTextColor}
           onFocus={props.onFocus}
           onBlur={props.onBlur}
           onChangeText={props.onChangeText}
@@ -87,6 +95,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
         />
       )}
+      {props.icon && <View style={styles.iconStyle}>{props.icon}</View>}
     </View>
   );
 };

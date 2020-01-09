@@ -706,6 +706,22 @@ export const ManageProfileIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_manageprofile.png')} />
 );
 
+export const Ambulance: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ambulance.png')} />
+);
+
+export const Diabetes: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_diabetes.png')} />
+);
+
+export const Symptomtracker: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_symptomtracker.png')} />
+);
+
+export const PrescriptionMenu: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_prescription_menu.png')} />
+);
+
 export const CartIconWhite: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_cart_white.png')} />
 );

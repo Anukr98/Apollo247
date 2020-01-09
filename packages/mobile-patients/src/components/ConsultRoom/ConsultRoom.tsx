@@ -11,6 +11,19 @@ import {
   TestsIcon,
   MedicineIcon,
   DropdownGreen,
+  ManageProfileIcon,
+  Location,
+  NotificaitonAccounts,
+  Ambulance,
+  CartIcon,
+  NotificationIcon,
+  TestsCartIcon,
+  TestsCartMedicineIcon,
+  DoctorIcon,
+  Diabetes,
+  Symptomtracker,
+  PrescriptionIcon,
+  PrescriptionMenu,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -45,6 +58,8 @@ import {
   View,
   AppState,
   AppStateStatus,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
@@ -56,6 +71,9 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useUIElements } from '../UIElementsProvider';
 import { AppConfig } from '../../strings/AppConfig';
+import { ListCard } from '../ui/ListCard';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -63,7 +81,7 @@ const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
-    height: Platform.OS === 'ios' ? 274 : 284,
+    marginBottom: 20,
   },
   gotItStyles: {
     height: 60,
@@ -96,7 +114,7 @@ const styles = StyleSheet.create({
   },
   descriptionTextStyle: {
     marginLeft: 20,
-    marginTop: 12,
+    marginTop: 0,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
@@ -132,6 +150,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#dddddd',
     marginHorizontal: 16,
+  },
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
+  menuOptionIconStyle: {
+    height: 40,
+    width: 40,
+    resizeMode: 'contain',
   },
 });
 
@@ -204,14 +242,65 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
-  const [showMenu, setShowMenu] = useState<boolean>(false);
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+
+  const { cartItems } = useDiagnosticsCart();
+  const { cartItems: shopCartItems } = useShoppingCart();
+  const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
+  const menuOptions = [
+    {
+      id: 1,
+      title: 'Find A Doctor',
+      image: <DoctorIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate(AppRoutes.DoctorSearch),
+    },
+    {
+      id: 2,
+      title: 'Buy Medicines',
+      image: <TestsCartMedicineIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate('MEDICINES', { focusSearch: true }),
+    },
+    {
+      id: 3,
+      title: 'Order Tests',
+      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate('TESTS', { focusSearch: true }),
+    },
+    {
+      id: 4,
+      title: 'Manage Diabetes',
+      image: <Diabetes style={styles.menuOptionIconStyle} />,
+      onPress: () => {},
+    },
+    {
+      id: 5,
+      title: 'Track Symptoms',
+      image: <Symptomtracker style={styles.menuOptionIconStyle} />,
+      onPress: () =>
+        props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' }),
+    },
+    {
+      id: 6,
+      title: 'View Health Records',
+      image: <PrescriptionMenu style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate('HEALTH RECORDS'),
+    },
+  ];
+
+  useEffect(() => {
+    // if (token.data.message === 'VitaToken Obtained Successfully') {
+    //   setMenuViewOptions([1, 2, 3, 4, 5, 6]);
+    // } else {
+    setMenuViewOptions([1, 2, 3, 5]);
+    // }
+  }, []);
 
   useEffect(() => {
     currentPatient && setshowSpinner(false);
@@ -414,82 +503,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ),
     });
   };
-
-  const Popup = () => (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={{
-        paddingVertical: 9,
-        position: 'absolute',
-        width: width,
-        height: height,
-        flex: 1,
-        alignItems: 'flex-end',
-        zIndex: 3,
-        backgroundColor: 'transparent',
-      }}
-      onPress={() => setShowMenu(false)}
-    >
-      <View
-        style={{
-          width: 160,
-          borderRadius: 10,
-          backgroundColor: 'white',
-          marginRight: 56,
-          shadowColor: '#808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.8,
-          shadowRadius: 10,
-          elevation: 5,
-          paddingTop: 8,
-          paddingBottom: 16,
-          ...Platform.select({
-            android: {
-              marginTop: 94,
-            },
-            ios: {
-              marginTop: 114,
-            },
-          }),
-        }}
-      >
-        {allCurrentPatients &&
-          allCurrentPatients.map((profile: PatientSignIn_patientSignIn_patients, i: number) => (
-            <View style={styles.textViewStyle} key={i}>
-              <Text
-                style={[
-                  styles.textStyle,
-                  profile.firstName && currentPatient!.firstName === profile.firstName
-                    ? { color: theme.colors.APP_GREEN }
-                    : null,
-                ]}
-                onPress={() => {
-                  setShowMenu(false);
-                }}
-              >
-                {profile.firstName
-                  ? profile.firstName
-                      .split(' ')[0]
-                      .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
-                  : ''}
-              </Text>
-            </View>
-          ))}
-        {/* 
-        <Text
-          style={{
-            paddingTop: 15,
-            paddingBottom: 4,
-            paddingRight: 16,
-            textAlign: 'right',
-            ...theme.viewStyles.yellowTextStyle,
-          }}
-        >
-          ADD MEMBER
-        </Text> */}
-      </View>
-    </TouchableOpacity>
-  );
 
   const renderStarDoctors = () => {
     return (
@@ -705,12 +718,229 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderProfileDrop = () => {
+    return (
+      <ProfileList
+        navigation={props.navigation}
+        saveUserChange={true}
+        childView={
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingRight: 8,
+              borderRightWidth: 0,
+              borderRightColor: 'rgba(2, 71, 91, 0.2)',
+              backgroundColor: theme.colors.WHITE,
+            }}
+          >
+            <Text style={styles.hiTextStyle}>{'hi'}</Text>
+            <View style={styles.nameTextContainerStyle}>
+              <Text style={styles.nameTextStyle} numberOfLines={1}>
+                {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+              </Text>
+              <View style={styles.seperatorStyle} />
+            </View>
+            <View style={{ paddingTop: 15 }}>
+              <DropdownGreen />
+            </View>
+          </View>
+        }
+        setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+        unsetloaderDisplay={true}
+      />
+    );
+  };
+
+  const renderListView = () => {
+    return (
+      <View>
+        <ListCard
+          container={{ marginTop: 14 }}
+          title={'Upcoming Appointments'}
+          leftIcon={renderListCount(5)}
+          onPress={() => props.navigation.navigate('CONSULT ROOM')}
+        />
+        {/* <ListCard
+          container={{ marginTop: 14 }}
+          title={'Active Orders'}
+          leftIcon={renderListCount(2)}
+          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
+        /> */}
+      </View>
+    );
+  };
+
+  const renderListCount = (count: number) => {
+    return (
+      <View
+        style={{
+          height: 40,
+          width: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.colors.CARD_BG,
+          borderRadius: 5,
+        }}
+      >
+        <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
+          {count}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderMenuOptions = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          marginLeft: 20,
+          marginRight: 8,
+          marginTop: 16,
+        }}
+      >
+        {menuOptions.map((item) => {
+          if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
+            return (
+              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <View
+                  style={{
+                    ...theme.viewStyles.cardViewStyle,
+                    flexDirection: 'row',
+                    minHeight: 59,
+                    width: width / 2 - 28,
+                    marginRight: 12,
+                    marginBottom: 12,
+                  }}
+                >
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginHorizontal: 10,
+                      flex: 0.5,
+                    }}
+                  >
+                    {item.image}
+                  </View>
+                  <View
+                    style={{
+                      alignItems: 'flex-start',
+                      justifyContent: 'center',
+                      marginRight: 10,
+                      flex: 1,
+                    }}
+                  >
+                    <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
+                      {item.title}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }
+        })}
+      </View>
+    );
+  };
+
+  const renderEmergencyCallBanner = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          {
+            Linking.openURL('tel:1066');
+          }
+        }}
+      >
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginVertical: 16,
+            paddingHorizontal: 10,
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            backgroundColor: '#d13135',
+            borderRadius: 10,
+          }}
+        >
+          <Text style={theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20)}>
+            Call 1066 in emergency
+          </Text>
+          <Ambulance style={{ height: 41, width: 41 }} />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
+    return (
+      <View style={[styles.labelView, containerStyle]}>
+        <Text style={styles.labelText}>{count}</Text>
+      </View>
+    );
+  };
+
+  const renderTopIcons = () => {
+    return (
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          paddingTop: 16,
+          paddingHorizontal: 20,
+          backgroundColor: theme.colors.WHITE,
+        }}
+      >
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <ApolloLogo />
+        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              props.navigation.navigate(AppRoutes.MedAndTestCart, {
+                isComingFromConsult: true,
+              })
+            }
+            style={{ right: 20 }}
+          >
+            <CartIcon />
+            {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
+          >
+            <NotificationIcon />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
-        {showMenu && Popup()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          <Image
+          <View style={{ width: '100%' }}>
+            <View style={styles.viewName}>
+              {renderTopIcons()}
+              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
+              {renderMenuOptions()}
+              {renderEmergencyCallBanner()}
+            </View>
+          </View>
+          {renderListView()}
+          <NeedHelpAssistant
+            containerStyle={{ marginTop: 30, marginBottom: 48 }}
+            navigation={props.navigation}
+          />
+          {/* <Image
             source={require('@aph/mobile-patients/src/images/doctor/doctor.png')}
             style={{
               right: 20,
@@ -727,79 +957,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 CommonLogEvent(AppRoutes.ConsultRoom, 'symptom checker  clicked');
                 props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
-            />
-          </View>
-          <View style={{ width: '100%', height: Platform.OS === 'ios' ? 436 : 446 }}>
-            <View style={styles.viewName}>
-              <View
-                style={{
-                  justifyContent: 'space-between',
-                  flexDirection: 'row',
-                  paddingTop: 16,
-                  paddingHorizontal: 20,
-                  backgroundColor: theme.colors.WHITE,
-                }}
-              >
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {}} //props.navigation.replace(AppRoutes.TabBar)}
-                >
-                  <ApolloLogo />
-                </TouchableOpacity>
-              </View>
-              <View
-                // activeOpacity={1}
-                // onPress={() => setShowMenu(true)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}
-              >
-                <View style={{ flexDirection: 'row' }}>
-                  <ProfileList
-                    navigation={props.navigation}
-                    saveUserChange={true}
-                    childView={
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          paddingRight: 8,
-                          borderRightWidth: 0,
-                          borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                          backgroundColor: theme.colors.WHITE,
-                        }}
-                      >
-                        <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                        <View style={styles.nameTextContainerStyle}>
-                          <Text style={styles.nameTextStyle} numberOfLines={1}>
-                            {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                          </Text>
-                          <View style={styles.seperatorStyle} />
-                        </View>
-                        <View style={{ paddingTop: 15 }}>
-                          <DropdownGreen />
-                        </View>
-                      </View>
-                    }
-                    setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-                    unsetloaderDisplay={true}
-                  ></ProfileList>
-                  {/* <Text style={styles.hiTextStyle}>
-                    {string.home.hi} {userName}!
-                  </Text> */}
-                  {/* <View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Text style={styles.nameTextStyle}>{userName}!</Text>
-                      <DropdownGreen style={{ marginTop: 8 }} />
-                    </View>
-                    <View style={styles.seperatorStyle} />
-                  </View> */}
-                </View>
+            /> 
+            </View> */}
+          {/* </View>
               </View>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
             </View>
@@ -866,21 +1026,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   </View>
                 </TouchableOpacity>
               </View>
-            ))}
-          </View>
+            ))} */}
+          {/* </View> */}
           {/* {renderStarDoctors()} */}
-          <NeedHelpAssistant
-            containerStyle={{ marginTop: 30, marginBottom: 48 }}
-            navigation={props.navigation}
-          />
-          {/* <View style={styles.helpView}>
-            <Mascot style={{ height: 80, width: 80 }} />
-            <Button
-              title={string.home.need_help}
-              style={styles.needhelpbuttonStyles}
-              titleTextStyle={styles.titleBtnStyles}
-            />
-          </View> */}
         </ScrollView>
       </SafeAreaView>
       {renderBottomTabBar()}
