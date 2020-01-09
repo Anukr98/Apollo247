@@ -11,10 +11,9 @@ export class LoginHistoryRepository extends Repository<DoctorLoginSessionHistory
     });
   }
 
-  updateLoginSession(loginSession: Partial<DoctorLoginSessionHistory>) {
+  async updateLoginSession(loginSession: Partial<DoctorLoginSessionHistory>) {
     return this.save(loginSession).catch((loginSessionError) => {
-      //TODO: change error message
-      throw new AphError(AphErrorMessages.SAVE_DOCTORS_ERROR, undefined, {
+      throw new AphError(AphErrorMessages.SAVE_LOGIN_SESSION_ERROR, undefined, {
         loginSessionError,
       });
     });
