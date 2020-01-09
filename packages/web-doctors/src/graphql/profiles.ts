@@ -634,7 +634,14 @@ export const GET_APPOINTMENT_DATA = gql`
     }
   }
 `;
-
+export const LOGIN = gql`
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+      status
+      message
+    }
+  }
+`;
 export const GET_CASESHEET = gql`
   query GetCaseSheet($appointmentId: String!) {
     getCaseSheet(appointmentId: $appointmentId) {

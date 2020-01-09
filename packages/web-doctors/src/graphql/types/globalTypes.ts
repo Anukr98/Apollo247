@@ -62,6 +62,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum LoggedInUserType {
   ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
