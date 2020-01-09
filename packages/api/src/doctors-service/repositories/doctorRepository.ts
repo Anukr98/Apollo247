@@ -677,6 +677,11 @@ export class DoctorRepository extends Repository<Doctor> {
   }
 
   getAllDoctors() {
-    return this.find({ where: { isActive: true, doctorType: Not('JUNIOR') } });
+    return this.find({
+      where: {
+        isActive: true,
+        doctorType: Not('JUNIOR'),
+      },
+    });
   }
 }

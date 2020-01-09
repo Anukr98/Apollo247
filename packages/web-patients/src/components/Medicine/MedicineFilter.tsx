@@ -128,11 +128,13 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 type priceFilter = { fromPrice: string; toPrice: string };
+type discountFilter = { fromDiscount: string; toDiscount: string };
 
 interface MedicineFilterProps {
   setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
   setPriceFilter?: (priceFilter: priceFilter) => void;
   setFilterData?: (filterData: []) => void;
+  setDiscountFilter?: (discountFilter: discountFilter) => void;
 }
 
 type Params = { searchMedicineType: string; searchText: string };
@@ -153,6 +155,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
+  const [fromDiscount, setFromDiscount] = useState<string>('0');
+  const [toDiscount, setToDiscount] = useState<string>('100');
 
   useEffect(() => {
     if (subtxt.length > 0 && subtxt !== params.searchText) {
@@ -198,11 +202,17 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       fromPrice: fromPrice,
       toPrice: toPrice,
     };
+
+    const discountObj = {
+      fromDiscount: fromDiscount.length > 0 ? parseFloat(fromDiscount) : 0,
+      toDiscount: toDiscount.length > 0 ? parseFloat(toDiscount) : 100,
+    };
     if (!window.location.href.includes('search-by-brand')) {
       props.setFilterData(selectedCatagerys);
     }
 
     props.setPriceFilter(obj);
+    props.setDiscountFilter(discountObj);
   };
 
   useEffect(() => {
@@ -338,8 +348,17 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                 <div className={classes.filterType}>Discount</div>
                 <div className={classes.boxContent}>
                   <div className={classes.filterBy}>
-                    <AphTextField placeholder="0%" /> <span>TO</span>{' '}
-                    <AphTextField placeholder="100%" />
+                    <AphTextField
+                      placeholder="0%"
+                      value={fromDiscount}
+                      onChange={(e) => setFromDiscount(e.target.value)}
+                    />{' '}
+                    <span>TO</span>{' '}
+                    <AphTextField
+                      placeholder="100%"
+                      value={toDiscount}
+                      onChange={(e) => setToDiscount(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>

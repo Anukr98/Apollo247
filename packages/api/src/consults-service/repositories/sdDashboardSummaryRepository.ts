@@ -4,6 +4,8 @@ import {
   AppointmentCallDetails,
   SdDashboardSummary,
   STATUS,
+  FeedbackDashboardSummary,
+  APPOINTMENT_TYPE,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
@@ -20,23 +22,48 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
   }
 
-  getAppointmentsByDoctorId(doctorId: string, appointmentDate: Date) {
+  saveFeedbackDetails(feedbackSummaryAttrs: Partial<FeedbackDashboardSummary>) {
+    return FeedbackDashboardSummary.create(feedbackSummaryAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  getAppointmentsByDoctorId(doctorId: string, appointmentDate: Date, appointmentType: string) {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
-    return Appointment.createQueryBuilder('appointment')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
-        fromDate: startDate,
-        toDate: endDate,
-      })
-      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-      })
-      .getCount();
+    if (appointmentType == 'BOTH') {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getCount();
+    } else {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.appointmentType = :appointmentType', {
+          appointmentType: APPOINTMENT_TYPE.ONLINE,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getCount();
+    }
   }
 
   async getCallsCount(doctorId: string, callType: string, appointmentDate: Date) {
@@ -193,7 +220,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           'appointment_call_details."appointmentId" as "appointmentId"',
           'sum(appointment_call_details."callDuration") as "totalDuration"',
         ])
-        .andWhere('appointment_call_details.appointmentId in (:...apptIds)', { apptIds })
+        .andWhere('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
         .andWhere('appointment_call_details.endTime is not null')
         .groupBy('appointment_call_details."appointmentId"')
         .getRawMany();

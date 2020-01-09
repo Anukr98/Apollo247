@@ -13,6 +13,8 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
+import { PatientHelpTickets } from 'profiles-service/entities';
 
 export const helpTypeDefs = gql`
   input HelpEmailInput {
@@ -45,7 +47,14 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-
+  const helpTicketRepo = profilesDb.getCustomRepository(PatientHelpTicketRepository);
+  const helpTicketAttrs: Partial<PatientHelpTickets> = {
+    category: helpEmailInput.category,
+    comments: helpEmailInput.comments,
+    reason: helpEmailInput.reason,
+    patient: patientDetails,
+  };
+  await helpTicketRepo.saveHelpTicket(helpTicketAttrs);
   const startDate = addDays(new Date(), -10);
   const endDate = new Date();
 

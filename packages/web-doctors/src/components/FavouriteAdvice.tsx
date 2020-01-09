@@ -194,6 +194,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 480,
       margin: '30px auto 0 auto',
       boxShadow: 'none',
+      outline: '0 !important',
     },
     dialogActions: {
       padding: 10,

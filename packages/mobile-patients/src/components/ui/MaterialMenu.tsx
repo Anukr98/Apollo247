@@ -1,5 +1,5 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -52,10 +52,16 @@ export interface MaterialMenuProps {
   lastTextStyle?: StyleProp<TextStyle> | undefined;
   lastContainerStyle?: StyleProp<ViewStyle> | undefined;
   bottomPadding?: StyleProp<ViewStyle> | undefined;
+  showMenu?: boolean;
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
   const menuRef = React.useRef<any>(null);
+  useEffect(() => {
+    if (props.showMenu) {
+      showMenu();
+    }
+  }, [props.showMenu]);
 
   const hideMenu = () => {
     menuRef.current.hide();
