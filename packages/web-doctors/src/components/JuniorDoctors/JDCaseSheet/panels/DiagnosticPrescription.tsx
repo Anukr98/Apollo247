@@ -368,7 +368,9 @@ export const DiagnosticPrescription: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    if (newValue.length > 2) fetchDignostic(newValue);
+    if (event.nativeEvent.type === 'input') {
+      if (newValue.length > 2) fetchDignostic(newValue);
+    }
 
     setOtherDiagnostic(newValue.trim());
     setState({
