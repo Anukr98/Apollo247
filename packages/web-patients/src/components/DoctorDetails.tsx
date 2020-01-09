@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
+import { AphButton } from '@aph/web-ui-components';
 
 type Params = { id: string };
 
@@ -213,9 +214,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
-  const { allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
 
-  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+  const currentUserId = currentPatient && currentPatient.id;
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -301,11 +302,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <div className={classes.doctorProfileSection}>
               <DoctorProfile
                 doctorDetails={doctorDetails}
-                onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                 avaPhy={availableForPhysicalConsultation}
                 avaOnline={availableForVirtualConsultation}
               />
               <div className={classes.searchSection}>
+                <span className={classes.count}>
+                  <AphButton onClick={(e) => setIsPopoverOpen(true)} fullWidth color="primary">
+                    Book Appointment
+                  </AphButton>
+                </span>
                 <Scrollbars
                   style={{ height: '100%' }}
                   autoHide={true}
@@ -313,9 +318,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   autoHeightMax={'calc(100vh - 195px'}
                 >
                   <div className={classes.customScroll}>
-                    <DoctorClinics doctorDetails={doctorDetails} />
-                    {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                    <AppointmentHistory doctorId={doctorId} patientId={currentUserId} />
+                    {isStarDoctor && (
+                      <>
+                        <DoctorClinics doctorDetails={doctorDetails} />
+                        <StarDoctorTeam doctorDetails={doctorDetails} />
+                      </>
+                    )}
+                    <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
                   </div>
                 </Scrollbars>
               </div>
