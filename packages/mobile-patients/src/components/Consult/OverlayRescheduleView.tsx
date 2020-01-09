@@ -162,6 +162,33 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
     );
   };
 
+  const navigateToViewRescdule = (data: any) => {
+    AsyncStorage.setItem('showSchduledPopup', 'true');
+    console.log('navigateToView', data);
+    console.log('doctorname', props.doctor);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.TabBar,
+            params: {
+              Data:
+                data &&
+                data.bookRescheduleAppointment &&
+                data.bookRescheduleAppointment.appointmentDetails,
+              DoctorName:
+                props.navigation.state.params!.data &&
+                props.navigation.state.params!.data.doctorInfo &&
+                props.navigation.state.params!.data.doctorInfo.firstName,
+            },
+          }),
+        ],
+      })
+    );
+  };
+
   const renderBottomButton = () => {
     return (
       <StickyBottomComponent
@@ -293,7 +320,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   props.setdisplayoverlay(false),
                   setshowSpinner(false),
                   setshowSuccessPopUp(true),
-                  navigateToView())
+                  navigateToViewRescdule(data))
                 : null}
               {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
               {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}

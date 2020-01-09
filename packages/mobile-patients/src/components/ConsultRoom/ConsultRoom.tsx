@@ -478,8 +478,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }
               } else {
                 if (buildName() === 'QA') {
-                  if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
-                    showUpdateAlert(nietos[4].value);
+                  if (parseFloat(nietos[6].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[5].value);
                   }
                 } else {
                   if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {

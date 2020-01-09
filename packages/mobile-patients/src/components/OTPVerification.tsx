@@ -41,6 +41,8 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { BottomPopUp } from './ui/BottomPopUp';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
+import { useApolloClient } from 'react-apollo-hooks';
+import { verifyOTP } from '../helpers/clientCalls';
 
 const { height, width } = Dimensions.get('window');
 
@@ -137,8 +139,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
+  const client = useApolloClient();
 
-  const dbChildKey = props.navigation.state.params && props.navigation.state.params.dbChildKey;
+  const dbChildKey = props.navigation.state.params!.dbChildKey;
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -356,9 +359,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           .update({
             OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
           });
+        const { phoneNumber } = props.navigation.state.params!;
 
         setTimeout(() => {
-          verifyOtp(otp)
+          // verifyOtp(otp)
+          verifyOTP(client, phoneNumber, otp)
             .then((otp) => {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
               CommonBugFender('OTP_ENTERED_SUCCESS', otp as Error);
@@ -380,14 +385,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 CommonBugFender('OTP_ENTERED_FAIL', error);
                 CommonLogEvent('OTP_ENTERED_FAIL', error);
 
-                // if (
-                //   error &&
-                //   error.message ===
-                //     'The sms code has expired. Please re-send the verification code to try again.'
-                // ) {
-                //   setshowSpinner(false);
-                //   setErrorpopup(true);
-                // }
                 setTimeout(() => {
                   if (isAuthChanged) {
                     _removeFromStore();
@@ -677,7 +674,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           >
             <View style={styles.inputView}>
               <TextInput
-                style={[styles.codeInputStyle, { borderColor: 'rgba(0, 179, 142, 0.4)' }]}
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor: 'rgba(0, 179, 142, 0.4)',
+                  },
+                ]}
                 value={otp}
                 onChangeText={(otp: string) => setOtp(otp)}
                 editable={false}
@@ -772,13 +774,24 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 activeOpacity={1}
                 onPress={showResentTimer ? () => {} : onClickResend}
               >
-                <Text style={[styles.bottomDescription, showResentTimer ? { opacity: 0.5 } : {}]}>
+                <Text
+                  style={[
+                    styles.bottomDescription,
+                    showResentTimer
+                      ? {
+                          opacity: 0.5,
+                        }
+                      : {},
+                  ]}
+                >
                   {string.login.resend_opt}
                   {showResentTimer && ' '}
                   {showResentTimer && (
                     <CountDownTimer
                       timer={30}
-                      style={{ color: theme.colors.LIGHT_BLUE }}
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                      }}
                       onStopTimer={onStopResendTimer}
                     />
                   )}
