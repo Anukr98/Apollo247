@@ -486,8 +486,8 @@ export const Symptoms: React.FC = (props) => {
                 )}
             </List>
           ) : (
-            <div className={classes.nodatafound}>No data Found</div>
-          )}
+              <div className={classes.nodatafound}>No data Found</div>
+            )}
 
           {caseSheetEdit && (
             <AphButton
@@ -513,15 +513,14 @@ export const Symptoms: React.FC = (props) => {
               <Paper className={classes.medicinePopup}>
                 <AphDialogTitle className={classes.popupHeadingCenter}>
                   ADD COMPLAINT
-                  <Button className={classes.cross}>
+                  <Button className={classes.cross} onClick={() => {
+                    clearError();
+                    setIsDialogOpen(false);
+                    clearField();
+                  }}>
                     <img
                       src={require('images/ic_cross.svg')}
                       alt=""
-                      onClick={() => {
-                        clearError();
-                        setIsDialogOpen(false);
-                        clearField();
-                      }}
                     />
                   </Button>
                 </AphDialogTitle>
