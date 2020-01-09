@@ -33,7 +33,12 @@ import {
   UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
-import { g, isValidSearch, isValidText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  isValidSearch,
+  isValidText,
+  isValidName,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -184,7 +189,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [testName, settestName] = useState<string>('');
-  const [typeofRecord, settypeofRecord] = useState<MedicalRecordType>();
+  const [docName, setDocName] = useState<string>('');
+  const [locationName, setLocationName] = useState<string>('');
+  const [typeofRecord, settypeofRecord] = useState<MedicRecordType>();
   const [dateOfTest, setdateOfTest] = useState<string>('');
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
@@ -558,6 +565,107 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderDateInpt = () => {
+    return (
+      <View>
+        <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.placeholderViewStyle}
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsDateTimePickerVisible(true);
+              CommonLogEvent('ADD_RECORD', 'Date picker visible');
+            }}
+          >
+            <Text
+              style={[
+                styles.placeholderTextStyle,
+                dateOfTest !== '' ? null : styles.placeholderStyle,
+              ]}
+            >
+              {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <DatePicker
+          isDateTimePickerVisible={isDateTimePickerVisible}
+          handleDatePicked={(date) => {
+            const formatDate = Moment(date).format('DD/MM/YYYY');
+            setdateOfTest(formatDate);
+            setIsDateTimePickerVisible(false);
+            Keyboard.dismiss();
+          }}
+          hideDateTimePicker={() => {
+            setIsDateTimePickerVisible(false);
+            Keyboard.dismiss();
+          }}
+        />
+      </View>
+    );
+  };
+
+  const inputRecordType = () => {
+    switch (typeofRecord) {
+      case MedicRecordType.TEST_REPORT:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Name Of Test'}
+              value={testName}
+              placeholder={'Enter name of test'}
+              onChangeText={(testName) => {
+                if (isValidText(testName)) {
+                  settestName(testName);
+                }
+              }}
+            />
+            <TextInputComponent label={'Date Of Test'} noInput={true} />
+            {renderDateInpt()}
+          </View>
+        );
+      case MedicRecordType.PRESCRIPTION:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Doctor who issued prescription'}
+              value={docName}
+              placeholder={'Enter doctor name'}
+              onChangeText={(docName) => {
+                if (isValidName(docName)) {
+                  setDocName(docName);
+                }
+              }}
+            />
+            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            {renderDateInpt()}
+            <TextInputComponent
+              label={'Location (optional)'}
+              value={locationName}
+              placeholder={'Enter Location '}
+              onChangeText={(name) => {
+                setLocationName(name);
+              }}
+            />
+          </View>
+        );
+      case MedicRecordType.CONSULTATION:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Location of Consultation'}
+              value={locationName}
+              placeholder={'Enter doctor name'}
+              onChangeText={(text) => {
+                setLocationName(text);
+              }}
+            />
+            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            {renderDateInpt()}
+          </View>
+        );
+    }
+  };
   const renderRecordDetails = () => {
     return (
       <View>
@@ -587,8 +695,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               selectedText={typeofRecord}
               onPress={(data) => {
                 // setshowRecordTypePopup(false);
-                settypeofRecord(data.key as MedicalRecordType);
+                if (data.key !== typeofRecord) {
+                  setDocName('');
+                  setLocationName('');
+                  settestName('');
+                  setdateOfTest('');
+                }
+                settypeofRecord(data.key as MedicRecordType);
               }}
+              selectedTextStyle={{ color: theme.colors.APP_GREEN }}
               // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
             >
               <TextInputComponent
@@ -631,7 +746,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholder={'Select type of record'}
               /> */}
             </MaterialMenu>
-            <TextInputComponent
+            {inputRecordType()}
+            {/* <TextInputComponent
               label={'Name Of Test'}
               value={testName}
               placeholder={'Enter name of test'}
@@ -679,7 +795,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 setIsDateTimePickerVisible(false);
                 Keyboard.dismiss();
               }}
-            />
+            /> */}
           </View>
         </CollapseCard>
       </View>
