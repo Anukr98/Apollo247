@@ -9,6 +9,7 @@ import {
   NotificationIcon,
   CartIconWhite,
   CartIcon,
+  HomeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -30,6 +31,7 @@ import {
   TouchableOpacity,
   View,
   Image,
+  ViewStyle,
 } from 'react-native';
 import {
   NavigationActions,
@@ -45,7 +47,6 @@ import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
-import { HomeLogo } from '@aph/mobile-patients/src/components/ui/HomeLogo';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import DeviceInfo from 'react-native-device-info';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
@@ -534,7 +535,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             );
           }}
         >
-          <HomeLogo />
+          <HomeIcon />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', paddingHorizontal: 20 }}>
           <TouchableOpacity
@@ -606,7 +607,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     // const todayConsults = consultations.filter(
     // (item) => item.appointmentDateTime.split('T')[0] === new Date().toISOString().split('T')[0]
     // );
-    return <TabHeader containerStyle={{}} navigation={props.navigation} />;
+    const containerStyle: ViewStyle = {
+      shadowColor: '#808080',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.4,
+      shadowRadius: 10,
+      elevation: 5,
+    };
+    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
   };
   return (
     <View style={{ flex: 1 }}>
