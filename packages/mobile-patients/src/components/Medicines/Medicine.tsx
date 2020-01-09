@@ -58,8 +58,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -961,53 +959,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const [scrollOffset, setScrollOffset] = useState<number>(0);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
-    setScrollOffset(event.nativeEvent.contentOffset.y);
-  };
-
   const renderSearchBar = () => {
-    const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
     const styles = StyleSheet.create({
       inputStyle: {
         minHeight: 29,
         ...theme.fonts.IBMPlexSansMedium(18),
       },
-      inputContainerStyle: isFocusedStyle
-        ? {
-            borderBottomColor: '#00b38e',
-            borderBottomWidth: 2,
-            marginHorizontal: 10,
-          }
-        : {
-            borderRadius: 5,
-            backgroundColor: '#f7f8f5',
-            marginHorizontal: 10,
-            paddingHorizontal: 16,
-            borderBottomWidth: 0,
-          },
-      rightIconContainerStyle: isFocusedStyle
-        ? {
-            height: 24,
-          }
-        : {},
-      style: isFocusedStyle
-        ? {
-            paddingBottom: 18.5,
-          }
-        : { borderRadius: 5 },
-      containerStyle: isFocusedStyle
-        ? {
-            marginBottom: 20,
-            marginTop: 8,
-          }
-        : {
-            marginBottom: 20,
-            marginTop: 12,
-            alignSelf: 'center',
-          },
+      inputContainerStyle: {
+        borderBottomColor: '#00b38e',
+        borderBottomWidth: 2,
+        marginHorizontal: 10,
+      },
+      rightIconContainerStyle: {
+        height: 24,
+      },
+      style: {
+        paddingBottom: 18.5,
+      },
+      containerStyle: {
+        marginBottom: 19,
+        marginTop: 4,
+      },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -1054,7 +1026,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             onSearchMedicine(value);
           }}
           autoCorrect={false}
-          rightIcon={isSearchFocused ? rigthIconView : <View />}
+          rightIcon={rigthIconView}
           placeholder="Search meds, brands &amp; more"
           selectionColor={itemsNotFound ? '#890000' : '#00b38e'}
           underlineColorAndroid="transparent"
@@ -1222,7 +1194,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
           // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
