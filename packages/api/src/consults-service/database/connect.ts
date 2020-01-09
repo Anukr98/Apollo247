@@ -13,6 +13,7 @@ import {
   DoctorNextAvaialbleSlots,
   AppointmentNoShow,
   SdDashboardSummary,
+  FeedbackDashboardSummary,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -62,6 +63,8 @@ import {
   DiagnosticPincodeHubs,
   PatientFeedback,
   DiagnosticOrdersStatus,
+  PatientHelpTickets,
+  LoginOtp,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -81,6 +84,7 @@ export const connect = async () => {
         DoctorNextAvaialbleSlots,
         AppointmentNoShow,
         SdDashboardSummary,
+        FeedbackDashboardSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -149,6 +153,8 @@ export const connect = async () => {
         DiagnosticPincodeHubs,
         PatientFeedback,
         DiagnosticOrdersStatus,
+        PatientHelpTickets,
+        LoginOtp,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

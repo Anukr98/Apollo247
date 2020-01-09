@@ -123,6 +123,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [priceFilter, setPriceFilter] = useState();
+  const [discountFilter, setDiscountFilter] = useState();
   const [filterData, setFilterData] = useState();
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
@@ -203,83 +204,91 @@ export const SearchByMedicine: React.FC = (props) => {
     }
   }, [medicineList]);
 
+  const getSpecialPrice = (special_price?: string | number) =>
+    special_price
+      ? typeof special_price == 'string'
+        ? parseInt(special_price)
+        : special_price
+      : null;
+
   useEffect(() => {
-    let priceFilterArray: MedicineProduct[] = [];
+    let priceFilterArray: MedicineProduct[] | null = null;
     if (
       priceFilter &&
       !priceFilter.fromPrice &&
       !priceFilter.toPrice &&
       filterData &&
-      filterData[0] === ''
+      filterData[0] === '' &&
+      discountFilter &&
+      discountFilter.fromDiscount === 0 &&
+      discountFilter.toDiscount === 100
     ) {
       setMedicineListFiltered(medicineList);
       return;
     } else if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
       if (priceFilter.fromPrice && priceFilter.toPrice) {
-        medicineList &&
-          medicineList.map((value) => {
+        priceFilterArray =
+          medicineList &&
+          medicineList.filter((value) => {
             if (Number(priceFilter.fromPrice) <= value.price) {
               if (value.price <= Number(priceFilter.toPrice)) {
-                priceFilterArray.push(value);
+                return value;
               }
             }
           });
       } else if (priceFilter.fromPrice) {
-        medicineList &&
-          medicineList.map((value) => {
+        priceFilterArray =
+          medicineList &&
+          medicineList.filter((value) => {
             if (Number(priceFilter.fromPrice) <= value.price) {
-              priceFilterArray.push(value);
+              // priceFilterArray.push(value);
+              return value;
             }
           });
       } else if (priceFilter.toPrice) {
-        medicineList &&
-          medicineList.map((value) => {
+        priceFilterArray =
+          medicineList &&
+          medicineList.filter((value) => {
             if (value.price <= Number(priceFilter.toPrice)) {
-              priceFilterArray.push(value);
+              // priceFilterArray.push(value);
+              return value;
             }
           });
       }
+    } else if (priceFilter && !priceFilter.fromPrice && !priceFilter.toPrice) {
+      priceFilterArray = medicineList && medicineList.length > 0 ? medicineList : [];
     }
-    if (filterData && filterData.length > 0) {
-      if (filterData[0] !== '') {
-        const categoryFilterArray: MedicineProduct[] = [];
-        const filteredArray = priceFilterArray.length > 0 ? priceFilterArray : medicineList;
-        filterData &&
-          filterData.map((filter: string) => {
-            filteredArray &&
-              filteredArray.map((value) => {
-                if (value.category_id === filter) {
-                  categoryFilterArray.push(value);
-                }
-              });
-          });
-        priceFilterArray = categoryFilterArray;
-      }
-    }
-    setMedicineListFiltered(priceFilterArray);
-  }, [priceFilter, filterData]);
 
-  useEffect(() => {
-    if (
-      priceFilter &&
-      !priceFilter.fromPrice &&
-      !priceFilter.toPrice &&
-      filterData &&
-      filterData[0] !== ''
-    ) {
-      let filterArray: MedicineProduct[] = [];
+    if (discountFilter && discountFilter.fromDiscount >= 0 && discountFilter.toDiscount <= 100) {
+      const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
+      priceFilterArray = filteredArray.filter((item) => {
+        if (item.special_price) {
+          const specialPrice = getSpecialPrice(item.special_price);
+          const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
+
+          return discountPercentage >= (discountFilter.fromDiscount || 0) &&
+            discountPercentage <= discountFilter.toDiscount
+            ? true
+            : false;
+        }
+      });
+    }
+    if (filterData && filterData.length > 0 && filterData[0] !== '') {
+      const categoryFilterArray: MedicineProduct[] = [];
+      const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
       filterData &&
         filterData.map((filter: string) => {
-          medicineList &&
-            medicineList.map((value) => {
+          filteredArray.length > 0 &&
+            filteredArray.map((value) => {
               if (value.category_id === filter) {
-                filterArray.push(value);
+                categoryFilterArray.push(value);
               }
             });
         });
-      setMedicineListFiltered(filterArray);
+      priceFilterArray = categoryFilterArray;
     }
-  }, [priceFilter, filterData]);
+    setMedicineListFiltered(priceFilterArray);
+  }, [priceFilter, filterData, discountFilter]);
 
   return (
     <div className={classes.welcome}>
@@ -303,6 +312,7 @@ export const SearchByMedicine: React.FC = (props) => {
             <MedicineFilter
               setMedicineList={setMedicineList}
               setPriceFilter={setPriceFilter}
+              setDiscountFilter={setDiscountFilter}
               setFilterData={setFilterData}
             />
             <div className={classes.searchSection}>

@@ -257,6 +257,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
 
+  const morningStartTime = getIstTimestamp(new Date(apiDateFormat), '06:01');
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
@@ -359,7 +360,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       // if (slot === autoSlot) {
       //   slotAvailableNext = autoSlot;
       // }
-      if (slotTime < morningTime) morningSlots.push(slotTime);
+      if (slotTime < morningTime && slotTime > morningStartTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
       else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
       else lateNightSlots.push(slotTime);
@@ -425,50 +426,54 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </div>
             </div>
           )}
-          <Grid container spacing={2}>
-            <Grid item sm={6}>
-              <div
-                className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
-                  showCalendar || scheduleLater || !consultNowAvailable ? classes.showCalendar : ''
-                }`}
-                ref={calendarRef}
-              >
-                <AphCalendar
-                  getDate={(dateSelected: string) => setDateSelected(dateSelected)}
-                  selectedDate={new Date(apiDateFormat)}
-                />
-              </div>
-            </Grid>
-            <Grid item sm={6}>
-              {morningSlots.length > 0 ||
-              afternoonSlots.length > 0 ||
-              eveningSlots.length > 0 ||
-              lateNightSlots.length > 0 ? (
+          {showCalendar && (
+            <Grid container spacing={2}>
+              <Grid item sm={6}>
                 <div
-                  className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                  className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
                     showCalendar || scheduleLater || !consultNowAvailable
-                      ? classes.showTimeSlot
+                      ? classes.showCalendar
                       : ''
                   }`}
+                  ref={calendarRef}
                 >
-                  <DayTimeSlots
-                    morningSlots={morningSlots}
-                    afternoonSlots={afternoonSlots}
-                    eveningSlots={eveningSlots}
-                    latenightSlots={lateNightSlots}
-                    doctorName={doctorName}
-                    timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                  <AphCalendar
+                    getDate={(dateSelected: string) => setDateSelected(dateSelected)}
+                    selectedDate={new Date(apiDateFormat)}
                   />
                 </div>
-              ) : (
-                <div className={classes.consultGroup}>
-                  <div className={classes.noSlotsAvailable}>
-                    Oops! No slots available with Dr. {doctorName} :(
+              </Grid>
+              <Grid item sm={6}>
+                {morningSlots.length > 0 ||
+                afternoonSlots.length > 0 ||
+                eveningSlots.length > 0 ||
+                lateNightSlots.length > 0 ? (
+                  <div
+                    className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                      showCalendar || scheduleLater || !consultNowAvailable
+                        ? classes.showTimeSlot
+                        : ''
+                    }`}
+                  >
+                    <DayTimeSlots
+                      morningSlots={morningSlots}
+                      afternoonSlots={afternoonSlots}
+                      eveningSlots={eveningSlots}
+                      latenightSlots={lateNightSlots}
+                      doctorName={doctorName}
+                      timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                    />
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className={classes.consultGroup}>
+                    <div className={classes.noSlotsAvailable}>
+                      Oops! No slots available with Dr. {doctorName} :(
+                    </div>
+                  </div>
+                )}
+              </Grid>
             </Grid>
-          </Grid>
+          )}
         </div>
       </Scrollbars>
       {props.isRescheduleConsult ? (

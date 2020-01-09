@@ -924,9 +924,9 @@ export const Tests: React.FC = () => {
               label="SCANS &amp; HEALTH CHECKS"
             />
           </Tabs>
-          <div onClick={() => setIsSmartTestsDialogOpen(false)} className={classes.closeIcon}>
+          <Button onClick={() => setIsSmartTestsDialogOpen(false)} className={classes.closeIcon}>
             <img src={require('images/ic_cross.svg')} alt="" />
-          </div>
+          </Button>
           {tabValue === 0 && (
             <TabContainer>
               <div className={classes.tabsContainer}>

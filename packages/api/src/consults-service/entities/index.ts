@@ -788,6 +788,47 @@ export class AppointmentNoShow extends BaseEntity {
 
 //SD dashboard summary starts
 @Entity()
+export class FeedbackDashboardSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  ratingDate: Date;
+
+  @Column({ default: 0 })
+  goodRating: number;
+
+  @Column({ default: 0 })
+  greatRating: number;
+
+  @Column({ default: 0 })
+  poorRating: number;
+
+  @Column({ default: 0 })
+  okRating: number;
+
+  @Column({ default: 0 })
+  noRating: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+//SD dashboard summary starts
+@Entity()
 export class SdDashboardSummary extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -805,6 +846,9 @@ export class SdDashboardSummary extends BaseEntity {
   totalConsultations: number;
 
   @Column({ default: 0 })
+  totalVirtualConsultations: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   onTimeConsultations: number;
 
   @Column({ default: 0 })
@@ -825,7 +869,7 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   rescheduledByDoctor: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerConsult: number;
 
   @Column({ default: 0 })

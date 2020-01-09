@@ -48,7 +48,10 @@ app.get('/invokeApptReminder', (req, res) => {
         response.data.data.sendApptReminderNotification.apptsListCount,
         'notifications response is....'
       );
-      const fileName = 'pharmalogs/' + new Date().toDateString() + '-apptNotifications.txt';
+      const fileName =
+        '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+        new Date().toDateString() +
+        '-apptNotifications.txt';
       let content =
         new Date().toString() +
         '\n---------------------------\n' +
@@ -83,7 +86,10 @@ app.get('/invokePhysicalApptReminder', (req, res) => {
         response.data.data.sendApptReminderNotification.apptsListCount,
         'notifications response is....'
       );
-      const fileName = 'pharmalogs/' + new Date().toDateString() + '-apptNotifications.txt';
+      const fileName =
+        '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+        new Date().toDateString() +
+        '-apptNotifications.txt';
       let content =
         new Date().toString() +
         '\n---------------------------\n' +
@@ -969,7 +975,10 @@ app.get('/processOrders', (req, res) => {
                 },
               };
               console.log(pharmaInput, 'pharmaInput');
-              const fileName = 'pharmalogs/' + new Date().toDateString() + '-pharmaLogs.txt';
+              const fileName =
+                '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+                new Date().toDateString() +
+                '-pharmaLogs.txt';
               let content =
                 new Date().toString() +
                 '\n---------------------------\n' +
@@ -1302,7 +1311,10 @@ app.get('/processOrderById', (req, res) => {
           },
         };
         console.log(pharmaInput, 'pharmaInput');
-        const fileName = 'pharmalogs/' + new Date().toDateString() + '-pharmaLogs.txt';
+        const fileName =
+          '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+          new Date().toDateString() +
+          '-pharmaLogs.txt';
         let content =
           new Date().toString() +
           '\n---------------------------\n' +
