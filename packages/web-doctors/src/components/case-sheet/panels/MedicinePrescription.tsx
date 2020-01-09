@@ -169,10 +169,6 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       outline: 'none',
     },
-    activeCard: {
-      // border: '1px solid #00b38e',
-      // backgroundColor: '#fff',
-    },
     checkImg: {
       position: 'absolute',
       right: 16,
@@ -318,7 +314,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: 0,
       '& button': {
         border: '1px solid #00b38e',
-        padding: '5px 10px',
+        padding: '0 10px',
         fontSize: 12,
         fontWeight: 'normal',
         borderRadius: 14,
@@ -326,6 +322,8 @@ const useStyles = makeStyles((theme: Theme) =>
         cursor: 'pointer',
         color: '#00b38e',
         backgroundColor: '#fff',
+        textTransform: 'none',
+        boxShadow: 'none',
         '&:focus': {
           outline: 'none',
         },
@@ -452,6 +450,12 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     unitsSelect: {
       marginTop: 0,
+      '& div': {
+        '&:focus': {
+          boxShadow: '0 8px 6px -6px rgba(128, 128, 128, 0.3)',
+          transition: 'all 0.2s',          
+        },
+      },
     },
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
@@ -1026,7 +1030,7 @@ export const MedicinePrescription: React.FC = () => {
   const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
     const daySlotitem = _daySlotitem!;
     return (
-      <button
+      <AphButton
         key={daySlotitem.id}
         className={daySlotitem.selected ? classes.activeBtnRed : ''}
         onClick={() => {
@@ -1034,7 +1038,7 @@ export const MedicinePrescription: React.FC = () => {
         }}
       >
         {daySlotitem.value}
-      </button>
+      </AphButton>
     );
   });
   const addUpdateMedicines = () => {
@@ -1136,7 +1140,7 @@ export const MedicinePrescription: React.FC = () => {
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
     const tobeTakenitem = _tobeTakenitem!;
     return (
-      <button
+      <AphButton
         key={tobeTakenitem.id}
         className={tobeTakenitem.selected ? classes.activeBtn : ''}
         onClick={() => {
@@ -1144,7 +1148,7 @@ export const MedicinePrescription: React.FC = () => {
         }}
       >
         {tobeTakenitem.value}
-      </button>
+      </AphButton>
     );
   });
 
