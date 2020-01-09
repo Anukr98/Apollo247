@@ -238,6 +238,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     cross: {
+      cursor: 'pointer',
       position: 'absolute',
       right: -10,
       top: -9,
@@ -1168,7 +1169,7 @@ export const MedicinePrescription: React.FC = () => {
   ) => {
     setMedicine(newValue);
     setLoading(false);
-    if (newValue.length > 2) {
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchMedicines(newValue);
     }
     setState({
@@ -1728,16 +1729,15 @@ export const MedicinePrescription: React.FC = () => {
               </Button>
             )}
             {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  setShowDosage(false);
-                  handleClearRequested();
-                }}
-              />
+            <Button
+              className={classes.cross}
+              onClick={() => {
+                setIsDialogOpen(false);
+                setShowDosage(false);
+                handleClearRequested();
+              }}
+            >
+              <img src={require('images/ic_cross.svg')} alt="" />
             </Button>
           </AphDialogTitle>
           <div className={classes.shadowHide}>
