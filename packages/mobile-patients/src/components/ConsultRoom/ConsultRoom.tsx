@@ -60,6 +60,7 @@ import {
   AppStateStatus,
   StyleProp,
   ViewStyle,
+  ImageBackground,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
@@ -253,7 +254,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
@@ -781,8 +782,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               flexDirection: 'row',
               paddingRight: 8,
               borderRightWidth: 0,
+              paddingTop: 80,
+              marginTop: 30,
               borderRightColor: 'rgba(2, 71, 91, 0.2)',
-              backgroundColor: theme.colors.WHITE,
+              backgroundColor: theme.colors.CLEAR,
             }}
           >
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
@@ -948,11 +951,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           flexDirection: 'row',
           paddingTop: 16,
           paddingHorizontal: 20,
-          backgroundColor: theme.colors.WHITE,
+          backgroundColor: theme.colors.CLEAR,
         }}
       >
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <ApolloLogo />
+          <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
@@ -984,8 +987,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View style={{ width: '100%' }}>
             <View style={styles.viewName}>
-              {renderTopIcons()}
-              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              <ImageBackground
+                style={{ width: '100%' }}
+                imageStyle={{ width: width }}
+                source={require('@aph/mobile-patients/src/images/apollo/img_doctorimage.png')}
+              >
+                {renderTopIcons()}
+                <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              </ImageBackground>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
               {renderMenuOptions()}
               {renderEmergencyCallBanner()}
