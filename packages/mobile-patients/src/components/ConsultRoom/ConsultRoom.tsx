@@ -302,9 +302,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     // if (token.data.message === 'VitaToken Obtained Successfully') {
-    //   setMenuViewOptions([1, 2, 3, 4, 5, 6]);
+    setMenuViewOptions([1, 2, 3, 4, 5, 6]);
     // } else {
-    setMenuViewOptions([1, 2, 3, 5]);
+    // setMenuViewOptions([1, 2, 3, 5]);
     // }
   }, []);
 
