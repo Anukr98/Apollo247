@@ -11,6 +11,19 @@ import {
   TestsIcon,
   MedicineIcon,
   DropdownGreen,
+  ManageProfileIcon,
+  Location,
+  NotificaitonAccounts,
+  Ambulance,
+  CartIcon,
+  NotificationIcon,
+  TestsCartIcon,
+  TestsCartMedicineIcon,
+  DoctorIcon,
+  Diabetes,
+  Symptomtracker,
+  PrescriptionIcon,
+  PrescriptionMenu,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -25,7 +38,7 @@ import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
-import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -45,7 +58,9 @@ import {
   View,
   AppState,
   AppStateStatus,
-  NativeModules,
+  StyleProp,
+  ViewStyle,
+  ImageBackground,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
@@ -57,9 +72,12 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useUIElements } from '../UIElementsProvider';
 import { AppConfig } from '../../strings/AppConfig';
-import KotlinBridge from '../../KotlinBridge';
-import { GenerateTokenforCM } from '../../helpers/apiCalls';
-const { Vitals } = NativeModules;
+import { ListCard } from '../ui/ListCard';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { getAppointments } from '../../helpers/clientCalls';
+import moment from 'moment';
+import { apiRoutes } from '../../helpers/apiRoutes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -67,7 +85,7 @@ const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
-    height: Platform.OS === 'ios' ? 274 : 284,
+    marginBottom: 20,
   },
   gotItStyles: {
     height: 60,
@@ -100,7 +118,7 @@ const styles = StyleSheet.create({
   },
   descriptionTextStyle: {
     marginLeft: 20,
-    marginTop: 12,
+    marginTop: 0,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
@@ -137,6 +155,26 @@ const styles = StyleSheet.create({
     borderColor: '#dddddd',
     marginHorizontal: 16,
   },
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
+  menuOptionIconStyle: {
+    height: 40,
+    width: 40,
+    resizeMode: 'contain',
+  },
 });
 
 type ArrayTest = {
@@ -164,12 +202,6 @@ const arrayTest: ArrayTest[] = [
     title: 'Do you want to get some tests done?',
     descripiton: 'BOOK A TEST',
     image: require('@aph/mobile-patients/src/images/home/test.png'),
-  },
-  {
-    id: 4,
-    title: 'Track your Diabetes',
-    descripiton: 'Continue to your program',
-    image: require('@aph/mobile-patients/src/images/home/ic_diabetes.png'),
   },
 ];
 
@@ -214,29 +246,106 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
-  const [showMenu, setShowMenu] = useState<boolean>(false);
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+
+  const { cartItems } = useDiagnosticsCart();
+  const { cartItems: shopCartItems } = useShoppingCart();
+  const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const [listValues, setListValues] = useState<ArrayTest[]>(arrayTest);
+  const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
+  const [currentAppointments, setCurrentAppointments] = useState<string>('0');
+  const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
+  const menuOptions = [
+    {
+      id: 1,
+      title: 'Find A Doctor',
+      image: <DoctorIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate(AppRoutes.DoctorSearch),
+    },
+    {
+      id: 2,
+      title: 'Buy Medicines',
+      image: <TestsCartMedicineIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate('MEDICINES', { focusSearch: true }),
+    },
+    {
+      id: 3,
+      title: 'Order Tests',
+      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate('TESTS', { focusSearch: true }),
+    },
+    {
+      id: 4,
+      title: 'Manage Diabetes',
+      image: <Diabetes style={styles.menuOptionIconStyle} />,
+      onPress: () => {},
+    },
+    {
+      id: 5,
+      title: 'Track Symptoms',
+      image: <Symptomtracker style={styles.menuOptionIconStyle} />,
+      onPress: () =>
+        props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' }),
+    },
+    {
+      id: 6,
+      title: 'View Health Records',
+      image: <PrescriptionMenu style={styles.menuOptionIconStyle} />,
+      onPress: () => props.navigation.navigate('HEALTH RECORDS'),
+    },
+  ];
+
+  useEffect(() => {
+    // if (token.data.message === 'VitaToken Obtained Successfully') {
+    setMenuViewOptions([1, 2, 3, 4, 5, 6]);
+    // } else {
+    // setMenuViewOptions([1, 2, 3, 5]);
+    // }
+  }, []);
+
+  const buildName = () => {
+    switch (apiRoutes.graphql()) {
+      case 'https://aph.dev.api.popcornapps.com//graphql':
+        return 'DEV';
+      case 'https://aph.staging.api.popcornapps.com//graphql':
+        return 'QA';
+      case 'https://aph.uat.api.popcornapps.com//graphql':
+        return 'UAT';
+      case 'https://aph.vapt.api.popcornapps.com//graphql':
+        return 'VAPT';
+      case 'https://api.apollo247.com//graphql':
+        return 'PROD';
+      case 'https://asapi.apollo247.com//graphql':
+        return 'PRF';
+      default:
+        return '';
+    }
+  };
 
   useEffect(() => {
     currentPatient && setshowSpinner(false);
-    console.log(currentPatient, 'currentPatient');
-
     if (!currentPatient) {
       getPatientApiCall();
+    } else {
+      setAppointmentLoading(true);
+      getAppointments(client, currentPatient.id)
+        .then((data: any) => {
+          const appointments = data.patinetAppointments.filter((item: any) =>
+            moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+          );
+          setCurrentAppointments(appointments.length);
+        })
+        .finally(() => {
+          setAppointmentLoading(false);
+        });
     }
     AppState.addEventListener('change', _handleAppStateChange);
   }, [currentPatient, analytics, props.navigation.state.params]);
-
-  useEffect(() => {
-    currentPatient && getTokenforCM(currentPatient);
-  }, [currentPatient]);
 
   useEffect(() => {
     async function fetchData() {
@@ -249,7 +358,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
     callDeviceTokenAPI();
-    // getTokenforCM();
     checkForVersionUpdate();
   }, []);
 
@@ -265,44 +373,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     } catch (error) {}
   }, []);
-
-  const getTokenforCM = (currentPatient: any) => {
-    const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(currentPatient, 'lastName') ||
-      ''}`;
-
-    GenerateTokenforCM(
-      currentPatient ? (currentPatient.uhid ? currentPatient.uhid : currentPatient.id) : '',
-      fullName,
-      currentPatient ? (currentPatient.gender ? currentPatient.gender : '') : '',
-      currentPatient ? (currentPatient.emailAddress ? currentPatient.emailAddress : '') : '',
-      currentPatient ? (currentPatient.mobileNumber ? currentPatient.mobileNumber : '') : ''
-    ).then((token: any) => {
-      console.log(token, 'getTokenforCM');
-      AsyncStorage.setItem('token', token.data.vitaToken);
-      AsyncStorage.setItem('conditionalName', token.data.message);
-
-      const testArray = JSON.parse(JSON.stringify(arrayTest));
-
-      for (var i in testArray) {
-        if (testArray[i].id == 4) {
-          if (token.data.message === 'VitaToken Obtained Successfully') {
-            testArray[i].title = 'Track your Diabetes';
-            testArray[i].descripiton = 'Continue to your program';
-          } else {
-            testArray[i].title = 'Are you looking for Diabetes Management?';
-            testArray[i].descripiton = 'Get Started';
-          }
-          break; //Stop this loop, we found it!
-        }
-      }
-      setListValues(testArray);
-      console.log(testArray, 'testArray');
-
-      {
-        renderItemsList();
-      }
-    });
-  };
 
   const handleOpenURL = (event: any) => {
     console.log('event', event);
@@ -388,6 +458,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             'android_latest_version',
             'ios_mandatory',
             'ios_Latest_version',
+            'QA_Android_mandatory',
+            'QA_android_latest_version',
+            'QA_ios_mandatory',
+            'QA_ios_latest_version',
           ]);
       })
       .then((snapshot) => {
@@ -402,20 +476,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             index++;
             const element = myValye[val];
             nietos.push({ index: index, value: element.val() });
-            if (nietos.length === 4) {
+            if (nietos.length === 8) {
               console.log(
                 'nietos',
                 parseFloat(nietos[1].value),
                 parseFloat(iOS_version),
-                parseFloat(Android_version)
+                parseFloat(Android_version),
+                parseFloat(nietos[5].value),
+                parseFloat(nietos[7].value)
               );
               if (Platform.OS === 'ios') {
-                if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
-                  showUpdateAlert(nietos[2].value);
+                if (buildName() === 'QA') {
+                  if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
+                    showUpdateAlert(nietos[6].value);
+                  }
+                } else {
+                  if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
+                    showUpdateAlert(nietos[2].value);
+                  }
                 }
               } else {
-                if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-                  showUpdateAlert(nietos[0].value);
+                if (buildName() === 'QA') {
+                  if (parseFloat(nietos[6].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[5].value);
+                  }
+                } else {
+                  if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[0].value);
+                  }
                 }
               }
             }
@@ -470,82 +558,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ),
     });
   };
-
-  const Popup = () => (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={{
-        paddingVertical: 9,
-        position: 'absolute',
-        width: width,
-        height: height,
-        flex: 1,
-        alignItems: 'flex-end',
-        zIndex: 3,
-        backgroundColor: 'transparent',
-      }}
-      onPress={() => setShowMenu(false)}
-    >
-      <View
-        style={{
-          width: 160,
-          borderRadius: 10,
-          backgroundColor: 'white',
-          marginRight: 56,
-          shadowColor: '#808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.8,
-          shadowRadius: 10,
-          elevation: 5,
-          paddingTop: 8,
-          paddingBottom: 16,
-          ...Platform.select({
-            android: {
-              marginTop: 94,
-            },
-            ios: {
-              marginTop: 114,
-            },
-          }),
-        }}
-      >
-        {allCurrentPatients &&
-          allCurrentPatients.map((profile: PatientSignIn_patientSignIn_patients, i: number) => (
-            <View style={styles.textViewStyle} key={i}>
-              <Text
-                style={[
-                  styles.textStyle,
-                  profile.firstName && currentPatient!.firstName === profile.firstName
-                    ? { color: theme.colors.APP_GREEN }
-                    : null,
-                ]}
-                onPress={() => {
-                  setShowMenu(false);
-                }}
-              >
-                {profile.firstName
-                  ? profile.firstName
-                      .split(' ')[0]
-                      .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
-                  : ''}
-              </Text>
-            </View>
-          ))}
-        {/* 
-        <Text
-          style={{
-            paddingTop: 15,
-            paddingBottom: 4,
-            paddingRight: 16,
-            textAlign: 'right',
-            ...theme.viewStyles.yellowTextStyle,
-          }}
-        >
-          ADD MEMBER
-        </Text> */}
-      </View>
-    </TouchableOpacity>
-  );
 
   const renderStarDoctors = () => {
     return (
@@ -761,101 +773,212 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderItemsList = () => {
+  const renderProfileDrop = () => {
+    return (
+      <ProfileList
+        navigation={props.navigation}
+        saveUserChange={true}
+        childView={
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingRight: 8,
+              borderRightWidth: 0,
+              paddingTop: 80,
+              marginTop: 30,
+              borderRightColor: 'rgba(2, 71, 91, 0.2)',
+              backgroundColor: theme.colors.CLEAR,
+            }}
+          >
+            <Text style={styles.hiTextStyle}>{'hi'}</Text>
+            <View style={styles.nameTextContainerStyle}>
+              <Text style={styles.nameTextStyle} numberOfLines={1}>
+                {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+              </Text>
+              <View style={styles.seperatorStyle} />
+            </View>
+            <View style={{ paddingTop: 15 }}>
+              <DropdownGreen />
+            </View>
+          </View>
+        }
+        setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+        unsetloaderDisplay={true}
+      />
+    );
+  };
+
+  const renderListView = () => {
     return (
       <View>
-        {listValues.map((serviceTitle, i) => (
-          <View key={i} style={{}}>
-            <TouchableOpacity
-              activeOpacity={1}
-              key={i}
-              onPress={() => {
-                if (i === 0) {
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
-                  props.navigation.navigate(AppRoutes.DoctorSearch);
-                } else if (i == 1) {
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'SearchMedicineScene_clicked');
-                  // props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                  props.navigation.navigate('MEDICINES', { focusSearch: true });
-                } else if (i == 2) {
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'SearchTestScene_clicked');
-                  // props.navigation.navigate(AppRoutes.SearchTestScene);
-                  props.navigation.navigate('TESTS', { focusSearch: true });
-                } else if (i == 3) {
-                  async function fetchTokenData() {
-                    const tokenValue = await AsyncStorage.getItem('token');
-                    console.log(tokenValue, 'tokenValue');
+        <ListCard
+          container={{ marginTop: 14 }}
+          title={'Upcoming Appointments'}
+          leftIcon={renderListCount(currentAppointments)}
+          onPress={() => props.navigation.navigate('CONSULT ROOM')}
+        />
+        {/* <ListCard
+          container={{ marginTop: 14 }}
+          title={'Active Orders'}
+          leftIcon={renderListCount(2)}
+          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
+        /> */}
+      </View>
+    );
+  };
 
-                    if (Platform.OS === 'ios') {
-                      // Vitals.vitalsToExport(tokenValue);
-                      Vitals.vitalsToExport(
-                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhSWQiOiJ2aXRhSWRfMzY2OGYyNDYtZjZhNS00YmJkLWE5OGYtOTEzNDBiN2YzNWVkIiwicHJvdmlkZXJzIjp7InByb3ZpZGVySWRfZGExMWM0ZDQtMzExNi00MGJhLWI2NDEtMzM5MDA3NmFjMDA3Ijp7InByb3ZpZGVySWQiOiJwcm92aWRlcklkX2RhMTFjNGQ0LTMxMTYtNDBiYS1iNjQxLTMzOTAwNzZhYzAwNyIsIm5hbWUiOiJEZW1vIERvYyIsInJvbGUiOiJkb2N0b3IifSwicHJvdmlkZXJJZF84YjE1ODRmNC00NWM1LTQzNWItOGI2Ni00MTFjY2RlMzcxYWIiOnsicHJvdmlkZXJJZCI6InByb3ZpZGVySWRfOGIxNTg0ZjQtNDVjNS00MzViLThiNjYtNDExY2NkZTM3MWFiIiwibmFtZSI6IlRlc3QgQ29hY2giLCJyb2xlIjoiY29hY2gifSwicHJvdmlkZXJJZF9mY2QzM2FiNy01NWUxLTQxMjItOTUzMC02NmFlMzZiZWIyYmUiOnsicHJvdmlkZXJJZCI6InByb3ZpZGVySWRfZmNkMzNhYjctNTVlMS00MTIyLTk1MzAtNjZhZTM2YmViMmJlIiwibmFtZSI6IkhhcmkiLCJyb2xlIjoiZG9jdG9yIn19LCJwcm4iOiJ2aXRhSWRfMzY2OGYyNDYtZjZhNS00YmJkLWE5OGYtOTEzNDBiN2YzNWVkIiwiaWF0IjoxNTY4MjY4MjE1LCJleHAiOjk5OTk5OTk5OTksImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.OgQdvqOJQeQGqlupI1N-ZLZLApYQMEiFrJtGJ_Be6P4'
-                      );
-                      setTimeout(() => {
-                        Vitals.goToReactNative();
-                      }, 500);
-                    } else {
-                      const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(
-                        currentPatient,
-                        'lastName'
-                      ) || ''}`;
-                      const UHID = `${g(currentPatient, 'uhid') || ''}`;
+  const renderListCount = (count: string) => {
+    return (
+      <View
+        style={{
+          height: 40,
+          width: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.colors.CARD_BG,
+          borderRadius: 5,
+        }}
+      >
+        {appointmentLoading ? (
+          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+        ) : (
+          <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
+            {count}
+          </Text>
+        )}
+      </View>
+    );
+  };
 
-                      tokenValue &&
-                        KotlinBridge.show(
-                          tokenValue,
-                          UHID,
-                          fullName,
-                          '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android'
-                        );
-                    }
-                  }
-                  fetchTokenData();
-                }
-              }}
-            >
-              <View
-                style={{
-                  ...theme.viewStyles.cardViewStyle,
-                  ...theme.viewStyles.shadowStyle,
-                  padding: 16,
-                  marginHorizontal: 20,
-                  backgroundColor: theme.colors.CARD_BG,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  // height: 104,
-                  marginTop: i === 0 ? 0 : 8,
-                  marginBottom: arrayTest.length === i + 1 ? 16 : 8,
-                }}
-                key={i}
-              >
-                <View style={{ width: width - 144, justifyContent: 'space-between' }}>
-                  <Text
+  const renderMenuOptions = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          marginLeft: 20,
+          marginRight: 8,
+          marginTop: 16,
+        }}
+      >
+        {menuOptions.map((item) => {
+          if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
+            return (
+              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <View
+                  style={{
+                    ...theme.viewStyles.cardViewStyle,
+                    flexDirection: 'row',
+                    minHeight: 59,
+                    width: width / 2 - 28,
+                    marginRight: 12,
+                    marginBottom: 12,
+                  }}
+                >
+                  <View
                     style={{
-                      color: '#02475b',
-                      lineHeight: 24,
-                      textAlign: 'left',
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                      paddingRight: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginHorizontal: 10,
+                      flex: 0.5,
                     }}
                   >
-                    {serviceTitle.title}
-                  </Text>
-                  <Text
+                    {item.image}
+                  </View>
+                  <View
                     style={{
-                      marginTop: 8,
-                      textAlign: 'left',
-                      ...theme.viewStyles.yellowTextStyle,
+                      alignItems: 'flex-start',
+                      justifyContent: 'center',
+                      marginRight: 10,
+                      flex: 1,
                     }}
                   >
-                    {serviceTitle.descripiton}
-                  </Text>
+                    <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
+                      {item.title}
+                    </Text>
+                  </View>
                 </View>
-                <Image style={{ height: 72, width: 72 }} source={serviceTitle.image} />
-              </View>
-            </TouchableOpacity>
-          </View>
-        ))}
+              </TouchableOpacity>
+            );
+          }
+        })}
+      </View>
+    );
+  };
+
+  const renderEmergencyCallBanner = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          {
+            Linking.openURL('tel:1066');
+          }
+        }}
+      >
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginVertical: 16,
+            paddingHorizontal: 10,
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            backgroundColor: '#d13135',
+            borderRadius: 10,
+          }}
+        >
+          <Text style={theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20)}>
+            Call 1066 in emergency
+          </Text>
+          <Ambulance style={{ height: 41, width: 41 }} />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
+    return (
+      <View style={[styles.labelView, containerStyle]}>
+        <Text style={styles.labelText}>{count}</Text>
+      </View>
+    );
+  };
+
+  const renderTopIcons = () => {
+    return (
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          paddingTop: 16,
+          paddingHorizontal: 20,
+          backgroundColor: theme.colors.CLEAR,
+        }}
+      >
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
+        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              props.navigation.navigate(AppRoutes.MedAndTestCart, {
+                isComingFromConsult: true,
+              })
+            }
+            style={{ right: 20 }}
+          >
+            <CartIcon />
+            {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
+          >
+            <NotificationIcon />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -863,9 +986,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
-        {showMenu && Popup()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          <Image
+          <View style={{ width: '100%' }}>
+            <View style={styles.viewName}>
+              <ImageBackground
+                style={{ width: '100%' }}
+                imageStyle={{ width: width }}
+                source={require('@aph/mobile-patients/src/images/apollo/img_doctorimage.png')}
+              >
+                {renderTopIcons()}
+                <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              </ImageBackground>
+              <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
+              {renderMenuOptions()}
+              {renderEmergencyCallBanner()}
+            </View>
+          </View>
+          {renderListView()}
+          <NeedHelpAssistant
+            containerStyle={{ marginTop: 30, marginBottom: 48 }}
+            navigation={props.navigation}
+          />
+          {/* <Image
             source={require('@aph/mobile-patients/src/images/doctor/doctor.png')}
             style={{
               right: 20,
@@ -882,97 +1024,78 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 CommonLogEvent(AppRoutes.ConsultRoom, 'symptom checker  clicked');
                 props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
-            />
-          </View>
-          <View style={{ width: '100%', height: Platform.OS === 'ios' ? 436 : 446 }}>
-            <View style={styles.viewName}>
-              <View
-                style={{
-                  justifyContent: 'space-between',
-                  flexDirection: 'row',
-                  paddingTop: 16,
-                  paddingHorizontal: 20,
-                  backgroundColor: theme.colors.WHITE,
-                }}
-              >
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {}} //props.navigation.replace(AppRoutes.TabBar)}
-                >
-                  <ApolloLogo />
-                </TouchableOpacity>
-              </View>
-              <View
-                // activeOpacity={1}
-                // onPress={() => setShowMenu(true)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}
-              >
-                <View style={{ flexDirection: 'row' }}>
-                  <ProfileList
-                    navigation={props.navigation}
-                    saveUserChange={true}
-                    childView={
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          paddingRight: 8,
-                          borderRightWidth: 0,
-                          borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                          backgroundColor: theme.colors.WHITE,
-                        }}
-                      >
-                        <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                        <View style={styles.nameTextContainerStyle}>
-                          <Text style={styles.nameTextStyle} numberOfLines={1}>
-                            {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                          </Text>
-                          <View style={styles.seperatorStyle} />
-                        </View>
-                        <View style={{ paddingTop: 15 }}>
-                          <DropdownGreen />
-                        </View>
-                      </View>
-                    }
-                    setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-                    unsetloaderDisplay={true}
-                  ></ProfileList>
-                  {/* <Text style={styles.hiTextStyle}>
-                    {string.home.hi} {userName}!
-                  </Text> */}
-                  {/* <View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Text style={styles.nameTextStyle}>{userName}!</Text>
-                      <DropdownGreen style={{ marginTop: 8 }} />
-                    </View>
-                    <View style={styles.seperatorStyle} />
-                  </View> */}
-                </View>
+            /> 
+            </View> */}
+          {/* </View>
               </View>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
             </View>
           </View>
-          {renderItemsList()}
+          <View>
+            {arrayTest.map((serviceTitle, i) => (
+              <View key={i} style={{}}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  key={i}
+                  onPress={() => {
+                    if (i === 0) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
+                      props.navigation.navigate(AppRoutes.DoctorSearch);
+                    } else if (i == 1) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchMedicineScene_clicked');
+                      // props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                      props.navigation.navigate('MEDICINES', { focusSearch: true });
+                    } else if (i == 2) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchTestScene_clicked');
+                      // props.navigation.navigate(AppRoutes.SearchTestScene);
+                      props.navigation.navigate('TESTS', { focusSearch: true });
+                    }
+                  }}
+                >
+                  <View
+                    style={{
+                      ...theme.viewStyles.cardViewStyle,
+                      ...theme.viewStyles.shadowStyle,
+                      padding: 16,
+                      marginHorizontal: 20,
+                      backgroundColor: theme.colors.CARD_BG,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      // height: 104,
+                      marginTop: i === 0 ? 0 : 8,
+                      marginBottom: arrayTest.length === i + 1 ? 16 : 8,
+                    }}
+                    key={i}
+                  >
+                    <View style={{ width: width - 144, justifyContent: 'space-between' }}>
+                      <Text
+                        style={{
+                          color: '#02475b',
+                          lineHeight: 24,
+                          textAlign: 'left',
+                          ...theme.fonts.IBMPlexSansMedium(14),
+                          paddingRight: 16,
+                        }}
+                      >
+                        {serviceTitle.title}
+                      </Text>
+                      <Text
+                        style={{
+                          marginTop: 8,
+                          textAlign: 'left',
+                          ...theme.viewStyles.yellowTextStyle,
+                        }}
+                      >
+                        {serviceTitle.descripiton}
+                      </Text>
+                    </View>
+                    <Image style={{ height: 72, width: 72 }} source={serviceTitle.image} />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            ))} */}
+          {/* </View> */}
           {/* {renderStarDoctors()} */}
-          <NeedHelpAssistant
-            containerStyle={{ marginTop: 30, marginBottom: 48 }}
-            navigation={props.navigation}
-          />
-          {/* <View style={styles.helpView}>
-            <Mascot style={{ height: 80, width: 80 }} />
-            <Button
-              title={string.home.need_help}
-              style={styles.needhelpbuttonStyles}
-              titleTextStyle={styles.titleBtnStyles}
-            />
-          </View> */}
         </ScrollView>
       </SafeAreaView>
       {renderBottomTabBar()}
