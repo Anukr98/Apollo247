@@ -76,6 +76,7 @@ import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { getAppointments } from '../../helpers/clientCalls';
 import moment from 'moment';
+import { apiRoutes } from '../../helpers/apiRoutes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -306,6 +307,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     // }
   }, []);
 
+  const buildName = () => {
+    switch (apiRoutes.graphql()) {
+      case 'https://aph.dev.api.popcornapps.com//graphql':
+        return 'DEV';
+      case 'https://aph.staging.api.popcornapps.com//graphql':
+        return 'QA';
+      case 'https://aph.uat.api.popcornapps.com//graphql':
+        return 'UAT';
+      case 'https://aph.vapt.api.popcornapps.com//graphql':
+        return 'VAPT';
+      case 'https://api.apollo247.com//graphql':
+        return 'PROD';
+      case 'https://asapi.apollo247.com//graphql':
+        return 'PRF';
+      default:
+        return '';
+    }
+  };
+
   useEffect(() => {
     currentPatient && setshowSpinner(false);
     if (!currentPatient) {
@@ -437,6 +457,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             'android_latest_version',
             'ios_mandatory',
             'ios_Latest_version',
+            'QA_android_latest_version',
+            'QA_Android_mandatory',
+            'QA_ios_latest_version',
+            'QA_ios_mandatory',
           ]);
       })
       .then((snapshot) => {
@@ -459,12 +483,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 parseFloat(Android_version)
               );
               if (Platform.OS === 'ios') {
-                if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
-                  showUpdateAlert(nietos[2].value);
+                if (buildName() === 'QA') {
+                  if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
+                    showUpdateAlert(nietos[6].value);
+                  }
+                } else {
+                  if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
+                    showUpdateAlert(nietos[2].value);
+                  }
                 }
               } else {
-                if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-                  showUpdateAlert(nietos[0].value);
+                if (buildName() === 'QA') {
+                  if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[0].value);
+                  }
+                } else {
+                  if (parseFloat(nietos[6].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[5].value);
+                  }
                 }
               }
             }

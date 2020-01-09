@@ -1,4 +1,3 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
@@ -6,70 +5,61 @@ import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRec
 import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 // import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   AddFileIcon,
-  FileBig,
-  Filter,
-  NotificationIcon,
-  NoData,
   DropdownGreen,
+  Filter,
+  NoData,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_PAST_CONSULTS_PRESCRIPTIONS,
-  GET_MEDICAL_RECORD,
-  DELETE_PATIENT_MEDICAL_RECORD,
   CHECK_IF_FOLLOWUP_BOOKED,
+  DELETE_PATIENT_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
+  GET_MEDICAL_RECORD,
+  GET_PAST_CONSULTS_PRESCRIPTIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import {
+  deletePatientMedicalRecord,
+  deletePatientMedicalRecordVariables,
+} from '@aph/mobile-patients/src/graphql/types/deletePatientMedicalRecord';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import {
+  getPatientMedicalRecords,
+  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
+} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
 import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  Platform,
-  AsyncStorage,
-  Dimensions,
+  ViewStyle,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps, StackActions, NavigationActions, FlatList } from 'react-navigation';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  getPatientMedicalRecords,
-  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  deletePatientMedicalRecord,
-  deletePatientMedicalRecordVariables,
-} from '@aph/mobile-patients/src/graphql/types/deletePatientMedicalRecord';
-import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
-import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { useUIElements } from '../UIElementsProvider';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
-
-const { width, height } = Dimensions.get('window');
+import { TabHeader } from '../ui/TabHeader';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -100,6 +90,14 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+  },
+  descriptionTextStyle: {
+    marginTop: 8,
+    marginBottom: 16,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+    paddingHorizontal: 20,
   },
 });
 
@@ -329,166 +327,84 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         handleGraphQlError(e);
       });
   };
+
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
+    setScrollOffset(event.nativeEvent.contentOffset.y);
+  };
+
   const renderTopView = () => {
+    const containerStyle: ViewStyle =
+      scrollOffset > 1
+        ? {
+            shadowColor: '#808080',
+            shadowOffset: { width: 0, height: 0 },
+            zIndex: 1,
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 5,
+          }
+        : {};
+    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
+  };
+
+  const renderProfileChangeView = () => {
     return (
-      <View
-        style={{
-          //height: 250,
-          // justifyContent: 'space-between',
-          //...theme.viewStyles.shadowStyle,
-          backgroundColor: 'white',
-        }}
-      >
-        <View
-          style={{
-            justifyContent: 'space-between',
-            flexDirection: 'row',
-            paddingTop: 16,
-            paddingHorizontal: 20,
-            backgroundColor: theme.colors.WHITE,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            // onPress={() => props.navigation.popToTop()}
-            onPress={() => {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-                })
-              );
-            }}
-          >
-            <ApolloLogo />
-          </TouchableOpacity>
-          <View style={{ flexDirection: 'row' }}>
-            <NotificationIcon />
-          </View>
-        </View>
-        <View>
-          <ProfileList
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                  backgroundColor: theme.colors.WHITE,
-                  paddingBottom: 8,
-                }}
-              >
-                <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View style={styles.nameTextContainerStyle}>
-                  <Text style={styles.nameTextStyle} numberOfLines={1}>
-                    {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
-                  </Text>
-                  <View style={styles.seperatorStyle} />
-                </View>
-                <View style={{ paddingTop: 15 }}>
-                  <DropdownGreen />
-                </View>
-              </View>
-            }
-            selectedProfile={profile}
-            setDisplayAddProfile={() => {}}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-          {/* <MaterialMenu
-            onPress={(item) => {
-              const val = (allCurrentPatients || []).find(
-                (_item) => _item.firstName == item.value.toString()
-              );
-              setCurrentPatientId!(val!.id);
-              AsyncStorage.setItem('selectUserId', val!.id);
-            }}
-            options={
-              allCurrentPatients &&
-              allCurrentPatients!.map((item) => {
-                return { key: item.id, value: item.firstName };
-              })
-            }
-            menuContainerStyle={{
-              alignItems: 'flex-end',
-              marginTop: 16,
-              marginLeft: width / 2 - 95,
-            }}
-          >
+      <View style={{ backgroundColor: theme.colors.WHITE }}>
+        <ProfileList
+          navigation={props.navigation}
+          saveUserChange={true}
+          childView={
             <View
               style={{
                 flexDirection: 'row',
                 paddingRight: 8,
-                borderRightWidth: 0.5,
+                borderRightWidth: 0,
                 borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                backgroundColor: theme.colors.WHITE,
+                paddingBottom: 8,
               }}
             >
-              <Text style={styles.hiTextStyle}>hi</Text>
-              <View>
-                <Text style={styles.nameTextStyle}>{userName}</Text>
+              <Text style={styles.hiTextStyle}>{'hi'}</Text>
+              <View style={styles.nameTextContainerStyle}>
+                <Text style={styles.nameTextStyle} numberOfLines={1}>
+                  {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
+                </Text>
                 <View style={styles.seperatorStyle} />
               </View>
               <View style={{ paddingTop: 15 }}>
                 <DropdownGreen />
               </View>
             </View>
-          </MaterialMenu> */}
-        </View>
-        {/* <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          <UserIntro
-            description={strings.health_records_home.description}
-            style={{
-              height: 190, //236,
-            }}
-          >
-            <View
-              style={{
-                height: 83,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: 20,
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{ marginTop: 20 }}
-                onPress={() => {
-                  CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate back to consult room'),
-                    props.navigation.replace(AppRoutes.ConsultRoom);
-                }}
-              >
-                <ApolloLogo />
-              </TouchableOpacity>
-              <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                <NotificationIcon />
-              </View>
-            </View>
-          </UserIntro>
-        </View> */}
-        <TabsComponent
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            borderRadius: 0,
-            //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
-            backgroundColor: theme.colors.CARD_BG,
-            shadowRadius: 2,
-          }}
-          height={44}
-          data={tabs}
-          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-          selectedTab={selectedTab}
-        />
+          }
+          selectedProfile={profile}
+          setDisplayAddProfile={() => {}}
+          unsetloaderDisplay={true}
+        ></ProfileList>
+        <Text style={styles.descriptionTextStyle}>
+          {'Find all your health record & prescription in one place.'}
+        </Text>
       </View>
+    );
+  };
+
+  const renderTabSwitch = () => {
+    return (
+      <TabsComponent
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          borderRadius: 0,
+          //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
+          backgroundColor: theme.colors.CARD_BG,
+          shadowRadius: 2,
+        }}
+        height={44}
+        data={tabs}
+        onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+        selectedTab={selectedTab}
+      />
     );
   };
 
@@ -502,7 +418,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             props.navigation.navigate(AppRoutes.AddRecord);
           }}
         >
-          <AddFileIcon />
+          <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 20)}>
+            {'UPLOAD PRESCRIPTION'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
@@ -632,8 +550,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderTopView()}
+        {renderTopView()}
+        <ScrollView
+          style={{ flex: 1 }}
+          bounces={false}
+          stickyHeaderIndices={[1]}
+          onScroll={handleScroll}
+        >
+          {renderProfileChangeView()}
+          {renderTabSwitch()}
           {!loading ? (
             selectedTab === tabs[0].title ? (
               renderConsults()
