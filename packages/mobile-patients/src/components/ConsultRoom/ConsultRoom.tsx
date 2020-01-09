@@ -458,10 +458,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             'android_latest_version',
             'ios_mandatory',
             'ios_Latest_version',
-            'QA_android_latest_version',
             'QA_Android_mandatory',
-            'QA_ios_latest_version',
+            'QA_android_latest_version',
             'QA_ios_mandatory',
+            'QA_ios_latest_version',
           ]);
       })
       .then((snapshot) => {
@@ -476,12 +476,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             index++;
             const element = myValye[val];
             nietos.push({ index: index, value: element.val() });
-            if (nietos.length === 4) {
+            if (nietos.length === 8) {
               console.log(
                 'nietos',
                 parseFloat(nietos[1].value),
                 parseFloat(iOS_version),
-                parseFloat(Android_version)
+                parseFloat(Android_version),
+                parseFloat(nietos[5].value),
+                parseFloat(nietos[7].value)
               );
               if (Platform.OS === 'ios') {
                 if (buildName() === 'QA') {
@@ -495,12 +497,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }
               } else {
                 if (buildName() === 'QA') {
-                  if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-                    showUpdateAlert(nietos[0].value);
-                  }
-                } else {
                   if (parseFloat(nietos[6].value) > parseFloat(Android_version)) {
                     showUpdateAlert(nietos[5].value);
+                  }
+                } else {
+                  if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[0].value);
                   }
                 }
               }

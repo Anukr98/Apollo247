@@ -91,6 +91,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
@@ -184,10 +189,13 @@ export enum MEDICINE_UNIT {
 }
 
 export enum MedicalRecordType {
+  CONSULTATION = "CONSULTATION",
   EHR = "EHR",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
+  PRESCRIPTION = "PRESCRIPTION",
+  TEST_REPORT = "TEST_REPORT",
 }
 
 export enum MedicalTestUnit {
@@ -513,6 +521,12 @@ export interface OrderCancelInput {
   remarksCode?: string | null;
 }
 
+export interface OtpVerificationInput {
+  mobileNumber: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
@@ -567,6 +581,7 @@ export interface PrescriptionMedicineInput {
   prescriptionImageUrl: string;
   prismPrescriptionFileId: string;
   appointmentId?: string | null;
+  isEprescription?: number | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
 }
 

@@ -37,6 +37,8 @@ import moment from 'moment';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { loginAPI } from '../helpers/clientCalls';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const { height, width } = Dimensions.get('window');
 
@@ -121,6 +123,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
+  const client = useApolloClient();
 
   useEffect(() => {
     try {
@@ -274,10 +277,12 @@ export const Login: React.FC<LoginProps> = (props) => {
             CommonSetUserBugsnag(phoneNumber);
             AsyncStorage.setItem('phoneNumber', phoneNumber);
 
-            sendOtp(phoneNumber)
+            loginAPI(client, phoneNumber)
               .then((confirmResult) => {
+                console.log(confirmResult, 'confirmResult');
+
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-                CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
+                //  CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
 
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
@@ -310,6 +315,43 @@ export const Login: React.FC<LoginProps> = (props) => {
                   (error && error.message) || 'The interaction was cancelled by the user.'
                 );
               });
+
+            // sendOtp(phoneNumber)
+            //   .then((confirmResult) => {
+            //     CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
+            //     CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
+
+            //     db.ref('ApolloPatients/')
+            //       .child(dbChildKey)
+            //       .update({
+            //         mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+            //       });
+
+            //     console.log('confirmResult login', confirmResult);
+
+            //     props.navigation.navigate(AppRoutes.OTPVerification, {
+            //       otpString,
+            //       phoneNumber: phoneNumber,
+            //       dbChildKey,
+            //     });
+            //   })
+            //   .catch((error: RNFirebase.RnError) => {
+            //     console.log(error, 'error');
+            //     console.log(error.message, 'errormessage');
+
+            //     db.ref('ApolloPatients/')
+            //       .child(dbChildKey)
+            //       .update({
+            //         mobileNumberFailed: error && error.message,
+            //       });
+
+            //     CommonLogEvent('OTP_SEND_FAIL', error.message);
+            //     CommonBugFender('OTP_SEND_FAIL', error);
+            //     Alert.alert(
+            //       'Error',
+            //       (error && error.message) || 'The interaction was cancelled by the user.'
+            //     );
+            //   });
           }
         }
       } else {
