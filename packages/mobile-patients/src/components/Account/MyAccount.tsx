@@ -610,8 +610,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     const containerStyle: ViewStyle = {
       shadowColor: '#808080',
       shadowOffset: { width: 0, height: 0 },
+      zIndex: 1,
       shadowOpacity: 0.4,
-      shadowRadius: 10,
+      shadowRadius: 5,
       elevation: 5,
     };
     return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;

@@ -337,12 +337,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const renderTopView = () => {
     const containerStyle: ViewStyle =
-      scrollOffset > 134
+      scrollOffset > 1
         ? {
             shadowColor: '#808080',
             shadowOffset: { width: 0, height: 0 },
+            zIndex: 1,
             shadowOpacity: 0.4,
-            shadowRadius: 10,
+            shadowRadius: 5,
             elevation: 5,
           }
         : {};
@@ -417,7 +418,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             props.navigation.navigate(AppRoutes.AddRecord);
           }}
         >
-          <AddFileIcon />
+          <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 20)}>
+            {'UPLOAD PRESCRIPTION'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
