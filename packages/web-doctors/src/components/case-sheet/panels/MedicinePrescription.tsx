@@ -1169,10 +1169,8 @@ export const MedicinePrescription: React.FC = () => {
   ) => {
     setMedicine(newValue);
     setLoading(false);
-    if (event.nativeEvent.type === 'input') {
-      if (newValue.length > 2) {
-        fetchMedicines(newValue);
-      }
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
+      fetchMedicines(newValue);
     }
     setState({
       ...state,

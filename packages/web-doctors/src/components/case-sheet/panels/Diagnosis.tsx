@@ -289,10 +289,8 @@ export const Diagnosis: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    if (event.nativeEvent.type === 'input') {
-      if (newValue.length > 2) {
-        fetchDignosis(newValue);
-      }
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
+      fetchDignosis(newValue);
     }
     setState({
       ...state,
