@@ -669,24 +669,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const requestToJrDoctor = async () => {
-    // let ConsultQueueData: any = await AsyncStorage.getItem('ConsultQueueData');
-    // ConsultQueueData = JSON.parse(ConsultQueueData || 'null') || [];
-    // console.log('ConsultQueueData', ConsultQueueData);
-    // if (ConsultQueueData.appointmentId != appointmentData.id) {
-    // addToConsultQueue(client, appointmentData.id)
-    //   .then(({ data }: any) => {
-    //     console.log(data, 'data res');
-    //     const queueData = {
-    //       queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-    //       appointmentId: appointmentData.id,
-    //     };
-    //     console.log(queueData, 'queueData res');
-    //     AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
-    //   })
-    //   .catch((e: string) => {
-    //     console.log('Error occured ', e);
-    //   });
-
     //new code
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
@@ -719,25 +701,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         })
         .finally(() => startJoinTimer(0));
     }
-    // userAnswers &&
-    //   addToConsultQueueWithAutomatedQuestions(client, userAnswers)
-    //     .then(({ data }: any) => {
-    //       console.log(data, 'data res, adding');
-    //       startJoinTimer(0);
-    //       const queueData = {
-    //         queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-    //         appointmentId: appointmentData.id,
-    //       };
-    //       console.log(queueData, 'queueData res, adding');
-    //       AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
-    //     })
-    //     .catch((e: string) => {
-    //       console.log('Error occured, adding ', e);
-    //     });
-
-    // } else {
-    //   console.log('requestToJrDoctor not called');
-    // }
   };
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -1309,31 +1272,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
     console.log('android:', androidToken);
 
-    // if (Platform.OS === 'ios') {
-    //   pubnub.push.addChannels(
-    //     {
-    //       channels: [channel],
-    //       device: deviceToken,
-    //       pushGateway: 'apns',
-    //     },
-    //     (status: any) => {
-    //       if (status.error) {
-    //         console.log('operation failed w/ error:', status);
-    //       } else {
-    //         console.log('operation done!');
-    //       }
-    //     }
-    //   );
-    //   console.log('ios:', token);
-    //   // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
-    // } else {
-    //   pubnub.push.addChannels({
-    //     channels: [channel],
-    //     device: androidToken,
-    //     pushGateway: 'gcm', // apns, gcm, mpns
-    //   });
-    //   // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
-    // }
+    if (Platform.OS === 'ios') {
+      pubnub.push.addChannels(
+        {
+          channels: [channel],
+          device: deviceToken,
+          pushGateway: 'apns',
+        },
+        (status: any) => {
+          if (status.error) {
+            console.log('operation failed w/ error:', status);
+          } else {
+            console.log('operation done!');
+          }
+        }
+      );
+      console.log('ios:', token);
+      // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
+    } else {
+      pubnub.push.addChannels({
+        channels: [channel],
+        device: androidToken,
+        pushGateway: 'gcm', // apns, gcm, mpns
+      });
+      // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+    }
   };
 
   let insertText: object[] = [];
