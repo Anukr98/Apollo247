@@ -49,6 +49,8 @@ const verifyLoginOtp: Resolver<
 > = async (parent, { otpVerificationInput }, { profilesDb }) => {
   //otp verification logic here
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
+
+  /*
   const matchedOtpRow: LoginOtp[] = await otpRepo.verifyOtp(otpVerificationInput);
   if (matchedOtpRow.length === 0) {
     return { status: false, authToken: null, isBlocked: false };
@@ -75,11 +77,30 @@ const verifyLoginOtp: Resolver<
 
   //update status of otp
   await otpRepo.updateOtpStatus(matchedOtpRow[0].id, { status: OTP_STATUS.VERIFIED });
+  */
+
+  //const res = await sendSMS();
 
   //generate customeToken
   const customToken = await firebase.auth().createCustomToken(otpVerificationInput.mobileNumber);
 
   return { status: true, authToken: customToken, isBlocked: false };
+};
+
+const sendSMS = async () => {
+  const request = require('request');
+
+  var options = {
+    method: 'POST',
+    url:
+      'https://api-alerts.kaleyra.com/v4/?api_key=A776bdeb4cd88a07779ea9998c49987c8&method=sms&message=hello&to=9052959527&sender=Apollo247',
+    headers: {},
+    formData: {},
+  };
+  request(options, function(error: any, response: any) {
+    if (error) throw new Error(error);
+    console.log(response.body);
+  });
 };
 
 export const verifyLoginOtpResolvers = {
