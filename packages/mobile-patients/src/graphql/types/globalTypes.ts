@@ -524,7 +524,7 @@ export interface OrderCancelInput {
 }
 
 export interface OtpVerificationInput {
-  mobileNumber: string;
+  id: string;
   otp: string;
   loginType: LOGIN_TYPE;
 }
