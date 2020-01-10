@@ -856,6 +856,12 @@ export class MedicalRecords extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   documentURLs: string;
 
+  @Column({ nullable: true })
+  issuingDoctor: string;
+
+  @Column({ nullable: true })
+  location: string;
+
   @Column({ nullable: true, type: 'text' })
   prismFileIds: string;
 
