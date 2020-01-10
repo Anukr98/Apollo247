@@ -280,7 +280,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             setShowSpinner(true);
 
             loginAPI(client, phoneNumber)
-              .then((confirmResult) => {
+              .then((confirmResult: any) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);
 
@@ -298,6 +298,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   otpString,
                   phoneNumber: phoneNumber,
                   dbChildKey,
+                  loginId: confirmResult.loginId,
                 });
               })
               .catch((error) => {

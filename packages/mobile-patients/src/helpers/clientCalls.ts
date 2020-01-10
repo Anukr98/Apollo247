@@ -261,10 +261,10 @@ export const loginAPI = (client: ApolloClient<object>, mobileNumber: string) => 
   });
 };
 
-export const verifyOTP = (client: ApolloClient<object>, mobileNumber: string, otp: string) => {
+export const verifyOTP = (client: ApolloClient<object>, loginId: string, otp: string) => {
   return new Promise((res, rej) => {
     const inputData = {
-      mobileNumber: mobileNumber,
+      id: loginId,
       loginType: LOGIN_TYPE.PATIENT,
       otp: otp,
     };

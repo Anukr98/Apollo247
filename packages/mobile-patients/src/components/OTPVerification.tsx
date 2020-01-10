@@ -117,6 +117,7 @@ export interface OTPVerificationProps
     otpString: string;
     phoneNumber: string;
     dbChildKey: string;
+    loginId: string;
   }> {}
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
@@ -359,11 +360,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           .update({
             OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
           });
-        const { phoneNumber } = props.navigation.state.params!;
+        const { loginId } = props.navigation.state.params!;
 
         setTimeout(() => {
           // verifyOtp(otp)
-          verifyOTP(client, phoneNumber, otp)
+          verifyOTP(client, loginId, otp)
             .then((data: any) => {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
               CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
