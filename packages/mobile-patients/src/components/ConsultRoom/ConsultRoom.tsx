@@ -186,28 +186,28 @@ type TabBarOptions = {
 const tabBarOptions: TabBarOptions[] = [
   {
     id: 1,
-    title: 'APPOINTMENTS',
-    image: <ConsultationRoom />,
+    title: 'CONSULT ROOM',
+    image: <ConsultationRoom style={{ marginTop: -4 }} />,
   },
   {
     id: 2,
     title: 'HEALTH RECORDS',
-    image: <MyHealth />,
+    image: <MyHealth style={{ marginTop: -4 }} />,
   },
   {
     id: 3,
     title: 'MEDICINES',
-    image: <MedicineIcon />,
+    image: <ShoppingCart style={{ marginTop: -4 }} />,
   },
   {
     id: 4,
     title: 'TESTS',
-    image: <TestsIcon />,
+    image: <TestsIcon style={{ marginTop: -4 }} />,
   },
   {
     id: 5,
     title: 'MY ACCOUNT',
-    image: <Person />,
+    image: <Person style={{ marginTop: -4 }} />,
   },
 ];
 
@@ -321,7 +321,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             );
             setAppointmentLoading(false);
           })
-          .catch((e) => {})
           .finally(() => setAppointmentLoading(false));
       }
     }
@@ -708,7 +707,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               onPress={() => {
                 if (i === 0) {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'CONSULT_ROOM clicked');
-                  props.navigation.navigate('APPOINTMENTS');
+                  props.navigation.navigate('CONSULT ROOM');
                 } else if (i == 1) {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
@@ -796,7 +795,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           container={{ marginTop: 14 }}
           title={'Upcoming Appointments'}
           leftIcon={renderListCount(currentAppointments)}
-          onPress={() => props.navigation.navigate('APPOINTMENTS')}
+          onPress={() => props.navigation.navigate('CONSULT ROOM')}
         />
         {/* <ListCard
           container={{ marginTop: 14 }}

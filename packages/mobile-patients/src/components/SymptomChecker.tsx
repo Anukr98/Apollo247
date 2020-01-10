@@ -237,7 +237,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
         },
         {
           type: 'white-button',
-          text: 'SOMEONE ELSE',
+          text: 'SOMWONE ELSE',
           onPress: () => {
             setShowList(true);
             hideAphAlert!();
@@ -249,7 +249,6 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
 
   const navigateToPrev = async () => {
     console.log('navigateToPrev hardwareBackPress');
-    hideAphAlert!();
     BackHandler.removeEventListener('hardwareBackPress', navigateToPrev);
     props.navigation.dispatch(
       StackActions.reset({

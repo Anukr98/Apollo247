@@ -253,7 +253,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               isPoptype: true,
               mobileNumber: currentPatient && currentPatient!.mobileNumber,
             });
-            setDisplayAddProfile && setDisplayAddProfile(true);
+            setDisplayAddProfile(true);
           } else {
             profileArray && setProfile(profileArray!.find((i) => selectedUser.key === i.id));
           }
