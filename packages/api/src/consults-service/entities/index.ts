@@ -848,7 +848,7 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   totalVirtualConsultations: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   onTimeConsultations: number;
 
   @Column({ default: 0 })
@@ -869,7 +869,7 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   rescheduledByDoctor: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerConsult: number;
 
   @Column({ default: 0 })

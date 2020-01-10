@@ -112,10 +112,9 @@ export interface StarDoctorTeamProps {
 }
 
 export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const { doctorDetails } = props;
-  // let hospitalLocation = '';
 
   if (
     doctorDetails &&
@@ -123,35 +122,23 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
     doctorDetails.getDoctorDetailsById.starTeam
   ) {
     const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    // const lastName = doctorDetails.getDoctorDetailsById.lastName;
-
     const team =
       doctorDetails.getDoctorDetailsById.starTeam.length > 0
         ? doctorDetails.getDoctorDetailsById.starTeam
         : [];
 
-    // console.log('88888888', doctorDetails);
-
-    // if (team.length > 0) {
-    //   _forEach(doctorDetails.getDoctorDetailsById.starTeam, (starDoctor: any) => {
-    //     console.log(starDoctor);
-    //     // if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
-    //     //   hospitalLocation = hospitalDetails.facility.name;
-    //     // }
-    //   });
-    // }
-
     return team.length > 0 ? (
       <div className={classes.sectionGroup}>
         <div className={classes.sectionHeader}>
-          <span>Dr. {firstName}'s Team</span>
-          <span className={classes.count}>
-            {team.length > 0 ? team.length.toString().padStart(2, '0') : '0'}
+          <span>
+            {`Dr. ${firstName}'s Team (${
+              team.length > 0 ? team.length.toString().padStart(2, '0') : '0'
+            })`}
           </span>
+          <span className={classes.count}></span>
         </div>
         <Grid container className={classes.gridContainer} spacing={2}>
           {_map(team, (doctorDetails: StarTeam) => {
-            // console.log('doctor details.........', doctorDetails);
             let starDoctorLocation = '';
             if (
               doctorDetails &&
@@ -160,7 +147,6 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
               doctorDetails.associatedDoctor.doctorHospital.length > 0
             ) {
               _forEach(doctorDetails.associatedDoctor.doctorHospital, (hospitalDetails) => {
-                // console.log(hospitalDetails);
                 if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
                   starDoctorLocation = hospitalDetails.facility.name;
                 }
@@ -242,9 +228,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
           })}
         </Grid>
       </div>
-    ) : (
-      <></>
-    );
+    ) : null;
   } else {
     return <div>No Doctors Found...</div>;
   }

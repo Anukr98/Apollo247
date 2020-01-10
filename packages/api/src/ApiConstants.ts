@@ -140,6 +140,8 @@ export enum ApiConstants {
 
   PHARMA_DEFAULT_SHOPID = '16001',
 
+  OTP_EXPIRATION_MINUTES = 2,
+
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',
   MEDMANTRA_REGIONID = '1',

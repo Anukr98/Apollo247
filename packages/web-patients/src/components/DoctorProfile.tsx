@@ -1,7 +1,6 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { AphButton } from '@aph/web-ui-components';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import Scrollbars from 'react-custom-scrollbars';
 import _forEach from 'lodash/forEach';
@@ -12,8 +11,8 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { format } from 'date-fns';
-import { getIstTimestamp } from 'helpers/dateHelpers';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -58,6 +57,8 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       paddingRight: 40,
       marginRight: 15,
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
+      paddingBottom: 10,
     },
     shareIcon: {
       position: 'absolute',
@@ -178,17 +179,17 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface DoctorProfileProps {
   doctorDetails: DoctorDetails;
-  onBookConsult: (popover: boolean) => void;
   avaPhy: boolean;
   avaOnline: boolean;
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles({});
-  const { doctorDetails, onBookConsult } = props;
+  const { doctorDetails } = props;
 
   let availableSlot = 0,
-    differenceInMinutes = 0;
+    availableIn = 0,
+    physicalAvailableIn = 0;
 
   const doctorId =
     doctorDetails && doctorDetails.getDoctorDetailsById
@@ -218,62 +219,45 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     data.getDoctorNextAvailableSlot &&
     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
   ) {
-    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
-      // if (availability && availability.availableSlot !== '') {
-      //   const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-      //   const slotTimeStamp =
-      //     getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
-      //   const currentTime = new Date().getTime();
-      //   if (slotTimeStamp > currentTime) {
-      //     availableSlot = slotTimeStamp;
-      //     const difference = slotTimeStamp - currentTime;
-      //     differenceInMinutes = Math.round(difference / 60000);
-      //   }
-      // } else {
-      //   differenceInMinutes = -1;
-      // }
-      if (availability && availability.availableSlot !== '') {
-        // const slotTimeUtc = new Date(
-        //   new Date(
-        //     `${format(new Date(), 'yyyy-MM-dd')} ${availability.availableSlot}:00`
-        //   ).toISOString()
-        // ).getTime();
-        // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
-        // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
-        const slotTime = new Date(availability.availableSlot).getTime();
-        const currentTime = new Date(new Date().toISOString()).getTime();
+    const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+    const currentTime = new Date(new Date().toISOString()).getTime();
+    const firstAvailableSLot = availableSlots[0];
+    if (firstAvailableSLot) {
+      if (firstAvailableSLot.availableSlot !== '') {
+        const slotTime = new Date(firstAvailableSLot.availableSlot).getTime();
         if (slotTime > currentTime) {
           const difference = slotTime - currentTime;
-          differenceInMinutes = Math.round(difference / 60000);
+          availableIn = Math.round(difference / 60000);
         }
       } else {
-        differenceInMinutes = -1;
+        availableIn = -1;
       }
-    });
+      const physicalAvailableSlotTime = new Date(
+        firstAvailableSLot.physicalAvailableSlot
+      ).getTime();
+      if (physicalAvailableSlotTime > currentTime) {
+        const difference = physicalAvailableSlotTime - currentTime;
+        physicalAvailableIn = Math.round(difference / 60000);
+      } else {
+        physicalAvailableIn = -1;
+      }
+    }
   }
 
-  // console.log(differenceInMinutes, 'hello.....');
-
-  // if (differenceInMinutes <= 15) {
-  //   onBookConsult(true);
-  // }
-
-  const availabilityMarkup = () => {
-    if (differenceInMinutes === 0) {
+  const availabilityMarkup = (availableIn: number) => {
+    if (availableIn === 0) {
       return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
-    } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
+    } else if (availableIn > 0 && availableIn <= 15) {
       return (
         <div className={`${classes.availability} ${classes.availableNow}`}>
-          AVAILABLE IN {differenceInMinutes} MINS
+          AVAILABLE IN {availableIn} MINS
         </div>
       );
-    } else if (differenceInMinutes > 15 && differenceInMinutes <= 45) {
-      return (
-        <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
-      );
-    } else if (differenceInMinutes > 45 && differenceInMinutes <= 60) {
+    } else if (availableIn > 15 && availableIn <= 45) {
+      return <div className={`${classes.availability}`}>AVAILABLE IN {availableIn} MINS</div>;
+    } else if (availableIn > 45 && availableIn <= 60) {
       return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
-    } else if (differenceInMinutes > 60) {
+    } else if (availableIn > 60) {
       return (
         <div className={`${classes.availability}`}>
           TODAY {format(new Date(availableSlot), 'h:mm a')}
@@ -284,32 +268,26 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
   if (doctorDetails && doctorDetails.getDoctorDetailsById) {
     let hospitalLocation = '';
-
-    // const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    // const lastName = doctorDetails.getDoctorDetailsById.lastName;
-    // const experience = doctorDetails.getDoctorDetailsById.experience;
-    // const awards = doctorDetails.getDoctorDetailsById.awards;
-    // const languages = doctorDetails.getDoctorDetailsById.languages;
-    // const onlineConsultFees =
-    //   doctorDetails.getDoctorDetailsById.onlineConsultationFees;
-    // const physicalConsultationFees = doctorDetails.getDoctorDetailsById.physicalConsultationFees;
-
     let speciality;
+
     if (doctorDetails.getDoctorDetailsById.specialty) {
       speciality = doctorDetails.getDoctorDetailsById.specialty.name;
     }
-
-    // const education = doctorDetails.getDoctorDetailsById.qualification;
+    const education = doctorDetails.getDoctorDetailsById.qualification;
     const profileImage = doctorDetails.getDoctorDetailsById.photoUrl;
 
     const {
-      // awards,
+      awards,
       experience,
       firstName,
       languages,
       lastName,
       onlineConsultationFees,
+      physicalConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
+
+    const isStarDoctor =
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO ? true : false;
 
     _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
       if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
@@ -337,22 +315,30 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               </div>
             </div>
             <Scrollbars autoHeight autoHeightMax={'calc(100vh - 496px'}>
-              {/* <div className={classes.doctorInfoGroup}>
+              <div className={classes.doctorInfoGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require("images/ic-edu.svg")} alt="" />
+                    <img src={require('images/ic-edu.svg')} alt="" />
                   </div>
-                  <div className={classes.details}>{education}</div>
+                  {education && education.includes(';') ? (
+                    education.split(';').map((edu, idx) => (
+                      <div key={idx} className={classes.details}>
+                        {edu}
+                      </div>
+                    ))
+                  ) : (
+                    <div className={classes.details}>{education}</div>
+                  )}
                 </div>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require("images/ic-awards.svg")} alt="" />
+                    <img src={require('images/ic-awards.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, "")}
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
                   </div>
                 </div>
-              </div> */}
+              </div>
               <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
@@ -377,37 +363,28 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     <div className={classes.details}>
                       Online Consultation
                       <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
-                      {availabilityMarkup()}
+                      {availabilityMarkup(availableIn)}
                     </div>
                     <div className={classes.doctorPrice}>Rs.{onlineConsultationFees}</div>
                   </div>
                 </div>
-                {/* <div className={classes.consultGroup}>
-                  <div className={classes.infoRow}>
-                    <div className={`${classes.iconType} ${classes.noIcon}`}>
-                      <img src={require('images/ic-rupee.svg')} alt="" />
+                {isStarDoctor && (
+                  <div className={classes.consultGroup}>
+                    <div className={classes.infoRow}>
+                      <div className={`${classes.iconType} ${classes.noIcon}`}>
+                        <img src={require('images/ic-rupee.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>
+                        Clinic Visit
+                        <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
+                        {availabilityMarkup(physicalAvailableIn)}
+                      </div>
+                      <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                     </div>
-                    <div className={classes.details}>
-                      Clinic Visit
-                      <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
-                      <div className={`${classes.availability}`}>Available in 27 mins</div>
-                    </div>
-                    <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                   </div>
-                </div> */}
+                )}
               </div>
             </Scrollbars>
-          </div>
-          <div className={classes.bottomActions}>
-            <AphButton
-              onClick={(e) => {
-                onBookConsult(true);
-              }}
-              fullWidth
-              color="primary"
-            >
-              Book Appointment
-            </AphButton>
           </div>
         </div>
       </div>
