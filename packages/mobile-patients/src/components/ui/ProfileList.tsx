@@ -158,19 +158,29 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           variables: { patientId: key },
           fetchPolicy: 'no-cache',
         })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          console.log(addressList, 'addresslidt');
+        .then(
+          ({
+            data: {
+              getPatientAddressList: { addressList },
+            },
+          }) => {
+            console.log(addressList, 'addresslidt');
 
-          shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
-          diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
-          shopCart.setAddresses && shopCart.setAddresses(addressList!);
-          diagCart.setAddresses && diagCart.setAddresses(addressList!);
-        })
-        .catch((e) => {})
-        .finally(() => {
+            shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
+            diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
+            shopCart.setAddresses && shopCart.setAddresses(addressList!);
+            diagCart.setAddresses && diagCart.setAddresses(addressList!);
+            unsetloaderDisplay ? null : setLoading && setLoading(false);
+            setAddressCalled(false);
+          }
+        )
+        .catch((e) => {
           unsetloaderDisplay ? null : setLoading && setLoading(false);
           setAddressCalled(false);
         });
+      // .finally(() => {
+
+      // });
     }
   };
 
