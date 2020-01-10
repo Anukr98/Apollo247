@@ -48,7 +48,7 @@ import {
 } from 'graphql/types/RemoveFavouriteMedicine';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from 'graphql/types/GetDoctorFavouriteMedicineList';
 const apiDetails = {
-  url: process.env.PHARMACY_MED_SEARCH_URL,
+  url: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchprd_api.php`,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
 };
