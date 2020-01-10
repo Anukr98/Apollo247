@@ -21,6 +21,8 @@ import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View, Text, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
+import { TestOrderNewCard } from '../ui/TestOrderNewCard';
+import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -159,21 +161,25 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return moment(time).format('D MMM YY, hh:mm a');
   };
 
+  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+  };
+
   const renderOrder = (
     order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
     index: number
   ) => {
-    const title =
-      g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
+    const isHomeVisit = !!order.slotTimings;
+    const dt = moment(order!.diagnosticDate).format(`D MMM YYYY`);
+    const tm = getSlotStartTime(order!.slotTimings);
+    const dtTm = `${dt}${isHomeVisit ? `, ${tm}` : ''}`;
     return (
-      <TestOrderCard
-        style={[
-          { marginHorizontal: 20 },
-          index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
-          index == 0 ? { marginTop: 20 } : {},
-        ]}
+      <TestOrderNewCard
         key={`${order!.id}`}
-        orderId={`#${order!.displayId}`}
+        orderId={`${order!.displayId}${order!.displayId}`}
+        dateTime={`Scheduled For: ${dtTm}`}
+        statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
+        isCancelled={order.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         onPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
             orderId: order!.id,
@@ -182,14 +188,46 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             refetch: refetch,
           });
         }}
-        title={title}
-        description={getDeliverType(order, order!.orderType)}
-        statusDesc={order!.orderStatus!}
-        status={order!.orderStatus!}
-        dateTime={getFormattedTime(order!.createdDate)}
+        style={[
+          { marginHorizontal: 20 },
+          index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
+          index == 0 ? { marginTop: 20 } : {},
+        ]}
       />
     );
   };
+
+  // const renderOrder = (
+  //   order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+  //   index: number
+  // ) => {
+  //   const title =
+  //     g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
+  //   return (
+  //     <TestOrderCard
+  //       style={[
+  //         { marginHorizontal: 20 },
+  //         index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
+  //         index == 0 ? { marginTop: 20 } : {},
+  //       ]}
+  //       key={`${order!.id}`}
+  //       orderId={`#${order!.displayId}`}
+  //       onPress={() => {
+  //         props.navigation.navigate(AppRoutes.TestOrderDetails, {
+  //           orderId: order!.id,
+  //           setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
+  //             setOrders(orders),
+  //           refetch: refetch,
+  //         });
+  //       }}
+  //       title={title}
+  //       description={getDeliverType(order, order!.orderType)}
+  //       statusDesc={order!.orderStatus!}
+  //       status={order!.orderStatus!}
+  //       dateTime={getFormattedTime(order!.createdDate)}
+  //     />
+  //   );
+  // };
 
   const [bottomOffset, setBottomOffset] = useState<number>(0);
 
