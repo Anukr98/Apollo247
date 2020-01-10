@@ -911,14 +911,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       {renderUploadSelection()}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
-        <KeyboardAvoidingView
-          behavior={Platform.OS == 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
-        >
+        <KeyboardAvoidingView behavior={Platform.OS == 'ios' ? 'padding' : ''} style={{ flex: 1 }}>
           <ScrollView bounces={false} style={{ backgroundColor: '#f7f8f5' }}>
             {renderForm()}
-            <View style={{ height: 100 }} />
+            <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>
+
           {renderButtons()}
         </KeyboardAvoidingView>
       </SafeAreaView>

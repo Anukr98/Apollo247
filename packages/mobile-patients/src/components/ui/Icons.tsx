@@ -92,7 +92,7 @@ export const Star: React.FC<IconProps> = (props) => (
 );
 
 export const ConsultationRoom: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_appointments.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/ic_consultroom.png')} />
 );
 
 export const MyHealth: React.FC<IconProps> = (props) => (
@@ -112,7 +112,7 @@ export const Person: React.FC<IconProps> = (props) => (
 );
 
 export const ConsultationRoomFocused: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_appointments_white.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/ic_consultroom_white.png')} />
 );
 
 export const MyHealthFocused: React.FC<IconProps> = (props) => (
@@ -267,13 +267,6 @@ export const ShareGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_share_green.png')} />
 );
 
-export const MedicineIconWhite: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ width: 17, height: 20 }}
-    {...props}
-    source={require('./icons/ic_medicines_selected.png')}
-  />
-);
 export const MedicineIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tablets.png')} />
 );
@@ -739,8 +732,4 @@ export const Symptomtracker: React.FC<IconProps> = (props) => (
 
 export const PrescriptionMenu: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_prescription_menu.png')} />
-);
-
-export const Gift: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ic_gift.png')} />
 );
