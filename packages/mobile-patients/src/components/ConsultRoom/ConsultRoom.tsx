@@ -254,7 +254,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
