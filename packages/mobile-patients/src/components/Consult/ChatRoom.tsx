@@ -1821,7 +1821,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const saveimageIos = (url: any) => {
     if (Platform.OS === 'ios') {
-      Linking.openURL(url).catch((err) => console.log('An error occurred', err));
+      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
     }
   };
 
@@ -2670,11 +2670,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
             Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
-              console.log('An error occurred', err)
+              console.error('An error occurred', err)
             );
           })
           .catch(() =>
-            Linking.openURL(rowData.url).catch((err) => console.log('An error occurred', err))
+            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err))
           )
           .finally(() => {
             setLoading(false);
@@ -2682,7 +2682,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           });
       } else {
         setLoading(false);
-        Linking.openURL(rowData.url).catch((err) => console.log('An error occurred', err));
+        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
       }
     }
   };
@@ -3859,15 +3859,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           appointmentData.status === STATUS.COMPLETED
             ? `Consult is completed`
             : `Will be joining soon`;
-      } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
-      } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
-      } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
-        time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
-      } else {
-        time = `Joining in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
-      }
+      }else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
+ time = `Joining in ${diffMin} minute${diffMin === 1 ? "" : "s"}`;
+} else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
+ time = `Joining in ${diffHours} hour${diffHours === 1 ? "" : "s"}`;
+} else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
+ time = `Joining in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+} else {
+ time = `Joining in ${diffMonths} month${diffMonths === 1 ? "" : "s"}`;
+}
     }
     return (
       <View style={styles.mainView}>
