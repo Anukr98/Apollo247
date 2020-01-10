@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.LIGHT_BLUE,
-    letterSpacing: 28,
-    paddingLeft: 12,
+    letterSpacing: 28, // 26
+    paddingLeft: 12, // 25
   },
   viewWebStyles: {
     position: 'absolute',
@@ -122,7 +122,7 @@ export interface OTPVerificationProps
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
-  const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
+  const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -362,10 +362,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           });
         const { loginId } = props.navigation.state.params!;
 
-        setTimeout(() => {
-          // verifyOtp(otp)
-          verifyOTP(client, loginId, otp)
-            .then((data: any) => {
+        verifyOTP(client, loginId, otp)
+          .then((data: any) => {
+            console.log(data.status === true, data.status, 'status');
+
+            if (data.status === true) {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
               CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
 
@@ -382,14 +383,18 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               sendOtp(data.authToken).then((data) => {
                 // setshowSpinner(true);
               });
-            })
-            .catch((error) => {
+            } else {
+              console.log('else error');
+
               try {
-                console.log({
-                  error,
-                });
-                CommonBugFender('OTP_ENTERED_FAIL', error);
-                CommonLogEvent('OTP_ENTERED_FAIL', error);
+                // console.log(
+                //   {
+                //     error,
+                //   },
+                //   'else error'
+                // );
+                // CommonBugFender('OTP_ENTERED_FAIL', error);
+                // CommonLogEvent('OTP_ENTERED_FAIL', error);
 
                 setOnOtpClick(false);
                 setshowSpinner(false);
@@ -415,14 +420,53 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
                   .update({
-                    OTPFailedReason: error ? error.message : '',
+                    OTPFailedReason: 'Wrong OTP',
                   });
               } catch (error) {
                 setshowSpinner(false);
-                console.log(error);
+                // console.log(error);
               }
-            });
-        }, 3000);
+            }
+          })
+          .catch((error) => {
+            try {
+              console.log({
+                error,
+              });
+              CommonBugFender('OTP_ENTERED_FAIL', error);
+              CommonLogEvent('OTP_ENTERED_FAIL', error);
+
+              setOnOtpClick(false);
+              setshowSpinner(false);
+              // console.log('error', error);
+              _storeTimerData(invalidOtpCount + 1);
+
+              if (invalidOtpCount + 1 === 3) {
+                setShowErrorMsg(true);
+                setIsValidOTP(false);
+                // startInterval(timer);
+                setIntervalId(intervalId);
+              } else {
+                setShowErrorMsg(true);
+                setIsValidOTP(true);
+              }
+              setInvalidOtpCount(invalidOtpCount + 1);
+              db.ref('ApolloPatients/')
+                .child(dbChildKey)
+                .update({
+                  wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                });
+
+              db.ref('ApolloPatients/')
+                .child(dbChildKey)
+                .update({
+                  OTPFailedReason: error ? error.message : '',
+                });
+            } catch (error) {
+              setshowSpinner(false);
+              console.log(error);
+            }
+          });
       } else {
         setshowOfflinePopup(true);
       }
