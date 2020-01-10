@@ -285,7 +285,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                 setShowSpinner(false);
 
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-                //  CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
 
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
@@ -301,7 +300,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   dbChildKey,
                 });
               })
-              .catch((error: RNFirebase.RnError) => {
+              .catch((error) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
                 setShowSpinner(false);

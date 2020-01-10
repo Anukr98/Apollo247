@@ -126,10 +126,7 @@ export const AuthProvider: React.FC = (props) => {
     return new Promise(async (resolve, reject) => {
       setIsSendingOtp(true);
 
-      const [phoneAuthResult, phoneAuthError] = await wait(
-        // auth.signInWithPhoneNumber('+91' + phoneNumber, forceResend)
-        auth.signInWithCustomToken(customToken)
-      );
+      const [phoneAuthResult, phoneAuthError] = await wait(auth.signInWithCustomToken(customToken));
       setIsSendingOtp(false);
       if (phoneAuthError) {
         setSendOtpError(true);

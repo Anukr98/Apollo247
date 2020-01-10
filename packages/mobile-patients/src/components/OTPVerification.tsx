@@ -405,7 +405,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   setIsValidOTP(true);
                 }
                 setInvalidOtpCount(invalidOtpCount + 1);
-                // setOtp('');
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
                   .update({
