@@ -426,7 +426,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </div>
             </div>
           )}
-          {showCalendar && (
+          {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
             <Grid container spacing={2}>
               <Grid item sm={6}>
                 <div

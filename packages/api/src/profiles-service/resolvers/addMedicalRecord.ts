@@ -33,25 +33,27 @@ export const addPatientMedicalRecordTypeDefs = gql`
   }
 
   input AddMedicalRecordInput {
+    additionalNotes: String
+    documentURLs: String
+    issuingDoctor: String
+    location: String
+    medicalRecordParameters: [AddMedicalRecordParametersInput]
+    observations: String
     patientId: ID!
-    testName: String!
-    testDate: Date
+    prismFileIds: String
     recordType: MedicalRecordType
     referringDoctor: String
     sourceName: String
-    observations: String
-    additionalNotes: String
-    documentURLs: String
-    prismFileIds: String
-    medicalRecordParameters: [AddMedicalRecordParametersInput]
+    testDate: Date
+    testName: String!
   }
 
   input AddMedicalRecordParametersInput {
-    parameterName: String
-    unit: MedicalTestUnit
-    result: Float
-    minimum: Float
     maximum: Float
+    minimum: Float
+    parameterName: String
+    result: Float
+    unit: MedicalTestUnit
   }
 
   type AddMedicalRecordResult {
@@ -64,25 +66,27 @@ export const addPatientMedicalRecordTypeDefs = gql`
 `;
 
 type AddMedicalRecordInput = {
+  additionalNotes: string;
+  documentURLs: string;
+  issuingDoctor: string;
+  location: string;
+  medicalRecordParameters: [AddMedicalRecordParametersInput];
+  observations: string;
   patientId: string;
-  testName: string;
-  testDate: Date;
+  prismFileIds: string;
   recordType: MedicalRecordType;
   referringDoctor: string;
   sourceName: string;
-  observations: string;
-  additionalNotes: string;
-  documentURLs: string;
-  prismFileIds: string;
-  medicalRecordParameters: [AddMedicalRecordParametersInput];
+  testDate: Date;
+  testName: string;
 };
 
 type AddMedicalRecordParametersInput = {
-  parameterName: string;
-  unit: MedicalTestUnit;
-  result: number;
-  minimum: number;
   maximum: number;
+  minimum: number;
+  parameterName: string;
+  result: number;
+  unit: MedicalTestUnit;
 };
 
 type MedicalRecordInputArgs = { addMedicalRecordInput: AddMedicalRecordInput };
@@ -104,16 +108,18 @@ const addPatientMedicalRecord: Resolver<
   }
 
   const addMedicalRecordAttrs: Partial<MedicalRecords> = {
+    additionalNotes: addMedicalRecordInput.additionalNotes,
+    documentURLs: addMedicalRecordInput.documentURLs,
+    issuingDoctor: addMedicalRecordInput.issuingDoctor,
+    location: addMedicalRecordInput.location,
+    observations: addMedicalRecordInput.observations,
     patient: patient,
-    testName: addMedicalRecordInput.testName,
-    testDate: addMedicalRecordInput.testDate,
+    prismFileIds: addMedicalRecordInput.prismFileIds,
     recordType: addMedicalRecordInput.recordType,
     referringDoctor: addMedicalRecordInput.referringDoctor,
     sourceName: addMedicalRecordInput.sourceName,
-    observations: addMedicalRecordInput.observations,
-    additionalNotes: addMedicalRecordInput.additionalNotes,
-    documentURLs: addMedicalRecordInput.documentURLs,
-    prismFileIds: addMedicalRecordInput.prismFileIds,
+    testDate: addMedicalRecordInput.testDate,
+    testName: addMedicalRecordInput.testName,
   };
 
   const medicalRecordRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);

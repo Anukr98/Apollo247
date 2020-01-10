@@ -132,6 +132,8 @@ export type Resolver<Parent, Args, Context, Result> = (
           throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
         });
 
+      //console.log('IDToken:::::::::::::', firebaseIdToken);
+
       const firebaseUser = await firebase
         .auth()
         .getUser(firebaseIdToken.uid)

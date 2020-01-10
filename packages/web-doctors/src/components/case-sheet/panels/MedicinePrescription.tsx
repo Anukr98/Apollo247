@@ -1797,7 +1797,7 @@ export const MedicinePrescription: React.FC = () => {
                         </Scrollbars>
                       )}
                     />
-                    {medicine.length > 2 && !loading && (
+                    {medicine.trim().length > 2 && !loading && (
                       <div>
                         <span>
                           <AphButton
