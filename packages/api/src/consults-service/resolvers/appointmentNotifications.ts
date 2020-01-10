@@ -12,7 +12,7 @@ import { CASESHEET_STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 export const appointmentNotificationTypeDefs = gql`
   type ApptReminderResult {
     status: Boolean
-    currentTime: DateTime
+    currentTime: String
     apptsListCount: Int
   }
 
