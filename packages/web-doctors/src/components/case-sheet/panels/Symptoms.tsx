@@ -323,7 +323,7 @@ export const Symptoms: React.FC = (props) => {
     //     severityError: false,
     //   });
     // }
-    else if (isEmpty(severity)) {
+    else if (isEmpty(trim(severity))) {
       setErrorState({
         ...errorState,
         symptomError: false,

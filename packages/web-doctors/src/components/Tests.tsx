@@ -1000,7 +1000,7 @@ export const Tests: React.FC = () => {
                       </Scrollbars>
                     )}
                   />
-                  {otherDiagnostic.length > 2 && (
+                  {otherDiagnostic.trim().length > 2 && (
                     <AphButton
                       className={classes.darkGreenaddBtn}
                       variant="contained"
