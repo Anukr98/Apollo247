@@ -21,7 +21,7 @@ import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigatio
 import { Tests } from '@aph/mobile-patients/src/components/Tests/Tests';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
-  'CONSULT ROOM': <ConsultationRoom />,
+  APPOINTMENTS: <ConsultationRoom />,
   'HEALTH RECORDS': <MyHealth />,
   MEDICINES: <ShoppingCart />,
   TESTS: <TestsIcon />,
@@ -29,7 +29,7 @@ const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
 };
 
 const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
-  'CONSULT ROOM': <ConsultationRoomFocused />,
+  APPOINTMENTS: <ConsultationRoomFocused />,
   'HEALTH RECORDS': <MyHealthFocused />,
   MEDICINES: <ShoppingCartFocused />,
   TESTS: <TestsIconFocused />,
@@ -37,7 +37,7 @@ const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
 };
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
-  'CONSULT ROOM': Consult,
+  APPOINTMENTS: Consult,
   'HEALTH RECORDS': HealthRecordsHome,
   MEDICINES: Medicine,
   TESTS: Tests,
@@ -45,8 +45,8 @@ const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
 };
 
 export const TabBar = createBottomTabNavigator(routeConfigMap, {
-  initialRouteName: 'CONSULT ROOM',
-  backBehavior: 'initialRoute',
+  initialRouteName: 'APPOINTMENTS',
+  backBehavior: 'none',
   defaultNavigationOptions: ({ navigation }) => ({
     tabBarIcon: ({ focused }) =>
       focused

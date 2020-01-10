@@ -3,7 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import { Mascot, Check, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Mascot, Check, UnCheck, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -299,7 +299,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           >
             <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
-              <Mascot style={{ marginRight: 20 }} />
+              <Gift style={{ marginRight: 20 }} />
               <TextInputComponent
                 label={
                   referredBy

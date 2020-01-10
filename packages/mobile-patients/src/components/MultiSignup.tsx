@@ -2,7 +2,7 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { DropdownGreen, Mascot, Check } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DropdownGreen, Mascot, Check, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -479,7 +479,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         }}
       >
         <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
-          <Mascot style={{ marginRight: 20 }} />
+          <Gift style={{ marginRight: 20 }} />
           <TextInputComponent
             label={
               referredBy
