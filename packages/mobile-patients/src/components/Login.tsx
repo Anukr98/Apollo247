@@ -357,18 +357,18 @@ export const Login: React.FC<LoginProps> = (props) => {
               backgroundColor: 'white',
             }}
             useWebKit={true}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setShowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setShowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setShowSpinner(false);
-            }}
+            // onLoadStart={() => {
+            //   console.log('onLoadStart');
+            //   setshowSpinner(true);
+            // }}
+            // onLoadEnd={() => {
+            //   console.log('onLoadEnd');
+            //   setshowSpinner(false);
+            // }}
+            // onLoad={() => {
+            //   console.log('onLoad');
+            //   setshowSpinner(false);
+            // }}
           />
         </View>
       </View>

@@ -6,8 +6,6 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -34,9 +32,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         Linking.addEventListener('url', handleOpenURL);
       }
       AsyncStorage.removeItem('location');
-      PrefetchAPIReuqest({ clientId: AppConfig.Configuration.PRAKTISE_API_KEY }).then((res) =>
-        console.log(res, 'practice res')
-      );
     } catch (error) {}
   }, []);
 
