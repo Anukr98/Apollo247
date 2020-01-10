@@ -36,6 +36,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Linking,
 } from 'react-native';
 // import { Slider } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -181,6 +182,19 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const { locationForDiagnostics } = useAppCommonData();
   const client = useApolloClient();
   const MAX_SLIDER_VALUE = grandTotal;
+
+  const getHomeVisitTime = () => {
+    return '';
+    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'slotStartTime')) {
+      const _date = moment(g(diagnosticSlot, 'date')).format('D MMM YYYY');
+      const _time = moment(g(diagnosticSlot, 'slotStartTime')!.trim(), 'hh:mm').format('hh:mm a');
+      return `${_date}, ${_time}`;
+    } else {
+      return '';
+    }
+  };
+
+  const homeVisitTime = getHomeVisitTime();
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -481,7 +495,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         {renderHeadingAndCard(
           isOneApolloPayment
             ? 'How would you prefer to pay the balace amount ?'
-            : 'Pick a payment mode',
+            : 'Select payment mode',
           content
         )}
       </View>
@@ -493,7 +507,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY RS. ${grandTotal.toFixed(2)}`}
+          title={`PAY : RS. ${grandTotal.toFixed(2)}`}
           onPress={() => {
             try {
               CommonLogEvent(AppRoutes.TestsCheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
@@ -528,72 +542,125 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description: 'Your order has been placed successfully.',
       children: (
-        <View
-          style={{
-            margin: 20,
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: '#f7f8f5',
-            borderRadius: 10,
-          }}
-        >
+        <View>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              margin: 20,
+              marginTop: 16,
+              padding: 16,
+              backgroundColor: '#f7f8f5',
+              borderRadius: 10,
             }}
           >
-            <TestsIcon />
-            <Text
+            <View
               style={{
-                flex: 1,
-                marginLeft: 2,
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}
             >
-              Tests
-            </Text>
-            <Text
+              <TestsIcon />
+              <Text
+                style={{
+                  flex: 1,
+                  marginLeft: 16,
+                  ...theme.fonts.IBMPlexSansMedium(17),
+                  lineHeight: 24,
+                  color: '#01475b',
+                }}
+              >
+                Tests
+              </Text>
+              <Text
+                style={{
+                  flex: 1,
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  lineHeight: 24,
+                  color: '#01475b',
+                  textAlign: 'right',
+                }}
+              >
+                {`#${displayId}`}
+              </Text>
+            </View>
+            {!!homeVisitTime && (
+              <>
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: '#02475b',
+                    opacity: 0.1,
+                    marginBottom: 7.5,
+                    marginTop: 15.5,
+                  }}
+                />
+                <View>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                    }}
+                  >
+                    {`Home Visit On: ${homeVisitTime}`}
+                  </Text>
+                </View>
+              </>
+            )}
+            <View
               style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 24,
-                color: '#01475b',
-                textAlign: 'right',
+                height: 1,
+                backgroundColor: '#02475b',
+                opacity: 0.1,
+                marginBottom: 7.5,
+                marginTop: 15.5,
               }}
-            >
-              {`#${displayId}`}
-            </Text>
+            />
+            <View style={styles.popupButtonStyle}>
+              {/* <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => navigateToOrderDetails(true, orderId)}
+              >
+                <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
+              </TouchableOpacity> */}
+              <TouchableOpacity
+                style={{ flex: 1, alignItems: 'flex-end' }}
+                onPress={() => navigateToOrderDetails(true, orderId)}
+              >
+                <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 7.5,
-              marginTop: 15.5,
-            }}
-          />
-          <View style={styles.popupButtonStyle}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() => navigateToOrderDetails(true, orderId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false, orderId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
-            </TouchableOpacity>
-          </View>
+          {renderDiagnosticHelpText()}
         </View>
       ),
     });
+  };
+
+  const renderDiagnosticHelpText = () => {
+    const textMediumStyle = theme.viewStyles.text('M', 14, '#02475b', 1, 22);
+    const textBoldStyle = theme.viewStyles.text('B', 14, '#02475b', 1, 22);
+    const PhoneNumberTextStyle = theme.viewStyles.text('M', 14, '#fc9916', 1, 22);
+    const ontapNumber = (number: string) => {
+      Linking.openURL(`tel:${number}`)
+        .then(() => {})
+        .catch(() => {});
+    };
+
+    return (
+      <Text style={{ margin: 20, marginTop: 0 }}>
+        <Text style={textMediumStyle}>{'For '}</Text>
+        <Text style={textBoldStyle}>{'Test Orders,'}</Text>
+        <Text style={textMediumStyle}>
+          {' to know the Order Status / Reschedule / Cancel, please call — \n'}
+        </Text>
+        <Text onPress={() => ontapNumber('040 44442424')} style={PhoneNumberTextStyle}>
+          {'040 44442424'}
+        </Text>
+        <Text style={textMediumStyle}>{' / '}</Text>
+        <Text onPress={() => ontapNumber('040 33442424')} style={PhoneNumberTextStyle}>
+          {'040 33442424'}
+        </Text>
+      </Text>
+    );
   };
 
   return (

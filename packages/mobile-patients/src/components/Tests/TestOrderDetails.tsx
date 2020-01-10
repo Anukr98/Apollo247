@@ -10,7 +10,7 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+// import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
   CANCEL_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDER_LIST,
@@ -97,7 +97,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [selectedTab, setSelectedTab] = useState<string>(
-    showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
+    // showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
+    string.orders.viewBill
   );
   const [apiLoading, setApiLoading] = useState(false);
   const [isCancelVisible, setCancelVisible] = useState(false);
@@ -169,10 +170,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             nextItemStatus={'NOT_EXIST'}
           />
         </View>
-        <NeedHelpAssistant
-          containerStyle={{ marginTop: 20, marginBottom: 30 }}
-          navigation={props.navigation}
-        />
       </View>
     );
   };
@@ -284,7 +281,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderSummary = () => {
-    return <TestOrderSummaryView orderDetails={orderDetails} />;
+    return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
   };
 
   const renderMoreMenu = () => {
@@ -331,16 +328,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             }}
           />
         </View>
-        <TabsComponent
+        {/* <TabsComponent
           style={styles.tabsContainer}
           onChange={(title) => {
             setSelectedTab(title);
           }}
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}
-        />
+        /> */}
         <ScrollView bounces={false}>
           {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
+          <NeedHelpAssistant
+            containerStyle={{ marginTop: 20, marginBottom: 30 }}
+            navigation={props.navigation}
+          />
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner style={{ zIndex: 200 }} />}

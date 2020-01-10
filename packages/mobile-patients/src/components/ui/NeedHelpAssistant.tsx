@@ -26,7 +26,8 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   titleBtnStyles: {
-    color: theme.colors.SKY_BLUE,
+    ...theme.viewStyles.text('M', 16, '#0087ba', 1, undefined, -0.36),
+    // color: theme.colors.SKY_BLUE,
   },
   mascotImageStyle: {
     height: 80,

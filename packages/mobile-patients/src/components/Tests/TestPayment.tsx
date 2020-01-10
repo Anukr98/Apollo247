@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
   WebView,
+  Linking,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
@@ -38,9 +39,11 @@ export interface TestPaymentProps extends NavigationScreenProps {
   orderId: string;
   displayId: string;
   price: number;
+  homeVisitTime: string;
 }
 
 export const TestPayment: React.FC<TestPaymentProps> = (props) => {
+  const homeVisitTime = props.navigation.getParam('homeVisitTime');
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
   const displayId = props.navigation.getParam('displayId');
@@ -82,72 +85,125 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description: 'Your order has been placed successfully.',
       children: (
-        <View
-          style={{
-            margin: 20,
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: '#f7f8f5',
-            borderRadius: 10,
-          }}
-        >
+        <View>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              margin: 20,
+              marginTop: 16,
+              padding: 16,
+              backgroundColor: '#f7f8f5',
+              borderRadius: 10,
             }}
           >
-            <TestsIcon />
-            <Text
+            <View
               style={{
-                flex: 1,
-                marginLeft: 2,
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}
             >
-              Tests
-            </Text>
-            <Text
+              <TestsIcon />
+              <Text
+                style={{
+                  flex: 1,
+                  marginLeft: 2,
+                  ...theme.fonts.IBMPlexSansMedium(17),
+                  lineHeight: 24,
+                  color: '#01475b',
+                }}
+              >
+                Tests
+              </Text>
+              <Text
+                style={{
+                  flex: 1,
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  lineHeight: 24,
+                  color: '#01475b',
+                  textAlign: 'right',
+                }}
+              >
+                {`#${displayId}`}
+              </Text>
+            </View>
+            {!!homeVisitTime && (
+              <>
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: '#02475b',
+                    opacity: 0.1,
+                    marginBottom: 7.5,
+                    marginTop: 15.5,
+                  }}
+                />
+                <View>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                    }}
+                  >
+                    {`Home Visit On: ${homeVisitTime}`}
+                  </Text>
+                </View>
+              </>
+            )}
+            <View
               style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 24,
-                color: '#01475b',
-                textAlign: 'right',
+                height: 1,
+                backgroundColor: '#02475b',
+                opacity: 0.1,
+                marginBottom: 7.5,
+                marginTop: 15.5,
               }}
-            >
-              {`#${displayId}`}
-            </Text>
-          </View>
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 7.5,
-              marginTop: 15.5,
-            }}
-          />
-          <View style={styles.popupButtonStyle}>
-            <TouchableOpacity
+            />
+            <View style={styles.popupButtonStyle}>
+              {/* <TouchableOpacity
               style={{ flex: 1 }}
               onPress={() => navigateToOrderDetails(true, orderId)}
             >
               <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false, orderId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+              <TouchableOpacity
+                style={{ flex: 1, alignItems: 'flex-end' }}
+                onPress={() => navigateToOrderDetails(true, orderId)}
+              >
+                <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+          {renderDiagnosticHelpText()}
         </View>
       ),
     });
+  };
+
+  const renderDiagnosticHelpText = () => {
+    const textMediumStyle = theme.viewStyles.text('M', 14, '#02475b', 1, 22);
+    const textBoldStyle = theme.viewStyles.text('B', 14, '#02475b', 1, 22);
+    const PhoneNumberTextStyle = theme.viewStyles.text('M', 14, '#fc9916', 1, 22);
+    const ontapNumber = (number: string) => {
+      Linking.openURL(`tel:${number}`)
+        .then(() => {})
+        .catch(() => {});
+    };
+
+    return (
+      <Text style={{ margin: 20, marginTop: 0 }}>
+        <Text style={textMediumStyle}>{'For '}</Text>
+        <Text style={textBoldStyle}>{'Test Orders,'}</Text>
+        <Text style={textMediumStyle}>
+          {' to know the Order Status / Reschedule / Cancel, please call —\n'}
+        </Text>
+        <Text onPress={() => ontapNumber('040 44442424')} style={PhoneNumberTextStyle}>
+          {'040 44442424'}
+        </Text>
+        <Text style={textMediumStyle}>{' / '}</Text>
+        <Text onPress={() => ontapNumber('040 33442424')} style={PhoneNumberTextStyle}>
+          {'040 33442424'}
+        </Text>
+      </Text>
+    );
   };
 
   const handleOrderFailure = () => {
