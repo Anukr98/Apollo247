@@ -112,6 +112,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     updateBtn: {
       backgroundColor: '#fc9916 !important',
+      '&:disabled': {
+        backgroundColor: '#fdd49c !important',
+      },
     },
     addmedicine_btn: {
       color: '#fc9916',
@@ -474,6 +477,7 @@ export const FavouriteAdvice: React.FC = () => {
                   <AphButton
                     color="primary"
                     className={classes.updateBtn}
+                    disabled={advice.trim() === ''}
                     onClick={() => {
                       setShowAddInputText(false);
                       handleUpdate(advice, updateAdviceId);
@@ -485,6 +489,7 @@ export const FavouriteAdvice: React.FC = () => {
                   <AphButton
                     color="primary"
                     className={classes.updateBtn}
+                    disabled={advice.trim() === ''}
                     onClick={() => {
                       saveAdvice(advice);
                       console.log('save advice');
