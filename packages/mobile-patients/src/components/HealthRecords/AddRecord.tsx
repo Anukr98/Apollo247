@@ -299,11 +299,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     });
 
     let message = typeofRecord
-      ? testName
+      ? testName || docName || locationName
         ? dateOfTest
           ? ''
           : 'Enter Date Of Test'
-        : 'Enter Name Of Test'
+        : 'Enter Name'
       : 'Select the Record Type';
 
     message === '' &&
@@ -422,6 +422,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const inputData = {
           patientId: currentPatient ? currentPatient.id : '',
           testName: testName,
+          issuingDoctor: docName,
+          location: locationName,
           testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
           recordType: typeofRecord,
           referringDoctor: referringDoctor,

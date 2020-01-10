@@ -1347,6 +1347,8 @@ export const GET_MEDICAL_RECORD = gql`
         sourceName
         documentURLs
         prismFileIds
+        issuingDoctor
+        location
         medicalRecordParameters {
           id
           parameterName
