@@ -1816,7 +1816,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         stopAudioVideoCall();
                       }
                       props.endConsultAction();
-                      setDisableOnCancel(true);
                       isConsultStarted = false;
                     }}
                   >
@@ -1881,6 +1880,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             {props.appointmentStatus !== STATUS.COMPLETED && (
               <Button
                 className={classes.backButton}
+                disabled={
+                  isPastAppointment() ||
+                  appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE' ||
+                  props.appointmentStatus === STATUS.NO_SHOW ||
+                  props.appointmentStatus === STATUS.CALL_ABANDON ||
+                  isCallAccepted
+                }
                 onClick={() => {
                   setLoading(true);
                   const rescheduleCountByDoctor =
