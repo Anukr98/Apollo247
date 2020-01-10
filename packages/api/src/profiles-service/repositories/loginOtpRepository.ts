@@ -18,12 +18,12 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
   }
 
   async verifyOtp(otpAttrs: Partial<LoginOtp>) {
-    const { mobileNumber, loginType } = otpAttrs;
+    const { id, loginType } = otpAttrs;
     const currentTime = new Date();
     const expirationTime = subMinutes(currentTime, ApiConstants.OTP_EXPIRATION_MINUTES);
     const validOtpRecord = await this.find({
       where: {
-        mobileNumber,
+        id,
         loginType,
         createdDate: MoreThanOrEqual(expirationTime),
       },
