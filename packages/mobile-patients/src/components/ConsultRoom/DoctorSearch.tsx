@@ -292,15 +292,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             // console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }
+           callSpecialityAPI();
+           !!searchText && fetchSearchData();
         } catch {}
       })
       .catch((e: string) => {
         console.log('Error occured', e);
+         callSpecialityAPI();
+         !!searchText && fetchSearchData();
       })
-      .finally(() => {
-        callSpecialityAPI();
-        !!searchText && fetchSearchData();
-      });
+      // .finally(() => {
+      //   callSpecialityAPI();
+      //   !!searchText && fetchSearchData();
+      // });
   };
 
   const todayDate = moment(new Date()).format('YYYY-MM-DD');

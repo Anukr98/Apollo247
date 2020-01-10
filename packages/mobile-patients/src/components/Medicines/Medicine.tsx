@@ -1223,6 +1223,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           bounces={false}
           stickyHeaderIndices={[1]}
           onScroll={handleScroll}
+          scrollEventThrottle={20}
           // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},

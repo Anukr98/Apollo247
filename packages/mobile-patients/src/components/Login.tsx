@@ -279,7 +279,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
 
-            loginAPI(client, phoneNumber)
+            loginAPI(client, '+91' + phoneNumber)
               .then((confirmResult: any) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);
@@ -357,18 +357,18 @@ export const Login: React.FC<LoginProps> = (props) => {
               backgroundColor: 'white',
             }}
             useWebKit={true}
-            // onLoadStart={() => {
-            //   console.log('onLoadStart');
-            //   setshowSpinner(true);
-            // }}
-            // onLoadEnd={() => {
-            //   console.log('onLoadEnd');
-            //   setshowSpinner(false);
-            // }}
-            // onLoad={() => {
-            //   console.log('onLoad');
-            //   setshowSpinner(false);
-            // }}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setShowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setShowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setShowSpinner(false);
+            }}
           />
         </View>
       </View>

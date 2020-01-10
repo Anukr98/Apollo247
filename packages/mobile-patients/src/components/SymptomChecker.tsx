@@ -293,7 +293,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
           patientGender: currentPatient.gender === Gender.MALE ? 'male' : 'female',
         }
       : {};
-
+  console.log(patientAge, patientGender);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>

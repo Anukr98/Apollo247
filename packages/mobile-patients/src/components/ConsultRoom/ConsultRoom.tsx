@@ -1,87 +1,75 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  ConsultationRoom,
-  DoctorImage,
-  MyHealth,
-  Person,
-  ShoppingCart,
-  TestsIcon,
-  MedicineIcon,
-  DropdownGreen,
-  ManageProfileIcon,
-  Location,
-  NotificaitonAccounts,
   Ambulance,
   CartIcon,
+  ConsultationRoom,
+  Diabetes,
+  DoctorIcon,
+  DoctorImage,
+  DropdownGreen,
+  MyHealth,
   NotificationIcon,
+  Person,
+  PrescriptionMenu,
+  ShoppingCart,
+  Symptomtracker,
   TestsCartIcon,
   TestsCartMedicineIcon,
-  DoctorIcon,
-  Diabetes,
-  Symptomtracker,
-  PrescriptionIcon,
-  PrescriptionMenu,
+  TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
-  DeviceHelper,
   CommonLogEvent,
+  DeviceHelper,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  SAVE_DEVICE_TOKEN,
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+  SAVE_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
-import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  AppState,
+  AppStateStatus,
   AsyncStorage,
   Dimensions,
-  Image,
+  ImageBackground,
   ImageSourcePropType,
   Linking,
   Platform,
   SafeAreaView,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  AppState,
-  AppStateStatus,
-  StyleProp,
   ViewStyle,
-  ImageBackground,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { useUIElements } from '../UIElementsProvider';
+import { getPatientFutureAppointmentCount } from '../../graphql/types/getPatientFutureAppointmentCount';
+import { apiRoutes } from '../../helpers/apiRoutes';
 import { AppConfig } from '../../strings/AppConfig';
-import { ListCard } from '../ui/ListCard';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useShoppingCart } from '../ShoppingCartProvider';
-import { getAppointments } from '../../helpers/clientCalls';
-import moment from 'moment';
-import { apiRoutes } from '../../helpers/apiRoutes';
-import { getPatientFutureAppointmentCount } from '../../graphql/types/getPatientFutureAppointmentCount';
+import { ListCard } from '../ui/ListCard';
+import { useUIElements } from '../UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -127,16 +115,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
-  buttonStyles: {
-    flex: 1,
-    backgroundColor: '#fcb716',
-    height: 40,
-    width: 'auto',
-    borderRadius: 10,
-    marginLeft: 20,
-    marginTop: 16,
-    paddingHorizontal: 13,
-  },
   doctorView: {
     width: '100%',
     height: 277,
@@ -147,17 +125,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansMedium(15),
-  },
-  textStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-    paddingVertical: 8,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  textViewStyle: {
-    borderBottomWidth: 1,
-    borderColor: '#dddddd',
-    marginHorizontal: 16,
   },
   labelView: {
     position: 'absolute',
@@ -351,6 +318,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCurrentAppointments(
               (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
             );
+            setAppointmentLoading(false);
           })
           .finally(() => setAppointmentLoading(false));
       }
@@ -795,8 +763,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               flexDirection: 'row',
               paddingRight: 8,
               borderRightWidth: 0,
-              paddingTop: 80,
-              marginTop: 30,
+              // paddingTop: 80,
+              // marginTop: 30,
               borderRightColor: 'rgba(2, 71, 91, 0.2)',
               backgroundColor: theme.colors.CLEAR,
             }}
@@ -1006,6 +974,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 source={require('@aph/mobile-patients/src/images/apollo/img_doctorimage.png')}
               >
                 {renderTopIcons()}
+                <View style={{ height: 100 }} />
                 <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               </ImageBackground>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
@@ -1018,95 +987,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             containerStyle={{ marginTop: 30, marginBottom: 48 }}
             navigation={props.navigation}
           />
-          {/* <Image
-            source={require('@aph/mobile-patients/src/images/doctor/doctor.png')}
-            style={{
-              right: 20,
-              top: Platform.OS === 'ios' ? 187 : 197,
-              position: 'absolute',
-              zIndex: 2,
-            }}
-          />
-          <View style={{ top: Platform.OS === 'ios' ? 180 : 190, position: 'absolute', zIndex: 3 }}>
-            <Button
-              title={string.home.consult_doctor}
-              style={styles.buttonStyles}
-              onPress={() => {
-                CommonLogEvent(AppRoutes.ConsultRoom, 'symptom checker  clicked');
-                props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
-              }}
-            /> 
-            </View> */}
-          {/* </View>
-              </View>
-              <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
-            </View>
-          </View>
-          <View>
-            {arrayTest.map((serviceTitle, i) => (
-              <View key={i} style={{}}>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  key={i}
-                  onPress={() => {
-                    if (i === 0) {
-                      CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
-                      props.navigation.navigate(AppRoutes.DoctorSearch);
-                    } else if (i == 1) {
-                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchMedicineScene_clicked');
-                      // props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                      props.navigation.navigate('MEDICINES', { focusSearch: true });
-                    } else if (i == 2) {
-                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchTestScene_clicked');
-                      // props.navigation.navigate(AppRoutes.SearchTestScene);
-                      props.navigation.navigate('TESTS', { focusSearch: true });
-                    }
-                  }}
-                >
-                  <View
-                    style={{
-                      ...theme.viewStyles.cardViewStyle,
-                      ...theme.viewStyles.shadowStyle,
-                      padding: 16,
-                      marginHorizontal: 20,
-                      backgroundColor: theme.colors.CARD_BG,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      // height: 104,
-                      marginTop: i === 0 ? 0 : 8,
-                      marginBottom: arrayTest.length === i + 1 ? 16 : 8,
-                    }}
-                    key={i}
-                  >
-                    <View style={{ width: width - 144, justifyContent: 'space-between' }}>
-                      <Text
-                        style={{
-                          color: '#02475b',
-                          lineHeight: 24,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(14),
-                          paddingRight: 16,
-                        }}
-                      >
-                        {serviceTitle.title}
-                      </Text>
-                      <Text
-                        style={{
-                          marginTop: 8,
-                          textAlign: 'left',
-                          ...theme.viewStyles.yellowTextStyle,
-                        }}
-                      >
-                        {serviceTitle.descripiton}
-                      </Text>
-                    </View>
-                    <Image style={{ height: 72, width: 72 }} source={serviceTitle.image} />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            ))} */}
-          {/* </View> */}
-          {/* {renderStarDoctors()} */}
         </ScrollView>
       </SafeAreaView>
       {renderBottomTabBar()}
@@ -1130,27 +1010,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
-      {/* <BottomPopUp
-        title={string.common.greatPopup}
-        description={
-          'Your appointment with Dr. Jayanth has been scheduled for — 18th May, Monday, 12:00 pm'
-        }
-      >
-        <View style={{ height: 60, alignItems: 'flex-end' }}>
-          <TouchableOpacity style={styles.gotItStyles} onPress={() => {}}>
-            <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
-          </TouchableOpacity>
-        </View>
-      </BottomPopUp> */}
       {showSpinner && <Spinner />}
-      {/* {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )} */}
       <NotificationListener navigation={props.navigation} />
     </View>
   );
