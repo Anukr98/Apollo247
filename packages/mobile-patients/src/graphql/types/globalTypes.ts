@@ -184,10 +184,13 @@ export enum MEDICINE_UNIT {
 }
 
 export enum MedicalRecordType {
+  CONSULTATION = "CONSULTATION",
   EHR = "EHR",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
+  PRESCRIPTION = "PRESCRIPTION",
+  TEST_REPORT = "TEST_REPORT",
 }
 
 export enum MedicalTestUnit {
@@ -567,6 +570,7 @@ export interface PrescriptionMedicineInput {
   prescriptionImageUrl: string;
   prismPrescriptionFileId: string;
   appointmentId?: string | null;
+  isEprescription?: number | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
 }
 

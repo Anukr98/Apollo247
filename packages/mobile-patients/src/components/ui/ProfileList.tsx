@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
 
 export interface ProfileListProps {
   selectedProfile?: GetCurrentPatients_getCurrentPatients_patients;
-  setDisplayAddProfile: (args0: boolean) => void;
+  setDisplayAddProfile?: (args0: boolean) => void;
   saveUserChange: boolean;
   defaultText?: string;
   childView?: Element;
@@ -158,20 +158,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           variables: { patientId: key },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            console.log(addressList, 'addresslidt');
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          console.log(addressList, 'addresslidt');
 
-            shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
-            diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
-            shopCart.setAddresses && shopCart.setAddresses(addressList!);
-            diagCart.setAddresses && diagCart.setAddresses(addressList!);
-          }
-        )
+          shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
+          diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
+          shopCart.setAddresses && shopCart.setAddresses(addressList!);
+          diagCart.setAddresses && diagCart.setAddresses(addressList!);
+        })
         .catch((e) => {})
         .finally(() => {
           unsetloaderDisplay ? null : setLoading && setLoading(false);
