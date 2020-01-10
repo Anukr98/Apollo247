@@ -431,7 +431,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           // consultations
           selectedTab === tabs[0].title
             ? consultations.filter((item) =>
-                moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()).add(15,'minutes'))
+                moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
               )
             : consultations.filter((item) =>
                 moment(item.appointmentDateTime).isBefore(moment(new Date()))
