@@ -234,7 +234,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const onScrolling = (offSet: number) => {
     if (offSet < 400) {
       const bottomOffset = 100 - offSet;
-      console.log('offset', bottomOffset);
       setBottomOffset(bottomOffset < 0 ? bottomOffset : 0);
     }
   };
@@ -343,7 +342,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           //     )
           //   }
         />
-        <ScrollView bounces={false} onScroll={(i) => onScrolling(i.nativeEvent.contentOffset.y)}>
+        <ScrollView
+          bounces={false}
+          onScroll={(i) => onScrolling(i.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={1}
+        >
           {renderOrders()}
           {renderNoOrders()}
           {renderError()}
