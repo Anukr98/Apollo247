@@ -1662,7 +1662,7 @@ export const FavouriteMedicines: React.FC = () => {
                         </Scrollbars>
                       )}
                     />
-                    {medicine.length > 2 && !loadingStatus && (
+                    {medicine.trim().length > 2 && !loadingStatus && (
                       <div>
                         <span>
                           <AphButton
