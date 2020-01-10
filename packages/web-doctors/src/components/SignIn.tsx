@@ -314,7 +314,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
               }}
               onKeyPress={(e) => {
                 if (otp.join('').length === numOtpDigits && e.key == 'Enter') {
-                  verifyOtp(otp.join(''));
+                  verifyOtp(otp.join(''), mobileNumberWithPrefix);
                   setSubmitCount(submitCount + 1);
                 }
               }}
@@ -390,8 +390,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         <Fab
           color="primary"
           onClick={() => {
-            alert('OTP');
-            verifyOtp(otp.join('')).then(() => setDisplayOtpInput(true));
+            verifyOtp(otp.join(''), mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
             // verifyOtp(otp.join(''));
             // setSubmitCount(submitCount + 1);
           }}

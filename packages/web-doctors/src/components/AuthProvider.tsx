@@ -11,7 +11,7 @@ import {
   LOGIN,
   VERIFY_LOGIN_OTP,
 } from 'graphql/profiles';
-import { LoggedInUserType, LOGIN_TYPE, OtpVerificationInput } from 'graphql/types/globalTypes';
+import { LoggedInUserType, LOGIN_TYPE } from 'graphql/types/globalTypes';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import {
@@ -44,7 +44,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   isSendingOtp: boolean;
 
   //verifyOtp: ((otp: string) => void) | null;
-  verifyOtp: ((otp: string) => Promise<unknown>) | null;
+  verifyOtp: ((otp: string, phone: string) => Promise<unknown>) | null;
   verifyOtpError: boolean;
   isVerifyingOtp: boolean;
 
@@ -197,12 +197,12 @@ export const AuthProvider: React.FC = (props) => {
       setIsSendingOtp(false);
     });
   };
-  const otpCheckApiCall = async (otp: string) => {
+  const otpCheckApiCall = async (otp: string, phone: string) => {
     const [verifyLoginOtpResult, verifyLoginOtpError] = await wait(
       apolloClient.mutate<verifyLoginOtp, verifyLoginOtpVariables>({
         variables: {
           otpVerificationInput: {
-            mobileNumber: '8686949657',
+            mobileNumber: phone,
             otp: otp,
             loginType: LOGIN_TYPE.DOCTOR,
           },
@@ -217,34 +217,32 @@ export const AuthProvider: React.FC = (props) => {
       verifyLoginOtpResult &&
       verifyLoginOtpResult.data &&
       verifyLoginOtpResult.data.verifyLoginOtp &&
-      verifyLoginOtpResult.data.verifyLoginOtp.status
+      verifyLoginOtpResult.data.verifyLoginOtp.status &&
+      verifyLoginOtpResult.data.verifyLoginOtp.authToken
     ) {
       //setSendOtpError(false);
-      return true;
+      return verifyLoginOtpResult.data.verifyLoginOtp.authToken;
     } else {
       return false;
     }
   };
-  const verifyOtp = (otp: string) => {
+  const verifyOtp = (otp: string, phone: string) => {
     return new Promise((resolve, reject) => {
       setIsVerifyingOtp(true);
-      otpCheckApiCall(otp).then((res) => {
+      otpCheckApiCall(otp, phone).then((res) => {
         if (!res) {
-          console.log(111111111);
-          TrackJS.track(`otpError`);
-          //setSendOtpError(true);
+          TrackJS.track(`phone:${phone} otp:${otp} otp-verification-error`);
           setVerifyOtpError(true);
         } else {
-          console.log(222222222);
           setVerifyOtpError(false);
+          console.log(res);
+          app.auth().signInWithCustomToken(res);
         }
         setIsVerifyingOtp(false);
-        //console.log(res);
         resolve();
       });
     }).finally(() => {
-      TrackJS.track(`finally-block-otp-Error`);
-      setSendOtpError(true);
+      TrackJS.track(`phone:${phone} otp:${otp} finally-block-otp-Error`);
       setVerifyOtpError(true);
       //setIsSendingOtp(false);
     });
@@ -266,12 +264,15 @@ export const AuthProvider: React.FC = (props) => {
       .then(() => window.location.replace('/'));
 
   useEffect(() => {
+    console.log('useEffect getFirebaseToken');
     getFirebaseToken();
   }, []);
 
   const getFirebaseToken = () => {
+    console.log('getFirebaseToken111111111111');
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
+        console.log('getFirebaseToken22222222');
         const [jwt, jwtError] = await wait(user.getIdToken());
         if (jwtError || !jwt) {
           if (jwtError) console.error(jwtError);
