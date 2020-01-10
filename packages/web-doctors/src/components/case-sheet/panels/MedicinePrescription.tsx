@@ -29,7 +29,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -327,7 +327,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
-    daysInWeek:{
+    daysInWeek: {
       margin: '0 0 10px 0 !important',
     },
     daysOfWeek: {
@@ -457,7 +457,7 @@ const useStyles = makeStyles((theme: Theme) =>
       '& div': {
         '&:focus': {
           boxShadow: '0 8px 6px -6px rgba(128, 128, 128, 0.3)',
-          transition: 'all 0.2s',          
+          transition: 'all 0.2s',
         },
       },
     },
@@ -1879,10 +1879,7 @@ export const MedicinePrescription: React.FC = () => {
                             </AphSelect>
                           </div>
                         </Grid>
-                        <Grid
-                          item
-                          xs={medicineForm === 'OTHERS' ? 12 : 6}
-                        >
+                        <Grid item xs={medicineForm === 'OTHERS' ? 12 : 6}>
                           {medicineForm !== 'OTHERS' && <h6>&nbsp;</h6>}
                           <div className={classes.unitsSelect}>
                             <AphSelect
@@ -1934,7 +1931,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </Grid>
                         <Grid item lg={6} md={6} xs={6}>
-                        <h6>&nbsp;</h6>
+                          <h6>&nbsp;</h6>
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               style={{ paddingTop: 3 }}
