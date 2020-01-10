@@ -642,6 +642,15 @@ export const LOGIN = gql`
     }
   }
 `;
+export const VERIFY_LOGIN_OTP = gql`
+  query verifyLoginOtp($otpVerificationInput: OtpVerificationInput) {
+    verifyLoginOtp(otpVerificationInput: $otpVerificationInput) {
+      status
+      authToken
+      isBlocked
+    }
+  }
+`;
 export const GET_CASESHEET = gql`
   query GetCaseSheet($appointmentId: String!) {
     getCaseSheet(appointmentId: $appointmentId) {

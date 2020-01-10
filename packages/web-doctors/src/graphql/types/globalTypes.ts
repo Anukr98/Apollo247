@@ -301,6 +301,12 @@ export interface OtherInstructionsInput {
   instruction?: string | null;
 }
 
+export interface OtpVerificationInput {
+  mobileNumber: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
+}
+
 export interface PatientFamilyHistoryInput {
   patientId: string;
   description: string;

@@ -390,8 +390,10 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         <Fab
           color="primary"
           onClick={() => {
-            verifyOtp(otp.join(''));
-            setSubmitCount(submitCount + 1);
+            alert('OTP');
+            verifyOtp(otp.join('')).then(() => setDisplayOtpInput(true));
+            // verifyOtp(otp.join(''));
+            // setSubmitCount(submitCount + 1);
           }}
           disabled={
             isSendingOtp || isVerifyingOtp || otp.join('').length !== numOtpDigits || showTimer
