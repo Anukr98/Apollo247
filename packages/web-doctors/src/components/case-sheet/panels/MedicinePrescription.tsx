@@ -228,7 +228,7 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -2,
+      top: -9,
       '& img': {
         verticalAlign: 'middle',
       },
@@ -242,7 +242,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
     },
     dialogActions: {
-      padding: 20,
+      padding: '16px 20px',
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
       textAlign: 'right',
@@ -283,10 +283,8 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 14,
         fontWeight: 500,
         color: 'rgba(2, 71, 91, 0.6)',
-        marginBottom: 5,
-        marginTop: 5,
+        margin: 0,
         lineHeight: 'normal',
-        minHeight: 18,
       },
     },
     popupHeading: {
@@ -329,11 +327,17 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+    daysInWeek:{
+      margin: '0 0 10px 0 !important',
+    },
     daysOfWeek: {
       '& button:last-child': {
         border: '1px solid #e50000 !important',
         color: '#e50000',
       },
+    },
+    instructionText: {
+      margin: '0 0 8px 0 !important',
     },
     tabletcontent: {
       margin: '0 10px',
@@ -1512,7 +1516,7 @@ export const MedicinePrescription: React.FC = () => {
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       {medicineForm === 'OTHERS' && (
-                        <Grid item lg={6} md={6} xs={12}>
+                        <Grid item lg={6} md={6} xs={6}>
                           <h6>Take</h6>
                           <AphTextField
                             autoFocus
@@ -1534,7 +1538,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </Grid>
                       )}
-                      <Grid item lg={6} md={6} xs={12}>
+                      <Grid item lg={6} md={6} xs={6}>
                         <h6>{medicineForm !== 'OTHERS' ? 'Apply' : ''}</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
@@ -1565,9 +1569,8 @@ export const MedicinePrescription: React.FC = () => {
                         item
                         lg={medicineForm === 'OTHERS' ? 12 : 6}
                         md={medicineForm === 'OTHERS' ? 12 : 6}
-                        xs={12}
+                        xs={6}
                       >
-                        <h6>&nbsp;</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
@@ -1593,7 +1596,7 @@ export const MedicinePrescription: React.FC = () => {
                           </AphSelect>
                         </div>
                       </Grid>
-                      <Grid item lg={6} md={6} xs={12}>
+                      <Grid item lg={6} md={6} xs={6}>
                         <h6>For</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
@@ -1616,7 +1619,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </div>
                       </Grid>
-                      <Grid item lg={6} md={6} xs={12}>
+                      <Grid item lg={6} md={6} xs={6}>
                         <h6>&nbsp;</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
@@ -1672,7 +1675,7 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Instructions/Notes</h6>
+                        <h6 className={classes.instructionText}>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             multiline
@@ -1826,7 +1829,7 @@ export const MedicinePrescription: React.FC = () => {
                     <div className={classes.dialogContent}>
                       <Grid container spacing={2}>
                         {medicineForm === 'OTHERS' && (
-                          <Grid item lg={6} md={6} xs={12}>
+                          <Grid item lg={6} md={6} xs={6}>
                             <h6>Take</h6>
                             <AphTextField
                               autoFocus
@@ -1848,8 +1851,9 @@ export const MedicinePrescription: React.FC = () => {
                             )}
                           </Grid>
                         )}
-                        <Grid item lg={6} md={6} xs={12}>
+                        <Grid item lg={6} md={6} xs={6}>
                           <h6>{medicineForm !== 'OTHERS' ? 'Apply' : ''}</h6>
+                          {medicineForm == 'OTHERS' && <h6>&nbsp;</h6>}
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               style={{ paddingTop: 3 }}
@@ -1877,11 +1881,9 @@ export const MedicinePrescription: React.FC = () => {
                         </Grid>
                         <Grid
                           item
-                          lg={medicineForm === 'OTHERS' ? 12 : 6}
-                          md={medicineForm === 'OTHERS' ? 12 : 6}
-                          xs={12}
+                          xs={medicineForm === 'OTHERS' ? 12 : 6}
                         >
-                          <h6>&nbsp;</h6>
+                          {medicineForm !== 'OTHERS' && <h6>&nbsp;</h6>}
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               style={{ paddingTop: 3 }}
@@ -1908,7 +1910,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </Grid>
 
-                        <Grid item lg={6} md={6} xs={12}>
+                        <Grid item lg={6} md={6} xs={6}>
                           <h6>For</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
@@ -1931,8 +1933,8 @@ export const MedicinePrescription: React.FC = () => {
                             )}
                           </div>
                         </Grid>
-                        <Grid item lg={6} md={6} xs={12}>
-                          <h6>&nbsp;</h6>
+                        <Grid item lg={6} md={6} xs={6}>
+                        <h6>&nbsp;</h6>
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               style={{ paddingTop: 3 }}
@@ -1959,7 +1961,6 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </Grid>
                         <Grid item lg={6} md={6} xs={12}>
-                          <h6>&nbsp;</h6>
                           <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                           {errorState.tobeTakenErr && (
                             <FormHelperText
@@ -1972,7 +1973,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </Grid>
                         <Grid item lg={12} xs={12}>
-                          <h6>In the</h6>
+                          <h6 className={classes.daysInWeek}>In the</h6>
                           <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
                             {daySlotsHtml}
                           </div>
@@ -1987,7 +1988,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </Grid>
                         <Grid item lg={12} xs={12}>
-                          <h6>Instructions/Notes</h6>
+                          <h6 className={classes.instructionText}>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
                               multiline
