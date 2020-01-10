@@ -14,6 +14,8 @@ import {
   ShoppingCartFocused,
   TestsIconFocused,
   TestsIcon,
+  MedicineIcon,
+  MedicineIconWhite,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -23,7 +25,7 @@ import { Tests } from '@aph/mobile-patients/src/components/Tests/Tests';
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoom />,
   'HEALTH RECORDS': <MyHealth />,
-  MEDICINES: <ShoppingCart />,
+  MEDICINES: <MedicineIcon />,
   TESTS: <TestsIcon />,
   'MY ACCOUNT': <Person />,
 };
@@ -31,7 +33,7 @@ const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
 const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoomFocused />,
   'HEALTH RECORDS': <MyHealthFocused />,
-  MEDICINES: <ShoppingCartFocused />,
+  MEDICINES: <MedicineIconWhite />,
   TESTS: <TestsIconFocused />,
   'MY ACCOUNT': <PersonFocused />,
 };

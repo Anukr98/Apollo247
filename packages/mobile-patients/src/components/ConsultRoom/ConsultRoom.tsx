@@ -229,7 +229,7 @@ const tabBarOptions: TabBarOptions[] = [
   {
     id: 3,
     title: 'MEDICINES',
-    image: <ShoppingCart />,
+    image: <MedicineIcon />,
   },
   {
     id: 4,
@@ -352,6 +352,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
             );
           })
+          .catch((e) => {})
           .finally(() => setAppointmentLoading(false));
       }
     }
