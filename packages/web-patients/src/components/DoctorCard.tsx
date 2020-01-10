@@ -225,7 +225,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           },
         }}
         onCompleted={(data) => {
-          // window.location.href = clientRoutes.doctorDetails(doctorId);
           setIsPopoverOpen(true)
         }}
         onError={(error) => {
