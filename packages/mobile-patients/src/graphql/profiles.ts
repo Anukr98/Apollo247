@@ -273,6 +273,14 @@ export const GET_AVAILABLE_SLOTS = gql`
   }
 `;
 
+export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
+  query getPatientFutureAppointmentCount($patientId: String) {
+    getPatientFutureAppointmentCount(patientId: $patientId) {
+      consultsCount
+    }
+  }
+`;
+
 export const GET_PATIENT_APPOINTMENTS = gql`
   query getPatinetAppointments($patientAppointmentsInput: PatientAppointmentsInput!) {
     getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {

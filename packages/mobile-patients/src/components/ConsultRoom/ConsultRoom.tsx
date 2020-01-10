@@ -31,14 +31,17 @@ import {
   DeviceHelper,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  SAVE_DEVICE_TOKEN,
+  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -78,6 +81,7 @@ import { useShoppingCart } from '../ShoppingCartProvider';
 import { getAppointments } from '../../helpers/clientCalls';
 import moment from 'moment';
 import { apiRoutes } from '../../helpers/apiRoutes';
+import { getPatientFutureAppointmentCount } from '../../graphql/types/getPatientFutureAppointmentCount';
 
 const { width, height } = Dimensions.get('window');
 
@@ -246,7 +250,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [selectedProfile, setSelectedProfile] = useState<string>('');
 
   const { cartItems } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
@@ -332,17 +336,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (!currentPatient) {
       getPatientApiCall();
     } else {
-      setAppointmentLoading(true);
-      getAppointments(client, currentPatient.id)
-        .then((data: any) => {
-          const appointments = data.patinetAppointments.filter((item: any) =>
-            moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
-          );
-          setCurrentAppointments(appointments.length);
-        })
-        .finally(() => {
-          setAppointmentLoading(false);
-        });
+      if (selectedProfile !== currentPatient.id) {
+        setAppointmentLoading(true);
+        setSelectedProfile(currentPatient.id);
+        client
+          .query<getPatientFutureAppointmentCount>({
+            query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+            fetchPolicy: 'no-cache',
+            variables: {
+              patientId: currentPatient.id,
+            },
+          })
+          .then((data) => {
+            setCurrentAppointments(
+              (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
+            );
+          })
+          .finally(() => setAppointmentLoading(false));
+      }
     }
     AppState.addEventListener('change', _handleAppStateChange);
   }, [currentPatient, analytics, props.navigation.state.params]);
@@ -800,7 +811,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </View>
           </View>
         }
-        setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+        // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
         unsetloaderDisplay={true}
       />
     );
