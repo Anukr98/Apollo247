@@ -696,7 +696,7 @@ export async function sendReminderNotification(
         body: notificationBody,
       },
       data: {
-        type: 'Reminder_Appointment_Casesheet_15',
+        type: 'Reschedule-Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
