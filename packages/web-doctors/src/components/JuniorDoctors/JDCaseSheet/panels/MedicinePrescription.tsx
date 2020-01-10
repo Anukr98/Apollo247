@@ -1154,9 +1154,11 @@ export const MedicinePrescription: React.FC = () => {
   ) => {
     setLoading(false);
     setMedicine(newValue);
-    if (newValue.length > 2) {
+
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchMedicines(newValue);
     }
+
     setState({
       ...state,
       [name]: newValue,
@@ -1276,15 +1278,14 @@ export const MedicinePrescription: React.FC = () => {
             ) : (
               'ADD MEDICINE'
             )}
-            <AphButton className={classes.dialogClose}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  setShowDosage(false);
-                }}
-              />
+            <AphButton
+              className={classes.dialogClose}
+              onClick={() => {
+                setIsDialogOpen(false);
+                setShowDosage(false);
+              }}
+            >
+              <img src={require('images/ic_cross.svg')} alt="" />
             </AphButton>
           </AphDialogTitle>
           <div className={classes.shadowHide}>

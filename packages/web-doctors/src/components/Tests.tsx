@@ -684,7 +684,7 @@ export const Tests: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    if (newValue && newValue.length > 2) {
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchDignostic(newValue);
     }
     setOtherDiagnostic(newValue);
@@ -960,6 +960,7 @@ export const Tests: React.FC = () => {
                       onChange: handleChange('single'),
                       onKeyPress: (e) => {
                         if (e.which == 13 || e.keyCode == 13) {
+                          setIsSmartTestsDialogOpen(false);
                           if (suggestions.length === 1) {
                             if (selectedValues && selectedValues.length > 0) {
                               selectedValues.push(suggestions[0]);

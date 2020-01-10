@@ -292,6 +292,9 @@ export class Doctor extends BaseEntity {
   @Validate(NameValidator)
   lastName: string;
 
+  @OneToMany((type) => DoctorLoginSessionHistory, (loginSession) => loginSession.doctor)
+  loginSessionHistory: DoctorLoginSessionHistory[];
+
   @Column({ nullable: true })
   middleName: string;
 
@@ -340,6 +343,9 @@ export class Doctor extends BaseEntity {
 
   @Column({ nullable: true })
   state: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  statusChangeTime: Date;
 
   @Column({ nullable: true, type: 'text' })
   streetLine1: string;
@@ -851,8 +857,7 @@ export class DoctorsFavouriteAdvice extends BaseEntity {
 }
 //doctors favoutite advice ends
 
-// admin_doctor_mapper starts
-
+//admin_doctor_mapper starts
 @Entity()
 export class AdminDoctorMapper extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -870,4 +875,33 @@ export class AdminDoctorMapper extends BaseEntity {
   @ManyToOne((type) => AdminUsers, (adminuser) => adminuser.admindoctormapper)
   adminuser: AdminUsers;
 }
-// admin_doctors ends
+//admin_doctors ends
+
+//Login session starts
+@Entity()
+export class DoctorLoginSessionHistory extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @Column()
+  onlineStatus: DOCTOR_ONLINE_STATUS;
+
+  @ManyToOne((type) => Doctor, (doctor) => doctor.loginSessionHistory)
+  doctor: Doctor;
+
+  @Column()
+  sessionDate: Date;
+
+  @Column({ default: () => 0, type: 'float' })
+  onlineTimeInSeconds: number;
+
+  @Column({ default: () => 0, type: 'float' })
+  offlineTimeInSeconds: number;
+}
+//Login session ends

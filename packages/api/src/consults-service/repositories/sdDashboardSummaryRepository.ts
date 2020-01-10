@@ -185,7 +185,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     let totalHours = 0;
     if (totalTime.length > 0) {
       totalTime.map((apptTime) => {
-        totalHours += apptTime.callDuration;
+        totalHours =
+          parseFloat(totalHours.toString()) + parseFloat(apptTime.callDuration.toString());
       });
     }
     return totalHours;

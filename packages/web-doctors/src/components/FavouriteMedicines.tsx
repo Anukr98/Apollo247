@@ -99,8 +99,9 @@ function renderSuggestion(
               fontWeight: part.highlight ? 500 : 400,
               whiteSpace: 'pre',
             }}
+            title={part.text}
           >
-            {part.text}
+            {part.text.length > 45 ? part.text.substring(0, 44) + '...' : part.text}
           </span>
         ))}
       </div>
@@ -1448,9 +1449,10 @@ export const FavouriteMedicines: React.FC = () => {
   ) => {
     setMedicine(newValue);
     setLoading(false);
-    if (newValue.length > 2) {
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchMedicines(newValue);
     }
+
     setState({
       ...state,
       [name]: newValue,
@@ -1599,20 +1601,19 @@ export const FavouriteMedicines: React.FC = () => {
               <span className={classes.headingName}>
                 {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
               </span>
-              <Button className={classes.cross}>
-                <img
-                  src={require('images/ic_cross.svg')}
-                  alt=""
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    setShowDosage(false);
-                    setTabletsCount(1);
-                    setMedicineUnit(MEDICINE_UNIT.OTHERS);
-                    setConsumptionDuration('');
-                    setMedicineInstruction('');
-                    resetOptions();
-                  }}
-                />
+              <Button
+                className={classes.cross}
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setShowDosage(false);
+                  setTabletsCount(1);
+                  setMedicineUnit(MEDICINE_UNIT.OTHERS);
+                  setConsumptionDuration('');
+                  setMedicineInstruction('');
+                  resetOptions();
+                }}
+              >
+                <img src={require('images/ic_cross.svg')} alt="" />
               </Button>
             </AphDialogTitle>
             <div className={classes.shadowHide}>
