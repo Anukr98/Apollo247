@@ -1878,6 +1878,59 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Start Consult
                 </Button>
               ))}
+            {props.appointmentStatus !== STATUS.COMPLETED && (
+              <Button
+                className={classes.backButton}
+                onClick={() => {
+                  setLoading(true);
+                  const rescheduleCountByDoctor =
+                    (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
+                  if (rescheduleCountByDoctor >= 3) {
+                    setIsCancelDialogOpen(true);
+                  } else {
+                    setIsCancelDialogOpen(false);
+                    setIsPopoverOpen(true);
+                    getNextAvailabityMutation()
+                      .then(({ data }: any) => {
+                        try {
+                          if (
+                            data &&
+                            data.getDoctorNextAvailableSlot &&
+                            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+                            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                          ) {
+                            setDoctorNextAvailableSlot(
+                              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                .availableSlot || ''
+                            );
+                            setDateSelected(
+                              moment(
+                                data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                  .availableSlot
+                              ).format('YYYY-MM-DD')
+                            );
+
+                            setTimeSelected(
+                              moment(
+                                data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                  .availableSlot
+                              ).format('HH:mm')
+                            );
+                          }
+                        } catch (error) {
+                          setDoctorNextAvailableSlot('');
+                          alert(error);
+                        } finally {
+                          setLoading(false);
+                        }
+                      })
+                      .catch((e) => console.log(e));
+                  }
+                }}
+              >
+                Reschedule
+              </Button>
+            )}
             {!showCallMoreBtns && (
               <Button
                 className={classes.consultIcon}
@@ -2004,69 +2057,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       }}
                     >
                       End or Cancel Consult
-                    </li>
-                  )}
-                  {(props.startAppointment ||
-                    !(
-                      props.isAppointmentEnded ||
-                      (appointmentInfo!.appointmentState !== 'NEW' &&
-                        appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                        appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                      (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                        appointmentInfo!.status !== STATUS.PENDING)
-                    ) ||
-                    (!props.startAppointment && appointmentInfo!.status === STATUS.PENDING)) && (
-                    <li
-                      onClick={() => {
-                        setLoading(true);
-
-                        handleCloseThreeDots();
-                        const rescheduleCountByDoctor =
-                          (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
-                        if (rescheduleCountByDoctor >= 3) {
-                          setIsCancelDialogOpen(true);
-                        } else {
-                          setIsCancelDialogOpen(false);
-                          setIsPopoverOpen(true);
-                          getNextAvailabityMutation()
-                            .then(({ data }: any) => {
-                              try {
-                                if (
-                                  data &&
-                                  data.getDoctorNextAvailableSlot &&
-                                  data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-                                  data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                ) {
-                                  setDoctorNextAvailableSlot(
-                                    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                      .availableSlot || ''
-                                  );
-                                  setDateSelected(
-                                    moment(
-                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                        .availableSlot
-                                    ).format('YYYY-MM-DD')
-                                  );
-
-                                  setTimeSelected(
-                                    moment(
-                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                        .availableSlot
-                                    ).format('HH:mm')
-                                  );
-                                }
-                              } catch (error) {
-                                setDoctorNextAvailableSlot('');
-                                alert(error);
-                              } finally {
-                                setLoading(false);
-                              }
-                            })
-                            .catch((e) => console.log(e));
-                        }
-                      }}
-                    >
-                      Reschedule Consult
                     </li>
                   )}
                 </ul>
