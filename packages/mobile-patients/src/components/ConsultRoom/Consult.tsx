@@ -917,7 +917,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       </SafeAreaView>
       {showSchdulesView && (
         <BottomPopUp
-          title={'Hi! :)'}
+          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
           description={`Your appointment with Dr. ${props.navigation.getParam(
             'DoctorName'
           )} \nhas been rescheduled for — ${newAppointmentTime}\n\n${
@@ -945,7 +945,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )}
       {transferfollowup && (
         <BottomPopUp
-          title={'Hi! :)'}
+          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
           description={`Your appointment with ${props.navigation.getParam('TransferData') &&
             props.navigation.getParam('TransferData').doctorName} has been transferred to —`}
         >
@@ -1032,7 +1032,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )}
       {followupdone && (
         <BottomPopUp
-          title={'Hi! :)'}
+          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
           description={`Your appointment with ${props.navigation.getParam('FollowupData') &&
             props.navigation.getParam('FollowupData').firstName} has been followup to —`}
         >
