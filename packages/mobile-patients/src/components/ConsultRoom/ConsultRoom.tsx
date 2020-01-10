@@ -20,6 +20,7 @@ import {
   TestsCartIcon,
   TestsCartMedicineIcon,
   TestsIcon,
+  MedicineIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
