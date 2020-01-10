@@ -16,14 +16,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    // justifyContent: 'space-between',
+    justifyContent: 'space-between',
   },
   textInput: {
-    flex: 1,
     height: 50,
-    // width: 50,
+    width: 50,
     borderBottomWidth: 4,
-    // margin: 5,
+    margin: 5,
     textAlign: 'center',
     fontSize: 22,
     fontWeight: '500',

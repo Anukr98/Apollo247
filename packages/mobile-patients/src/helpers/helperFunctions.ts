@@ -26,7 +26,7 @@ const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
 
 export const aphConsole: AphConsole = {
   error: (message?: any, ...optionalParams: any[]) => {
-    isDebugOn && console.log(message, ...optionalParams);
+    isDebugOn && console.error(message, ...optionalParams);
   },
   log: (message?: any, ...optionalParams: any[]) => {
     isDebugOn && console.log(message, ...optionalParams);

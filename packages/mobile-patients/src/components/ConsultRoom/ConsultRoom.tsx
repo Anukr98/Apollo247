@@ -351,9 +351,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCurrentAppointments(
               (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
             );
-            setAppointmentLoading(false);
-          });
-        // .finally(() => setAppointmentLoading(false));
+          })
+          .finally(() => setAppointmentLoading(false));
       }
     }
     AppState.addEventListener('change', _handleAppStateChange);
@@ -563,7 +562,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => console.log('An error occurred', err));
+              ).catch((err) => console.error('An error occurred', err));
             }}
           />
         </View>
