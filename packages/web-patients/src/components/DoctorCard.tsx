@@ -225,7 +225,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           },
         }}
         onCompleted={(data) => {
-          setIsPopoverOpen(true)
+          setIsPopoverOpen(true);
         }}
         onError={(error) => {
           console.log(error);
@@ -271,13 +271,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               </div>
             </div>
             <div className={classes.bottomAction}>
-              <AphButton fullWidth color="primary" className={classes.button} >
+              <AphButton fullWidth color="primary" className={classes.button}>
                 {differenceInMinutes >= 0 && differenceInMinutes <= 15
                   ? 'CONSULT NOW'
                   : 'BOOK APPOINTMENT'}
               </AphButton>
             </div>
-
           </div>
         )}
       </Mutation>

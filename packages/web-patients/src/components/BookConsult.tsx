@@ -103,15 +103,15 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
         ? true
         : false;
 
     const isPayrollDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
         ? true
         : false;
 
@@ -173,9 +173,8 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
           </TabContainer>
         )}
       </Paper>
-    )
+    );
   } else {
-    return <LinearProgress />
+    return <LinearProgress />;
   }
-
 };
