@@ -302,7 +302,7 @@ export interface OtherInstructionsInput {
 }
 
 export interface OtpVerificationInput {
-  mobileNumber: string;
+  id: string;
   otp: string;
   loginType: LOGIN_TYPE;
 }

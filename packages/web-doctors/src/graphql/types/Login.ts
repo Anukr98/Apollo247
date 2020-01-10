@@ -12,6 +12,7 @@ export interface Login_login {
   __typename: "LoginResult";
   status: boolean;
   message: string | null;
+  loginId: string | null;
 }
 
 export interface Login {

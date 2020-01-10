@@ -639,6 +639,7 @@ export const LOGIN = gql`
     login(mobileNumber: $mobileNumber, loginType: $loginType) {
       status
       message
+      loginId
     }
   }
 `;

@@ -44,7 +44,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   isSendingOtp: boolean;
 
   //verifyOtp: ((otp: string) => void) | null;
-  verifyOtp: ((otp: string, phone: string) => Promise<unknown>) | null;
+  verifyOtp: ((otp: string, loginId: string) => Promise<unknown>) | null;
   verifyOtpError: boolean;
   isVerifyingOtp: boolean;
 
@@ -173,10 +173,11 @@ export const AuthProvider: React.FC = (props) => {
       loginResult &&
       loginResult.data &&
       loginResult.data.login &&
-      loginResult.data.login.status
+      loginResult.data.login.status &&
+      loginResult.data.login.loginId
     ) {
       setSendOtpError(false);
-      return true;
+      return loginResult.data.login.loginId;
     } else {
       TrackJS.track(`phoneNumber: ${mobileNumber}`);
       TrackJS.track(`phoneAuthError: ${loginError}`);
@@ -190,19 +191,19 @@ export const AuthProvider: React.FC = (props) => {
       setVerifyOtpError(false);
       localStorage.setItem('loggedInMobileNumber', phoneNumber);
       setIsSendingOtp(true);
-      loginApiCall(phoneNumber).then((res) => {
-        resolve();
+      loginApiCall(phoneNumber).then((loginId) => {
+        resolve(loginId);
       });
     }).finally(() => {
       setIsSendingOtp(false);
     });
   };
-  const otpCheckApiCall = async (otp: string, phone: string) => {
+  const otpCheckApiCall = async (otp: string, loginId: string) => {
     const [verifyLoginOtpResult, verifyLoginOtpError] = await wait(
       apolloClient.mutate<verifyLoginOtp, verifyLoginOtpVariables>({
         variables: {
           otpVerificationInput: {
-            mobileNumber: phone,
+            id: loginId,
             otp: otp,
             loginType: LOGIN_TYPE.DOCTOR,
           },
@@ -226,12 +227,12 @@ export const AuthProvider: React.FC = (props) => {
       return false;
     }
   };
-  const verifyOtp = (otp: string, phone: string) => {
+  const verifyOtp = (otp: string, loginId: string) => {
     return new Promise((resolve, reject) => {
       setIsVerifyingOtp(true);
-      otpCheckApiCall(otp, phone).then((res) => {
+      otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
-          TrackJS.track(`phone:${phone} otp:${otp} otp-verification-error`);
+          TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error`);
           setVerifyOtpError(true);
         } else {
           setVerifyOtpError(false);
@@ -242,7 +243,7 @@ export const AuthProvider: React.FC = (props) => {
         resolve();
       });
     }).finally(() => {
-      TrackJS.track(`phone:${phone} otp:${otp} finally-block-otp-Error`);
+      TrackJS.track(`loginId:${loginId} otp:${otp} finally-block-otp-Error`);
       setVerifyOtpError(true);
       //setIsSendingOtp(false);
     });
