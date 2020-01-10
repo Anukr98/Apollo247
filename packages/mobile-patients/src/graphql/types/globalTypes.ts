@@ -91,6 +91,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
@@ -516,6 +521,12 @@ export interface MedicinePaymentMqInput {
 export interface OrderCancelInput {
   orderNo?: number | null;
   remarksCode?: string | null;
+}
+
+export interface OtpVerificationInput {
+  mobileNumber: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
 }
 
 export interface PatientAddressInput {

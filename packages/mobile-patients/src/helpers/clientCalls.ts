@@ -9,6 +9,8 @@ import {
   GET_APPOINTMENT_DATA,
   DOWNLOAD_DOCUMENT,
   GET_PATIENT_APPOINTMENTS,
+  LOGIN,
+  VERIFY_LOGIN_OTP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
@@ -18,6 +20,7 @@ import {
   REQUEST_ROLES,
   STATUS,
   EndAppointmentSessionInput,
+  LOGIN_TYPE,
 } from '../graphql/types/globalTypes';
 import {
   EndAppointmentSessionVariables,
@@ -30,6 +33,8 @@ import {
 import { downloadDocuments } from '../graphql/types/downloadDocuments';
 import { getPatinetAppointments } from '../graphql/types/getPatinetAppointments';
 import moment from 'moment';
+import { LoginVariables, Login } from '../graphql/types/Login';
+import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -227,6 +232,51 @@ export const getAppointments = (
       })
       .then((data) => {
         res(data.data.getPatinetAppointments);
+      })
+      .catch((e) => {
+        rej(e);
+      });
+  });
+};
+
+export const loginAPI = (client: ApolloClient<object>, mobileNumber: string) => {
+  return new Promise((res, rej) => {
+    const inputData = {
+      mobileNumber: mobileNumber,
+      loginType: LOGIN_TYPE.PATIENT,
+    };
+    client
+      .query<Login, LoginVariables>({
+        query: LOGIN,
+        fetchPolicy: 'no-cache',
+        variables: inputData,
+      })
+      .then((data) => {
+        console.log('logindata', data);
+        res(data.data.login);
+      })
+      .catch((e) => {
+        rej(e);
+      });
+  });
+};
+
+export const verifyOTP = (client: ApolloClient<object>, mobileNumber: string, otp: string) => {
+  return new Promise((res, rej) => {
+    const inputData = {
+      mobileNumber: mobileNumber,
+      loginType: LOGIN_TYPE.PATIENT,
+      otp: otp,
+    };
+    client
+      .query<verifyLoginOtp, verifyLoginOtpVariables>({
+        query: VERIFY_LOGIN_OTP,
+        fetchPolicy: 'no-cache',
+        variables: { otpVerificationInput: inputData },
+      })
+      .then((data) => {
+        console.log('verifyOTPdata', data);
+        res(data.data.verifyLoginOtp);
       })
       .catch((e) => {
         rej(e);

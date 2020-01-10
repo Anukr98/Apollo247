@@ -1815,3 +1815,22 @@ export const AUTOMATED_QUESTIONS = gql`
     }
   }
 `;
+
+export const LOGIN = gql`
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+      status
+      message
+    }
+  }
+`;
+
+export const VERIFY_LOGIN_OTP = gql`
+  query verifyLoginOtp($otpVerificationInput: OtpVerificationInput) {
+    verifyLoginOtp(otpVerificationInput: $otpVerificationInput) {
+      status
+      authToken
+      isBlocked
+    }
+  }
+`;

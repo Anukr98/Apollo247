@@ -1,7 +1,6 @@
 import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-// import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { ApolloClient, ApolloQueryResult } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
@@ -36,10 +35,6 @@ export interface AuthContextProps {
   sendOtpError: boolean;
   isSendingOtp: boolean;
 
-  verifyOtp: ((otp: string) => Promise<unknown>) | null;
-  verifyOtpError: boolean;
-  isVerifyingOtp: boolean;
-
   signInError: boolean;
   isSigningIn: boolean;
   signOut: (() => void) | null;
@@ -56,9 +51,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   sendOtpError: false,
   isSendingOtp: false,
 
-  verifyOtp: null,
-  verifyOtpError: false,
-  isVerifyingOtp: false,
   hasAuthToken: false,
   signInError: false,
   isSigningIn: true,
@@ -86,16 +78,27 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
     }
     return forward(operation);
   });
-  const authLink = setContext((_, { headers }) => ({
-    headers: { ...headers, Authorization: authToken },
+  const authLink = setContext(async (_, { headers }) => ({
+    headers: {
+      ...headers,
+      Authorization: authToken ? authToken : 'Bearer 3d1833da7020e0602165529446587434',
+    },
   }));
-  const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
+  const httpLink = createHttpLink({
+    uri: apiRoutes.graphql(),
+  });
+  console.log(
+    '-------authToken-------',
+    authToken ? authToken : 'Bearer 3d1833da7020e0602165529446587434'
+  );
+
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
-  return new ApolloClient({ link, cache });
+  return new ApolloClient({
+    link,
+    cache,
+  });
 };
-
-let otpVerifier: RNFirebase.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
@@ -112,9 +115,6 @@ export const AuthProvider: React.FC = (props) => {
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
   const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
 
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState<AuthContextProps['isVerifyingOtp']>(false);
-  const [verifyOtpError, setVerifyOtpError] = useState<AuthContextProps['verifyOtpError']>(false);
-
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
 
@@ -122,42 +122,19 @@ export const AuthProvider: React.FC = (props) => {
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
-  const sendOtp = (phoneNumber: string, forceResend: boolean = false) => {
+  const sendOtp = (customToken: string) => {
     return new Promise(async (resolve, reject) => {
       setIsSendingOtp(true);
 
-      const [phoneAuthResult, phoneAuthError] = await wait(
-        auth.signInWithPhoneNumber('+91' + phoneNumber, forceResend)
-      );
+      const [phoneAuthResult, phoneAuthError] = await wait(auth.signInWithCustomToken(customToken));
       setIsSendingOtp(false);
       if (phoneAuthError) {
         setSendOtpError(true);
         reject(phoneAuthError);
         return;
       }
-      otpVerifier = phoneAuthResult;
       setSendOtpError(false);
       resolve(phoneAuthResult);
-    });
-  };
-
-  const verifyOtp = async (otp: string) => {
-    return new Promise(async (resolve, reject) => {
-      if (!otpVerifier) {
-        setSendOtpError(true);
-        reject();
-        return;
-      }
-      setIsVerifyingOtp(true);
-      const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-      setVerifyOtpError(Boolean(otpError || !otpAuthResult));
-      if (otpAuthResult) {
-        // console.log('otpAuthResult', otpAuthResult);
-        resolve(otpAuthResult);
-      } else {
-        reject(otpError);
-      }
-      setIsVerifyingOtp(false);
     });
   };
 
@@ -260,10 +237,6 @@ export const AuthProvider: React.FC = (props) => {
             sendOtp,
             sendOtpError,
             isSendingOtp,
-
-            verifyOtp,
-            verifyOtpError,
-            isVerifyingOtp,
 
             signInError,
             isSigningIn,

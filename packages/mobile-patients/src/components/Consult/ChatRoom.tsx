@@ -3805,6 +3805,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then((data: any) => {
         console.log(data, 'data');
         setLoading(false);
+        AsyncStorage.setItem('showSchduledPopup', 'true');
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,
@@ -3817,6 +3818,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     data.data &&
                     data.data.bookRescheduleAppointment &&
                     data.data.bookRescheduleAppointment.appointmentDetails,
+                  DoctorName:
+                    props.navigation.state.params!.data &&
+                    props.navigation.state.params!.data.doctorInfo &&
+                    props.navigation.state.params!.data.doctorInfo.firstName,
                 },
               }),
             ],
