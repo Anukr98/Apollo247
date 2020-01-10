@@ -294,25 +294,27 @@ export enum WeekDay {
 }
 
 export interface AddMedicalRecordInput {
+  additionalNotes?: string | null;
+  documentURLs?: string | null;
+  issuingDoctor?: string | null;
+  location?: string | null;
+  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+  observations?: string | null;
   patientId: string;
-  testName: string;
-  testDate?: any | null;
+  prismFileIds?: string | null;
   recordType?: MedicalRecordType | null;
   referringDoctor?: string | null;
   sourceName?: string | null;
-  observations?: string | null;
-  additionalNotes?: string | null;
-  documentURLs?: string | null;
-  prismFileIds?: string | null;
-  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+  testDate?: any | null;
+  testName: string;
 }
 
 export interface AddMedicalRecordParametersInput {
-  parameterName?: string | null;
-  unit?: MedicalTestUnit | null;
-  result?: number | null;
-  minimum?: number | null;
   maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: MedicalTestUnit | null;
 }
 
 export interface AppointmentHistoryInput {
