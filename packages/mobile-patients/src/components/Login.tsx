@@ -319,43 +319,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   (error && error.message) || 'The interaction was cancelled by the user.'
                 );
               });
-
-            // sendOtp(phoneNumber)
-            //   .then((confirmResult) => {
-            //     CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-            //     CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
-
-            //     db.ref('ApolloPatients/')
-            //       .child(dbChildKey)
-            //       .update({
-            //         mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-            //       });
-
-            //     console.log('confirmResult login', confirmResult);
-
-            //     props.navigation.navigate(AppRoutes.OTPVerification, {
-            //       otpString,
-            //       phoneNumber: phoneNumber,
-            //       dbChildKey,
-            //     });
-            //   })
-            //   .catch((error: RNFirebase.RnError) => {
-            //     console.log(error, 'error');
-            //     console.log(error.message, 'errormessage');
-
-            //     db.ref('ApolloPatients/')
-            //       .child(dbChildKey)
-            //       .update({
-            //         mobileNumberFailed: error && error.message,
-            //       });
-
-            //     CommonLogEvent('OTP_SEND_FAIL', error.message);
-            //     CommonBugFender('OTP_SEND_FAIL', error);
-            //     Alert.alert(
-            //       'Error',
-            //       (error && error.message) || 'The interaction was cancelled by the user.'
-            //     );
-            //   });
           }
         }
       } else {
