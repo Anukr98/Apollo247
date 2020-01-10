@@ -121,6 +121,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
   const client = useApolloClient();
@@ -276,10 +277,12 @@ export const Login: React.FC<LoginProps> = (props) => {
           } else {
             CommonSetUserBugsnag(phoneNumber);
             AsyncStorage.setItem('phoneNumber', phoneNumber);
+            setShowSpinner(true);
 
             loginAPI(client, phoneNumber)
               .then((confirmResult) => {
                 console.log(confirmResult, 'confirmResult');
+                setShowSpinner(false);
 
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
                 //  CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
@@ -301,6 +304,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               .catch((error: RNFirebase.RnError) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
+                setShowSpinner(false);
 
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
@@ -315,47 +319,11 @@ export const Login: React.FC<LoginProps> = (props) => {
                   (error && error.message) || 'The interaction was cancelled by the user.'
                 );
               });
-
-            // sendOtp(phoneNumber)
-            //   .then((confirmResult) => {
-            //     CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-            //     CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
-
-            //     db.ref('ApolloPatients/')
-            //       .child(dbChildKey)
-            //       .update({
-            //         mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-            //       });
-
-            //     console.log('confirmResult login', confirmResult);
-
-            //     props.navigation.navigate(AppRoutes.OTPVerification, {
-            //       otpString,
-            //       phoneNumber: phoneNumber,
-            //       dbChildKey,
-            //     });
-            //   })
-            //   .catch((error: RNFirebase.RnError) => {
-            //     console.log(error, 'error');
-            //     console.log(error.message, 'errormessage');
-
-            //     db.ref('ApolloPatients/')
-            //       .child(dbChildKey)
-            //       .update({
-            //         mobileNumberFailed: error && error.message,
-            //       });
-
-            //     CommonLogEvent('OTP_SEND_FAIL', error.message);
-            //     CommonBugFender('OTP_SEND_FAIL', error);
-            //     Alert.alert(
-            //       'Error',
-            //       (error && error.message) || 'The interaction was cancelled by the user.'
-            //     );
-            //   });
           }
         }
       } else {
         setshowOfflinePopup(true);
+        setShowSpinner(false);
       }
     });
   };
@@ -485,7 +453,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         </Card>
         {onClickOpen && openWebView()}
       </SafeAreaView>
-      {isSendingOtp ? <Spinner /> : null}
+      {showSpinner ? <Spinner /> : null}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );

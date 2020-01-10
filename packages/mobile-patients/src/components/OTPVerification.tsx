@@ -364,9 +364,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         setTimeout(() => {
           // verifyOtp(otp)
           verifyOTP(client, phoneNumber, otp)
-            .then((otp) => {
+            .then((data: any) => {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
-              CommonBugFender('OTP_ENTERED_SUCCESS', otp as Error);
+              CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
 
               db.ref('ApolloPatients/')
                 .child(dbChildKey)
@@ -376,6 +376,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
               _removeFromStore();
               setOnOtpClick(true);
+              console.log('error', data.authToken);
+
+              sendOtp(data.authToken).then((data) => {
+                // setshowSpinner(true);
+              });
             })
             .catch((error) => {
               try {
@@ -385,45 +390,33 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 CommonBugFender('OTP_ENTERED_FAIL', error);
                 CommonLogEvent('OTP_ENTERED_FAIL', error);
 
-                setTimeout(() => {
-                  if (isAuthChanged) {
-                    _removeFromStore();
-                    setOnOtpClick(true);
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-                      });
-                  } else {
-                    setOnOtpClick(false);
-                    setshowSpinner(false);
-                    // console.log('error', error);
-                    _storeTimerData(invalidOtpCount + 1);
+                setOnOtpClick(false);
+                setshowSpinner(false);
+                // console.log('error', error);
+                _storeTimerData(invalidOtpCount + 1);
 
-                    if (invalidOtpCount + 1 === 3) {
-                      setShowErrorMsg(true);
-                      setIsValidOTP(false);
-                      // startInterval(timer);
-                      setIntervalId(intervalId);
-                    } else {
-                      setShowErrorMsg(true);
-                      setIsValidOTP(true);
-                    }
-                    setInvalidOtpCount(invalidOtpCount + 1);
-                    // setOtp('');
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-                      });
+                if (invalidOtpCount + 1 === 3) {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(false);
+                  // startInterval(timer);
+                  setIntervalId(intervalId);
+                } else {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(true);
+                }
+                setInvalidOtpCount(invalidOtpCount + 1);
+                // setOtp('');
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                  });
 
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        OTPFailedReason: error ? error.message : '',
-                      });
-                  }
-                }, 1000);
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    OTPFailedReason: error ? error.message : '',
+                  });
               } catch (error) {
                 setshowSpinner(false);
                 console.log(error);
