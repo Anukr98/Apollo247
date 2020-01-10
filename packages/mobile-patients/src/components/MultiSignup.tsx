@@ -18,6 +18,7 @@ import {
   Alert,
   ActivityIndicator,
   BackHandler,
+  Keyboard,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -377,6 +378,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               title={'SUBMIT'}
               disabled={isDisabled()}
               onPress={async () => {
+                Keyboard.dismiss();
                 if (profiles) {
                   const result = profiles.filter((obj) => {
                     return obj.relation == Relation['ME'];

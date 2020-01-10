@@ -351,6 +351,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   // style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
                   disabled={!firstName || !lastName || !date || !gender}
                   onPress={async () => {
+                    Keyboard.dismiss();
                     CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
                     let validationMessage = '';
                     if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
