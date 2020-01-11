@@ -9,6 +9,7 @@ import { getConnection } from 'typeorm';
 import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
+import { format } from 'date-fns';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
@@ -265,7 +266,10 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
     if (!doctordata.firebaseToken)
-      await doctorRepository.updateFirebaseId(doctordata.id, firebaseUid);
+      await doctorRepository.updateFirebaseId(
+        doctordata.id,
+        format(new Date(), 'yyyy-MM-dd HH:mm')
+      );
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
@@ -314,7 +318,10 @@ const findLoggedinUserDetails: Resolver<
 
   if (doctorData) {
     if (!doctorData.firebaseToken)
-      await doctorRepository.updateFirebaseId(doctorData.id, firebaseUid);
+      await doctorRepository.updateFirebaseId(
+        doctorData.id,
+        format(new Date(), 'yyyy-MM-dd HH:mm')
+      );
 
     return {
       loggedInUserType:

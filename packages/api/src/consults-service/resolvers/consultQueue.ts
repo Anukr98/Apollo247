@@ -84,16 +84,17 @@ type GqlConsultQueueItem = {
 };
 type GqlConsultQueue = GqlConsultQueueItem[];
 
-const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
+const getRepos = ({ consultsDb, doctorsDb, patientsDb, mobileNumber }: ConsultServiceContext) => ({
   apptRepo: consultsDb.getCustomRepository(AppointmentRepository),
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
   patRepo: patientsDb.getCustomRepository(PatientRepository),
   cqRepo: consultsDb.getCustomRepository(ConsultQueueRepository),
   caseSheetRepo: consultsDb.getCustomRepository(CaseSheetRepository),
+  mobileNumber: mobileNumber,
 });
 
-const checkAuth = async (docRepo: DoctorRepository, firebaseUid: string, doctorId: string) => {
-  const currentDoctor = await docRepo.getDoctorDetails(firebaseUid);
+const checkAuth = async (docRepo: DoctorRepository, mobileNumber: string, doctorId: string) => {
+  const currentDoctor = await docRepo.searchDoctorByMobileNumber(mobileNumber, true);
   const authorized = currentDoctor && currentDoctor.id && currentDoctor.id === doctorId;
   if (!authorized) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 };
@@ -125,8 +126,8 @@ const getConsultQueue: Resolver<
   ConsultServiceContext,
   GetConsultQueueResult
 > = async (parent, { doctorId }, context) => {
-  const { docRepo } = getRepos(context);
-  await checkAuth(docRepo, context.firebaseUid, doctorId);
+  const { docRepo, mobileNumber } = getRepos(context);
+  await checkAuth(docRepo, mobileNumber, doctorId);
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };
 };
@@ -230,10 +231,10 @@ const removeFromConsultQueue: Resolver<
   ConsultServiceContext,
   RemoveFromConsultQueueResult
 > = async (parent, { id }, context) => {
-  const { docRepo, cqRepo } = getRepos(context);
+  const { docRepo, cqRepo, mobileNumber } = getRepos(context);
   const consultQueueItemToDeactivate = await cqRepo.findOneOrFail(id);
   const { doctorId } = consultQueueItemToDeactivate;
-  await checkAuth(docRepo, context.firebaseUid, doctorId);
+  await checkAuth(docRepo, mobileNumber, doctorId);
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };

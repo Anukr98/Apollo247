@@ -35,14 +35,15 @@ type GetAllDoctorAppointmentsInput = {
   doctorId: string;
 };
 
-const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
+const getRepos = ({ consultsDb, doctorsDb, patientsDb, mobileNumber }: ConsultServiceContext) => ({
   apptRepo: consultsDb.getCustomRepository(AppointmentRepository),
   patRepo: patientsDb.getCustomRepository(PatientRepository),
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
+  mobileNumber: mobileNumber,
 });
 
-const checkAuth = async (docRepo: DoctorRepository, firebaseUid: string, doctorId: string) => {
-  const currentDoctor = await docRepo.getDoctorDetails(firebaseUid);
+const checkAuth = async (docRepo: DoctorRepository, mobileNumber: string, doctorId: string) => {
+  const currentDoctor = await docRepo.searchDoctorByMobileNumber(mobileNumber, true);
   const authorized = currentDoctor && currentDoctor.id && currentDoctor.id === doctorId;
   if (!authorized) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 };
@@ -53,8 +54,8 @@ const getAllDoctorAppointments: Resolver<
   ConsultServiceContext,
   GetAllDoctorAppointmentsResult
 > = async (parent, { doctorId }, context) => {
-  const { patRepo, apptRepo, docRepo } = getRepos(context);
-  await checkAuth(docRepo, context.firebaseUid, doctorId);
+  const { patRepo, apptRepo, docRepo, mobileNumber } = getRepos(context);
+  await checkAuth(docRepo, mobileNumber, doctorId);
   const allDocAppointments = await apptRepo.find({
     where: { doctorId },
     order: { appointmentDateTime: 'DESC' },
