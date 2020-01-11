@@ -77,7 +77,10 @@ import { winstonLogger } from 'customWinstonLogger';
       const patientsDb = getConnection('patients-db');
 
       const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-      const doctordata = (await doctorRepository.getDoctorDetails(firebaseUid)) as Doctor;
+      const doctordata = (await doctorRepository.searchDoctorByMobileNumber(
+        mobileNumber,
+        true
+      )) as Doctor;
       const currentUser = doctordata;
 
       const context: DoctorsServiceContext = {
