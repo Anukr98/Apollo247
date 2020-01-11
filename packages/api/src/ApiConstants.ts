@@ -67,7 +67,7 @@ export enum ApiConstants {
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
 
   //book appointment sucessfull
-  BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
+  BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
   BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
 
   //physical book appointment sucessfull
