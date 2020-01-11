@@ -64,8 +64,14 @@ function renderSuggestion(
   return (
     <MenuItem selected={isHighlighted} component="div">
       {parts.map((part) => (
-        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
-          {part.text}
+        <span
+          key={part.text}
+          style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+          title={suggestion.label}
+        >
+          {part.text.length > 46
+            ? part.text.substring(0, 45).toLowerCase() + '...'
+            : part.text.toLowerCase()}
         </span>
       ))}
       <img src={require('images/ic_dark_plus.svg')} alt="" />
@@ -1335,7 +1341,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Scrollbars>
                   )}
                 />
-                {medicine.length > 2 && !loading && (
+                {medicine.trim().length > 2 && !loading && (
                   <AphButton
                     className={classes.darkGreenaddBtn}
                     onClick={() => {

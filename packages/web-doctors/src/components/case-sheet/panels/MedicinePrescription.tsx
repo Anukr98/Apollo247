@@ -77,8 +77,11 @@ function renderSuggestion(
               fontWeight: part.highlight ? 500 : 400,
               whiteSpace: 'pre',
             }}
+            title={suggestion.label}
           >
-            {part.text}
+            {part.text.length > 46
+              ? part.text.substring(0, 45).toLowerCase() + '...'
+              : part.text.toLowerCase()}
           </span>
         ))}
       </div>
@@ -1794,7 +1797,7 @@ export const MedicinePrescription: React.FC = () => {
                         </Scrollbars>
                       )}
                     />
-                    {medicine.length > 2 && !loading && (
+                    {medicine.trim().length > 2 && !loading && (
                       <div>
                         <span>
                           <AphButton

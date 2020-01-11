@@ -119,6 +119,7 @@ export enum ApiConstants {
   CONSULTS_SERVICE_ERROR_LOG_FILE = '/error-logs/consults-service.log',
   NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
+  KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -141,6 +142,11 @@ export enum ApiConstants {
   PHARMA_DEFAULT_SHOPID = '16001',
 
   OTP_EXPIRATION_MINUTES = 2,
+  OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.',
+  KALEYRA_OTP_SENDER = 'APOLLO',
+  KALEYRA_OTP_SMS_METHOD = 'sms',
+  OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
+  OTP_FAIL_MESSAGE = 'OTP sending failed',
 
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',

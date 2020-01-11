@@ -1548,12 +1548,34 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const isPastAppointment = () => {
+    const selectedDay = moment()
+      .format('dddd')
+      .toUpperCase();
+    const consultHours = currentDoctor && currentDoctor.consultHours;
+    let duration = 15;
+    if (consultHours) {
+      const filteredDay =
+        consultHours &&
+        _.filter(consultHours, function(o) {
+          if (o && o.weekDay) {
+            return o.weekDay === selectedDay;
+          }
+        });
+      const consultDurationDay: any =
+        filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
+      duration =
+        consultDurationDay &&
+        Object.keys(consultDurationDay).length !== 0 &&
+        consultDurationDay.consultDuration
+          ? consultDurationDay.consultDuration
+          : 15;
+    }
     const diff = moment.duration(
       moment(new Date(props.appointmentDateTime)).diff(
         moment(moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
       )
     );
-    return diff.asMinutes() + 15 < 0;
+    return diff.asMinutes() + duration < 0;
   };
 
   const currentDoctor = useCurrentPatient();
@@ -1816,7 +1838,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         stopAudioVideoCall();
                       }
                       props.endConsultAction();
-                      setDisableOnCancel(true);
                       isConsultStarted = false;
                     }}
                   >
@@ -1881,6 +1902,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             {props.appointmentStatus !== STATUS.COMPLETED && (
               <Button
                 className={classes.backButton}
+                disabled={
+                  isPastAppointment() ||
+                  (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
+                  props.appointmentStatus === STATUS.NO_SHOW ||
+                  props.appointmentStatus === STATUS.CALL_ABANDON ||
+                  isCallAccepted
+                }
                 onClick={() => {
                   setLoading(true);
                   const rescheduleCountByDoctor =
@@ -1939,13 +1967,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 onClick={(e) => handleClick(e)}
                 disabled={
                   props.appointmentStatus === STATUS.COMPLETED ||
-                  props.appointmentStatus === STATUS.CANCELLED
+                  props.appointmentStatus === STATUS.CANCELLED ||
+                  isPastAppointment()
                 }
               >
                 <img src={require('images/ic_call.svg')} />
               </Button>
             )}
-
             <Popover
               id={id}
               open={open}
@@ -2012,6 +2040,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   props.appointmentStatus === STATUS.CANCELLED ||
                   props.isAppointmentEnded ||
                   disableOnCancel ||
+                  isPastAppointment() ||
                   (appointmentInfo!.appointmentState !== 'NEW' &&
                     appointmentInfo!.appointmentState !== 'TRANSFER' &&
                     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
@@ -2023,7 +2052,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <img src={require('images/ic_more.svg')} />
               </Button>
             )}
-
             <Popover
               id={idThreeDots}
               className={classes.dotPaper}
@@ -2042,7 +2070,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <ul className={classes.popOverUL}>
                   {/* <li>Share Case Sheet</li> */}
-                  {!isPastAppointment() && currentUserType !== LoggedInUserType.SECRETARY && (
+                  {currentUserType !== LoggedInUserType.SECRETARY && (
                     <li
                       onClick={() => {
                         if (

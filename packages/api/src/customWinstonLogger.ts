@@ -67,6 +67,21 @@ winston.loggers.add('notificationServiceLogger', {
   ],
 });
 
+//sms-service logger
+winston.loggers.add('smsOtpAPILogger', {
+  format: combine(label({ label: 'smsOtpAPILogger' }), timestamp(), winstonFormat.json()),
+  transports: [
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.KALEYRA_OPT_API_LOG_FILE,
+      level: 'info',
+    }),
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.KALEYRA_OPT_API_LOG_FILE,
+      level: 'error',
+    }),
+  ],
+});
+
 export const winstonLogger = winston;
 
 export const log = (
