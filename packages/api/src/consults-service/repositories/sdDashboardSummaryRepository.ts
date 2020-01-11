@@ -92,6 +92,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       })
       .andWhere('appointment_call_details.callType = :callType', { callType: callType })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .groupBy('appointment_call_details.appointmentId')
       .getMany();
     if (callDetails && callDetails.length > 0) {
       return callDetails.length;
