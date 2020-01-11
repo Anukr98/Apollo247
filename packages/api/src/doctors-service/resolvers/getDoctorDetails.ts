@@ -266,10 +266,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
     if (!doctordata.firebaseToken)
-      await doctorRepository.updateFirebaseId(
-        doctordata.id,
-        format(new Date(), 'yyyy-MM-dd HH:mm')
-      );
+      await doctorRepository.updateFirebaseId(doctordata.id, format(new Date(), 'yyyyMMddHHmm'));
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
@@ -318,10 +315,7 @@ const findLoggedinUserDetails: Resolver<
 
   if (doctorData) {
     if (!doctorData.firebaseToken)
-      await doctorRepository.updateFirebaseId(
-        doctorData.id,
-        format(new Date(), 'yyyy-MM-dd HH:mm')
-      );
+      await doctorRepository.updateFirebaseId(doctorData.id, format(new Date(), 'yyyyMMddHHmm'));
 
     return {
       loggedInUserType:
