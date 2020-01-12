@@ -2,13 +2,14 @@ import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/gl
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
 import moment from 'moment';
-import { Alert, NetInfo, AsyncStorage, Dimensions, Platform } from 'react-native';
+import { Alert, AsyncStorage, Dimensions, Platform } from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import NetInfo from '@react-native-community/netinfo';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -304,7 +305,7 @@ export function g(obj: any, ...props: string[]) {
 }
 
 export const getNetStatus = async () => {
-  const status = await NetInfo.getConnectionInfo().then((connectionInfo) => {
+  const status = await NetInfo.fetch().then((connectionInfo) => {
     //console.log(connectionInfo, 'connectionInfo');
     return connectionInfo.type !== 'none';
   });

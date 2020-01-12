@@ -11,8 +11,6 @@ import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verify
 import { LOGIN_TYPE } from '../graphql/types/globalTypes';
 import { VERIFY_LOGIN_OTP, LOGIN } from '../graphql/profiles';
 
-let apolloClient: ApolloClient<NormalizedCacheObject>;
-
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
     console.log('-------error-------', error);
@@ -31,14 +29,14 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const authLink = setContext(async (_, { headers }) => ({
     headers: {
       ...headers,
-      Authorization: authToken ? authToken : 'Bearer 3d1833da7020e0602165529446587434',
+      Authorization: 'Bearer 3d1833da7020e0602165529446587434',
     },
   }));
   const httpLink = createHttpLink({
     uri: apiRoutes.graphql(),
   });
   console.log(
-    '-------authToken-------',
+    '-------loginauthToken-------',
     authToken ? authToken : 'Bearer 3d1833da7020e0602165529446587434'
   );
 
@@ -50,13 +48,22 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   });
 };
 
+const apolloClient: ApolloClient<NormalizedCacheObject> = buildApolloClient(
+  'Bearer 3d1833da7020e0602165529446587434',
+  () => tokenFailed()
+);
+
+const tokenFailed = () => {
+  console.log('Failed');
+};
+
 export const loginAPI = (client: ApolloClient<object>, mobileNumber: string) => {
   return new Promise((res, rej) => {
     const inputData = {
       mobileNumber: mobileNumber,
       loginType: LOGIN_TYPE.PATIENT,
     };
-    client
+    apolloClient
       .query<Login, LoginVariables>({
         query: LOGIN,
         fetchPolicy: 'no-cache',
@@ -75,11 +82,11 @@ export const loginAPI = (client: ApolloClient<object>, mobileNumber: string) => 
 export const verifyOTP = (client: ApolloClient<object>, mobileNumber: string, otp: string) => {
   return new Promise((res, rej) => {
     const inputData = {
-      mobileNumber: mobileNumber,
+      id: mobileNumber,
       loginType: LOGIN_TYPE.PATIENT,
       otp: otp,
     };
-    client
+    apolloClient
       .query<verifyLoginOtp, verifyLoginOtpVariables>({
         query: VERIFY_LOGIN_OTP,
         fetchPolicy: 'no-cache',

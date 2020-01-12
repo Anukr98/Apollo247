@@ -37,7 +37,7 @@ import moment from 'moment';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { loginAPI } from '../helpers/clientCalls';
+import { loginAPI } from '../helpers/loginCalls';
 import { useApolloClient } from 'react-apollo-hooks';
 
 const { height, width } = Dimensions.get('window');
@@ -301,7 +301,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   loginId: confirmResult.loginId,
                 });
               })
-              .catch((error) => {
+              .catch((error: Error) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
                 setShowSpinner(false);

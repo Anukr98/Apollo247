@@ -136,7 +136,10 @@ const slides: Slide[] = [
     index: 0,
     title: 'What is your height?',
     inputPlacerholder: 'Enter height…',
-    dropDown: [{ key: '1', value: 'cm' }, { key: '2', value: 'ft' }],
+    dropDown: [
+      { key: '1', value: 'cm' },
+      { key: '2', value: 'ft' },
+    ],
     inputData: ['value', 'drop'],
     keyboardType: 'number-pad',
   },
@@ -374,7 +377,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
             }
             setRefresh(!refresh);
           }}
-          renderItem={(item: Slide) => (
+          renderItem={({ item }: any) => (
             <View style={styles.itemContainer}>
               <View>
                 <Text style={styles.titleStyle}>{item.title}</Text>

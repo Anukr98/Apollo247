@@ -42,7 +42,7 @@ import { BottomPopUp } from './ui/BottomPopUp';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
-import { verifyOTP } from '../helpers/clientCalls';
+import { verifyOTP } from '../helpers/loginCalls';
 
 const { height, width } = Dimensions.get('window');
 
@@ -135,7 +135,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
 
-  const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
+  const { sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
@@ -428,13 +428,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               }
             }
           })
-          .catch((error) => {
+          .catch((error: Error) => {
             try {
               console.log({
                 error,
               });
-              CommonBugFender('OTP_ENTERED_FAIL', error);
-              CommonLogEvent('OTP_ENTERED_FAIL', error);
 
               setOnOtpClick(false);
               setshowSpinner(false);
@@ -462,6 +460,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 .update({
                   OTPFailedReason: error ? error.message : '',
                 });
+
+              CommonBugFender('OTP_ENTERED_FAIL', error);
+              CommonLogEvent('OTP_ENTERED_FAIL', JSON.stringify(error));
             } catch (error) {
               setshowSpinner(false);
               console.log(error);

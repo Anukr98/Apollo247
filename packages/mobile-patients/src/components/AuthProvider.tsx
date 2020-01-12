@@ -81,16 +81,12 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const authLink = setContext(async (_, { headers }) => ({
     headers: {
       ...headers,
-      Authorization: authToken ? authToken : 'Bearer 3d1833da7020e0602165529446587434',
+      Authorization: authToken,
     },
   }));
   const httpLink = createHttpLink({
     uri: apiRoutes.graphql(),
   });
-  console.log(
-    '-------authToken-------',
-    authToken ? authToken : 'Bearer 3d1833da7020e0602165529446587434'
-  );
 
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();

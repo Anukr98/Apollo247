@@ -60,6 +60,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  NativeModules,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
@@ -71,6 +72,10 @@ import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { ListCard } from '../ui/ListCard';
 import { useUIElements } from '../UIElementsProvider';
+import KotlinBridge from '../../KotlinBridge';
+import { GenerateTokenforCM } from '../../helpers/apiCalls';
+
+const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
 
@@ -149,33 +154,12 @@ const styles = StyleSheet.create({
   },
 });
 
-type ArrayTest = {
+type menuOptions = {
   id: number;
   title: string;
-  descripiton: string;
-  image: ImageSourcePropType;
+  image: React.ReactNode;
+  onPress: () => void;
 };
-
-const arrayTest: ArrayTest[] = [
-  {
-    id: 1,
-    title: 'Are you looking for a particular doctor?',
-    descripiton: 'SEARCH SPECIALIST',
-    image: require('@aph/mobile-patients/src/images/home/doctor.png'),
-  },
-  {
-    id: 2,
-    title: 'Do you want to buy some medicines?',
-    descripiton: 'SEARCH MEDICINE',
-    image: require('@aph/mobile-patients/src/images/home/medicine.png'),
-  },
-  {
-    id: 3,
-    title: 'Do you want to get some tests done?',
-    descripiton: 'BOOK A TEST',
-    image: require('@aph/mobile-patients/src/images/home/test.png'),
-  },
-];
 
 type TabBarOptions = {
   id: number;
@@ -216,7 +200,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
 
   const startDoctor = string.home.startDoctor;
-  const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [selectedProfile, setSelectedProfile] = useState<string>('');
 
@@ -232,7 +215,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
-  const menuOptions = [
+
+  const menuOptions: menuOptions[] = [
     {
       id: 1,
       title: 'Find A Doctor',
@@ -271,6 +255,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => props.navigation.navigate('HEALTH RECORDS'),
     },
   ];
+
+  const [listValues, setListValues] = useState<menuOptions[]>(menuOptions);
 
   useEffect(() => {
     // if (token.data.message === 'VitaToken Obtained Successfully') {
@@ -329,6 +315,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
+    currentPatient && getTokenforCM(currentPatient);
+  }, [currentPatient]);
+
+  useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
@@ -339,8 +329,60 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
     callDeviceTokenAPI();
+    // currentPatient && getTokenforCM(currentPatient);
     checkForVersionUpdate();
   }, []);
+
+  const getTokenforCM = (currentPatient: any) => {
+    const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(currentPatient, 'lastName') ||
+      ''}`;
+
+    GenerateTokenforCM(
+      currentPatient ? (currentPatient.uhid ? currentPatient.uhid : currentPatient.id) : '',
+      fullName,
+      currentPatient ? (currentPatient.gender ? currentPatient.gender : '') : '',
+      currentPatient ? (currentPatient.emailAddress ? currentPatient.emailAddress : '') : '',
+      currentPatient ? (currentPatient.mobileNumber ? currentPatient.mobileNumber : '') : ''
+    ).then((token: any) => {
+      console.log(token, 'getTokenforCM');
+
+      const testArray = menuOptions;
+      for (const i in testArray) {
+        if (testArray[i].id == 4) {
+          testArray[i].onPress = () => {
+            async function fetchTokenData() {
+              const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
+              console.log(tokenValue, 'tokenValue');
+              if (Platform.OS === 'ios') {
+                Vitals.vitalsToExport(tokenValue);
+                setTimeout(() => {
+                  Vitals.goToReactNative(tokenValue);
+                }, 500);
+              } else {
+                const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(
+                  currentPatient,
+                  'lastName'
+                ) || ''}`;
+                const UHID = `${g(currentPatient, 'uhid') || ''}`;
+
+                tokenValue &&
+                  KotlinBridge.show(
+                    tokenValue,
+                    UHID,
+                    fullName,
+                    '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android'
+                  );
+              }
+            }
+
+            fetchTokenData();
+          };
+          break; //Stop this loop, we found it!
+        }
+      }
+      setListValues(testArray);
+    });
+  };
 
   useEffect(() => {
     try {
@@ -842,7 +884,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           marginTop: 16,
         }}
       >
-        {menuOptions.map((item) => {
+        {listValues.map((item) => {
           if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
             return (
               <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
