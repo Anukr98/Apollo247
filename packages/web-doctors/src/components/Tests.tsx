@@ -72,25 +72,23 @@ function renderSuggestion(
   const parts = parse(suggestion!.itemName, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span
-            key={part.text}
-            style={{
-              fontWeight: part.highlight ? 500 : 400,
-              whiteSpace: 'pre',
-            }}
-            title={suggestion!.itemName}
-          >
-            {part.text.length > 46
-              ? part.text.substring(0, 45).toLowerCase() + '...'
-              : part.text.toLowerCase()}
-          </span>
-        ))}
-      </div>
+    <div>
+      {parts.map((part) => (
+        <span
+          key={part.text}
+          style={{
+            fontWeight: part.highlight ? 500 : 400,
+            whiteSpace: 'pre',
+          }}
+          title={suggestion!.itemName}
+        >
+          {part.text.length > 46
+            ? part.text.substring(0, 45).toLowerCase() + '...'
+            : part.text.toLowerCase()}
+        </span>
+      ))}
       <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </MenuItem>
+    </div>
   );
 }
 const TabContainer: React.FC = (props) => {
@@ -99,19 +97,64 @@ const TabContainer: React.FC = (props) => {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      height: 250,
-      flexGrow: 1,
-    },
-    container: {
+    suggestionsContainer: {
       position: 'relative',
     },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
+    suggestionPopover: {
+      boxShadow: 'none',
+      maxHeight: 330,
+      overflowY: 'auto',
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+      color: '#02475b',
+    },
+    suggestionsList: {
+      margin: 0,
+      padding: 0,
+      listStyleType: 'none',
+      overflow: 'hidden',
+      borderRadius: '0 0 0 10px',
+    },
+    suggestionItem: {
+      fontSize: 18,
+      fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 7,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 4,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
     },
     medicinePopup: {
       width: 480,
@@ -137,7 +180,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogContent: {
       padding: '20px 20px 0 20px',
-      minHeight: 100,
+      minHeight: 300,
       position: 'relative',
       '&:focus': {
         outline: 'none',
@@ -208,17 +251,6 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 41,
       position: 'relative',
     },
-    textFieldWrapper: {
-      border: 'solid 1px #30c1a3',
-      borderRadius: 10,
-      width: '100%',
-      padding: 16,
-      color: '#01475b',
-      fontSize: 14,
-      fontWeight: 500,
-      position: 'relative',
-      paddingRight: 48,
-    },
     iconRight: {
       position: 'absolute',
       right: 5,
@@ -226,23 +258,6 @@ const useStyles = makeStyles((theme: Theme) =>
       '& img': {
         cursor: 'pointer',
       },
-    },
-    chatSubmitBtn: {
-      position: 'absolute',
-      top: '50%',
-      marginTop: -18,
-      right: 10,
-      minWidth: 'auto',
-      padding: 0,
-      '& img': {
-        maxWidth: 36,
-      },
-    },
-    divider: {
-      height: theme.spacing(2),
-    },
-    mainContainer: {
-      width: '100%',
     },
     contentContainer: {
       display: 'flex',
@@ -258,18 +273,9 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 12,
       },
     },
-    column: {
-      width: '49%',
-      display: 'flex',
-      marginRight: '1%',
-      flexDirection: 'column',
-    },
     listContainer: {
       display: 'flex',
       flexFlow: 'column',
-    },
-    icon: {
-      color: '#00b38e',
     },
     textFieldContainer: {
       width: '100%',
@@ -296,56 +302,18 @@ const useStyles = makeStyles((theme: Theme) =>
         wordBreak: 'break-word',
       },
     },
-    textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
-        },
-      },
-    },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      // pointerEvents: 'none',
       paddingLeft: 8,
       '&:hover': {
         backgroundColor: 'transparent',
       },
       '& img': {
         marginRight: 8,
-      },
-    },
-    card: {
-      position: 'relative',
-      margin: 0,
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        '& li': {
-          color: '#02475b',
-          listStyleType: 'none',
-          padding: '10px 50px 10px 10px !important',
-          fontSize: 14,
-          fontWeight: 500,
-          position: 'relative',
-          borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
-          '&:last-child': {
-            paddingBottom: 0,
-            borderBottom: 'none',
-            paddingLeft: 0,
-          },
-          '& img': {
-            '&:first-child': {
-              position: 'relative',
-              top: -2,
-              marginRight: 10,
-            },
-          },
-        },
       },
     },
     addedList: {
@@ -364,89 +332,16 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      right: -10,
-      top: 10,
-      paddingLeft: 4,
+      right: 20,
+      top: 15,
+      padding: 0,
+      minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
       },
-      '& img': {
-        marginRight: 8,
-      },
-    },
-    searchPopupScroll: {
-      borderBottomRightRadius: 10,
-      borderBottomLefttRadius: 10,
-    },
-    searchpopup: {
-      borderRadius: 'none',
-      boxShadow: 'none',
-      backgroundColor: 'transparent',
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        overflow: 'hidden',
-        '& li': {
-          padding: 0,
-          listStyleType: 'none',
-          position: 'relative',
-          '&:after': {
-            content: '""',
-            height: 1,
-            left: 20,
-            right: 20,
-            bottom: 0,
-            position: 'absolute',
-            backgroundColor: 'rgba(2, 71, 91, 0.15)',
-          },
-          '& >div': {
-            padding: '10px 62px 10px 20px',
-            fontSize: 18,
-            fontWeight: 500,
-            color: '#02475b',
-            '&:hover': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '&:focus': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '& span:nth-child(2)': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-            '& img': {
-              position: 'absolute',
-              right: 20,
-              display: 'none',
-            },
-          },
-          '&:first-child': {
-            borderRadius: 0,
-          },
-          '&:last-child': {
-            borderRadius: 0,
-            '&:after': {
-              display: 'none',
-            },
-          },
-          '&:hover': {
-            '&:first-child': {
-              borderRadius: 0,
-            },
-            '&:last-child': {
-              borderRadius: 0,
-            },
-            '& >div': {
-              '& img': {
-                display: 'block',
-              },
-            },
-          },
-        },
-      },
     },
     inputRoot: {
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -458,7 +353,6 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 500,
         color: '#01475b',
         paddingTop: 0,
-        paddingRight: 25,
       },
       '&:hover': {
         '&:before': {
@@ -531,6 +425,7 @@ const useStyles = makeStyles((theme: Theme) =>
     searchFrom: {
       padding: 0,
       position: 'relative',
+      minHeight: 300,
     },
   })
 );
@@ -988,19 +883,19 @@ export const Tests: React.FC = () => {
                       },
                     }}
                     theme={{
-                      container: classes.container,
-                      suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                      container: classes.suggestionsContainer,
+                      suggestionsList: classes.suggestionsList,
+                      suggestion: classes.suggestionItem,
+                      suggestionHighlighted: classes.suggestionHighlighted,
                     }}
                     renderSuggestionsContainer={(options) => (
-                      <Scrollbars
-                        autoHide={true}
-                        style={{ height: 'calc(45vh' }}
-                        className={classes.searchPopupScroll}
+                      <Paper
+                        {...options.containerProps}
+                        square
+                        classes={{ root: classes.suggestionPopover }}
                       >
-                        <Paper {...options.containerProps} square className={classes.searchpopup}>
-                          {options.children}
-                        </Paper>
-                      </Scrollbars>
+                        {options.children}
+                      </Paper>
                     )}
                   />
                   {otherDiagnostic.trim().length > 2 && (
