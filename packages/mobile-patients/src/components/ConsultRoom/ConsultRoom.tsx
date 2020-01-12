@@ -20,6 +20,7 @@ import {
   TestsCartIcon,
   TestsCartMedicineIcon,
   TestsIcon,
+  MedicineIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -185,28 +186,28 @@ type TabBarOptions = {
 const tabBarOptions: TabBarOptions[] = [
   {
     id: 1,
-    title: 'CONSULT ROOM',
-    image: <ConsultationRoom style={{ marginTop: -4 }} />,
+    title: 'APPOINTMENTS',
+    image: <ConsultationRoom />,
   },
   {
     id: 2,
     title: 'HEALTH RECORDS',
-    image: <MyHealth style={{ marginTop: -4 }} />,
+    image: <MyHealth />,
   },
   {
     id: 3,
     title: 'MEDICINES',
-    image: <ShoppingCart style={{ marginTop: -4 }} />,
+    image: <MedicineIcon />,
   },
   {
     id: 4,
     title: 'TESTS',
-    image: <TestsIcon style={{ marginTop: -4 }} />,
+    image: <TestsIcon />,
   },
   {
     id: 5,
     title: 'MY ACCOUNT',
-    image: <Person style={{ marginTop: -4 }} />,
+    image: <Person />,
   },
 ];
 
@@ -225,7 +226,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
@@ -320,6 +321,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             );
             setAppointmentLoading(false);
           })
+          .catch((e) => {})
           .finally(() => setAppointmentLoading(false));
       }
     }
@@ -706,7 +708,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               onPress={() => {
                 if (i === 0) {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'CONSULT_ROOM clicked');
-                  props.navigation.navigate('CONSULT ROOM');
+                  props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
@@ -794,7 +796,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           container={{ marginTop: 14 }}
           title={'Upcoming Appointments'}
           leftIcon={renderListCount(currentAppointments)}
-          onPress={() => props.navigation.navigate('CONSULT ROOM')}
+          onPress={() => props.navigation.navigate('APPOINTMENTS')}
         />
         {/* <ListCard
           container={{ marginTop: 14 }}
