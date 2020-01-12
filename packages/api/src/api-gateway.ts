@@ -13,12 +13,10 @@ import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universa
 console.log('gateway starting');
 
 export interface GatewayContext {
-  firebaseUid: string;
   mobileNumber: string;
 }
 
 export interface GatewayHeaders extends IncomingHttpHeaders {
-  firebaseuid: string;
   mobilenumber: string;
 }
 
@@ -65,7 +63,6 @@ export type Resolver<Parent, Args, Context, Result> = (
           const context = (requestContext.context as any) as GatewayContext;
           if (request && request.http) {
             request.http.headers.set('mobilenumber', context.mobileNumber);
-            request.http.headers.set('firebaseuid', context.firebaseUid);
           }
         },
       });
@@ -101,7 +98,7 @@ export type Resolver<Parent, Args, Context, Result> = (
       const isNotProduction = process.env.NODE_ENV !== 'production';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
       if (isNotProduction && isSchemaIntrospectionQuery) {
-        const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
+        const gatewayContext: GatewayContext = { mobileNumber: '' };
         return gatewayContext;
       }
 
@@ -109,7 +106,6 @@ export type Resolver<Parent, Args, Context, Result> = (
 
       if (jwt.indexOf('Bearer 3d1833da7020e0602165529446587434') == 0) {
         const gatewayContext: GatewayContext = {
-          firebaseUid: '',
           mobileNumber: '',
         };
         return gatewayContext;
@@ -119,7 +115,6 @@ export type Resolver<Parent, Args, Context, Result> = (
       const isFromLocalPlayground = jwt === 'FromLocalPlayground';
       if (isLocal && isFromLocalPlayground) {
         const gatewayContext: GatewayContext = {
-          firebaseUid: (req.headers.firebaseuid as string) || '',
           mobileNumber: (req.headers.mobilenumber as string) || '',
         };
         return gatewayContext;
@@ -142,14 +137,12 @@ export type Resolver<Parent, Args, Context, Result> = (
         });
 
       let gatewayContext: GatewayContext = {
-        firebaseUid: firebaseUser.uid,
         mobileNumber: firebaseUser.phoneNumber || '',
       };
 
       //below logic applies if Authorization jwt is from custom token
       if (firebaseIdToken.firebase.sign_in_provider === 'custom') {
         gatewayContext = {
-          firebaseUid: firebaseUser.uid || '',
           mobileNumber: firebaseUser.uid || '',
         };
       }
