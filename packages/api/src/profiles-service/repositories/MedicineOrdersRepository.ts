@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not } from 'typeorm';
+import { EntityRepository, Repository, Not, Between } from 'typeorm';
 import {
   MedicineOrders,
   MedicineOrderLineItems,
@@ -9,7 +9,7 @@ import {
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
@@ -183,5 +183,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
   saveMedicineOrderInvoice(orderInvoiceAttrs: Partial<MedicineOrderInvoice>) {
     return MedicineOrderInvoice.create(orderInvoiceAttrs).save();
+  }
+
+  getPrescriptionsCount(prescriptionDate: Date) {
+    const newStartDate = new Date(format(addDays(prescriptionDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(prescriptionDate, 'yyyy-MM-dd') + 'T18:30');
+    return this.count({
+      where: {
+        prescriptionImageUrl: Not([null, '']),
+        createdDate: Between(newStartDate, newEndDate),
+      },
+    });
   }
 }

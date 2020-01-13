@@ -199,7 +199,7 @@ const sendPatientAcknowledgements = async (
     patientDetails.firstName +
     '<br>Mobile Number :-' +
     patientDetails.mobileNumber +
-    '<br>Patient Location (city) :-\nDoctor Name :-' +
+    '<br>Doctor Name :-' +
     docDetails.firstName +
     ' ' +
     docDetails.lastName +

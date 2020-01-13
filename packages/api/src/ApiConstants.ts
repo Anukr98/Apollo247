@@ -17,6 +17,8 @@ export enum ApiConstants {
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
   APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 15 mins. :)',
   PHYSICAL_APPOINTMENT_REMINDER_15_BODY = ' Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
+  PHYSICAL_APPOINTMENT_REMINDER_60_BODY = 'Hi {0}! Dr. {1} will see you in an hour. Please come down to {2}.',
+  PHYSICAL_APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're ready for your appointment.",
 
   //appointment casesheet reminder 15
   APPOINTMENT_CASESHEET_REMINDER_15_TITLE = 'Appointment reminder',
@@ -107,6 +109,7 @@ export enum ApiConstants {
   PRISM_STATIC_MOBILE_NUMBER = '8019677178',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
+  MAX_DOCTOR_AVAILABILITY_CHECK_DAYS = 7,
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
@@ -120,6 +123,7 @@ export enum ApiConstants {
   NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
+  DOCTORS_SEARCH_API_LOG_FILE = '/debug-logs/doctors-search.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -147,6 +151,7 @@ export enum ApiConstants {
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
+  INVALID_RESEND_MESSAGE = 'Invalid resend details',
 
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',

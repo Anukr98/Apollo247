@@ -169,6 +169,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const [otp, setOtp] = useState<number[]>([]);
+  const [loginId, setLoginId] = useState<string>('');
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const [displayGetHelp, setDisplayGetHelp] = useState<boolean>(false);
   const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
@@ -243,7 +244,8 @@ export const SignIn: React.FC<PopupProps> = (props) => {
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       {count < 3 && (
         <div>
-          <IdleTimer
+          &nbsp;
+          {/* <IdleTimer
             element={document}
             onIdle={(e) => {
               sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
@@ -260,7 +262,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             }}
             debounce={250}
             timeout={1000 * 30 * 2}
-          />
+          /> */}
         </div>
       )}
       <Button
@@ -314,7 +316,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
               }}
               onKeyPress={(e) => {
                 if (otp.join('').length === numOtpDigits && e.key == 'Enter') {
-                  verifyOtp(otp.join(''));
+                  verifyOtp(otp.join(''), loginId);
                   setSubmitCount(submitCount + 1);
                 }
               }}
@@ -331,7 +333,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={submitCount !== 0 && submitCount !== 3 && verifyOtpError}
+              error={submitCount !== 0 && submitCount !== 3 && verifyOtpError && !isSigningIn}
             />
           </Grid>
         ))}
@@ -390,7 +392,8 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         <Fab
           color="primary"
           onClick={() => {
-            verifyOtp(otp.join(''));
+            verifyOtp(otp.join(''), loginId).then(() => setDisplayOtpInput(true));
+            // verifyOtp(otp.join(''));
             setSubmitCount(submitCount + 1);
           }}
           disabled={
@@ -437,9 +440,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           }
           onKeyPress={(e) => {
             if (!showErrorMessage && mobileNumber.length === 10 && e.key == 'Enter') {
-              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-                setDisplayOtpInput(true)
-              );
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then((res: any) => {
+                if (res) {
+                  setLoginId(res);
+                }
+                setDisplayOtpInput(true);
+              });
               setStickyPopupValue();
             }
             if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
@@ -474,9 +480,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             !isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10 || isSendingOtp
           }
           onClick={() => {
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-              setDisplayOtpInput(true)
-            );
+            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then((res: any) => {
+              if (res) {
+                setLoginId(res);
+              }
+              setDisplayOtpInput(true);
+            });
             setStickyPopupValue();
           }}
         >

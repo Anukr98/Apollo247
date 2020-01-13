@@ -2,12 +2,18 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { SdDashboardSummary, FeedbackDashboardSummary } from 'consults-service/entities';
+import {
+  SdDashboardSummary,
+  FeedbackDashboardSummary,
+  PhrDocumentsSummary,
+} from 'consults-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { SdDashboardSummaryRepository } from 'consults-service/repositories/sdDashboardSummaryRepository';
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
+import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -21,9 +27,15 @@ export const sdDashboardSummaryTypeDefs = gql`
     ratingRowsCount: Int
   }
 
+  type DocumentSummaryResult {
+    apptDocCount: Int
+    medDocCount: Int
+  }
+
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
+    updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
   }
 `;
 
@@ -38,6 +50,11 @@ type FeedbackSummaryResult = {
   ratingRowsCount: number;
 };
 
+type DocumentSummaryResult = {
+  apptDocCount: number;
+  medDocCount: number;
+};
+
 type FeedbackCounts = {
   rating: string;
   ratingcount: number;
@@ -49,6 +66,8 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
   dashboardRepo: consultsDb.getCustomRepository(SdDashboardSummaryRepository),
   feedbackRepo: patientsDb.getCustomRepository(PatientFeedbackRepository),
+  helpTicketRepo: patientsDb.getCustomRepository(PatientHelpTicketRepository),
+  medOrderRepo: patientsDb.getCustomRepository(MedicineOrdersRepository),
 });
 
 const updateConsultRating: Resolver<
@@ -57,7 +76,7 @@ const updateConsultRating: Resolver<
   ConsultServiceContext,
   FeedbackSummaryResult
 > = async (parent, args, context) => {
-  const { feedbackRepo, dashboardRepo } = getRepos(context);
+  const { feedbackRepo, dashboardRepo, helpTicketRepo } = getRepos(context);
   const feedbackData: FeedbackCounts[] = await feedbackRepo.getFeedbackByDate(
     args.summaryDate,
     FEEDBACKTYPE.CONSULT
@@ -81,6 +100,7 @@ const updateConsultRating: Resolver<
         poorRating = record.ratingcount;
       }
     });
+    const helpTicketCount = await helpTicketRepo.getHelpTicketCount(args.summaryDate);
     const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
       ratingDate: args.summaryDate,
       goodRating,
@@ -88,10 +108,29 @@ const updateConsultRating: Resolver<
       poorRating,
       greatRating,
       okRating,
+      helpTickets: helpTicketCount,
     };
     await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
   return { ratingRowsCount: feedbackData.length };
+};
+
+const updatePhrDocSummary: Resolver<
+  null,
+  { summaryDate: Date },
+  ConsultServiceContext,
+  DocumentSummaryResult
+> = async (parent, args, context) => {
+  const { dashboardRepo, medOrderRepo } = getRepos(context);
+  const docCount = await dashboardRepo.getDocumentSummary(args.summaryDate);
+  const prescritionCount = await medOrderRepo.getPrescriptionsCount(args.summaryDate);
+  const phrDocAttrs: Partial<PhrDocumentsSummary> = {
+    documentDate: args.summaryDate,
+    appointmentDoc: docCount,
+    medicineOrderDoc: prescritionCount,
+  };
+  await dashboardRepo.saveDocumentSummary(phrDocAttrs);
+  return { apptDocCount: docCount, medDocCount: prescritionCount };
 };
 
 const updateSdSummary: Resolver<
@@ -159,6 +198,7 @@ const updateSdSummary: Resolver<
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
+    updatePhrDocSummary,
     updateConsultRating,
   },
 };

@@ -62,6 +62,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum LoggedInUserType {
   ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
@@ -294,6 +299,12 @@ export interface ModifyCaseSheetInput {
 
 export interface OtherInstructionsInput {
   instruction?: string | null;
+}
+
+export interface OtpVerificationInput {
+  id: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
 }
 
 export interface PatientFamilyHistoryInput {

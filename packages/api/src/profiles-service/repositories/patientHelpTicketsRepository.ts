@@ -1,7 +1,8 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, In, Between } from 'typeorm';
 import { PatientHelpTickets } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { addDays } from 'date-fns';
 
 @EntityRepository(PatientHelpTickets)
 export class PatientHelpTicketRepository extends Repository<PatientHelpTickets> {
@@ -13,5 +14,14 @@ export class PatientHelpTicketRepository extends Repository<PatientHelpTickets> 
           helpTicketError,
         });
       });
+  }
+
+  getHelpTicketCount(ticketDate: Date) {
+    return this.count({
+      where: {
+        category: In(['Virtual Consult', 'Physical Consult']),
+        createdDate: Between(ticketDate, addDays(ticketDate, 1)),
+      },
+    });
   }
 }

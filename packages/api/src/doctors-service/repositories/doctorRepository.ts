@@ -17,6 +17,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { ApiConstants } from 'ApiConstants';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Doctor)
@@ -240,7 +241,7 @@ export class DoctorRepository extends Repository<Doctor> {
               onlineSlot = nextSlot;
               break;
             }
-            if (counter >= 1) {
+            if (counter >= ApiConstants.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS) {
               onlineSlot = '';
               break;
             }
@@ -269,7 +270,7 @@ export class DoctorRepository extends Repository<Doctor> {
               physicalSlot = nextSlot;
               break;
             }
-            if (counter >= 1) {
+            if (counter >= ApiConstants.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS) {
               physicalSlot = '';
               break;
             }

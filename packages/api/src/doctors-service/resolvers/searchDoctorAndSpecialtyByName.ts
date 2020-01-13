@@ -17,6 +17,7 @@ import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
+import { log } from 'customWinstonLogger';
 
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   type PossibleSearchMatches {
@@ -69,6 +70,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
+  log(
+    'doctorSearchAPILogger',
+    `SEARCH_CALL_STARTED`,
+    'SearchDoctorAndSpecialtyByName_API',
+    '----------------------------------------------',
+    ''
+  );
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
 
   let matchedDoctors: Doctor[] = [],
@@ -86,8 +94,22 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     //get facility distances from user geolocation
     let facilityDistances: FacilityDistanceMap = {};
     if (args.geolocation) {
+      log(
+        'doctorSearchAPILogger',
+        `GEOLOCATION_API_CALL_START`,
+        'SearchDoctorAndSpecialtyByName_API',
+        '',
+        ''
+      );
       const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
       facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
+      log(
+        'doctorSearchAPILogger',
+        `GEOLOCATION_API_CALL_END`,
+        'SearchDoctorAndSpecialtyByName_API',
+        '',
+        ''
+      );
     }
 
     matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase);

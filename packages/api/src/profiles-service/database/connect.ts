@@ -65,6 +65,7 @@ import {
   RescheduleAppointmentDetails,
   SdDashboardSummary,
   TransferAppointmentDetails,
+  PhrDocumentsSummary,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -155,6 +156,7 @@ export const connect = async () => {
         RescheduleAppointmentDetails,
         SdDashboardSummary,
         TransferAppointmentDetails,
+        PhrDocumentsSummary,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

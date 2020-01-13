@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
 
 export interface ProfileListProps {
   selectedProfile?: GetCurrentPatients_getCurrentPatients_patients;
-  setDisplayAddProfile: (args0: boolean) => void;
+  setDisplayAddProfile?: (args0: boolean) => void;
   saveUserChange: boolean;
   defaultText?: string;
   childView?: Element;
@@ -59,6 +59,7 @@ export interface ProfileListProps {
   addStringValue?: string;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   unsetloaderDisplay?: boolean;
+  showList?: boolean;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -169,13 +170,17 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
             shopCart.setAddresses && shopCart.setAddresses(addressList!);
             diagCart.setAddresses && diagCart.setAddresses(addressList!);
+            unsetloaderDisplay ? null : setLoading && setLoading(false);
+            setAddressCalled(false);
           }
         )
-        .catch((e) => {})
-        .finally(() => {
+        .catch((e) => {
           unsetloaderDisplay ? null : setLoading && setLoading(false);
           setAddressCalled(false);
         });
+      // .finally(() => {
+
+      // });
     }
   };
 
@@ -220,6 +225,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const renderPicker = () => {
     return (
       <MaterialMenu
+        showMenu={props.showList}
         options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
@@ -257,7 +263,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               isPoptype: true,
               mobileNumber: currentPatient && currentPatient!.mobileNumber,
             });
-            setDisplayAddProfile(true);
+            setDisplayAddProfile && setDisplayAddProfile(true);
           } else {
             profileArray && setProfile(profileArray!.find((i) => selectedUser.key === i.id));
           }
