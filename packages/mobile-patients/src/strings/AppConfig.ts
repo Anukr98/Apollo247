@@ -93,7 +93,7 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
-  Android_Version: '1.74',
+  Android_Version: '1.76',
 };
 
 // QA
