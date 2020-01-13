@@ -6,6 +6,8 @@ import {
   STATUS,
   FeedbackDashboardSummary,
   APPOINTMENT_TYPE,
+  PhrDocumentsSummary,
+  AppointmentDocuments,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
@@ -40,6 +42,25 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
       });
+  }
+
+  saveDocumentSummary(phrDocSummaryAttrs: Partial<PhrDocumentsSummary>) {
+    return PhrDocumentsSummary.create(phrDocSummaryAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  getDocumentSummary(docDate: Date) {
+    const newStartDate = new Date(format(addDays(docDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(docDate, 'yyyy-MM-dd') + 'T18:30');
+    return AppointmentDocuments.createQueryBuilder('appointment_documents')
+      .where('appointment_documents.createdDate Between :fromDate AND :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .getCount();
   }
 
   getAppointmentsByDoctorId(doctorId: string, appointmentDate: Date, appointmentType: string) {

@@ -786,6 +786,47 @@ export class AppointmentNoShow extends BaseEntity {
 }
 //Appointment no show details end
 
+//documents summary starts
+@Entity()
+export class PhrDocumentsSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  documentDate: Date;
+
+  @Column({ default: 0 })
+  appointmentDoc: number;
+
+  @Column({ default: 0 })
+  medicineOrderDoc: number;
+
+  @Column({ default: 0 })
+  standAloneDoc: number;
+
+  @Column({ default: 0 })
+  newUser: number;
+
+  @Column({ default: 0 })
+  oldUser: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
 //SD dashboard summary starts
 @Entity()
 export class FeedbackDashboardSummary extends BaseEntity {

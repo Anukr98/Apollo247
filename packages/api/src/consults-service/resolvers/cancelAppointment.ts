@@ -137,33 +137,34 @@ const cancelAppointment: Resolver<
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
 
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
-  const apptTime = format(istDateTime, 'hh:mm');
+  const apptTime = format(istDateTime, 'hh:mm A');
   const patientName = appointment.patientName;
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   let docName = '';
   let hospitalName = '';
   if (doctorDetails) {
-    docName = doctorDetails.firstName + '' + doctorDetails.lastName;
+    docName = doctorDetails.displayName;
   }
 
   if (appointment.hospitalId != '' && appointment.hospitalId != null) {
     const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
     const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
     if (facilityDets) {
+      const streetLine2 = facilityDets.streetLine2 == null ? '' : facilityDets.streetLine2 + ',';
       hospitalName =
         facilityDets.name +
-        ' ' +
+        ', ' +
         facilityDets.streetLine1 +
-        ' ' +
-        facilityDets.streetLine2 +
+        ', ' +
+        streetLine2 +
         ' ' +
         facilityDets.city +
-        ' ' +
+        ', ' +
         facilityDets.state;
     }
   }
-  const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${patientName}<br>Appointment Date Time: ${apptDate}  ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
+  const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${patientName}<br>Appointment Date Time: ${apptDate}, ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
