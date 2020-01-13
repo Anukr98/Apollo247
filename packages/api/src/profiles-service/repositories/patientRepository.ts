@@ -759,6 +759,10 @@ export class PatientRepository extends Repository<Patient> {
     const patientDetails = await this.getPatientDetails(id);
     if (patientDetails == null)
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
+    let patientDob = new Date('1984-01-01');
+    if (patientDetails.dateOfBirth != null) {
+      patientDob = patientDetails.dateOfBirth;
+    }
     const athsTokenInput = {
       AdminId: process.env.ATHS_TOKEN_ADMIN ? process.env.ATHS_TOKEN_ADMIN.toString() : '',
       AdminPassword: process.env.ATHS_TOKEN_PWD ? process.env.ATHS_TOKEN_PWD.toString() : '',
@@ -766,7 +770,7 @@ export class PatientRepository extends Repository<Patient> {
       LastName: patientDetails.lastName,
       countryCode: ApiConstants.COUNTRY_CODE.toString(),
       PhoneNumber: patientDetails.mobileNumber,
-      DOB: format(patientDetails.dateOfBirth, 'dd/MM/yyyy'),
+      DOB: format(patientDob, 'dd/MM/yyyy'),
       Gender: '1',
       PartnerUserId: '1012',
       SourceApp: process.env.ATHS_SOURCE_APP ? process.env.ATHS_SOURCE_APP.toString() : '',
