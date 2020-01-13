@@ -924,7 +924,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     marginHorizontal: 6,
                     marginTop: 11.5,
                     marginBottom: 16,
-                    height: 230,
+                    height: 215,
                   },
                   1
                 )
