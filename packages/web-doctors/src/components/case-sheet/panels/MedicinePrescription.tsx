@@ -29,7 +29,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -43,6 +43,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      className={classes.inputField}
       autoFocus
       placeholder="Search"
       fullWidth
@@ -68,59 +69,86 @@ function renderSuggestion(
   const parts = parse(suggestion.label, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span
-            key={part.text}
-            style={{
-              fontWeight: part.highlight ? 500 : 400,
-              whiteSpace: 'pre',
-            }}
-          >
-            {part.text}
-          </span>
-        ))}
-      </div>
-    </MenuItem>
+    <div>
+      {parts.map((part) => (
+        <span
+          key={part.text}
+          style={{
+            fontWeight: part.highlight ? 500 : 400,
+            whiteSpace: 'pre',
+          }}
+          title={suggestion.label}
+        >
+          {part.text.length > 46
+            ? part.text.substring(0, 45).toLowerCase() + '...'
+            : part.text.toLowerCase()}
+        </span>
+      ))}
+      <img src={require('images/ic_dark_plus.svg')} alt="" />
+    </div>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    container: {
+    suggestionsContainer: {
       position: 'relative',
+      paddingTop: 20,
     },
-    input: {
-      color: 'black',
-      paddingTop: 0,
-    },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
-      color: 'black',
+    suggestionPopover: {
       boxShadow: 'none',
-    },
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
-      '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
-        },
-      },
+      maxHeight: 355,
+      overflowY: 'auto',
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
     },
     suggestionsList: {
       margin: 0,
       padding: 0,
       listStyleType: 'none',
-      color: '#02475b',
+      overflow: 'hidden',
+      borderRadius: '0 0 0 10px',
+    },
+    suggestionItem: {
       fontSize: 18,
       fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 7,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
     },
     root: {
       flexGrow: 1,
@@ -169,15 +197,6 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       outline: 'none',
     },
-    activeCard: {
-      // border: '1px solid #00b38e',
-      // backgroundColor: '#fff',
-    },
-    checkImg: {
-      position: 'absolute',
-      right: 16,
-      top: 16,
-    },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
@@ -199,15 +218,12 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      right: 0,
-      top: '0px',
+      right: 20,
+      top: 15,
       padding: 0,
-      marginTop: 12,
+      minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
-      },
-      '& img': {
-        marginRight: 8,
       },
     },
     medicineHeading: {
@@ -232,12 +248,13 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -2,
+      top: -9,
       '& img': {
         verticalAlign: 'middle',
       },
     },
     cross: {
+      cursor: 'pointer',
       position: 'absolute',
       right: -10,
       top: -9,
@@ -245,7 +262,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
     },
     dialogActions: {
-      padding: 20,
+      padding: '16px 20px',
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
       textAlign: 'right',
@@ -279,18 +296,19 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: 'hidden',
     },
     dialogContent: {
-      padding: 20,
       minHeight: 400,
       position: 'relative',
+      padding: 20,
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
         color: 'rgba(2, 71, 91, 0.6)',
-        marginBottom: 5,
-        marginTop: 5,
+        margin: 0,
         lineHeight: 'normal',
-        minHeight: 18,
       },
+    },
+    autoSuggestionWrapper: {
+      padding: 0,
     },
     popupHeading: {
       '& h6': {
@@ -317,7 +335,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: 0,
       '& button': {
         border: '1px solid #00b38e',
-        padding: '5px 10px',
+        padding: '0 10px',
         fontSize: 12,
         fontWeight: 'normal',
         borderRadius: 14,
@@ -325,16 +343,24 @@ const useStyles = makeStyles((theme: Theme) =>
         cursor: 'pointer',
         color: '#00b38e',
         backgroundColor: '#fff',
+        textTransform: 'none',
+        boxShadow: 'none',
         '&:focus': {
           outline: 'none',
         },
       },
+    },
+    daysInWeek: {
+      margin: '0 0 10px 0 !important',
     },
     daysOfWeek: {
       '& button:last-child': {
         border: '1px solid #e50000 !important',
         color: '#e50000',
       },
+    },
+    instructionText: {
+      margin: '0 0 8px 0 !important',
     },
     tabletcontent: {
       margin: '0 10px',
@@ -368,8 +394,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     loader: {
       left: '50%',
-      top: 41,
-      position: 'relative',
+      top: '45%',
+      position: 'absolute',
     },
     updateSymptom: {
       backgroundColor: 'transparent',
@@ -402,6 +428,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     inputRoot: {
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -451,6 +478,12 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     unitsSelect: {
       marginTop: 0,
+      '& div': {
+        '&:focus': {
+          boxShadow: '0 8px 6px -6px rgba(128, 128, 128, 0.3)',
+          transition: 'all 0.2s',
+        },
+      },
     },
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
@@ -475,6 +508,9 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 12,
         fontWeight: 'normal',
       },
+    },
+    inputField: {
+      padding: '0 20px 0 20px',
     },
   })
 );
@@ -1025,7 +1061,7 @@ export const MedicinePrescription: React.FC = () => {
   const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
     const daySlotitem = _daySlotitem!;
     return (
-      <button
+      <AphButton
         key={daySlotitem.id}
         className={daySlotitem.selected ? classes.activeBtnRed : ''}
         onClick={() => {
@@ -1033,7 +1069,7 @@ export const MedicinePrescription: React.FC = () => {
         }}
       >
         {daySlotitem.value}
-      </button>
+      </AphButton>
     );
   });
   const addUpdateMedicines = () => {
@@ -1135,7 +1171,7 @@ export const MedicinePrescription: React.FC = () => {
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
     const tobeTakenitem = _tobeTakenitem!;
     return (
-      <button
+      <AphButton
         key={tobeTakenitem.id}
         className={tobeTakenitem.selected ? classes.activeBtn : ''}
         onClick={() => {
@@ -1143,7 +1179,7 @@ export const MedicinePrescription: React.FC = () => {
         }}
       >
         {tobeTakenitem.value}
-      </button>
+      </AphButton>
     );
   });
 
@@ -1168,7 +1204,7 @@ export const MedicinePrescription: React.FC = () => {
   ) => {
     setMedicine(newValue);
     setLoading(false);
-    if (newValue.length > 2) {
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchMedicines(newValue);
     }
     setState({
@@ -1507,7 +1543,7 @@ export const MedicinePrescription: React.FC = () => {
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       {medicineForm === 'OTHERS' && (
-                        <Grid item lg={6} md={6} xs={12}>
+                        <Grid item lg={6} md={6} xs={6}>
                           <h6>Take</h6>
                           <AphTextField
                             autoFocus
@@ -1529,7 +1565,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </Grid>
                       )}
-                      <Grid item lg={6} md={6} xs={12}>
+                      <Grid item lg={6} md={6} xs={6}>
                         <h6>{medicineForm !== 'OTHERS' ? 'Apply' : ''}</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
@@ -1560,9 +1596,8 @@ export const MedicinePrescription: React.FC = () => {
                         item
                         lg={medicineForm === 'OTHERS' ? 12 : 6}
                         md={medicineForm === 'OTHERS' ? 12 : 6}
-                        xs={12}
+                        xs={6}
                       >
-                        <h6>&nbsp;</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
@@ -1588,7 +1623,7 @@ export const MedicinePrescription: React.FC = () => {
                           </AphSelect>
                         </div>
                       </Grid>
-                      <Grid item lg={6} md={6} xs={12}>
+                      <Grid item lg={6} md={6} xs={6}>
                         <h6>For</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
@@ -1611,7 +1646,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </div>
                       </Grid>
-                      <Grid item lg={6} md={6} xs={12}>
+                      <Grid item lg={6} md={6} xs={6}>
                         <h6>&nbsp;</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
@@ -1667,7 +1702,7 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Instructions/Notes</h6>
+                        <h6 className={classes.instructionText}>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             multiline
@@ -1728,92 +1763,85 @@ export const MedicinePrescription: React.FC = () => {
               </Button>
             )}
             {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  setShowDosage(false);
-                  handleClearRequested();
-                }}
-              />
+            <Button
+              className={classes.cross}
+              onClick={() => {
+                setIsDialogOpen(false);
+                setShowDosage(false);
+                handleClearRequested();
+              }}
+            >
+              <img src={require('images/ic_cross.svg')} alt="" />
             </Button>
           </AphDialogTitle>
           <div className={classes.shadowHide}>
             {!showDosage ? (
-              <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
-                  <div className={classes.dialogContent}>
-                    <Autosuggest
-                      onSuggestionSelected={(e, { suggestion }) => {
-                        setState({
-                          single: '',
-                          popper: '',
-                        });
-                        getMedicineDetails(suggestion);
-                      }}
-                      {...autosuggestProps}
-                      inputProps={{
-                        classes,
-                        color: 'primary',
-                        id: 'react-autosuggest-simple',
-                        placeholder: 'Search',
-                        value: state.single,
-                        onChange: handleChange('single'),
-                        onKeyPress: (e) => {
-                          if (e.which == 13 || e.keyCode == 13) {
-                            if (suggestions.length === 1) {
-                              setState({
-                                single: '',
-                                popper: '',
-                              });
-                              getMedicineDetails(suggestions[0]);
-                            }
-                          }
-                        },
-                      }}
-                      theme={{
-                        container: classes.container,
-                        suggestionsContainerOpen: classes.suggestionsContainerOpen,
-                        suggestionsList: classes.suggestionsList,
-                        suggestion: classes.suggestion,
-                      }}
-                      renderSuggestionsContainer={(options) => (
-                        <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
-                          <Paper {...options.containerProps} square>
-                            {options.children}
-                          </Paper>
-                        </Scrollbars>
-                      )}
-                    />
-                    {medicine.length > 2 && !loading && (
-                      <div>
-                        <span>
-                          <AphButton
-                            className={classes.darkGreenaddBtn}
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                              setState({
-                                single: '',
-                                popper: '',
-                              });
-                              setShowDosage(true);
-                              setSelectedValue(medicine);
-                              setSelectedId('IB01');
-                              setLoading(false);
-                              setMedicine('');
-                            }}
-                          >
-                            <img src={require('images/ic_add_circle.svg')} alt="" />
-                          </AphButton>
-                        </span>
-                      </div>
-                    )}
-                    {loading ? <CircularProgress className={classes.loader} /> : null}
-                  </div>
-                </Scrollbars>
+              <div className={`${classes.dialogContent} ${classes.autoSuggestionWrapper}`}>
+                <Autosuggest
+                  onSuggestionSelected={(e, { suggestion }) => {
+                    setState({
+                      single: '',
+                      popper: '',
+                    });
+                    getMedicineDetails(suggestion);
+                  }}
+                  {...autosuggestProps}
+                  inputProps={{
+                    classes,
+                    color: 'primary',
+                    id: 'react-autosuggest-simple',
+                    placeholder: 'Search',
+                    value: state.single,
+                    onChange: handleChange('single'),
+                    onKeyPress: (e) => {
+                      if (e.which == 13 || e.keyCode == 13) {
+                        if (suggestions.length === 1) {
+                          setState({
+                            single: '',
+                            popper: '',
+                          });
+                          getMedicineDetails(suggestions[0]);
+                        }
+                      }
+                    },
+                  }}
+                  theme={{
+                    container: classes.suggestionsContainer,
+                    suggestionsList: classes.suggestionsList,
+                    suggestion: classes.suggestionItem,
+                    suggestionHighlighted: classes.suggestionHighlighted,
+                  }}
+                  renderSuggestionsContainer={(options) => (
+                    <Paper
+                      {...options.containerProps}
+                      square
+                      classes={{ root: classes.suggestionPopover }}
+                    >
+                      {options.children}
+                    </Paper>
+                  )}
+                />
+                {medicine.trim().length > 2 && !loading && (
+                  <AphButton
+                    className={classes.darkGreenaddBtn}
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      setState({
+                        single: '',
+                        popper: '',
+                      });
+                      setShowDosage(true);
+                      setSelectedValue(medicine);
+                      setSelectedId('IB01');
+                      setLoading(false);
+                      setMedicine('');
+                    }}
+                  >
+                    <img src={require('images/ic_add_circle.svg')} alt="" />
+                  </AphButton>
+                )}
+                {loading ? <CircularProgress className={classes.loader} /> : null}
               </div>
             ) : (
               <div>
@@ -1822,7 +1850,7 @@ export const MedicinePrescription: React.FC = () => {
                     <div className={classes.dialogContent}>
                       <Grid container spacing={2}>
                         {medicineForm === 'OTHERS' && (
-                          <Grid item lg={6} md={6} xs={12}>
+                          <Grid item lg={6} md={6} xs={6}>
                             <h6>Take</h6>
                             <AphTextField
                               autoFocus
@@ -1844,8 +1872,9 @@ export const MedicinePrescription: React.FC = () => {
                             )}
                           </Grid>
                         )}
-                        <Grid item lg={6} md={6} xs={12}>
+                        <Grid item lg={6} md={6} xs={6}>
                           <h6>{medicineForm !== 'OTHERS' ? 'Apply' : ''}</h6>
+                          {medicineForm == 'OTHERS' && <h6>&nbsp;</h6>}
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               style={{ paddingTop: 3 }}
@@ -1871,13 +1900,8 @@ export const MedicinePrescription: React.FC = () => {
                             </AphSelect>
                           </div>
                         </Grid>
-                        <Grid
-                          item
-                          lg={medicineForm === 'OTHERS' ? 12 : 6}
-                          md={medicineForm === 'OTHERS' ? 12 : 6}
-                          xs={12}
-                        >
-                          <h6>&nbsp;</h6>
+                        <Grid item xs={medicineForm === 'OTHERS' ? 12 : 6}>
+                          {medicineForm !== 'OTHERS' && <h6>&nbsp;</h6>}
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               style={{ paddingTop: 3 }}
@@ -1904,7 +1928,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </Grid>
 
-                        <Grid item lg={6} md={6} xs={12}>
+                        <Grid item lg={6} md={6} xs={6}>
                           <h6>For</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
@@ -1927,7 +1951,7 @@ export const MedicinePrescription: React.FC = () => {
                             )}
                           </div>
                         </Grid>
-                        <Grid item lg={6} md={6} xs={12}>
+                        <Grid item lg={6} md={6} xs={6}>
                           <h6>&nbsp;</h6>
                           <div className={classes.unitsSelect}>
                             <AphSelect
@@ -1955,7 +1979,6 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </Grid>
                         <Grid item lg={6} md={6} xs={12}>
-                          <h6>&nbsp;</h6>
                           <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                           {errorState.tobeTakenErr && (
                             <FormHelperText
@@ -1968,7 +1991,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </Grid>
                         <Grid item lg={12} xs={12}>
-                          <h6>In the</h6>
+                          <h6 className={classes.daysInWeek}>In the</h6>
                           <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
                             {daySlotsHtml}
                           </div>
@@ -1983,7 +2006,7 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </Grid>
                         <Grid item lg={12} xs={12}>
-                          <h6>Instructions/Notes</h6>
+                          <h6 className={classes.instructionText}>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
                             <AphTextField
                               multiline

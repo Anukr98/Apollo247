@@ -355,7 +355,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, []);
 
-  // Common Views
+  // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
     return (
@@ -683,7 +683,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 paddingBottom: 12,
               }}
             >
-              Have a prescription ready?
+              Have a prescription ready?
             </Text>
             <Button
               onPress={() => {
@@ -693,7 +693,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               titleTextStyle={{
                 ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
               }}
-              title={'UPLOAD PRESCRIPTION'}
+              title={'UPLOAD PRESCRIPTION'}
             />
           </View>
           <FileBig style={{ height: 60, width: 40 }} />
@@ -802,7 +802,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
         >
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
+          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
               (
@@ -813,7 +813,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   },
                 ]}
               >
-                Rs. {price}
+                Rs. {price}
               </Text>
               )
             </Text>
@@ -864,7 +864,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
             onPress={data.onAddOrRemoveCartItem}
           >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -1083,7 +1083,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     },
                   ]}
                 >
-                  Rs. {price}
+                  Rs. {price}
                 </Text>
                 )
               </Text>
@@ -1704,7 +1704,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
@@ -1797,6 +1797,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           bounces={false}
           stickyHeaderIndices={[1]}
           onScroll={handleScroll}
+          scrollEventThrottle={20}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}

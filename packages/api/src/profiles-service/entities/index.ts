@@ -153,6 +153,18 @@ export enum FEEDBACKTYPE {
   DIAGNOSTICS = 'DIAGNOSTICS',
 }
 
+export enum LOGIN_TYPE {
+  PATIENT = 'PATIENT',
+  DOCTOR = 'DOCTOR',
+}
+
+export enum OTP_STATUS {
+  NOT_VERIFIED = 'NOT_VERIFIED',
+  VERIFIED = 'VERIFIED',
+  EXPIRED = 'EXPIRED',
+  BLOCKED = 'BLOCKED',
+}
+
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
@@ -843,6 +855,12 @@ export class MedicalRecords extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   documentURLs: string;
+
+  @Column({ nullable: true })
+  issuingDoctor: string;
+
+  @Column({ nullable: true })
+  location: string;
 
   @Column({ nullable: true, type: 'text' })
   prismFileIds: string;
@@ -1547,4 +1565,31 @@ export class PatientHelpTickets extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+}
+
+@Entity()
+export class LoginOtp extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  loginType: LOGIN_TYPE;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  otp: string;
+
+  @Column({ default: OTP_STATUS.NOT_VERIFIED })
+  status: string;
+
+  @Column({ default: 0 })
+  incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
 }

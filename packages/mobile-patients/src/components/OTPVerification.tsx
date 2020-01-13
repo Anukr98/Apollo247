@@ -41,6 +41,8 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { BottomPopUp } from './ui/BottomPopUp';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
+import { useApolloClient } from 'react-apollo-hooks';
+import { verifyOTP } from '../helpers/loginCalls';
 
 const { height, width } = Dimensions.get('window');
 
@@ -74,8 +76,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.LIGHT_BLUE,
-    letterSpacing: 28,
-    paddingLeft: 12,
+    letterSpacing: 28, // 26
+    paddingLeft: 12, // 25
   },
   viewWebStyles: {
     position: 'absolute',
@@ -115,11 +117,12 @@ export interface OTPVerificationProps
     otpString: string;
     phoneNumber: string;
     dbChildKey: string;
+    loginId: string;
   }> {}
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
-  const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
+  const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -132,13 +135,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
 
-  const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
+  const { sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
+  const client = useApolloClient();
 
-  const dbChildKey = props.navigation.state.params && props.navigation.state.params.dbChildKey;
+  const dbChildKey = props.navigation.state.params!.dbChildKey;
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -356,12 +360,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           .update({
             OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
           });
+        const { loginId } = props.navigation.state.params!;
 
-        setTimeout(() => {
-          verifyOtp(otp)
-            .then((otp) => {
+        verifyOTP(client, loginId, otp)
+          .then((data: any) => {
+            console.log(data.status === true, data.status, 'status');
+
+            if (data.status === true) {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
-              CommonBugFender('OTP_ENTERED_SUCCESS', otp as Error);
+              CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
 
               db.ref('ApolloPatients/')
                 .child(dbChildKey)
@@ -371,68 +378,96 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
               _removeFromStore();
               setOnOtpClick(true);
-            })
-            .catch((error) => {
+              console.log('error', data.authToken);
+
+              sendOtp(data.authToken).then((data) => {
+                // setshowSpinner(true);
+              });
+            } else {
+              console.log('else error');
+
               try {
-                console.log({
-                  error,
-                });
-                CommonBugFender('OTP_ENTERED_FAIL', error);
-                CommonLogEvent('OTP_ENTERED_FAIL', error);
+                // console.log(
+                //   {
+                //     error,
+                //   },
+                //   'else error'
+                // );
+                // CommonBugFender('OTP_ENTERED_FAIL', error);
+                // CommonLogEvent('OTP_ENTERED_FAIL', error);
 
-                // if (
-                //   error &&
-                //   error.message ===
-                //     'The sms code has expired. Please re-send the verification code to try again.'
-                // ) {
-                //   setshowSpinner(false);
-                //   setErrorpopup(true);
-                // }
-                setTimeout(() => {
-                  if (isAuthChanged) {
-                    _removeFromStore();
-                    setOnOtpClick(true);
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-                      });
-                  } else {
-                    setOnOtpClick(false);
-                    setshowSpinner(false);
-                    // console.log('error', error);
-                    _storeTimerData(invalidOtpCount + 1);
+                setOnOtpClick(false);
+                setshowSpinner(false);
+                // console.log('error', error);
+                _storeTimerData(invalidOtpCount + 1);
 
-                    if (invalidOtpCount + 1 === 3) {
-                      setShowErrorMsg(true);
-                      setIsValidOTP(false);
-                      // startInterval(timer);
-                      setIntervalId(intervalId);
-                    } else {
-                      setShowErrorMsg(true);
-                      setIsValidOTP(true);
-                    }
-                    setInvalidOtpCount(invalidOtpCount + 1);
-                    // setOtp('');
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-                      });
+                if (invalidOtpCount + 1 === 3) {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(false);
+                  // startInterval(timer);
+                  setIntervalId(intervalId);
+                } else {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(true);
+                }
+                setInvalidOtpCount(invalidOtpCount + 1);
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                  });
 
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        OTPFailedReason: error ? error.message : '',
-                      });
-                  }
-                }, 1000);
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    OTPFailedReason: 'Wrong OTP',
+                  });
               } catch (error) {
                 setshowSpinner(false);
-                console.log(error);
+                // console.log(error);
               }
-            });
-        }, 3000);
+            }
+          })
+          .catch((error: Error) => {
+            try {
+              console.log({
+                error,
+              });
+
+              setOnOtpClick(false);
+              setshowSpinner(false);
+              // console.log('error', error);
+              _storeTimerData(invalidOtpCount + 1);
+
+              if (invalidOtpCount + 1 === 3) {
+                setShowErrorMsg(true);
+                setIsValidOTP(false);
+                // startInterval(timer);
+                setIntervalId(intervalId);
+              } else {
+                setShowErrorMsg(true);
+                setIsValidOTP(true);
+              }
+              setInvalidOtpCount(invalidOtpCount + 1);
+              db.ref('ApolloPatients/')
+                .child(dbChildKey)
+                .update({
+                  wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                });
+
+              db.ref('ApolloPatients/')
+                .child(dbChildKey)
+                .update({
+                  OTPFailedReason: error ? error.message : '',
+                });
+
+              CommonBugFender('OTP_ENTERED_FAIL', error);
+              CommonLogEvent('OTP_ENTERED_FAIL', JSON.stringify(error));
+            } catch (error) {
+              setshowSpinner(false);
+              console.log(error);
+            }
+          });
       } else {
         setshowOfflinePopup(true);
       }
@@ -677,7 +712,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           >
             <View style={styles.inputView}>
               <TextInput
-                style={[styles.codeInputStyle, { borderColor: 'rgba(0, 179, 142, 0.4)' }]}
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor: 'rgba(0, 179, 142, 0.4)',
+                  },
+                ]}
                 value={otp}
                 onChangeText={(otp: string) => setOtp(otp)}
                 editable={false}
@@ -772,13 +812,24 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 activeOpacity={1}
                 onPress={showResentTimer ? () => {} : onClickResend}
               >
-                <Text style={[styles.bottomDescription, showResentTimer ? { opacity: 0.5 } : {}]}>
+                <Text
+                  style={[
+                    styles.bottomDescription,
+                    showResentTimer
+                      ? {
+                          opacity: 0.5,
+                        }
+                      : {},
+                  ]}
+                >
                   {string.login.resend_opt}
                   {showResentTimer && ' '}
                   {showResentTimer && (
                     <CountDownTimer
                       timer={30}
-                      style={{ color: theme.colors.LIGHT_BLUE }}
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                      }}
                       onStopTimer={onStopResendTimer}
                     />
                   )}

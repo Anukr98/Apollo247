@@ -25,7 +25,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       if (Platform.OS === 'android') {
         Linking.getInitialURL().then((url) => {
-          // this.navigate(url);
+          handleOpenURL(url);
+          console.log('linking', url);
         });
       } else {
         console.log('linking');
@@ -37,16 +38,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const handleOpenURL = (event: any) => {
     console.log('event', event);
-    const route = event.url.replace('apollopatients://', '');
+    let route;
 
-    if (route == 'ConsultRoom') {
-      console.log('ConsultRoom');
-      // props.navigation.replace(AppRoutes.ConsultRoom);
+    if (Platform.OS === 'ios') {
+      route = event.url.replace('apollopatients://', '');
+    } else {
+      route = event.replace('apollopatients://', '');
+    }
+
+    switch (route) {
+      case 'Consult':
+        console.log('Consult');
+        getData('Consult');
+        break;
+      case 'Medicine':
+        console.log('Medicine');
+        getData('Medicine');
+        break;
+      case 'Test':
+        console.log('Test');
+        getData('Test');
+        break;
+      default:
+        break;
     }
     console.log('route', route);
   };
 
-  useEffect(() => {
+  const getData = (routeName: String) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       const onboarding = await AsyncStorage.getItem('onboarding');
@@ -79,7 +98,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           if (mePatient) {
             if (mePatient.firstName !== '') {
-              props.navigation.replace(AppRoutes.ConsultRoom);
+              pushTheView(routeName);
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
@@ -100,11 +119,44 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setshowSpinner(false);
           props.navigation.replace(AppRoutes.Onboarding);
         }
+        SplashScreenView.hide();
       }, 2000);
     }
     fetchData();
-    SplashScreenView.hide();
-  }, [props.navigation]);
+  };
+
+  useEffect(() => {
+    getData('ConsultRoom');
+  }, []);
+
+  const pushTheView = (routeName: String) => {
+    console.log('pushTheView', routeName);
+
+    switch (routeName) {
+      case 'Consult':
+        console.log('Consult');
+        props.navigation.navigate('CONSULT ROOM');
+        break;
+
+      case 'Medicine':
+        console.log('Medicine');
+        props.navigation.navigate('MEDICINES');
+        break;
+
+      case 'Test':
+        console.log('Test');
+        props.navigation.navigate('TESTS');
+        break;
+
+      case 'ConsultRoom':
+        console.log('ConsultRoom');
+        props.navigation.replace(AppRoutes.ConsultRoom);
+        break;
+
+      default:
+        break;
+    }
+  };
 
   // useEffect(() => {
   //   console.log('SplashScreen signInError', signInError);

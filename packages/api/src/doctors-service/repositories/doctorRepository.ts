@@ -676,12 +676,22 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { nextAvailableSlot });
   }
 
-  getAllDoctors() {
-    return this.find({
-      where: {
-        isActive: true,
-        doctorType: Not('JUNIOR'),
-      },
-    });
+  getAllDoctors(doctorId: string) {
+    if (doctorId == '0') {
+      return this.find({
+        where: {
+          isActive: true,
+          doctorType: Not('JUNIOR'),
+        },
+      });
+    } else {
+      return this.find({
+        where: {
+          id: doctorId,
+          isActive: true,
+          doctorType: Not('JUNIOR'),
+        },
+      });
+    }
   }
 }

@@ -948,6 +948,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       // const consultStartTime = new Date(
       //   format(new Date(), 'yyyy-MM-dd') + ' ' + timeSlot[0].startTime.toString()
       // );
+
       if (blockedSlots.length > 0) {
         blockedSlots.map((blockedSlot) => {
           let firstSlot = true;
@@ -960,6 +961,12 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCMinutes()
             .toString()
             .padStart(2, '0')}:00.000Z`;
+
+          let blockedSlotsCount =
+            (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
+          if (!Number.isInteger(blockedSlotsCount)) {
+            blockedSlotsCount = Math.ceil(blockedSlotsCount);
+          }
 
           //const startMin = parseInt(format(blockedSlot.start, 'mm'), 0);
           //const consultStartMin = parseInt(format(consultStartTime, 'mm'), 0);
@@ -983,15 +990,27 @@ export class AppointmentRepository extends Repository<Appointment> {
           // ) {
           //   slot = blockedSlot.start;
           // }
-          // console.log(startMin, addMin, slot, 'start min');
+          const blockedSlotsDuration = differenceInMinutes(blockedSlot.end, blockedSlot.start);
+          console.log(slot, 'before start min');
           let counter = 0;
           while (true) {
             if (availableSlots.includes(sl)) {
+              console.log(counter, sl, 'came here 3333');
               break;
             }
             slot = addMinutes(slot, 1);
             counter++;
-            if (counter >= availableSlots.length && counter >= timeSlot[0].consultDuration) {
+            // if (counter >= blockedSlotsDuration) {
+            //   console.log(counter, sl, 'came here 111');
+            //   break;
+            // }
+            if (
+              counter >= availableSlots.length &&
+              counter >= timeSlot[0].consultDuration &&
+              counter >= blockedSlotsCount &&
+              counter >= blockedSlotsDuration
+            ) {
+              console.log(counter, sl, 'came here 111');
               break;
             }
             apptDt = format(slot, 'yyyy-MM-dd');
@@ -1004,16 +1023,13 @@ export class AppointmentRepository extends Repository<Appointment> {
               .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
-          let blockedSlotsCount =
-            (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
-          if (!Number.isInteger(blockedSlotsCount)) {
-            blockedSlotsCount = Math.ceil(blockedSlotsCount);
-          }
+
           console.log(
             blockedSlotsCount,
             'blocked count',
             differenceInMinutes(blockedSlot.end, blockedSlot.start)
           );
+
           Array(blockedSlotsCount)
             .fill(0)
             .map(() => {
@@ -1038,7 +1054,7 @@ export class AppointmentRepository extends Repository<Appointment> {
             doctorBblockedSlots[blockedSlotsCount - 1] = '';
           }
         });
-        console.log(doctorBblockedSlots, 'doctor slots');
+        //console.log(doctorBblockedSlots, 'doctor slots');
       }
     }
     return doctorBblockedSlots;
@@ -1353,5 +1369,18 @@ export class AppointmentRepository extends Repository<Appointment> {
       endTime = addMinutes(new Date(apptStartDateTime), duration);
     }
     return endTime;
+  }
+
+  getPatientFutureAppointmentsCount(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+      })
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getCount();
   }
 }

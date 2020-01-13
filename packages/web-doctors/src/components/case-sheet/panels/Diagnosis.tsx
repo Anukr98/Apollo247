@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import {
-  Typography,
-  Chip,
-  MenuItem,
-  makeStyles,
-  Theme,
-  createStyles,
-  Paper,
-} from '@material-ui/core';
-import { AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
+import { Typography, Chip, makeStyles, Theme, createStyles, Paper } from '@material-ui/core';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -17,6 +9,147 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { SearchDiagnosis, SearchDiagnosisVariables } from 'graphql/types/SearchDiagnosis';
 import { SEARCH_DIAGNOSIS } from 'graphql/profiles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    suggestionsContainer: {
+      position: 'relative',
+    },
+    suggestionPopover: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
+      position: 'absolute',
+      zIndex: 1,
+      left: 0,
+      right: 0,
+      maxHeight: 240,
+      overflowY: 'auto',
+    },
+    suggestionsList: {
+      margin: 0,
+      padding: 0,
+      listStyleType: 'none',
+      borderRadius: 10,
+      overflow: 'hidden',
+    },
+    suggestionItem: {
+      fontSize: 18,
+      fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 20,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 40,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
+    },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
+    },
+    mainContainer: {
+      width: '100%',
+      '& h4': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.6)',
+        marginBottom: 12,
+      },
+    },
+    diagnosBtn: {
+      border: '1px solid #00b38e',
+      borderRadius: 16,
+      color: '#fff !important',
+      fontWeight: 600,
+      backgroundColor: '#00b38e',
+      marginBottom: 15,
+      marginRight: 16,
+      fontSize: 14,
+      paddingRight: 30,
+      position: 'relative',
+      minHeight: 32,
+      height: 'auto',
+      '& svg': {
+        position: 'absolute',
+        right: 0,
+        '& path': {
+          fill: '#fff',
+        },
+      },
+      '& span': {
+        whiteSpace: 'normal',
+        paddingTop: 5,
+        paddingBottom: 5,
+      },
+      '&:focus': {
+        backgroundColor: '#00b38e',
+      },
+    },
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
+      },
+    },
+  })
+);
 
 interface OptionType {
   name: string;
@@ -55,163 +188,22 @@ function renderSuggestion(
   const parts = parse(suggestion.name, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span
-            key={part.text}
-            style={{
-              fontWeight: part.highlight ? 500 : 400,
-              whiteSpace: 'pre',
-            }}
-          >
-            {part.text}
-          </span>
-        ))}
-      </div>
-    </MenuItem>
+    <div>
+      {parts.map((part) => (
+        <span
+          key={part.text}
+          style={{
+            fontWeight: part.highlight ? 500 : 400,
+            whiteSpace: 'pre',
+          }}
+        >
+          {part.text}
+        </span>
+      ))}
+      <img src={require('images/ic_dark_plus.svg')} alt="" />
+    </div>
   );
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      height: 250,
-      flexGrow: 1,
-    },
-    container: {
-      position: 'relative',
-    },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
-    },
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
-      '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
-        },
-      },
-    },
-    suggestionsList: {
-      margin: 0,
-      padding: 0,
-      listStyleType: 'none',
-      borderRadius: 10,
-    },
-    divider: {
-      height: theme.spacing(2),
-    },
-    mainContainer: {
-      width: '100%',
-      '& h4': {
-        fontSize: 14,
-        fontWeight: 500,
-        color: 'rgba(2, 71, 91, 0.6)',
-        marginBottom: 12,
-      },
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '& input': {
-        borderBottom: '2px solid #00b38e',
-        '&:hover': {
-          borderBottom: '2px solid #00b38e',
-          '&:before': {
-            borderBottom: '2px solid #00b38e',
-          },
-        },
-        '&:before': {
-          borderBottom: '2px solid #00b38e',
-        },
-        '&:after': {
-          borderBottom: '2px solid #00b38e',
-        },
-      },
-    },
-    diagnosBtn: {
-      border: '1px solid #00b38e',
-      borderRadius: 16,
-      color: '#fff !important',
-      fontWeight: 600,
-      backgroundColor: '#00b38e',
-      marginBottom: 15,
-      marginRight: 16,
-      fontSize: 14,
-      paddingRight: 30,
-      position: 'relative',
-      minHeight: 32,
-      height: 'auto',
-      '& svg': {
-        position: 'absolute',
-        right: 0,
-        '& path': {
-          fill: '#fff',
-        },
-      },
-      '& span': {
-        whiteSpace: 'normal',
-        paddingTop: 5,
-        paddingBottom: 5,
-      },
-      '&:focus': {
-        backgroundColor: '#00b38e',
-      },
-    },
-
-    btnAddDoctor: {
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      color: theme.palette.action.selected,
-      fontSize: 14,
-      fontWeight: 600,
-      // pointerEvents: 'none',
-      paddingLeft: 4,
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-      '& img': {
-        marginRight: 8,
-      },
-    },
-    searchpopup: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
-      marginTop: 2,
-    },
-    inputRoot: {
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '& input': {
-        fontSize: 16,
-        fontWeight: 500,
-        color: '#01475b',
-        paddingTop: 0,
-      },
-      '&:hover': {
-        '&:before': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-        '&:after': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-      },
-    },
-  })
-);
 
 export const Diagnosis: React.FC = () => {
   const classes = useStyles();
@@ -289,7 +281,7 @@ export const Diagnosis: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    if (newValue.length > 2) {
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchDignosis(newValue);
     }
     setState({
@@ -388,13 +380,13 @@ export const Diagnosis: React.FC = () => {
             },
           }}
           theme={{
-            container: classes.container,
-            suggestionsContainerOpen: classes.suggestionsContainerOpen,
+            container: classes.suggestionsContainer,
             suggestionsList: classes.suggestionsList,
-            suggestion: classes.suggestion,
+            suggestion: classes.suggestionItem,
+            suggestionHighlighted: classes.suggestionHighlighted,
           }}
           renderSuggestionsContainer={(options) => (
-            <Paper {...options.containerProps} square className={classes.searchpopup}>
+            <Paper {...options.containerProps} square classes={{ root: classes.suggestionPopover }}>
               {options.children}
             </Paper>
           )}

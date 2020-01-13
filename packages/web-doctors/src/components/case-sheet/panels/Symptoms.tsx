@@ -323,7 +323,7 @@ export const Symptoms: React.FC = (props) => {
     //     severityError: false,
     //   });
     // }
-    else if (isEmpty(severity)) {
+    else if (isEmpty(trim(severity))) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -513,16 +513,15 @@ export const Symptoms: React.FC = (props) => {
               <Paper className={classes.medicinePopup}>
                 <AphDialogTitle className={classes.popupHeadingCenter}>
                   ADD COMPLAINT
-                  <Button className={classes.cross}>
-                    <img
-                      src={require('images/ic_cross.svg')}
-                      alt=""
-                      onClick={() => {
-                        clearError();
-                        setIsDialogOpen(false);
-                        clearField();
-                      }}
-                    />
+                  <Button
+                    className={classes.cross}
+                    onClick={() => {
+                      clearError();
+                      setIsDialogOpen(false);
+                      clearField();
+                    }}
+                  >
+                    <img src={require('images/ic_cross.svg')} alt="" />
                   </Button>
                 </AphDialogTitle>
                 <div>

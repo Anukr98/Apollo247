@@ -431,7 +431,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           // consultations
           selectedTab === tabs[0].title
             ? consultations.filter((item) =>
-                moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+                moment(item.appointmentDateTime).isSameOrAfter(
+                  moment(new Date()).add(15, 'minutes')
+                )
               )
             : consultations.filter((item) =>
                 moment(item.appointmentDateTime).isBefore(moment(new Date()))
@@ -765,7 +767,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
-    setScrollOffset(event.nativeEvent.contentOffset.y);
+    const offset = event.nativeEvent.contentOffset.y;
+    if (!(offset > 1 && scrollOffset > 1)) {
+      setScrollOffset(event.nativeEvent.contentOffset.y);
+    }
   };
 
   const renderTopView = () => {
@@ -888,6 +893,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           bounces={false}
           stickyHeaderIndices={[1]}
           onScroll={handleScroll}
+          scrollEventThrottle={20}
         >
           {renderProfileChangeView()}
           {renderTabSwitch()}

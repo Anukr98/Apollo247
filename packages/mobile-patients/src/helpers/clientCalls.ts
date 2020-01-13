@@ -8,6 +8,9 @@ import {
   END_APPOINTMENT_SESSION,
   GET_APPOINTMENT_DATA,
   DOWNLOAD_DOCUMENT,
+  GET_PATIENT_APPOINTMENTS,
+  LOGIN,
+  VERIFY_LOGIN_OTP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
@@ -17,6 +20,7 @@ import {
   REQUEST_ROLES,
   STATUS,
   EndAppointmentSessionInput,
+  LOGIN_TYPE,
 } from '../graphql/types/globalTypes';
 import {
   EndAppointmentSessionVariables,
@@ -27,6 +31,10 @@ import {
   getAppointmentDataVariables,
 } from '../graphql/types/getAppointmentData';
 import { downloadDocuments } from '../graphql/types/downloadDocuments';
+import { getPatinetAppointments } from '../graphql/types/getPatinetAppointments';
+import moment from 'moment';
+import { LoginVariables, Login } from '../graphql/types/Login';
+import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -201,6 +209,32 @@ export const getPrismUrls = (
       .catch((e: any) => {
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
+      });
+  });
+};
+
+export const getAppointments = (
+  client: ApolloClient<object>,
+  patientId: string | null | undefined
+) => {
+  return new Promise((res, rej) => {
+    const inputData = {
+      patientId: patientId || '',
+      appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
+    };
+    client
+      .query<getPatinetAppointments>({
+        query: GET_PATIENT_APPOINTMENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientAppointmentsInput: inputData,
+        },
+      })
+      .then((data) => {
+        res(data.data.getPatinetAppointments);
+      })
+      .catch((e) => {
+        rej(e);
       });
   });
 };

@@ -147,7 +147,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
             onSlideChange={(index: number) => {
               setcurrentIndex(index);
             }}
-            renderItem={(item: Slide) => (
+            renderItem={({ item }: any) => (
               <View style={styles.itemContainer}>
                 <Image source={item.image} style={styles.imageStyle} resizeMode="cover" />
                 <View>

@@ -132,6 +132,8 @@ export type Resolver<Parent, Args, Context, Result> = (
           throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
         });
 
+      console.log('IDToken:::::::::::::', firebaseIdToken);
+
       const firebaseUser = await firebase
         .auth()
         .getUser(firebaseIdToken.uid)
@@ -139,10 +141,19 @@ export type Resolver<Parent, Args, Context, Result> = (
           throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
         });
 
-      const gatewayContext: GatewayContext = {
+      let gatewayContext: GatewayContext = {
         firebaseUid: firebaseUser.uid,
         mobileNumber: firebaseUser.phoneNumber || '',
       };
+
+      //below logic applies if Authorization jwt is from custom token
+      if (firebaseIdToken.firebase.sign_in_provider === 'custom') {
+        gatewayContext = {
+          firebaseUid: firebaseUser.uid || '',
+          mobileNumber: firebaseUser.uid || '',
+        };
+      }
+
       return gatewayContext;
     },
   });

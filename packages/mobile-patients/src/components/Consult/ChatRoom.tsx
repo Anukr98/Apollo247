@@ -54,6 +54,7 @@ import {
   ConsultQueueInput,
   FEEDBACKTYPE,
   REQUEST_ROLES,
+  APPOINTMENT_STATE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -715,6 +716,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     if (abondmentStarted == true) {
       if (appointmentData.status === STATUS.COMPLETED) return;
+      if (appointmentData.status === STATUS.NO_SHOW) return;
+      if (appointmentData.status === STATUS.CALL_ABANDON) return;
+      if (appointmentData.status === STATUS.CANCELLED) return;
+      if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
       console.log('API Called');
       endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
     }
@@ -1166,6 +1172,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isSeniorConsultStarted) {
       console.log('callAbondmentMethod scenario');
       if (appointmentData.status === STATUS.COMPLETED) return;
+      if (appointmentData.status === STATUS.NO_SHOW) return;
+      if (appointmentData.status === STATUS.CALL_ABANDON) return;
+      if (appointmentData.status === STATUS.CANCELLED) return;
+      if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
       abondmentStarted = true;
       startCallAbondmentTimer(200, true);
     } else {
@@ -1184,6 +1195,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         !isSeniorConsultStarted
       ) {
         if (appointmentData.status === STATUS.COMPLETED) return;
+        if (appointmentData.status === STATUS.NO_SHOW) return;
+        if (appointmentData.status === STATUS.CALL_ABANDON) return;
+        if (appointmentData.status === STATUS.CANCELLED) return;
+        if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
         abondmentStarted = true;
         startCallAbondmentTimer(200, false);
       } else {
@@ -3805,6 +3821,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then((data: any) => {
         console.log(data, 'data');
         setLoading(false);
+        AsyncStorage.setItem('showSchduledPopup', 'true');
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,
@@ -3817,6 +3834,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     data.data &&
                     data.data.bookRescheduleAppointment &&
                     data.data.bookRescheduleAppointment.appointmentDetails,
+                  DoctorName:
+                    props.navigation.state.params!.data &&
+                    props.navigation.state.params!.data.doctorInfo &&
+                    props.navigation.state.params!.data.doctorInfo.firstName,
                 },
               }),
             ],
@@ -3854,15 +3875,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           appointmentData.status === STATUS.COMPLETED
             ? `Consult is completed`
             : `Will be joining soon`;
-      }else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
- time = `Joining in ${diffMin} minute${diffMin === 1 ? "" : "s"}`;
-} else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
- time = `Joining in ${diffHours} hour${diffHours === 1 ? "" : "s"}`;
-} else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
- time = `Joining in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
-} else {
- time = `Joining in ${diffMonths} month${diffMonths === 1 ? "" : "s"}`;
-}
+      } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
+        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+      } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
+        time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
+      } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
+        time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+      } else {
+        time = `Joining in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
+      }
     }
     return (
       <View style={styles.mainView}>

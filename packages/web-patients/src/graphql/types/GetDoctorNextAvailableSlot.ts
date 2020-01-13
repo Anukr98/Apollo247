@@ -12,6 +12,7 @@ export interface GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAva
   __typename: "SlotAvailability";
   doctorId: string;
   availableSlot: string;
+  physicalAvailableSlot: string;
 }
 
 export interface GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot {

@@ -37,6 +37,8 @@ import moment from 'moment';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { loginAPI } from '../helpers/loginCalls';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const { height, width } = Dimensions.get('window');
 
@@ -119,8 +121,10 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
+  const client = useApolloClient();
 
   useEffect(() => {
     try {
@@ -273,11 +277,14 @@ export const Login: React.FC<LoginProps> = (props) => {
           } else {
             CommonSetUserBugsnag(phoneNumber);
             AsyncStorage.setItem('phoneNumber', phoneNumber);
+            setShowSpinner(true);
 
-            sendOtp(phoneNumber)
-              .then((confirmResult) => {
+            loginAPI(client, '+91' + phoneNumber)
+              .then((confirmResult: any) => {
+                console.log(confirmResult, 'confirmResult');
+                setShowSpinner(false);
+
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-                CommonBugFender('OTP_SEND_SUCCESS', confirmResult as Error);
 
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
@@ -291,11 +298,13 @@ export const Login: React.FC<LoginProps> = (props) => {
                   otpString,
                   phoneNumber: phoneNumber,
                   dbChildKey,
+                  loginId: confirmResult.loginId,
                 });
               })
-              .catch((error: RNFirebase.RnError) => {
+              .catch((error: Error) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
+                setShowSpinner(false);
 
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
@@ -314,6 +323,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         }
       } else {
         setshowOfflinePopup(true);
+        setShowSpinner(false);
       }
     });
   };
@@ -347,18 +357,18 @@ export const Login: React.FC<LoginProps> = (props) => {
               backgroundColor: 'white',
             }}
             useWebKit={true}
-            // onLoadStart={() => {
-            //   console.log('onLoadStart');
-            //   setshowSpinner(true);
-            // }}
-            // onLoadEnd={() => {
-            //   console.log('onLoadEnd');
-            //   setshowSpinner(false);
-            // }}
-            // onLoad={() => {
-            //   console.log('onLoad');
-            //   setshowSpinner(false);
-            // }}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setShowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setShowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setShowSpinner(false);
+            }}
           />
         </View>
       </View>
@@ -443,7 +453,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         </Card>
         {onClickOpen && openWebView()}
       </SafeAreaView>
-      {isSendingOtp ? <Spinner /> : null}
+      {showSpinner ? <Spinner /> : null}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );

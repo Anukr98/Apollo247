@@ -3,6 +3,9 @@ import { Resolver } from 'api-gateway';
 import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -37,10 +40,15 @@ export const getPatinetAppointmentsTypeDefs = gql`
     patinetAppointments: [PatinetAppointments!]
   }
 
+  type AppointmentsCount {
+    consultsCount: Int
+  }
+
   extend type Query {
     getPatinetAppointments(
       patientAppointmentsInput: PatientAppointmentsInput
     ): PatientAppointmentsResult!
+    getPatientFutureAppointmentCount(patientId: String): AppointmentsCount
   }
 `;
 
@@ -92,6 +100,27 @@ const getPatinetAppointments: Resolver<
   return { patinetAppointments };
 };
 
+const getPatientFutureAppointmentCount: Resolver<
+  null,
+  { patientId: string },
+  ConsultServiceContext,
+  { consultsCount: number }
+> = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
+  //check whether the access is by patient
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.getPatientDetails(args.patientId);
+  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+  if (patientData.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  let consultsCount = 0;
+
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  consultsCount = await appointmentRepo.getPatientFutureAppointmentsCount(args.patientId);
+
+  return { consultsCount };
+};
+
 export const getPatinetAppointmentsResolvers = {
   PatinetAppointments: {
     doctorInfo(appointments: PatinetAppointments) {
@@ -100,5 +129,6 @@ export const getPatinetAppointmentsResolvers = {
   },
   Query: {
     getPatinetAppointments,
+    getPatientFutureAppointmentCount,
   },
 };

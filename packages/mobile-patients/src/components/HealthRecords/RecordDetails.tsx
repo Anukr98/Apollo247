@@ -256,6 +256,8 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           <View style={{ flex: 1 }}>
             <Text style={styles.doctorNameStyle}>
               {(data.testName && data.testName) ||
+                (data.issuingDoctor && data.issuingDoctor) ||
+                (data.location && data.location) ||
                 (data.diagnosisNotes && data.diagnosisNotes) ||
                 (data.healthCheckName && data.healthCheckName) ||
                 (data.labTestName && data.labTestName)}

@@ -131,7 +131,7 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.doctorNameStyles}>
-                  {(data && data.testName) ||
+                  {(data && (data.testName || data.issuingDoctor || data.location)) ||
                     (datahospitalization && datahospitalization.diagnosisNotes) ||
                     (datahealth && datahealth.healthCheckName) ||
                     (datalab && datalab.labTestName)}
