@@ -33,7 +33,7 @@ import {
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, statusBarHeight, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -171,7 +171,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
   const movedFrom = props.navigation.state.params!.from;
-  console.log('data', data);
+  console.log('******DATA*********', { data, doctorDetails });
 
   const dateIsAfter = moment(data.appointmentDateTime).isAfter(moment(new Date()));
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
@@ -188,7 +188,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
-  const [sucesspopup, setSucessPopup] = useState<boolean>(false);
+  // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -286,7 +286,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       })
       .then((data: any) => {
         setshowSpinner(false);
-        setSucessPopup(true);
+        // setSucessPopup(true);
+        showAppointmentCancellSuccessAlert();
         console.log(data, 'datacancel');
         // props.navigation.dispatch(
         //   StackActions.reset({
@@ -311,6 +312,26 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         }
       });
     // }
+  };
+
+  const showAppointmentCancellSuccessAlert = () => {
+    setShowCancelPopup(false);
+    // setSucessPopup(false);
+    const appointmentNum = g(data, 'displayId');
+    const doctorName = g(data, 'doctorInfo', 'displayName');
+    showAphAlert!({
+      title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+      description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
+      onPressOk: () => {
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+          })
+        );
+      },
+    });
   };
 
   const rescheduleAPI = (availability: any) => {
@@ -663,10 +684,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             </View>
           </BottomPopUp>
         )}
-        {sucesspopup && (
+        {/* {sucesspopup && (
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-            description={'Appointment sucessfully cancelled'}
+            description={`Hi ${g(currentPatient, 'firstName') ||
+              ''}! As per your request, your appointment ${}<Appointment  No..> with Dr. ${}<Name> scheduled for ${}<Appointment Date and Time> has been cancelled.`}
+            // description={'Appointment sucessfully cancelled'}
           >
             <View
               style={{
@@ -697,7 +720,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               </View>
             </View>
           </BottomPopUp>
-        )}
+        )} */}
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{

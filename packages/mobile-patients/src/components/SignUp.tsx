@@ -121,9 +121,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [backPressCount, setbackPressCount] = useState<number>(0);
-  const [referral, setReferral] = useState<string>('');
+  // const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
-  const [referredBy, setReferredBy] = useState<string>();
+  // const [referredBy, setReferredBy] = useState<string>();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -288,7 +288,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
-          <View
+          {/* <View
             style={{
               backgroundColor: theme.colors.SKY_BLUE,
               marginHorizontal: -20,
@@ -317,7 +317,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 icon={referredBy ? <Check /> : null}
               />
             </View>
-          </View>
+          </View> */}
         </Card>
       </View>
     );

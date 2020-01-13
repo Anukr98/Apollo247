@@ -990,17 +990,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 isComingFromConsult: true,
               })
             }
-            style={{ right: 20 }}
+            // style={{ right: 20 }}
           >
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             activeOpacity={1}
             onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
           >
             <NotificationIcon />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     );
