@@ -346,7 +346,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#e50000',
       },
     },
-    instructionText:{
+    instructionText: {
       margin: '0 0 10px 0 !important',
     },
     tabletcontent: {
@@ -1618,7 +1618,7 @@ export const FavouriteMedicines: React.FC = () => {
                           </Grid>
                           {/* {medicineForm === 'OTHERS' && ( */}
                           <Grid item xs={medicineForm === 'OTHERS' ? 12 : 6}>
-                          {medicineForm !== 'OTHERS' && <h6>&nbsp;</h6>}
+                            {medicineForm !== 'OTHERS' && <h6>&nbsp;</h6>}
                             <div className={classes.unitsSelect}>
                               <AphSelect
                                 style={{ paddingTop: 3 }}

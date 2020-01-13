@@ -258,7 +258,6 @@ const useStyles = makeStyles((theme: Theme) =>
     searchFrom: {
       padding: 0,
       minHeight: 400,
-
     },
     loader: {
       left: '50%',
@@ -473,10 +472,9 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 'bold',
     },
     unitsSelect: {
-      '& > div':{
-        paddingTop: '3px !important'
+      '& > div': {
+        paddingTop: '3px !important',
       },
-
     },
   })
 );
@@ -1348,7 +1346,6 @@ export const MedicinePrescription: React.FC = () => {
                       classes={{ root: classes.suggestionPopover }}
                     >
                       {options.children}
-                      
                     </Paper>
                   )}
                 />
@@ -1370,9 +1367,7 @@ export const MedicinePrescription: React.FC = () => {
                     <img src={require('images/ic_add_circle.svg')} alt="" />
                   </AphButton>
                 )}
-                {loading ? (
-                          <CircularProgress className={classes.loader} />
-                       ) : null}
+                {loading ? <CircularProgress className={classes.loader} /> : null}
               </div>
             ) : (
               <div>
@@ -1409,9 +1404,11 @@ export const MedicinePrescription: React.FC = () => {
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             {medicineForm !== 'OTHERS' ? 'Apply' : ''}
                           </div>
-                          {medicineForm == 'OTHERS' && <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                          {medicineForm == 'OTHERS' && (
+                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                               &nbsp;
-                            </div>}
+                            </div>
+                          )}
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               value={medicineUnit}
@@ -1438,9 +1435,11 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                         {medicineForm !== 'OTHERS' && (
                           <div className={classes.divCol}>
-                            {medicineForm !== 'OTHERS' && <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                              &nbsp;
-                            </div>}
+                            {medicineForm !== 'OTHERS' && (
+                              <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                                &nbsp;
+                              </div>
+                            )}
                             <AphSelect
                               style={{ paddingTop: 3 }}
                               value={frequency}
@@ -1470,29 +1469,29 @@ export const MedicinePrescription: React.FC = () => {
                     {medicineForm === 'OTHERS' && (
                       <div className={classes.sectionGroup}>
                         <div className={classes.unitsSelect}>
-                        <div className={classes.numberOfTimes}>
-                          <AphSelect
-                            style={{ paddingTop: 3 }}
-                            value={frequency}
-                            MenuProps={{
-                              classes: {
-                                paper: classes.menuPaper,
-                              },
-                              anchorOrigin: {
-                                vertical: 'bottom',
-                                horizontal: horizontal,
-                              },
-                              transformOrigin: {
-                                vertical: 'top',
-                                horizontal: horizontal,
-                              },
-                            }}
-                            onChange={(e: any) => {
-                              setFrequency(e.target.value as string);
-                            }}
-                          >
-                            {generateFrequency}
-                          </AphSelect>
+                          <div className={classes.numberOfTimes}>
+                            <AphSelect
+                              style={{ paddingTop: 3 }}
+                              value={frequency}
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: horizontal,
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: horizontal,
+                                },
+                              }}
+                              onChange={(e: any) => {
+                                setFrequency(e.target.value as string);
+                              }}
+                            >
+                              {generateFrequency}
+                            </AphSelect>
                           </div>
                         </div>
                       </div>
