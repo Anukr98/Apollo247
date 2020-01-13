@@ -3,23 +3,29 @@
 buildscript {
     ext {
         buildToolsVersion = "28.0.3"
-        minSdkVersion = 16
+        minSdkVersion = 21
         compileSdkVersion = 28
         targetSdkVersion = 28
         supportLibVersion = "28.0.0"
-        googlePlayServicesVersion = "15.0.0" // Make Sure This line is added over here only
+        googlePlayServicesVersion = "15.0.0" 
+        androidXCore = "1.0.2"
+        kotlin_version = '1.2.10'
     }
     repositories {
         google()
         jcenter()
         maven { url 'https://maven.fabric.io/public' }
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.1'
-        classpath 'com.google.gms:google-services:4.2.0'
+        classpath('com.android.tools.build:gradle:3.5.1')
+        classpath 'com.google.gms:google-services:3.2.1'
         classpath 'io.fabric.tools:gradle:1.+'
-        classpath 'com.google.gms:google-services:3.2.1' // Make Sure This line is added over here only
+          /* Chron */
+        classpath "org.jetbrains.kotlin:kotlin-serialization:1.3.50"
+        classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.2.0-alpha02'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.50"
+
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -27,14 +33,18 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url "https://jitpack.io" }
-//        mavenLocal()
-        google()
-        jcenter()
+        mavenLocal()
         maven {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url "$rootDir/../node_modules/react-native/android"
+            url("$rootDir/../node_modules/react-native/android")
         }
+        maven {
+            // Android JSC is installed from npm
+            url("$rootDir/../node_modules/jsc-android/dist")
+        }
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
         maven {
             url "http://tokbox.bintray.com/maven"
         }
@@ -42,5 +52,8 @@ allprojects {
             url 'https://maven.google.com/' // Make Sure This block is added over here only
             name 'Google'
         }
+
+        mavenCentral()
+        maven { url 'https://kotlin.bintray.com/kotlinx/' }
     }
 }

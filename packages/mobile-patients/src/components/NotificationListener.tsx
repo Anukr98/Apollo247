@@ -30,7 +30,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import firebase from 'react-native-firebase';
+import firebase, { Firebase } from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
@@ -479,6 +479,21 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * */
     const notificationListener = firebase.notifications().onNotification((notification) => {
       aphConsole.log('notificationListener');
+      const localNotification = new firebase.notifications.Notification()
+        .setSound('sampleaudio.wav')
+        .setNotificationId(notification.notificationId)
+        .setTitle(notification.title)
+        .setBody(notification.body)
+        .setData(notification.data)
+        .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
+        .android.setSmallIcon('@mipmap/ic_launcher') // create this icon in Android Studio
+        .android.setColor('#000000') // you can set a color here
+        .android.setPriority(firebase.notifications.Android.Priority.Default);
+      firebase
+        .notifications()
+        .displayNotification(localNotification)
+        .catch((err) => console.error(err));
+
       processNotification(notification);
     });
 
@@ -521,7 +536,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         firebase.notifications.Android.Importance.Default
       )
         .setDescription('Demo app description')
-        .setSound('incallmanager_ringtone.mp3');
+        .setSound('sampleaudio.wav');
       firebase.notifications().android.createChannel(channel);
     } catch (error) {
       aphConsole.log('error in notification channel', error);
