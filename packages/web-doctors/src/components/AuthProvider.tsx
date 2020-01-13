@@ -214,7 +214,6 @@ export const AuthProvider: React.FC = (props) => {
       verifyLoginOtpResult.data.verifyLoginOtp.status &&
       verifyLoginOtpResult.data.verifyLoginOtp.authToken
     ) {
-      //setSendOtpError(false);
       return verifyLoginOtpResult.data.verifyLoginOtp.authToken;
     } else {
       return false;
@@ -222,11 +221,13 @@ export const AuthProvider: React.FC = (props) => {
   };
   const verifyOtp = (otp: string, loginId: string) => {
     return new Promise((resolve, reject) => {
+      setIsSigningIn(true);
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
           TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error`);
           setVerifyOtpError(true);
+          setIsSigningIn(false);
         } else {
           setVerifyOtpError(false);
           app.auth().signInWithCustomToken(res);
