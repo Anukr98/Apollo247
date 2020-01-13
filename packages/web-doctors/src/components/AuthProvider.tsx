@@ -167,8 +167,6 @@ export const AuthProvider: React.FC = (props) => {
       })
     );
     setIsSendingOtp(false);
-    console.log(loginResult);
-    console.log(loginError);
     if (
       loginResult &&
       loginResult.data &&
@@ -179,9 +177,7 @@ export const AuthProvider: React.FC = (props) => {
       setSendOtpError(false);
       return loginResult.data.login.loginId;
     } else {
-      TrackJS.track(`phoneNumber: ${mobileNumber}`);
-      TrackJS.track(`phoneAuthError: ${loginError}`);
-      console.error(loginError);
+      TrackJS.track(`phoneNumber: ${mobileNumber}, phoneAuthError: ${loginError}`);
       setSendOtpError(true);
       return false;
     }
@@ -211,9 +207,6 @@ export const AuthProvider: React.FC = (props) => {
         mutation: VERIFY_LOGIN_OTP,
       })
     );
-    //setIsSendingOtp(false);
-    console.log(verifyLoginOtpResult.data);
-    console.log(verifyLoginOtpError);
     if (
       verifyLoginOtpResult &&
       verifyLoginOtpResult.data &&
@@ -236,7 +229,6 @@ export const AuthProvider: React.FC = (props) => {
           setVerifyOtpError(true);
         } else {
           setVerifyOtpError(false);
-          console.log(res);
           app.auth().signInWithCustomToken(res);
         }
         setIsVerifyingOtp(false);
@@ -265,15 +257,12 @@ export const AuthProvider: React.FC = (props) => {
       .then(() => window.location.replace('/'));
 
   useEffect(() => {
-    console.log('useEffect getFirebaseToken');
     getFirebaseToken();
   }, []);
 
   const getFirebaseToken = () => {
-    console.log('getFirebaseToken111111111111');
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
-        console.log('getFirebaseToken22222222');
         const [jwt, jwtError] = await wait(user.getIdToken());
         if (jwtError || !jwt) {
           if (jwtError) console.error(jwtError);
