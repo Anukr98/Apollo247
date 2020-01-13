@@ -53,7 +53,7 @@ export interface ButtonProps {
   disabled?: boolean;
   disabledStyle?: StyleProp<ViewStyle>;
   displayThorn?: boolean;
-  thornStyle: StyleProp<ViewStyle>;
+  thornStyle?: StyleProp<ViewStyle>;
 }
 
 export const Button: React.FC<ButtonProps> = (props) => {
