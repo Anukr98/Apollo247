@@ -94,7 +94,6 @@ import {
   TouchableOpacity,
   View,
   BackHandler,
-  WebView,
   StyleSheet,
   AppState,
   AppStateStatus,
@@ -142,6 +141,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
 import { colors } from '../../theme/colors';
+import { WebView } from 'react-native-webview';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
