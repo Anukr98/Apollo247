@@ -240,7 +240,7 @@ export class DoctorRepository extends Repository<Doctor> {
               onlineSlot = nextSlot;
               break;
             }
-            if (counter >= 1) {
+            if (counter >= 7) {
               onlineSlot = '';
               break;
             }
@@ -269,7 +269,7 @@ export class DoctorRepository extends Repository<Doctor> {
               physicalSlot = nextSlot;
               break;
             }
-            if (counter >= 1) {
+            if (counter >= 7) {
               physicalSlot = '';
               break;
             }
