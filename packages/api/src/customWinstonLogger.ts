@@ -87,11 +87,11 @@ winston.loggers.add('doctorSearchAPILogger', {
   format: combine(label({ label: 'doctorSearchAPILogger' }), timestamp(), winstonFormat.json()),
   transports: [
     new winston.transports.File({
-      filename: logsDir + ApiConstants.DOCTROS_SEARCH_API_LOG_FILE,
+      filename: logsDir + ApiConstants.DOCTORS_SEARCH_API_LOG_FILE,
       level: 'info',
     }),
     new winston.transports.File({
-      filename: logsDir + ApiConstants.DOCTROS_SEARCH_API_LOG_FILE,
+      filename: logsDir + ApiConstants.DOCTORS_SEARCH_API_LOG_FILE,
       level: 'error',
     }),
   ],
