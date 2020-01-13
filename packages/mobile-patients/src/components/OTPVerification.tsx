@@ -795,7 +795,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 onChangeText={isOtpValid}
                 keyboardType="numeric"
                 textContentType={'oneTimeCode'}
-                caretHidden={otp.length >= 6}
                 autoFocus
                 maxLength={6}
               />
