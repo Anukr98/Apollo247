@@ -40,7 +40,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
 	<key>ITunesAppleID</key>
@@ -70,6 +70,12 @@
 	<string>${PRODUCT_NAME} need access to the calendar to select the date for booking appointments.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>${PRODUCT_NAME} need access to the camera to update your avatar.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>${PRODUCT_NAME} wants to access your contacts list.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>${PRODUCT_NAME} wants to access your health to share data.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>${PRODUCT_NAME} wants to access your health to update data.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This will enable the nearby location functionality to get nearest doctors. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

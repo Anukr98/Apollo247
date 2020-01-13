@@ -1832,6 +1832,18 @@ export const VERIFY_LOGIN_OTP = gql`
       status
       authToken
       isBlocked
+      reason
+      incorrectAttempts
+    }
+  }
+`;
+
+export const RESEND_OTP = gql`
+  query resendOtp($mobileNumber: String!, $loginType: LOGIN_TYPE!, $id: String!) {
+    resendOtp(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      message
+      loginId
     }
   }
 `;

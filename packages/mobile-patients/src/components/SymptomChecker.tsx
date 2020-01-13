@@ -347,6 +347,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
           }
         />
         <NavigatorSDK
+          key={currentPatient ? currentPatient.id : ''}
           clientId={AppConfig.Configuration.PRAKTISE_API_KEY}
           showDocBtn={() => <CustomComponent navigation={props.navigation} />}
           {...patientGender}
