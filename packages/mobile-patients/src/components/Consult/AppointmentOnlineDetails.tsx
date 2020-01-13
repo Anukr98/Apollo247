@@ -192,7 +192,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -323,6 +323,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
       description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
       onPressOk: () => {
+        hideAphAlert!();
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,

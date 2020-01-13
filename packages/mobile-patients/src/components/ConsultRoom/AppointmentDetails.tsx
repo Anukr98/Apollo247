@@ -155,7 +155,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -412,6 +412,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
       description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
       onPressOk: () => {
+        hideAphAlert!();
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,
