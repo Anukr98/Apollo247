@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, MoreThanOrEqual } from 'typeorm';
-import { LoginOtp } from 'profiles-service/entities';
+import { LoginOtp, OTP_STATUS } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { subMinutes } from 'date-fns';
@@ -26,6 +26,24 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
         id,
         loginType,
         createdDate: MoreThanOrEqual(expirationTime),
+      },
+      order: { createdDate: 'DESC' },
+      take: 1,
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_OTP_ERROR, undefined, {
+        error,
+      });
+    });
+
+    return validOtpRecord;
+  }
+
+  async getValidOtpRecord(id: string, mobileNumber: string) {
+    const validOtpRecord = await this.find({
+      where: {
+        id,
+        mobileNumber,
+        status: OTP_STATUS.NOT_VERIFIED,
       },
       order: { createdDate: 'DESC' },
       take: 1,
