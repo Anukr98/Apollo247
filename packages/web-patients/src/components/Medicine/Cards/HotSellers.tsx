@@ -114,7 +114,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
   };
 
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+    url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
   const { cartItems, addCartItem, updateCartItem } = useShoppingCart();
