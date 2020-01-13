@@ -151,6 +151,7 @@ export enum ApiConstants {
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
+  INVALID_RESEND_MESSAGE = 'Invalid resend details',
 
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',
