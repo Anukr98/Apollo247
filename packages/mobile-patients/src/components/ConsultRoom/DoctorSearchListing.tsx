@@ -775,7 +775,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const renderSearchDoctorResultsRow = (
     rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null,
     index: number,
-    styles: StyleProp<ViewStyle> = {}
+    styles: StyleProp<ViewStyle> = {},
+    numberOfLines?: number
   ) => {
     if (rowData)
       return (
@@ -786,6 +787,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           // doctorAvailalbeSlots={doctorAvailalbeSlots}
           doctorsNextAvailability={doctorsNextAvailability}
           style={styles}
+          numberOfLines={numberOfLines}
         />
       );
     return null;
@@ -907,19 +909,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 // marginTop: 20,
                 // marginBottom: 8,
                 marginHorizontal: 14,
+                paddingRight: 28,
               }}
               bounces={false}
               // data={doctors}
-              data={[...filteredDoctorsList, ...filteredDoctorsList, ...filteredDoctorsList]}
+              data={filteredDoctorsList}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                renderSearchDoctorResultsRow(item, index, {
-                  width: width - 40,
-                  marginHorizontal: 6,
-                  marginTop: 11.5,
-                  marginBottom: 16,
-                  height: 230,
-                })
+                renderSearchDoctorResultsRow(
+                  item,
+                  index,
+                  {
+                    width: width - 40,
+                    marginHorizontal: 6,
+                    marginTop: 11.5,
+                    marginBottom: 16,
+                    height: 230,
+                  },
+                  1
+                )
               }
               horizontal
               showsHorizontalScrollIndicator={false}

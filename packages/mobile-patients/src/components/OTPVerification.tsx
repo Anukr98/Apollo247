@@ -41,7 +41,7 @@ import { BottomPopUp } from './ui/BottomPopUp';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
-import { verifyOTP, loginAPI } from '../helpers/loginCalls';
+import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window');
@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.LIGHT_BLUE,
-    letterSpacing: 28, // 26
-    paddingLeft: 12, // 25
+    // letterSpacing: 28, // 26
+    // paddingLeft: 12, // 25
   },
   viewWebStyles: {
     position: 'absolute',
@@ -134,13 +134,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
+  const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
 
   const { sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
-  const client = useApolloClient();
 
   const dbChildKey = props.navigation.state.params!.dbChildKey;
 
@@ -360,9 +360,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           .update({
             OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
           });
+
         const { loginId } = props.navigation.state.params!;
 
-        verifyOTP(client, loginId, otp)
+        verifyOTP(loginId, otp)
           .then((data: any) => {
             console.log(data.status === true, data.status, 'status');
 
@@ -387,15 +388,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               console.log('else error');
 
               try {
-                // console.log(
-                //   {
-                //     error,
-                //   },
-                //   'else error'
-                // );
-                // CommonBugFender('OTP_ENTERED_FAIL', error);
-                // CommonLogEvent('OTP_ENTERED_FAIL', error);
-
+                setshowErrorBottomLine(true);
                 setOnOtpClick(false);
                 setshowSpinner(false);
                 // console.log('error', error);
@@ -433,7 +426,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               console.log({
                 error,
               });
-
+              setshowErrorBottomLine(true);
               setOnOtpClick(false);
               setshowSpinner(false);
               // console.log('error', error);
@@ -533,6 +526,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const isOtpValid = (otp: string) => {
     if (otp.match(/[0-9]/) || otp === '') {
+      showErrorBottomLine && setshowErrorBottomLine(false);
       setOtp(otp);
       if (otp.length === 6) {
         setIsValidOTP(true);
@@ -558,11 +552,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         const { phoneNumber } = props.navigation.state.params!;
         console.log('onClickResend', phoneNumber);
 
-        loginAPI(client, '+91' + phoneNumber)
-          .then((confirmResult) => {
-            CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
+        const { loginId } = props.navigation.state.params!;
+
+        resendOTP('+91' + phoneNumber, loginId)
+          .then((resendResult: any) => {
+            console.log('resendOTP ', resendResult.loginId);
+
+            props.navigation.setParams({ loginId: resendResult.loginId });
+
+            CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
             setShowResentTimer(true);
-            console.log('confirmResult login', confirmResult);
+            console.log('confirmResult login', resendResult);
           })
           .catch((error: Error) => {
             console.log(error, 'error');
@@ -785,10 +785,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 style={[
                   styles.codeInputStyle,
                   {
-                    borderColor:
-                      otp.length != 6 && invalidOtpCount >= 1
-                        ? theme.colors.INPUT_BORDER_FAILURE
-                        : theme.colors.INPUT_BORDER_SUCCESS,
+                    borderColor: showErrorBottomLine
+                      ? theme.colors.INPUT_BORDER_FAILURE
+                      : theme.colors.INPUT_BORDER_SUCCESS,
                   },
                 ]}
                 value={otp}

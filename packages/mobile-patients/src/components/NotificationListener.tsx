@@ -30,7 +30,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import firebase, { Firebase } from 'react-native-firebase';
+import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
@@ -542,8 +542,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         'fcm_FirebaseNotifiction_default_channel',
         'Apollo',
         firebase.notifications.Android.Importance.Default
-      ).setDescription('Demo app description');
-      // .setSound('sampleaudio.wav');
+      )
+        .setDescription('Demo app description')
+        .setSound('sampleaudio.wav');
       firebase.notifications().android.createChannel(channel);
     } catch (error) {
       aphConsole.log('error in notification channel', error);

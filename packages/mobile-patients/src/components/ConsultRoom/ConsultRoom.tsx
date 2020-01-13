@@ -891,6 +891,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <View
                   style={{
                     ...theme.viewStyles.cardViewStyle,
+                    shadowOffset: { width: 0, height: 5 },
                     flexDirection: 'row',
                     minHeight: 59,
                     width: width / 2 - 28,
