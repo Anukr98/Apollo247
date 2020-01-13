@@ -67,7 +67,8 @@ type CustomNotificationType =
   | 'Reminder_Appointment_Casesheet_15'
   | 'Diagnostic_Order_Success'
   | 'Diagnostic_Order_Payment_Failed'
-  | 'Registration_Success';
+  | 'Registration_Success'
+  | 'Patient_Cancel_Appointment';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -134,7 +135,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   ) => {
     aphConsole.log(`CustomNotificationType:: ${type}`);
     showAphAlert!({
-      title: `Hi,`,
+      title: ' ',
       description: data.content,
       CTAs: [
         {
@@ -163,7 +164,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     const description = data.content;
     const appointmentId = data.appointmentId;
     showAphAlert!({
-      title: `Hi :)`,
+      title: ' ',
       description,
       CTAs: [
         {
@@ -279,11 +280,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Registration_Success':
         {
           showAphAlert!({
-            title: `Hi,`,
+            title: ' ',
             description: data.content,
           });
         }
         break;
+
+      case 'Patient_Cancel_Appointment': {
+        showAphAlert!({
+          title: ' ',
+          description: data.content,
+        });
+      }
 
       case 'Cart_Ready':
         {
@@ -534,9 +542,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         'fcm_FirebaseNotifiction_default_channel',
         'Apollo',
         firebase.notifications.Android.Importance.Default
-      )
-        .setDescription('Demo app description')
-        .setSound('sampleaudio.wav');
+      ).setDescription('Demo app description');
+      // .setSound('sampleaudio.wav');
       firebase.notifications().android.createChannel(channel);
     } catch (error) {
       aphConsole.log('error in notification channel', error);

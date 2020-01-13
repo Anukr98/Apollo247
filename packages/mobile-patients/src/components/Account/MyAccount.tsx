@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     bottom: 0,
-    right: 24,
+    // right: 24,
     top: 0,
     position: 'absolute',
   },
@@ -399,7 +399,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             {/* {cartItemsCount > 0 && renderBadge(cartItemsCount, {})} */}
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             activeOpacity={1}
             // onPress={() => {
             //   props.navigation.navigate(AppRoutes.EditProfile, {
@@ -411,7 +411,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             style={styles.noteIconstyles}
           >
             <NotificationIcon style={styles.noteIcon} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     );
@@ -572,7 +572,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             {/* {cartItemsCount > 0 && renderBadge(cartItemsCount, {})} */}
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             activeOpacity={1}
             // onPress={() => {
             //   props.navigation.navigate(AppRoutes.EditProfile, {
@@ -584,7 +584,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             style={styles.noteIconstyles}
           >
             <NotificationIcon style={styles.noteIcon} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     );
