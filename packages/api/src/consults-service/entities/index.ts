@@ -810,6 +810,9 @@ export class FeedbackDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   noRating: number;
 
+  @Column({ default: 0 })
+  helpTickets: number;
+
   @Column()
   createdDate: Date;
 
