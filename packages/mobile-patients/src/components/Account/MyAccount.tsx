@@ -128,15 +128,15 @@ const styles = StyleSheet.create({
     // marginBottom: 17,
   },
   cartIconstyles: {
-    marginRight: 24,
+    // marginRight: 24,
   },
   cartIcon: {
     width: 24,
     height: 24,
-    bottom: 0,
+    // bottom: 0,
     // right: 24,
-    top: 0,
-    position: 'absolute',
+    // top: 0,
+    // position: 'absolute',
   },
 });
 type Appointments = {
