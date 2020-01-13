@@ -333,7 +333,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={submitCount !== 0 && submitCount !== 3 && verifyOtpError}
+              error={submitCount !== 0 && submitCount !== 3 && verifyOtpError && !isSigningIn}
             />
           </Grid>
         ))}
@@ -394,7 +394,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           onClick={() => {
             verifyOtp(otp.join(''), loginId).then(() => setDisplayOtpInput(true));
             // verifyOtp(otp.join(''));
-            // setSubmitCount(submitCount + 1);
+            setSubmitCount(submitCount + 1);
           }}
           disabled={
             isSendingOtp || isVerifyingOtp || otp.join('').length !== numOtpDigits || showTimer
