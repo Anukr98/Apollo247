@@ -5054,7 +5054,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         instructions={[
           'Take clear Picture of your entire file.',
           'Doctor details & date of the test should be clearly visible.',
-          'Only PDF / JPG / PNG type files up to 2 mb are allowed',
+          'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
