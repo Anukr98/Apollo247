@@ -238,7 +238,7 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -2,
+      top: -9,
       '& img': {
         verticalAlign: 'middle',
       },
@@ -289,15 +289,12 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '20px 0 0 0',
       minHeight: 300,
       position: 'relative',
-
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
         color: 'rgba(2, 71, 91, 0.6)',
-        marginBottom: 5,
-        marginTop: 5,
+        margin: 0,
         lineHeight: 'normal',
-        minHeight: 9,
       },
     },
     dialogNewMedicine: {
@@ -343,10 +340,14 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     daysOfWeek: {
+      margin: '10px 0 0 0 !important',
       '& button:last-child': {
         border: '1px solid #e50000',
         color: '#e50000',
       },
+    },
+    instructionText:{
+      margin: '0 0 10px 0 !important',
     },
     tabletcontent: {
       margin: '0 10px',
@@ -463,10 +464,10 @@ const useStyles = makeStyles((theme: Theme) =>
         borderBottom: '2px solid #00b38e',
       },
       '& input': {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: 500,
         color: '#02475b !important',
-        paddingTop: 0,
+        paddingTop: 9,
       },
       '&:hover': {
         '&:before': {
@@ -1556,11 +1557,11 @@ export const FavouriteMedicines: React.FC = () => {
               ) : (
                 <div>
                   <div>
-                    <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
+                    <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
                       <div className={`${classes.dialogContent} ${classes.dialogNewMedicine}`}>
                         <Grid container spacing={2}>
                           {medicineForm === 'OTHERS' && (
-                            <Grid item lg={6} md={6} xs={12}>
+                            <Grid item lg={6} md={6} xs={6}>
                               <h6>Take</h6>
                               <AphTextField
                                 autoFocus
@@ -1587,8 +1588,9 @@ export const FavouriteMedicines: React.FC = () => {
                               )}
                             </Grid>
                           )}
-                          <Grid item lg={6} md={6} xs={12}>
+                          <Grid item lg={6} md={6} xs={6}>
                             <h6>{medicineForm !== 'OTHERS' ? 'Apply' : ''}</h6>
+                            {medicineForm == 'OTHERS' && <h6>&nbsp;</h6>}
                             <div className={classes.unitsSelect}>
                               <AphSelect
                                 style={{ paddingTop: 3 }}
@@ -1615,8 +1617,8 @@ export const FavouriteMedicines: React.FC = () => {
                             </div>
                           </Grid>
                           {/* {medicineForm === 'OTHERS' && ( */}
-                          <Grid item lg={6} md={6} xs={6}>
-                            <h6>&nbsp;</h6>
+                          <Grid item xs={medicineForm === 'OTHERS' ? 12 : 6}>
+                          {medicineForm !== 'OTHERS' && <h6>&nbsp;</h6>}
                             <div className={classes.unitsSelect}>
                               <AphSelect
                                 style={{ paddingTop: 3 }}
@@ -1643,7 +1645,7 @@ export const FavouriteMedicines: React.FC = () => {
                             </div>
                           </Grid>
                           {/* // )} */}
-                          <Grid item lg={6} md={6} xs={12}>
+                          <Grid item lg={6} md={6} xs={6}>
                             <h6>For</h6>
                             <div className={classes.numberTablets}>
                               <AphTextField
@@ -1666,7 +1668,7 @@ export const FavouriteMedicines: React.FC = () => {
                               )}
                             </div>
                           </Grid>
-                          <Grid item lg={6} md={6} xs={12}>
+                          <Grid item lg={6} md={6} xs={6}>
                             <h6>&nbsp;</h6>
                             <div className={classes.unitsSelect}>
                               <AphSelect
@@ -1694,7 +1696,6 @@ export const FavouriteMedicines: React.FC = () => {
                             </div>
                           </Grid>
                           <Grid item lg={6} md={6} xs={12}>
-                            <h6>&nbsp;</h6>
                             <div className={classes.numberTablets}>{tobeTakenHtml}</div>
                             {errorState.tobeTakenErr && (
                               <FormHelperText
@@ -1722,7 +1723,7 @@ export const FavouriteMedicines: React.FC = () => {
                             )}
                           </Grid>
                           <Grid item lg={12} xs={12}>
-                            <h6>Instructions/Notes</h6>
+                            <h6 className={classes.instructionText}>Instructions/Notes</h6>
                             <div className={classes.numberTablets}>
                               <AphTextField
                                 multiline
