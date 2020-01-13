@@ -67,7 +67,7 @@ winston.loggers.add('notificationServiceLogger', {
   ],
 });
 
-//sms-service logger
+//sms-api logger
 winston.loggers.add('smsOtpAPILogger', {
   format: combine(label({ label: 'smsOtpAPILogger' }), timestamp(), winstonFormat.json()),
   transports: [
@@ -77,6 +77,21 @@ winston.loggers.add('smsOtpAPILogger', {
     }),
     new winston.transports.File({
       filename: logsDir + ApiConstants.KALEYRA_OPT_API_LOG_FILE,
+      level: 'error',
+    }),
+  ],
+});
+
+//doctor-search-filter-api logger
+winston.loggers.add('doctorSearchAPILogger', {
+  format: combine(label({ label: 'doctorSearchAPILogger' }), timestamp(), winstonFormat.json()),
+  transports: [
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.DOCTORS_SEARCH_API_LOG_FILE,
+      level: 'info',
+    }),
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.DOCTORS_SEARCH_API_LOG_FILE,
       level: 'error',
     }),
   ],
