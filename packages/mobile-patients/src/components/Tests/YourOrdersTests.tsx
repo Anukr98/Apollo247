@@ -18,9 +18,11 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
+import { TestOrderNewCard } from '../ui/TestOrderNewCard';
+import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -159,21 +161,25 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return moment(time).format('D MMM YY, hh:mm a');
   };
 
+  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+  };
+
   const renderOrder = (
     order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
     index: number
   ) => {
-    const title =
-      g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
+    const isHomeVisit = !!order.slotTimings;
+    const dt = moment(order!.diagnosticDate).format(`D MMM YYYY`);
+    const tm = getSlotStartTime(order!.slotTimings);
+    const dtTm = `${dt}${isHomeVisit ? `, ${tm}` : ''}`;
     return (
-      <TestOrderCard
-        style={[
-          { marginHorizontal: 20 },
-          index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
-          index == 0 ? { marginTop: 20 } : {},
-        ]}
+      <TestOrderNewCard
         key={`${order!.id}`}
-        orderId={`#${order!.displayId}`}
+        orderId={`${order!.displayId}${order!.displayId}`}
+        dateTime={`Scheduled For: ${dtTm}`}
+        statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
+        isCancelled={order.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         onPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
             orderId: order!.id,
@@ -182,12 +188,93 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             refetch: refetch,
           });
         }}
-        title={title}
-        description={getDeliverType(order, order!.orderType)}
-        statusDesc={order!.orderStatus!}
-        status={order!.orderStatus!}
-        dateTime={getFormattedTime(order!.createdDate)}
+        style={[
+          { marginHorizontal: 20 },
+          index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
+          index == 0 ? { marginTop: 20 } : {},
+        ]}
       />
+    );
+  };
+
+  // const renderOrder = (
+  //   order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+  //   index: number
+  // ) => {
+  //   const title =
+  //     g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
+  //   return (
+  //     <TestOrderCard
+  //       style={[
+  //         { marginHorizontal: 20 },
+  //         index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
+  //         index == 0 ? { marginTop: 20 } : {},
+  //       ]}
+  //       key={`${order!.id}`}
+  //       orderId={`#${order!.displayId}`}
+  //       onPress={() => {
+  //         props.navigation.navigate(AppRoutes.TestOrderDetails, {
+  //           orderId: order!.id,
+  //           setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
+  //             setOrders(orders),
+  //           refetch: refetch,
+  //         });
+  //       }}
+  //       title={title}
+  //       description={getDeliverType(order, order!.orderType)}
+  //       statusDesc={order!.orderStatus!}
+  //       status={order!.orderStatus!}
+  //       dateTime={getFormattedTime(order!.createdDate)}
+  //     />
+  //   );
+  // };
+
+  const [bottomOffset, setBottomOffset] = useState<number>(0);
+
+  const onScrolling = (offSet: number) => {
+    if (offSet < 400) {
+      const bottomOffset = 100 - offSet;
+      setBottomOffset(bottomOffset < 0 ? bottomOffset : 0);
+    }
+  };
+
+  const renderListFooter = () => {
+    const textMediumStyle = theme.viewStyles.text('M', 14, '#02475b', 1, 22);
+    const textBoldStyle = theme.viewStyles.text('B', 14, '#02475b', 1, 22);
+    const PhoneNumberTextStyle = theme.viewStyles.text('M', 14, '#fc9916', 1, 22);
+    const ontapNumber = (number: string) => {
+      Linking.openURL(`tel:${number}`)
+        .then(() => {})
+        .catch(() => {});
+    };
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          bottom: bottomOffset,
+          ...theme.viewStyles.cardViewStyle,
+          left: 0,
+          right: 0,
+          borderRadius: 0,
+        }}
+      >
+        <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
+          <Text>
+            <Text style={textMediumStyle}>{'For '}</Text>
+            <Text style={textBoldStyle}>{'Test Orders,'}</Text>
+            <Text style={textMediumStyle}>
+              {' to know the Order Status / Reschedule / Cancel, please call — \n'}
+            </Text>
+            <Text onPress={() => ontapNumber('040 44442424')} style={PhoneNumberTextStyle}>
+              {'040 44442424'}
+            </Text>
+            <Text style={textMediumStyle}>{' / '}</Text>
+            <Text onPress={() => ontapNumber('040 33442424')} style={PhoneNumberTextStyle}>
+              {'040 33442424'}
+            </Text>
+          </Text>
+        </View>
+      </View>
     );
   };
 
@@ -255,11 +342,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           //     )
           //   }
         />
-        <ScrollView bounces={false}>
+        <ScrollView
+          bounces={false}
+          onScroll={(i) => onScrolling(i.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={1}
+        >
           {renderOrders()}
           {renderNoOrders()}
           {renderError()}
         </ScrollView>
+        {!loading && renderListFooter()}
       </SafeAreaView>
       {loading && <Spinner />}
     </View>

@@ -266,7 +266,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
-          title={string.orders.urOrders}
+          title={props.navigation.getParam('header') || string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
           rightComponent={

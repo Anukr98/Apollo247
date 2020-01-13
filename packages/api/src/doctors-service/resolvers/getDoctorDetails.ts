@@ -9,6 +9,7 @@ import { getConnection } from 'typeorm';
 import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
+import { format } from 'date-fns';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
@@ -257,7 +258,7 @@ enum LoggedInUserType {
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { mobileNumber, doctorsDb, firebaseUid }
+  { mobileNumber, doctorsDb }
 ) => {
   let doctordata;
   try {
@@ -265,7 +266,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
     if (!doctordata.firebaseToken)
-      await doctorRepository.updateFirebaseId(doctordata.id, firebaseUid);
+      await doctorRepository.updateFirebaseId(doctordata.id, format(new Date(), 'yyyyMMddHHmm'));
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
@@ -276,7 +277,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
 const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { doctorsDb, firebaseUid }
+  { doctorsDb }
 ) => {
   let doctordata: Doctor;
   try {
@@ -301,7 +302,7 @@ const findLoggedinUserDetails: Resolver<
   {},
   DoctorsServiceContext,
   LoggedInUserDetails
-> = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
+> = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   //check if doctor
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
@@ -314,7 +315,7 @@ const findLoggedinUserDetails: Resolver<
 
   if (doctorData) {
     if (!doctorData.firebaseToken)
-      await doctorRepository.updateFirebaseId(doctorData.id, firebaseUid);
+      await doctorRepository.updateFirebaseId(doctorData.id, format(new Date(), 'yyyyMMddHHmm'));
 
     return {
       loggedInUserType:

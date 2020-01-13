@@ -91,6 +91,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
@@ -184,10 +189,13 @@ export enum MEDICINE_UNIT {
 }
 
 export enum MedicalRecordType {
+  CONSULTATION = "CONSULTATION",
   EHR = "EHR",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
+  PRESCRIPTION = "PRESCRIPTION",
+  TEST_REPORT = "TEST_REPORT",
 }
 
 export enum MedicalTestUnit {
@@ -286,25 +294,27 @@ export enum WeekDay {
 }
 
 export interface AddMedicalRecordInput {
+  additionalNotes?: string | null;
+  documentURLs?: string | null;
+  issuingDoctor?: string | null;
+  location?: string | null;
+  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+  observations?: string | null;
   patientId: string;
-  testName: string;
-  testDate?: any | null;
+  prismFileIds?: string | null;
   recordType?: MedicalRecordType | null;
   referringDoctor?: string | null;
   sourceName?: string | null;
-  observations?: string | null;
-  additionalNotes?: string | null;
-  documentURLs?: string | null;
-  prismFileIds?: string | null;
-  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+  testDate?: any | null;
+  testName: string;
 }
 
 export interface AddMedicalRecordParametersInput {
-  parameterName?: string | null;
-  unit?: MedicalTestUnit | null;
-  result?: number | null;
-  minimum?: number | null;
   maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: MedicalTestUnit | null;
 }
 
 export interface AppointmentHistoryInput {
@@ -513,6 +523,12 @@ export interface OrderCancelInput {
   remarksCode?: string | null;
 }
 
+export interface OtpVerificationInput {
+  id: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
@@ -567,6 +583,7 @@ export interface PrescriptionMedicineInput {
   prescriptionImageUrl: string;
   prismPrescriptionFileId: string;
   appointmentId?: string | null;
+  isEprescription?: number | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
 }
 

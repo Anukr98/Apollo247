@@ -202,7 +202,7 @@ const getDoctorFavouriteMedicineList: Resolver<
   {},
   DoctorsServiceContext,
   FavouriteMedicineList
-> = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
+> = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);

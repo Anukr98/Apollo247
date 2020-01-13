@@ -527,7 +527,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientFamilyHistory, (familyHistory) => familyHistory.patient)
   familyHistory: PatientFamilyHistory[];
 
-  @Column()
+  @Column({ nullable: true })
   firebaseUid: string;
 
   @Column()

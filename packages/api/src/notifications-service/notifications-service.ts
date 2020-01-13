@@ -28,13 +28,11 @@ import { winstonLogger } from 'customWinstonLogger';
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
-      const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
       const consultsDb = getConnection();
       const doctorsDb = getConnection('doctors-db');
       const patientsDb = getConnection('patients-db');
       const context: NotificationsServiceContext = {
-        firebaseUid,
         mobileNumber,
         doctorsDb,
         consultsDb,

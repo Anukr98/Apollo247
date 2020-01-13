@@ -90,64 +90,86 @@ function renderSuggestion(
   const parts = parse(suggestion.label, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span
-            key={part.text}
-            style={{
-              fontWeight: part.highlight ? 500 : 400,
-              whiteSpace: 'pre',
-            }}
-            title={part.text}
-          >
-            {part.text.length > 45 ? part.text.substring(0, 44) + '...' : part.text}
-          </span>
-        ))}
-      </div>
+    <div>
+      {parts.map((part) => (
+        <span
+          key={part.text}
+          style={{
+            fontWeight: part.highlight ? 500 : 400,
+            whiteSpace: 'pre',
+          }}
+          title={suggestion.label}
+        >
+          {part.text.length > 46
+            ? part.text.substring(0, 45).toLowerCase() + '...'
+            : part.text.toLowerCase()}
+        </span>
+      ))}
       <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </MenuItem>
+    </div>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    container: {
+    suggestionsContainer: {
       position: 'relative',
     },
-    input: {
-      color: 'black',
-      paddingTop: 0,
-    },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
-      color: 'black',
+    suggestionPopover: {
       boxShadow: 'none',
-    },
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      // borderBottom: '1px solid rgba(2,71,91,0.1)',
-      '& div': {
-        paddingLeft: 0,
-      },
-      '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
-        },
-      },
+      maxHeight: 355,
+      overflowY: 'auto',
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+      color: '#02475b',
     },
     suggestionsList: {
       margin: 0,
       padding: 0,
       listStyleType: 'none',
-      color: '#02475b',
+      overflow: 'hidden',
+      borderRadius: '0 0 0 10px',
+    },
+    suggestionItem: {
       fontSize: 18,
       fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 7,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
     },
     root: {
       flexGrow: 1,
@@ -182,15 +204,6 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       outline: '0 !important',
     },
-    activeCard: {
-      // border: '1px solid #00b38e',
-      // backgroundColor: '#fff',
-    },
-    checkImg: {
-      position: 'absolute',
-      right: 16,
-      top: 16,
-    },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
@@ -206,38 +219,6 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
-    card: {
-      background: '#fff',
-      boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.2)',
-      padding: 16,
-      borderRadius: 10,
-      '& ul': {
-        padding: 0,
-        margin: '0 0 0 10px',
-        '& li': {
-          color: '#02475b',
-          listStyleType: 'none',
-          // padding: 10,
-          fontSize: 14,
-          fontWeight: 500,
-          padding: '10px 50px 10px 10px !important',
-          position: 'relative',
-          borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
-          '&:last-child': {
-            paddingBottom: 0,
-            borderBottom: 'none',
-            paddingLeft: 0,
-          },
-          '& img': {
-            '&:first-child': {
-              position: 'relative',
-              top: -2,
-              marginRight: 10,
-            },
-          },
-        },
-      },
-    },
     darkGreenaddBtn: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
@@ -245,23 +226,13 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      left: '414px',
-      top: '0px',
+      right: 20,
+      top: 15,
       padding: 0,
-      marginTop: 12,
+      minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
       },
-      '& img': {
-        marginRight: 8,
-      },
-    },
-    medicineHeading: {
-      fontSize: 14,
-      fontWeight: 500,
-      lineHeight: 'normal',
-      color: 'rgba(2, 71, 91, 0.6) !important',
-      marginBottom: 12,
     },
     backArrow: {
       cursor: 'pointer',
@@ -298,11 +269,6 @@ const useStyles = makeStyles((theme: Theme) =>
     updateBtn: {
       backgroundColor: '#fc9916 !important',
     },
-    loading: {
-      position: 'absolute',
-      left: '48%',
-      top: '48%',
-    },
     cancelBtn: {
       fontSize: 14,
       fontWeight: 600,
@@ -320,7 +286,7 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: 'hidden',
     },
     dialogContent: {
-      padding: '20px 0',
+      padding: '20px 0 0 0',
       minHeight: 300,
       position: 'relative',
 
@@ -456,36 +422,6 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
-    updateSymptom: {
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      top: 5,
-      right: 40,
-      color: '#666666',
-      position: 'absolute',
-      fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
-      minWidth: 30,
-      padding: '5px 10px',
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-    },
-    deleteSymptom: {
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      top: 5,
-      right: 0,
-      color: '#666666',
-      position: 'absolute',
-      fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
-      minWidth: 30,
-      padding: '5px 10px',
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-    },
     iconRight: {
       position: 'absolute',
       right: 5,
@@ -541,9 +477,6 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
-    selectDropdown: {
-      paddingTop: 3,
-    },
     menuPaper: {
       width: 200,
       borderRadius: 10,
@@ -575,73 +508,6 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '90%',
       wordBreak: 'break-word',
       textAlign: 'center',
-    },
-    searchpopup: {
-      borderRadius: 'none',
-      boxShadow: 'none',
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        overflow: 'hidden',
-        '& li': {
-          padding: 0,
-          listStyleType: 'none',
-          position: 'relative',
-          '&:after': {
-            content: '""',
-            height: 1,
-            left: 20,
-            right: 20,
-            bottom: 0,
-            position: 'absolute',
-            backgroundColor: 'rgba(2, 71, 91, 0.15)',
-          },
-          '& >div': {
-            padding: '10px 62px 10px 20px',
-            fontSize: 18,
-            fontWeight: 500,
-            color: '#02475b',
-            '&:hover': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '&:focus': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '& span:nth-child(2)': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-            '& img': {
-              position: 'absolute',
-              right: 20,
-              display: 'none',
-            },
-          },
-          '&:first-child': {
-            borderRadius: 0,
-          },
-          '&:last-child': {
-            borderRadius: 0,
-            '&:after': {
-              display: 'none',
-            },
-          },
-          '&:hover': {
-            '&:first-child': {
-              borderRadius: 0,
-            },
-            '&:last-child': {
-              borderRadius: 0,
-            },
-            '& >div': {
-              '& img': {
-                display: 'block',
-              },
-            },
-          },
-        },
-      },
     },
   })
 );
@@ -1649,42 +1515,40 @@ export const FavouriteMedicines: React.FC = () => {
                         },
                       }}
                       theme={{
-                        container: classes.container,
-                        suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                        container: classes.suggestionsContainer,
                         suggestionsList: classes.suggestionsList,
-                        suggestion: classes.suggestion,
+                        suggestion: classes.suggestionItem,
+                        suggestionHighlighted: classes.suggestionHighlighted,
                       }}
                       renderSuggestionsContainer={(options) => (
-                        <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
-                          <Paper {...options.containerProps} square className={classes.searchpopup}>
-                            {options.children}
-                          </Paper>
-                        </Scrollbars>
+                        <Paper
+                          {...options.containerProps}
+                          square
+                          classes={{ root: classes.suggestionPopover }}
+                        >
+                          {options.children}
+                        </Paper>
                       )}
                     />
                     {medicine.trim().length > 2 && !loadingStatus && (
-                      <div>
-                        <span>
-                          <AphButton
-                            className={classes.darkGreenaddBtn}
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                              setState({
-                                single: '',
-                                popper: '',
-                              });
-                              setShowDosage(true);
-                              setSelectedValue(medicine);
-                              setSelectedId('');
-                              setLoading(false);
-                              setMedicine('');
-                            }}
-                          >
-                            <img src={require('images/ic_add_circle.svg')} alt="" />
-                          </AphButton>
-                        </span>
-                      </div>
+                      <AphButton
+                        className={classes.darkGreenaddBtn}
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          setState({
+                            single: '',
+                            popper: '',
+                          });
+                          setShowDosage(true);
+                          setSelectedValue(medicine);
+                          setSelectedId('');
+                          setLoading(false);
+                          setMedicine('');
+                        }}
+                      >
+                        <img src={require('images/ic_add_circle.svg')} alt="" />
+                      </AphButton>
                     )}
                     {loadingStatus ? <CircularProgress className={classes.loader} /> : null}
                   </div>

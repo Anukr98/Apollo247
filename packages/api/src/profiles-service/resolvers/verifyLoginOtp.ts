@@ -78,9 +78,7 @@ const verifyLoginOtp: Resolver<
   await otpRepo.updateOtpStatus(matchedOtpRow[0].id, { status: OTP_STATUS.VERIFIED });
 
   //generate customeToken
-  const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber, {
-    phoneNumber: matchedOtpRow[0].mobileNumber,
-  });
+  const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
 
   return { status: true, authToken: customToken, isBlocked: false };
 };

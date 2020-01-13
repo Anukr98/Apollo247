@@ -106,6 +106,8 @@ export enum NotificationType {
   DIAGNOSTIC_ORDER_SUCCESS = 'DIAGNOSTIC_ORDER_SUCCESS',
   DIAGNOSTIC_ORDER_PAYMENT_FAILED = 'DIAGNOSTIC_ORDER_PAYMENT_FAILED',
   PATIENT_CANCEL_APPOINTMENT = 'PATIENT_CANCEL_APPOINTMENT',
+  PHYSICAL_APPT_60 = 'PHYSICAL_APPT_60',
+  PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
 }
 
 export enum APPT_CALL_TYPE {
@@ -499,6 +501,24 @@ export async function sendNotification(
     };
   }
 
+  if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Patient_Cancel_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
   if (
     pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT ||
     pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
@@ -613,7 +633,66 @@ export async function sendReminderNotification(
     },
     data: {},
   };
-  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
+  if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_1) {
+    notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
+    notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_1_BODY;
+    notificationBody = notificationBody.replace('{1}', doctorDetails.firstName);
+    notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Reminder_Appointment_15',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  } else if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_60) {
+    notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
+    notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
+    if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+        if (facilityDets) {
+          notificationBody = notificationBody.replace(
+            '{1}',
+            facilityDets.name +
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.streetLine2 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
+          );
+        }
+      }
+    }
+    notificationBody = notificationBody.replace('{1}', doctorDetails.firstName);
+    notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Reminder_Appointment_15',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  } else if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY;
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {

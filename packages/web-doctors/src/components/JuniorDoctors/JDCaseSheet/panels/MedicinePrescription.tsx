@@ -37,6 +37,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      className={classes.inputContainer}
       autoFocus
       placeholder="Search"
       fullWidth
@@ -54,27 +55,93 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: OptionType,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
+function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
   const matches = match(suggestion.label, query);
   const parts = parse(suggestion.label, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
+    <div>
       {parts.map((part) => (
-        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
-          {part.text}
+        <span
+          key={part.text}
+          style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+          title={suggestion.label}
+        >
+          {part.text.length > 46
+            ? part.text.substring(0, 45).toLowerCase() + '...'
+            : part.text.toLowerCase()}
         </span>
       ))}
       <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </MenuItem>
+    </div>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    suggestionsContainer: {
+      position: 'relative',
+    },
+    suggestionPopover: {
+      boxShadow: 'none',
+      maxHeight: 355,
+      overflowY: 'auto',
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+      color: '#02475b',
+    },
+    suggestionsList: {
+      margin: 0,
+      padding: 0,
+      listStyleType: 'none',
+      overflow: 'hidden',
+      borderRadius: '0 0 0 10px',
+    },
+    suggestionItem: {
+      fontSize: 18,
+      fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 7,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
+    },
+    inputContainer: {
+      padding: 20,
+      paddingBottom: 0,
+    },
     root: {
       padding: 0,
     },
@@ -121,7 +188,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       position: 'absolute',
-      top: 11,
+      top: 15,
       right: 20,
       padding: 0,
       minWidth: 'auto',
@@ -192,6 +259,7 @@ const useStyles = makeStyles((theme: Theme) =>
     searchFrom: {
       padding: 0,
       position: 'relative',
+      minHeight: 300,
     },
     loaderDiv: {
       textAlign: 'center',
@@ -222,67 +290,13 @@ const useStyles = makeStyles((theme: Theme) =>
         paddingRight: 30,
       },
     },
-    searchpopup: {
-      boxShadow: 'none',
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        '& li': {
-          padding: 0,
-          listStyleType: 'none',
-          position: 'relative',
-          '&:after': {
-            content: '""',
-            height: 1,
-            left: 20,
-            right: 20,
-            bottom: 0,
-            position: 'absolute',
-            backgroundColor: 'rgba(2, 71, 91, 0.15)',
-          },
-          '& >div': {
-            padding: '10px 66px 10px 20px',
-            fontSize: 18,
-            fontWeight: 500,
-            color: '#02475b',
-            '&:hover': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '&:focus': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '& span:nth-child(2)': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-            '& img': {
-              position: 'absolute',
-              right: 20,
-              display: 'none',
-            },
-          },
-          '&:last-child': {
-            '&:after': {
-              display: 'none',
-            },
-          },
-          '&:hover': {
-            '& >div': {
-              '& img': {
-                display: 'block',
-              },
-            },
-          },
-        },
-      },
-    },
     addNewMedicine: {
       padding: 20,
       color: '#02475b',
       fontSize: 16,
     },
     inputRoot: {
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -290,7 +304,7 @@ const useStyles = makeStyles((theme: Theme) =>
         borderBottom: '2px solid #00b38e',
       },
       '& input': {
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: 500,
         color: '#02475b',
         paddingTop: 0,
@@ -1320,19 +1334,24 @@ export const MedicinePrescription: React.FC = () => {
                     },
                   }}
                   theme={{
-                    container: classes.autoSuggestBox,
+                    container: classes.suggestionsContainer,
+                    suggestionsList: classes.suggestionsList,
+                    suggestion: classes.suggestionItem,
+                    suggestionHighlighted: classes.suggestionHighlighted,
                   }}
                   renderSuggestionsContainer={(options) => (
-                    <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
-                      <Paper {...options.containerProps} square className={classes.searchpopup}>
-                        {options.children}
-                        {loading ? (
-                          <div className={classes.loaderDiv}>
-                            <CircularProgress />
-                          </div>
-                        ) : null}
-                      </Paper>
-                    </Scrollbars>
+                    <Paper
+                      {...options.containerProps}
+                      square
+                      classes={{ root: classes.suggestionPopover }}
+                    >
+                      {options.children}
+                      {loading ? (
+                        <div className={classes.loaderDiv}>
+                          <CircularProgress />
+                        </div>
+                      ) : null}
+                    </Paper>
                   )}
                 />
                 {medicine.trim().length > 2 && !loading && (
