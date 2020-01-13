@@ -18,10 +18,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-  WebView,
   Linking,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { WebView } from 'react-native-webview';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {

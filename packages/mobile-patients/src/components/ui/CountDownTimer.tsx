@@ -35,7 +35,6 @@ export class CountDownTimer extends React.Component<CountDownTimerTypes, CountDo
   }
 
   static getDerivedStateFromProps(nextProps: CountDownTimerTypes, prevState: CountDownTimerState) {
-    console.log(nextProps, prevState, 'props, state');
     if (nextProps.timer !== prevState.startTime) {
       return {
         timer: nextProps.timer,

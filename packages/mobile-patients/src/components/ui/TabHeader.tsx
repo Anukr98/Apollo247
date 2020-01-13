@@ -83,12 +83,12 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
           onPress={() =>
             props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
           }
-          style={{ right: 20 }}
+          // style={{ right: 20 }}
         >
           <CartIcon style={{}} />
           {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
         </TouchableOpacity>
-        <NotificationIcon />
+        {/* <NotificationIcon /> */}
       </View>
     </View>
   );
