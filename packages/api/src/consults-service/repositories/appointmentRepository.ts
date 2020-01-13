@@ -1371,9 +1371,15 @@ export class AppointmentRepository extends Repository<Appointment> {
     return endTime;
   }
 
-  getPatientFutureAppointmentsCount(patientId: string) {
+  getPatientFutureAppointmentsCount(patientId: string, maxConsultationMinutes: number) {
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
+      .where(
+        'appointment.appointmentDateTime > :apptDate or (appointment.appointmentDateTime > :apptDate and appointment.appointmentDateTime < :calculatedAppointmentDate)',
+        {
+          apptDate: new Date(),
+          calculatedAppointmentDate: addMinutes(new Date(), maxConsultationMinutes),
+        }
+      )
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
