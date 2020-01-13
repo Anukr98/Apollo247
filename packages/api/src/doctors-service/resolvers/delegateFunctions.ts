@@ -30,7 +30,7 @@ const updateDelegateNumber: Resolver<
   { delegateNumber: string },
   DoctorsServiceContext,
   Doctor
-> = async (parent, args, { mobileNumber, doctorsDb, firebaseUid }) => {
+> = async (parent, args, { mobileNumber, doctorsDb }) => {
   if (!isMobileNumberValid(args.delegateNumber))
     throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
@@ -57,7 +57,7 @@ const updateDelegateNumber: Resolver<
 const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { mobileNumber, doctorsDb, firebaseUid }
+  { mobileNumber, doctorsDb }
 ) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);

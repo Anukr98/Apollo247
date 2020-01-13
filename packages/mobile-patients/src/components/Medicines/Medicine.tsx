@@ -1,4 +1,4 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -6,13 +6,11 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  CartIcon,
   DropdownGreen,
   FileBig,
   InjectionIcon,
   MedicineIcon,
   MedicineRxIcon,
-  NotificationIcon,
   SearchSendIcon,
   SyrupBottleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -20,6 +18,7 @@ import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { GET_MEDICINE_ORDERS_LIST, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
@@ -29,6 +28,7 @@ import {
   GetMedicineOrdersListVariables,
   GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   Doseform,
@@ -43,8 +43,9 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import Axios from 'axios';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
@@ -52,35 +53,18 @@ import {
   ListRenderItemInfo,
   SafeAreaView,
   ScrollView,
-  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import moment from 'moment';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
-  labelView: {
-    position: 'absolute',
-    top: -3,
-    right: -3,
-    backgroundColor: '#ff748e',
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelText: {
-    ...theme.fonts.IBMPlexSansBold(9),
-    color: theme.colors.WHITE,
-  },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
     opacity: 0.5,
@@ -262,61 +246,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   // console.log('ORDERS\n', { _orders });
 
-  // Common Views
+  // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
-  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
-    return (
-      <View style={[styles.labelView, containerStyle]}>
-        <Text style={styles.labelText}>{count}</Text>
-      </View>
-    );
-  };
-
   const renderTopView = () => {
-    return (
-      <View
-        style={{
-          justifyContent: 'space-between',
-          flexDirection: 'row',
-          paddingTop: 16,
-          paddingHorizontal: 20,
-          backgroundColor: theme.colors.WHITE,
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          // onPress={() => props.navigation.popToTop()}
-          onPress={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
-          }}
-        >
-          <ApolloLogo />
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() =>
-              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
-            }
-            style={{ right: 20 }}
-          >
-            <CartIcon style={{}} />
-            {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
-          </TouchableOpacity>
-          <NotificationIcon />
-        </View>
-      </View>
-    );
+    return <TabHeader navigation={props.navigation} />;
   };
 
   const renderEPrescriptionModal = () => {
@@ -343,17 +280,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isVisible={ShowPopop}
         disabledOption="NONE"
         type="nonCartFlow"
-        heading={'Upload Prescription(s)'}
-        instructionHeading={'Instructions For Uploading Prescriptions'}
+        heading={'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
         instructions={[
-          'Take clear picture of your entire prescription.',
-          'Doctor details & date of the prescription should be clearly visible.',
-          'Medicines will be dispensed as per prescription.',
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
         ]}
         optionTexts={{
-          camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE\nFROM GALLERY',
-          prescription: 'SELECT FROM\nE-PRESCRIPTION',
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+          prescription: 'SELECT FROM\nE-PRESCRIPTION',
         }}
         onClickClose={() => setShowPopop(false)}
         onResponse={(selectedType, response) => {
@@ -378,7 +315,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     else if (offerBannerImage)
       return (
         <Image
-          // PlaceholderContent={renderSectionLoader(imgHeight)}
+          // PlaceholderContent={renderSectionLoader(imgHeight)}
           placeholderStyle={styles.imagePlaceholderStyle}
           onLoad={(value) => {
             const { height, width } = value.nativeEvent.source;
@@ -402,7 +339,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               paddingBottom: 12,
             }}
           >
-            Have a prescription ready?
+            Have a prescription ready?
           </Text>
           <Button
             onPress={() => {
@@ -412,7 +349,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             titleTextStyle={{
               ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
             }}
-            title={'UPLOAD PRESCRIPTION'}
+            title={'UPLOAD PRESCRIPTION'}
           />
         </View>
         <FileBig style={{ height: 60, width: 40 }} />
@@ -429,7 +366,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             paddingBottom: 8,
           }}
         >
-          Don’t have a prescription? Don’t worry!
+          Don’t have a prescription? Don’t worry!
         </Text>
         <Text
           onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
@@ -437,7 +374,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
           }}
         >
-          CONSULT A DOCTOR
+          CONSULT A DOCTOR
         </Text>
       </View>
     );
@@ -482,7 +419,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         container={{ marginBottom: 24 }}
-        title={'Your Orders'}
+        title={'My Orders'}
         leftIcon={<MedicineIcon />}
       />
       // )) ||
@@ -568,7 +505,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (healthAreas.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
+        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -601,7 +538,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'DEALS OF THE DAY'} />
+        <SectionHeader leftText={'DEALS OF THE DAY'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -615,7 +552,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
-                    title: 'DEALS OF THE DAY',
+                    title: 'DEALS OF THE DAY',
                   });
                 }}
               >
@@ -675,10 +612,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
           {!!specialPrice && (
             <Text style={[styles.discountedPriceText, { marginRight: 4 }]}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
           )}
-          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
+          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
         </View>
       );
     };
@@ -721,7 +658,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
             onPress={data.onAddOrRemoveCartItem}
           >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -782,7 +719,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (hotSellers.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
+        <SectionHeader leftText={'HOT SELLERS'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -799,7 +736,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (shopByCategory.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY CATEGORY'} />
+        <SectionHeader leftText={'SHOP BY CATEGORY'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -1024,27 +961,53 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
+    setScrollOffset(event.nativeEvent.contentOffset.y);
+  };
+
   const renderSearchBar = () => {
+    const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
     const styles = StyleSheet.create({
       inputStyle: {
         minHeight: 29,
         ...theme.fonts.IBMPlexSansMedium(18),
       },
-      inputContainerStyle: {
-        borderBottomColor: '#00b38e',
-        borderBottomWidth: 2,
-        marginHorizontal: 10,
-      },
-      rightIconContainerStyle: {
-        height: 24,
-      },
-      style: {
-        paddingBottom: 18.5,
-      },
-      containerStyle: {
-        marginBottom: 19,
-        marginTop: 18,
-      },
+      inputContainerStyle: isFocusedStyle
+        ? {
+            borderBottomColor: '#00b38e',
+            borderBottomWidth: 2,
+            marginHorizontal: 10,
+          }
+        : {
+            borderRadius: 5,
+            backgroundColor: '#f7f8f5',
+            marginHorizontal: 10,
+            paddingHorizontal: 16,
+            borderBottomWidth: 0,
+          },
+      rightIconContainerStyle: isFocusedStyle
+        ? {
+            height: 24,
+          }
+        : {},
+      style: isFocusedStyle
+        ? {
+            paddingBottom: 18.5,
+          }
+        : { borderRadius: 5 },
+      containerStyle: isFocusedStyle
+        ? {
+            marginBottom: 20,
+            marginTop: 8,
+          }
+        : {
+            marginBottom: 20,
+            marginTop: 12,
+            alignSelf: 'center',
+          },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -1091,7 +1054,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             onSearchMedicine(value);
           }}
           autoCorrect={false}
-          rightIcon={rigthIconView}
+          rightIcon={isSearchFocused ? rigthIconView : <View />}
           placeholder="Search meds, brands &amp; more"
           selectionColor={itemsNotFound ? '#890000' : '#00b38e'}
           underlineColorAndroid="transparent"
@@ -1174,7 +1137,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
@@ -1259,6 +1222,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
+          onScroll={handleScroll}
+          scrollEventThrottle={20}
           // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},

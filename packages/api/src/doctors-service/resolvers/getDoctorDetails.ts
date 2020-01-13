@@ -258,7 +258,7 @@ enum LoggedInUserType {
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { mobileNumber, doctorsDb, firebaseUid }
+  { mobileNumber, doctorsDb }
 ) => {
   let doctordata;
   try {
@@ -277,7 +277,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
 const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { doctorsDb, firebaseUid }
+  { doctorsDb }
 ) => {
   let doctordata: Doctor;
   try {
@@ -302,7 +302,7 @@ const findLoggedinUserDetails: Resolver<
   {},
   DoctorsServiceContext,
   LoggedInUserDetails
-> = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
+> = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   //check if doctor
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);

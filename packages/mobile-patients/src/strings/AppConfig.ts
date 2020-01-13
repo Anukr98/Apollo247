@@ -11,26 +11,30 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+
+const appStaticVariables = {
+  DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,
+};
 
 const PharmaApiConfig = {
   dev: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
-    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201], // change to PROD
-    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201], // change to PROD
+    MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201], // change to PROD
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloUatBaseUrl],
-    IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
+    IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
-    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
-    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
+    GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`],
     GET_PACKAGE_DATA: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`],
     GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
@@ -43,7 +47,7 @@ const PharmaApiConfig = {
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloProdBaseUrl],
-    IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
+    IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
@@ -87,8 +91,9 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
+  ...appStaticVariables,
   iOS_Version: '1.7',
-  Android_Version: '1.72',
+  Android_Version: '1.74',
 };
 
 // QA
@@ -116,7 +121,8 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
-  iOS_Version: '1.7',
+  ...appStaticVariables,
+  iOS_Version: '1.8',
   Android_Version: '1.22',
 };
 
@@ -145,6 +151,7 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
+  ...appStaticVariables,
   iOS_Version: '1.7',
   Android_Version: '1.16',
 };
@@ -338,6 +345,7 @@ export const NeedHelp = [
   {
     category: 'Virtual Consult',
     options: [
+      'Require Reschedule',
       'Delay in consult',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
@@ -365,6 +373,7 @@ export const NeedHelp = [
   {
     category: 'Physical Consult',
     options: [
+      'Require Reschedule',
       'Long Waiting time for Physical consult',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
@@ -388,6 +397,7 @@ export const NeedHelp = [
   {
     category: 'Diagnostics',
     options: [
+      'Require Reschedule',
       'Payment Issues while ordering',
       'Sample pick up related',
       'Excess amount related',

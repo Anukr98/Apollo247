@@ -98,12 +98,6 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
     delegateNumber: '+91123456789',
     isActive: true, // Don't forget to set this to true or you won't be able to log in!
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-
-    // kabir
-    // firebaseToken: 'dJYFTV7MJGWK2EdziTtr5zUPm243', // This is actually the firebaseuid, not the token
-    // mobileNumber: '+919999999999', // OTP is 999999
-
-    // sankeerth
     mobileNumber: '+919296858696', // OTP is 772345
     firebaseToken: 'gnUQsiiGlrS0NuGgF62RsmvG1HF3',
   });

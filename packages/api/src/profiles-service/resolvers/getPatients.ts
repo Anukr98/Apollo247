@@ -63,7 +63,6 @@ type PatientProfileInput = {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
-  firebaseUid: string;
 };
 
 type EditProfileInput = {
@@ -124,9 +123,8 @@ const addNewProfile: Resolver<
   PatientProfileInputArgs,
   ProfilesServiceContext,
   PatientInfo
-> = async (parent, { patientProfileInput }, { firebaseUid, mobileNumber, profilesDb }) => {
+> = async (parent, { patientProfileInput }, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  patientProfileInput.firebaseUid = firebaseUid;
   const pateintDetails = await patientRepo.findByMobileNumber(patientProfileInput.mobileNumber);
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
