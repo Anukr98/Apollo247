@@ -187,7 +187,7 @@ const getPatientLabResults: Resolver<
   { patientId: string },
   ConsultServiceContext,
   boolean
-> = async (parent, args, { firebaseUid, mobileNumber, patientsDb }) => {
+> = async (parent, args, { mobileNumber, patientsDb }) => {
   const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);

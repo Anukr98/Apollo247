@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 
-import { Chip, Theme, MenuItem, Paper } from '@material-ui/core';
+import { Chip, Theme, Paper } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import deburr from 'lodash/deburr';
@@ -56,19 +56,82 @@ function renderSuggestion(
   const parts = parse(suggestion!.itemName, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
+    <div>
       {parts.map((part) => (
         <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
           {part.text}
         </span>
       ))}
-      <img src={require('images/ic-add.svg')} alt="" />
-    </MenuItem>
+      <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
+    </div>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    suggestionsContainer: {
+      position: 'relative',
+    },
+    suggestionPopover: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
+      position: 'absolute',
+      zIndex: 1,
+      left: 0,
+      right: 0,
+      maxHeight: 240,
+      overflowY: 'auto',
+      color: '#02475b',
+    },
+    suggestionsList: {
+      margin: 0,
+      padding: 0,
+      listStyleType: 'none',
+      borderRadius: 10,
+      overflow: 'hidden',
+    },
+    suggestionItem: {
+      fontSize: 18,
+      fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 7,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
+    },
     root: {
       padding: 0,
     },
@@ -78,7 +141,6 @@ const useStyles = makeStyles((theme: Theme) =>
     sectionTitle: {
       color: '#02475b',
       opacity: 0.6,
-
       fontSize: 14,
       fontWeight: 500,
       letterSpacing: 0.02,
@@ -99,9 +161,9 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
-
     inputRoot: {
       marginTop: 10,
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -153,79 +215,6 @@ const useStyles = makeStyles((theme: Theme) =>
         margin: 0,
         marginLeft: 12,
         maxWidth: 20,
-      },
-    },
-    autoSuggestBox: {
-      position: 'relative',
-      '& input': {
-        paddingRight: 30,
-      },
-    },
-    searchpopup: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
-      marginTop: 2,
-      position: 'absolute',
-      left: 0,
-      width: '100%',
-      zIndex: 1,
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        borderRadius: 10,
-        overflow: 'hidden',
-        '& li': {
-          padding: 0,
-          listStyleType: 'none',
-          position: 'relative',
-          '&:after': {
-            content: '""',
-            height: 1,
-            left: 20,
-            right: 20,
-            bottom: 0,
-            position: 'absolute',
-            backgroundColor: 'rgba(2, 71, 91, 0.15)',
-          },
-          '& >div': {
-            padding: '10px 62px 10px 16px',
-            fontSize: 18,
-            fontWeight: 500,
-            color: '#02475b',
-            '&:hover': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '&:focus': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '& span:nth-child(2)': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-            '& img': {
-              position: 'absolute',
-              right: 20,
-              display: 'none',
-            },
-          },
-          '&:first-child': {
-            borderRadius: '10px 10px 0 0',
-          },
-          '&:last-child': {
-            borderRadius: '10px 10px 0 0',
-            '&:after': {
-              display: 'none',
-            },
-          },
-          '&:hover': {
-            '& >div': {
-              '& img': {
-                display: 'block',
-              },
-            },
-          },
-        },
       },
     },
     addNewDiagnostic: {
@@ -494,16 +483,19 @@ export const DiagnosticPrescription: React.FC = () => {
             },
           }}
           theme={{
-            container: classes.autoSuggestBox,
+            container: classes.suggestionsContainer,
+            suggestionsList: classes.suggestionsList,
+            suggestion: classes.suggestionItem,
+            suggestionHighlighted: classes.suggestionHighlighted,
           }}
           renderSuggestionsContainer={(options) => (
-            <Paper {...options.containerProps} square className={classes.searchpopup}>
+            <Paper {...options.containerProps} square classes={{ root: classes.suggestionPopover }}>
               {options.children}
             </Paper>
           )}
         />
       )}
-      {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
+      {lengthOfSuggestions === 0 && otherDiagnostic.trim().length > 2 && (
         <div className={classes.addNewDiagnostic}>
           <AphButton
             onClick={() => {

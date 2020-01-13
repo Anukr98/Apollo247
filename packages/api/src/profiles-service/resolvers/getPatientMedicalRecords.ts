@@ -19,18 +19,20 @@ import {
 
 export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecords {
+    additionalNotes: String
+    documentURLs: String
     id: ID!
-    testName: String!
-    testDate: Date
+    issuingDoctor: String
+    location: String
+    medicalRecordParameters: [MedicalRecordParameters]
+    observations: String
+    patient: Patient
+    prismFileIds: String
     recordType: MedicalRecordType
     referringDoctor: String
-    observations: String
-    additionalNotes: String
     sourceName: String
-    documentURLs: String
-    prismFileIds: String
-    patient: Patient
-    medicalRecordParameters: [MedicalRecordParameters]
+    testDate: Date
+    testName: String!
   }
 
   type MedicalRecordParameters {
@@ -191,7 +193,7 @@ const getPatientPrismMedicalRecords: Resolver<
   { patientId: string },
   ProfilesServiceContext,
   PrismMedicalRecordsResult
-> = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
+> = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);

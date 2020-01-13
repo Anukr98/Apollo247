@@ -17,6 +17,8 @@ export enum ApiConstants {
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
   APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 15 mins. :)',
   PHYSICAL_APPOINTMENT_REMINDER_15_BODY = ' Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
+  PHYSICAL_APPOINTMENT_REMINDER_60_BODY = 'Hi {0}! Dr. {1} will see you in an hour. Please come down to {2}.',
+  PHYSICAL_APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're ready for your appointment.",
 
   //appointment casesheet reminder 15
   APPOINTMENT_CASESHEET_REMINDER_15_TITLE = 'Appointment reminder',
@@ -67,14 +69,14 @@ export enum ApiConstants {
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
 
   //book appointment sucessfull
-  BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
+  BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
   BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
 
   //physical book appointment sucessfull
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
 
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
-  DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully. View Test Details",
+  DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE = 'Diagnostic test payment failed',
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days. Click here to book again",
@@ -119,6 +121,7 @@ export enum ApiConstants {
   CONSULTS_SERVICE_ERROR_LOG_FILE = '/error-logs/consults-service.log',
   NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
+  KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -141,6 +144,11 @@ export enum ApiConstants {
   PHARMA_DEFAULT_SHOPID = '16001',
 
   OTP_EXPIRATION_MINUTES = 2,
+  OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.',
+  KALEYRA_OTP_SENDER = 'APOLLO',
+  KALEYRA_OTP_SMS_METHOD = 'sms',
+  OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
+  OTP_FAIL_MESSAGE = 'OTP sending failed',
 
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',

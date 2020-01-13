@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
+import { LOGIN_TYPE, LoginOtp, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import * as firebaseAdmin from 'firebase-admin';
 
@@ -18,7 +18,7 @@ export const verifyLoginOtpTypeDefs = gql`
   }
 
   input OtpVerificationInput {
-    mobileNumber: String!
+    id: String!
     otp: String!
     loginType: LOGIN_TYPE!
   }
@@ -28,7 +28,7 @@ export const verifyLoginOtpTypeDefs = gql`
   }
 `;
 type OtpVerificationInput = {
-  mobileNumber: string;
+  id: string;
   otp: string;
   loginType: LOGIN_TYPE;
 };
@@ -50,7 +50,6 @@ const verifyLoginOtp: Resolver<
   //otp verification logic here
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
-  /*
   const matchedOtpRow: LoginOtp[] = await otpRepo.verifyOtp(otpVerificationInput);
   if (matchedOtpRow.length === 0) {
     return { status: false, authToken: null, isBlocked: false };
@@ -77,30 +76,11 @@ const verifyLoginOtp: Resolver<
 
   //update status of otp
   await otpRepo.updateOtpStatus(matchedOtpRow[0].id, { status: OTP_STATUS.VERIFIED });
-  */
-
-  //const res = await sendSMS();
 
   //generate customeToken
-  const customToken = await firebase.auth().createCustomToken(otpVerificationInput.mobileNumber);
+  const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
 
   return { status: true, authToken: customToken, isBlocked: false };
-};
-
-const sendSMS = async () => {
-  const request = require('request');
-
-  var options = {
-    method: 'POST',
-    url:
-      'https://api-alerts.kaleyra.com/v4/?api_key=A776bdeb4cd88a07779ea9998c49987c8&method=sms&message=hello&to=9052959527&sender=Apollo247',
-    headers: {},
-    formData: {},
-  };
-  request(options, function(error: any, response: any) {
-    if (error) throw new Error(error);
-    console.log(response.body);
-  });
 };
 
 export const verifyLoginOtpResolvers = {

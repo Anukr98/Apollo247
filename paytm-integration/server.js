@@ -82,8 +82,9 @@ app.get('/invokePhysicalApptReminder', (req, res) => {
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
+      console.log(response);
       console.log(
-        response.data.data.sendApptReminderNotification.apptsListCount,
+        response.data.data.sendPhysicalApptReminderNotification.apptsListCount,
         'notifications response is....'
       );
       const fileName =
@@ -93,7 +94,7 @@ app.get('/invokePhysicalApptReminder', (req, res) => {
       let content =
         new Date().toString() +
         '\n---------------------------\n' +
-        response.data.data.sendApptReminderNotification.apptsListCount +
+        response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
       fs.appendFile(fileName, content, function(err) {
         if (err) throw err;

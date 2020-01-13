@@ -1,0 +1,95 @@
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CartIcon, HomeIcon, NotificationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React from 'react';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import {
+  NavigationActions,
+  NavigationRoute,
+  NavigationScreenProp,
+  StackActions,
+} from 'react-navigation';
+
+const styles = StyleSheet.create({
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
+});
+
+export interface TabHeaderProps {
+  containerStyle?: StyleProp<ViewStyle>;
+  navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
+}
+
+export const TabHeader: React.FC<TabHeaderProps> = (props) => {
+  const { cartItems } = useShoppingCart();
+  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+
+  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
+    return (
+      <View style={[styles.labelView, containerStyle]}>
+        <Text style={styles.labelText}>{count}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <View
+      style={[
+        {
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          paddingTop: 16,
+          paddingBottom: 12,
+          paddingHorizontal: 20,
+          backgroundColor: theme.colors.WHITE,
+        },
+        props.containerStyle,
+      ]}
+    >
+      <TouchableOpacity
+        activeOpacity={1}
+        // onPress={() => props.navigation.popToTop()}
+        onPress={() => {
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+            })
+          );
+        }}
+      >
+        <HomeIcon />
+      </TouchableOpacity>
+      <View style={{ flexDirection: 'row' }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+          }
+          style={{ right: 20 }}
+        >
+          <CartIcon style={{}} />
+          {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
+        </TouchableOpacity>
+        <NotificationIcon />
+      </View>
+    </View>
+  );
+};

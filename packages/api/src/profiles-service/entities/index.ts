@@ -527,7 +527,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientFamilyHistory, (familyHistory) => familyHistory.patient)
   familyHistory: PatientFamilyHistory[];
 
-  @Column()
+  @Column({ nullable: true })
   firebaseUid: string;
 
   @Column()
@@ -855,6 +855,12 @@ export class MedicalRecords extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   documentURLs: string;
+
+  @Column({ nullable: true })
+  issuingDoctor: string;
+
+  @Column({ nullable: true })
+  location: string;
 
   @Column({ nullable: true, type: 'text' })
   prismFileIds: string;

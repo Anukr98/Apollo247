@@ -64,7 +64,7 @@ type MedicineInformationProps = {
 export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+    url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
   const images = [

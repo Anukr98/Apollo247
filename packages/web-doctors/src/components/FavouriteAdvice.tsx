@@ -112,6 +112,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     updateBtn: {
       backgroundColor: '#fc9916 !important',
+      '&:disabled': {
+        backgroundColor: '#fdd49c !important',
+      },
     },
     addmedicine_btn: {
       color: '#fc9916',
@@ -279,7 +282,6 @@ export const FavouriteAdvice: React.FC = () => {
         },
       })
       .then((data) => {
-        console.log('data after mutation' + data);
         setSelectedValues(data && data!.data!.updateDoctorFavouriteAdvice!.adviceList);
         setAdviceLoader(false);
       });
@@ -321,14 +323,16 @@ export const FavouriteAdvice: React.FC = () => {
           data.data.addDoctorFavouriteAdvice.adviceList &&
           data.data.addDoctorFavouriteAdvice.adviceList[0]!.id
         ) {
-          temp = data!.data!.addDoctorFavouriteAdvice!.adviceList[0]!.id;
+          temp = data!.data!.addDoctorFavouriteAdvice!.adviceList[
+            data!.data!.addDoctorFavouriteAdvice!.adviceList.length - 1
+          ]!.id;
         }
 
         if (advice.trim() !== '') {
           selectedValues &&
             selectedValues!.splice(idx, 0, {
               instruction: advice,
-              id: selectedValues.length > 0 ? selectedValues[selectedValues.length - 1]!.id! : temp,
+              id: temp,
               __typename: 'DoctorsFavouriteAdvice',
             });
           setSelectedValues(selectedValues);
@@ -474,6 +478,7 @@ export const FavouriteAdvice: React.FC = () => {
                   <AphButton
                     color="primary"
                     className={classes.updateBtn}
+                    disabled={advice.trim() === ''}
                     onClick={() => {
                       setShowAddInputText(false);
                       handleUpdate(advice, updateAdviceId);
@@ -485,9 +490,9 @@ export const FavouriteAdvice: React.FC = () => {
                   <AphButton
                     color="primary"
                     className={classes.updateBtn}
+                    disabled={advice.trim() === ''}
                     onClick={() => {
                       saveAdvice(advice);
-                      console.log('save advice');
                       setShowAddInputText(false);
                     }}
                   >

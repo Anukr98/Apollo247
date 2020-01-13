@@ -94,7 +94,7 @@ const getCurrentPatients: Resolver<
   { appVersion: string; deviceType: DEVICE_TYPE },
   ProfilesServiceContext,
   GetCurrentPatientsResult
-> = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
+> = async (parent, args, { mobileNumber, profilesDb }) => {
   let isPrismWorking = 1;
   const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
   const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
@@ -198,7 +198,6 @@ const getCurrentPatients: Resolver<
       return findOrCreatePatient(
         { uhid: data.UHID, mobileNumber },
         {
-          firebaseUid,
           firstName: data.userName,
           lastName: '',
           gender: undefined,
@@ -217,7 +216,6 @@ const getCurrentPatients: Resolver<
         findOrCreatePatient(
           { uhid: '', mobileNumber },
           {
-            firebaseUid,
             firstName: '',
             lastName: '',
             gender: undefined,
@@ -274,7 +272,7 @@ const getLoginPatients: Resolver<
   { appVersion: string; deviceType: DEVICE_TYPE },
   ProfilesServiceContext,
   GetCurrentPatientsResult
-> = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
+> = async (parent, args, { mobileNumber, profilesDb }) => {
   let isPrismWorking = 1;
   const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
   const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
@@ -378,7 +376,6 @@ const getLoginPatients: Resolver<
       return findOrCreatePatient(
         { uhid: data.UHID, mobileNumber },
         {
-          firebaseUid,
           firstName: data.userName,
           lastName: '',
           gender: undefined,
@@ -397,7 +394,6 @@ const getLoginPatients: Resolver<
         findOrCreatePatient(
           { uhid: '', mobileNumber },
           {
-            firebaseUid,
             firstName: '',
             lastName: '',
             gender: undefined,

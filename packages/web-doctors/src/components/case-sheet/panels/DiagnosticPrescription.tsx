@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Chip, Theme, MenuItem, Paper, Button, Grid } from '@material-ui/core';
+import { Typography, Chip, Theme, Paper, Grid } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import deburr from 'lodash/deburr';
@@ -56,83 +56,86 @@ function renderSuggestion(
   const parts = parse(suggestion!.itemName, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span
-            key={part.text}
-            style={{
-              fontWeight: part.highlight ? 500 : 400,
-              whiteSpace: 'pre',
-            }}
-          >
-            {part.text}
-          </span>
-        ))}
-      </div>
-    </MenuItem>
+    <div>
+      {parts.map((part) => (
+        <span
+          key={part.text}
+          style={{
+            fontWeight: part.highlight ? 500 : 400,
+            whiteSpace: 'pre',
+          }}
+        >
+          {part.text}
+        </span>
+      ))}
+      <img src={require('images/ic_dark_plus.svg')} alt="" />
+    </div>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      height: 250,
-      flexGrow: 1,
-    },
-    container: {
+    suggestionsContainer: {
       position: 'relative',
     },
-    suggestionsContainerOpen: {
+    suggestionPopover: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
       position: 'absolute',
       zIndex: 1,
-      marginTop: theme.spacing(1),
       left: 0,
       right: 0,
-    },
-    textFieldWrapper: {
-      border: 'solid 1px #30c1a3',
-      borderRadius: 10,
-      width: '100%',
-      padding: 16,
-      color: '#01475b',
-      fontSize: 14,
-      fontWeight: 500,
-      position: 'relative',
-      paddingRight: 48,
-    },
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
-      '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
-        },
-      },
+      maxHeight: 240,
+      overflowY: 'auto',
     },
     suggestionsList: {
       margin: 0,
       padding: 0,
       listStyleType: 'none',
       borderRadius: 10,
+      overflow: 'hidden',
     },
-    chatSubmitBtn: {
-      position: 'absolute',
-      top: '50%',
-      marginTop: -18,
-      right: 10,
-      minWidth: 'auto',
-      padding: 0,
+    suggestionItem: {
+      fontSize: 18,
+      fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 20,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
       '& img': {
-        maxWidth: 36,
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
       },
     },
-    divider: {
-      height: theme.spacing(2),
-    },
-    mainContainer: {
-      width: '100%',
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
     },
     contentContainer: {
       display: 'flex',
@@ -146,12 +149,6 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 12,
       },
     },
-    column: {
-      width: '49%',
-      display: 'flex',
-      marginRight: '1%',
-      flexDirection: 'column',
-    },
     listContainer: {
       display: 'flex',
       flexFlow: 'column',
@@ -159,9 +156,6 @@ const useStyles = makeStyles((theme: Theme) =>
       '&:last-child': {
         borderBottom: 'none',
       },
-    },
-    icon: {
-      color: '#00b38e',
     },
     textFieldContainer: {
       width: '100%',
@@ -184,7 +178,6 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b !important',
       whiteSpace: 'normal',
       paddingRight: 5,
-
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
       },
@@ -200,15 +193,12 @@ const useStyles = makeStyles((theme: Theme) =>
     othersBtnFav: {
       height: 'auto',
       backgroundColor: 'transparent',
-      // border: '1px solid rgba(2, 71, 91, 0.15)',
-      // marginBottom: 12,
       borderRadius: 0,
       fontWeight: 600,
       fontSize: 14,
       color: '#02475b !important',
       whiteSpace: 'normal',
       paddingRight: 5,
-
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
       },
@@ -221,21 +211,12 @@ const useStyles = makeStyles((theme: Theme) =>
         wordBreak: 'break-word',
       },
     },
-    textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
-        },
-      },
-    },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
@@ -252,7 +233,6 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 600,
       position: 'absolute',
       right: 5,
-      // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
@@ -271,22 +251,16 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      right: -20,
-      bottom: 0,
-      paddingLeft: 4,
+      right: 0,
+      bottom: 5,
+      minWidth: 'auto',
+      padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
-      '& img': {
-        marginRight: 8,
-      },
-    },
-    searchpopup: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
-      marginTop: 2,
     },
     inputRoot: {
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -460,7 +434,7 @@ export const DiagnosticPrescription: React.FC = () => {
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Grid container spacing={1}>
-        <Grid item lg={6} xs={12}>
+        <Grid item xs={12}>
           <Typography component="div" className={classes.fullWidth}>
             <Typography component="h5" variant="h5">
               Tests
@@ -558,19 +532,23 @@ export const DiagnosticPrescription: React.FC = () => {
                   },
                 }}
                 theme={{
-                  container: classes.container,
-                  suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                  container: classes.suggestionsContainer,
                   suggestionsList: classes.suggestionsList,
-                  suggestion: classes.suggestion,
+                  suggestion: classes.suggestionItem,
+                  suggestionHighlighted: classes.suggestionHighlighted,
                 }}
                 renderSuggestionsContainer={(options) => (
-                  <Paper {...options.containerProps} square className={classes.searchpopup}>
+                  <Paper
+                    {...options.containerProps}
+                    square
+                    classes={{ root: classes.suggestionPopover }}
+                  >
                     {options.children}
                   </Paper>
                 )}
               />
             )}
-            {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
+            {lengthOfSuggestions === 0 && otherDiagnostic.trim().length > 2 && (
               <AphButton
                 className={classes.darkGreenaddBtn}
                 variant="contained"

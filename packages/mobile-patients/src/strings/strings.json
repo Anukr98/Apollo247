@@ -37,7 +37,7 @@
   },
   "home": {
     "hi": "hi",
-    "description": "How are you doing?",
+    "description": "How can we help you?",
     "consult_doctor": "CONSULT A DOCTOR",
     "start_doctor_title": "Learn about Apollo Star Doctor Program",
     "doctors_label": "Doctors",
@@ -215,7 +215,7 @@
     ]
   },
   "orders": {
-    "urOrders": "YOUR ORDERS",
+    "urOrders": "MY ORDERS",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",

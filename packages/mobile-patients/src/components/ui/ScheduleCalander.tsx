@@ -40,6 +40,7 @@ import { GET_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles'
 import { useApolloClient } from 'react-apollo-hooks';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -194,8 +195,17 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             moment()
               .format('DMY')
               .toString()
-              ? parseInt(item!.startTime!.split(':')[0]) >= parseInt(moment().format('k'))
-                ? parseInt(item!.startTime!.split(':')[1]) > moment().minute()
+              ? parseInt(item!.startTime!.split(':')[0], 10) >=
+                parseInt(
+                  moment()
+                    .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
+                    .format('k'),
+                  10
+                )
+                ? parseInt(item!.startTime!.split(':')[1], 10) >
+                  moment()
+                    .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
+                    .minute()
                 : false
               : true
           )
