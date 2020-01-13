@@ -10,7 +10,7 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, normalize } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -795,6 +795,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 onChangeText={isOtpValid}
                 keyboardType="numeric"
                 textContentType={'oneTimeCode'}
+                caretHidden={otp.length >= 6}
                 autoFocus
                 maxLength={6}
               />
