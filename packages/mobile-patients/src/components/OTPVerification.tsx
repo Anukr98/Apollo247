@@ -29,7 +29,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  WebView,
   AppState,
   AppStateStatus,
   TextInput,
@@ -42,7 +41,8 @@ import { BottomPopUp } from './ui/BottomPopUp';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
-import { verifyOTP } from '../helpers/loginCalls';
+import { verifyOTP, loginAPI } from '../helpers/loginCalls';
+import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window');
 
@@ -558,17 +558,30 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         const { phoneNumber } = props.navigation.state.params!;
         console.log('onClickResend', phoneNumber);
 
-        sendOtp(phoneNumber, true)
+        loginAPI(client, '+91' + phoneNumber)
           .then((confirmResult) => {
             CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
             setShowResentTimer(true);
             console.log('confirmResult login', confirmResult);
           })
-          .catch((error) => {
+          .catch((error: Error) => {
+            console.log(error, 'error');
+            console.log(error.message, 'errormessage');
             CommonBugFender('OTP_RESEND_FAIL', error);
-
             Alert.alert('Error', 'The interaction was cancelled by the user.');
           });
+
+        // sendOtp(phoneNumber, true)
+        //   .then((confirmResult) => {
+        //     CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
+        //     setShowResentTimer(true);
+        //     console.log('confirmResult login', confirmResult);
+        //   })
+        //   .catch((error) => {
+        //     CommonBugFender('OTP_RESEND_FAIL', error);
+
+        //     Alert.alert('Error', 'The interaction was cancelled by the user.');
+        //   });
       } else {
         setshowOfflinePopup(true);
       }
@@ -603,7 +616,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               flex: 1,
               backgroundColor: 'white',
             }}
-            useWebKit={true}
+            // useWebKit={true}
             onLoadStart={() => {
               console.log('onLoadStart');
               setshowSpinner(true);
