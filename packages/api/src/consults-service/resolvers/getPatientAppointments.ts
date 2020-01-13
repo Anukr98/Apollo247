@@ -6,8 +6,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { ConsultHours } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 export const getPatinetAppointmentsTypeDefs = gql`
