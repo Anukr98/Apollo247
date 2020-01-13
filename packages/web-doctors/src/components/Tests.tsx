@@ -647,8 +647,10 @@ export const Tests: React.FC = () => {
         },
       })
       .then((data) => {
-        console.log('data after mutation' + data);
         getTest();
+      })
+      .finally(() => {
+        setIsSmartTestsDialogOpen(false);
       });
   };
 
@@ -839,7 +841,6 @@ export const Tests: React.FC = () => {
                       }
                       saveTests(suggestion);
                       setShowAddCondition(false);
-                      setIsSmartTestsDialogOpen(false);
                       suggestions = suggestions.filter(
                         (val) => selectedValues && !selectedValues!.includes(val!)
                       );
