@@ -59,17 +59,17 @@ export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
   };
 
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+    url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         {props.data &&
-          props.data.map((healthArea) => {
+          props.data.map((healthArea, index) => {
             const formattedTitle = _replace(_lowerCase(healthArea.title), ' ', '-');
             return (
-              <div key={healthArea.category_id} className={classes.card}>
+              <div key={index} className={classes.card}>
                 <Link to={clientRoutes.searchByMedicine(formattedTitle, healthArea.category_id)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>

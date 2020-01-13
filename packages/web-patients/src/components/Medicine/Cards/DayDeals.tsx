@@ -74,15 +74,15 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
   };
 
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+    url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         {props.data &&
-          props.data.map((deal) => (
-            <div key={deal.category_id} className={classes.card}>
+          props.data.map((deal, index) => (
+            <div key={index} className={classes.card}>
               <Link
                 className={classes.cardLink}
                 to={clientRoutes.searchByMedicine('Deals-of-the-day', deal.category_id)}
