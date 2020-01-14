@@ -259,6 +259,7 @@ export async function sendCallsNotification(
     registrationToken.push(values.deviceToken);
   });*/
   console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -564,7 +565,7 @@ export async function sendNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -819,7 +820,7 @@ export async function sendReminderNotification(
       registrationToken.push(values.deviceToken);
     });
   }
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -949,7 +950,7 @@ export async function sendCartNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
