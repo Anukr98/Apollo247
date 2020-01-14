@@ -194,7 +194,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient.id) {
+    if (currentPatient && profile && profile.id !== currentPatient.id) {
       setLoadingContext!(true);
       setProfile(currentPatient);
       ordersRefetch().then((data: any) => {
@@ -270,18 +270,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 doRequestAndAccessLocation()
                   .then((response) => {
                     //console.log('response', { response });
+                    setLoadingContext!(false);
                     setLocationDetails!(response);
                   })
                   .catch((e) => {
+                    setLoadingContext!(false);
                     showAphAlert!({
                       title: 'Uh oh! :(',
                       description: 'Unable to access location.',
                     });
                     setLocationError(true);
                     setshowLocationpopup(true);
-                  })
-                  .finally(() => {
-                    setLoadingContext!(false);
                   });
               }}
             />
@@ -306,15 +305,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (locationForDiagnostics && locationForDiagnostics.cityId) {
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
+          setLoading(false);
           aphConsole.log('getTestsPackages\n', { data });
           setTestPackages(g(data, 'data') || []);
         })
         .catch((e) => {
-          aphConsole.log('getTestsPackages Error\n', { e });
-        })
-        .finally(() => {
           setLoading(false);
+          aphConsole.log('getTestsPackages Error\n', { e });
         });
+      // .finally(() => {
+      //   setLoading(false);
+      // });
     } else {
       setTestPackages([]);
       setLoading(false);
@@ -1128,6 +1129,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
+          setLoadingContext!(false);
           aphConsole.log('searchDiagnostics\n', { data });
           const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
           if (product) {
@@ -1137,12 +1139,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         })
         .catch((e) => {
+          setLoadingContext!(false);
           aphConsole.log({ e });
           errorAlert();
-        })
-        .finally(() => {
-          setLoadingContext!(false);
         });
+      // .finally(() => {
+      //   setLoadingContext!(false);
+      // });
     }
   };
 
@@ -1150,6 +1153,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setLoadingContext!(true);
     getPackageData(id)
       .then(({ data }) => {
+        setLoadingContext!(false);
         console.log('getPackageData\n', { data });
         const product = g(data, 'data');
         if (product && product.length) {
@@ -1159,12 +1163,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       })
       .catch((e) => {
+        setLoadingContext!(false);
         console.log('getPackageData Error\n', { e });
         errorAlert();
-      })
-      .finally(() => {
-        setLoadingContext!(false);
       });
+    // .finally(() => {
+    //   setLoadingContext!(false);
+    // });
   };
 
   const renderTestPackages = () => {
