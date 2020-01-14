@@ -309,6 +309,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       paddingLeft: 8,
+      paddingTop: 11,
       '&:hover': {
         backgroundColor: 'transparent',
       },

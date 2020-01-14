@@ -179,7 +179,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       color: '#02475b !important',
       whiteSpace: 'normal',
-      paddingRight: 5,
+      paddingRight: 45,
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
       },
@@ -237,6 +237,7 @@ const useStyles = makeStyles((theme: Theme) =>
       right: 0,
       paddingLeft: 4,
       minWidth: 'auto',
+      paddingRight: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -459,7 +460,6 @@ export const DiagnosticPrescription: React.FC = () => {
                           onDelete={() => handleDelete(item, idx)}
                           deleteIcon={
                             <img
-                              className={classes.deleteImage}
                               src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                               alt=""
                             />
@@ -475,6 +475,7 @@ export const DiagnosticPrescription: React.FC = () => {
                           onDelete={() => handleDelete(item, idx)}
                           deleteIcon={
                             <img
+                              className={classes.deleteImage}
                               src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                               alt=""
                             />

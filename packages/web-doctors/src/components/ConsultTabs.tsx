@@ -163,6 +163,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: '0 20px 20px 20px',
       position: 'relative',
+      outline: 'none',
       '& h3': {
         fontSize: 20,
         fontWeight: 600,
