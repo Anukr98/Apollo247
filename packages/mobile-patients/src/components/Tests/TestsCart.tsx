@@ -67,6 +67,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import Geolocation from '@react-native-community/geolocation';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -258,7 +259,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (testCentresLoaded) {
       if (!(locationDetails && locationDetails.pincode)) {
-        navigator.geolocation.getCurrentPosition(
+        Geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
             getPlaceInfoByLatLng(latitude, longitude)

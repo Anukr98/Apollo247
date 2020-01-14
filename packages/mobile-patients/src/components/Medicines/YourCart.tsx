@@ -48,6 +48,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import Geolocation from '@react-native-community/geolocation';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -152,7 +153,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     if (!(locationDetails && locationDetails.pincode)) {
-      navigator.geolocation.getCurrentPosition(
+      Geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           getPlaceInfoByLatLng(latitude, longitude)
