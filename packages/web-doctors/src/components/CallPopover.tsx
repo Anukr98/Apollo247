@@ -1301,7 +1301,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const curTm1 = new Date().toISOString();
 
-    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19)) {
+    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19) && isConsultStarted) {
       clearInterval(intervalcallId);
       callIntervalTimer(180);
     }
