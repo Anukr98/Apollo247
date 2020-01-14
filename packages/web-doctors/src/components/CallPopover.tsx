@@ -101,9 +101,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fc9916',
       marginLeft: 20,
       minWidth: 168,
-
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+      marginTop: 0,
       '&:hover': {
         backgroundColor: '#e28913',
       },
