@@ -94,7 +94,7 @@ const verifyLoginOtp: Resolver<
   }
 
   //update status of otp
-  const updatedOtpRecord = await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
+  await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
     status: OTP_STATUS.VERIFIED,
   });
 
