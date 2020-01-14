@@ -643,6 +643,15 @@ export const LOGIN = gql`
     }
   }
 `;
+export const RESEND_OTP = gql`
+  query ResendOtp($mobileNumber: String!, $id: String!, $loginType: LOGIN_TYPE!) {
+    resendOtp(mobileNumber: $mobileNumber, id: $id, loginType: $loginType) {
+      status
+      message
+      loginId
+    }
+  }
+`;
 export const VERIFY_LOGIN_OTP = gql`
   query verifyLoginOtp($otpVerificationInput: OtpVerificationInput) {
     verifyLoginOtp(otpVerificationInput: $otpVerificationInput) {

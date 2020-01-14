@@ -6,6 +6,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -24,6 +25,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     isConsultStarted: Boolean
     isSeniorConsultStarted: Boolean
     isJdQuestionsComplete: Boolean
+    symptoms: String
     doctorInfo: DoctorDetails @provides(fields: "id")
   }
 
@@ -77,6 +79,7 @@ type PatinetAppointments = {
   isSeniorConsultStarted: Boolean;
   appointmentState: APPOINTMENT_STATE;
   isJdQuestionsComplete: Boolean;
+  symptoms: string;
 };
 
 type Doctor = {
@@ -105,7 +108,7 @@ const getPatientFutureAppointmentCount: Resolver<
   { patientId: string },
   ConsultServiceContext,
   { consultsCount: number }
-> = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
+> = async (parent, args, { consultsDb, patientsDb, mobileNumber, doctorsDb }) => {
   //check whether the access is by patient
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.getPatientDetails(args.patientId);
@@ -113,10 +116,21 @@ const getPatientFutureAppointmentCount: Resolver<
 
   if (patientData.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
+  //get max consult duration
+  let maxConsultationMinutes = 0;
+  const consultRepository = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+  const consultationRecord = await consultRepository.getMaxConsultationMinutes();
+  if (consultationRecord) {
+    maxConsultationMinutes = consultationRecord.maxconsultduration;
+  }
+
   let consultsCount = 0;
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  consultsCount = await appointmentRepo.getPatientFutureAppointmentsCount(args.patientId);
+  consultsCount = await appointmentRepo.getPatientFutureAppointmentsCount(
+    args.patientId,
+    maxConsultationMinutes
+  );
 
   return { consultsCount };
 };

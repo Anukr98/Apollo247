@@ -29,7 +29,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -236,6 +236,7 @@ const useStyles = makeStyles((theme: Theme) =>
     favMedBg: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
+      paddingRight: 10,
     },
     favmedicineHeading: {
       fontSize: 14,
@@ -248,7 +249,9 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -9,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -324,8 +327,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
-        padding: '0 25px',
-        marginTop: 5,
+        padding: '0 50px',
       },
     },
     numberTablets: {
@@ -488,7 +490,7 @@ const useStyles = makeStyles((theme: Theme) =>
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
       border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 40px 12px 12px',
+      padding: '12px 64px 12px 12px',
       position: 'relative',
       maxWidth: '100%',
       boxShadow: 'none',
@@ -1342,8 +1344,12 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const unitHtmls =
               medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
-                ? term(medicine.medicineUnit.toLowerCase(), '(s)')
-                : medicine.medicineUnit.toLowerCase() + '(s)';
+                ? term(
+                    medicine.medicineUnit.toLowerCase(),
+                    medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+                  )
+                : medicine.medicineUnit.toLowerCase() +
+                  (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
             const isInDuration =
               medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
                 ? ''
@@ -1444,8 +1450,12 @@ export const MedicinePrescription: React.FC = () => {
                 const favUnitHtmls =
                   favMedicine.medicineUnit[favMedicine.medicineUnit.length - 1].toLowerCase() ===
                   's'
-                    ? term(favMedicine.medicineUnit.toLowerCase(), '(s)')
-                    : favMedicine.medicineUnit.toLowerCase() + '(s)';
+                    ? term(
+                        favMedicine.medicineUnit.toLowerCase(),
+                        favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+                      )
+                    : favMedicine.medicineUnit.toLowerCase() +
+                      (favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
                 const isInDuration =
                   favMedicine.medicineTimings.length === 1 &&
                   favMedicine.medicineTimings[0] === 'AS_NEEDED'

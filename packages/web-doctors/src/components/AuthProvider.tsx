@@ -10,9 +10,11 @@ import {
   LOGGED_IN_USER_DETAILS,
   LOGIN,
   VERIFY_LOGIN_OTP,
+  RESEND_OTP,
 } from 'graphql/profiles';
 import { LoggedInUserType, LOGIN_TYPE } from 'graphql/types/globalTypes';
 import { Login, LoginVariables } from 'graphql/types/Login';
+import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import {
   GetDoctorDetails,
@@ -39,7 +41,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   //allCurrentPatients: Patient[] | null;
   setCurrentUser: ((p: Doctor) => void) | null;
 
-  sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
+  sendOtp: ((phoneNumber: string, loginId: string) => Promise<unknown>) | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
 
@@ -182,14 +184,48 @@ export const AuthProvider: React.FC = (props) => {
       return false;
     }
   };
-  const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
+  const resendOtpApiCall = async (mobileNumber: string, loginId: string) => {
+    const [resendOtpResult, resendOtpError] = await wait(
+      apolloClient.mutate<ResendOtp, ResendOtpVariables>({
+        variables: {
+          mobileNumber: mobileNumber,
+          id: loginId,
+          loginType: LOGIN_TYPE.DOCTOR,
+        },
+        mutation: RESEND_OTP,
+      })
+    );
+    setIsSendingOtp(false);
+    console.log(resendOtpResult);
+    if (
+      resendOtpResult &&
+      resendOtpResult.data &&
+      resendOtpResult.data.resendOtp &&
+      resendOtpResult.data.resendOtp.status &&
+      resendOtpResult.data.resendOtp.loginId
+    ) {
+      setSendOtpError(false);
+      return resendOtpResult.data.resendOtp.loginId;
+    } else {
+      TrackJS.track(`phoneNumber: ${mobileNumber}, phoneAuthError: ${resendOtpError}`);
+      setSendOtpError(true);
+      return false;
+    }
+  };
+  const sendOtp = (phoneNumber: string, loginId: string) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
       localStorage.setItem('loggedInMobileNumber', phoneNumber);
       setIsSendingOtp(true);
-      loginApiCall(phoneNumber).then((loginId) => {
-        resolve(loginId);
-      });
+      if (loginId && loginId !== '') {
+        resendOtpApiCall(phoneNumber, loginId).then((generatedLoginId) => {
+          resolve(generatedLoginId);
+        });
+      } else {
+        loginApiCall(phoneNumber).then((generatedLoginId) => {
+          resolve(generatedLoginId);
+        });
+      }
     }).finally(() => {
       setIsSendingOtp(false);
     });
@@ -212,10 +248,20 @@ export const AuthProvider: React.FC = (props) => {
       verifyLoginOtpResult.data &&
       verifyLoginOtpResult.data.verifyLoginOtp &&
       verifyLoginOtpResult.data.verifyLoginOtp.status &&
-      verifyLoginOtpResult.data.verifyLoginOtp.authToken
+      verifyLoginOtpResult.data.verifyLoginOtp.authToken &&
+      !verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
     ) {
       return verifyLoginOtpResult.data.verifyLoginOtp.authToken;
+    } else if (
+      verifyLoginOtpResult &&
+      verifyLoginOtpResult.data &&
+      verifyLoginOtpResult.data.verifyLoginOtp &&
+      verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
+    ) {
+      TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error-block`);
+      return false;
     } else {
+      TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error`);
       return false;
     }
   };
@@ -225,7 +271,6 @@ export const AuthProvider: React.FC = (props) => {
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
-          TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error`);
           setVerifyOtpError(true);
           setIsSigningIn(false);
         } else {
@@ -238,17 +283,7 @@ export const AuthProvider: React.FC = (props) => {
     }).finally(() => {
       TrackJS.track(`loginId:${loginId} otp:${otp} finally-block-otp-Error`);
       setVerifyOtpError(true);
-      //setIsSendingOtp(false);
     });
-    // if (!otpVerifier) {
-    //   setSendOtpError(true);
-    //   return;
-    // }
-    // setIsVerifyingOtp(true);
-    // const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-    // TrackJS.track(otpError);
-    // setVerifyOtpError(Boolean(otpError || !otpAuthResult.user));
-    // setIsVerifyingOtp(false);
   };
 
   const signOut = () =>

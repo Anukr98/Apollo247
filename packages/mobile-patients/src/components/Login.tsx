@@ -279,7 +279,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
 
-            loginAPI(client, '+91' + phoneNumber)
+            loginAPI('+91' + phoneNumber)
               .then((confirmResult: any) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);

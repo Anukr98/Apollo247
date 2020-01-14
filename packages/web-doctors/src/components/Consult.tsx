@@ -45,10 +45,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     videoContainer: {
-      height: 'calc(100vh - 200px)',
+      height: 'calc(100vh - 248px)',
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
+      marginTop: 68,
       overflow: 'hidden',
       position: 'relative',
     },
@@ -105,7 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     timerCls: {
       position: 'absolute',
-      top: 40,
+      top: 80,
       zIndex: 99,
       left: 40,
       fontSize: 12,

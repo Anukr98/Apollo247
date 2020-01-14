@@ -1135,10 +1135,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.appointmentType = :appointmentType', {
         appointmentType: appointmentType,
       })
-      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+      .andWhere('appointment.status in(:status1)', {
+        status1: STATUS.PENDING,
       })
       .getMany();
   }
@@ -1371,14 +1369,17 @@ export class AppointmentRepository extends Repository<Appointment> {
     return endTime;
   }
 
-  getPatientFutureAppointmentsCount(patientId: string) {
+  getPatientFutureAppointmentsCount(patientId: string, maxConsultationMinutes: number) {
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: subMinutes(new Date(), maxConsultationMinutes),
+      })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
+        status4: STATUS.COMPLETED,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getCount();

@@ -15,7 +15,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format } from 'date-fns';
+import { addMilliseconds, format, differenceInHours } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -188,7 +188,7 @@ export async function sendCallsNotification(
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //check for registered device tokens
-  if (patientDetails.patientDeviceTokens.length == 0) return;
+  //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   //if notiifcation of type reschedule & check for reschedule notification setting
   if (
@@ -259,6 +259,7 @@ export async function sendCallsNotification(
     registrationToken.push(values.deviceToken);
   });*/
   console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -314,10 +315,11 @@ export async function sendNotification(
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  console.log(patientDetails, 'patient details in notification');
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //check for registered device tokens
-  if (patientDetails.patientDeviceTokens.length == 0) return;
+  //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   //if notiifcation of type reschedule & check for reschedule notification setting
   if (
@@ -344,6 +346,7 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
+    console.log(notificationBody, 'patient canel notification');
   } else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.CANCEL_APPT_BODY.replace('{0}', patientDetails.firstName);
@@ -562,34 +565,35 @@ export async function sendNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
     .then((response: PushNotificationSuccessMessage) => {
       notificationResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
+      //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+      const fileName =
+        process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+      let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+      if (process.env.NODE_ENV != 'local') {
+        assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
       }
+      let content =
+        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        '\n apptid: ' +
+        pushNotificationInput.appointmentId +
+        '\n';
+      content += pushNotificationInput.notificationType.toString() + '\n multicastId: ';
+      content +=
+        response.multicastId.toString() +
+        '\n------------------------------------------------------------------------------------\n';
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+        if (err) {
+          console.log('file saving error', err);
+        }
+        console.log('notification results saved');
+      });
+      //}
     })
     .catch((error: JSON) => {
       console.log('PushNotification Failed::' + error);
@@ -621,7 +625,7 @@ export async function sendReminderNotification(
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //check for registered device tokens
-  if (patientDetails.patientDeviceTokens.length == 0) return;
+  //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
@@ -816,7 +820,7 @@ export async function sendReminderNotification(
       registrationToken.push(values.deviceToken);
     });
   }
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -946,7 +950,7 @@ export async function sendCartNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -1157,13 +1161,17 @@ export async function sendMedicineOrderStatusNotification(
   //notification payload
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
-  const orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+  let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+  if (Date.parse(orderDetails.orderTat.toString())) {
+    const tatDate = new Date(orderDetails.orderTat.toString());
+    orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
+  }
 
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
   notificationBody = notificationBody.replace('{2}', orderTat);
-
+  console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {
       title: notificationTitle,

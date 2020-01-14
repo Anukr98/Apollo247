@@ -1060,7 +1060,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     getHistory(0);
 
-    // registerForPushNotification();
+    registerForPushNotification();
 
     pubnub.addListener({
       status: (statusEvent) => {
@@ -1278,15 +1278,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
-    ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    if (Platform.OS === 'ios') {
+       ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    } else {
+      handlePushNotification('')
+    }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
     console.log('Device Token Received', deviceToken);
-
-    const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    try {
+       const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
-    console.log('android:', androidToken);
+    console.log('android:', androidToken.deviceToken);
 
     if (Platform.OS === 'ios') {
       pubnub.push.addChannels(
@@ -1306,12 +1310,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('ios:', token);
       // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
     } else {
+      console.log('androidtoken:', token);
       pubnub.push.addChannels({
         channels: [channel],
         device: androidToken,
         pushGateway: 'gcm', // apns, gcm, mpns
       });
       // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+    }
+    } catch (error) {
+        console.log('ioserror:', error);
     }
   };
 
@@ -3865,7 +3873,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMonths = Math.ceil(
       moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
     );
-    console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
+    // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
     if (textChange) {
       time = 'Consult is In-progress';
@@ -5054,7 +5062,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         instructions={[
           'Take clear Picture of your entire file.',
           'Doctor details & date of the test should be clearly visible.',
-          'Only PDF / JPG / PNG type files up to 2 mb are allowed',
+          'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}

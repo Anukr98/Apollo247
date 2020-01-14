@@ -281,13 +281,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const isValid = () => {
-    const validRecordDetails = typeofRecord && testName && dateOfTest ? true : false;
+    const validRecordDetails1 = typeofRecord && testName && dateOfTest ? true : false;
+    const validRecordDetails2 = typeofRecord && locationName && dateOfTest ? true : false;
+    const validRecordDetails3 = typeofRecord && docName && dateOfTest ? true : false;
+
+    console.log(validRecordDetails1, 'validRecordDetails', typeofRecord);
+    console.log(validRecordDetails2, 'validRecordDetails2', typeofRecord);
+    console.log(validRecordDetails3, 'validRecordDetails3', typeofRecord);
+
     const valid = isRecordParameterFilled().map((item) => {
       return {
         maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
         changed:
           // item.parameterName !== MedicalRecordInitialValues.parameterName
-          //   &&item.result !== MedicalRecordInitialValues.result?
+          // &&item.result !== MedicalRecordInitialValues.result?
           true,
         // : false,
         notinitial:
@@ -313,8 +320,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       });
 
+    const finval = validRecordDetails1
+      ? true
+      : validRecordDetails2
+      ? true
+      : validRecordDetails3
+      ? true
+      : false;
+    console.log(finval, 'finval');
+
     return {
-      isvalid: validRecordDetails,
+      isvalid: finval,
       isValidParameter:
         valid.find((i) => i.maxmin === false || (i.changed === false && !i.notinitial)) !==
         undefined,

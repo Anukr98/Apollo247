@@ -219,7 +219,7 @@ const useStyles = makeStyles((theme: Theme) => {
     cross: {
       position: 'absolute',
       right: 0,
-      top: '10px',
+      top: 7,
       fontSize: '18px',
       color: '#02475b',
     },
@@ -331,6 +331,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 88,
       backgroundColor: '#eeeeee',
       position: 'relative',
+      outline: 'none',
     },
     modalBoxClose: {
       position: 'absolute',
@@ -356,26 +357,26 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         letterSpacing: '0.5px',
         color: '#01475b',
-        padding: '15px',
+        padding: '17px 20px',
+        textTransform: 'uppercase',
       },
     },
     tabFooter: {
       background: 'white',
       position: 'absolute',
-      height: 60,
-      paddingTop: '10px',
       borderBottomLeftRadius: '10px',
       borderBottomRightRadius: '10px',
       width: '480px',
       bottom: '0px',
       textAlign: 'right',
-      paddingRight: '20px',
+      padding: '16px 20px 16px 0',
     },
     tabBody: {
       background: 'white',
       minHeight: 80,
-      marginTop: 10,
+      margin: 20,
       padding: '10px 15px 15px 15px',
+      borderRadius: 5,
       '& p': {
         margin: 0,
         fontSize: '15px',
@@ -1648,9 +1649,26 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
                     mutationRemoveConsult();
-                    if (document.getElementById('homeId')) {
-                      document.getElementById('homeId')!.click();
-                    }
+                    const text = {
+                      id: props.doctorId,
+                      message: cancelConsultInitiated,
+                      isTyping: true,
+                      messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.JUNIOR,
+                    };
+                    pubnub.publish(
+                      {
+                        message: text,
+                        channel: channel,
+                        storeInHistory: true,
+                      },
+                      (status: any, response: any) => {
+                        if (document.getElementById('homeId')) {
+                          document.getElementById('homeId')!.click();
+                        }
+                      }
+                    );
+
                     //window.location.href = clientRoutes.juniorDoctor();
                   })
                   .catch((e: ApolloError) => {

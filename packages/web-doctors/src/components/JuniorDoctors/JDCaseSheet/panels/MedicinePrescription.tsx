@@ -22,7 +22,7 @@ import Scrollbars from 'react-custom-scrollbars';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -155,7 +155,6 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 500,
       letterSpacing: 0.02,
       paddingBottom: 5,
-      minHeight: 18,
     },
     sectionBody: {
       '& >div:last-child': {
@@ -222,6 +221,7 @@ const useStyles = makeStyles((theme: Theme) =>
     actionGroup: {
       marginLeft: 'auto',
       display: 'flex',
+      alignItems: 'flex-start',
       '& button': {
         boxShadow: 'none',
         borderRadius: 0,
@@ -229,6 +229,9 @@ const useStyles = makeStyles((theme: Theme) =>
         padding: 0,
         marginLeft: 12,
         minWidth: 'auto',
+        '&:first-child': {
+          marginTop: 4,
+        },
       },
     },
     medicinePopup: {
@@ -258,13 +261,13 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     searchFrom: {
       padding: 0,
+      minHeight: 400,
       position: 'relative',
-      minHeight: 300,
     },
-    loaderDiv: {
-      textAlign: 'center',
-      margin: 'auto',
-      paddingTop: 20,
+    loader: {
+      left: '50%',
+      top: '45%',
+      position: 'absolute',
     },
     dialogContent: {
       padding: 20,
@@ -322,7 +325,9 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -2,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -474,7 +479,9 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 'bold',
     },
     unitsSelect: {
-      marginTop: -7,
+      '& > div': {
+        paddingTop: '3px !important',
+      },
     },
   })
 );
@@ -964,8 +971,12 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       const unitHtmls =
         medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
-          ? term(medicine.medicineUnit.toLowerCase(), '(s)')
-          : medicine.medicineUnit.toLowerCase() + '(s)';
+          ? term(
+              medicine.medicineUnit.toLowerCase(),
+              medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+            )
+          : medicine.medicineUnit.toLowerCase() +
+            (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
       const isInDuration =
         medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
           ? ''
@@ -1346,11 +1357,6 @@ export const MedicinePrescription: React.FC = () => {
                       classes={{ root: classes.suggestionPopover }}
                     >
                       {options.children}
-                      {loading ? (
-                        <div className={classes.loaderDiv}>
-                          <CircularProgress />
-                        </div>
-                      ) : null}
                     </Paper>
                   )}
                 />
@@ -1372,10 +1378,11 @@ export const MedicinePrescription: React.FC = () => {
                     <img src={require('images/ic_add_circle.svg')} alt="" />
                   </AphButton>
                 )}
+                {loading ? <CircularProgress className={classes.loader} /> : null}
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
@@ -1408,6 +1415,11 @@ export const MedicinePrescription: React.FC = () => {
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             {medicineForm !== 'OTHERS' ? 'Apply' : ''}
                           </div>
+                          {medicineForm == 'OTHERS' && (
+                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                              &nbsp;
+                            </div>
+                          )}
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               value={medicineUnit}
@@ -1434,9 +1446,11 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                         {medicineForm !== 'OTHERS' && (
                           <div className={classes.divCol}>
-                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                              &nbsp;
-                            </div>
+                            {medicineForm !== 'OTHERS' && (
+                              <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                                &nbsp;
+                              </div>
+                            )}
                             <AphSelect
                               style={{ paddingTop: 3 }}
                               value={frequency}
@@ -1465,38 +1479,38 @@ export const MedicinePrescription: React.FC = () => {
                     </div>
                     {medicineForm === 'OTHERS' && (
                       <div className={classes.sectionGroup}>
-                        {/* <div className={classes.unitsSelect}> */}
-                        <div className={classes.numberOfTimes}>
-                          <AphSelect
-                            style={{ paddingTop: 3 }}
-                            value={frequency}
-                            MenuProps={{
-                              classes: {
-                                paper: classes.menuPaper,
-                              },
-                              anchorOrigin: {
-                                vertical: 'bottom',
-                                horizontal: horizontal,
-                              },
-                              transformOrigin: {
-                                vertical: 'top',
-                                horizontal: horizontal,
-                              },
-                            }}
-                            onChange={(e: any) => {
-                              setFrequency(e.target.value as string);
-                            }}
-                          >
-                            {generateFrequency}
-                          </AphSelect>
-                          {/* </div> */}
+                        <div className={classes.unitsSelect}>
+                          <div className={classes.numberOfTimes}>
+                            <AphSelect
+                              style={{ paddingTop: 3 }}
+                              value={frequency}
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: horizontal,
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: horizontal,
+                                },
+                              }}
+                              onChange={(e: any) => {
+                                setFrequency(e.target.value as string);
+                              }}
+                            >
+                              {generateFrequency}
+                            </AphSelect>
+                          </div>
                         </div>
                       </div>
                     )}
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
-                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>for</div>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>For</div>
                           <AphTextField
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
@@ -1548,7 +1562,6 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>To be taken</div>
                       <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
                         {tobeTakenHtml}
                       </div>

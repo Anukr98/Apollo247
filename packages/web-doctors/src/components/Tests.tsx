@@ -309,6 +309,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       paddingLeft: 8,
+      paddingTop: 11,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -318,7 +319,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     addedList: {
       '& li': {
-        padding: '10px 50px 10px 0 !important',
+        padding: '10px 60px 10px 0 !important',
         wordWrap: 'break-word',
       },
       '& li:last-child': {
@@ -425,7 +426,7 @@ const useStyles = makeStyles((theme: Theme) =>
     searchFrom: {
       padding: 0,
       position: 'relative',
-      minHeight: 300,
+      minHeight: 400,
     },
   })
 );
