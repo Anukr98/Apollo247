@@ -1343,8 +1343,12 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const unitHtmls =
               medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
-                ? term(medicine.medicineUnit.toLowerCase(), '(s)')
-                : medicine.medicineUnit.toLowerCase() + '(s)';
+                ? term(
+                    medicine.medicineUnit.toLowerCase(),
+                    medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+                  )
+                : medicine.medicineUnit.toLowerCase() +
+                  (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
             const isInDuration =
               medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
                 ? ''
@@ -1445,8 +1449,12 @@ export const MedicinePrescription: React.FC = () => {
                 const favUnitHtmls =
                   favMedicine.medicineUnit[favMedicine.medicineUnit.length - 1].toLowerCase() ===
                   's'
-                    ? term(favMedicine.medicineUnit.toLowerCase(), '(s)')
-                    : favMedicine.medicineUnit.toLowerCase() + '(s)';
+                    ? term(
+                        favMedicine.medicineUnit.toLowerCase(),
+                        favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+                      )
+                    : favMedicine.medicineUnit.toLowerCase() +
+                      (favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
                 const isInDuration =
                   favMedicine.medicineTimings.length === 1 &&
                   favMedicine.medicineTimings[0] === 'AS_NEEDED'
