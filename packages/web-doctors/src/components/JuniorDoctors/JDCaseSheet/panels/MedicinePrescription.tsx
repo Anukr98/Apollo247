@@ -258,6 +258,7 @@ const useStyles = makeStyles((theme: Theme) =>
     searchFrom: {
       padding: 0,
       minHeight: 400,
+      position: 'relative',
     },
     loader: {
       left: '50%',
@@ -319,8 +320,10 @@ const useStyles = makeStyles((theme: Theme) =>
     backArrow: {
       cursor: 'pointer',
       position: 'absolute',
-      left: -20,
-      top: -9,
+      left: 0,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },

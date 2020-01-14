@@ -238,7 +238,9 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -9,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -287,7 +289,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogContent: {
       padding: '20px 0 0 0',
-      minHeight: 300,
+      minHeight: 400,
       position: 'relative',
       '& h6': {
         fontSize: 14,
@@ -305,7 +307,6 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
-        textAlign: 'left',
       },
     },
     popupHeadingCenter: {
@@ -315,8 +316,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
-        padding: '0 25px',
-        marginTop: 5,
+        padding: '0 50px',
       },
     },
     numberTablets: {
@@ -503,12 +503,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     unitsSelect: {
       marginTop: 0,
-    },
-    headingName: {
-      display: 'inline-block',
-      width: '90%',
-      wordBreak: 'break-word',
-      textAlign: 'center',
     },
   })
 );
@@ -1465,9 +1459,7 @@ export const FavouriteMedicines: React.FC = () => {
                   <img src={require('images/ic_back.svg')} alt="" />
                 </Button>
               )}
-              <span className={classes.headingName}>
                 {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
-              </span>
               <Button
                 className={classes.cross}
                 onClick={() => {

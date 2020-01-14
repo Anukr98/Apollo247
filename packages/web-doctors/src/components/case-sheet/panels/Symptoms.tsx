@@ -107,7 +107,6 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: '#01475b',
       fontWeight: 600,
       textAlign: 'center',
-      marginTop: 5,
     },
   },
   medicinePopup: {
