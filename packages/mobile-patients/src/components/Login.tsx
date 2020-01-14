@@ -26,7 +26,6 @@ import {
   Text,
   TextInput,
   View,
-  WebView,
   Dimensions,
 } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
@@ -39,6 +38,7 @@ import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { loginAPI } from '../helpers/loginCalls';
 import { useApolloClient } from 'react-apollo-hooks';
+import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window');
 
@@ -279,7 +279,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
 
-            loginAPI(client, '+91' + phoneNumber)
+            loginAPI('+91' + phoneNumber)
               .then((confirmResult: any) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);

@@ -647,12 +647,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             onPress={() =>
               props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
             }
-            style={{ right: 20 }}
+            // style={{ right: 20 }}
           >
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
-          <NotificationIcon />
+          {/* <NotificationIcon /> */}
         </View>
       </View>
     );

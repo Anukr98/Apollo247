@@ -11,6 +11,11 @@ type DayTimes = {
 
 @EntityRepository(ConsultHours)
 export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
+  getMaxConsultationMinutes() {
+    return this.createQueryBuilder('consult_hours')
+      .select('max("consultDuration") as maxConsultDuration')
+      .getRawOne();
+  }
   getConsultHours(doctor: string, weekDay: string) {
     return this.find({
       where: [{ doctor, weekDay, consultMode: 'ONLINE' }, { doctor, weekDay, consultMode: 'BOTH' }],

@@ -9,7 +9,8 @@ import { LoginVariables, Login } from '../graphql/types/Login';
 import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
 
 import { LOGIN_TYPE } from '../graphql/types/globalTypes';
-import { VERIFY_LOGIN_OTP, LOGIN } from '../graphql/profiles';
+import { VERIFY_LOGIN_OTP, LOGIN, RESEND_OTP } from '../graphql/profiles';
+import { resendOtp, resendOtpVariables } from '../graphql/types/resendOtp';
 
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
@@ -57,7 +58,7 @@ const tokenFailed = () => {
   console.log('Failed');
 };
 
-export const loginAPI = (client: ApolloClient<object>, mobileNumber: string) => {
+export const loginAPI = (mobileNumber: string) => {
   return new Promise((res, rej) => {
     const inputData = {
       mobileNumber: mobileNumber,
@@ -79,13 +80,14 @@ export const loginAPI = (client: ApolloClient<object>, mobileNumber: string) => 
   });
 };
 
-export const verifyOTP = (client: ApolloClient<object>, mobileNumber: string, otp: string) => {
+export const verifyOTP = (mobileNumber: string, otp: string) => {
   return new Promise((res, rej) => {
     const inputData = {
       id: mobileNumber,
       loginType: LOGIN_TYPE.PATIENT,
       otp: otp,
     };
+    console.log('inputData', inputData);
     apolloClient
       .query<verifyLoginOtp, verifyLoginOtpVariables>({
         query: VERIFY_LOGIN_OTP,
@@ -95,6 +97,29 @@ export const verifyOTP = (client: ApolloClient<object>, mobileNumber: string, ot
       .then((data) => {
         console.log('verifyOTPdata', data);
         res(data.data.verifyLoginOtp);
+      })
+      .catch((e) => {
+        rej(e);
+      });
+  });
+};
+
+export const resendOTP = (mobileNumber: string, id: string) => {
+  return new Promise((res, rej) => {
+    const inputData = {
+      mobileNumber: mobileNumber,
+      loginType: LOGIN_TYPE.PATIENT,
+      id: id,
+    };
+    apolloClient
+      .query<resendOtp, resendOtpVariables>({
+        query: RESEND_OTP,
+        fetchPolicy: 'no-cache',
+        variables: inputData,
+      })
+      .then((data) => {
+        console.log('resendOTPdata', data);
+        res(data.data.resendOtp);
       })
       .catch((e) => {
         rej(e);

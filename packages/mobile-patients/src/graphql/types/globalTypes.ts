@@ -205,6 +205,13 @@ export enum MedicalTestUnit {
   _PERCENT_ = "_PERCENT_",
 }
 
+export enum OTP_STATUS {
+  BLOCKED = "BLOCKED",
+  EXPIRED = "EXPIRED",
+  NOT_VERIFIED = "NOT_VERIFIED",
+  VERIFIED = "VERIFIED",
+}
+
 export enum PATIENT_ADDRESS_TYPE {
   HOME = "HOME",
   OFFICE = "OFFICE",

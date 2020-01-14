@@ -37,7 +37,7 @@ import {
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, statusBarHeight, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -154,8 +154,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
-  const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-  const { showAphAlert } = useUIElements();
+  // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -378,7 +378,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       .then((data: any) => {
         setshowSpinner(false);
         console.log(data, 'data');
-        setSucessPopup(true);
+        // setSucessPopup(true);
+        showAppointmentCancellSuccessAlert();
+
         // props.navigation.dispatch(
         //   StackActions.reset({
         //     index: 0,
@@ -399,6 +401,27 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         }
       });
     // }
+  };
+
+  const showAppointmentCancellSuccessAlert = () => {
+    setShowCancelPopup(false);
+    // setSucessPopup(false);
+    const appointmentNum = g(data, 'displayId');
+    const doctorName = g(data, 'doctorInfo', 'displayName');
+    showAphAlert!({
+      title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+      description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
+      onPressOk: () => {
+        hideAphAlert!();
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+          })
+        );
+      },
+    });
   };
 
   if (data.doctorInfo) {
@@ -702,7 +725,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
-        {sucesspopup && (
+        {/* {sucesspopup && (
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={'Appointment sucessfully cancelled'}
@@ -736,7 +759,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               </View>
             </View>
           </BottomPopUp>
-        )}
+        )} */}
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{

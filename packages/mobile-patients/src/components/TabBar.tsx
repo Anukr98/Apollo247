@@ -49,6 +49,7 @@ const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
 export const TabBar = createBottomTabNavigator(routeConfigMap, {
   initialRouteName: 'APPOINTMENTS',
   backBehavior: 'none',
+  resetOnBlur: true,
   defaultNavigationOptions: ({ navigation }) => ({
     tabBarIcon: ({ focused }) =>
       focused

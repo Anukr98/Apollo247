@@ -126,6 +126,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
   doctorsNextAvailability?:
     | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
     | null;
+  numberOfLines?: number;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -376,8 +377,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   {rowData.specialty.userFriendlyNomenclature}
                 </Text>
               ) : null}
-              <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>
-              {!!clinicAddress && <Text style={styles.doctorLocation}>{clinicAddress}</Text>}
+              <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
+                {rowData.qualification}
+              </Text>
+              {!!clinicAddress && (
+                <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines}>
+                  {clinicAddress}
+                </Text>
+              )}
             </View>
           </View>
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>

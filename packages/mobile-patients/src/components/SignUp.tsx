@@ -42,8 +42,7 @@ import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height } = Dimensions.get('window');
 
@@ -122,10 +121,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [backPressCount, setbackPressCount] = useState<number>(0);
-  const [referral, setReferral] = useState<string>('');
+  // const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
-  const { showAphAlert, hideAphAlert } = useUIElements();
-  const [referredBy, setReferredBy] = useState<string>();
+  // const [referredBy, setReferredBy] = useState<string>();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -290,7 +288,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
-          <View
+          {/* <View
             style={{
               backgroundColor: theme.colors.SKY_BLUE,
               marginHorizontal: -20,
@@ -319,7 +317,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 icon={referredBy ? <Check /> : null}
               />
             </View>
-          </View>
+          </View> */}
         </Card>
       </View>
     );
@@ -409,26 +407,17 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('gotIt', 'false'),
                       CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       setTimeout(() => {
-                        showAphAlert!({
-                          title: `Hi ${g(currentPatient, 'firstName') || ''},`,
-                          description:
-                            'Welcome to Apollo24X7. We’re glad you’re here!\nConsult online with our top Apollo doctors now!',
-                          unDismissable: true,
-                          onPressOk: () => {
-                            hideAphAlert!();
-                            props.navigation.dispatch(
-                              StackActions.reset({
-                                index: 0,
-                                key: null,
-                                actions: [
-                                  NavigationActions.navigate({
-                                    routeName: AppRoutes.ConsultRoom,
-                                  }),
-                                ],
-                              })
-                            );
-                          },
-                        });
+                        props.navigation.dispatch(
+                          StackActions.reset({
+                            index: 0,
+                            key: null,
+                            actions: [
+                              NavigationActions.navigate({
+                                routeName: AppRoutes.ConsultRoom,
+                              }),
+                            ],
+                          })
+                        );
                       }, 500))
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
