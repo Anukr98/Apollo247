@@ -117,3 +117,14 @@ export const log = (
   };
   logger.log(logMessage);
 };
+
+export const debugLog = (loggerName: string, message: string, path: string) => {
+  const logger = winstonLogger.loggers.get(loggerName);
+  const logMessage = {
+    level: 'info',
+    message,
+    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+    path,
+  };
+  logger.log(logMessage);
+};
