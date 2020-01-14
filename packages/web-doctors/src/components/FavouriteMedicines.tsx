@@ -1459,7 +1459,7 @@ export const FavouriteMedicines: React.FC = () => {
                   <img src={require('images/ic_back.svg')} alt="" />
                 </Button>
               )}
-                {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
+              {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
               <Button
                 className={classes.cross}
                 onClick={() => {
