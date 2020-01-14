@@ -1,9 +1,7 @@
-import { EntityRepository, Repository, MoreThanOrEqual } from 'typeorm';
-import { LoginOtpArchive, OTP_STATUS } from 'profiles-service/entities';
+import { EntityRepository, Repository } from 'typeorm';
+import { LoginOtpArchive } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { subMinutes } from 'date-fns';
-import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(LoginOtpArchive)
 export class LoginOtpArchiveRepository extends Repository<LoginOtpArchive> {
