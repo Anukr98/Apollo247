@@ -52,6 +52,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import Geolocation from '@react-native-community/geolocation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -210,7 +211,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   useEffect(() => {
     if (!(locationDetails && locationDetails.pincode)) {
-      navigator.geolocation.getCurrentPosition(
+      Geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           getPlaceInfoByLatLng(latitude, longitude)
