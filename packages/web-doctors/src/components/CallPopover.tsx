@@ -101,9 +101,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fc9916',
       marginLeft: 20,
       minWidth: 168,
-
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+      marginTop: 0,
       '&:hover': {
         backgroundColor: '#e28913',
       },
@@ -1301,7 +1301,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const curTm1 = new Date().toISOString();
 
-    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19)) {
+    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19) && isConsultStarted) {
       clearInterval(intervalcallId);
       callIntervalTimer(180);
     }

@@ -248,7 +248,9 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -9,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -324,8 +326,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
-        padding: '0 25px',
-        marginTop: 5,
+        padding: '0 50px',
       },
     },
     numberTablets: {
@@ -488,7 +489,7 @@ const useStyles = makeStyles((theme: Theme) =>
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
       border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 40px 12px 12px',
+      padding: '12px 64px 12px 12px',
       position: 'relative',
       maxWidth: '100%',
       boxShadow: 'none',
