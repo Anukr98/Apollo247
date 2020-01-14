@@ -248,7 +248,9 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -9,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -324,8 +326,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
-        padding: '0 25px',
-        marginTop: 5,
+        padding: '0 50px',
       },
     },
     numberTablets: {

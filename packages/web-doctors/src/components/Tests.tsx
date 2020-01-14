@@ -425,7 +425,7 @@ const useStyles = makeStyles((theme: Theme) =>
     searchFrom: {
       padding: 0,
       position: 'relative',
-      minHeight: 300,
+      minHeight: 400,
     },
   })
 );
