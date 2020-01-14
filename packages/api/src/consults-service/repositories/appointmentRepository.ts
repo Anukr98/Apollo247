@@ -1135,10 +1135,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.appointmentType = :appointmentType', {
         appointmentType: appointmentType,
       })
-      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+      .andWhere('appointment.status in(:status1)', {
+        status1: STATUS.PENDING,
       })
       .getMany();
   }
