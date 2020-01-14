@@ -1648,9 +1648,26 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
                     mutationRemoveConsult();
-                    if (document.getElementById('homeId')) {
-                      document.getElementById('homeId')!.click();
-                    }
+                    const text = {
+                      id: props.doctorId,
+                      message: cancelConsultInitiated,
+                      isTyping: true,
+                      messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.JUNIOR,
+                    };
+                    pubnub.publish(
+                      {
+                        message: text,
+                        channel: channel,
+                        storeInHistory: true,
+                      },
+                      (status: any, response: any) => {
+                        if (document.getElementById('homeId')) {
+                          document.getElementById('homeId')!.click();
+                        }
+                      }
+                    );
+
                     //window.location.href = clientRoutes.juniorDoctor();
                   })
                   .catch((e: ApolloError) => {
