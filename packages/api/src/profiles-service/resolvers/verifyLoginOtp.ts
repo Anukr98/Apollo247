@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LOGIN_TYPE, LoginOtp, OTP_STATUS } from 'profiles-service/entities';
+import { archiveOtpRecord } from 'profiles-service/resolvers/login';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import * as firebaseAdmin from 'firebase-admin';
 
@@ -93,7 +94,12 @@ const verifyLoginOtp: Resolver<
   }
 
   //update status of otp
-  await otpRepo.updateOtpStatus(matchedOtpRow[0].id, { status: OTP_STATUS.VERIFIED });
+  const updatedOtpRecord = await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
+    status: OTP_STATUS.VERIFIED,
+  });
+
+  //archive the old otp record and then delete it
+  archiveOtpRecord(matchedOtpRow[0].id, profilesDb);
 
   //generate customeToken
   const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
