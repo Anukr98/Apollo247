@@ -117,68 +117,71 @@ const getCurrentPatients: Resolver<
     '',
     ''
   );
-
-  const prismAuthToken = await fetch(apiUrl, prismHeaders)
-    .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
-    .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
-      log(
-        'profileServiceLogger',
-        'API_CALL_ERROR',
-        'getCurrentPatients()->CATCH_BLOCK',
-        '',
-        JSON.stringify(prismGetAuthTokenError)
-      );
-      // throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
-      //   prismGetAuthTokenError,
-      // });
-      isPrismWorking = 0;
-    });
-  log(
-    'profileServiceLogger',
-    'API_CALL_RESPONSE',
-    'getCurrentPatients()->API_CALL_RESPONSE',
-    JSON.stringify(prismAuthToken),
-    ''
-  );
-  console.log(prismAuthToken, 'prismAuthToken');
-
   let uhids;
-  if (prismAuthToken != null) {
-    const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
-    log(
-      'profileServiceLogger',
-      `EXTERNAL_API_CALL_PRISM: ${getUserApiUrl}`,
-      'getCurrentPatients()->prismGetUsersApiCall->API_CALL_STARTING',
-      '',
-      ''
-    );
-
-    uhids = await fetch(getUserApiUrl, prismHeaders)
-      .then((res) => res.json() as Promise<PrismGetUsersResponse>)
-      .catch((prismGetUsersError: PrismGetUsersError) => {
+  try {
+    /*const prismAuthToken = await fetch(apiUrl, prismHeaders)
+      .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
+      .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
         log(
           'profileServiceLogger',
           'API_CALL_ERROR',
-          'getCurrentPatients()->prismGetUsersApiCall->CATCH_BLOCK',
+          'getCurrentPatients()->CATCH_BLOCK',
           '',
-          JSON.stringify(prismGetUsersError)
+          JSON.stringify(prismGetAuthTokenError)
         );
-        // throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
-        //   prismGetUsersError,
+        // throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
+        //   prismGetAuthTokenError,
         // });
         isPrismWorking = 0;
       });
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'getCurrentPatients()->API_CALL_RESPONSE',
+      JSON.stringify(prismAuthToken),
+      ''
+    );
+    console.log(prismAuthToken, 'prismAuthToken');
+
+    if (prismAuthToken != null) {
+      const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
+      log(
+        'profileServiceLogger',
+        `EXTERNAL_API_CALL_PRISM: ${getUserApiUrl}`,
+        'getCurrentPatients()->prismGetUsersApiCall->API_CALL_STARTING',
+        '',
+        ''
+      );
+
+      uhids = await fetch(getUserApiUrl, prismHeaders)
+        .then((res) => res.json() as Promise<PrismGetUsersResponse>)
+        .catch((prismGetUsersError: PrismGetUsersError) => {
+          log(
+            'profileServiceLogger',
+            'API_CALL_ERROR',
+            'getCurrentPatients()->prismGetUsersApiCall->CATCH_BLOCK',
+            '',
+            JSON.stringify(prismGetUsersError)
+          );
+          // throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
+          //   prismGetUsersError,
+          // });
+          isPrismWorking = 0;
+        });
+    }
+
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
+      JSON.stringify(uhids),
+      ''
+    );
+
+    console.log(uhids, 'uhid', isPrismWorking);*/
+  } catch (e) {
+    isPrismWorking = 0;
   }
-
-  log(
-    'profileServiceLogger',
-    'API_CALL_RESPONSE',
-    'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
-    JSON.stringify(uhids),
-    ''
-  );
-
-  console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
@@ -191,7 +194,7 @@ const getCurrentPatients: Resolver<
     });
   };
   let patientPromises: Object[] = [];
-  if (uhids != null && uhids.response != null) {
+  /*if (uhids != null && uhids.response != null) {
     isPrismWorking = 1;
     //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
     patientPromises = uhids.response!.signUpUserData.map((data) => {
@@ -208,7 +211,8 @@ const getCurrentPatients: Resolver<
     });
   } else {
     isPrismWorking = 0;
-  }
+  }*/
+  isPrismWorking = 0;
   const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
   if (isPrismWorking == 0) {
     if (checkPatients == null || checkPatients.length == 0) {

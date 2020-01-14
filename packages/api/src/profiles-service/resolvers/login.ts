@@ -3,10 +3,13 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
+import { LoginOtpArchiveRepository } from 'profiles-service/repositories/loginOtpArchiveRepository';
+
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
+import { Connection } from 'typeorm';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -106,6 +109,9 @@ const resendOtp: Resolver<
 
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
 
+  //archive the old resend record and then delete it
+  archiveOtpRecord(validResendRecord[0].id, profilesDb);
+
   //call sms gateway service to send the OTP here
   const smsResult = await sendSMS(mobileNumber, otp);
   console.log(smsResult.status, smsResult);
@@ -122,6 +128,24 @@ const resendOtp: Resolver<
     loginId: otpSaveResponse.id,
     message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
   };
+};
+
+export const archiveOtpRecord = async (otpRecordId: string, profilesDb: Connection) => {
+  const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
+  const otpRecord = await otpRepo.findById(otpRecordId);
+  if (otpRecord) {
+    const recordAttrs = {
+      loginType: otpRecord.loginType,
+      mobileNumber: otpRecord.mobileNumber,
+      otp: otpRecord.otp,
+      status: otpRecord.status,
+      incorrectAttempts: otpRecord.incorrectAttempts,
+    };
+
+    const otpArchiveRepo = profilesDb.getCustomRepository(LoginOtpArchiveRepository);
+    await otpArchiveRepo.archiveOtpRecord(recordAttrs);
+    otpRepo.deleteOtpRecord(otpRecord.id);
+  }
 };
 
 //returns random 6 digit number string

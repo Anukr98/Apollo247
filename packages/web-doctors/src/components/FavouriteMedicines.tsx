@@ -423,6 +423,9 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+    medicineListElement: {
+      paddingRight: '60px !important',
+    },
     iconRight: {
       position: 'absolute',
       right: 5,
@@ -1409,7 +1412,7 @@ export const FavouriteMedicines: React.FC = () => {
                 selectedMedicinesArr &&
                 selectedMedicinesArr.length > 0 &&
                 selectedMedicinesArr.map((medicine: any, index: number) => (
-                  <li key={index}>
+                  <li key={index} className={classes.medicineListElement}>
                     {medicine!.medicineName}
                     <span className={classes.iconRight}>
                       <img

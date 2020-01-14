@@ -121,6 +121,7 @@ const useStyles = makeStyles((theme: Theme) =>
       '& svg': {
         position: 'absolute',
         right: 0,
+        top: 3,
         '& path': {
           fill: '#fff',
         },

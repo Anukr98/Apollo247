@@ -318,7 +318,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     addedList: {
       '& li': {
-        padding: '10px 50px 10px 0 !important',
+        padding: '10px 60px 10px 0 !important',
         wordWrap: 'break-word',
       },
       '& li:last-child': {

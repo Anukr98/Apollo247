@@ -105,6 +105,9 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 41,
       position: 'relative',
     },
+    medicineListElement: {
+      paddingRight: '60px !important',
+    },
     iconRight: {
       position: 'absolute',
       right: 5,
@@ -377,7 +380,7 @@ export const FavouriteAdvice: React.FC = () => {
               (item, idx) =>
                 item &&
                 item.instruction!.trim() !== '' && (
-                  <li key={idx}>
+                  <li key={idx} className={classes.medicineListElement}>
                     {item!.instruction}
                     <span className={classes.iconRight}>
                       <img
