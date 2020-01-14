@@ -489,7 +489,7 @@ const useStyles = makeStyles((theme: Theme) =>
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
       border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 40px 12px 12px',
+      padding: '12px 64px 12px 12px',
       position: 'relative',
       maxWidth: '100%',
       boxShadow: 'none',

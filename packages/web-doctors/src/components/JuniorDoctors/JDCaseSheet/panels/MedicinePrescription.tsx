@@ -221,6 +221,7 @@ const useStyles = makeStyles((theme: Theme) =>
     actionGroup: {
       marginLeft: 'auto',
       display: 'flex',
+      alignItems: 'flex-start',
       '& button': {
         boxShadow: 'none',
         borderRadius: 0,
@@ -228,6 +229,9 @@ const useStyles = makeStyles((theme: Theme) =>
         padding: 0,
         marginLeft: 12,
         minWidth: 'auto',
+        '&:first-child': {
+          marginTop: 4,
+        },
       },
     },
     medicinePopup: {
