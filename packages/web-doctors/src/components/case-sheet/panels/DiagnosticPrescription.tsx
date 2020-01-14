@@ -153,6 +153,7 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       flexFlow: 'column',
       borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
+      position: 'relative',
       '&:last-child': {
         borderBottom: 'none',
       },
@@ -166,6 +167,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgba(0,0,0,0.02)',
       padding: '0px 20px 0px 5px',
       borderRadius: 5,
+      position: 'relative',
     },
     othersBtn: {
       height: 'auto',
@@ -198,7 +200,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       color: '#02475b !important',
       whiteSpace: 'normal',
-      paddingRight: 5,
+      paddingRight: 30,
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
       },
@@ -232,13 +234,13 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       position: 'absolute',
-      right: 5,
+      right: 0,
       paddingLeft: 4,
+      minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
       },
       '& img': {
-        marginRight: 20,
         border: '1px solid #00b38e',
         borderRadius: '50%',
         maxWidth: 24,
@@ -284,6 +286,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     fullWidth: {
       width: '100%',
+    },
+    deleteImage: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
     },
   })
 );
@@ -434,7 +441,7 @@ export const DiagnosticPrescription: React.FC = () => {
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Grid container spacing={1}>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <Typography component="div" className={classes.fullWidth}>
             <Typography component="h5" variant="h5">
               Tests
@@ -452,6 +459,7 @@ export const DiagnosticPrescription: React.FC = () => {
                           onDelete={() => handleDelete(item, idx)}
                           deleteIcon={
                             <img
+                              className={classes.deleteImage}
                               src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                               alt=""
                             />
@@ -577,7 +585,7 @@ export const DiagnosticPrescription: React.FC = () => {
           </Typography>
         </Grid>
         {!showAddCondition && caseSheetEdit && favTests && favTests.length > 0 && (
-          <Grid item lg={6} xs={12}>
+          <Grid item lg={6} xs={6}>
             <Typography component="h5" variant="h5">
               Favorite Tests
             </Typography>

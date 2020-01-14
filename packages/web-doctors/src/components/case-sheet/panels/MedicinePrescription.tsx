@@ -236,6 +236,7 @@ const useStyles = makeStyles((theme: Theme) =>
     favMedBg: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
+      paddingRight: 10,
     },
     favmedicineHeading: {
       fontSize: 14,
