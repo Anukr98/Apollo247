@@ -13,6 +13,7 @@ import {
   JuniorAppointmentSessions,
   RescheduleAppointmentDetails,
   SdDashboardSummary,
+  DoctorFeeSummary,
   TransferAppointmentDetails,
   PhrDocumentsSummary,
 } from 'consults-service/entities';
@@ -87,6 +88,7 @@ export const connect = async () => {
         JuniorAppointmentSessions,
         RescheduleAppointmentDetails,
         SdDashboardSummary,
+        DoctorFeeSummary,
         TransferAppointmentDetails,
         PhrDocumentsSummary,
       ],

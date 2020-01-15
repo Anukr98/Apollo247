@@ -943,6 +943,26 @@ export class SdDashboardSummary extends BaseEntity {
 }
 //SD dashboard summary end
 
+//Doctor fee summary starts
+@Entity()
+export class DoctorFeeSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  date: Date;
+
+  @Column()
+  doctorId: string;
+
+  @Column()
+  amount: number;
+
+  @Column()
+  numberOfAppointment: number;
+}
+//Doctor fee summary end
+
 ///////////////////////////////////////////////////////////
 // RxPdf
 ///////////////////////////////////////////////////////////

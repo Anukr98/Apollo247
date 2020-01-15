@@ -7,6 +7,7 @@ import {
   FeedbackDashboardSummary,
   APPOINTMENT_TYPE,
   PhrDocumentsSummary,
+  AppointmentPayments,
   AppointmentDocuments,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
@@ -42,6 +43,12 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
       });
+  }
+
+  getAppointmentPaymentDetailsByApptId(appointment: string) {
+    return AppointmentPayments.findOne({ where: appointment }).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+    });
   }
 
   saveDocumentSummary(phrDocSummaryAttrs: Partial<PhrDocumentsSummary>) {
@@ -96,6 +103,46 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           status2: STATUS.PAYMENT_PENDING,
         })
         .getCount();
+    }
+  }
+
+  getAppointmentsDetailsByDoctorId(
+    doctorId: string,
+    appointmentDate: Date,
+    appointmentType: string
+  ) {
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const startDate = new Date(inputStartDate + 'T18:30');
+    if (appointmentType == 'BOTH') {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getMany();
+    } else {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.appointmentType = :appointmentType', {
+          appointmentType: APPOINTMENT_TYPE.ONLINE,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getMany();
     }
   }
 

@@ -14,6 +14,7 @@ import { SdDashboardSummaryRepository } from 'consults-service/repositories/sdDa
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import _isEmpty from 'lodash/isEmpty';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -32,8 +33,13 @@ export const sdDashboardSummaryTypeDefs = gql`
     medDocCount: Int
   }
 
+  type DoctorFeeSummaryResult {
+    status: Boolean
+  }
+
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
+    updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
   }
@@ -44,6 +50,10 @@ type DashboardSummaryResult = {
   doctorName: string;
   appointmentDateTime: Date;
   totalConsultation: number;
+};
+
+type DoctorFeeSummaryResult = {
+  status: boolean;
 };
 
 type FeedbackSummaryResult = {
@@ -195,9 +205,46 @@ const updateSdSummary: Resolver<
   return { doctorId: '', doctorName: '', appointmentDateTime: new Date(), totalConsultation: 0 };
 };
 
+const updateDoctorFeeSummary: Resolver<
+  null,
+  { summaryDate: Date; doctorId: string },
+  ConsultServiceContext,
+  DoctorFeeSummaryResult
+> = async (parent, args, context) => {
+  const { docRepo, dashboardRepo } = getRepos(context);
+  const docsList = await docRepo.getAllDoctors(args.doctorId);
+  // console.log('docsList=', docsList);
+  if (docsList.length > 0) {
+    docsList.map(async (doctor) => {
+      const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
+        doctor.id,
+        args.summaryDate,
+        'BOTH'
+      );
+      console.log('totalConsultations=', totalConsultations);
+      let totalFee = [];
+      if (totalConsultations.length) {
+        totalConsultations.forEach(async (consultation) => {
+          console.log(consultation.id);
+          const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
+            consultation.id
+          );
+          if (!_isEmpty(paymentDetails)) {
+            totalFee.push(paymentDetails.amountPaid);
+            // totalFee += paymentDetails && paymentDetails.amountPaid?parseInt(paymentDetails.amountPaid,10):0;
+          }
+        });
+      }
+    });
+  }
+
+  return { status: true };
+};
+
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
+    updateDoctorFeeSummary,
     updatePhrDocSummary,
     updateConsultRating,
   },
