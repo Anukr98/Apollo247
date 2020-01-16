@@ -18,7 +18,6 @@ import axios from 'axios';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import _uniqueId from 'lodash/uniqueId';
 import Scrollbars from 'react-custom-scrollbars';
-import { createGenerateClassName } from '@material-ui/styles';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
