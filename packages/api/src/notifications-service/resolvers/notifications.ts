@@ -15,7 +15,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInHours } from 'date-fns';
+import { addMilliseconds, format, differenceInHours, differenceInMinutes } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -719,6 +719,11 @@ export async function sendReminderNotification(
           );
         }
       }
+    } else {
+      const diffMins = Math.ceil(
+        Math.abs(differenceInMinutes(new Date(), appointment.appointmentDateTime))
+      );
+      notificationBody = notificationBody.replace('{1}', diffMins.toString());
     }
     notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
     payload = {
