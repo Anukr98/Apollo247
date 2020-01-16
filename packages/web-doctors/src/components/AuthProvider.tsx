@@ -1,5 +1,5 @@
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { ApolloClient } from 'apollo-client';
+import { ApolloClient, ApolloError } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
@@ -11,8 +11,13 @@ import {
   LOGIN,
   VERIFY_LOGIN_OTP,
   RESEND_OTP,
+  UPDATE_DOCTOR_ONLINE_STATUS,
 } from 'graphql/profiles';
-import { LoggedInUserType, LOGIN_TYPE } from 'graphql/types/globalTypes';
+import {
+  UpdateDoctorOnlineStatus,
+  UpdateDoctorOnlineStatusVariables,
+} from 'graphql/types/UpdateDoctorOnlineStatus';
+import { LoggedInUserType, LOGIN_TYPE, DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
@@ -28,7 +33,7 @@ import {
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
-import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
+import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
 import { TrackJS } from 'trackjs';
 
@@ -115,7 +120,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const authLink = setContext((_, { headers }) => ({
     headers: {
       ...headers,
-      Authorization: authToken ? authToken : `Bearer 3d1833da7020e0602165529446587434`,
+      Authorization: authToken ? authToken : process.env.AUTH_TOKEN,
     },
   }));
   const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
@@ -295,7 +300,24 @@ export const AuthProvider: React.FC = (props) => {
   useEffect(() => {
     getFirebaseToken();
   }, []);
-
+  const updateDoctorOnlineStatusCall = async (doctorId: string) => {
+    const [updateDoctorOnlineStatusResult, updateDoctorOnlineStatusError] = await wait(
+      apolloClient.mutate<UpdateDoctorOnlineStatus, UpdateDoctorOnlineStatusVariables>({
+        variables: {
+          doctorId: doctorId,
+          onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+        },
+        mutation: UPDATE_DOCTOR_ONLINE_STATUS,
+      })
+    );
+    if (updateDoctorOnlineStatusResult) {
+      console.log('updateDoctorOnlineStatusResult', updateDoctorOnlineStatusResult);
+      return true;
+    } else {
+      console.log('updateDoctorOnlineStatusError', updateDoctorOnlineStatusError);
+      return false;
+    }
+  };
   const getFirebaseToken = () => {
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
@@ -351,11 +373,28 @@ export const AuthProvider: React.FC = (props) => {
             return;
           }
           const doctors = signInResult.data.getDoctorDetails;
-          setCurrentUser(doctors);
-          setSignInError(false);
+          if (doctors && doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY) {
+            updateDoctorOnlineStatusCall(doctors.id).then((res) => {
+              if (res) {
+                setCurrentUser(doctors);
+                setSignInError(false);
+                setIsSigningIn(false);
+              } else {
+                alert('unable to update the status of doctor');
+                app.auth().signOut();
+                window.location.reload();
+              }
+            });
+          } else {
+            setCurrentUser(doctors);
+            setSignInError(false);
+            setIsSigningIn(false);
+          }
         }
+      } else {
+        setIsSigningIn(false);
       }
-      setIsSigningIn(false);
+      //setIsSigningIn(false);
     });
   };
   return (
