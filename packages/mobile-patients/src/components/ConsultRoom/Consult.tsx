@@ -21,7 +21,7 @@ import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -154,6 +154,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const articles = string.consult_room.articles.data;
   const tabs = [{ title: 'Active' }, { title: 'Past' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
+  const [selectedTabval, setselectedTabval] = useState<any>();
   const [userName, setuserName] = useState<string | number>('');
   const { analytics, getPatientApiCall } = useAuth();
 
@@ -421,28 +422,33 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 */
 
+  const isTomorrow = (date: Moment) => {
+    const tomorrow = moment(new Date()).add(1, 'days');
+    return date.year == tomorrow.year && date.month == tomorrow.month && date.date == tomorrow.date;
+  };
+
   const renderConsultations = () => {
     const dateIsAfterconsult = consultations.filter((item) =>
       moment(new Date(item.appointmentDateTime))
         .add(15, 'minutes')
         .isAfter(moment(new Date()).add(15, 'minutes'))
     );
-    console.log(dateIsAfterconsult, 'dateIsAfterconsult');
+    console.log(dateIsAfterconsult!.length, 'dateIsAfterconsult');
+    console.log(consultations.length - dateIsAfterconsult!.length, 'past');
     // moment(item.appointmentDateTime).isAfter(moment(new Date()).add(15, 'minutes'))
+
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
         // horizontal={true}
         data={
-          // consultations
-
           selectedTab === tabs[0].title
-            ? consultations.filter((item) =>
-                // moment(item.appointmentDateTime).isAfter(moment(new Date()))
-                moment(new Date(item.appointmentDateTime))
-                  .add(15, 'minutes')
-                  .isAfter(moment(new Date()).add(15, 'minutes'))
+            ? consultations.filter(
+                (item) => moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+                // moment(new Date(item.appointmentDateTime))
+                //   .add(15, 'minutes')
+                //   .isAfter(moment(new Date()).add(0, 'minutes'))
               )
             : consultations.filter((item) =>
                 moment(item.appointmentDateTime).isBefore(moment(new Date()))
@@ -452,6 +458,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         showsHorizontalScrollIndicator={false}
         ListEmptyComponent={renderNoAppointments()}
         renderItem={({ item }) => {
+          let tomorrowDate = moment(new Date())
+            .add(1, 'days')
+            .format('DD MMM');
+          // console.log(tomorrow, 'tomorrow');
+          let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
+          console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
+
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
             .local()
@@ -460,10 +473,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const title =
             minutes > 0 && minutes <= 15
               ? `${Math.ceil(minutes)} MIN${Math.ceil(minutes) > 1 ? 'S' : ''}`
+              : tomorrowDate == appointmentDateTomarrow
+              ? 'TOMORROW, ' + moment(appointmentDateTime).format('h:mm A')
               : moment(appointmentDateTime).format(
                   appointmentDateTime.split(' ')[0] === new Date().toISOString().split('T')[0]
                     ? 'h:mm A'
-                    : 'DD MMM h:mm A'
+                    : 'DD MMM, h:mm A'
                 );
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
@@ -558,7 +573,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       ) : (
                         <Text style={styles.doctorSpecializationStyles}>
                           {item.doctorInfo && item.doctorInfo.specialty
-                            ? item.doctorInfo.specialty.name
+                            ? item.doctorInfo.specialty.name.toUpperCase()
                             : ''}
                           {item.doctorInfo
                             ? ` | ${item.doctorInfo.experience} YR${
@@ -604,25 +619,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           )}
                         </View>
                       )}
-
-                      {/* <View style={styles.separatorStyle} /> */}
-                      {/* <View
-                        style={{
-                          flexDirection: 'row',
-                          marginBottom: 16,
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        {['FEVER', 'COUGH & COLD'].map((name, i) => (
-                          <CapsuleView
-                            key={i}
-                            title={name}
-                            isActive={false}
-                            style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                            titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                          />
-                        ))}
-                      </View> */}
+                      {/* 
+                      <View style={styles.separatorStyle} />
+                      {item.symptoms == null ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            marginBottom: 16,
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          {['FEVER', 'COUGH & COLD'].map((name, i) => (
+                            <CapsuleView
+                              key={i}
+                              title={name}
+                              isActive={false}
+                              style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                              titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+                            />
+                          ))}
+                        </View>
+                      ) : null} */}
                     </View>
                   </View>
                   <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
@@ -831,7 +848,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ></ProfileList>
         <Text style={styles.descriptionTextStyle}>
           {consultations.length > 0
-            ? 'Here are your recent and upcoming consultations'
+            ? consultations.filter((item) =>
+                moment(new Date(item.appointmentDateTime))
+                  .add(15, 'minutes')
+                  .isAfter(moment(new Date()).add(15, 'minutes'))
+              ).length > 0 && selectedTab === 'Active'
+              ? 'You have ' +
+                consultations.filter((item) =>
+                  moment(new Date(item.appointmentDateTime))
+                    .add(15, 'minutes')
+                    .isAfter(moment(new Date()).add(15, 'minutes'))
+                ).length +
+                ' upcoming appointments!'
+              : 'You have ' + selectedTabval + ' past appointments!'
             : string.consult_room.description}
         </Text>
       </View>
@@ -887,7 +916,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         }}
         data={tabs}
         onChange={(selectedTab: string) => {
+          const dateIsAfterconsult = consultations.filter((item) =>
+            moment(new Date(item.appointmentDateTime))
+              .add(15, 'minutes')
+              .isAfter(moment(new Date()).add(15, 'minutes'))
+          );
+          console.log(dateIsAfterconsult!.length, 'dateIsAfterconsult');
+
           setselectedTab(selectedTab);
+          setselectedTabval(consultations.length - dateIsAfterconsult!.length);
+          console.log(selectedTabval, 'pastpast');
         }}
         selectedTab={selectedTab}
       />
