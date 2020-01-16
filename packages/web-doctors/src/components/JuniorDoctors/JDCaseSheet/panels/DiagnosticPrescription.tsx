@@ -61,7 +61,7 @@ function renderSuggestion(
         <span
           key={part.text}
           style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
-          title={suggestion!.itemName}
+          title={suggestion!.itemName} //added by Vishal
         >
           {part.text}
         </span>
