@@ -64,6 +64,7 @@ function renderSuggestion(
             fontWeight: part.highlight ? 500 : 400,
             whiteSpace: 'pre',
           }}
+          title={suggestion!.itemName}
         >
           {part.text}
         </span>
@@ -587,7 +588,7 @@ export const DiagnosticPrescription: React.FC = () => {
             )}
           </Typography>
         </Grid>
-        {!showAddCondition && caseSheetEdit && favTests && favTests.length > 0 && (
+        {!showAddCondition && favTests && favTests.length > 0 && (
           <Grid item lg={6} xs={6}>
             <Typography component="h5" variant="h5">
               Favorite Tests
@@ -601,27 +602,29 @@ export const DiagnosticPrescription: React.FC = () => {
                       key={idx}
                       label={favTest && favTest.itemname}
                     />
-                    <AphButton
-                      className={classes.btnAddDoctorright}
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        const favTestValue = {
-                          itemName: favTest.itemname,
-                          id: favTest.id,
-                          __typename: favTest.__typename,
-                        };
-                        selectedValues!.push(favTestValue);
-                        setShowFavMedicine(true);
-                        setState({
-                          single: '',
-                          popper: '',
-                        });
-                        // handleChange('single');
-                      }}
-                    >
-                      <img src={require('images/add_doctor_white.svg')} alt="" />
-                    </AphButton>
+                    {caseSheetEdit && (
+                      <AphButton
+                        className={classes.btnAddDoctorright}
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          const favTestValue = {
+                            itemName: favTest.itemname,
+                            id: favTest.id,
+                            __typename: favTest.__typename,
+                          };
+                          selectedValues!.push(favTestValue);
+                          setShowFavMedicine(true);
+                          setState({
+                            single: '',
+                            popper: '',
+                          });
+                          // handleChange('single');
+                        }}
+                      >
+                        <img src={require('images/add_doctor_white.svg')} alt="" />
+                      </AphButton>
+                    )}
                   </Typography>
                 );
               })}

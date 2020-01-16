@@ -58,7 +58,11 @@ function renderSuggestion(
   return (
     <div>
       {parts.map((part) => (
-        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
+        <span
+          key={part.text}
+          style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+          title={suggestion!.itemName}
+        >
           {part.text}
         </span>
       ))}
