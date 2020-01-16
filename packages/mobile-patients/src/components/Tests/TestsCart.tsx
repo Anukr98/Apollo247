@@ -205,6 +205,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatientId]);
 
   useEffect(() => {
+    setDiagnosticSlot!(null);
+    setselectedTimeSlot('');
+  }, [deliveryAddressId]);
+
+  useEffect(() => {
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
@@ -533,18 +538,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               moment()
                 .format('DMY')
                 .toString()
-                ? parseInt(item!.startTime!.split(':')[0], 10) >=
-                  parseInt(
-                    moment()
-                      .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                      .format('k'),
-                    10
+                ? moment(item!.startTime!.trim(), 'hh:mm').isSameOrAfter(
+                    moment(new Date()).add(
+                      AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+                      'minutes'
+                    )
                   )
-                  ? parseInt(item!.startTime!.split(':')[1], 10) >
-                    moment()
-                      .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                      .minute()
-                  : false
                 : true
             )
             .map((item) => {
@@ -567,9 +566,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const noHubSlots = g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS';
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description: noHubSlots
-              ? 'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.'
-              : 'Oops! seems like we are having an issue. Please try again.',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
           });
         })
         .finally(() => {

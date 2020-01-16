@@ -288,10 +288,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
 
       case 'Patient_Cancel_Appointment': {
-        showAphAlert!({
-          title: ' ',
-          description: data.content,
-        });
+        return;
+        // showAphAlert!({
+        //   title: ' ',
+        //   description: data.content,
+        // });
       }
 
       case 'Cart_Ready':
