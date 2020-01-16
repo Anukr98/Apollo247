@@ -20,6 +20,7 @@ import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { ca } from 'date-fns/esm/locale';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -191,18 +192,22 @@ export async function sendCallsNotification(
   //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   //if notiifcation of type reschedule & check for reschedule notification setting
-  if (
-    patientDetails.patientNotificationSettings &&
-    pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
-    !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
-  ) {
-    return;
-  }
+  // if (
+  //   patientDetails.patientNotificationSettings &&
+  //   pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
+  //   !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
+  // ) {
+  //   return;
+  // }
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
   notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
-  notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+  notificationBody = ApiConstants.AVCALL_APPOINTMENT_BODY;
+  if (callType == APPT_CALL_TYPE.CHAT) {
+    notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
+  }
+  notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace(
     '{1}',
     doctorDetails.firstName + ' ' + doctorDetails.lastName
