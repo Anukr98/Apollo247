@@ -1593,3 +1593,30 @@ export class LoginOtp extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 }
+
+@Entity()
+export class LoginOtpArchive extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  loginType: LOGIN_TYPE;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  otp: string;
+
+  @Column({ default: OTP_STATUS.NOT_VERIFIED })
+  status: string;
+
+  @Column({ default: 0 })
+  incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}

@@ -119,6 +119,9 @@ const useStyles = makeStyles((theme: Theme) =>
         backgroundColor: '#fdd49c !important',
       },
     },
+    favAdviceList: {
+      paddingTop: 10,
+    },
     addmedicine_btn: {
       color: '#fc9916',
       fontSize: 14,
@@ -406,7 +409,7 @@ export const FavouriteAdvice: React.FC = () => {
             )
           )}
 
-          <li>
+          <li className={classes.favAdviceList}>
             <Button
               className={classes.addmedicine_btn}
               onClick={() => {

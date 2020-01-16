@@ -7,6 +7,13 @@ import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(LoginOtp)
 export class LoginOtpRepository extends Repository<LoginOtp> {
+  async findById(id: string) {
+    return this.findOne({ id }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_OTP_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
   async insertOtp(otpAttrs: Partial<LoginOtp>) {
     return this.create(otpAttrs)
       .save()
@@ -62,5 +69,9 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
         error,
       });
     });
+  }
+
+  deleteOtpRecord(id: string) {
+    return this.delete(id);
   }
 }

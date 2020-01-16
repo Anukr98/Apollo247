@@ -188,7 +188,7 @@ export async function sendCallsNotification(
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //check for registered device tokens
-  if (patientDetails.patientDeviceTokens.length == 0) return;
+  //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   //if notiifcation of type reschedule & check for reschedule notification setting
   if (
@@ -259,6 +259,7 @@ export async function sendCallsNotification(
     registrationToken.push(values.deviceToken);
   });*/
   console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -314,10 +315,11 @@ export async function sendNotification(
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  console.log(patientDetails, 'patient details in notification');
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //check for registered device tokens
-  if (patientDetails.patientDeviceTokens.length == 0) return;
+  //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   //if notiifcation of type reschedule & check for reschedule notification setting
   if (
@@ -563,7 +565,7 @@ export async function sendNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -623,7 +625,7 @@ export async function sendReminderNotification(
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //check for registered device tokens
-  if (patientDetails.patientDeviceTokens.length == 0) return;
+  //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
@@ -818,7 +820,7 @@ export async function sendReminderNotification(
       registrationToken.push(values.deviceToken);
     });
   }
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -948,7 +950,7 @@ export async function sendCartNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -1169,7 +1171,7 @@ export async function sendMedicineOrderStatusNotification(
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
   notificationBody = notificationBody.replace('{2}', orderTat);
-
+  console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {
       title: notificationTitle,

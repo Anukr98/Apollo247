@@ -22,7 +22,7 @@ import Scrollbars from 'react-custom-scrollbars';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -971,8 +971,12 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       const unitHtmls =
         medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
-          ? term(medicine.medicineUnit.toLowerCase(), '(s)')
-          : medicine.medicineUnit.toLowerCase() + '(s)';
+          ? term(
+              medicine.medicineUnit.toLowerCase(),
+              medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+            )
+          : medicine.medicineUnit.toLowerCase() +
+            (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
       const isInDuration =
         medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
           ? ''
