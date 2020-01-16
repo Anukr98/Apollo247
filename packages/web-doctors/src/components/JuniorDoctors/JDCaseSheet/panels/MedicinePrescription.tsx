@@ -18,6 +18,7 @@ import axios from 'axios';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import _uniqueId from 'lodash/uniqueId';
 import Scrollbars from 'react-custom-scrollbars';
+import { createGenerateClassName } from '@material-ui/styles';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -164,6 +165,16 @@ const useStyles = makeStyles((theme: Theme) =>
     numberOfTimes: {
       width: '100%',
       margin: '0 0 20px 0',
+      '& > div': {
+        '& > div': {
+          '&:focus': {
+            transition: 'all 0.2s',
+            backgroundColor: 'rgba(240, 244, 245, 0.3)',
+            borderTopLeftRadius: 5,
+            borderTopRightRadius: 5,
+          },
+        },
+      },
     },
     instructionsWrapper: {
       padding: '0 0 8px 0 !important',
@@ -481,6 +492,32 @@ const useStyles = makeStyles((theme: Theme) =>
     unitsSelect: {
       '& > div': {
         paddingTop: '3px !important',
+      },
+    },
+    focusInputs: {
+      '& > div': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+        },
+        '& > div': {
+          '&:focus': {
+            transition: 'all 0.2s',
+            backgroundColor: 'rgba(240, 244, 245, 0.3)',
+            borderTopLeftRadius: 5,
+            borderTopRightRadius: 5,
+          },
+        },
+      },
+      '& input': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+        },
       },
     },
   })
@@ -1392,6 +1429,7 @@ export const MedicinePrescription: React.FC = () => {
                               Take
                             </div>
                             <AphTextField
+                              className={classes.focusInputs}
                               autoFocus
                               inputProps={{ maxLength: 6 }}
                               value={tabletsCount === 0 ? '' : tabletsCount}
@@ -1420,7 +1458,7 @@ export const MedicinePrescription: React.FC = () => {
                               &nbsp;
                             </div>
                           )}
-                          <div className={classes.unitsSelect}>
+                          <div className={`${classes.unitsSelect} ${classes.focusInputs}`}>
                             <AphSelect
                               value={medicineUnit}
                               MenuProps={{
@@ -1451,28 +1489,30 @@ export const MedicinePrescription: React.FC = () => {
                                 &nbsp;
                               </div>
                             )}
-                            <AphSelect
-                              style={{ paddingTop: 3 }}
-                              value={frequency}
-                              MenuProps={{
-                                classes: {
-                                  paper: classes.menuPaper,
-                                },
-                                anchorOrigin: {
-                                  vertical: 'bottom',
-                                  horizontal: horizontal,
-                                },
-                                transformOrigin: {
-                                  vertical: 'top',
-                                  horizontal: horizontal,
-                                },
-                              }}
-                              onChange={(e: any) => {
-                                setFrequency(e.target.value as string);
-                              }}
-                            >
-                              {generateFrequency}
-                            </AphSelect>
+                            <div className={classes.focusInputs}>
+                              <AphSelect
+                                style={{ paddingTop: 3 }}
+                                value={frequency}
+                                MenuProps={{
+                                  classes: {
+                                    paper: classes.menuPaper,
+                                  },
+                                  anchorOrigin: {
+                                    vertical: 'bottom',
+                                    horizontal: horizontal,
+                                  },
+                                  transformOrigin: {
+                                    vertical: 'top',
+                                    horizontal: horizontal,
+                                  },
+                                }}
+                                onChange={(e: any) => {
+                                  setFrequency(e.target.value as string);
+                                }}
+                              >
+                                {generateFrequency}
+                              </AphSelect>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1512,6 +1552,7 @@ export const MedicinePrescription: React.FC = () => {
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>For</div>
                           <AphTextField
+                            className={classes.focusInputs}
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
                             value={consumptionDuration}
@@ -1535,28 +1576,30 @@ export const MedicinePrescription: React.FC = () => {
                             &nbsp;
                           </div>
                           {/* <div className={classes.unitsSelect}> */}
-                          <AphSelect
-                            style={{ paddingTop: 3 }}
-                            value={forUnit}
-                            MenuProps={{
-                              classes: {
-                                paper: classes.menuPaper,
-                              },
-                              anchorOrigin: {
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                              },
-                              transformOrigin: {
-                                vertical: 'top',
-                                horizontal: 'left',
-                              },
-                            }}
-                            onChange={(e: any) => {
-                              setforUnit(e.target.value as string);
-                            }}
-                          >
-                            {forOptionHtml}
-                          </AphSelect>
+                          <div className={classes.focusInputs}>
+                            <AphSelect
+                              style={{ paddingTop: 3 }}
+                              value={forUnit}
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: 'left',
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: 'left',
+                                },
+                              }}
+                              onChange={(e: any) => {
+                                setforUnit(e.target.value as string);
+                              }}
+                            >
+                              {forOptionHtml}
+                            </AphSelect>
+                          </div>
                           {/* </div> */}
                         </div>
                       </div>
