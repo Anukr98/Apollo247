@@ -849,18 +849,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         <Text style={styles.descriptionTextStyle}>
           {consultations.length > 0
             ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(15, 'minutes')
-                  .isAfter(moment(new Date()).add(15, 'minutes'))
-              ).length > 0 && selectedTab === 'Active'
+                moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+              ).length > -1 && selectedTab === tabs[0].title
               ? 'You have ' +
-                consultations.filter((item) =>
-                  moment(new Date(item.appointmentDateTime))
-                    .add(15, 'minutes')
-                    .isAfter(moment(new Date()).add(15, 'minutes'))
-                ).length +
-                ' upcoming appointments!'
-              : 'You have ' + selectedTabval + ' past appointments!'
+                (consultations.filter((item) =>
+                  moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+                ).length || 'no') +
+                ' upcoming appointment(s)!'
+              : 'You have ' + selectedTabval + ' past appointments(s)!'
             : string.consult_room.description}
         </Text>
       </View>
