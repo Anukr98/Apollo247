@@ -33,7 +33,12 @@ import {
   UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
-import { g, isValidSearch, isValidText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  isValidSearch,
+  isValidText,
+  isValidName,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -115,20 +120,28 @@ type RecordTypeType = {
 };
 type PickerImage = any;
 
+export enum MedicRecordType {
+  TEST_REPORT = 'TEST_REPORT',
+  CONSULTATION = 'CONSULTATION',
+  PRESCRIPTION = 'PRESCRIPTION',
+}
 const RecordType: RecordTypeType[] = [
-  { value: MedicalRecordType.EHR.toLowerCase().replace('_', ' '), key: MedicalRecordType.EHR },
   {
-    value: MedicalRecordType.OPERATIVE_REPORT.toLowerCase().replace('_', ' '),
-    key: MedicalRecordType.OPERATIVE_REPORT,
+    value: MedicRecordType.TEST_REPORT.toLowerCase().replace('_', ' '),
+    key: MedicRecordType.TEST_REPORT,
   },
   {
-    value: MedicalRecordType.PATHOLOGY_REPORT.toLowerCase().replace('_', ' '),
-    key: MedicalRecordType.PATHOLOGY_REPORT,
+    value: MedicRecordType.CONSULTATION.toLowerCase().replace('_', ' '),
+    key: MedicRecordType.CONSULTATION,
   },
   {
-    value: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
-    key: MedicalRecordType.PHYSICAL_EXAMINATION,
+    value: MedicRecordType.PRESCRIPTION.toLowerCase().replace('_', ' '),
+    key: MedicRecordType.PRESCRIPTION,
   },
+  // {
+  //   value: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
+  //   key: MedicalRecordType.PHYSICAL_EXAMINATION,
+  // },
 ];
 
 const charactersList = {
@@ -176,7 +189,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [testName, settestName] = useState<string>('');
-  const [typeofRecord, settypeofRecord] = useState<MedicalRecordType>();
+  const [docName, setDocName] = useState<string>('');
+  const [locationName, setLocationName] = useState<string>('');
+  const [typeofRecord, settypeofRecord] = useState<MedicRecordType>();
   const [dateOfTest, setdateOfTest] = useState<string>('');
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
@@ -266,13 +281,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const isValid = () => {
-    const validRecordDetails = typeofRecord && testName && dateOfTest ? true : false;
+    const validRecordDetails1 = typeofRecord && testName && dateOfTest ? true : false;
+    const validRecordDetails2 = typeofRecord && locationName && dateOfTest ? true : false;
+    const validRecordDetails3 = typeofRecord && docName && dateOfTest ? true : false;
+
+    console.log(validRecordDetails1, 'validRecordDetails', typeofRecord);
+    console.log(validRecordDetails2, 'validRecordDetails2', typeofRecord);
+    console.log(validRecordDetails3, 'validRecordDetails3', typeofRecord);
+
     const valid = isRecordParameterFilled().map((item) => {
       return {
         maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
         changed:
           // item.parameterName !== MedicalRecordInitialValues.parameterName
-          //   &&item.result !== MedicalRecordInitialValues.result?
+          // &&item.result !== MedicalRecordInitialValues.result?
           true,
         // : false,
         notinitial:
@@ -284,11 +306,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     });
 
     let message = typeofRecord
-      ? testName
+      ? testName || docName || locationName
         ? dateOfTest
           ? ''
           : 'Enter Date Of Test'
-        : 'Enter Name Of Test'
+        : 'Enter Name'
       : 'Select the Record Type';
 
     message === '' &&
@@ -298,8 +320,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       });
 
+    const finval = validRecordDetails1
+      ? true
+      : validRecordDetails2
+      ? true
+      : validRecordDetails3
+      ? true
+      : false;
+    console.log(finval, 'finval');
+
     return {
-      isvalid: validRecordDetails,
+      isvalid: finval,
       isValidParameter:
         valid.find((i) => i.maxmin === false || (i.changed === false && !i.notinitial)) !==
         undefined,
@@ -347,6 +378,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               const inputData = {
                 patientId: currentPatient ? currentPatient.id : '',
                 testName: testName,
+                issuingDoctor: docName,
+                location: locationName,
                 testDate:
                   dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
                 recordType: typeofRecord,
@@ -405,6 +438,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const inputData = {
           patientId: currentPatient ? currentPatient.id : '',
           testName: testName,
+          issuingDoctor: docName,
+          location: locationName,
           testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
           recordType: typeofRecord,
           referringDoctor: referringDoctor,
@@ -550,6 +585,107 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderDateInpt = () => {
+    return (
+      <View>
+        <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.placeholderViewStyle}
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsDateTimePickerVisible(true);
+              CommonLogEvent('ADD_RECORD', 'Date picker visible');
+            }}
+          >
+            <Text
+              style={[
+                styles.placeholderTextStyle,
+                dateOfTest !== '' ? null : styles.placeholderStyle,
+              ]}
+            >
+              {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <DatePicker
+          isDateTimePickerVisible={isDateTimePickerVisible}
+          handleDatePicked={(date) => {
+            const formatDate = Moment(date).format('DD/MM/YYYY');
+            setdateOfTest(formatDate);
+            setIsDateTimePickerVisible(false);
+            Keyboard.dismiss();
+          }}
+          hideDateTimePicker={() => {
+            setIsDateTimePickerVisible(false);
+            Keyboard.dismiss();
+          }}
+        />
+      </View>
+    );
+  };
+
+  const inputRecordType = () => {
+    switch (typeofRecord) {
+      case MedicRecordType.TEST_REPORT:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Name Of Test'}
+              value={testName}
+              placeholder={'Enter name of test'}
+              onChangeText={(testName) => {
+                if (isValidText(testName)) {
+                  settestName(testName);
+                }
+              }}
+            />
+            <TextInputComponent label={'Date Of Test'} noInput={true} />
+            {renderDateInpt()}
+          </View>
+        );
+      case MedicRecordType.PRESCRIPTION:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Doctor who issued prescription'}
+              value={docName}
+              placeholder={'Enter doctor name'}
+              onChangeText={(docName) => {
+                if (isValidName(docName)) {
+                  setDocName(docName);
+                }
+              }}
+            />
+            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            {renderDateInpt()}
+            <TextInputComponent
+              label={'Location (optional)'}
+              value={locationName}
+              placeholder={'Enter Location '}
+              onChangeText={(name) => {
+                setLocationName(name);
+              }}
+            />
+          </View>
+        );
+      case MedicRecordType.CONSULTATION:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Location of Consultation'}
+              value={locationName}
+              placeholder={'Enter doctor name'}
+              onChangeText={(text) => {
+                setLocationName(text);
+              }}
+            />
+            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            {renderDateInpt()}
+          </View>
+        );
+    }
+  };
   const renderRecordDetails = () => {
     return (
       <View>
@@ -579,8 +715,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               selectedText={typeofRecord}
               onPress={(data) => {
                 // setshowRecordTypePopup(false);
-                settypeofRecord(data.key as MedicalRecordType);
+                if (data.key !== typeofRecord) {
+                  setDocName('');
+                  setLocationName('');
+                  settestName('');
+                  setdateOfTest('');
+                }
+                settypeofRecord(data.key as MedicRecordType);
               }}
+              selectedTextStyle={{ color: theme.colors.APP_GREEN }}
               // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
             >
               <TextInputComponent
@@ -623,7 +766,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholder={'Select type of record'}
               /> */}
             </MaterialMenu>
-            <TextInputComponent
+            {inputRecordType()}
+            {/* <TextInputComponent
               label={'Name Of Test'}
               value={testName}
               placeholder={'Enter name of test'}
@@ -671,7 +815,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 setIsDateTimePickerVisible(false);
                 Keyboard.dismiss();
               }}
-            />
+            /> */}
           </View>
         </CollapseCard>
       </View>

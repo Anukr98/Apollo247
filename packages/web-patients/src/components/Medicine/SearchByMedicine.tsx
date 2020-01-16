@@ -123,10 +123,11 @@ const useStyles = makeStyles((theme: Theme) => {
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [priceFilter, setPriceFilter] = useState();
+  const [discountFilter, setDiscountFilter] = useState();
   const [filterData, setFilterData] = useState();
-  const [catageryFilterData, setCatageryFilterData] = useState<MedicineProduct[] | null>([]);
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const getTitle = () => {
     return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
@@ -134,22 +135,48 @@ export const SearchByMedicine: React.FC = (props) => {
   type Params = { searchMedicineType: string; searchText: string };
 
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_PROD_URL}/categoryproducts_api.php`,
+    url: `${
+      process.env.NODE_ENV === 'production'
+        ? process.env.PHARMACY_MED_PROD_URL
+        : process.env.PHARMACY_MED_UAT_URL
+    }/categoryproducts_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   const apiDetailsText = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
 
+  const onSearchMedicine = async () => {
+    setIsLoading(true);
+    await axios
+      .post(
+        apiDetailsText.url,
+        {
+          params: paramSearchText,
+        },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        setMedicineList(data.products);
+        setMedicineListFiltered(data.products);
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        console.log(e);
+        setIsLoading(false);
+      });
+  };
+
   useEffect(() => {
-    if (
-      !medicineListFiltered ||
-      (medicineListFiltered && medicineListFiltered.length < 1 && Number(paramSearchText) > 0)
-    ) {
+    if (!medicineList && Number(paramSearchText) > 0) {
+      setIsLoading(true);
       axios
         .post(
           apiDetails.url,
@@ -167,108 +194,104 @@ export const SearchByMedicine: React.FC = (props) => {
         .then((res) => {
           if (res && res.data && res.data.products) {
             setMedicineList(res.data.products);
-            setMedicineListFiltered(res.data.products);
+            setIsLoading(false);
           }
         })
-        .catch((e) => {});
-    } else if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
+        .catch((e) => {
+          setIsLoading(false);
+        });
+    } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
+    } else {
+      setMedicineListFiltered(medicineList);
     }
-  }, [medicineListFiltered]);
-  const onSearchMedicine = async () => {
-    await axios
-      .post(
-        apiDetailsText.url,
-        {
-          params: paramSearchText,
-        },
-        {
-          headers: {
-            Authorization: apiDetailsText.authToken,
-          },
-        }
-      )
-      .then(({ data }) => {
-        setMedicineList(data.products);
-        setMedicineListFiltered(data.products);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  };
+  }, [medicineList]);
+
+  const getSpecialPrice = (special_price?: string | number) =>
+    special_price
+      ? typeof special_price == 'string'
+        ? parseInt(special_price)
+        : special_price
+      : null;
 
   useEffect(() => {
-    if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
+    let priceFilterArray: MedicineProduct[] | null = null;
+    if (
+      priceFilter &&
+      !priceFilter.fromPrice &&
+      !priceFilter.toPrice &&
+      filterData &&
+      filterData[0] === '' &&
+      discountFilter &&
+      discountFilter.fromDiscount === 0 &&
+      discountFilter.toDiscount === 100
+    ) {
+      setMedicineListFiltered(medicineList);
+      return;
+    } else if (priceFilter && (priceFilter.fromPrice || priceFilter.toPrice)) {
       if (priceFilter.fromPrice && priceFilter.toPrice) {
-        let filterArray: MedicineProduct[] = [];
-        medicineListFiltered &&
-          medicineListFiltered.map((value) => {
+        priceFilterArray =
+          medicineList &&
+          medicineList.filter((value) => {
             if (Number(priceFilter.fromPrice) <= value.price) {
               if (value.price <= Number(priceFilter.toPrice)) {
-                filterArray.push(value);
+                return value;
               }
             }
           });
-        setMedicineList(filterArray);
-        setCatageryFilterData(filterArray);
       } else if (priceFilter.fromPrice) {
-        let filterArray: MedicineProduct[] = [];
-        medicineListFiltered &&
-          medicineListFiltered.map((value) => {
+        priceFilterArray =
+          medicineList &&
+          medicineList.filter((value) => {
             if (Number(priceFilter.fromPrice) <= value.price) {
-              filterArray.push(value);
+              // priceFilterArray.push(value);
+              return value;
             }
           });
-        setMedicineList(filterArray);
-        setCatageryFilterData(filterArray);
       } else if (priceFilter.toPrice) {
-        let filterArray: MedicineProduct[] = [];
-        medicineListFiltered &&
-          medicineListFiltered.map((value) => {
+        priceFilterArray =
+          medicineList &&
+          medicineList.filter((value) => {
             if (value.price <= Number(priceFilter.toPrice)) {
-              filterArray.push(value);
+              // priceFilterArray.push(value);
+              return value;
             }
           });
-        setMedicineList(filterArray);
-        setCatageryFilterData(filterArray);
       }
-      if (filterData && filterData.length > 0) {
-        if (filterData[0] !== '') {
-          let filterArray: MedicineProduct[] = [];
-          if (catageryFilterData && catageryFilterData.length > 0) {
-            filterData &&
-              filterData.map((filter: string) => {
-                catageryFilterData &&
-                  catageryFilterData.map((value) => {
-                    if (value.category_id === filter) {
-                      filterArray.push(value);
-                    }
-                  });
-              });
-            setMedicineList(filterArray);
-          }
-        }
-      }
-    } else if (filterData && filterData.length > 0) {
-      if (filterData[0] !== '') {
-        let filterArray: MedicineProduct[] = [];
-        filterData &&
-          filterData.map((filter: string) => {
-            medicineListFiltered &&
-              medicineListFiltered.map((value) => {
-                if (value.category_id === filter) {
-                  filterArray.push(value);
-                }
-              });
-          });
-        setMedicineList(filterArray);
-      } else {
-        setMedicineListFiltered([]);
-      }
-    } else {
-      setMedicineListFiltered([]);
+    } else if (priceFilter && !priceFilter.fromPrice && !priceFilter.toPrice) {
+      priceFilterArray = medicineList && medicineList.length > 0 ? medicineList : [];
     }
-  }, [priceFilter, filterData]);
+
+    if (discountFilter && discountFilter.fromDiscount >= 0 && discountFilter.toDiscount <= 100) {
+      const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
+      priceFilterArray = filteredArray.filter((item) => {
+        if (item.special_price) {
+          const specialPrice = getSpecialPrice(item.special_price);
+          const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
+
+          return discountPercentage >= (discountFilter.fromDiscount || 0) &&
+            discountPercentage <= discountFilter.toDiscount
+            ? true
+            : false;
+        }
+      });
+    }
+    if (filterData && filterData.length > 0 && filterData[0] !== '') {
+      const categoryFilterArray: MedicineProduct[] = [];
+      const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
+      filterData &&
+        filterData.map((filter: string) => {
+          filteredArray.length > 0 &&
+            filteredArray.map((value) => {
+              if (value.category_id === filter) {
+                categoryFilterArray.push(value);
+              }
+            });
+        });
+      priceFilterArray = categoryFilterArray;
+    }
+    setMedicineListFiltered(priceFilterArray);
+  }, [priceFilter, filterData, discountFilter]);
 
   return (
     <div className={classes.welcome}>
@@ -286,12 +309,13 @@ export const SearchByMedicine: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            {getTitle()}({medicineList && medicineList.length})
+            {getTitle()}({medicineListFiltered && medicineListFiltered.length})
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter
               setMedicineList={setMedicineList}
               setPriceFilter={setPriceFilter}
+              setDiscountFilter={setDiscountFilter}
               setFilterData={setFilterData}
             />
             <div className={classes.searchSection}>
@@ -300,9 +324,12 @@ export const SearchByMedicine: React.FC = (props) => {
                   <MedicinesCartContext.Consumer>
                     {() =>
                       params.searchMedicineType === 'search-by-brand' ? (
-                        <MedicineCard medicineList={medicineList} />
+                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
                       ) : (
-                        <MedicineListscard medicineList={medicineList} />
+                        <MedicineListscard
+                          medicineList={medicineListFiltered}
+                          isLoading={isLoading}
+                        />
                       )
                     }
                   </MedicinesCartContext.Consumer>

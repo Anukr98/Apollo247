@@ -5,8 +5,17 @@ import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
-
-import { GET_DOCTOR_DETAILS, LOGGED_IN_USER_DETAILS } from 'graphql/profiles';
+import {
+  GET_DOCTOR_DETAILS,
+  LOGGED_IN_USER_DETAILS,
+  LOGIN,
+  VERIFY_LOGIN_OTP,
+  RESEND_OTP,
+} from 'graphql/profiles';
+import { LoggedInUserType, LOGIN_TYPE } from 'graphql/types/globalTypes';
+import { Login, LoginVariables } from 'graphql/types/Login';
+import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
+import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
@@ -21,7 +30,6 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
-import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { TrackJS } from 'trackjs';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
@@ -33,11 +41,12 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   //allCurrentPatients: Patient[] | null;
   setCurrentUser: ((p: Doctor) => void) | null;
 
-  sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
+  sendOtp: ((phoneNumber: string, loginId: string) => Promise<unknown>) | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
 
-  verifyOtp: ((otp: string) => void) | null;
+  //verifyOtp: ((otp: string) => void) | null;
+  verifyOtp: ((otp: string, loginId: string) => Promise<unknown>) | null;
   verifyOtpError: boolean;
   isVerifyingOtp: boolean;
 
@@ -106,7 +115,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const authLink = setContext((_, { headers }) => ({
     headers: {
       ...headers,
-      Authorization: authToken,
+      Authorization: authToken ? authToken : `Bearer 3d1833da7020e0602165529446587434`,
     },
   }));
   const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
@@ -149,67 +158,132 @@ export const AuthProvider: React.FC = (props) => {
   const [doctorSecretary, addDoctorSecretary] = useState<AuthContextProps['doctorSecretary']>(null);
 
   const [currentUserId, setCurrentUserId] = useState<AuthContextProps['currentUserId']>(null);
-  const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
+  const loginApiCall = async (mobileNumber: string) => {
+    const [loginResult, loginError] = await wait(
+      apolloClient.mutate<Login, LoginVariables>({
+        variables: {
+          mobileNumber: mobileNumber,
+          loginType: LOGIN_TYPE.DOCTOR,
+        },
+        mutation: LOGIN,
+      })
+    );
+    setIsSendingOtp(false);
+    if (
+      loginResult &&
+      loginResult.data &&
+      loginResult.data.login &&
+      loginResult.data.login.status &&
+      loginResult.data.login.loginId
+    ) {
+      setSendOtpError(false);
+      return loginResult.data.login.loginId;
+    } else {
+      TrackJS.track(`phoneNumber: ${mobileNumber}, phoneAuthError: ${loginError}`);
+      setSendOtpError(true);
+      return false;
+    }
+  };
+  const resendOtpApiCall = async (mobileNumber: string, loginId: string) => {
+    const [resendOtpResult, resendOtpError] = await wait(
+      apolloClient.mutate<ResendOtp, ResendOtpVariables>({
+        variables: {
+          mobileNumber: mobileNumber,
+          id: loginId,
+          loginType: LOGIN_TYPE.DOCTOR,
+        },
+        mutation: RESEND_OTP,
+      })
+    );
+    setIsSendingOtp(false);
+    console.log(resendOtpResult);
+    if (
+      resendOtpResult &&
+      resendOtpResult.data &&
+      resendOtpResult.data.resendOtp &&
+      resendOtpResult.data.resendOtp.status &&
+      resendOtpResult.data.resendOtp.loginId
+    ) {
+      setSendOtpError(false);
+      return resendOtpResult.data.resendOtp.loginId;
+    } else {
+      TrackJS.track(`phoneNumber: ${mobileNumber}, phoneAuthError: ${resendOtpError}`);
+      setSendOtpError(true);
+      return false;
+    }
+  };
+  const sendOtp = (phoneNumber: string, loginId: string) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
-      if (!captchaPlacement) {
-        TrackJS.track(!captchaPlacement);
-        setSendOtpError(true);
-        reject();
-        return;
-      }
       localStorage.setItem('loggedInMobileNumber', phoneNumber);
       setIsSendingOtp(true);
-      // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
-      // and can eventually result in a 'recaptcha already assigned to this element' error.
-      const captchaContainer = document.createElement('div');
-      captchaContainer.style.display = 'none';
-      const captchaId = _uniqueId('captcha-container');
-      captchaContainer.id = captchaId;
-      captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
-      const captcha = new firebase.auth.RecaptchaVerifier(captchaId, {
-        size: 'invisible',
-        callback: async () => {
-          const [phoneAuthResult, phoneAuthError] = await wait(
-            app.auth().signInWithPhoneNumber(phoneNumber, captcha)
-          );
-          setIsSendingOtp(false);
-          if (phoneAuthError) {
-            TrackJS.track(`phoneNumber: ${phoneNumber}`);
-            TrackJS.track(`phoneAuthError: ${phoneAuthError}`);
-            setSendOtpError(true);
-            reject();
-            return;
-          }
-          TrackJS.track(`phoneNumber: ${phoneNumber}`);
-          TrackJS.track(`phoneAuthResult: ${phoneAuthResult}`);
-          otpVerifier = phoneAuthResult;
-          setSendOtpError(false);
-          captcha.clear();
-          resolve();
-        },
-        'expired-callback': () => {
-          setSendOtpError(true);
-          captcha.clear();
-          reject();
-        },
-      });
-      captcha.verify();
+      if (loginId && loginId !== '') {
+        resendOtpApiCall(phoneNumber, loginId).then((generatedLoginId) => {
+          resolve(generatedLoginId);
+        });
+      } else {
+        loginApiCall(phoneNumber).then((generatedLoginId) => {
+          resolve(generatedLoginId);
+        });
+      }
     }).finally(() => {
       setIsSendingOtp(false);
     });
   };
-
-  const verifyOtp = async (otp: string) => {
-    if (!otpVerifier) {
-      setSendOtpError(true);
-      return;
+  const otpCheckApiCall = async (otp: string, loginId: string) => {
+    const [verifyLoginOtpResult, verifyLoginOtpError] = await wait(
+      apolloClient.mutate<verifyLoginOtp, verifyLoginOtpVariables>({
+        variables: {
+          otpVerificationInput: {
+            id: loginId,
+            otp: otp,
+            loginType: LOGIN_TYPE.DOCTOR,
+          },
+        },
+        mutation: VERIFY_LOGIN_OTP,
+      })
+    );
+    if (
+      verifyLoginOtpResult &&
+      verifyLoginOtpResult.data &&
+      verifyLoginOtpResult.data.verifyLoginOtp &&
+      verifyLoginOtpResult.data.verifyLoginOtp.status &&
+      verifyLoginOtpResult.data.verifyLoginOtp.authToken &&
+      !verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
+    ) {
+      return verifyLoginOtpResult.data.verifyLoginOtp.authToken;
+    } else if (
+      verifyLoginOtpResult &&
+      verifyLoginOtpResult.data &&
+      verifyLoginOtpResult.data.verifyLoginOtp &&
+      verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
+    ) {
+      TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error-block`);
+      return false;
+    } else {
+      TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error`);
+      return false;
     }
-    setIsVerifyingOtp(true);
-    const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-    TrackJS.track(otpError);
-    setVerifyOtpError(Boolean(otpError || !otpAuthResult.user));
-    setIsVerifyingOtp(false);
+  };
+  const verifyOtp = (otp: string, loginId: string) => {
+    return new Promise((resolve, reject) => {
+      setIsSigningIn(true);
+      setIsVerifyingOtp(true);
+      otpCheckApiCall(otp, loginId).then((res) => {
+        if (!res) {
+          setVerifyOtpError(true);
+          setIsSigningIn(false);
+        } else {
+          setVerifyOtpError(false);
+          app.auth().signInWithCustomToken(res);
+        }
+        setIsVerifyingOtp(false);
+        resolve();
+      });
+    }).finally(() => {
+      TrackJS.track(`loginId:${loginId} otp:${otp} finally-block-otp-Error`);
+      setVerifyOtpError(true);
+    });
   };
 
   const signOut = () =>

@@ -199,7 +199,7 @@ const sendPatientAcknowledgements = async (
     patientDetails.firstName +
     '<br>Mobile Number :-' +
     patientDetails.mobileNumber +
-    '<br>Patient Location (city) :-\nDoctor Name :-' +
+    '<br>Doctor Name :-' +
     docDetails.firstName +
     ' ' +
     docDetails.lastName +
@@ -208,9 +208,9 @@ const sendPatientAcknowledgements = async (
     '<br>Appointment Date :-' +
     format(istDateTime, 'dd/MM/yyyy') +
     '<br>Appointment Slot :-' +
-    format(istDateTime, 'hh:mm') +
+    format(istDateTime, 'hh:mm aa') +
     ' - ' +
-    format(addMinutes(istDateTime, 15), 'hh:mm') +
+    format(addMinutes(istDateTime, 15), 'hh:mm aa') +
     '<br>Mode of Consult :-' +
     appointmentData.appointmentType;
 

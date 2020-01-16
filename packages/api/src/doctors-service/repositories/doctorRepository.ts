@@ -17,6 +17,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { ApiConstants } from 'ApiConstants';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Doctor)
@@ -240,7 +241,7 @@ export class DoctorRepository extends Repository<Doctor> {
               onlineSlot = nextSlot;
               break;
             }
-            if (counter >= 1) {
+            if (counter >= ApiConstants.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS) {
               onlineSlot = '';
               break;
             }
@@ -269,7 +270,7 @@ export class DoctorRepository extends Repository<Doctor> {
               physicalSlot = nextSlot;
               break;
             }
-            if (counter >= 1) {
+            if (counter >= ApiConstants.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS) {
               physicalSlot = '';
               break;
             }
@@ -278,7 +279,7 @@ export class DoctorRepository extends Repository<Doctor> {
           }
         }
 
-        let referenceSlot;
+        let referenceSlot = '';
         if (consultModeFilter == ConsultMode.ONLINE) {
           referenceSlot = onlineSlot;
         } else if (consultModeFilter == ConsultMode.PHYSICAL) {
@@ -289,9 +290,9 @@ export class DoctorRepository extends Repository<Doctor> {
           else referenceSlot = onlineSlot < physicalSlot ? onlineSlot : physicalSlot;
         }
 
-        if (referenceSlot == '') {
-          referenceSlot = format(addDays(new Date(), 2), 'yyyy-MM-dd HH:mm');
-        }
+        // if (referenceSlot == '') {
+        //   referenceSlot = format(addDays(new Date(), 2), 'yyyy-MM-dd HH:mm');
+        // }
 
         const doctorSlot: DoctorSlotAvailability = {
           doctorId,
@@ -324,7 +325,7 @@ export class DoctorRepository extends Repository<Doctor> {
       return doctor.availableInMinutes <= 60;
     });
     const bookNowDoctorSlots = doctorNextAvailSlots.filter((doctor) => {
-      return doctor.availableInMinutes > 60;
+      return doctor.availableInMinutes > 60 || isNaN(doctor.availableInMinutes);
     });
     //create key-pair object to map with doctors data object
     const timeSortedConsultNowDoctorSlots: DoctorSlotAvailabilityObject = {};
@@ -676,7 +677,22 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { nextAvailableSlot });
   }
 
-  getAllDoctors() {
-    return this.find({ where: { isActive: true, doctorType: Not('JUNIOR') } });
+  getAllDoctors(doctorId: string) {
+    if (doctorId == '0') {
+      return this.find({
+        where: {
+          isActive: true,
+          doctorType: Not('JUNIOR'),
+        },
+      });
+    } else {
+      return this.find({
+        where: {
+          id: doctorId,
+          isActive: true,
+          doctorType: Not('JUNIOR'),
+        },
+      });
+    }
   }
 }

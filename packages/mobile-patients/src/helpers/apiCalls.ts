@@ -668,3 +668,15 @@ export const getPackageData = (
     ItemID: currentItemId,
   });
 };
+
+export const GenerateTokenforCM = (
+  uhid: string,
+  userName: string,
+  gender: string,
+  emailId: string,
+  phoneNumber: string
+): Promise<AxiosResponse<any>> => {
+  const url = `https://aph.dev.pmt.popcornapps.com/getCmToken?appUserId=${uhid}&userName=${userName}&gender=${gender}&emailId=${emailId}&phoneNumber=${phoneNumber}`;
+  console.log('GenerateTokenforCMurl', url);
+  return Axios.get(url);
+};

@@ -786,6 +786,91 @@ export class AppointmentNoShow extends BaseEntity {
 }
 //Appointment no show details end
 
+//documents summary starts
+@Entity()
+export class PhrDocumentsSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  documentDate: Date;
+
+  @Column({ default: 0 })
+  appointmentDoc: number;
+
+  @Column({ default: 0 })
+  medicineOrderDoc: number;
+
+  @Column({ default: 0 })
+  standAloneDoc: number;
+
+  @Column({ default: 0 })
+  newUser: number;
+
+  @Column({ default: 0 })
+  oldUser: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+//SD dashboard summary starts
+@Entity()
+export class FeedbackDashboardSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  ratingDate: Date;
+
+  @Column({ default: 0 })
+  goodRating: number;
+
+  @Column({ default: 0 })
+  greatRating: number;
+
+  @Column({ default: 0 })
+  poorRating: number;
+
+  @Column({ default: 0 })
+  okRating: number;
+
+  @Column({ default: 0 })
+  noRating: number;
+
+  @Column({ default: 0 })
+  helpTickets: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
 //SD dashboard summary starts
 @Entity()
 export class SdDashboardSummary extends BaseEntity {
@@ -805,6 +890,9 @@ export class SdDashboardSummary extends BaseEntity {
   totalConsultations: number;
 
   @Column({ default: 0 })
+  totalVirtualConsultations: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   onTimeConsultations: number;
 
   @Column({ default: 0 })
@@ -825,7 +913,7 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   rescheduledByDoctor: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerConsult: number;
 
   @Column({ default: 0 })

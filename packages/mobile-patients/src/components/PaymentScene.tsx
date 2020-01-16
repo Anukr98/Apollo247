@@ -6,7 +6,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  WebView,
   BackHandler,
   NavState,
 } from 'react-native';
@@ -22,6 +21,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getParameterByName, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
+import { WebView } from 'react-native-webview';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {

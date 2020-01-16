@@ -273,6 +273,14 @@ export const GET_AVAILABLE_SLOTS = gql`
   }
 `;
 
+export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
+  query getPatientFutureAppointmentCount($patientId: String) {
+    getPatientFutureAppointmentCount(patientId: $patientId) {
+      consultsCount
+    }
+  }
+`;
+
 export const GET_PATIENT_APPOINTMENTS = gql`
   query getPatinetAppointments($patientAppointmentsInput: PatientAppointmentsInput!) {
     getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
@@ -1339,6 +1347,8 @@ export const GET_MEDICAL_RECORD = gql`
         sourceName
         documentURLs
         prismFileIds
+        issuingDoctor
+        location
         medicalRecordParameters {
           id
           parameterName
@@ -1802,6 +1812,38 @@ export const AUTOMATED_QUESTIONS = gql`
         queueCount
       }
       totalJuniorDoctors
+    }
+  }
+`;
+
+export const LOGIN = gql`
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+      status
+      message
+      loginId
+    }
+  }
+`;
+
+export const VERIFY_LOGIN_OTP = gql`
+  query verifyLoginOtp($otpVerificationInput: OtpVerificationInput) {
+    verifyLoginOtp(otpVerificationInput: $otpVerificationInput) {
+      status
+      authToken
+      isBlocked
+      reason
+      incorrectAttempts
+    }
+  }
+`;
+
+export const RESEND_OTP = gql`
+  query resendOtp($mobileNumber: String!, $loginType: LOGIN_TYPE!, $id: String!) {
+    resendOtp(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      message
+      loginId
     }
   }
 `;

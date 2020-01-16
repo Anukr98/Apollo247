@@ -6,6 +6,7 @@ import {
   FormHelperText,
   Modal,
   MenuItem,
+  Button,
   createStyles,
   CircularProgress,
 } from '@material-ui/core';
@@ -21,7 +22,7 @@ import Scrollbars from 'react-custom-scrollbars';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -36,6 +37,7 @@ function renderInputComponent(inputProps: any) {
 
   return (
     <AphTextField
+      className={classes.inputContainer}
       autoFocus
       placeholder="Search"
       fullWidth
@@ -53,27 +55,93 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: OptionType,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
+function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
   const matches = match(suggestion.label, query);
   const parts = parse(suggestion.label, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
+    <div>
       {parts.map((part) => (
-        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
-          {part.text}
+        <span
+          key={part.text}
+          style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+          title={suggestion.label}
+        >
+          {part.text.length > 46
+            ? part.text.substring(0, 45).toLowerCase() + '...'
+            : part.text.toLowerCase()}
         </span>
       ))}
-      <img src={require('images/ic-add.svg')} alt="" />
-    </MenuItem>
+      <img src={require('images/ic_dark_plus.svg')} alt="" />
+    </div>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    suggestionsContainer: {
+      position: 'relative',
+    },
+    suggestionPopover: {
+      boxShadow: 'none',
+      maxHeight: 355,
+      overflowY: 'auto',
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+      color: '#02475b',
+    },
+    suggestionsList: {
+      margin: 0,
+      padding: 0,
+      listStyleType: 'none',
+      overflow: 'hidden',
+      borderRadius: '0 0 0 10px',
+    },
+    suggestionItem: {
+      fontSize: 18,
+      fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 7,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
+    },
+    inputContainer: {
+      padding: 20,
+      paddingBottom: 0,
+    },
     root: {
       padding: 0,
     },
@@ -87,7 +155,6 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 500,
       letterSpacing: 0.02,
       paddingBottom: 5,
-      minHeight: 18,
     },
     sectionBody: {
       '& >div:last-child': {
@@ -120,7 +187,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'transparent',
       boxShadow: 'none',
       position: 'absolute',
-      top: 20,
+      top: 15,
       right: 20,
       padding: 0,
       minWidth: 'auto',
@@ -154,6 +221,7 @@ const useStyles = makeStyles((theme: Theme) =>
     actionGroup: {
       marginLeft: 'auto',
       display: 'flex',
+      alignItems: 'flex-start',
       '& button': {
         boxShadow: 'none',
         borderRadius: 0,
@@ -161,11 +229,14 @@ const useStyles = makeStyles((theme: Theme) =>
         padding: 0,
         marginLeft: 12,
         minWidth: 'auto',
+        '&:first-child': {
+          marginTop: 4,
+        },
       },
     },
     medicinePopup: {
       width: 480,
-      margin: '30px auto 0 auto',
+      margin: '60px auto 0 auto',
       boxShadow: 'none',
       '&:focus': {
         outline: 'none',
@@ -190,12 +261,13 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     searchFrom: {
       padding: 0,
+      minHeight: 400,
       position: 'relative',
     },
-    loaderDiv: {
-      textAlign: 'center',
-      margin: 'auto',
-      paddingTop: 20,
+    loader: {
+      left: '50%',
+      top: '45%',
+      position: 'absolute',
     },
     dialogContent: {
       padding: 20,
@@ -214,66 +286,11 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: 'hidden',
       borderRadius: 10,
       '& >div:first-child': {
-        padding: 20,
+        padding: '15px 20px 0 20px',
         paddingBottom: 0,
       },
       '& input': {
         paddingRight: 30,
-      },
-    },
-    searchpopup: {
-      boxShadow: 'none',
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        '& li': {
-          padding: 0,
-          listStyleType: 'none',
-          position: 'relative',
-          '&:after': {
-            content: '""',
-            height: 1,
-            left: 20,
-            right: 20,
-            bottom: 0,
-            position: 'absolute',
-            backgroundColor: 'rgba(2, 71, 91, 0.15)',
-          },
-          '& >div': {
-            padding: '10px 66px 10px 20px',
-            fontSize: 18,
-            fontWeight: 500,
-            color: '#02475b',
-            '&:hover': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '&:focus': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '& span:nth-child(2)': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-            '& img': {
-              position: 'absolute',
-              right: 20,
-              display: 'none',
-            },
-          },
-          '&:last-child': {
-            '&:after': {
-              display: 'none',
-            },
-          },
-          '&:hover': {
-            '& >div': {
-              '& img': {
-                display: 'block',
-              },
-            },
-          },
-        },
       },
     },
     addNewMedicine: {
@@ -282,6 +299,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 16,
     },
     inputRoot: {
+      paddingRight: 35,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -289,7 +307,7 @@ const useStyles = makeStyles((theme: Theme) =>
         borderBottom: '2px solid #00b38e',
       },
       '& input': {
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: 500,
         color: '#02475b',
         paddingTop: 0,
@@ -307,7 +325,9 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -2,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -351,7 +371,6 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
-        textAlign: 'left',
       },
     },
     numberTablets: {
@@ -460,7 +479,9 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 'bold',
     },
     unitsSelect: {
-      marginTop: -7,
+      '& > div': {
+        paddingTop: '3px !important',
+      },
     },
   })
 );
@@ -559,7 +580,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>();
+  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -927,6 +948,10 @@ export const MedicinePrescription: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
+  const term = (value: string, char: string) => {
+    let changedString = value.substring(0, value.length - 1);
+    return changedString + char;
+  };
   // console.log(selectedMedicines);
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
@@ -935,7 +960,7 @@ export const MedicinePrescription: React.FC = () => {
         medicine.medicineConsumptionDurationInDays &&
         ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
           medicine.medicineConsumptionDurationUnit
-            ? medicine.medicineConsumptionDurationUnit.toLowerCase()
+            ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
             : 'day(s)'
         } `;
       const whenString =
@@ -944,12 +969,19 @@ export const MedicinePrescription: React.FC = () => {
               .join(', ')
               .toLowerCase()
           : '';
-      const unitHtmls = medicine.medicineUnit.toLowerCase();
+      const unitHtmls =
+        medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
+          ? term(
+              medicine.medicineUnit.toLowerCase(),
+              medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+            )
+          : medicine.medicineUnit.toLowerCase() +
+            (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
       const isInDuration =
         medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
           ? ''
           : 'in the ';
-      const timesString =
+      let timesString =
         medicine.medicineTimings.length > 0
           ? isInDuration +
             medicine.medicineTimings
@@ -957,6 +989,9 @@ export const MedicinePrescription: React.FC = () => {
               .toLowerCase()
               .replace('_', ' ')
           : '';
+      if (timesString && timesString !== '') {
+        timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+      }
       const dosageCount = medicine.medicineDosage;
       const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
       const unitHtml = `${unitHtmls}`;
@@ -981,8 +1016,8 @@ export const MedicinePrescription: React.FC = () => {
                 timesString.length > 0 ? timesString : ''
               }`}
             </div>
-            {medicine.Instructions && (
-              <div className={classes.medicineInfo}>{medicine.Instructions}</div>
+            {medicine.medicineInstructions && (
+              <div className={classes.medicineInfo}>{medicine.medicineInstructions}</div>
             )}
           </div>
           <div className={classes.actionGroup}>
@@ -1027,67 +1062,84 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-
-    setErrorState({
-      ...errorState,
-      durationErr: false,
-      daySlotErr: false,
-      tobeTakenErr: false,
-      dosageErr: false,
-    });
-    const inputParamsArr: any = {
-      medicineConsumptionDurationInDays: consumptionDuration,
-      medicineDosage: String(tabletsCount),
-      medicineInstructions: medicineInstruction,
-      medicineTimings: daySlotsArr,
-      medicineToBeTaken: toBeTakenSlotsArr,
-      medicineName: selectedValue,
-      medicineFrequency: frequency,
-      medicineConsumptionDurationUnit: forUnit,
-      medicineFormTypes: medicineForm,
-      id: selectedId,
-      medicineUnit: medicineUnit,
-    };
-
-    const inputParams: any = {
-      id: selectedId,
-      value: selectedValue,
-      name: selectedValue,
-      times: daySlotsSelected.length,
-      daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
-      duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
-      selected: true,
-      medicineUnit: medicineUnit,
-      medicineFrequency: frequency,
-      medicineConsumptionDurationUnit: forUnit,
-      medicineFormTypes: medicineForm,
-    };
-    if (isUpdate) {
-      const medicineArray = selectedMedicinesArr;
-      medicineArray!.splice(idx, 1, inputParamsArr);
-      setSelectedMedicinesArr(medicineArray);
-      const medicineObj = selectedMedicines;
-      medicineObj.splice(idx, 1, inputParams);
-      setSelectedMedicines(medicineObj);
+    if (tabletsCount && isNaN(Number(tabletsCount))) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (consumptionDuration && isNaN(Number(consumptionDuration))) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else {
-      const medicineArray = selectedMedicinesArr;
-      medicineArray!.push(inputParamsArr);
-      setSelectedMedicinesArr(medicineArray);
-      const medicineObj = selectedMedicines;
-      medicineObj.push(inputParams);
-      setSelectedMedicines(medicineObj);
-    }
-    setIsDialogOpen(false);
-    setIsUpdate(false);
-    setShowDosage(false);
-    resetOptions();
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+      const inputParamsArr: any = {
+        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineDosage: String(tabletsCount),
+        medicineInstructions: medicineInstruction,
+        medicineTimings: daySlotsArr,
+        medicineToBeTaken: toBeTakenSlotsArr,
+        medicineName: selectedValue,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
+        id: selectedId,
+        medicineUnit: medicineUnit,
+      };
 
-    setMedicineInstruction('');
-    setConsumptionDuration('');
-    setTabletsCount(1);
-    setSelectedValue('');
-    setSelectedId('');
-    setMedicineUnit('OTHERS');
+      const inputParams: any = {
+        id: selectedId,
+        value: selectedValue,
+        name: selectedValue,
+        times: daySlotsSelected.length,
+        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
+        selected: true,
+        medicineUnit: medicineUnit,
+        medicineFrequency: frequency,
+        medicineConsumptionDurationUnit: forUnit,
+        medicineFormTypes: medicineForm,
+      };
+      if (isUpdate) {
+        const medicineArray = selectedMedicinesArr;
+        medicineArray!.splice(idx, 1, inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineObj = selectedMedicines;
+        medicineObj.splice(idx, 1, inputParams);
+        setSelectedMedicines(medicineObj);
+      } else {
+        const medicineArray = selectedMedicinesArr;
+        medicineArray!.push(inputParamsArr);
+        setSelectedMedicinesArr(medicineArray);
+        const medicineObj = selectedMedicines;
+        medicineObj.push(inputParams);
+        setSelectedMedicines(medicineObj);
+      }
+      setIsDialogOpen(false);
+      setIsUpdate(false);
+      setShowDosage(false);
+      resetOptions();
+
+      setMedicineInstruction('');
+      setConsumptionDuration('');
+      setTabletsCount(1);
+      setSelectedValue('');
+      setSelectedId('');
+      setMedicineUnit('OTHERS');
+    }
   };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -1127,9 +1179,11 @@ export const MedicinePrescription: React.FC = () => {
   ) => {
     setLoading(false);
     setMedicine(newValue);
-    if (newValue.length > 2) {
+
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchMedicines(newValue);
     }
+
     setState({
       ...state,
       [name]: newValue,
@@ -1240,24 +1294,23 @@ export const MedicinePrescription: React.FC = () => {
         <Paper className={classes.medicinePopup}>
           <AphDialogTitle className={!showDosage ? classes.popupHeading : classes.dialogTitle}>
             {showDosage && (
-              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+              <Button onClick={() => setShowDosage(false)} className={classes.backArrow}>
                 <img src={require('images/ic_back.svg')} alt="" />
-              </div>
+              </Button>
             )}
             {showDosage ? (
               <div className={classes.selectedMedicine}>{selectedValue.toUpperCase()}</div>
             ) : (
               'ADD MEDICINE'
             )}
-            <AphButton className={classes.dialogClose}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  setShowDosage(false);
-                }}
-              />
+            <AphButton
+              className={classes.dialogClose}
+              onClick={() => {
+                setIsDialogOpen(false);
+                setShowDosage(false);
+              }}
+            >
+              <img src={require('images/ic_cross.svg')} alt="" />
             </AphButton>
           </AphDialogTitle>
           <div className={classes.shadowHide}>
@@ -1292,22 +1345,22 @@ export const MedicinePrescription: React.FC = () => {
                     },
                   }}
                   theme={{
-                    container: classes.autoSuggestBox,
+                    container: classes.suggestionsContainer,
+                    suggestionsList: classes.suggestionsList,
+                    suggestion: classes.suggestionItem,
+                    suggestionHighlighted: classes.suggestionHighlighted,
                   }}
                   renderSuggestionsContainer={(options) => (
-                    <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
-                      <Paper {...options.containerProps} square className={classes.searchpopup}>
-                        {options.children}
-                        {loading ? (
-                          <div className={classes.loaderDiv}>
-                            <CircularProgress />
-                          </div>
-                        ) : null}
-                      </Paper>
-                    </Scrollbars>
+                    <Paper
+                      {...options.containerProps}
+                      square
+                      classes={{ root: classes.suggestionPopover }}
+                    >
+                      {options.children}
+                    </Paper>
                   )}
                 />
-                {medicine.length > 2 && !loading && (
+                {medicine.trim().length > 2 && !loading && (
                   <AphButton
                     className={classes.darkGreenaddBtn}
                     onClick={() => {
@@ -1325,10 +1378,11 @@ export const MedicinePrescription: React.FC = () => {
                     <img src={require('images/ic_add_circle.svg')} alt="" />
                   </AphButton>
                 )}
+                {loading ? <CircularProgress className={classes.loader} /> : null}
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
@@ -1352,7 +1406,7 @@ export const MedicinePrescription: React.FC = () => {
                                 component="div"
                                 error={errorState.dosageErr}
                               >
-                                Please Enter Dosage(Number only)
+                                Please enter valid number
                               </FormHelperText>
                             )}
                           </div>
@@ -1361,6 +1415,11 @@ export const MedicinePrescription: React.FC = () => {
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             {medicineForm !== 'OTHERS' ? 'Apply' : ''}
                           </div>
+                          {medicineForm == 'OTHERS' && (
+                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                              &nbsp;
+                            </div>
+                          )}
                           <div className={classes.unitsSelect}>
                             <AphSelect
                               value={medicineUnit}
@@ -1387,9 +1446,11 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                         {medicineForm !== 'OTHERS' && (
                           <div className={classes.divCol}>
-                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                              &nbsp;
-                            </div>
+                            {medicineForm !== 'OTHERS' && (
+                              <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                                &nbsp;
+                              </div>
+                            )}
                             <AphSelect
                               style={{ paddingTop: 3 }}
                               value={frequency}
@@ -1418,38 +1479,38 @@ export const MedicinePrescription: React.FC = () => {
                     </div>
                     {medicineForm === 'OTHERS' && (
                       <div className={classes.sectionGroup}>
-                        {/* <div className={classes.unitsSelect}> */}
-                        <div className={classes.numberOfTimes}>
-                          <AphSelect
-                            style={{ paddingTop: 3 }}
-                            value={frequency}
-                            MenuProps={{
-                              classes: {
-                                paper: classes.menuPaper,
-                              },
-                              anchorOrigin: {
-                                vertical: 'bottom',
-                                horizontal: horizontal,
-                              },
-                              transformOrigin: {
-                                vertical: 'top',
-                                horizontal: horizontal,
-                              },
-                            }}
-                            onChange={(e: any) => {
-                              setFrequency(e.target.value as string);
-                            }}
-                          >
-                            {generateFrequency}
-                          </AphSelect>
-                          {/* </div> */}
+                        <div className={classes.unitsSelect}>
+                          <div className={classes.numberOfTimes}>
+                            <AphSelect
+                              style={{ paddingTop: 3 }}
+                              value={frequency}
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: horizontal,
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: horizontal,
+                                },
+                              }}
+                              onChange={(e: any) => {
+                                setFrequency(e.target.value as string);
+                              }}
+                            >
+                              {generateFrequency}
+                            </AphSelect>
+                          </div>
                         </div>
                       </div>
                     )}
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
-                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>for</div>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>For</div>
                           <AphTextField
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
@@ -1465,7 +1526,7 @@ export const MedicinePrescription: React.FC = () => {
                               component="div"
                               error={errorState.durationErr}
                             >
-                              Please Enter Duration in days(Number only)
+                              Please enter valid number
                             </FormHelperText>
                           )}
                         </div>
@@ -1501,7 +1562,6 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>To be taken</div>
                       <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
                         {tobeTakenHtml}
                       </div>

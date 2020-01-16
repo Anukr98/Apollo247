@@ -32,6 +32,10 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from 'graphql/types/EndCallNotification';
 import { CasesheetView } from 'components/CasesheetView';
 import { APPOINTMENT_TYPE } from '../graphql/types/globalTypes';
 import _omit from 'lodash/omit';
@@ -77,7 +81,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
+import { SEND_CALL_NOTIFICATION, END_CALL_NOTIFICATION } from 'graphql/consults';
 import {
   SendCallNotification,
   SendCallNotificationVariables,
@@ -159,6 +163,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: '0 20px 20px 20px',
       position: 'relative',
+      outline: 'none',
       '& h3': {
         fontSize: 20,
         fontWeight: 600,
@@ -330,6 +335,7 @@ export const ConsultTabs: React.FC = () => {
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
   const [callId, setcallId] = useState<string>('');
+  const [chatRecordId, setChatRecordId] = useState<string>('');
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -956,7 +962,7 @@ export const ConsultTabs: React.FC = () => {
     }
   }, []);
 
-  const sendCallNotificationFn = (callType: APPT_CALL_TYPE) => {
+  const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -974,13 +980,17 @@ export const ConsultTabs: React.FC = () => {
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
-          const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
-          document.cookie = cookieStr + ';path=/;';
-          setcallId(_data.data.sendCallNotification.callDetails.id);
+          if (isCall) {
+            const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
+            document.cookie = cookieStr + ';path=/;';
+            setcallId(_data.data.sendCallNotification.callDetails.id);
+          } else {
+            setChatRecordId(_data.data.sendCallNotification.callDetails.id);
+          }
         }
       })
       .catch((error: ApolloError) => {
-        alert('An error occurred while sending notification to Client.');
+        console.log('An error occurred while sending notification to Client.');
       });
   };
 
@@ -1131,6 +1141,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        endCallNotificationAction(false);
         setAppointmentStatus('COMPLETED');
         setIsPdfPageOpen(true);
       })
@@ -1158,6 +1169,7 @@ export const ConsultTabs: React.FC = () => {
         setAppointmentStatus(STATUS.IN_PROGRESS);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
+        sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
         setError('');
         setSaving(false);
       })
@@ -1174,12 +1186,26 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO);
+      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
     }, 10);
   };
 
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
+  };
+  const endCallNotificationAction = (isCall: boolean) => {
+    client
+      .query<EndCallNotification, EndCallNotificationVariables>({
+        query: END_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentCallId: isCall ? callId : chatRecordId,
+        },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        //alert('An error occurred while sending notification to Client.');
+      });
   };
 
   return (
@@ -1307,10 +1333,10 @@ export const ConsultTabs: React.FC = () => {
                 sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
-                callId={callId}
                 pubnub={pubnub}
                 lastMsg={lastMsg}
                 presenceEventObject={presenceEventObject}
+                endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
               />
               <div>
                 {!isPdfPageOpen ||

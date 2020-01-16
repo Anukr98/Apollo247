@@ -12,7 +12,7 @@ import { CASESHEET_STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 export const appointmentNotificationTypeDefs = gql`
   type ApptReminderResult {
     status: Boolean
-    currentTime: DateTime
+    currentTime: String
     apptsListCount: Int
   }
 
@@ -46,10 +46,16 @@ const sendApptReminderNotification: Resolver<
         appointmentId: appt.id,
         notificationType: NotificationType.APPOINTMENT_REMINDER_15,
       };
-      if (
-        appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
-        appt.caseSheet[0].doctorType == 'JUNIOR'
-      ) {
+      if (appt.caseSheet.length > 0) {
+        if (
+          appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
+          appt.caseSheet[0].doctorType == 'JUNIOR'
+        ) {
+          pushNotificationInput.notificationType =
+            NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
+        }
+      }
+      if (appt.caseSheet.length == 0) {
         pushNotificationInput.notificationType = NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
       }
       const notificationResult = sendReminderNotification(
@@ -87,12 +93,22 @@ const sendPhysicalApptReminderNotification: Resolver<
         appointmentId: appt.id,
         notificationType: NotificationType.APPOINTMENT_REMINDER_15,
       };
-      if (
-        appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
-        appt.caseSheet[0].doctorType == 'JUNIOR'
-      ) {
+      if (args.inNextMin == 1) {
+        pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_1;
+      } else if (args.inNextMin == 59) {
+        pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_60;
+      } else if (appt.caseSheet.length > 0) {
+        if (
+          appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
+          appt.caseSheet[0].doctorType == 'JUNIOR'
+        ) {
+          pushNotificationInput.notificationType =
+            NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
+        }
+      } else if (appt.caseSheet.length == 0) {
         pushNotificationInput.notificationType = NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
       }
+
       const notificationResult = sendReminderNotification(
         pushNotificationInput,
         patientsDb,

@@ -44,7 +44,23 @@ app.get('/invokeApptReminder', (req, res) => {
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
-      console.log(response.data, 'notifications response is....');
+      console.log(
+        response.data.data.sendApptReminderNotification.apptsListCount,
+        'notifications response is....'
+      );
+      const fileName =
+        '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+        new Date().toDateString() +
+        '-apptNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendApptReminderNotification.apptsListCount +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
       res.send({
         status: 'success',
         message: response.data,
@@ -66,7 +82,24 @@ app.get('/invokePhysicalApptReminder', (req, res) => {
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
-      console.log(response.data, 'notifications response is....');
+      console.log(response);
+      console.log(
+        response.data.data.sendPhysicalApptReminderNotification.apptsListCount,
+        'notifications response is....'
+      );
+      const fileName =
+        '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+        new Date().toDateString() +
+        '-apptNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
       res.send({
         status: 'success',
         message: response.data,
@@ -943,7 +976,10 @@ app.get('/processOrders', (req, res) => {
                 },
               };
               console.log(pharmaInput, 'pharmaInput');
-              const fileName = 'pharmalogs/' + new Date().toDateString() + '-pharmaLogs.txt';
+              const fileName =
+                '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+                new Date().toDateString() +
+                '-pharmaLogs.txt';
               let content =
                 new Date().toString() +
                 '\n---------------------------\n' +
@@ -1276,7 +1312,10 @@ app.get('/processOrderById', (req, res) => {
           },
         };
         console.log(pharmaInput, 'pharmaInput');
-        const fileName = 'pharmalogs/' + new Date().toDateString() + '-pharmaLogs.txt';
+        const fileName =
+          '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+          new Date().toDateString() +
+          '-pharmaLogs.txt';
         let content =
           new Date().toString() +
           '\n---------------------------\n' +

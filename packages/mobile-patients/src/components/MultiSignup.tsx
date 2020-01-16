@@ -2,7 +2,7 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DropdownGreen, Mascot, Check, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -18,6 +18,7 @@ import {
   Alert,
   ActivityIndicator,
   BackHandler,
+  Keyboard,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -36,8 +37,8 @@ import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { TextInputComponent } from './ui/TextInputComponent';
 
 const { width, height } = Dimensions.get('window');
 
@@ -126,7 +127,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [backPressCount, setbackPressCount] = useState<number>(0);
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const [referredBy, setReferredBy] = useState<string>();
+  const [referral, setReferral] = useState<string>('');
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -374,6 +376,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               title={'SUBMIT'}
               disabled={isDisabled()}
               onPress={async () => {
+                Keyboard.dismiss();
                 if (profiles) {
                   const result = profiles.filter((obj) => {
                     return obj.relation == Relation['ME'];
@@ -413,26 +416,17 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('gotIt', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
                   setTimeout(() => {
-                    showAphAlert!({
-                      title: `Hi ${g(currentPatient, 'firstName') || ''},`,
-                      description:
-                        'Welcome to Apollo24X7. We’re glad you’re here!\nConsult online with our top Apollo doctors now!',
-                      unDismissable: true,
-                      onPressOk: () => {
-                        hideAphAlert!();
-                        props.navigation.dispatch(
-                          StackActions.reset({
-                            index: 0,
-                            key: null,
-                            actions: [
-                              NavigationActions.navigate({
-                                routeName: AppRoutes.ConsultRoom,
-                              }),
-                            ],
-                          })
-                        );
-                      },
-                    });
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [
+                          NavigationActions.navigate({
+                            routeName: AppRoutes.ConsultRoom,
+                          }),
+                        ],
+                      })
+                    );
                   }, 500))
                 : null}
               {error
@@ -465,6 +459,41 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     );
   };
 
+  const renderReferral = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.SKY_BLUE,
+          marginHorizontal: -20,
+          paddingVertical: 20,
+          marginTop: 20,
+        }}
+      >
+        <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
+          <Gift style={{ marginRight: 20 }} />
+          <TextInputComponent
+            label={
+              referredBy
+                ? `${referredBy} Has Sent You A Referral Code!`
+                : 'Do You Have A Referral Code? (Optional)'
+            }
+            labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
+            placeholder={'Enter referral code'}
+            placeholderTextColor={'rgba(255,255,255,0.6)'}
+            inputStyle={{
+              borderColor: theme.colors.WHITE,
+              color: theme.colors.WHITE,
+            }}
+            conatinerstyles={{ width: '78%' }}
+            value={referral}
+            onChangeText={(text) => setReferral(text)}
+            icon={referredBy ? <Check /> : null}
+          />
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -494,6 +523,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 profiles.map((allCurrentPatients, i: number) => (
                   <View key={i}>{renderUserForm(allCurrentPatients, i)}</View>
                 ))}
+              {/* {renderReferral()} */}
               <View style={{ height: 80 }} />
             </Card>
           </KeyboardAwareScrollView>

@@ -1,18 +1,16 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import {
-  DoctorPlaceholder,
+  DoctorIcon,
+  DoctorPlaceholderImage,
+  DropdownGreen,
   Mascot,
   OnlineConsult,
   PhysicalConsult,
-  DoctorPlaceholderImage,
-  DropdownGreen,
-  DoctorIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -30,40 +28,27 @@ import {
   AsyncStorage,
   Dimensions,
   Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableHighlight,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { getDataFromTree } from 'react-apollo';
-import { AddProfile } from '../ui/AddProfile';
-import { ProfileList } from '../ui/ProfileList';
-import { useUIElements } from '../UIElementsProvider';
-import { TabsComponent } from '../ui/TabsComponent';
+import { APPOINTMENT_STATE, STATUS } from '../../graphql/types/globalTypes';
 import { colors } from '../../theme/colors';
-const { width, height } = Dimensions.get('window');
+import { ProfileList } from '../ui/ProfileList';
+import { TabHeader } from '../ui/TabHeader';
+import { TabsComponent } from '../ui/TabsComponent';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
-  viewName: {
-    backgroundColor: theme.colors.WHITE,
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 5,
-  },
   nameTextContainerStyle: {
     maxWidth: '75%',
   },
@@ -84,7 +69,8 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   descriptionTextStyle: {
-    marginTop: 12,
+    marginTop: 8,
+    marginBottom: 16,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
@@ -94,35 +80,6 @@ const styles = StyleSheet.create({
     width: 180,
     // paddingHorizontal: 26
     marginTop: 16,
-  },
-  textStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-    paddingVertical: 8,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  textViewStyle: {
-    borderBottomWidth: 1,
-    borderColor: '#dddddd',
-    marginHorizontal: 16,
-  },
-  labelStyle: {
-    paddingVertical: 16,
-    color: theme.colors.FILTER_CARD_LABEL,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  labelViewStyle: {
-    marginHorizontal: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: theme.colors.SEPARATOR_LINE,
-  },
-  cardContainerStyle: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: Platform.OS === 'ios' ? 174 : 184,
-    zIndex: 3,
-    elevation: 5,
   },
   doctorView: {
     marginHorizontal: 8,
@@ -195,7 +152,7 @@ export interface ConsultProps extends NavigationScreenProps {
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
-  const tabs = [{ title: 'Upcoming' }, { title: 'Past' }];
+  const tabs = [{ title: 'Active' }, { title: 'Past' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [userName, setuserName] = useState<string | number>('');
   const { analytics, getPatientApiCall } = useAuth();
@@ -359,7 +316,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         setLoading && setLoading(false);
       });
   };
-
+  /*
   const renderThingsToDo = () => {
     return (
       <View>
@@ -462,6 +419,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       </View>
     );
   };
+*/
 
   const renderConsultations = () => {
     return (
@@ -470,14 +428,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
         // horizontal={true}
         data={
-          consultations
-          // selectedTab === tabs[0].title
-          //   ? consultations.filter((item) =>
-          //       moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
-          //     )
-          //   : consultations.filter((item) =>
-          //       moment(item.appointmentDateTime).isBefore(moment(new Date()))
-          //     )
+          // consultations
+
+          selectedTab === tabs[0].title
+            ? consultations.filter((item) =>
+                // moment(item.appointmentDateTime).isAfter(moment(new Date()))
+                moment(new Date(item.appointmentDateTime))
+                  .add(15, 'minutes')
+                  .isAfter(moment(new Date()).add(15, 'minutes'))
+              )
+            : consultations.filter((item) =>
+                moment(item.appointmentDateTime).isBefore(moment(new Date()))
+              )
         }
         bounces={false}
         showsHorizontalScrollIndicator={false}
@@ -803,138 +765,68 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
+    const offset = event.nativeEvent.contentOffset.y;
+    if (!(offset > 1 && scrollOffset > 1)) {
+      setScrollOffset(event.nativeEvent.contentOffset.y);
+    }
+  };
+
   const renderTopView = () => {
-    // const todayConsults = consultations.filter(
-    //   (item) => item.appointmentDateTime.split('T')[0] === new Date().toISOString().split('T')[0]
-    // );
+    const containerStyle: ViewStyle =
+      scrollOffset > 1
+        ? {
+            shadowColor: '#808080',
+            shadowOffset: { width: 0, height: 0 },
+            zIndex: 1,
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 5,
+          }
+        : {};
+    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
+  };
+
+  const renderProfileChangeView = () => {
     return (
-      <View style={{ width: '100%' }}>
-        <View style={styles.viewName}>
-          <View
-            style={{
-              justifyContent: 'space-between',
-              flexDirection: 'row',
-              paddingTop: 16,
-              paddingHorizontal: 0,
-              backgroundColor: theme.colors.WHITE,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={1}
-              // onPress={() => props.navigation.popToTop()}
-              onPress={() => {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-                  })
-                );
+      <View style={{ backgroundColor: theme.colors.WHITE, paddingHorizontal: 20 }}>
+        <ProfileList
+          navigation={props.navigation}
+          saveUserChange={true}
+          childView={
+            <View
+              style={{
+                flexDirection: 'row',
+                paddingRight: 8,
+                borderRightWidth: 0,
+                borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                backgroundColor: theme.colors.WHITE,
               }}
             >
-              <ApolloLogo />
-            </TouchableOpacity>
-          </View>
-          <View>
-            <ProfileList
-              navigation={props.navigation}
-              saveUserChange={true}
-              childView={
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    paddingRight: 8,
-                    borderRightWidth: 0,
-                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                    backgroundColor: theme.colors.WHITE,
-                  }}
-                >
-                  <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                  <View style={styles.nameTextContainerStyle}>
-                    <Text style={styles.nameTextStyle} numberOfLines={1}>
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    <View style={styles.seperatorStyle} />
-                  </View>
-                  <View style={{ paddingTop: 15 }}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-              }
-              selectedProfile={profile}
-              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-              unsetloaderDisplay={true}
-            ></ProfileList>
-            {/* <MaterialMenu
-              onPress={(item) => {
-                const val = (allCurrentPatients || []).find(
-                  (_item) => _item.firstName == item.value.toString()
-                );
-                setCurrentPatientId!(val!.id);
-                AsyncStorage.setItem('selectUserId', val!.id);
-              }}
-              options={
-                allCurrentPatients &&
-                allCurrentPatients!.map((item) => {
-                  return { key: item.id, value: item.firstName };
-                })
-              }
-              menuContainerStyle={{
-                alignItems: 'flex-end',
-                marginTop: 16,
-                marginLeft: width / 2 - 95,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0.5,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                }}
-              >
-                <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-                <View>
-                  <Text style={styles.nameTextStyle}>{userName}</Text>
-                  <View style={styles.seperatorStyle} />
-                </View>
-                <View style={{ paddingTop: 15 }}>
-                  <DropdownGreen />
-                </View>
-              </View>
-            </MaterialMenu> */}
-          </View>
-          {/* <View
-            // activeOpacity={1}
-            // onPress={() => setShowMenu(true)}
-            style={{
-              flexDirection: 'row',
-              marginTop: 8,
-              alignItems: 'center',
-            }}
-          >
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-              <View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text style={styles.nameTextStyle}> {userName}!</Text>
-                  <DropdownGreen style={{ marginTop: 8 }} />
-                </View>
+              <Text style={styles.hiTextStyle}>{'hi'}</Text>
+              <View style={styles.nameTextContainerStyle}>
+                <Text style={styles.nameTextStyle} numberOfLines={1}>
+                  {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                </Text>
                 <View style={styles.seperatorStyle} />
               </View>
+              <View style={{ paddingTop: 15 }}>
+                <DropdownGreen />
+              </View>
             </View>
-          </View> */}
-          <Text style={styles.descriptionTextStyle}>
-            {consultations.length > 0
-              ? 'Here are your recent and upcoming consultations'
-              : string.consult_room.description}
-          </Text>
-        </View>
+          }
+          selectedProfile={profile}
+          setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          unsetloaderDisplay={true}
+        ></ProfileList>
+        <Text style={styles.descriptionTextStyle}>
+          {consultations.length > 0
+            ? 'Here are your recent and upcoming consultations'
+            : string.consult_room.description}
+        </Text>
       </View>
     );
   };
@@ -997,9 +889,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderTopView()}
-          {/* {renderTabSwitch()} */}
+        {renderTopView()}
+        <ScrollView
+          style={{ flex: 1 }}
+          bounces={false}
+          stickyHeaderIndices={[1]}
+          onScroll={handleScroll}
+          scrollEventThrottle={20}
+        >
+          {renderProfileChangeView()}
+          {renderTabSwitch()}
           <View
             style={
               {
@@ -1022,7 +921,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       </SafeAreaView>
       {showSchdulesView && (
         <BottomPopUp
-          title={'Hi! :)'}
+          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
           description={`Your appointment with Dr. ${props.navigation.getParam(
             'DoctorName'
           )} \nhas been rescheduled for — ${newAppointmentTime}\n\n${
@@ -1050,7 +949,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )}
       {transferfollowup && (
         <BottomPopUp
-          title={'Hi! :)'}
+          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
           description={`Your appointment with ${props.navigation.getParam('TransferData') &&
             props.navigation.getParam('TransferData').doctorName} has been transferred to —`}
         >
@@ -1137,7 +1036,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )}
       {followupdone && (
         <BottomPopUp
-          title={'Hi! :)'}
+          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
           description={`Your appointment with ${props.navigation.getParam('FollowupData') &&
             props.navigation.getParam('FollowupData').firstName} has been followup to —`}
         >

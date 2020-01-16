@@ -129,6 +129,9 @@ export enum MedicalRecordType {
   PHYSICAL_EXAMINATION = 'PHYSICAL_EXAMINATION',
   OPERATIVE_REPORT = 'OPERATIVE_REPORT',
   PATHOLOGY_REPORT = 'PATHOLOGY_REPORT',
+  TEST_REPORT = 'TEST_REPORT',
+  CONSULTATION = 'CONSULTATION ',
+  PRESCRIPTION = 'PRESCRIPTION',
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
@@ -148,6 +151,18 @@ export enum FEEDBACKTYPE {
   CONSULT = 'CONSULT',
   PHARMACY = 'PHARMACY',
   DIAGNOSTICS = 'DIAGNOSTICS',
+}
+
+export enum LOGIN_TYPE {
+  PATIENT = 'PATIENT',
+  DOCTOR = 'DOCTOR',
+}
+
+export enum OTP_STATUS {
+  NOT_VERIFIED = 'NOT_VERIFIED',
+  VERIFIED = 'VERIFIED',
+  EXPIRED = 'EXPIRED',
+  BLOCKED = 'BLOCKED',
 }
 
 //medicine orders starts
@@ -176,6 +191,9 @@ export class MedicineOrders extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ default: 0 })
+  isEprescription: number;
 
   @PrimaryGeneratedColumn({ type: 'bigint' })
   orderAutoId: number;
@@ -509,7 +527,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientFamilyHistory, (familyHistory) => familyHistory.patient)
   familyHistory: PatientFamilyHistory[];
 
-  @Column()
+  @Column({ nullable: true })
   firebaseUid: string;
 
   @Column()
@@ -582,6 +600,9 @@ export class Patient extends BaseEntity {
 
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];
+
+  @OneToMany((type) => PatientHelpTickets, (patientHelpTickets) => patientHelpTickets.patient)
+  patientHelpTickets: PatientHelpTickets[];
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -834,6 +855,12 @@ export class MedicalRecords extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   documentURLs: string;
+
+  @Column({ nullable: true })
+  issuingDoctor: string;
+
+  @Column({ nullable: true })
+  location: string;
 
   @Column({ nullable: true, type: 'text' })
   prismFileIds: string;
@@ -1488,4 +1515,108 @@ export class PatientFeedback extends BaseEntity {
 
   @Column({ nullable: true })
   doctorId: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+@Entity()
+export class PatientHelpTickets extends BaseEntity {
+  @ManyToOne((type) => Patient, (patient) => patient.id)
+  patient: Patient;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  category: string;
+
+  @Column({ type: 'text' })
+  comments: string;
+
+  @Column()
+  reason: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+@Entity()
+export class LoginOtp extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  loginType: LOGIN_TYPE;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  otp: string;
+
+  @Column({ default: OTP_STATUS.NOT_VERIFIED })
+  status: string;
+
+  @Column({ default: 0 })
+  incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
+@Entity()
+export class LoginOtpArchive extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  loginType: LOGIN_TYPE;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  otp: string;
+
+  @Column({ default: OTP_STATUS.NOT_VERIFIED })
+  status: string;
+
+  @Column({ default: 0 })
+  incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
 }

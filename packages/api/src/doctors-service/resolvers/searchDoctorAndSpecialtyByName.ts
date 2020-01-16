@@ -17,6 +17,7 @@ import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
+import { debugLog } from 'customWinstonLogger';
 
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   type PossibleSearchMatches {
@@ -69,6 +70,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
+  debugLog(
+    'doctorSearchAPILogger',
+    `SEARCH_BY_NAME_CALL___STARTED`,
+    '----------------------SearchDoctorAndSpecialtyByName_API--------------------------------'
+  );
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
 
   let matchedDoctors: Doctor[] = [],
@@ -86,12 +92,32 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     //get facility distances from user geolocation
     let facilityDistances: FacilityDistanceMap = {};
     if (args.geolocation) {
+      debugLog(
+        'doctorSearchAPILogger',
+        `GEOLOCATION_API_CALL___START`,
+        'SearchDoctorAndSpecialtyByName_API'
+      );
       const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
       facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
+      debugLog(
+        'doctorSearchAPILogger',
+        `GEOLOCATION_API_CALL___END`,
+        'SearchDoctorAndSpecialtyByName_API'
+      );
     }
 
+    debugLog(
+      'doctorSearchAPILogger',
+      `GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`,
+      'SearchDoctorAndSpecialtyByName_API'
+    );
     matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase);
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
+    debugLog(
+      'doctorSearchAPILogger',
+      `GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`,
+      'SearchDoctorAndSpecialtyByName_API'
+    );
 
     //get Sorted Doctors List
     const { sortedDoctors, sortedDoctorsNextAvailability } = await getSortedDoctors(
@@ -143,6 +169,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
   }
+
+  debugLog(
+    'doctorSearchAPILogger',
+    `SEARCH_BY_NAME_CALL___END`,
+    '----------------------SearchDoctorAndSpecialtyByName_API--------------------------------'
+  );
 
   return {
     doctors: matchedDoctors,
@@ -214,16 +246,31 @@ const getSortedDoctors = async (
     return doctor.id;
   });
 
+  debugLog(
+    'doctorSearchAPILogger',
+    `GET_DOCTORS_NEXT_AVAILABILITY___START`,
+    'SearchDoctorAndSpecialtyByName_API'
+  );
   const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
     matchedDoctorIds,
     ConsultMode.BOTH,
     doctorsDb,
     consultsDb
   );
+  debugLog(
+    'doctorSearchAPILogger',
+    `GET_DOCTORS_NEXT_AVAILABILITY___END`,
+    'SearchDoctorAndSpecialtyByName_API'
+  );
 
   sortedDoctorsNextAvailability = doctorNextAvailSlots.doctorAvailalbeSlots;
 
   //apply sort algorithm
+  debugLog(
+    'doctorSearchAPILogger',
+    `APPLY_RANKING_ALGORITHM___START`,
+    'SearchDoctorAndSpecialtyByName_API'
+  );
   if (doctors.length > 1) {
     //get consult now and book now doctors by available time
     const {
@@ -287,6 +334,11 @@ const getSortedDoctors = async (
 
     sortedDoctors = consultNowDoctors.concat(bookNowDoctors);
   }
+  debugLog(
+    'doctorSearchAPILogger',
+    `APPLY_RANKING_ALGORITHM___END`,
+    'SearchDoctorAndSpecialtyByName_API'
+  );
 
   return { sortedDoctors, sortedDoctorsNextAvailability };
 };

@@ -1,4 +1,3 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -14,6 +13,7 @@ import {
   SearchSendIcon,
   TestsIcon,
   ShieldIcon,
+  HomeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -82,6 +82,8 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -353,7 +355,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, []);
 
-  // Common Views
+  // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
     return (
@@ -614,6 +616,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           justifyContent: 'space-between',
           flexDirection: 'row',
           paddingTop: 16,
+          paddingBottom: 12,
           paddingHorizontal: 20,
           backgroundColor: theme.colors.WHITE,
         }}
@@ -635,7 +638,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             );
           }}
         >
-          <ApolloLogo />
+          <HomeIcon />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
           {renderLocation()}
@@ -644,17 +647,61 @@ export const Tests: React.FC<TestsProps> = (props) => {
             onPress={() =>
               props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
             }
-            style={{ right: 20 }}
+            // style={{ right: 20 }}
           >
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
-          <NotificationIcon />
+          {/* <NotificationIcon /> */}
         </View>
       </View>
     );
   };
 
+  /*
+  const uploadPrescriptionCTA = () => {
+    return (
+      <View
+        style={[
+          {
+            ...theme.viewStyles.card(),
+            marginTop: 20,
+            marginBottom: 0,
+          },
+          medicineList.length > 0 && searchText
+            ? {
+                elevation: 0,
+              }
+            : {},
+        ]}
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 16, '#02475b', 1, 24, 0),
+                paddingBottom: 12,
+              }}
+            >
+              Have a prescription ready?
+            </Text>
+            <Button
+              onPress={() => {
+                // setShowPopop(true);
+              }}
+              style={{ width: 'auto' }}
+              titleTextStyle={{
+                ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
+              }}
+              title={'UPLOAD PRESCRIPTION'}
+            />
+          </View>
+          <FileBig style={{ height: 60, width: 40 }} />
+        </View>
+      </View>
+    );
+  };
+*/
   const renderYourOrders = () => {
     // if (ordersLoading) return renderSectionLoader(70);
     return (
@@ -674,7 +721,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           marginBottom: 24,
           marginTop: 20,
         }}
-        title={'Your Orders'}
+        title={'My Orders'}
         leftIcon={<TestsIcon />}
       />
       // )) || <View style={{ height: 24 }} />
@@ -755,7 +802,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
         >
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
+          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
               (
@@ -766,7 +813,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   },
                 ]}
               >
-                Rs. {price}
+                Rs. {price}
               </Text>
               )
             </Text>
@@ -817,7 +864,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
             onPress={data.onAddOrRemoveCartItem}
           >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -1036,7 +1083,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     },
                   ]}
                 >
-                  Rs. {price}
+                  Rs. {price}
                 </Text>
                 )
               </Text>
@@ -1419,27 +1466,54 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
+    setScrollOffset(event.nativeEvent.contentOffset.y);
+  };
+
   const renderSearchBar = () => {
+    const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
+
     const styles = StyleSheet.create({
       inputStyle: {
         minHeight: 29,
         ...theme.fonts.IBMPlexSansMedium(18),
       },
-      inputContainerStyle: {
-        borderBottomColor: '#00b38e',
-        borderBottomWidth: 2,
-        marginHorizontal: 10,
-      },
-      rightIconContainerStyle: {
-        height: 24,
-      },
-      style: {
-        paddingBottom: 18.5,
-      },
-      containerStyle: {
-        marginBottom: 19,
-        marginTop: 18,
-      },
+      inputContainerStyle: isFocusedStyle
+        ? {
+            borderBottomColor: '#00b38e',
+            borderBottomWidth: 2,
+            marginHorizontal: 10,
+          }
+        : {
+            borderRadius: 5,
+            backgroundColor: '#f7f8f5',
+            marginHorizontal: 10,
+            paddingHorizontal: 16,
+            borderBottomWidth: 0,
+          },
+      rightIconContainerStyle: isFocusedStyle
+        ? {
+            height: 24,
+          }
+        : {},
+      style: isFocusedStyle
+        ? {
+            paddingBottom: 18.5,
+          }
+        : { borderRadius: 5 },
+      containerStyle: isFocusedStyle
+        ? {
+            marginBottom: 20,
+            marginTop: 8,
+          }
+        : {
+            marginBottom: 20,
+            marginTop: 12,
+            alignSelf: 'center',
+          },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -1490,7 +1564,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             onSearchMedicine(value);
           }}
           autoCorrect={false}
-          rightIcon={rigthIconView}
+          rightIcon={isSearchFocused ? rigthIconView : <View />}
           placeholder="Search tests &amp; packages"
           selectionColor={itemsNotFound ? '#890000' : '#00b38e'}
           underlineColorAndroid="transparent"
@@ -1630,7 +1704,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
@@ -1687,6 +1761,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {renderBanner()}
+        {/* {uploadPrescriptionCTA()} */}
         {renderYourOrders()}
         <>
           {renderHotSellers()}
@@ -1721,6 +1796,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
+          onScroll={handleScroll}
+          scrollEventThrottle={20}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}

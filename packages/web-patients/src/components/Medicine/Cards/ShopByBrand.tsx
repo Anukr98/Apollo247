@@ -57,16 +57,16 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
   };
 
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_PROD_URL}/pub/media`,
+    url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         {props.data &&
-          props.data.map((brand) => {
+          props.data.map((brand, index) => {
             return (
-              <div key={brand.category_id} className={classes.card}>
+              <div key={index} className={classes.card}>
                 <Link to={clientRoutes.searchByMedicine('search-by-brand', brand.category_id)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>

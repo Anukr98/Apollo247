@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Chip, MenuItem, makeStyles, Theme, createStyles, Paper } from '@material-ui/core';
+import { Chip, makeStyles, Theme, createStyles, Paper } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
@@ -38,27 +38,87 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: OptionType,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
+function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
   const matches = match(suggestion.name, query);
   const parts = parse(suggestion.name, matches);
 
   return (
-    <MenuItem selected={isHighlighted} component="div">
+    <div>
       {parts.map((part) => (
         <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
           {part.text}
         </span>
       ))}
-      <img src={require('images/ic-add.svg')} alt="" />
-    </MenuItem>
+      <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Condition
+    </div>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    suggestionsContainer: {
+      position: 'relative',
+    },
+    suggestionPopover: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
+      position: 'absolute',
+      zIndex: 1,
+      left: 0,
+      right: 0,
+      maxHeight: 240,
+      overflowY: 'auto',
+      color: '#02475b',
+    },
+    suggestionsList: {
+      margin: 0,
+      padding: 0,
+      listStyleType: 'none',
+      borderRadius: 10,
+      overflow: 'hidden',
+    },
+    suggestionItem: {
+      fontSize: 18,
+      fontWeight: 500,
+      paddingLeft: 20,
+      paddingRight: 7,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      '& >div': {
+        borderBottom: '1px solid rgba(2,71,91,0.1)',
+        paddingTop: 10,
+        paddingBottom: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        position: 'relative',
+        paddingRight: 30,
+      },
+      '&:last-child': {
+        '& >div': {
+          borderBottom: 'none',
+        },
+      },
+      '& img': {
+        position: 'absolute',
+        right: 0,
+        display: 'none',
+        top: '50%',
+        marginTop: -12,
+      },
+      '&:hover': {
+        backgroundColor: '#f0f4f5',
+        '& img': {
+          display: 'block',
+        },
+      },
+    },
+    suggestionHighlighted: {
+      backgroundColor: '#f0f4f5',
+      '& img': {
+        display: 'block',
+      },
+    },
     root: {
       padding: 0,
     },
@@ -142,76 +202,6 @@ const useStyles = makeStyles((theme: Theme) =>
         marginLeft: 5,
       },
     },
-    autoSuggestBox: {
-      position: 'relative',
-    },
-    searchpopup: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
-      marginTop: 2,
-      position: 'absolute',
-      left: 0,
-      width: '100%',
-      zIndex: 1,
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        borderRadius: 10,
-        overflow: 'hidden',
-        '& li': {
-          padding: 0,
-          listStyleType: 'none',
-          position: 'relative',
-          '&:after': {
-            content: '""',
-            height: 1,
-            left: 20,
-            right: 20,
-            bottom: 0,
-            position: 'absolute',
-            backgroundColor: 'rgba(2, 71, 91, 0.15)',
-          },
-          '& >div': {
-            padding: '10px 62px 10px 16px',
-            fontSize: 18,
-            fontWeight: 500,
-            color: '#02475b',
-            '&:hover': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '&:focus': {
-              backgroundColor: '#f0f4f5 !important',
-            },
-            '& span:nth-child(2)': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-            '& img': {
-              position: 'absolute',
-              right: 20,
-              display: 'none',
-            },
-          },
-          '&:first-child': {
-            borderRadius: '10px 10px 0 0',
-          },
-          '&:last-child': {
-            borderRadius: '10px 10px 0 0',
-            '&:after': {
-              display: 'none',
-            },
-          },
-          '&:hover': {
-            '& >div': {
-              '& img': {
-                display: 'block',
-              },
-            },
-          },
-        },
-      },
-    },
   })
 );
 
@@ -291,7 +281,7 @@ export const Diagnosis: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    if (newValue.length > 2) {
+    if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchDignosis(newValue);
     }
     setState({
@@ -398,12 +388,15 @@ export const Diagnosis: React.FC = () => {
             },
           }}
           renderSuggestionsContainer={(options) => (
-            <Paper {...options.containerProps} square className={classes.searchpopup}>
+            <Paper {...options.containerProps} square classes={{ root: classes.suggestionPopover }}>
               {options.children}
             </Paper>
           )}
           theme={{
-            container: classes.autoSuggestBox,
+            container: classes.suggestionsContainer,
+            suggestionsList: classes.suggestionsList,
+            suggestion: classes.suggestionItem,
+            suggestionHighlighted: classes.suggestionHighlighted,
           }}
         />
       )}

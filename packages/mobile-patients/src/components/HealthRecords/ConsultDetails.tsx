@@ -434,28 +434,30 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         </View>
 
                         <Text style={styles.dataTextStyle}>
-                          {item.medicineFormTypes === 'OTHERS'
-                            ? 'Take ' + item!.medicineDosage! &&
-                              parseFloat(item!.medicineDosage!) +
+                          {item.medicineFormTypes == 'OTHERS'
+                            ? item!.medicineDosage! &&
+                              'Take ' +
+                                parseFloat(item!.medicineDosage!) +
                                 ' ' +
                                 item!.medicineUnit!.toLowerCase() +
-                                '  '
-                            : 'Apply ' + item!.medicineUnit!.toLowerCase() + '  '}
+                                ' (s)' +
+                                ' '
+                            : 'Apply ' + item!.medicineUnit!.toLowerCase() + ' '}
                           {/* {item.medicineTimings!.length *
-                            parseFloat(item!.medicineConsumptionDurationInDays!) *
-                            item.medicineToBeTaken!.length *
-                            parseFloat(item!.medicineDosage!) +
-                            ` ` +
-                            item.medicineUnit} */}
+ parseFloat(item!.medicineConsumptionDurationInDays!) *
+ item.medicineToBeTaken!.length *
+ parseFloat(item!.medicineDosage!) +
+ ` ` +
+ item.medicineUnit} */}
                           {/* parseInt(item.medicineDosage || '1') > 1 */}
                           {/* {item.medicineTimings!.length > 1 &&
-                          (item.medicineUnit == MEDICINE_UNIT.TABLET ||
-                            item.medicineUnit == MEDICINE_UNIT.CAPSULE)
-                            ? 'S'
-                            : ''} */}
+ (item.medicineUnit == MEDICINE_UNIT.TABLET ||
+ item.medicineUnit == MEDICINE_UNIT.CAPSULE)
+ ? 'S'
+ : ''} */}
                           {/* {item.medicineTimings
-                            ? `\n${item.medicineTimings.length} times a day  for ${item.medicineConsumptionDurationInDays} days\n`
-                            : ''} */}
+ ? `\n${item.medicineTimings.length} times a day for ${item.medicineConsumptionDurationInDays} days\n`
+ : ''} */}
                           {item!.medicineFrequency! &&
                             item!.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
                               ' '}
@@ -471,12 +473,42 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                                 )
                                 .join(', ')
                             : ''}
-                          {' in the ' +
-                            item!
-                              .medicineTimings!.join(', ')
-                              .replace(/[^a-zA-Z ]/g, ' ')
-                              .toLowerCase()}
+                          {item.medicineToBeTaken
+                            ? item.medicineToBeTaken.length > 0
+                              ? ' in the '
+                              : ''
+                            : ''}
+                          {item.medicineTimings
+                            ? item.medicineTimings
+                                .map(
+                                  (item) =>
+                                    item &&
+                                    item
+                                      .split('_')
+                                      .join(' ')
+                                      .toLowerCase()
+                                )
+                                .map(
+                                  (val, idx, array) =>
+                                    `${val}${
+                                      idx == array.length - 2
+                                        ? ' and '
+                                        : idx > array.length - 2
+                                        ? '.'
+                                        : ', '
+                                    }`
+                                )
+                            : // .join(', ')
+                              ''}
+                          {/* {item!
+ .medicineTimings!.join(', ')
+ .replace(/[^a-zA-Z ]/g, ' ')
+ .toLowerCase()} */}
                           {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
+                          {item!.medicineConsumptionDurationInDays! &&
+                          item!.medicineConsumptionDurationInDays!.length === 1
+                            ? ' for ' + item!.medicineConsumptionDurationInDays! + ' day'
+                            : ' for ' + item!.medicineConsumptionDurationInDays! + ' days'}
                         </Text>
                       </View>
                     );

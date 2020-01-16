@@ -323,7 +323,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     }
     return '';
   };
-
+  const term = (value: string, char: string) => {
+    let changedString = value.substring(0, value.length - 1);
+    return changedString + char;
+  };
   const isPageContentFull = () => {
     return (
       diagnosticPrescription &&
@@ -357,7 +360,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           prescription.medicineConsumptionDurationInDays &&
           ` for ${Number(prescription.medicineConsumptionDurationInDays)} ${
             prescription.medicineConsumptionDurationUnit
-              ? prescription.medicineConsumptionDurationUnit.toLowerCase()
+              ? term(prescription.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
               : 'day(s)'
           } `;
 
@@ -367,7 +370,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 .join(', ')
                 .toLowerCase()
             : '';
-        const unitHtmls = prescription!.medicineUnit!.toLowerCase();
+        let unitHtmls = prescription!.medicineUnit!.toLowerCase();
+        unitHtmls =
+          unitHtmls[unitHtmls.length - 1].toLowerCase() === 's'
+            ? term(unitHtmls, prescription!.medicineFormTypes === 'OTHERS' ? '(s)' : '')
+            : unitHtmls + (prescription!.medicineFormTypes === 'OTHERS' ? '(s)' : '');
         const isInDuration =
           prescription &&
           prescription!.medicineTimings &&
@@ -375,7 +382,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           prescription!.medicineTimings[0] === 'AS_NEEDED'
             ? ''
             : 'in the ';
-        const timesString =
+        let timesString =
           prescription!.medicineTimings!.length > 0
             ? isInDuration +
               prescription!
@@ -383,6 +390,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 .toLowerCase()
                 .replace('_', ' ')
             : '';
+        if (timesString && timesString !== '') {
+          timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+        }
         const dosageCount = prescription!.medicineDosage;
         const takeApplyHtml = prescription!.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
         const unitHtml = `${unitHtmls}`;

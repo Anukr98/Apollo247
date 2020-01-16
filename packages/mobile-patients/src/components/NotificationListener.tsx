@@ -67,7 +67,8 @@ type CustomNotificationType =
   | 'Reminder_Appointment_Casesheet_15'
   | 'Diagnostic_Order_Success'
   | 'Diagnostic_Order_Payment_Failed'
-  | 'Registration_Success';
+  | 'Registration_Success'
+  | 'Patient_Cancel_Appointment';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -134,7 +135,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   ) => {
     aphConsole.log(`CustomNotificationType:: ${type}`);
     showAphAlert!({
-      title: `Hi,`,
+      title: ' ',
       description: data.content,
       CTAs: [
         {
@@ -163,7 +164,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     const description = data.content;
     const appointmentId = data.appointmentId;
     showAphAlert!({
-      title: `Hi :)`,
+      title: ' ',
       description,
       CTAs: [
         {
@@ -279,11 +280,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Registration_Success':
         {
           showAphAlert!({
-            title: `Hi,`,
+            title: ' ',
             description: data.content,
           });
         }
         break;
+
+      case 'Patient_Cancel_Appointment': {
+        showAphAlert!({
+          title: ' ',
+          description: data.content,
+        });
+      }
 
       case 'Cart_Ready':
         {
@@ -438,7 +446,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               },
               {
                 text: 'CONSULT ROOM',
-                type: 'white-button',
+                type: 'orange-button',
                 onPress: () => {
                   aphConsole.log('data.appointmentId', data.appointmentId);
                   aphConsole.log('data.callType', data.callType);
@@ -479,6 +487,21 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * */
     const notificationListener = firebase.notifications().onNotification((notification) => {
       aphConsole.log('notificationListener');
+      const localNotification = new firebase.notifications.Notification()
+        .setSound('sampleaudio.wav')
+        .setNotificationId(notification.notificationId)
+        .setTitle(notification.title)
+        .setBody(notification.body)
+        .setData(notification.data)
+        .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
+        .android.setSmallIcon('@mipmap/ic_launcher') // create this icon in Android Studio
+        .android.setColor('#000000') // you can set a color here
+        .android.setPriority(firebase.notifications.Android.Priority.Default);
+      firebase
+        .notifications()
+        .displayNotification(localNotification)
+        .catch((err) => console.error(err));
+
       processNotification(notification);
     });
 
@@ -521,7 +544,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         firebase.notifications.Android.Importance.Default
       )
         .setDescription('Demo app description')
-        .setSound('incallmanager_ringtone.mp3');
+        .setSound('sampleaudio.wav');
       firebase.notifications().android.createChannel(channel);
     } catch (error) {
       aphConsole.log('error in notification channel', error);

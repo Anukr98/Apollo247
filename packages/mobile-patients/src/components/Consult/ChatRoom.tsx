@@ -54,6 +54,7 @@ import {
   ConsultQueueInput,
   FEEDBACKTYPE,
   REQUEST_ROLES,
+  APPOINTMENT_STATE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -93,7 +94,6 @@ import {
   TouchableOpacity,
   View,
   BackHandler,
-  WebView,
   StyleSheet,
   AppState,
   AppStateStatus,
@@ -141,6 +141,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
 import { colors } from '../../theme/colors';
+import { WebView } from 'react-native-webview';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -669,24 +670,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const requestToJrDoctor = async () => {
-    // let ConsultQueueData: any = await AsyncStorage.getItem('ConsultQueueData');
-    // ConsultQueueData = JSON.parse(ConsultQueueData || 'null') || [];
-    // console.log('ConsultQueueData', ConsultQueueData);
-    // if (ConsultQueueData.appointmentId != appointmentData.id) {
-    // addToConsultQueue(client, appointmentData.id)
-    //   .then(({ data }: any) => {
-    //     console.log(data, 'data res');
-    //     const queueData = {
-    //       queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-    //       appointmentId: appointmentData.id,
-    //     };
-    //     console.log(queueData, 'queueData res');
-    //     AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
-    //   })
-    //   .catch((e: string) => {
-    //     console.log('Error occured ', e);
-    //   });
-
     //new code
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
@@ -719,25 +702,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         })
         .finally(() => startJoinTimer(0));
     }
-    // userAnswers &&
-    //   addToConsultQueueWithAutomatedQuestions(client, userAnswers)
-    //     .then(({ data }: any) => {
-    //       console.log(data, 'data res, adding');
-    //       startJoinTimer(0);
-    //       const queueData = {
-    //         queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-    //         appointmentId: appointmentData.id,
-    //       };
-    //       console.log(queueData, 'queueData res, adding');
-    //       AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
-    //     })
-    //     .catch((e: string) => {
-    //       console.log('Error occured, adding ', e);
-    //     });
-
-    // } else {
-    //   console.log('requestToJrDoctor not called');
-    // }
   };
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -752,6 +716,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     if (abondmentStarted == true) {
       if (appointmentData.status === STATUS.COMPLETED) return;
+      if (appointmentData.status === STATUS.NO_SHOW) return;
+      if (appointmentData.status === STATUS.CALL_ABANDON) return;
+      if (appointmentData.status === STATUS.CANCELLED) return;
+      if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
       console.log('API Called');
       endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
     }
@@ -1091,7 +1060,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     getHistory(0);
 
-    // registerForPushNotification();
+    registerForPushNotification();
 
     pubnub.addListener({
       status: (statusEvent) => {
@@ -1203,6 +1172,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isSeniorConsultStarted) {
       console.log('callAbondmentMethod scenario');
       if (appointmentData.status === STATUS.COMPLETED) return;
+      if (appointmentData.status === STATUS.NO_SHOW) return;
+      if (appointmentData.status === STATUS.CALL_ABANDON) return;
+      if (appointmentData.status === STATUS.CANCELLED) return;
+      if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
       abondmentStarted = true;
       startCallAbondmentTimer(200, true);
     } else {
@@ -1221,6 +1195,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         !isSeniorConsultStarted
       ) {
         if (appointmentData.status === STATUS.COMPLETED) return;
+        if (appointmentData.status === STATUS.NO_SHOW) return;
+        if (appointmentData.status === STATUS.CALL_ABANDON) return;
+        if (appointmentData.status === STATUS.CANCELLED) return;
+        if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
         abondmentStarted = true;
         startCallAbondmentTimer(200, false);
       } else {
@@ -1299,41 +1278,49 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
-    ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    if (Platform.OS === 'ios') {
+       ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    } else {
+      handlePushNotification('')
+    }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
     console.log('Device Token Received', deviceToken);
-
-    const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    try {
+       const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
-    console.log('android:', androidToken);
+    console.log('android:', androidToken.deviceToken);
 
-    // if (Platform.OS === 'ios') {
-    //   pubnub.push.addChannels(
-    //     {
-    //       channels: [channel],
-    //       device: deviceToken,
-    //       pushGateway: 'apns',
-    //     },
-    //     (status: any) => {
-    //       if (status.error) {
-    //         console.log('operation failed w/ error:', status);
-    //       } else {
-    //         console.log('operation done!');
-    //       }
-    //     }
-    //   );
-    //   console.log('ios:', token);
-    //   // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
-    // } else {
-    //   pubnub.push.addChannels({
-    //     channels: [channel],
-    //     device: androidToken,
-    //     pushGateway: 'gcm', // apns, gcm, mpns
-    //   });
-    //   // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
-    // }
+    if (Platform.OS === 'ios') {
+      pubnub.push.addChannels(
+        {
+          channels: [channel],
+          device: deviceToken,
+          pushGateway: 'apns',
+        },
+        (status: any) => {
+          if (status.error) {
+            console.log('operation failed w/ error:', status);
+          } else {
+            console.log('operation done!');
+          }
+        }
+      );
+      console.log('ios:', token);
+      // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
+    } else {
+      console.log('androidtoken:', token);
+      pubnub.push.addChannels({
+        channels: [channel],
+        device: androidToken,
+        pushGateway: 'gcm', // apns, gcm, mpns
+      });
+      // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+    }
+    } catch (error) {
+        console.log('ioserror:', error);
+    }
   };
 
   let insertText: object[] = [];
@@ -2489,7 +2476,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               width: 244,
-              height: 206,
+              height: 235,
               backgroundColor: '#0087ba',
               marginLeft: 38,
               borderRadius: 10,
@@ -2506,7 +2493,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginTop: 12,
               }}
             >
-              Next slot for {appointmentData.doctorInfo.displayName} is available on —
+              {appointmentData.doctorInfo.displayName} has suggested the below slot for rescheduling
+              this appointment
+              {/* Next slot for {appointmentData.doctorInfo.displayName} is available on — */}
             </Text>
             <View
               style={{
@@ -2557,7 +2546,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 paddingHorizontal: 0,
                 backgroundColor: 'transparent',
                 shadowColor: 'transparent',
-                paddingTop: 13,
+                paddingTop: 3,
               }}
             >
               <Button
@@ -2654,7 +2643,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(10),
                 lineHeight: 24,
                 letterSpacing: 0.04,
-                marginTop: 53,
+                marginTop: 55,
                 marginRight: 16,
               }}
             >
@@ -3840,6 +3829,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then((data: any) => {
         console.log(data, 'data');
         setLoading(false);
+        AsyncStorage.setItem('showSchduledPopup', 'true');
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,
@@ -3852,6 +3842,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     data.data &&
                     data.data.bookRescheduleAppointment &&
                     data.data.bookRescheduleAppointment.appointmentDetails,
+                  DoctorName:
+                    props.navigation.state.params!.data &&
+                    props.navigation.state.params!.data.doctorInfo &&
+                    props.navigation.state.params!.data.doctorInfo.firstName,
                 },
               }),
             ],
@@ -3876,6 +3870,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffDays = Math.ceil(
       moment(appointmentData.appointmentDateTime).diff(moment(), 'days', true)
     );
+    const diffMonths = Math.ceil(
+      moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
+    );
+    // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
+
     if (textChange) {
       time = 'Consult is In-progress';
     } else {
@@ -3884,12 +3883,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           appointmentData.status === STATUS.COMPLETED
             ? `Consult is completed`
             : `Will be joining soon`;
-      } else if (diffMin > 0 && diffHours <= 0) {
+      } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
         time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
-      } else if (diffHours > 0 && diffDays <= 0) {
+      } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
         time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
-      } else {
+      } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
         time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+      } else {
+        time = `Joining in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
       }
     }
     return (
@@ -5061,7 +5062,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         instructions={[
           'Take clear Picture of your entire file.',
           'Doctor details & date of the test should be clearly visible.',
-          'Only PDF / JPG / PNG type files up to 2 mb are allowed',
+          'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}

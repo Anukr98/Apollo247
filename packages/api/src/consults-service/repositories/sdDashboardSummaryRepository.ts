@@ -4,6 +4,10 @@ import {
   AppointmentCallDetails,
   SdDashboardSummary,
   STATUS,
+  FeedbackDashboardSummary,
+  APPOINTMENT_TYPE,
+  PhrDocumentsSummary,
+  AppointmentDocuments,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
@@ -12,38 +16,94 @@ import { DoctorConsultHoursRepository } from 'doctors-service/repositories/docto
 
 @EntityRepository(SdDashboardSummary)
 export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary> {
-  saveDashboardDetails(dashboardSummaryAttrs: Partial<SdDashboardSummary>) {
-    return this.create(dashboardSummaryAttrs)
+  async saveDashboardDetails(dashboardSummaryAttrs: Partial<SdDashboardSummary>) {
+    const checkRecord = await this.findOne({
+      where: {
+        doctorId: dashboardSummaryAttrs.doctorId,
+        appointmentDateTime: dashboardSummaryAttrs.appointmentDateTime,
+      },
+    });
+    if (checkRecord) {
+      return this.update(checkRecord.id, dashboardSummaryAttrs);
+    } else {
+      return this.create(dashboardSummaryAttrs)
+        .save()
+        .catch((createErrors) => {
+          throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, {
+            createErrors,
+          });
+        });
+    }
+  }
+
+  saveFeedbackDetails(feedbackSummaryAttrs: Partial<FeedbackDashboardSummary>) {
+    return FeedbackDashboardSummary.create(feedbackSummaryAttrs)
       .save()
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
       });
   }
 
-  getAppointmentsByDoctorId(doctorId: string, appointmentDate: Date) {
+  saveDocumentSummary(phrDocSummaryAttrs: Partial<PhrDocumentsSummary>) {
+    return PhrDocumentsSummary.create(phrDocSummaryAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  getDocumentSummary(docDate: Date) {
+    const newStartDate = new Date(format(addDays(docDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(docDate, 'yyyy-MM-dd') + 'T18:30');
+    return AppointmentDocuments.createQueryBuilder('appointment_documents')
+      .where('appointment_documents.createdDate Between :fromDate AND :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .getCount();
+  }
+
+  getAppointmentsByDoctorId(doctorId: string, appointmentDate: Date, appointmentType: string) {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
-    return Appointment.createQueryBuilder('appointment')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
-        fromDate: startDate,
-        toDate: endDate,
-      })
-      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-      })
-      .getCount();
+    if (appointmentType == 'BOTH') {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getCount();
+    } else {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.appointmentType = :appointmentType', {
+          appointmentType: APPOINTMENT_TYPE.ONLINE,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getCount();
+    }
   }
 
   async getCallsCount(doctorId: string, callType: string, appointmentDate: Date) {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id - calls count');
     const startDate = new Date(inputStartDate + 'T18:30');
     const callDetails = await AppointmentCallDetails.createQueryBuilder('appointment_call_details')
       .leftJoinAndSelect('appointment_call_details.appointment', 'appointment')
@@ -53,18 +113,25 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       })
       .andWhere('appointment_call_details.callType = :callType', { callType: callType })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .groupBy('appointment_call_details.appointmentId')
       .getMany();
-    let counter = 0;
-    if (callDetails.length > 0) {
-      callDetails.map((dets) => {
-        if (differenceInMinutes(dets.startTime, dets.appointment.appointmentDateTime) < 60) {
-          counter++;
-        }
-      });
-      return counter;
+    if (callDetails && callDetails.length > 0) {
+      return callDetails.length;
     } else {
-      return counter;
+      return 0;
     }
+    // let counter = 0;
+    // console.log(callDetails, 'callDetails');
+    // if (callDetails.length > 0) {
+    //   callDetails.map((dets) => {
+    //     if (differenceInMinutes(dets.startTime, dets.appointment.appointmentDateTime) < 60) {
+    //       counter++;
+    //     }
+    //   });
+    //   return counter;
+    // } else {
+    //   return counter;
+    // }
   }
 
   getRescheduleCount(doctorId: string, appointmentDate: Date) {
@@ -125,7 +192,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id - time per consult');
     const startDate = new Date(inputStartDate + 'T18:30');
     const totalTime = await AppointmentCallDetails.createQueryBuilder('appointment_call_details')
       .leftJoinAndSelect('appointment_call_details.appointment', 'appointment')
@@ -136,10 +203,12 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .andWhere('appointment_call_details.endTime is not null')
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .getMany();
+    console.log(totalTime, 'total time');
     let totalHours = 0;
     if (totalTime.length > 0) {
       totalTime.map((apptTime) => {
-        totalHours += apptTime.callDuration;
+        totalHours =
+          parseFloat(totalHours.toString()) + parseFloat(apptTime.callDuration.toString());
       });
     }
     return totalHours;
@@ -190,17 +259,17 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         'appointment_call_details'
       )
         .select([
-          'appointment_call_details."appointmentId" as "appointmentId"',
-          'sum(appointment_call_details."callDuration") as "totalDuration"',
+          'appointment_call_details."appointmentId" as "appointmentid"',
+          'sum(appointment_call_details."callDuration") as "totalduration"',
         ])
-        .andWhere('appointment_call_details.appointmentId in (:...apptIds)', { apptIds })
+        .andWhere('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
         .andWhere('appointment_call_details.endTime is not null')
         .groupBy('appointment_call_details."appointmentId"')
         .getRawMany();
       console.log(callDetails, 'callDetails');
 
       if (callDetails.length > 0) {
-        duration = callDetails[0].callDuration;
+        duration = callDetails[0].totalduration;
       }
     }
     return duration;

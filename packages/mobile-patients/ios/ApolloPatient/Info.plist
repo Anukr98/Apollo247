@@ -40,7 +40,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
 	<key>ITunesAppleID</key>
@@ -70,6 +70,12 @@
 	<string>${PRODUCT_NAME} need access to the calendar to select the date for booking appointments.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>${PRODUCT_NAME} need access to the camera to update your avatar.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>${PRODUCT_NAME} wants to access your contacts list.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>${PRODUCT_NAME} wants to access your health to share data.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>${PRODUCT_NAME} wants to access your health to update data.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This will enable the nearby location functionality to get nearest doctors. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -99,22 +105,6 @@
 		<string>IBMPlexSans-ExtraLight.ttf</string>
 		<string>IBMPlexSans-Bold.ttf</string>
 		<string>IBMPlexSans-BoldItalic.ttf</string>
-		<string>AntDesign.ttf</string>
-		<string>Entypo.ttf</string>
-		<string>EvilIcons.ttf</string>
-		<string>Feather.ttf</string>
-		<string>FontAwesome.ttf</string>
-		<string>FontAwesome5_Brands.ttf</string>
-		<string>FontAwesome5_Regular.ttf</string>
-		<string>FontAwesome5_Solid.ttf</string>
-		<string>Foundation.ttf</string>
-		<string>Ionicons.ttf</string>
-		<string>MaterialCommunityIcons.ttf</string>
-		<string>MaterialIcons.ttf</string>
-		<string>Octicons.ttf</string>
-		<string>SimpleLineIcons.ttf</string>
-		<string>Zocial.ttf</string>
-		<string>Fontisto.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

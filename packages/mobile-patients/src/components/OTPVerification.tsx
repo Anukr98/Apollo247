@@ -29,9 +29,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  WebView,
   AppState,
   AppStateStatus,
+  TextInput,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
@@ -40,6 +40,9 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { BottomPopUp } from './ui/BottomPopUp';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
+import { useApolloClient } from 'react-apollo-hooks';
+import { verifyOTP, resendOTP } from '../helpers/loginCalls';
+import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window');
 
@@ -51,7 +54,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     height: 56,
-    marginBottom: 8,
+    // marginBottom: 8,
     paddingTop: 2,
   },
   errorText: {
@@ -67,11 +70,14 @@ const styles = StyleSheet.create({
   },
   codeInputStyle: {
     borderBottomWidth: 2,
-    width: '14%',
+    width: '100%',
     margin: 0,
     height: 48,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.LIGHT_BLUE,
+    // letterSpacing: 28, // 26
+    // paddingLeft: 12, // 25
   },
   viewWebStyles: {
     position: 'absolute',
@@ -111,11 +117,12 @@ export interface OTPVerificationProps
     otpString: string;
     phoneNumber: string;
     dbChildKey: string;
+    loginId: string;
   }> {}
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
-  const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
+  const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -126,8 +133,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
+  const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
+  const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
 
-  const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
+  const { sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
@@ -352,11 +361,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
           });
 
-        setTimeout(() => {
-          verifyOtp(otp)
-            .then((otp) => {
+        const { loginId } = props.navigation.state.params!;
+
+        verifyOTP(loginId, otp)
+          .then((data: any) => {
+            console.log(data.status === true, data.status, 'status');
+
+            if (data.status === true) {
               CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
-              CommonBugFender('OTP_ENTERED_SUCCESS', otp as Error);
+              CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
 
               db.ref('ApolloPatients/')
                 .child(dbChildKey)
@@ -366,68 +379,88 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
               _removeFromStore();
               setOnOtpClick(true);
-            })
-            .catch((error) => {
+              console.log('error', data.authToken);
+
+              sendOtp(data.authToken).then((data) => {
+                // setshowSpinner(true);
+              });
+            } else {
+              console.log('else error');
+
               try {
-                console.log({
-                  error,
-                });
-                CommonBugFender('OTP_ENTERED_FAIL', error);
-                CommonLogEvent('OTP_ENTERED_FAIL', error);
+                setshowErrorBottomLine(true);
+                setOnOtpClick(false);
+                setshowSpinner(false);
+                // console.log('error', error);
+                _storeTimerData(invalidOtpCount + 1);
 
-                // if (
-                //   error &&
-                //   error.message ===
-                //     'The sms code has expired. Please re-send the verification code to try again.'
-                // ) {
-                //   setshowSpinner(false);
-                //   setErrorpopup(true);
-                // }
-                setTimeout(() => {
-                  if (isAuthChanged) {
-                    _removeFromStore();
-                    setOnOtpClick(true);
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-                      });
-                  } else {
-                    setOnOtpClick(false);
-                    setshowSpinner(false);
-                    // console.log('error', error);
-                    _storeTimerData(invalidOtpCount + 1);
+                if (invalidOtpCount + 1 === 3) {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(false);
+                  // startInterval(timer);
+                  setIntervalId(intervalId);
+                } else {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(true);
+                }
+                setInvalidOtpCount(invalidOtpCount + 1);
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                  });
 
-                    if (invalidOtpCount + 1 === 3) {
-                      setShowErrorMsg(true);
-                      setIsValidOTP(false);
-                      // startInterval(timer);
-                      setIntervalId(intervalId);
-                    } else {
-                      setShowErrorMsg(true);
-                      setIsValidOTP(true);
-                    }
-                    setInvalidOtpCount(invalidOtpCount + 1);
-                    // setOtp('');
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-                      });
-
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        OTPFailedReason: error ? error.message : '',
-                      });
-                  }
-                }, 1000);
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    OTPFailedReason: 'Wrong OTP',
+                  });
               } catch (error) {
                 setshowSpinner(false);
-                console.log(error);
+                // console.log(error);
               }
-            });
-        }, 3000);
+            }
+          })
+          .catch((error: Error) => {
+            try {
+              console.log({
+                error,
+              });
+              setshowErrorBottomLine(true);
+              setOnOtpClick(false);
+              setshowSpinner(false);
+              // console.log('error', error);
+              _storeTimerData(invalidOtpCount + 1);
+
+              if (invalidOtpCount + 1 === 3) {
+                setShowErrorMsg(true);
+                setIsValidOTP(false);
+                // startInterval(timer);
+                setIntervalId(intervalId);
+              } else {
+                setShowErrorMsg(true);
+                setIsValidOTP(true);
+              }
+              setInvalidOtpCount(invalidOtpCount + 1);
+              db.ref('ApolloPatients/')
+                .child(dbChildKey)
+                .update({
+                  wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                });
+
+              db.ref('ApolloPatients/')
+                .child(dbChildKey)
+                .update({
+                  OTPFailedReason: error ? error.message : '',
+                });
+
+              CommonBugFender('OTP_ENTERED_FAIL', error);
+              CommonLogEvent('OTP_ENTERED_FAIL', JSON.stringify(error));
+            } catch (error) {
+              setshowSpinner(false);
+              console.log(error);
+            }
+          });
       } else {
         setshowOfflinePopup(true);
       }
@@ -487,12 +520,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     _removeFromStore();
   };
 
+  const onStopResendTimer = () => {
+    setShowResentTimer(false);
+  };
+
   const isOtpValid = (otp: string) => {
-    setOtp(otp);
-    if (otp.length === 6) {
-      setIsValidOTP(true);
-    } else {
-      setIsValidOTP(false);
+    if (otp.match(/[0-9]/) || otp === '') {
+      showErrorBottomLine && setshowErrorBottomLine(false);
+      setOtp(otp);
+      if (otp.length === 6) {
+        setIsValidOTP(true);
+      } else {
+        setIsValidOTP(false);
+      }
     }
   };
 
@@ -512,17 +552,36 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         const { phoneNumber } = props.navigation.state.params!;
         console.log('onClickResend', phoneNumber);
 
-        sendOtp(phoneNumber, true)
-          .then((confirmResult) => {
-            CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
+        const { loginId } = props.navigation.state.params!;
 
-            console.log('confirmResult login', confirmResult);
+        resendOTP('+91' + phoneNumber, loginId)
+          .then((resendResult: any) => {
+            console.log('resendOTP ', resendResult.loginId);
+
+            props.navigation.setParams({ loginId: resendResult.loginId });
+
+            CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
+            setShowResentTimer(true);
+            console.log('confirmResult login', resendResult);
           })
-          .catch((error) => {
+          .catch((error: Error) => {
+            console.log(error, 'error');
+            console.log(error.message, 'errormessage');
             CommonBugFender('OTP_RESEND_FAIL', error);
-
             Alert.alert('Error', 'The interaction was cancelled by the user.');
           });
+
+        // sendOtp(phoneNumber, true)
+        //   .then((confirmResult) => {
+        //     CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
+        //     setShowResentTimer(true);
+        //     console.log('confirmResult login', confirmResult);
+        //   })
+        //   .catch((error) => {
+        //     CommonBugFender('OTP_RESEND_FAIL', error);
+
+        //     Alert.alert('Error', 'The interaction was cancelled by the user.');
+        //   });
       } else {
         setshowOfflinePopup(true);
       }
@@ -557,7 +616,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               flex: 1,
               backgroundColor: 'white',
             }}
-            useWebKit={true}
+            // useWebKit={true}
             onLoadStart={() => {
               console.log('onLoadStart');
               setshowSpinner(true);
@@ -576,6 +635,40 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
+  const renderHyperLink = () => {
+    return (
+      <View
+        style={{
+          marginRight: 32,
+          marginTop: 12,
+        }}
+      >
+        <Hyperlink
+          linkStyle={{
+            color: '#02475b',
+            ...fonts.IBMPlexSansBold(10),
+            lineHeight: 16,
+            letterSpacing: 0,
+          }}
+          linkText={(url) =>
+            url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+          }
+          onPress={(url, text) => setonClickOpen(true)}
+        >
+          <Text
+            style={{
+              color: '#02475b',
+              ...fonts.IBMPlexSansMedium(10),
+              lineHeight: 16,
+              letterSpacing: 0,
+            }}
+          >
+            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+          </Text>
+        </Hyperlink>
+      </View>
+    );
+  };
   // const renderTime = () => {
   //   console.log(remainingTime, 'remainingTime', timer, 'timer');
 
@@ -617,7 +710,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             key={1}
             cardContainer={{
               marginTop: 0,
-              height: 290,
+              // height: 290,
+              paddingBottom: 12,
             }}
             headingTextStyle={{
               marginTop: 10,
@@ -630,7 +724,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }}
           >
             <View style={styles.inputView}>
-              <OTPTextView
+              <TextInput
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor: 'rgba(0, 179, 142, 0.4)',
+                  },
+                ]}
+                value={otp}
+                onChangeText={(otp: string) => setOtp(otp)}
+                editable={false}
+                textContentType={'oneTimeCode'}
+              />
+              {/* <OTPTextView
                 handleTextChange={(otp: string) => setOtp(otp)}
                 inputCount={6}
                 keyboardType="numeric"
@@ -641,7 +747,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   flex: 1,
                 }}
                 editable={false}
-              />
+              /> */}
             </View>
 
             <Text style={[styles.errorText]}>
@@ -652,43 +758,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 onStopTimer={onStopTimer}
               />
             </Text>
-
-            <View
-              style={{
-                marginRight: 32,
-              }}
-            >
-              <Hyperlink
-                linkStyle={{
-                  color: '#02475b',
-                  ...fonts.IBMPlexSansBold(11),
-                  lineHeight: 16,
-                  letterSpacing: 0,
-                }}
-                linkText={(url) =>
-                  url === 'https://www.apollo247.com/TnC.html' ? 'terms & conditions' : url
-                }
-                onPress={(url, text) => setonClickOpen(true)}
-              >
-                <Text
-                  style={{
-                    color: '#02475b',
-                    ...fonts.IBMPlexSansRegular(11),
-                    lineHeight: 16,
-                    letterSpacing: 0,
-                  }}
-                >
-                  By signing up, I agree to https://www.apollo247.com/TnC.html of Apollo24x7
-                </Text>
-              </Hyperlink>
-            </View>
+            {renderHyperLink()}
           </Card>
         ) : (
           <Card
             key={2}
             cardContainer={{
               marginTop: 0,
-              height: 320,
+              // height: 260,
+              paddingBottom: 12,
             }}
             headingTextStyle={{
               marginTop: 10,
@@ -703,7 +781,23 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }}
           >
             <View style={styles.inputView}>
-              <OTPTextView
+              <TextInput
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor: showErrorBottomLine
+                      ? theme.colors.INPUT_BORDER_FAILURE
+                      : theme.colors.INPUT_BORDER_SUCCESS,
+                  },
+                ]}
+                value={otp}
+                onChangeText={isOtpValid}
+                keyboardType="numeric"
+                textContentType={'oneTimeCode'}
+                autoFocus
+                maxLength={6}
+              />
+              {/* <OTPTextView
                 handleTextChange={isOtpValid}
                 inputCount={6}
                 keyboardType="numeric"
@@ -717,7 +811,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 containerStyle={{
                   flex: 1,
                 }}
-              />
+              /> */}
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
@@ -726,39 +820,35 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               </Text>
             )}
             {
-              <TouchableOpacity activeOpacity={1} onPress={onClickResend}>
-                <Text style={styles.bottomDescription}>{string.login.resend_opt}</Text>
-              </TouchableOpacity>
-            }
-            <View
-              style={{
-                marginRight: 32,
-              }}
-            >
-              <Hyperlink
-                linkStyle={{
-                  color: '#02475b',
-                  ...fonts.IBMPlexSansBold(11),
-                  lineHeight: 16,
-                  letterSpacing: 0,
-                }}
-                linkText={(url) =>
-                  url === 'https://www.apollo247.com/TnC.html' ? 'terms & conditions' : url
-                }
-                onPress={(url, text) => setonClickOpen(true)}
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={showResentTimer ? () => {} : onClickResend}
               >
                 <Text
-                  style={{
-                    color: '#02475b',
-                    ...fonts.IBMPlexSansRegular(11),
-                    lineHeight: 16,
-                    letterSpacing: 0,
-                  }}
+                  style={[
+                    styles.bottomDescription,
+                    showResentTimer
+                      ? {
+                          opacity: 0.5,
+                        }
+                      : {},
+                  ]}
                 >
-                  By signing up, I agree to https://www.apollo247.com/TnC.html of Apollo24x7
+                  {string.login.resend_opt}
+                  {showResentTimer && ' '}
+                  {showResentTimer && (
+                    <CountDownTimer
+                      timer={30}
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                      }}
+                      onStopTimer={onStopResendTimer}
+                    />
+                  )}
                 </Text>
-              </Hyperlink>
-            </View>
+              </TouchableOpacity>
+            }
+            {renderHyperLink()}
           </Card>
         )}
         {onClickOpen && openWebView()}

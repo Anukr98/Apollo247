@@ -1,19 +1,15 @@
 import React, { useState, useRef, Fragment, useEffect, useContext } from 'react';
-import { makeStyles, ThemeProvider } from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
   Button,
   Modal,
   MenuItem,
-  InputBase,
   Popover,
   Paper,
   FormHelperText,
-  TextField,
-  Grid,
   Typography,
 } from '@material-ui/core';
-import { AphCalendar } from 'components/AphCalendar';
 import { Prompt, Link } from 'react-router-dom';
 import moment from 'moment';
 import { createMuiTheme } from '@material-ui/core';
@@ -27,12 +23,7 @@ import { useParams } from 'hooks/routerHooks';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import { Consult } from 'components/Consult';
-import { DayTimeSlots } from 'components/DayTimeSlots';
 import { CircularProgress } from '@material-ui/core';
-import {
-  InitiateRescheduleAppointment,
-  InitiateRescheduleAppointmentVariables,
-} from 'graphql/types/InitiateRescheduleAppointment';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
@@ -46,11 +37,6 @@ import {
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { END_CALL_NOTIFICATION } from 'graphql/consults';
-import {
-  EndCallNotification,
-  EndCallNotificationVariables,
-} from 'graphql/types/EndCallNotification';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
@@ -115,9 +101,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fc9916',
       marginLeft: 20,
       minWidth: 168,
-
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+      marginTop: 0,
       '&:hover': {
         backgroundColor: '#e28913',
       },
@@ -189,6 +175,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1, 1, 0, 0),
+      marginTop: 0,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
@@ -408,6 +395,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 88,
       backgroundColor: '#eeeeee',
       position: 'relative',
+      outline: 'none',
     },
     modalBoxClose: {
       position: 'absolute',
@@ -433,26 +421,24 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         letterSpacing: '0.5px',
         color: '#01475b',
-        padding: '18px 15px 15px 15px',
+        textTransform: 'uppercase',
+        padding: '17px 20px',
       },
     },
     tabFooter: {
       background: 'white',
       position: 'absolute',
-      height: 60,
-      paddingTop: '10px',
       borderBottomLeftRadius: '10px',
       borderBottomRightRadius: '10px',
       width: '100%',
       bottom: '0px',
       textAlign: 'right',
-      paddingRight: '20px',
-      marginTop: 20,
+      padding: '16px 20px',
     },
     tabBody: {
       background: 'white',
       minHeight: 80,
-      margin: '8px 20px',
+      margin: 20,
       borderRadius: 5,
       padding: '10px 15px 15px 15px',
       '& h3': {
@@ -800,7 +786,7 @@ interface CallPopoverProps {
   sentToPatient: boolean;
   isAppointmentEnded: boolean;
   setIsPdfPageOpen: (flag: boolean) => void;
-  callId: string;
+  endCallNotificationAction: (callId: boolean) => void;
   pubnub: any;
   lastMsg: any;
   presenceEventObject: any;
@@ -886,7 +872,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   //get Doctor's next availability slot
-
   const getNextAvailabityMutation = useMutation<
     GetDoctorNextAvailableSlot,
     GetDoctorNextAvailableSlotVariables
@@ -968,11 +953,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }, 1000);
   };
   const noShowAction = (status: STATUS) => {
-    console.log(
-      window.location.pathname.indexOf('Consulttabs') ||
-        window.location.pathname.indexOf('consulttabs'),
-      'pagename'
-    );
     if (
       window.location.pathname.indexOf('Consulttabs') > -1 ||
       window.location.pathname.indexOf('consulttabs') > -1
@@ -1065,7 +1045,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
-    //srollToBottomAction();
   };
   useEffect(() => {
     if (isCallAccepted) {
@@ -1104,18 +1083,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {
-        //setMessageText('');
-      }
+      (status: any, response: any) => {}
     );
     const stoptext = {
       id: props.doctorId,
-      //message: `Audio call ended`,
       message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
-      //duration: `10:00`,
       isTyping: true,
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
@@ -1127,28 +1102,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {
-        //setMessageText('');
-      }
+      (status: any, response: any) => {}
     );
-    //setIsVideoCall(false);
     stopIntervalTimer();
-    sendStopCallNotificationFn();
-  };
-  const sendStopCallNotificationFn = () => {
-    const doctorCallId = getCookieValue('doctorCallId');
-    client
-      .query<EndCallNotification, EndCallNotificationVariables>({
-        query: END_CALL_NOTIFICATION,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentCallId: doctorCallId,
-        },
-      })
-      .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
-        alert('An error occurred while sending notification to Client.');
-      });
+    props.endCallNotificationAction(true);
   };
   const getCookieValue = (id: string) => {
     const name = id + '=';
@@ -1344,7 +1301,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const curTm1 = new Date().toISOString();
 
-    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19)) {
+    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19) && isConsultStarted) {
       clearInterval(intervalcallId);
       callIntervalTimer(180);
     }
@@ -1591,12 +1548,34 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const isPastAppointment = () => {
+    const selectedDay = moment()
+      .format('dddd')
+      .toUpperCase();
+    const consultHours = currentDoctor && currentDoctor.consultHours;
+    let duration = 15;
+    if (consultHours) {
+      const filteredDay =
+        consultHours &&
+        _.filter(consultHours, function(o) {
+          if (o && o.weekDay) {
+            return o.weekDay === selectedDay;
+          }
+        });
+      const consultDurationDay: any =
+        filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
+      duration =
+        consultDurationDay &&
+        Object.keys(consultDurationDay).length !== 0 &&
+        consultDurationDay.consultDuration
+          ? consultDurationDay.consultDuration
+          : 15;
+    }
     const diff = moment.duration(
       moment(new Date(props.appointmentDateTime)).diff(
         moment(moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
       )
     );
-    return diff.asMinutes() + 15 < 0;
+    return diff.asMinutes() + duration < 0;
   };
 
   const currentDoctor = useCurrentPatient();
@@ -1653,10 +1632,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           rescheduleInitiatedId: props.doctorId,
           //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
           rescheduledDateTime:
-            moment
-              .utc(dateSelected + 'T' + timeSelected + ':00.000Z')
-              .local()
-              .format('YYYY-MM-DDTHH:mm') + ':00.000Z',
+            moment(
+              new Date(
+                new Date(new Date(dateSelected + 'T' + timeSelected + ':00')).getTime() +
+                  new Date(
+                    new Date(dateSelected + 'T' + timeSelected + ':00')
+                  ).getTimezoneOffset() *
+                    60000
+              )
+            ).format('YYYY-MM-DDTHH:mm') + ':00.000Z',
           autoSelectSlot: 0,
         };
 
@@ -1664,6 +1648,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       variables: {
         RescheduleAppointmentInput: rescheduleParam,
       },
+      fetchPolicy: 'no-cache',
     })
       .then(({ data }: any) => {
         let rescheduledDateTime = '';
@@ -1853,7 +1838,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         stopAudioVideoCall();
                       }
                       props.endConsultAction();
-                      setDisableOnCancel(true);
                       isConsultStarted = false;
                     }}
                   >
@@ -1915,6 +1899,66 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Start Consult
                 </Button>
               ))}
+            {props.appointmentStatus !== STATUS.COMPLETED && (
+              <Button
+                className={classes.backButton}
+                disabled={
+                  isPastAppointment() ||
+                  (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
+                  props.appointmentStatus === STATUS.NO_SHOW ||
+                  props.appointmentStatus === STATUS.CALL_ABANDON ||
+                  isCallAccepted
+                }
+                onClick={() => {
+                  setLoading(true);
+                  const rescheduleCountByDoctor =
+                    (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
+                  if (rescheduleCountByDoctor >= 3) {
+                    setIsCancelDialogOpen(true);
+                  } else {
+                    setIsCancelDialogOpen(false);
+                    setIsPopoverOpen(true);
+                    getNextAvailabityMutation()
+                      .then(({ data }: any) => {
+                        try {
+                          if (
+                            data &&
+                            data.getDoctorNextAvailableSlot &&
+                            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+                            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                          ) {
+                            setDoctorNextAvailableSlot(
+                              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                .availableSlot || ''
+                            );
+                            setDateSelected(
+                              moment(
+                                data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                  .availableSlot
+                              ).format('YYYY-MM-DD')
+                            );
+
+                            setTimeSelected(
+                              moment(
+                                data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                                  .availableSlot
+                              ).format('HH:mm')
+                            );
+                          }
+                        } catch (error) {
+                          setDoctorNextAvailableSlot('');
+                          alert(error);
+                        } finally {
+                          setLoading(false);
+                        }
+                      })
+                      .catch((e) => console.log(e));
+                  }
+                }}
+              >
+                Reschedule
+              </Button>
+            )}
             {!showCallMoreBtns && (
               <Button
                 className={classes.consultIcon}
@@ -1923,13 +1967,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 onClick={(e) => handleClick(e)}
                 disabled={
                   props.appointmentStatus === STATUS.COMPLETED ||
-                  props.appointmentStatus === STATUS.CANCELLED
+                  props.appointmentStatus === STATUS.CANCELLED ||
+                  isPastAppointment()
                 }
               >
                 <img src={require('images/ic_call.svg')} />
               </Button>
             )}
-
             <Popover
               id={id}
               open={open}
@@ -1996,6 +2040,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   props.appointmentStatus === STATUS.CANCELLED ||
                   props.isAppointmentEnded ||
                   disableOnCancel ||
+                  isPastAppointment() ||
                   (appointmentInfo!.appointmentState !== 'NEW' &&
                     appointmentInfo!.appointmentState !== 'TRANSFER' &&
                     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
@@ -2007,7 +2052,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <img src={require('images/ic_more.svg')} />
               </Button>
             )}
-
             <Popover
               id={idThreeDots}
               className={classes.dotPaper}
@@ -2026,7 +2070,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <ul className={classes.popOverUL}>
                   {/* <li>Share Case Sheet</li> */}
-                  {!isPastAppointment() && currentUserType !== LoggedInUserType.SECRETARY && (
+                  {currentUserType !== LoggedInUserType.SECRETARY && (
                     <li
                       onClick={() => {
                         if (
@@ -2041,69 +2085,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       }}
                     >
                       End or Cancel Consult
-                    </li>
-                  )}
-                  {(props.startAppointment ||
-                    !(
-                      props.isAppointmentEnded ||
-                      (appointmentInfo!.appointmentState !== 'NEW' &&
-                        appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                        appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                      (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                        appointmentInfo!.status !== STATUS.PENDING)
-                    ) ||
-                    (!props.startAppointment && appointmentInfo!.status === STATUS.PENDING)) && (
-                    <li
-                      onClick={() => {
-                        setLoading(true);
-
-                        handleCloseThreeDots();
-                        const rescheduleCountByDoctor =
-                          (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
-                        if (rescheduleCountByDoctor >= 3) {
-                          setIsCancelDialogOpen(true);
-                        } else {
-                          setIsCancelDialogOpen(false);
-                          setIsPopoverOpen(true);
-                          getNextAvailabityMutation()
-                            .then(({ data }: any) => {
-                              try {
-                                if (
-                                  data &&
-                                  data.getDoctorNextAvailableSlot &&
-                                  data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-                                  data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                ) {
-                                  setDoctorNextAvailableSlot(
-                                    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                      .availableSlot || ''
-                                  );
-                                  setDateSelected(
-                                    moment(
-                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                        .availableSlot
-                                    ).format('YYYY-MM-DD')
-                                  );
-
-                                  setTimeSelected(
-                                    moment(
-                                      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                        .availableSlot
-                                    ).format('HH:mm')
-                                  );
-                                }
-                              } catch (error) {
-                                setDoctorNextAvailableSlot('');
-                                alert(error);
-                              } finally {
-                                setLoading(false);
-                              }
-                            })
-                            .catch((e) => console.log(e));
-                        }
-                      }}
-                    >
-                      Reschedule Consult
                     </li>
                   )}
                 </ul>

@@ -14,6 +14,8 @@ import {
   ShoppingCartFocused,
   TestsIconFocused,
   TestsIcon,
+  MedicineIcon,
+  MedicineIconWhite,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -21,23 +23,23 @@ import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigatio
 import { Tests } from '@aph/mobile-patients/src/components/Tests/Tests';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
-  'CONSULT ROOM': <ConsultationRoom />,
+  APPOINTMENTS: <ConsultationRoom />,
   'HEALTH RECORDS': <MyHealth />,
-  MEDICINES: <ShoppingCart />,
+  MEDICINES: <MedicineIcon />,
   TESTS: <TestsIcon />,
   'MY ACCOUNT': <Person />,
 };
 
 const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
-  'CONSULT ROOM': <ConsultationRoomFocused />,
+  APPOINTMENTS: <ConsultationRoomFocused />,
   'HEALTH RECORDS': <MyHealthFocused />,
-  MEDICINES: <ShoppingCartFocused />,
+  MEDICINES: <MedicineIconWhite />,
   TESTS: <TestsIconFocused />,
   'MY ACCOUNT': <PersonFocused />,
 };
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
-  'CONSULT ROOM': Consult,
+  APPOINTMENTS: Consult,
   'HEALTH RECORDS': HealthRecordsHome,
   MEDICINES: Medicine,
   TESTS: Tests,
@@ -45,8 +47,9 @@ const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
 };
 
 export const TabBar = createBottomTabNavigator(routeConfigMap, {
-  initialRouteName: 'CONSULT ROOM',
-  backBehavior: 'initialRoute',
+  initialRouteName: 'APPOINTMENTS',
+  backBehavior: 'none',
+  resetOnBlur: true,
   defaultNavigationOptions: ({ navigation }) => ({
     tabBarIcon: ({ focused }) =>
       focused

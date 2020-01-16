@@ -143,6 +143,12 @@ import {
   cancelDiagnosticOrdersTypeDefs,
   cancelDiagnosticOrdersResolvers,
 } from 'profiles-service/resolvers/cancelDiagnosticOrders';
+import { loginTypeDefs, loginResolvers } from 'profiles-service/resolvers/login';
+import {
+  verifyLoginOtpTypeDefs,
+  verifyLoginOtpResolvers,
+} from 'profiles-service/resolvers/verifyLoginOtp';
+
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -155,15 +161,12 @@ import { winstonLogger } from 'customWinstonLogger';
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
-      const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-
       const profilesDb = getConnection();
       const doctorsDb = getConnection('doctors-db');
       const consultsDb = getConnection('consults-db');
       const currentPatient = null;
       const context: ProfilesServiceContext = {
-        firebaseUid,
         mobileNumber,
         profilesDb,
         doctorsDb,
@@ -340,6 +343,14 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: cancelDiagnosticOrdersTypeDefs,
         resolvers: cancelDiagnosticOrdersResolvers,
+      },
+      {
+        typeDefs: loginTypeDefs,
+        resolvers: loginResolvers,
+      },
+      {
+        typeDefs: verifyLoginOtpTypeDefs,
+        resolvers: verifyLoginOtpResolvers,
       },
     ]),
     plugins: [

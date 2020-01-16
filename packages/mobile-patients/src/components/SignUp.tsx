@@ -3,7 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Mascot, Check, UnCheck, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -42,8 +42,7 @@ import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height } = Dimensions.get('window');
 
@@ -122,9 +121,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [backPressCount, setbackPressCount] = useState<number>(0);
-
+  // const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  // const [referredBy, setReferredBy] = useState<string>();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -289,6 +288,36 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
+          {/* <View
+            style={{
+              backgroundColor: theme.colors.SKY_BLUE,
+              marginHorizontal: -20,
+              paddingVertical: 20,
+              marginTop: 20,
+            }}
+          >
+            <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
+              <Gift style={{ marginRight: 20 }} />
+              <TextInputComponent
+                label={
+                  referredBy
+                    ? `${referredBy} Has Sent You A Referral Code!`
+                    : 'Do You Have A Referral Code? (Optional)'
+                }
+                labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
+                placeholder={'Enter referral code'}
+                placeholderTextColor={'rgba(255,255,255,0.6)'}
+                inputStyle={{
+                  borderColor: theme.colors.WHITE,
+                  color: theme.colors.WHITE,
+                }}
+                conatinerstyles={{ width: '78%' }}
+                value={referral}
+                onChangeText={(text) => setReferral(text)}
+                icon={referredBy ? <Check /> : null}
+              />
+            </View>
+          </View> */}
         </Card>
       </View>
     );
@@ -320,6 +349,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   // style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
                   disabled={!firstName || !lastName || !date || !gender}
                   onPress={async () => {
+                    Keyboard.dismiss();
                     CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
                     let validationMessage = '';
                     if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
@@ -377,26 +407,17 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('gotIt', 'false'),
                       CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       setTimeout(() => {
-                        showAphAlert!({
-                          title: `Hi ${g(currentPatient, 'firstName') || ''},`,
-                          description:
-                            'Welcome to Apollo24X7. We’re glad you’re here!\nConsult online with our top Apollo doctors now!',
-                          unDismissable: true,
-                          onPressOk: () => {
-                            hideAphAlert!();
-                            props.navigation.dispatch(
-                              StackActions.reset({
-                                index: 0,
-                                key: null,
-                                actions: [
-                                  NavigationActions.navigate({
-                                    routeName: AppRoutes.ConsultRoom,
-                                  }),
-                                ],
-                              })
-                            );
-                          },
-                        });
+                        props.navigation.dispatch(
+                          StackActions.reset({
+                            index: 0,
+                            key: null,
+                            actions: [
+                              NavigationActions.navigate({
+                                routeName: AppRoutes.ConsultRoom,
+                              }),
+                            ],
+                          })
+                        );
                       }, 500))
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}

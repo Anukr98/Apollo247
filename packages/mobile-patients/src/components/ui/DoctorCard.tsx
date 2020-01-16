@@ -126,6 +126,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
   doctorsNextAvailability?:
     | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
     | null;
+  numberOfLines?: number;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -376,32 +377,42 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   {rowData.specialty.userFriendlyNomenclature}
                 </Text>
               ) : null}
-              <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>
-              {!!clinicAddress && <Text style={styles.doctorLocation}>{clinicAddress}</Text>}
+              <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
+                {rowData.qualification}
+              </Text>
+              {!!clinicAddress && (
+                <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines}>
+                  {clinicAddress}
+                </Text>
+              )}
             </View>
           </View>
-          {props.displayButton && (
-            <View style={{ overflow: 'hidden' }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.buttonView}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
-                  availableInMin && availableInMin < 60 && availableInMin > 0
-                    ? navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
-                    : navigateToDetails(rowData.id ? rowData.id : '', {
-                        showBookAppointment: true,
-                      });
-                }}
-              >
-                <Text style={styles.buttonText}>
-                  {availableInMin && availableInMin < 60 && availableInMin > 0
-                    ? string.common.consult_now
-                    : string.common.book_apointment}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+            {props.displayButton && (
+              <View style={{ overflow: 'hidden' }}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={styles.buttonView}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
+                    availableInMin && availableInMin < 60 && availableInMin > 0
+                      ? navigateToDetails(rowData.id ? rowData.id : '', {
+                          showBookAppointment: true,
+                        })
+                      : navigateToDetails(rowData.id ? rowData.id : '', {
+                          showBookAppointment: true,
+                        });
+                  }}
+                >
+                  <Text style={styles.buttonText}>
+                    {availableInMin && availableInMin < 60 && availableInMin > 0
+                      ? string.common.consult_now
+                      : string.common.book_apointment}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       </TouchableOpacity>
     );

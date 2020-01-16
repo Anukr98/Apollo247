@@ -49,9 +49,14 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
@@ -769,7 +774,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderSearchDoctorResultsRow = (
     rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null,
-    index: number
+    index: number,
+    styles: StyleProp<ViewStyle> = {},
+    numberOfLines?: number
   ) => {
     if (rowData)
       return (
@@ -779,6 +786,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           navigation={props.navigation}
           // doctorAvailalbeSlots={doctorAvailalbeSlots}
           doctorsNextAvailability={doctorsNextAvailability}
+          style={styles}
+          numberOfLines={numberOfLines}
         />
       );
     return null;
@@ -804,13 +813,41 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   // };
 
   const renderDoctorSearches = (filter?: ConsultMode) => {
-    const doctors = doctorsList; // filter
+    // const doctors = doctorsList; // filter
     // ? doctorsList.filter(
     //     (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
     //       return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
     //     }
     //   )
     // : doctorsList;
+    const filterAvailabilityData = doctorsNextAvailability
+      ? doctorsNextAvailability
+          .filter((item) => {
+            if (item && item.referenceSlot) {
+              const today: Date = new Date();
+              const date2: Date = new Date(item.referenceSlot);
+              if (date2 && today) {
+                const timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+                console.log(timeDiff, 'timeDiff', Number(timeDiff) > 15 || timeDiff < 0);
+
+                return Number(timeDiff) > 15 || timeDiff < 0 ? false : true;
+              }
+            }
+          })
+          .map((item) => item && item.doctorId)
+      : [];
+    const filteredDoctorsList: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[] = [];
+
+    const doctors = doctorsList.filter((item) => {
+      if (item) {
+        if (filterAvailabilityData.includes(item.id)) filteredDoctorsList.push(item);
+        else return !filterAvailabilityData.includes(item.id);
+      }
+    });
+
+    console.log(filterAvailabilityData, 'filterAvailabilityData', doctors, 'doctors');
+    console.log(filteredDoctorsList, 'filteredDoctorsList');
+
     if (doctors.length === 0 && !showSpinner) {
       const specialistSingular =
         specialities && specialities.specialistSingularTerm
@@ -842,6 +879,62 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
     return (
       <View>
+        {filteredDoctorsList.length > 0 && (
+          <View
+            style={{
+              backgroundColor: theme.colors.WHITE,
+              marginTop: 24,
+              ...theme.viewStyles.shadowStyle,
+            }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
+                marginHorizontal: 20,
+                paddingTop: 12.5,
+                paddingBottom: 5,
+              }}
+            >
+              Consult our best GPs within 15mins!!
+            </Text>
+            <View
+              style={{
+                borderBottomColor: 'rgba(0, 135, 186, 0.4)',
+                borderBottomWidth: 1,
+                marginHorizontal: 20,
+              }}
+            />
+            <FlatList
+              contentContainerStyle={{
+                // marginTop: 20,
+                // marginBottom: 8,
+                marginHorizontal: 14,
+                paddingRight: 28,
+              }}
+              bounces={false}
+              // data={doctors}
+              data={filteredDoctorsList}
+              onEndReachedThreshold={0.5}
+              renderItem={({ item, index }) =>
+                renderSearchDoctorResultsRow(
+                  item,
+                  index,
+                  {
+                    width: width - 40,
+                    marginHorizontal: 6,
+                    marginTop: 11.5,
+                    marginBottom: 16,
+                    height: 215,
+                  },
+                  1
+                )
+              }
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+        )}
+
         {doctors.length > 0 && (
           <FlatList
             contentContainerStyle={{
