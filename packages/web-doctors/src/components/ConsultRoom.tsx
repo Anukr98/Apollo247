@@ -309,6 +309,15 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: -5,
       paddingTop: 5,
     },
+    timeStampPatient: {
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'left',
+      marginRight: -7,
+      marginBottom: -5,
+      paddingTop: 5,
+      paddingLeft: 94,
+    },
     timeStampImg: {
       fontSize: 10,
       fontWeight: 500,
@@ -815,7 +824,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span>{rowData.message}</span>
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
                 {rowData!.messageDate && (
-                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  <div className={classes.timeStampPatient}>{convertChatTime(rowData.messageDate)}</div>
                 )}
               </div>
             ) : (

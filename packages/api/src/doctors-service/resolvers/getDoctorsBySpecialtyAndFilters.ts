@@ -18,6 +18,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { Connection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
+import { debugLog } from 'customWinstonLogger';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   enum SpecialtySearchType {
@@ -134,6 +135,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   DoctorsServiceContext,
   FilterDoctorsResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
+  debugLog(
+    'doctorSearchAPILogger',
+    `FILTER_DOCTORS_BY_SPECIALTY___START`,
+    '----------------------GetDoctorsBySpecialtyAndFilters_API--------------------------------'
+  );
+
   let finalConsultNowDoctors: Doctor[] = [],
     finalBookNowDoctors: Doctor[] = [],
     finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
@@ -145,8 +152,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   //get facility distances from user geolocation
   let facilityDistances: FacilityDistanceMap = {};
   if (args.filterInput.geolocation) {
+    debugLog(
+      'doctorSearchAPILogger',
+      `GEOLOCATION_API_CALL___START`,
+      'GetDoctorsBySpecialtyAndFilters_API'
+    );
     const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
     facilityDistances = await facilityRepo.getAllFacilityDistances(args.filterInput.geolocation);
+    debugLog(
+      'doctorSearchAPILogger',
+      `GEOLOCATION_API_CALL___END`,
+      'GetDoctorsBySpecialtyAndFilters_API'
+    );
   }
 
   if (
@@ -257,6 +274,11 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
 
+  debugLog(
+    'doctorSearchAPILogger',
+    `FILTER_DOCTORS_BY_SPECIALTY___END`,
+    '----------------------GetDoctorsBySpecialtyAndFilters_API--------------------------------'
+  );
   return {
     doctors: finalSortedDoctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
@@ -286,7 +308,17 @@ const applyFilterLogic = async (
       throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
     }
 
+    debugLog(
+      'doctorSearchAPILogger',
+      'FILTERING_DOCTORS___START',
+      'GetDoctorsBySpecialtyAndFilters_API'
+    );
     filteredDoctors = await doctorRepository.filterDoctors(filterInput);
+    debugLog(
+      'doctorSearchAPILogger',
+      'FILTERING_DOCTORS___END',
+      'GetDoctorsBySpecialtyAndFilters_API'
+    );
     // console.log('basic filtered doctors: ',filteredDoctors)
 
     //apply sort algorithm
@@ -313,6 +345,12 @@ const applyFilterLogic = async (
     const doctorIds = filteredDoctors.map((doctor) => {
       return doctor.id;
     });
+
+    debugLog(
+      'doctorSearchAPILogger',
+      `FILTER_BY_AVAILABILITY_CONSULT_MODE___START`,
+      'GetDoctorsBySpecialtyAndFilters_API'
+    );
 
     //preparin required input parameters based on availability filters selected
     const appointmentDateTimes: AppointmentDateTime[] = [];
@@ -418,6 +456,11 @@ const applyFilterLogic = async (
         //console.log(doctorsConsultModeAvailability);
       }
     }
+    debugLog(
+      'doctorSearchAPILogger',
+      `FILTER_BY_AVAILABILITY_CONSULT_MODE___END`,
+      'GetDoctorsBySpecialtyAndFilters_API'
+    );
   } catch (filterDoctorsError) {
     throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, { filterDoctorsError });
   }
@@ -444,11 +487,21 @@ const applyFilterLogic = async (
     return doctor.id;
   });
 
+  debugLog(
+    'doctorSearchAPILogger',
+    'GET_DOCTORS_NEXT_AVAILABILITY___START',
+    'GetDoctorsBySpecialtyAndFilters_API'
+  );
   const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
     finalDoctorIds,
     consultModeFilter,
     doctorsDb,
     consultsDb
+  );
+  debugLog(
+    'doctorSearchAPILogger',
+    `GET_DOCTORS_NEXT_AVAILABILITY___END`,
+    'GetDoctorsBySpecialtyAndFilters_API'
   );
 
   //get consult now and book now doctors by available time
@@ -457,6 +510,11 @@ const applyFilterLogic = async (
     finalDoctorsList
   );
 
+  debugLog(
+    'doctorSearchAPILogger',
+    `APPLY_RANKING_ALGORITHM___START`,
+    'GetDoctorsBySpecialtyAndFilters_API'
+  );
   //apply sort algorithm on ConsultNow doctors
   if (consultNowDoctors.length > 1) {
     //get patient and matched doctors previous appointments starts here
@@ -506,6 +564,11 @@ const applyFilterLogic = async (
       );
     });
   }
+  debugLog(
+    'doctorSearchAPILogger',
+    `APPLY_RANKING_ALGORITHM___END`,
+    'GetDoctorsBySpecialtyAndFilters_API'
+  );
 
   return {
     consultNowDoctors,

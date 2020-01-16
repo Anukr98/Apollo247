@@ -119,7 +119,7 @@ const getCurrentPatients: Resolver<
   );
   let uhids;
   try {
-    /*const prismAuthToken = await fetch(apiUrl, prismHeaders)
+    const prismAuthToken = await fetch(apiUrl, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
       .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
         log(
@@ -178,7 +178,7 @@ const getCurrentPatients: Resolver<
       ''
     );
 
-    console.log(uhids, 'uhid', isPrismWorking);*/
+    console.log(uhids, 'uhid', isPrismWorking);
   } catch (e) {
     isPrismWorking = 0;
   }
@@ -194,7 +194,7 @@ const getCurrentPatients: Resolver<
     });
   };
   let patientPromises: Object[] = [];
-  /*if (uhids != null && uhids.response != null) {
+  if (uhids != null && uhids.response != null) {
     isPrismWorking = 1;
     //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
     patientPromises = uhids.response!.signUpUserData.map((data) => {
@@ -211,7 +211,7 @@ const getCurrentPatients: Resolver<
     });
   } else {
     isPrismWorking = 0;
-  }*/
+  }
   isPrismWorking = 0;
   const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
   if (isPrismWorking == 0) {

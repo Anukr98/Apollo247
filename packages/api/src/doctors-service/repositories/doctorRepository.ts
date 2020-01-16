@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not, In } from 'typeorm';
 import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
 import {
   Range,
@@ -691,6 +691,25 @@ export class DoctorRepository extends Repository<Doctor> {
           id: doctorId,
           isActive: true,
           doctorType: Not('JUNIOR'),
+        },
+      });
+    }
+  }
+
+  getAllJuniorDoctors(doctorId: string) {
+    if (doctorId == '0') {
+      return this.find({
+        where: {
+          isActive: true,
+          doctorType: DoctorType.JUNIOR,
+        },
+      });
+    } else {
+      return this.find({
+        where: {
+          id: doctorId,
+          isActive: true,
+          doctorType: DoctorType.JUNIOR,
         },
       });
     }
