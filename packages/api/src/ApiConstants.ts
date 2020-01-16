@@ -12,7 +12,8 @@ export enum ApiConstants {
 
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
-  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the Consult Room',
+  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the consult room',
+  AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
   //appointment reminder 15
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
