@@ -522,6 +522,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const t = finalaray!
             .slotInfo!.filter((item) => item!.status != 'booked')
             .filter((item) =>
+              moment(item!.startTime!.trim(), 'hh:mm').isSameOrBefore(
+                moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'hh:mm')
+              )
+            )
+            .filter((item) =>
               moment(date)
                 .format('DMY')
                 .toString() ===
@@ -1422,6 +1427,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           dropdownArray={timeArray}
           setDropArray={(array) => settimeArray(array)}
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
+          maxDate={moment()
+            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .toDate()}
         />
       )}
       {/* {displayAddProfile && (

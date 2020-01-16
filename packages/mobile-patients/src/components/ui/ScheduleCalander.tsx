@@ -101,6 +101,7 @@ export interface ScheduleCalanderProps {
   dropdownArray?: TimeOptionArray[];
   CALENDAR_TYPE: CALENDAR_TYPE;
   setDropArray?: (args0: TimeOptionArray[]) => void;
+  maxDate?: Date;
 }
 
 export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
@@ -189,6 +190,11 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         const t = finalaray!
           .slotInfo!.filter((item) => item!.status != 'booked')
           .filter((item) =>
+            moment(item!.startTime!.trim(), 'hh:mm').isSameOrBefore(
+              moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'hh:mm')
+            )
+          )
+          .filter((item) =>
             moment(selectedDate)
               .format('DMY')
               .toString() ===
@@ -259,6 +265,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
           setType(type);
         }}
         minDate={new Date()}
+        maxDate={props.maxDate}
       />
     );
   };

@@ -15,6 +15,8 @@ const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD)
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,
+  DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2,
+  DIAGNOSTIC_MAX_SLOT_TIME: '11:30', // 24 hours format
 };
 
 const PharmaApiConfig = {
