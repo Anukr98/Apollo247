@@ -433,8 +433,6 @@ export async function sendNotification(
               ' ' +
               facilityDets.streetLine1 +
               ' ' +
-              facilityDets.streetLine2 +
-              ' ' +
               facilityDets.city +
               ' ' +
               facilityDets.state
@@ -665,18 +663,16 @@ export async function sendReminderNotification(
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      //notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
         if (facilityDets) {
           notificationBody = notificationBody.replace(
-            '{1}',
+            '{2}',
             facilityDets.name +
               ' ' +
               facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.streetLine2 +
               ' ' +
               facilityDets.city +
               ' ' +
@@ -704,8 +700,12 @@ export async function sendReminderNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY;
+    let diffMins = Math.ceil(
+      Math.abs(differenceInMinutes(new Date(), appointment.appointmentDateTime))
+    );
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
@@ -716,8 +716,6 @@ export async function sendReminderNotification(
               ' ' +
               facilityDets.streetLine1 +
               ' ' +
-              facilityDets.streetLine2 +
-              ' ' +
               facilityDets.city +
               ' ' +
               facilityDets.state
@@ -725,12 +723,17 @@ export async function sendReminderNotification(
         }
       }
     } else {
-      const diffMins = Math.ceil(
-        Math.abs(differenceInMinutes(new Date(), appointment.appointmentDateTime))
-      );
-      notificationBody = notificationBody.replace('{1}', diffMins.toString());
+      if (diffMins <= 1) {
+        diffMins = 1;
+        notificationBody = ApiConstants.APPOINTMENT_REMINDER_1_BODY;
+        notificationBody = notificationBody.replace('{1}', doctorDetails.displayName);
+        notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
+      } else {
+        notificationBody = notificationBody.replace('{1}', diffMins.toString());
+        notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+      }
     }
-    notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+
     payload = {
       notification: {
         title: notificationTitle,
