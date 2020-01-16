@@ -52,6 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 68,
       overflow: 'hidden',
       position: 'relative',
+      textAlign: 'center',
     },
     hideVideoContainer: {
       right: 15,
@@ -97,12 +98,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#000',
     },
     minimizeImg: {
-      left: 0,
-      bottom: 0,
-      width: '100%',
+      width: 'auto',
       height: '100%',
       zIndex: 9,
-      position: 'absolute',
     },
     timerCls: {
       position: 'absolute',
