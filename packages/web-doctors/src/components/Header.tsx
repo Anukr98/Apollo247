@@ -190,13 +190,30 @@ export const Header: React.FC = (props) => {
   const isAdminDoctor = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
   const isSecretary = useAuth() && currentUserType === LoggedInUserType.SECRETARY;
 
+  function getCookieValue() {
+    const name = 'action=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return '';
+  }
+  let isInCall = false;
+  setInterval(() => {
+    isInCall = getCookieValue() === 'audiocall' || getCookieValue() === 'videocall' ? true : false;
+  }, 1000);
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 3;
   const triggerAutoOffline = () => {
     if (currentPatient && currentPatient.id) {
       mutationUpdateDoctorOnlineStatus()
         .then((response) => {
-          console.log(response);
           signOut();
           localStorage.removeItem('loggedInMobileNumber');
           sessionStorage.removeItem('mobileNumberSession');
@@ -217,7 +234,7 @@ export const Header: React.FC = (props) => {
   });
   return (
     <header className={classes.header}>
-      {!isJuniorDoctor && isSignedIn && (
+      {!isJuniorDoctor && isSignedIn && !isInCall && (
         <IdleTimer
           ref={idleTimerRef}
           element={document}
