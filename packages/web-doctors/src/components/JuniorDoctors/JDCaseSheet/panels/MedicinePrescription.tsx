@@ -1483,31 +1483,31 @@ export const MedicinePrescription: React.FC = () => {
                                 &nbsp;
                               </div>
                             )}
-                              <AphSelect
-                                style={{ paddingTop: 3 }}
-                                value={frequency}
-                                MenuProps={{
-                                  classes: {
-                                    paper: classes.menuPaper,
-                                  },
-                                  anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: horizontal,
-                                  },
-                                  transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: horizontal,
-                                  },
-                                }}
-                                inputProps={{
-                                  classes: { root: classes.focusInputs },
-                                }}
-                                onChange={(e: any) => {
-                                  setFrequency(e.target.value as string);
-                                }}
-                              >
-                                {generateFrequency}
-                              </AphSelect>
+                            <AphSelect
+                              style={{ paddingTop: 3 }}
+                              value={frequency}
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: horizontal,
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: horizontal,
+                                },
+                              }}
+                              inputProps={{
+                                classes: { root: classes.focusInputs },
+                              }}
+                              onChange={(e: any) => {
+                                setFrequency(e.target.value as string);
+                              }}
+                            >
+                              {generateFrequency}
+                            </AphSelect>
                           </div>
                         )}
                       </div>
@@ -1590,7 +1590,8 @@ export const MedicinePrescription: React.FC = () => {
                               classes: {
                                 root: classes.focusInputs,
                               },
-                            }}                              onChange={(e: any) => {
+                            }}
+                            onChange={(e: any) => {
                               setforUnit(e.target.value as string);
                             }}
                           >
