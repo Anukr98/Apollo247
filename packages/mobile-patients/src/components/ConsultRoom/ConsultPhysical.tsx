@@ -260,7 +260,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     //     await Permissions.request('location')
     //       .then((response) => {
     //         if (response === 'authorized') {
-    //           navigator.geolocation.getCurrentPosition(
+    //           Geolocation.getCurrentPosition(
     //             (position) => {
     //               findDistance(position.coords.latitude + ',' + position.coords.longitude);
     //             },

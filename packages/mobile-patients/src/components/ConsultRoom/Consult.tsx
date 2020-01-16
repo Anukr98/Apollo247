@@ -422,6 +422,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 */
 
   const renderConsultations = () => {
+    const dateIsAfterconsult = consultations.filter((item) =>
+      moment(new Date(item.appointmentDateTime))
+        .add(15, 'minutes')
+        .isAfter(moment(new Date()).add(15, 'minutes'))
+    );
+    console.log(dateIsAfterconsult, 'dateIsAfterconsult');
+    // moment(item.appointmentDateTime).isAfter(moment(new Date()).add(15, 'minutes'))
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
