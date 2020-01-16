@@ -242,17 +242,19 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                 <View style={{ flexDirection: 'row' }}>
                   <View style={styles.imageView}>
                     {/* {data.image} */}
-                    {props.PastData &&
+                    {!!(
+                      props.PastData &&
                       props.PastData.doctorInfo &&
                       props.PastData.doctorInfo.photoUrl &&
                       props.PastData.doctorInfo.photoUrl.match(
                         /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
-                      ) && (
-                        <Image
-                          style={styles.profileImageStyle}
-                          source={{ uri: props.PastData.doctorInfo.photoUrl }}
-                        />
-                      )}
+                      )
+                    ) && (
+                      <Image
+                        style={styles.profileImageStyle}
+                        source={{ uri: props.PastData.doctorInfo.photoUrl }}
+                      />
+                    )}
                   </View>
                   <View style={{ flex: 1 }}>
                     <TouchableOpacity activeOpacity={1}>
