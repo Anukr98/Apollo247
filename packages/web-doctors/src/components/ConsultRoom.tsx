@@ -316,6 +316,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: -7,
       marginBottom: -5,
       paddingTop: 5,
+      paddingLeft: 94,
     },
     timeStampImg: {
       fontSize: 10,
