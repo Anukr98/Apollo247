@@ -376,6 +376,7 @@ interface MessagesObjectProps {
   text: string;
   duration: string;
   transferInfo: any;
+  messageDate: string;
 }
 
 interface ChatWindowProps {
@@ -543,9 +544,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       message: autoMessageStrings.consultPatientStartedMsg,
       automatedText: successSteps,
       id: doctorId,
+      messageDate: new Date(),
       isTyping: true,
       storeInHistory: true,
       sendByPost: true,
+
     };
     pubnub.publish(
       {
@@ -553,7 +556,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => {}
+      (status, response) => { }
     );
   };
 
@@ -607,7 +610,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     });
     getHistory(0);
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
@@ -650,7 +653,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           setShowVideo(false);
         }
       },
-      presence: (presenceEvent) => {},
+      presence: (presenceEvent) => { },
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
@@ -668,7 +671,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const startTimerForFirstTextMessageToPatient = () => {
-    thirtySecondTimer = setTimeout(function() {
+    thirtySecondTimer = setTimeout(function () {
       if (jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.firstMessage;
@@ -696,11 +699,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 ’s team is with another patient right now. Your consultation prep will start soon.`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: new Date(),
               },
               storeInHistory: true,
               sendByPost: true,
             },
-            (status, response) => {}
+            (status: any, response: any) => { }
           );
         } else {
           thirtySecondTimer && clearTimeout(thirtySecondTimer);
@@ -728,7 +732,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const startTimerForSecondTextMessageToPatient = () => {
-    minuteTimer = setTimeout(function() {
+    minuteTimer = setTimeout(function () {
       if (jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.secondMessage;
@@ -755,11 +759,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 automatedText: `Sorry, but all the members in ’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: new Date(),
               },
               storeInHistory: true,
               sendByPost: true,
             },
-            (status, response) => {}
+            (status: any, response: any) => { }
           );
         } else {
           minuteTimer && clearTimeout(minuteTimer);
@@ -814,6 +819,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       const text = {
         id: patientId,
         message: messageText,
+        messageDate: new Date(),
       };
       setMessageText('');
       pubnub.publish(
@@ -865,7 +871,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     props.availableNextSlot(slotDoctorId, todayDate);
   };
 
-  const showPrescriptionCard = () => (
+  const showPrescriptionCard = (rowData: MessagesObjectProps) => (
     <div className={`${classes.blueBubble} ${classes.petient}`}>
       {`Hello ${currentPatient &&
         currentPatient.firstName},\nHope your consultation went well… Here is your prescription.`}
@@ -873,7 +879,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <AphButton className={classes.viewButton}>Download</AphButton>
         <AphButton className={classes.viewButton}>View</AphButton>
       </div>
-      <div className={classes.chatTime}>6:20 PM</div>
+      <div className={classes.chatTime}>{moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}</div>
     </div>
   );
 
@@ -881,20 +887,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     <div className={`${classes.doctorChatBubble} ${classes.blueBubble} ${classes.petient}`}>
       {(rowData.message === autoMessageStrings.followupconsult &&
         rowData.transferInfo.folloupDateTime.length) > 0 ? (
-        <div>
-          <div>I've a free followup for you --</div>
-          <div>{rowData.transferInfo.folloupDateTime}</div>
-        </div>
-      ) : (
-        <div>
-          <div className={`${classes.dashedBorderBottom} ${classes.scheduledText} `}>
-            I've rescheduled your appointment --
+          <div>
+            <div>I've a free followup for you --</div>
+            <div>{rowData.transferInfo.folloupDateTime}</div>
           </div>
-          <div className={`${classes.dashedBorderBottom} ${classes.scheduledTextTwo} `}>
-            {moment(rowData.transferInfo.transferDateTime).format('Do MMMM, dddd \nhh:mm a')}
+        ) : (
+          <div>
+            <div className={`${classes.dashedBorderBottom} ${classes.scheduledText} `}>
+              I've rescheduled your appointment --
           </div>
-        </div>
-      )}
+            <div className={`${classes.dashedBorderBottom} ${classes.scheduledTextTwo} `}>
+              {moment(rowData.transferInfo.transferDateTime).format('Do MMMM, dddd \nhh:mm a')}
+            </div>
+          </div>
+        )}
       <div className={classes.bubbleActions}>
         <AphButton
           className={classes.viewButton}
@@ -906,7 +912,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           Reschedule
         </AphButton>
       </div>
-      <div className={classes.chatTime}>6:22 PM</div>
+      <div className={classes.chatTime}>{moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}</div>
     </div>
   );
 
@@ -914,7 +920,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     <div>
       <div>
         {rowData.message === autoMessageStrings.rescheduleconsult &&
-        rowData.transferInfo.rescheduleCount < 4
+          rowData.transferInfo.rescheduleCount < 4
           ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
           : `Since you have already rescheduled 3 times with ${rowData.transferInfo.doctorInfo.displayName}, we will consider this a new paid appointment.`}
       </div>
@@ -995,11 +1001,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 </div>
               </div>
             ) : (
-              <div>
-                <span>{rowData.message}</span>
-                <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>6:23 PM</div>
-              </div>
-            )}
+                  <div>
+                    <span>{rowData.message}</span>
+                    <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>{moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}</div>
+                  </div>
+                )}
           </div>
         </div>
       );
@@ -1020,8 +1026,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               rowData.duration
                 ? classes.callMsg
                 : rowData.automatedText
-                ? classes.petient
-                : classes.chatBubble
+                  ? classes.petient
+                  : classes.chatBubble
             }
           >
             {/* {rightComponent == 1 && !rowData.duration && (
@@ -1040,7 +1046,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {/* show Prescription card */}
             {(rowData.message === autoMessageStrings.rescheduleconsult ||
               rowData.message === autoMessageStrings.followupconsult) &&
-              showPrescriptionCard()}
+              showPrescriptionCard(rowData)}
             {/* show reschedule or followup card */}
             {(rowData.message === autoMessageStrings.rescheduleconsult ||
               rowData.message === autoMessageStrings.followupconsult) &&
@@ -1049,17 +1055,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {/* show available slots for reschedule */}
             {(rowData.message === autoMessageStrings.rescheduleconsult ||
               rowData.message === autoMessageStrings.followupconsult) &&
-            reschedule
+              reschedule
               ? getNextAvailableRescheduleSlot(rowData)
               : null}
 
             {/* show other messages when it is not reschedule and followUp   */}
             {rowData.message !== autoMessageStrings.rescheduleconsult &&
-            rowData.message !== autoMessageStrings.followupconsult ? (
-              <div>
-                <span>{rowData.automatedText || rowData.message}</span>
-              </div>
-            ) : null}
+              rowData.message !== autoMessageStrings.followupconsult ? (
+                <div>
+                  <span>{rowData.automatedText || rowData.message}</span>
+                  <div className={classes.chatTime}>{moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}</div>
+                </div>
+              ) : null}
 
             {/* below code related to msgs during  call  */}
             {/* {rowData.duration === '00 : 00' ? (
@@ -1089,8 +1096,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-        })
+        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+      })
       : '';
   // const toggelChatVideo = () => {
   //   setIsNewMsg(false);
@@ -1167,7 +1174,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       <div
         className={`${classes.chatSection} ${
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
-        }`}
+          }`}
       >
         {/* {showVideo && sessionId !== "" && token !== "" && (
           <ChatVideo
@@ -1279,7 +1286,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       <div className={classes.callActions}>
                         <Button
                           className={classes.callPickIcon}
-                          // onClick={() => actionBtn()}
+                        // onClick={() => actionBtn()}
                         >
                           <img src={require('images/ic_callpick.svg')} alt="" />
                         </Button>
