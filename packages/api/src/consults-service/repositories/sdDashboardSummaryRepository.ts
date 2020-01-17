@@ -11,6 +11,7 @@ import {
   DoctorFeeSummary,
   AppointmentDocuments,
 } from 'consults-service/entities';
+import { ConsultMode } from 'doctors-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -125,9 +126,9 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    // console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
-    if (appointmentType == 'BOTH') {
+    if (appointmentType == ConsultMode.BOTH) {
       return Appointment.createQueryBuilder('appointment')
         .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
           fromDate: startDate,

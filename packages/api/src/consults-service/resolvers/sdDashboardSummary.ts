@@ -8,6 +8,7 @@ import {
   PhrDocumentsSummary,
   DoctorFeeSummary,
 } from 'consults-service/entities';
+import { ConsultMode } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -219,12 +220,11 @@ const updateDoctorFeeSummary: Resolver<
     const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
       doctor.id,
       args.summaryDate,
-      'BOTH'
+      ConsultMode.BOTH
     );
     const totalFee: number[] = [];
     if (totalConsultations.length) {
       totalConsultations.forEach(async (consultation) => {
-        console.log(consultation.id);
         const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
           consultation.id
         );
