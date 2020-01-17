@@ -126,7 +126,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    // console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
     if (appointmentType == ConsultMode.BOTH) {
       return Appointment.createQueryBuilder('appointment')
