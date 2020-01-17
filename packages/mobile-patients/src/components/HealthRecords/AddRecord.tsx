@@ -658,7 +658,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
-            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            <TextInputComponent label={'Date Of Prescription'} noInput={true} />
             {renderDateInpt()}
             <TextInputComponent
               label={'Location (optional)'}
@@ -681,7 +681,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 setLocationName(text);
               }}
             />
-            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            <TextInputComponent label={'Date Of Test'} noInput={true} />
             {renderDateInpt()}
           </View>
         );
