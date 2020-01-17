@@ -315,6 +315,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
+        maxHeight: 'calc(100vh - 212px)',
       },
     },
     timeStamp: {

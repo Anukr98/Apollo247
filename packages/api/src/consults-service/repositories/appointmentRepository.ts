@@ -1372,7 +1372,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getPatientFutureAppointmentsCount(patientId: string, maxConsultationMinutes: number) {
     return this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', {
-        apptDate: subMinutes(new Date(), maxConsultationMinutes),
+        apptDate: new Date(),
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {

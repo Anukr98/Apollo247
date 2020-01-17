@@ -94,6 +94,10 @@ import {
   sdDashboardSummaryResolvers,
 } from 'consults-service/resolvers/sdDashboardSummary';
 import {
+  jdDashboardSummaryTypeDefs,
+  jdDashboardSummaryResolvers,
+} from 'consults-service/resolvers/jdDashboardSummary';
+import {
   appointmentNotificationTypeDefs,
   appointmentNotificationResolvers,
 } from 'consults-service/resolvers/appointmentNotifications';
@@ -220,6 +224,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: sdDashboardSummaryTypeDefs,
         resolvers: sdDashboardSummaryResolvers,
+      },
+      {
+        typeDefs: jdDashboardSummaryTypeDefs,
+        resolvers: jdDashboardSummaryResolvers,
       },
       {
         typeDefs: appointmentNotificationTypeDefs,

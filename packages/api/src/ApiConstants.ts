@@ -3,7 +3,8 @@ export enum ApiConstants {
 
   //appointment reschedule initiated
   RESCHEDULE_INITIATION_TITLE = 'Appointment Reschedule Initiation',
-  RESCHEDULE_INITIATION_BODY = 'Hi {0}, we’re really sorry to keep you waiting. {1} will not be able to make it for this appointment. We request you to reschedule.',
+  //RESCHEDULE_INITIATION_BODY = 'Hi {0}, we’re really sorry to keep you waiting. {1} will not be able to make it for this appointment. We request you to reschedule.',
+  RESCHEDULE_INITIATION_BODY = 'Hi {0}! Dr. {1} has requested you to reschedule due to an emergency. Please choose the next most suitable slot.',
 
   //appointment transfer initiated
   TRANSFER_INITIATION_TITLE = 'Appointment Transfer Initiation',
@@ -11,12 +12,14 @@ export enum ApiConstants {
 
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
-  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the Consult Room',
+  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the consult room',
+  AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
   //appointment reminder 15
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
-  APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 15 mins. :)',
-  PHYSICAL_APPOINTMENT_REMINDER_15_BODY = ' Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
+  APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in {1} mins. :)',
+  APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're online and ready for your appointment.",
+  PHYSICAL_APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
   PHYSICAL_APPOINTMENT_REMINDER_60_BODY = 'Hi {0}! Dr. {1} will see you in an hour. Please come down to {2}.',
   PHYSICAL_APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're ready for your appointment.",
 

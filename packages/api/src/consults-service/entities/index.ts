@@ -871,6 +871,94 @@ export class FeedbackDashboardSummary extends BaseEntity {
   }
 }
 
+//JD dashboard summary starts
+@Entity()
+export class JdDashboardSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  doctorId: string;
+
+  @Column()
+  doctorName: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column({ default: 0 })
+  waitTimePerChat: number;
+
+  @Column({ default: 0 })
+  caseSheetFillTime: number;
+
+  @Column({ default: 0 })
+  totalCompletedChats: number;
+
+  @Column({ default: 0 })
+  timePerChat: number;
+
+  @Column({ default: 0 })
+  audioChats: number;
+
+  @Column({ default: 0 })
+  videoChats: number;
+
+  @Column({ default: 0 })
+  chatConsults: number;
+
+  @Column({ default: 0 })
+  jdsUtilization: number;
+
+  @Column({ default: 0 })
+  loggedInHours: number;
+
+  @Column({ default: 0 })
+  awayHours: number;
+
+  @Column({ default: 0 })
+  totalConsultationTime: number;
+
+  @Column({ default: 0 })
+  casesCompleted: number;
+
+  //No. of cases started less than 15 mins before scheduled appointment
+  @Column({ default: 0 })
+  cases15Less: number;
+
+  @Column({ default: 0 })
+  casesOngoing: number;
+
+  //% of on-time consultations (start)
+  @Column({ default: 0 })
+  startOnTimeConsults: number;
+
+  //% of consults within 15 mins
+  @Column({ default: 0 })
+  completeWithin15: number;
+
+  //% of consults more than 15 mins
+  @Column({ default: 0 })
+  completeMore15: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//JD dashboard summary end
+
 //SD dashboard summary starts
 @Entity()
 export class SdDashboardSummary extends BaseEntity {
