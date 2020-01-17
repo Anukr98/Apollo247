@@ -17,7 +17,6 @@ import { PatientFeedbackRepository } from 'profiles-service/repositories/patient
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import _isEmpty from 'lodash/isEmpty';
-import _isundefined from 'lodash/isundefined';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -228,7 +227,7 @@ const updateDoctorFeeSummary: Resolver<
         const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
           consultation.id
         );
-        if (!_isEmpty(paymentDetails) && !_isundefined(paymentDetails)) {
+        if (!_isEmpty(paymentDetails) && paymentDetails) {
           totalFee.push(paymentDetails.amountPaid);
         }
       });
