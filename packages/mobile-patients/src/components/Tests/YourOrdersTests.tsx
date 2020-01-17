@@ -23,6 +23,7 @@ import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
 import { TestOrderNewCard } from '../ui/TestOrderNewCard';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ScrollableFooter } from '../ui/ScrollableFooter';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -228,54 +229,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   //     />
   //   );
   // };
-
-  const [bottomOffset, setBottomOffset] = useState<number>(0);
+  const [scrollOffSet, setScrollOffSet] = useState<number>(0);
+  const [show, setShow] = useState<boolean>(true);
 
   const onScrolling = (offSet: number) => {
-    if (offSet < 400) {
-      const bottomOffset = 100 - offSet;
-      setBottomOffset(bottomOffset < 0 ? bottomOffset : 0);
+    if (scrollOffSet > offSet) {
+      if (!show) {
+        setShow(true);
+      }
+    } else {
+      setShow(false);
     }
-  };
-
-  const renderListFooter = () => {
-    const textMediumStyle = theme.viewStyles.text('M', 14, '#02475b', 1, 22);
-    const textBoldStyle = theme.viewStyles.text('B', 14, '#02475b', 1, 22);
-    const PhoneNumberTextStyle = theme.viewStyles.text('M', 14, '#fc9916', 1, 22);
-    const ontapNumber = (number: string) => {
-      Linking.openURL(`tel:${number}`)
-        .then(() => {})
-        .catch(() => {});
-    };
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: bottomOffset,
-          ...theme.viewStyles.cardViewStyle,
-          left: 0,
-          right: 0,
-          borderRadius: 0,
-        }}
-      >
-        <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
-          <Text>
-            <Text style={textMediumStyle}>{'For '}</Text>
-            <Text style={textBoldStyle}>{'Test Orders,'}</Text>
-            <Text style={textMediumStyle}>
-              {' to know the Order Status / Reschedule / Cancel, please call — \n'}
-            </Text>
-            <Text onPress={() => ontapNumber('040 44442424')} style={PhoneNumberTextStyle}>
-              {'040 44442424'}
-            </Text>
-            <Text style={textMediumStyle}>{' / '}</Text>
-            <Text onPress={() => ontapNumber('040 33442424')} style={PhoneNumberTextStyle}>
-              {'040 33442424'}
-            </Text>
-          </Text>
-        </View>
-      </View>
-    );
+    if (offSet <= 0) {
+      setShow(true);
+    }
+    setScrollOffSet(offSet);
   };
 
   const renderOrders = () => {
@@ -351,7 +319,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           {renderNoOrders()}
           {renderError()}
         </ScrollView>
-        {!loading && renderListFooter()}
+        {!loading && <ScrollableFooter show={show} />}
       </SafeAreaView>
       {loading && <Spinner />}
     </View>

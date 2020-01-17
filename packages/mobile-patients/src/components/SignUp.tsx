@@ -181,6 +181,41 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     };
   }, [backPressCount]);
 
+  const renderReferral = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.SKY_BLUE,
+          marginHorizontal: -20,
+          paddingVertical: 20,
+          marginTop: 20,
+        }}
+      >
+        <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
+          <Gift style={{ marginRight: 20 }} />
+          <TextInputComponent
+            label={
+              referredBy
+                ? `${referredBy} Has Sent You A Referral Code!`
+                : 'Do You Have A Referral Code? (Optional)'
+            }
+            labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
+            placeholder={'Enter referral code'}
+            placeholderTextColor={'rgba(255,255,255,0.6)'}
+            inputStyle={{
+              borderColor: theme.colors.WHITE,
+              color: theme.colors.WHITE,
+            }}
+            conatinerstyles={{ width: '78%' }}
+            value={referral}
+            onChangeText={(text) => setReferral(text)}
+            icon={referredBy ? <Check /> : null}
+          />
+        </View>
+      </View>
+    );
+  };
+
   const renderCard = () => {
     return (
       <View>
@@ -288,36 +323,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
-          {/* <View
-            style={{
-              backgroundColor: theme.colors.SKY_BLUE,
-              marginHorizontal: -20,
-              paddingVertical: 20,
-              marginTop: 20,
-            }}
-          >
-            <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
-              <Gift style={{ marginRight: 20 }} />
-              <TextInputComponent
-                label={
-                  referredBy
-                    ? `${referredBy} Has Sent You A Referral Code!`
-                    : 'Do You Have A Referral Code? (Optional)'
-                }
-                labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
-                placeholder={'Enter referral code'}
-                placeholderTextColor={'rgba(255,255,255,0.6)'}
-                inputStyle={{
-                  borderColor: theme.colors.WHITE,
-                  color: theme.colors.WHITE,
-                }}
-                conatinerstyles={{ width: '78%' }}
-                value={referral}
-                onChangeText={(text) => setReferral(text)}
-                icon={referredBy ? <Check /> : null}
-              />
-            </View>
-          </View> */}
+          {/* {renderReferral()} */}
         </Card>
       </View>
     );
@@ -328,7 +334,11 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+          {...keyboardVerticalOffset}
+        >
           <ScrollView
             style={styles.container} //extraScrollHeight={50}
             // scrollEnabled={true}
