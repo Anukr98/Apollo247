@@ -417,7 +417,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .messaging()
       .getToken()
       .then((token) => {
-        // console.log('token', token);
+        console.log('token', token);
         // console.log('DeviceInfo', DeviceInfo);
         if (token !== deviceToken2.deviceToken) {
           const input = {
