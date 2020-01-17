@@ -169,7 +169,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm a')}`}
+                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
                 </Text>
               </View>
             </>

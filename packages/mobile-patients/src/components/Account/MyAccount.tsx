@@ -429,13 +429,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             })
           }
         />
-        <ListCard
+        {/* <ListCard
           // container={{ marginBottom: 32 }}
           container={{ marginTop: 4 }}
           title={'Notification Settings'}
           leftIcon={<NotificaitonAccounts />}
           onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
-        />
+        /> */}
         <ListCard
           container={{ marginBottom: 32 }}
           title={'Logout'}

@@ -159,7 +159,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('D MMM YY, hh:mm a');
+    return moment(time).format('D MMM YY, hh:mm A');
   };
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
