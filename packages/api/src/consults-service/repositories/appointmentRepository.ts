@@ -60,6 +60,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getAppointmentsByDate(appointmentDateTime: Date) {
+    return this.find({
+      where: { appointmentDateTime },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
   checkPatientCancelledHistory(patientId: string, doctorId: string) {
     const newStartDate = new Date(format(addDays(new Date(), -9), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30');
