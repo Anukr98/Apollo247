@@ -201,7 +201,6 @@ export const AuthProvider: React.FC = (props) => {
       })
     );
     setIsSendingOtp(false);
-    console.log(resendOtpResult);
     if (
       resendOtpResult &&
       resendOtpResult.data &&
@@ -311,10 +310,8 @@ export const AuthProvider: React.FC = (props) => {
       })
     );
     if (updateDoctorOnlineStatusResult) {
-      console.log('updateDoctorOnlineStatusResult', updateDoctorOnlineStatusResult);
       return true;
     } else {
-      console.log('updateDoctorOnlineStatusError', updateDoctorOnlineStatusError);
       return false;
     }
   };
