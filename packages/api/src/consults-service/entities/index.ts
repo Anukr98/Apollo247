@@ -579,6 +579,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   patientId: string;
 
+  @Column({ default: () => 0, type: 'float' })
+  preperationTimeInSeconds: number;
+
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
 
