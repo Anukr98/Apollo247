@@ -8,7 +8,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
-import { format } from 'date-fns';
+import { format, subMinutes } from 'date-fns';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 
 import {
@@ -153,14 +153,14 @@ const noShowReminderNotification: Resolver<
   ConsultServiceContext,
   noShowReminder
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-  const date = new Date();
-  date.setSeconds(0, 0);
-  date.setMinutes(date.getMinutes() - 3);
+  const date = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
   const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointments = await apptsrepo.getAppointmentsByDate(date);
+  const appointments = await apptsrepo.getAppointmentsByDate(subMinutes(new Date(date), 3));
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const noShowRepo = consultsDb.getCustomRepository(AppointmentNoShowRepository);
   if (appointments.length) {
     appointments.forEach(async (appt) => {
-      const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
       const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(appt.id);
       if (caseSheetDetails.length === 0) {
         const rescheduleAppointmentAttrs = {
@@ -173,14 +173,12 @@ const noShowReminderNotification: Resolver<
           rescheduleStatus: TRANSFER_STATUS.INITIATED,
           appointment: appt,
         };
-        const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
         await rescheduleRepo.rescheduleAppointment(
           rescheduleAppointmentAttrs,
           consultsDb,
           doctorsDb,
           patientsDb
         );
-        const noShowRepo = consultsDb.getCustomRepository(AppointmentNoShowRepository);
         const noShowAttrs: Partial<AppointmentNoShow> = {
           noShowType: REQUEST_ROLES.PATIENT,
           appointment: appt,
