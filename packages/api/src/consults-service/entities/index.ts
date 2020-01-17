@@ -1038,16 +1038,16 @@ export class DoctorFeeSummary extends BaseEntity {
   id: string;
 
   @Column()
-  date: Date;
+  appointmentDateTime: Date;
 
   @Column()
   doctorId: string;
 
-  @Column()
-  amount: number;
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  amountPaid: number;
 
   @Column()
-  numberOfAppointment: number;
+  appointmentsCount: number;
 }
 //Doctor fee summary end
 

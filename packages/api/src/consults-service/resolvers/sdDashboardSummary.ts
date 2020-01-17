@@ -215,15 +215,12 @@ const updateDoctorFeeSummary: Resolver<
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId);
-  // console.log('docsList=', docsList);
-  // if (docsList.length > 0) {
   docsList.forEach(async (doctor) => {
     const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
       doctor.id,
       args.summaryDate,
       'BOTH'
     );
-    console.log('totalConsultations=', totalConsultations);
     const totalFee: number[] = [];
     if (totalConsultations.length) {
       totalConsultations.forEach(async (consultation) => {
@@ -236,17 +233,15 @@ const updateDoctorFeeSummary: Resolver<
         }
       });
       const feeAmount = totalFee.reduce((total, num) => total + num, 0);
-      console.log('total fee = ', feeAmount);
       const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
-        date: args.summaryDate,
+        appointmentDateTime: args.summaryDate,
         doctorId: doctor.id,
-        amount: feeAmount,
-        numberOfAppointment: totalConsultations.length,
+        amountPaid: feeAmount,
+        appointmentsCount: totalConsultations.length,
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
     }
   });
-  // }
 
   return { status: true };
 };
