@@ -201,18 +201,12 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             moment()
               .format('DMY')
               .toString()
-              ? parseInt(item!.startTime!.split(':')[0], 10) >=
-                parseInt(
-                  moment()
-                    .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                    .format('k'),
-                  10
+              ? moment(item!.startTime!.trim(), 'hh:mm').isSameOrAfter(
+                  moment(new Date()).add(
+                    AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+                    'minutes'
+                  )
                 )
-                ? parseInt(item!.startTime!.split(':')[1], 10) >
-                  moment()
-                    .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                    .minute()
-                : false
               : true
           )
           .map((item) => {
@@ -224,7 +218,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
 
         console.log('ARRAY', { t });
 
-        setDropArray(t);
+        setDropArray(t || []);
         setDiagnosticSlot &&
           setDiagnosticSlot({
             employeeSlotId: parseInt(t[0].label),
@@ -235,14 +229,17 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             city: selectedAddress!.city || '',
             date: date.getTime(),
           });
-        props.setDropArray && props.setDropArray(t);
+        props.setDropArray && props.setDropArray(t || []);
         if (selectedTime) {
           setSelectedDrop(t.find((value) => value.time === selectedTime));
         } else {
-          setSelectedDrop(t[0]);
+          t.length > 0 ? setSelectedDrop(t[0]) : setSelectedDrop(undefined);
+          props.setselectedTimeSlot(t[0].time || '');
         }
+        props.setDate(selectedDate);
       })
       .catch((e: string) => {
+        props.setDate(selectedDate);
         setshowSpinner(false);
       })
       .finally(() => {
@@ -256,6 +253,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         date={date}
         onPressDate={(selectedDate) => {
           setDate(selectedDate);
+          props.setDate(selectedDate);
+          props.setselectedTimeSlot('');
           setshowSpinner(true);
           setDropArray([]);
           getDropArrayData(selectedDate);
@@ -290,6 +289,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
             onPress={(item) => {
               setselectedTimeSlot(item.value.toString());
+              props.setDate(date);
+              props.setselectedTimeSlot(item.value.toString());
               setSelectedDrop({ label: item.key, time: item.value.toString() });
             }}
           >
@@ -412,6 +413,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                 date: date.getTime(),
                 employeeSlotId: parseInt(selectedDrop!.label),
               });
+            props.setDropArray && props.setDropArray(dropArray);
             props.setDate(date);
             props.setdisplayoverlay(false);
             props.setselectedTimeSlot(selectedDrop!.time);
@@ -447,7 +449,17 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               props.setdisplayoverlay(false);
-              selectedDrop && props.setselectedTimeSlot(selectedDrop!.time);
+              setDiagnosticSlot &&
+                setDiagnosticSlot({
+                  ...diagnosticSlot!,
+                  slotStartTime: selectedDrop!.time.split('-')[0].trim(),
+                  slotEndTime: selectedDrop!.time.split('-')[1].trim(),
+                  date: date.getTime(),
+                  employeeSlotId: parseInt(selectedDrop!.label),
+                });
+              props.setDropArray && props.setDropArray(dropArray);
+              // props.setDate(date);
+              // selectedDrop && props.setselectedTimeSlot(selectedDrop!.time);
             }}
             style={{
               marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
