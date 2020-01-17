@@ -820,7 +820,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   validationMessage = 'Enter valid email';
                 }
                 if (validationMessage) {
-                  Alert.alert('Error', validationMessage);
+                  showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
+                  // Alert.alert('Error', validationMessage);
                 } else {
                   isEdit ? updateUserProfile() : newProfile();
                 }
