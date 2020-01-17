@@ -376,6 +376,7 @@ interface MessagesObjectProps {
   text: string;
   duration: string;
   transferInfo: any;
+  messageDate: string;
 }
 
 interface ChatWindowProps {
@@ -543,6 +544,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       message: autoMessageStrings.consultPatientStartedMsg,
       automatedText: successSteps,
       id: doctorId,
+      messageDate: new Date(),
       isTyping: true,
       storeInHistory: true,
       sendByPost: true,
@@ -696,6 +698,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 ’s team is with another patient right now. Your consultation prep will start soon.`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: new Date(),
               },
               storeInHistory: true,
               sendByPost: true,
@@ -755,6 +758,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 automatedText: `Sorry, but all the members in ’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
                 isTyping: true,
+                messageDate: new Date(),
               },
               storeInHistory: true,
               sendByPost: true,
@@ -814,6 +818,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       const text = {
         id: patientId,
         message: messageText,
+        messageDate: new Date(),
       };
       setMessageText('');
       pubnub.publish(
@@ -865,7 +870,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     props.availableNextSlot(slotDoctorId, todayDate);
   };
 
-  const showPrescriptionCard = () => (
+  const showPrescriptionCard = (rowData: MessagesObjectProps) => (
     <div className={`${classes.blueBubble} ${classes.petient}`}>
       {`Hello ${currentPatient &&
         currentPatient.firstName},\nHope your consultation went well… Here is your prescription.`}
@@ -873,7 +878,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <AphButton className={classes.viewButton}>Download</AphButton>
         <AphButton className={classes.viewButton}>View</AphButton>
       </div>
-      <div className={classes.chatTime}>6:20 PM</div>
+      <div className={classes.chatTime}>
+        {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
+      </div>
     </div>
   );
 
@@ -906,7 +913,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           Reschedule
         </AphButton>
       </div>
-      <div className={classes.chatTime}>6:22 PM</div>
+      <div className={classes.chatTime}>
+        {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
+      </div>
     </div>
   );
 
@@ -997,7 +1006,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             ) : (
               <div>
                 <span>{rowData.message}</span>
-                <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>6:23 PM</div>
+                <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>
+                  {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
+                </div>
               </div>
             )}
           </div>
@@ -1040,7 +1051,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {/* show Prescription card */}
             {(rowData.message === autoMessageStrings.rescheduleconsult ||
               rowData.message === autoMessageStrings.followupconsult) &&
-              showPrescriptionCard()}
+              showPrescriptionCard(rowData)}
             {/* show reschedule or followup card */}
             {(rowData.message === autoMessageStrings.rescheduleconsult ||
               rowData.message === autoMessageStrings.followupconsult) &&
@@ -1058,6 +1069,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             rowData.message !== autoMessageStrings.followupconsult ? (
               <div>
                 <span>{rowData.automatedText || rowData.message}</span>
+                <div className={classes.chatTime}>
+                  {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
+                </div>
               </div>
             ) : null}
 

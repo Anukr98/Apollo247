@@ -99,6 +99,7 @@ import {
   AppStateStatus,
   Image as ImageReact,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
