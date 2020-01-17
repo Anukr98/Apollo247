@@ -8,6 +8,7 @@ import {
   APPOINTMENT_TYPE,
   PhrDocumentsSummary,
   AppointmentPayments,
+  DoctorFeeSummary,
   AppointmentDocuments,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
@@ -42,6 +43,16 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .save()
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+    return DoctorFeeSummary.create(doctorFeeAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_DOCTORFEESUMMARY_ERROR, undefined, {
+          createErrors,
+        });
       });
   }
 

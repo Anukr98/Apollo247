@@ -6,6 +6,7 @@ import {
   SdDashboardSummary,
   FeedbackDashboardSummary,
   PhrDocumentsSummary,
+  DoctorFeeSummary,
 } from 'consults-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -15,6 +16,7 @@ import { PatientFeedbackRepository } from 'profiles-service/repositories/patient
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import _isEmpty from 'lodash/isEmpty';
+import _isundefined from 'lodash/isundefined';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -214,29 +216,37 @@ const updateDoctorFeeSummary: Resolver<
   const { docRepo, dashboardRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId);
   // console.log('docsList=', docsList);
-  if (docsList.length > 0) {
-    docsList.map(async (doctor) => {
-      const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
-        doctor.id,
-        args.summaryDate,
-        'BOTH'
-      );
-      console.log('totalConsultations=', totalConsultations);
-      let totalFee = [];
-      if (totalConsultations.length) {
-        totalConsultations.forEach(async (consultation) => {
-          console.log(consultation.id);
-          const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
-            consultation.id
-          );
-          if (!_isEmpty(paymentDetails)) {
-            totalFee.push(paymentDetails.amountPaid);
-            // totalFee += paymentDetails && paymentDetails.amountPaid?parseInt(paymentDetails.amountPaid,10):0;
-          }
-        });
-      }
-    });
-  }
+  // if (docsList.length > 0) {
+  docsList.forEach(async (doctor) => {
+    const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
+      doctor.id,
+      args.summaryDate,
+      'BOTH'
+    );
+    console.log('totalConsultations=', totalConsultations);
+    const totalFee: number[] = [];
+    if (totalConsultations.length) {
+      totalConsultations.forEach(async (consultation) => {
+        console.log(consultation.id);
+        const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
+          consultation.id
+        );
+        if (!_isEmpty(paymentDetails) && !_isundefined(paymentDetails)) {
+          totalFee.push(paymentDetails.amountPaid);
+        }
+      });
+      const feeAmount = totalFee.reduce((total, num) => total + num, 0);
+      console.log('total fee = ', feeAmount);
+      const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
+        date: args.summaryDate,
+        doctorId: doctor.id,
+        amount: feeAmount,
+        numberOfAppointment: totalConsultations.length,
+      };
+      await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
+    }
+  });
+  // }
 
   return { status: true };
 };
