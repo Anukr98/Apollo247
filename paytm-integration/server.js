@@ -880,6 +880,17 @@ app.get('/processOrders', (req, res) => {
                   orderLineItems.push(lineItem);
                 }
               );
+
+              //logic to add delivery charges line item starts here
+              const orderDetails = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
+              if (orderDetails.orderType == 'CART_ORDER') {
+                const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
+                if (isDeliveryChargeApplicable(amountPaid)) {
+                  orderLineItems.push(getDeliveryChargesLineItem());
+                }
+              }
+              //logic to add delivery charges line item ends here
+
               let prescriptionImages = [];
               let orderType = 'FMCG';
               if (
@@ -1190,24 +1201,30 @@ app.get('/processOrderById', (req, res) => {
         const orderLineItems = [];
         const orderPrescriptionUrl = [];
         let requestType = 'NONCART';
-        if (
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderType == 'CART_ORDER'
-        ) {
+
+        const orderDetails = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
+        if (orderDetails.orderType == 'CART_ORDER') {
           requestType = 'CART';
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderLineItems.map(
-            (item) => {
-              const lineItem = {
-                ItemID: item.medicineSKU,
-                ItemName: item.medicineName,
-                Qty: item.quantity * item.mou,
-                Pack: item.quantity,
-                MOU: item.mou,
-                Price: item.price,
-                Status: true,
-              };
-              orderLineItems.push(lineItem);
-            }
-          );
+
+          orderDetails.medicineOrderLineItems.map((item) => {
+            const lineItem = {
+              ItemID: item.medicineSKU,
+              ItemName: item.medicineName,
+              Qty: item.quantity * item.mou,
+              Pack: item.quantity,
+              MOU: item.mou,
+              Price: item.price,
+              Status: true,
+            };
+            orderLineItems.push(lineItem);
+          });
+
+          //logic to add delivery charges lineItem starts here
+          const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
+          if (isDeliveryChargeApplicable(amountPaid)) {
+            orderLineItems.push(getDeliveryChargesLineItem());
+          }
+          //logic to add delivery charges lineItem ends here
         }
         let prescriptionImages = [];
         let orderType = 'FMCG';
@@ -1386,6 +1403,26 @@ app.get('/processOrderById', (req, res) => {
       });
     });
 });
+
+const isDeliveryChargeApplicable = (totalAmountPaid) => {
+  if (totalAmountPaid === null || totalAmountPaid === '' || isNaN(totalAmountPaid)) {
+    totalAmountPaid = 0;
+  }
+  return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+};
+
+//returns constant response object
+const getDeliveryChargesLineItem = () => {
+  return {
+    ItemID: 'ESH0002',
+    ItemName: 'E SHOP SHIPPING CHARGE',
+    Qty: 1, //Pack* MOU
+    Pack: 1,
+    MOU: 1,
+    Price: 25.0,
+    Status: true,
+  };
+};
 
 app.listen(PORT, () => {
   console.log('Running on ' + PORT);

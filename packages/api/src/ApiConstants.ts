@@ -156,6 +156,8 @@ export enum ApiConstants {
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
 
+  NOTIFICATION_DEFAULT_SOUND = 'default',
+
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',
   MEDMANTRA_REGIONID = '1',

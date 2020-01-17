@@ -225,6 +225,7 @@ export async function sendCallsNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: 'incallmanager_ringtone.mp3',
     },
     data: {
       type: 'call_started',
@@ -336,6 +337,7 @@ export async function sendNotification(
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
+  const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
   const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
@@ -466,6 +468,7 @@ export async function sendNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: notificationSound,
     },
     data: {},
   };
@@ -475,13 +478,13 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Book_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -493,13 +496,13 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -511,13 +514,13 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Patient_Cancel_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -532,13 +535,13 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'chat_room',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -636,6 +639,7 @@ export async function sendReminderNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {},
   };
@@ -648,6 +652,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_15',
@@ -686,6 +691,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_15',
@@ -737,6 +743,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_15',
@@ -760,6 +767,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_Casesheet_15',
@@ -789,6 +797,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reschedule-Appointment',
@@ -917,6 +926,7 @@ export async function sendCartNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: 'Cart_Ready',
@@ -1098,6 +1108,7 @@ export async function sendPatientRegistrationNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: 'Registration_Success',
@@ -1188,6 +1199,7 @@ export async function sendMedicineOrderStatusNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: payloadDataType,
@@ -1273,6 +1285,7 @@ export async function sendDiagnosticOrderStatusNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: payloadDataType,
