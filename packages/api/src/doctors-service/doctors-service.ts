@@ -60,7 +60,7 @@ import {
   doctorFavouriteTestTypeDefs,
   doctorFavouriteTestResolvers,
 } from 'doctors-service/resolvers/doctorFavouriteTest';
-import { AdminTypeDefs, AdminResolvers } from 'doctors-service/resolvers/admin';
+
 import { winstonLogger } from 'customWinstonLogger';
 
 (async () => {
@@ -159,10 +159,6 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: doctorFavouriteTestTypeDefs,
         resolvers: doctorFavouriteTestResolvers,
-      },
-      {
-        typeDefs: AdminTypeDefs,
-        resolvers: AdminResolvers,
       },
     ]),
     plugins: [

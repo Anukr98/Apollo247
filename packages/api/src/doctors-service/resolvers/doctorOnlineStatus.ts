@@ -1,12 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import {
-  DOCTOR_ONLINE_STATUS,
-  Doctor,
-  DoctorType,
-  DoctorLoginSessionHistory,
-} from 'doctors-service/entities';
+import { DOCTOR_ONLINE_STATUS, Doctor, DoctorLoginSessionHistory } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
