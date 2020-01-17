@@ -6,9 +6,7 @@ import {
   SdDashboardSummary,
   FeedbackDashboardSummary,
   PhrDocumentsSummary,
-  DoctorFeeSummary,
 } from 'consults-service/entities';
-import { ConsultMode } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -35,13 +33,8 @@ export const sdDashboardSummaryTypeDefs = gql`
     medDocCount: Int
   }
 
-  type DoctorFeeSummaryResult {
-    status: Boolean
-  }
-
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
-    updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
   }
@@ -52,10 +45,6 @@ type DashboardSummaryResult = {
   doctorName: string;
   appointmentDateTime: Date;
   totalConsultation: number;
-};
-
-type DoctorFeeSummaryResult = {
-  status: boolean;
 };
 
 type FeedbackSummaryResult = {
@@ -248,7 +237,6 @@ const updateDoctorFeeSummary: Resolver<
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
-    updateDoctorFeeSummary,
     updatePhrDocSummary,
     updateConsultRating,
   },

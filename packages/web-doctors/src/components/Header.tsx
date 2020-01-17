@@ -182,6 +182,8 @@ export const Header: React.FC = (props) => {
   const [selectedTab, setSelectedTab] = React.useState(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [showIdleTimer, setShowIdleTimer] = React.useState(false);
+  const [isOnline, setIsOnline] = React.useState(true);
+  const [showLoader, setShowLoader] = React.useState(false);
 
   // TODO remove currentPatient and name it as currentDoctor
   const currentUserType = useAuth().currentUserType;
@@ -210,15 +212,24 @@ export const Header: React.FC = (props) => {
   }, 1000);
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 3;
-  const triggerAutoOffline = () => {
+  const changeDoctorStatus = () => {
     if (currentPatient && currentPatient.id) {
+      setShowLoader(true);
       mutationUpdateDoctorOnlineStatus()
         .then((response) => {
-          signOut();
-          localStorage.removeItem('loggedInMobileNumber');
-          sessionStorage.removeItem('mobileNumberSession');
+          if (isOnline) {
+            setIsOnline(false);
+          } else {
+            setIsOnline(true);
+            setShowIdleTimer(false);
+          }
+          setShowLoader(false);
+          // signOut();
+          // localStorage.removeItem('loggedInMobileNumber');
+          // sessionStorage.removeItem('mobileNumberSession');
         })
         .catch((e: ApolloError) => {
+          setShowLoader(false);
           console.log('An error occurred updating doctor status.');
         });
     }
@@ -229,7 +240,7 @@ export const Header: React.FC = (props) => {
   >(UPDATE_DOCTOR_ONLINE_STATUS, {
     variables: {
       doctorId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,
+      onlineStatus: isOnline ? DOCTOR_ONLINE_STATUS.AWAY : DOCTOR_ONLINE_STATUS.ONLINE,
     },
   });
   return (
@@ -495,15 +506,16 @@ export const Header: React.FC = (props) => {
           <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Alert</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with
-              your patient.
+              {isOnline
+                ? "Hi! Seems like you've gone offline. Please click on 'Cancel' to continue."
+                : "Please make yourself online by clicking on 'Ok' button"}
               <div className={classes.countdownLoader}>
                 <ReactCountdownClock
                   seconds={60}
                   color="#fcb716"
                   alpha={0.9}
                   size={50}
-                  onComplete={() => triggerAutoOffline()}
+                  onComplete={() => changeDoctorStatus()}
                 />
               </div>
             </DialogContentText>
@@ -512,11 +524,16 @@ export const Header: React.FC = (props) => {
             <Button
               color="primary"
               onClick={() => {
-                setShowIdleTimer(false);
+                if (isOnline) {
+                  setShowIdleTimer(false);
+                } else {
+                  changeDoctorStatus();
+                }
               }}
+              disabled={showLoader}
               autoFocus
             >
-              Ok
+              {isOnline ? 'Cancel' : 'Ok'}
             </Button>
           </DialogActions>
         </Dialog>

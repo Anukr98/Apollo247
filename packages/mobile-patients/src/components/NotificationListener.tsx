@@ -490,7 +490,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     const notificationListener = firebase.notifications().onNotification((notification) => {
       aphConsole.log('notificationListener');
       const localNotification = new firebase.notifications.Notification()
-        .setSound('sampleaudio.wav')
+        // .setSound('incallmanager_ringtone.mp3')
         .setNotificationId(notification.notificationId)
         .setTitle(notification.title)
         .setBody(notification.body)
@@ -544,9 +544,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         'fcm_FirebaseNotifiction_default_channel',
         'Apollo',
         firebase.notifications.Android.Importance.Default
-      )
-        .setDescription('Demo app description')
-        .setSound('sampleaudio.wav');
+      ).setDescription('Demo app description');
+      // .setSound('incallmanager_ringtone.mp3');
       firebase.notifications().android.createChannel(channel);
     } catch (error) {
       aphConsole.log('error in notification channel', error);
