@@ -219,7 +219,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const menuOptions: menuOptions[] = [
     {
       id: 1,
-      title: 'Find A Doctor',
+      title: 'Find a Doctor',
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => props.navigation.navigate(AppRoutes.DoctorSearch),
     },

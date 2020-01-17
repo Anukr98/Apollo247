@@ -382,10 +382,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const formatTime = (time: string) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
-    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm a');
+    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
   const formatDateTime = (time: string) => {
-    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm a');
+    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
 
   const renderDoctorDetails = () => {
@@ -718,7 +718,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     {Moment.utc(item.appointmentDateTime)
                       .local()
-                      .format('DD MMMM, hh:mm a')}
+                      .format('DD MMMM, hh:mm A')}
                   </Text>
                   <View style={styles.separatorStyle} />
                   <View style={{ flexDirection: 'row' }}>

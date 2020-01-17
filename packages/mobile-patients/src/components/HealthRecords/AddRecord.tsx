@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   placeholderTextStyle: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
+    textTransform: 'capitalize',
   },
   placeholderViewStyle: {
     flexDirection: 'row',
@@ -130,10 +131,10 @@ const RecordType: RecordTypeType[] = [
     value: MedicRecordType.TEST_REPORT.toLowerCase().replace('_', ' '),
     key: MedicRecordType.TEST_REPORT,
   },
-  {
-    value: MedicRecordType.CONSULTATION.toLowerCase().replace('_', ' '),
-    key: MedicRecordType.CONSULTATION,
-  },
+  // {
+  //   value: MedicRecordType.CONSULTATION.toLowerCase().replace('_', ' '),
+  //   key: MedicRecordType.CONSULTATION,
+  // },
   {
     value: MedicRecordType.PRESCRIPTION.toLowerCase().replace('_', ' '),
     key: MedicRecordType.PRESCRIPTION,
@@ -712,6 +713,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   marginLeft: width / 2 - 95,
                 },
               ]}
+              itemTextStyle={{ textTransform: 'capitalize' }}
               options={RecordType}
               selectedText={typeofRecord}
               onPress={(data) => {

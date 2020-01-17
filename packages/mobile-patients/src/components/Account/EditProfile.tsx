@@ -769,7 +769,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <TextInputComponent label={'Relation'} noInput={true} />
         {renderRelation()}
         <TextInputComponent
-          label={'Email Address (Optional)'}
+          label={'Email Address'}
           value={`${email}`}
           onChangeText={(email) => setEmail(email)}
           placeholder={'name@email.com'}

@@ -221,7 +221,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
           ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
-              'Do MMMM, dddd \nhh:mm a'
+              'Do MMMM, dddd \nhh:mm A'
             )
           : ''
       );

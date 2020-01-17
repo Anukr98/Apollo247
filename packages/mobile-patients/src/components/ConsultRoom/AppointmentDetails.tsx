@@ -194,7 +194,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       const time = `Today, ${moment
         .utc(data.appointmentDateTime)
         .local()
-        .format('hh:mm a')}`;
+        .format('hh:mm A')}`;
       setAppointmentTime(time);
     } else {
       const time = `${moment
