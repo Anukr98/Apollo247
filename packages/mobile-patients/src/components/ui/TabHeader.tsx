@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
 
 export interface TabHeaderProps {
   containerStyle?: StyleProp<ViewStyle>;
+  hideHomeIcon?: boolean;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
 }
 
@@ -75,7 +76,7 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
           );
         }}
       >
-        <HomeIcon />
+        {!props.hideHomeIcon ? <HomeIcon /> : null}
       </TouchableOpacity>
       <View style={{ flexDirection: 'row' }}>
         <TouchableOpacity

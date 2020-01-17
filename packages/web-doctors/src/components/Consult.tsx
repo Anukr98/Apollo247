@@ -45,12 +45,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     videoContainer: {
-      height: 'calc(100vh - 200px)',
+      height: 'calc(100vh - 248px)',
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
+      marginTop: 68,
       overflow: 'hidden',
       position: 'relative',
+      textAlign: 'center',
     },
     hideVideoContainer: {
       right: 15,
@@ -96,16 +98,13 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#000',
     },
     minimizeImg: {
-      left: 0,
-      bottom: 0,
-      width: '100%',
+      width: 'auto',
       height: '100%',
       zIndex: 9,
-      position: 'absolute',
     },
     timerCls: {
       position: 'absolute',
-      top: 40,
+      top: 80,
       zIndex: 99,
       left: 40,
       fontSize: 12,

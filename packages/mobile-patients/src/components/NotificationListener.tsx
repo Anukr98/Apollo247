@@ -268,7 +268,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Diagnostic_Order_Success':
         {
-          showTestOrderStatusAlert(data, 'Diagnostic_Order_Success');
+          return;
+          // showTestOrderStatusAlert(data, 'Diagnostic_Order_Success');
         }
         break;
       case 'Diagnostic_Order_Payment_Failed':
@@ -287,10 +288,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
 
       case 'Patient_Cancel_Appointment': {
-        showAphAlert!({
-          title: ' ',
-          description: data.content,
-        });
+        return;
+        // showAphAlert!({
+        //   title: ' ',
+        //   description: data.content,
+        // });
       }
 
       case 'Cart_Ready':

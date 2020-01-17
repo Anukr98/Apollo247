@@ -138,22 +138,22 @@ const sendCallNotification: Resolver<
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
   );
-  //if (args.sendNotification == true) {
-  const pushNotificationInput = {
-    appointmentId: args.appointmentId,
-    notificationType: NotificationType.CALL_APPOINTMENT,
-  };
-  const notificationResult = sendCallsNotification(
-    pushNotificationInput,
-    patientsDb,
-    consultsDb,
-    doctorsDb,
-    args.callType,
-    args.doctorType,
-    appointmentCallDetails.id
-  );
-  console.log(notificationResult, 'doctor call appt notification');
-  //}
+  if (args.callType != APPT_CALL_TYPE.CHAT) {
+    const pushNotificationInput = {
+      appointmentId: args.appointmentId,
+      notificationType: NotificationType.CALL_APPOINTMENT,
+    };
+    const notificationResult = sendCallsNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb,
+      args.callType,
+      args.doctorType,
+      appointmentCallDetails.id
+    );
+    console.log(notificationResult, 'doctor call appt notification');
+  }
   return { status: true, callDetails: appointmentCallDetails };
 };
 

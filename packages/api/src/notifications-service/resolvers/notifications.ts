@@ -15,11 +15,12 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInHours } from 'date-fns';
+import { addMilliseconds, format, differenceInHours, differenceInMinutes } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { ca } from 'date-fns/esm/locale';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -191,18 +192,22 @@ export async function sendCallsNotification(
   //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   //if notiifcation of type reschedule & check for reschedule notification setting
-  if (
-    patientDetails.patientNotificationSettings &&
-    pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
-    !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
-  ) {
-    return;
-  }
+  // if (
+  //   patientDetails.patientNotificationSettings &&
+  //   pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
+  //   !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
+  // ) {
+  //   return;
+  // }
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
   notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
-  notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+  notificationBody = ApiConstants.AVCALL_APPOINTMENT_BODY;
+  if (callType == APPT_CALL_TYPE.CHAT) {
+    notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
+  }
+  notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace(
     '{1}',
     doctorDetails.firstName + ' ' + doctorDetails.lastName
@@ -259,6 +264,7 @@ export async function sendCallsNotification(
     registrationToken.push(values.deviceToken);
   });*/
   console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -427,8 +433,6 @@ export async function sendNotification(
               ' ' +
               facilityDets.streetLine1 +
               ' ' +
-              facilityDets.streetLine2 +
-              ' ' +
               facilityDets.city +
               ' ' +
               facilityDets.state
@@ -564,7 +568,7 @@ export async function sendNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -659,18 +663,16 @@ export async function sendReminderNotification(
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      //notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
         if (facilityDets) {
           notificationBody = notificationBody.replace(
-            '{1}',
+            '{2}',
             facilityDets.name +
               ' ' +
               facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.streetLine2 +
               ' ' +
               facilityDets.city +
               ' ' +
@@ -698,8 +700,12 @@ export async function sendReminderNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY;
+    let diffMins = Math.ceil(
+      Math.abs(differenceInMinutes(new Date(), appointment.appointmentDateTime))
+    );
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
@@ -710,16 +716,24 @@ export async function sendReminderNotification(
               ' ' +
               facilityDets.streetLine1 +
               ' ' +
-              facilityDets.streetLine2 +
-              ' ' +
               facilityDets.city +
               ' ' +
               facilityDets.state
           );
         }
       }
+    } else {
+      if (diffMins <= 1) {
+        diffMins = 1;
+        notificationBody = ApiConstants.APPOINTMENT_REMINDER_1_BODY;
+        notificationBody = notificationBody.replace('{1}', doctorDetails.displayName);
+        notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
+      } else {
+        notificationBody = notificationBody.replace('{1}', diffMins.toString());
+        notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+      }
     }
-    notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+
     payload = {
       notification: {
         title: notificationTitle,
@@ -819,7 +833,7 @@ export async function sendReminderNotification(
       registrationToken.push(values.deviceToken);
     });
   }
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -949,7 +963,7 @@ export async function sendCartNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
     registrationToken.push(values.deviceToken);
   });*/
-
+  if (registrationToken.length == 0) return;
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)

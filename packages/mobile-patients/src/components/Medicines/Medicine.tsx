@@ -123,7 +123,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient.id) {
+    if (currentPatient && profile && profile.id !== currentPatient.id) {
       globalLoading!(true);
       setProfile(currentPatient);
       ordersRefetch().then(({ data }) => {

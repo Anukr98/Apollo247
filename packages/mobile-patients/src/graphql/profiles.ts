@@ -300,6 +300,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         isConsultStarted
         isJdQuestionsComplete
         isSeniorConsultStarted
+        symptoms
         doctorInfo {
           id
           salutation

@@ -164,6 +164,16 @@ const useStyles = makeStyles((theme: Theme) =>
     numberOfTimes: {
       width: '100%',
       margin: '0 0 20px 0',
+      '& > div': {
+        '& > div': {
+          '&:focus': {
+            transition: 'all 0.2s',
+            backgroundColor: 'rgba(240, 244, 245, 0.3)',
+            borderTopLeftRadius: 5,
+            borderTopRightRadius: 5,
+          },
+        },
+      },
     },
     instructionsWrapper: {
       padding: '0 0 8px 0 !important',
@@ -481,6 +491,22 @@ const useStyles = makeStyles((theme: Theme) =>
     unitsSelect: {
       '& > div': {
         paddingTop: '3px !important',
+      },
+    },
+    focusInputs: {
+      '&:focus': {
+        transition: 'all 0.2s',
+        backgroundColor: 'rgba(240, 244, 245, 0.3)',
+        borderTopLeftRadius: 5,
+        borderTopRightRadius: 5,
+      },
+      '& input': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+        },
       },
     },
   })
@@ -1392,6 +1418,7 @@ export const MedicinePrescription: React.FC = () => {
                               Take
                             </div>
                             <AphTextField
+                              className={classes.focusInputs}
                               autoFocus
                               inputProps={{ maxLength: 6 }}
                               value={tabletsCount === 0 ? '' : tabletsCount}
@@ -1436,6 +1463,11 @@ export const MedicinePrescription: React.FC = () => {
                                   horizontal: 'right',
                                 },
                               }}
+                              inputProps={{
+                                classes: {
+                                  root: classes.focusInputs,
+                                },
+                              }}
                               onChange={(e: any) => {
                                 setMedicineUnit(e.target.value as string);
                               }}
@@ -1466,6 +1498,9 @@ export const MedicinePrescription: React.FC = () => {
                                   vertical: 'top',
                                   horizontal: horizontal,
                                 },
+                              }}
+                              inputProps={{
+                                classes: { root: classes.focusInputs },
                               }}
                               onChange={(e: any) => {
                                 setFrequency(e.target.value as string);
@@ -1512,6 +1547,7 @@ export const MedicinePrescription: React.FC = () => {
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>For</div>
                           <AphTextField
+                            className={classes.focusInputs}
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
                             value={consumptionDuration}
@@ -1534,7 +1570,6 @@ export const MedicinePrescription: React.FC = () => {
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             &nbsp;
                           </div>
-                          {/* <div className={classes.unitsSelect}> */}
                           <AphSelect
                             style={{ paddingTop: 3 }}
                             value={forUnit}
@@ -1551,13 +1586,17 @@ export const MedicinePrescription: React.FC = () => {
                                 horizontal: 'left',
                               },
                             }}
+                            inputProps={{
+                              classes: {
+                                root: classes.focusInputs,
+                              },
+                            }}
                             onChange={(e: any) => {
                               setforUnit(e.target.value as string);
                             }}
                           >
                             {forOptionHtml}
                           </AphSelect>
-                          {/* </div> */}
                         </div>
                       </div>
                     </div>

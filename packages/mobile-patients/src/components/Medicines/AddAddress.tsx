@@ -62,6 +62,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import Geolocation from '@react-native-community/geolocation';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -153,7 +154,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setOptionalAddress(addressData.otherAddressType);
     } else {
       if (!(locationDetails && locationDetails.pincode)) {
-        navigator.geolocation.getCurrentPosition(
+        Geolocation.getCurrentPosition(
           (position) => {
             console.log(position, 'position');
             // const searchstring = position.coords.latitude + ',' + position.coords.longitude;

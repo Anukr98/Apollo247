@@ -10,6 +10,7 @@ import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import NetInfo from '@react-native-community/netinfo';
+import Geolocation from '@react-native-community/geolocation';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -349,7 +350,7 @@ const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void
 ) => {
-  navigator.geolocation.getCurrentPosition(
+  Geolocation.getCurrentPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
       getPlaceInfoByLatLng(latitude, longitude)
@@ -444,7 +445,7 @@ export const getUserCurrentPosition = async () => {
       Permissions.request('location')
         .then((response) => {
           if (response === 'authorized') {
-            navigator.geolocation.getCurrentPosition(
+            Geolocation.getCurrentPosition(
               async (position) => {
                 console.log(position, 'position');
 

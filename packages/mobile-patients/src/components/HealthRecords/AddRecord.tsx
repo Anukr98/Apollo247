@@ -359,6 +359,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const onSavePress = () => {
     // console.log('images', Images);
     const valid = isValid();
+    console.log('valid', valid);
     if (valid.isvalid && !valid.isValidParameter) {
       setshowSpinner(true);
       let uploadedUrls: any = [];
@@ -657,7 +658,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
-            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            <TextInputComponent label={'Date Of Prescription'} noInput={true} />
             {renderDateInpt()}
             <TextInputComponent
               label={'Location (optional)'}
@@ -675,12 +676,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInputComponent
               label={'Location of Consultation'}
               value={locationName}
-              placeholder={'Enter doctor name'}
+              placeholder={'Enter location of consultation'}
               onChangeText={(text) => {
                 setLocationName(text);
               }}
             />
-            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            <TextInputComponent label={'Date Of Test'} noInput={true} />
             {renderDateInpt()}
           </View>
         );

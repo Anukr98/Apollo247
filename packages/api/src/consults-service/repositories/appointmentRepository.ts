@@ -995,7 +995,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           let counter = 0;
           while (true) {
             if (availableSlots.includes(sl)) {
-              console.log(counter, sl, 'came here 3333');
+              //console.log(counter, sl, 'came here 3333');
               break;
             }
             slot = addMinutes(slot, 1);
@@ -1010,7 +1010,7 @@ export class AppointmentRepository extends Repository<Appointment> {
               counter >= blockedSlotsCount &&
               counter >= blockedSlotsDuration
             ) {
-              console.log(counter, sl, 'came here 111');
+              //console.log(counter, sl, 'came here 111');
               break;
             }
             apptDt = format(slot, 'yyyy-MM-dd');
@@ -1372,7 +1372,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getPatientFutureAppointmentsCount(patientId: string, maxConsultationMinutes: number) {
     return this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', {
-        apptDate: subMinutes(new Date(), maxConsultationMinutes),
+        apptDate: new Date(),
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
