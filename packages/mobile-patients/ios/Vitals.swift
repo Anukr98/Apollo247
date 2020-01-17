@@ -14,7 +14,7 @@ import JWTDecode
 class Vitals: NSObject {
   @objc
   func vitalsToExport(_ token: String) -> Void {
-    print("vitalsToExport")
+    print("vitalsToExport", token)
     
     let vitaToken = String(format:"Open %@", token)
     UserDefaults.standard.set(vitaToken, forKey: "CONDITIONMANAGEMENT_VITA_TOKEN");
@@ -22,14 +22,15 @@ class Vitals: NSObject {
     #if DEVELOPMENT
     UserDefaults.standard.set("play", forKey: "environment")
     #else
-    UserDefaults.standard.set("prod", forKey: "environment")
+    UserDefaults.standard.set("play", forKey: "environment")
     #endif
+//    UserDefaults.standard.set("prod", forKey: "environment")  while production enable it..
 
     UserDefaults.standard.synchronize();
   }
   
   @objc func goToReactNative(_ token: String) -> Void {
-    print("goToReactNative")
+    print("goToReactNative", token)
 
    DispatchQueue.main.async {
     if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
