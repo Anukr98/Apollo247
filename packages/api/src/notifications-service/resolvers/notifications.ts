@@ -20,7 +20,6 @@ import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
-import { ca } from 'date-fns/esm/locale';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {

@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection, Not, In } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
 import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
 import {
   Range,

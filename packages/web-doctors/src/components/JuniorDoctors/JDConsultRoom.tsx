@@ -971,7 +971,6 @@ export const JDConsultRoom: React.FC = () => {
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
-  const jdChatStartAction = () => {};
   const createSessionAction = () => {
     setSaving(true);
     client
