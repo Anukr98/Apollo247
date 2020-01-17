@@ -588,7 +588,7 @@ export const DiagnosticPrescription: React.FC = () => {
             )}
           </Typography>
         </Grid>
-        {!showAddCondition && favTests && favTests.length > 0 && (
+        {favTests && favTests.length > 0 && (
           <Grid item lg={6} xs={6}>
             <Typography component="h5" variant="h5">
               Favorite Tests

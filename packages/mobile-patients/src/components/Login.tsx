@@ -28,6 +28,7 @@ import {
   View,
   Dimensions,
 } from 'react-native';
+//import { WebView } from 'react-native-webview';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';

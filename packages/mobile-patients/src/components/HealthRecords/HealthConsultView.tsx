@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.04,
   },
+
   profileImageStyle: { width: 40, height: 40, borderRadius: 20 },
   yellowTextStyle: {
     ...theme.fonts.IBMPlexSansBold(12),
@@ -241,17 +242,19 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                 <View style={{ flexDirection: 'row' }}>
                   <View style={styles.imageView}>
                     {/* {data.image} */}
-                    {props.PastData &&
+                    {!!(
+                      props.PastData &&
                       props.PastData.doctorInfo &&
                       props.PastData.doctorInfo.photoUrl &&
                       props.PastData.doctorInfo.photoUrl.match(
                         /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
-                      ) && (
-                        <Image
-                          style={styles.profileImageStyle}
-                          source={{ uri: props.PastData.doctorInfo.photoUrl }}
-                        />
-                      )}
+                      )
+                    ) && (
+                      <Image
+                        style={styles.profileImageStyle}
+                        source={{ uri: props.PastData.doctorInfo.photoUrl }}
+                      />
+                    )}
                   </View>
                   <View style={{ flex: 1 }}>
                     <TouchableOpacity activeOpacity={1}>
@@ -286,7 +289,17 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               {item.symptoms.map((value: any) => {
                                 return (
                                   <View style={{ flex: 1, paddingRight: 20 }}>
-                                    <Text style={styles.descriptionTextStyles}>
+                                    <Text
+                                      style={{
+                                        paddingLeft: 0,
+                                        ...theme.fonts.IBMPlexSansMedium(12),
+                                        color: theme.colors.TEXT_LIGHT_BLUE,
+                                        lineHeight: 20,
+                                        letterSpacing: 0.04,
+                                        width: 160,
+                                      }}
+                                      numberOfLines={2}
+                                    >
                                       {value.symptom}
                                     </Text>
                                   </View>
@@ -323,19 +336,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     justifyContent: 'space-between',
                   }}
                 >
-                  {g(item, 'followUp') ? (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => {
-                        CommonLogEvent('HEALTH_CONSULT_VIEW', 'On follow up click'),
-                          props.onFollowUpClick && props.onFollowUpClick(props.PastData);
-                      }}
-                    >
-                      <Text style={styles.yellowTextStyle}> BOOK FOLLOW-UP</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <Text></Text>
-                  )}
                   {g(item, 'medicinePrescription') ? (
                     <Text
                       style={styles.yellowTextStyle}
@@ -491,6 +491,19 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       ORDER MEDS & TESTS
                     </Text>
                   ) : null}
+                  {g(item, 'followUp') ? (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        CommonLogEvent('HEALTH_CONSULT_VIEW', 'On follow up click'),
+                          props.onFollowUpClick && props.onFollowUpClick(props.PastData);
+                      }}
+                    >
+                      <Text style={styles.yellowTextStyle}> BOOK FOLLOW-UP</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text></Text>
+                  )}
                 </View>
               </View>
             </TouchableOpacity>
