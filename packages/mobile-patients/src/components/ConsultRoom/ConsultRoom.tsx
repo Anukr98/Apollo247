@@ -239,7 +239,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       id: 4,
       title: 'Manage Diabetes',
       image: <Diabetes style={styles.menuOptionIconStyle} />,
-      onPress: () => {},
+      onPress: () => {
+        getTokenforCM(currentPatient);
+      },
     },
     {
       id: 5,
@@ -314,9 +316,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AppState.addEventListener('change', _handleAppStateChange);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
-  useEffect(() => {
-    currentPatient && getTokenforCM(currentPatient);
-  }, [currentPatient]);
+  // useEffect(() => {
+  //   currentPatient && getTokenforCM(currentPatient);
+  // }, [currentPatient]);
 
   useEffect(() => {
     async function fetchData() {
@@ -334,6 +336,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   const getTokenforCM = (currentPatient: any) => {
+    setshowSpinner(true);
     const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(currentPatient, 'lastName') ||
       ''}`;
 
@@ -343,45 +346,51 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       currentPatient ? (currentPatient.gender ? currentPatient.gender : '') : '',
       currentPatient ? (currentPatient.emailAddress ? currentPatient.emailAddress : '') : '',
       currentPatient ? (currentPatient.mobileNumber ? currentPatient.mobileNumber : '') : ''
-    ).then((token: any) => {
-      console.log(token, 'getTokenforCM');
+    )
+      .then((token: any) => {
+        console.log(token, 'getTokenforCM');
 
-      const testArray = menuOptions;
-      for (const i in testArray) {
-        if (testArray[i].id == 4) {
-          testArray[i].onPress = () => {
-            async function fetchTokenData() {
-              const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
-              console.log(tokenValue, 'tokenValue');
-              if (Platform.OS === 'ios') {
-                Vitals.vitalsToExport(tokenValue);
-                setTimeout(() => {
-                  Vitals.goToReactNative(tokenValue);
-                }, 500);
-              } else {
-                const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(
-                  currentPatient,
-                  'lastName'
-                ) || ''}`;
-                const UHID = `${g(currentPatient, 'uhid') || ''}`;
+        // const testArray = menuOptions;
+        // for (const i in testArray) {
+        //   if (testArray[i].id == 4) {
+        //     testArray[i].onPress = () => {
+        async function fetchTokenData() {
+          setshowSpinner(false);
 
-                tokenValue &&
-                  KotlinBridge.show(
-                    tokenValue,
-                    UHID,
-                    fullName,
-                    '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android'
-                  );
-              }
-            }
+          const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
+          console.log(tokenValue, 'tokenValue');
+          if (Platform.OS === 'ios') {
+            Vitals.vitalsToExport(tokenValue);
+            setTimeout(() => {
+              Vitals.goToReactNative(tokenValue);
+            }, 500);
+          } else {
+            const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(
+              currentPatient,
+              'lastName'
+            ) || ''}`;
+            const UHID = `${g(currentPatient, 'uhid') || ''}`;
 
-            fetchTokenData();
-          };
-          break; //Stop this loop, we found it!
+            tokenValue &&
+              KotlinBridge.show(
+                tokenValue,
+                UHID,
+                fullName,
+                '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android'
+              );
+          }
         }
-      }
-      setListValues(testArray);
-    });
+
+        fetchTokenData();
+        //     };
+        //     break; //Stop this loop, we found it!
+        //   }
+        // }
+        // setListValues(testArray);
+      })
+      .catch(() => {
+        setshowSpinner(false);
+      });
   };
 
   useEffect(() => {
