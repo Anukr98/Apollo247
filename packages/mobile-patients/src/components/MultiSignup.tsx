@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
     paddingVertical: 8,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
   textViewStyle: {
     borderBottomWidth: 1,

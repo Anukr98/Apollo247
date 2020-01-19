@@ -17,13 +17,14 @@ class Vitals: NSObject {
     print("vitalsToExport", token)
     
     let vitaToken = String(format:"Open %@", token)
-    UserDefaults.standard.set(vitaToken, forKey: "CONDITIONMANAGEMENT_VITA_TOKEN");
-    
+   UserDefaults.standard.set(vitaToken, forKey: "CONDITIONMANAGEMENT_VITA_TOKEN");
+   
     #if DEVELOPMENT
     UserDefaults.standard.set("play", forKey: "environment")
     #else
     UserDefaults.standard.set("play", forKey: "environment")
     #endif
+    UserDefaults.standard.set(true, forKey: "isComingFrom24x7")
 //    UserDefaults.standard.set("prod", forKey: "environment")  while production enable it..
 
     UserDefaults.standard.synchronize();
@@ -37,7 +38,9 @@ class Vitals: NSObject {
       let resourcesBundle = Bundle.init(identifier:"com.apollo.ApolloVitalsFramework")
 
       let storyboard = UIStoryboard(name: "AV_Main", bundle: resourcesBundle)
-      
+
+      // let storyboard = UIStoryboard(name: "AV_Main", bundle: nil)
+
       let jwt = try? decode(jwt: token as String)
       print("the data: \(jwt!.body)")
       let tokenBody = jwt!.body as? [String : Any]
