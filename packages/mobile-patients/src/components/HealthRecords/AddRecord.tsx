@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
   placeholderTextStyle: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
-    textTransform: 'capitalize',
   },
   placeholderViewStyle: {
     flexDirection: 'row',
@@ -310,7 +309,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       ? testName || docName || locationName
         ? dateOfTest
           ? ''
-          : 'Enter Date Of Test'
+          : typeofRecord === MedicRecordType.PRESCRIPTION
+          ? 'Enter Date of Prescription'
+          : 'Enter Date of Test'
+        : typeofRecord === MedicRecordType.PRESCRIPTION
+        ? 'Enter doctor name'
+        : typeofRecord === MedicRecordType.CONSULTATION
+        ? 'Enter Location of Consultation'
+        : typeofRecord === MedicRecordType.TEST_REPORT
+        ? 'Enter test name'
         : 'Enter Name'
       : 'Select the Record Type';
 
@@ -633,7 +640,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         return (
           <View>
             <TextInputComponent
-              label={'Name Of Test'}
+              label={'Name of Test'}
               value={testName}
               placeholder={'Enter name of test'}
               onChangeText={(testName) => {
@@ -642,7 +649,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
-            <TextInputComponent label={'Date Of Test'} noInput={true} />
+            <TextInputComponent label={'Date of Test'} noInput={true} />
             {renderDateInpt()}
           </View>
         );
@@ -659,7 +666,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
-            <TextInputComponent label={'Date Of Prescription'} noInput={true} />
+            <TextInputComponent label={'Date of Prescription'} noInput={true} />
             {renderDateInpt()}
             <TextInputComponent
               label={'Location (optional)'}
@@ -682,7 +689,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 setLocationName(text);
               }}
             />
-            <TextInputComponent label={'Date Of Test'} noInput={true} />
+            <TextInputComponent label={'Date of Test'} noInput={true} />
             {renderDateInpt()}
           </View>
         );
@@ -730,7 +737,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
             >
               <TextInputComponent
-                label={'Type Of Record'}
+                label={'Type of Record'}
                 noInput={true}
                 conatinerstyles={{
                   paddingBottom: 0,
@@ -741,7 +748,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   <Text
                     style={[
                       styles.placeholderTextStyle,
-                      typeofRecord !== undefined ? null : styles.placeholderStyle,
+                      typeofRecord !== undefined
+                        ? { textTransform: 'capitalize' }
+                        : styles.placeholderStyle,
                     ]}
                   >
                     {typeofRecord !== undefined
@@ -873,7 +882,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   }}
                 >
                   <TextInputComponent
-                    label={'Name Of Parameter'}
+                    label={'Name of Parameter'}
                     placeholder={'Enter name'}
                     value={item.parameterName || ''}
                     onChangeText={(value) => {
