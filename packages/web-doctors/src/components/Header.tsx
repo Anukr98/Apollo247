@@ -206,10 +206,6 @@ export const Header: React.FC = (props) => {
     }
     return '';
   }
-  let isInCall = false;
-  setInterval(() => {
-    isInCall = getCookieValue() === 'audiocall' || getCookieValue() === 'videocall' ? true : false;
-  }, 1000);
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 3;
   const changeDoctorStatus = () => {
@@ -224,9 +220,6 @@ export const Header: React.FC = (props) => {
             setShowIdleTimer(false);
           }
           setShowLoader(false);
-          // signOut();
-          // localStorage.removeItem('loggedInMobileNumber');
-          // sessionStorage.removeItem('mobileNumberSession');
         })
         .catch((e: ApolloError) => {
           setShowLoader(false);
@@ -245,17 +238,20 @@ export const Header: React.FC = (props) => {
   });
   return (
     <header className={classes.header}>
-      {!isJuniorDoctor && isSignedIn && !isInCall && (
-        <IdleTimer
-          ref={idleTimerRef}
-          element={document}
-          onIdle={(e) => {
-            setShowIdleTimer(true);
-          }}
-          debounce={250}
-          timeout={1000 * 60 * idleTimeValueInMinutes}
-        />
-      )}
+      {!isJuniorDoctor &&
+        isSignedIn &&
+        getCookieValue() !== 'audiocall' &&
+        getCookieValue() !== 'videocall' && (
+          <IdleTimer
+            ref={idleTimerRef}
+            element={document}
+            onIdle={(e) => {
+              setShowIdleTimer(true);
+            }}
+            debounce={250}
+            timeout={1000 * 60 * idleTimeValueInMinutes}
+          />
+        )}
       <div className={classes.container}>
         <div className={classes.logo}>
           <Link to="/">
@@ -508,16 +504,18 @@ export const Header: React.FC = (props) => {
             <DialogContentText>
               {isOnline
                 ? "Hi! Seems like you've gone offline. Please click on 'Cancel' to continue."
-                : "Please make yourself online by clicking on 'Ok' button"}
-              <div className={classes.countdownLoader}>
-                <ReactCountdownClock
-                  seconds={60}
-                  color="#fcb716"
-                  alpha={0.9}
-                  size={50}
-                  onComplete={() => changeDoctorStatus()}
-                />
-              </div>
+                : "You have been marked as 'Away', please click on 'Ok' to make yourself 'Online'"}
+              {isOnline && (
+                <div className={classes.countdownLoader}>
+                  <ReactCountdownClock
+                    seconds={60}
+                    color="#fcb716"
+                    alpha={0.9}
+                    size={50}
+                    onComplete={() => changeDoctorStatus()}
+                  />
+                </div>
+              )}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
