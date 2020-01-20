@@ -846,6 +846,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const secondMessage = '^^#secondMessage';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -1399,7 +1400,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
-        lastMsg.message.message !== callAbandonment
+        lastMsg.message.message !== callAbandonment &&
+        lastMsg.message.message !== appointmentComplete
       ) {
         setIsNewMsg(true);
       } else {
@@ -2571,7 +2573,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <h3>The patient is no more there in the consult room, please take necessary action.</h3>
+            <h3>
+              We are sorry, but it seems your patient is no longer active on the application. You
+              may wish to reschedule this consult.
+            </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
               Continue
