@@ -170,7 +170,10 @@ const slides: Slide[] = [
     index: 0,
     title: 'What is your height?',
     inputPlacerholder: 'Enter height…',
-    dropDown: [{ key: '1', value: 'cm' }, { key: '2', value: 'ft' }],
+    dropDown: [
+      { key: '1', value: 'cm' },
+      { key: '2', value: 'ft' },
+    ],
     basedonDropValue: [
       { inputHolder: 'Enter height…', dropValue: 'cm' },
       { inputHolder: 'eg. 5’ 8”', dropValue: 'ft' },
@@ -180,7 +183,7 @@ const slides: Slide[] = [
     validation: /^[0-9'"’”.]*$/,
     onSubmitValidation: [
       /^[0-9]+\.{0,1}[0-9]{0,3}$/,
-      /^[0-9]('|’)(?:\s*(?:1[01]|[0-9])(''|"|’’|”))?$/,
+      /^[0-9]{1,2}('|’)(?:\s*(?:1[01]|[0-9])(''|"|’’|”))?$/,
     ],
     validationMessage: 'Enter height in valid format (eg. 5’8” ft or 172.5 cm)',
   },
@@ -410,7 +413,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       let v: any = values && values.find((i) => i.k === slides[index - 1].key);
       v = v && v.v;
       if (inputDataType.length === 1) {
-        v = validations.find((i) => i.test(v[0]));
+        v = validations.find((i) => i.test(v[0])) || v[0] === '';
       } else {
         v = v[0] ? validations.find((i) => i.test(v[0])) : v[1];
       }
@@ -473,7 +476,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                 if (currentIndex <= item.index) {
                   let v = values!;
                   if (item.validation) {
-                    if (item.validation.test(text)) {
+                    if (item.validation.test(text) || text === '') {
                       v[item.index].v[0] = text;
                       setValues(v);
                     }
@@ -517,7 +520,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                 }
               }}
             >
-              <View style={{ flexDirection: 'row', paddingTop: 1, marginRight: 40 }}>
+              <View style={{ flexDirection: 'row', paddingTop: 3, marginRight: 40 }}>
                 <View
                   style={[
                     styles.placeholderViewStyle,
