@@ -137,7 +137,7 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 76
+        versionCode 84
         versionName "1.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
@@ -230,7 +230,8 @@ dependencies {
     implementation "com.google.firebase:firebase-auth:17.0.0"
     implementation "com.google.firebase:firebase-config:17.0.0"
     implementation "com.google.firebase:firebase-database:17.0.0"
-
+    implementation  "com.google.android.gms:play-services-fitness:18.0.0"
+    implementation 'com.google.android.gms:play-services-auth:17.0.0'
     implementation "com.google.firebase:firebase-messaging:18.0.0"
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
 

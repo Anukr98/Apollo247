@@ -170,10 +170,7 @@ const slides: Slide[] = [
     index: 0,
     title: 'What is your height?',
     inputPlacerholder: 'Enter height…',
-    dropDown: [
-      { key: '1', value: 'cm' },
-      { key: '2', value: 'ft' },
-    ],
+    dropDown: [{ key: '1', value: 'cm' }, { key: '2', value: 'ft' }],
     basedonDropValue: [
       { inputHolder: 'Enter height…', dropValue: 'cm' },
       { inputHolder: 'eg. 5’ 8”', dropValue: 'ft' },
@@ -444,7 +441,8 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
     let v = values && values.find((i) => i.k === item.key);
     return (
       (item.basedonDropValue &&
-        item.basedonDropValue.find((i) => i.dropValue === ((v && v.v[1]) || ''))?.inputHolder) ||
+        (item.basedonDropValue.find((i) => i.dropValue === ((v && v.v[1]) || '')) || {})
+          .inputHolder) ||
       item.inputPlacerholder
     );
   };
