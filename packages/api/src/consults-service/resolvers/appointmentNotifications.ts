@@ -3,6 +3,7 @@ import { Resolver } from 'api-gateway';
 import {
   sendReminderNotification,
   NotificationType,
+  sendNotification,
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -180,18 +181,29 @@ const noShowReminderNotification: Resolver<
           rescheduleStatus: TRANSFER_STATUS.INITIATED,
           appointment: appt,
         };
-        await rescheduleRepo.rescheduleAppointment(
-          rescheduleAppointmentAttrs,
-          consultsDb,
-          doctorsDb,
-          patientsDb
-        );
-        const noShowAttrs: Partial<AppointmentNoShow> = {
-          noShowType: REQUEST_ROLES.PATIENT,
-          appointment: appt,
-          noShowStatus: STATUS.NO_SHOW,
-        };
-        await noShowRepo.saveNoShow(noShowAttrs);
+        const reschDetails = await rescheduleRepo.findRescheduleRecord(appt);
+        if (reschDetails) {
+          console.log('appointment reschedule record exists', appt.id);
+        } else {
+          await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
+          const noShowAttrs: Partial<AppointmentNoShow> = {
+            noShowType: REQUEST_ROLES.PATIENT,
+            appointment: appt,
+            noShowStatus: STATUS.NO_SHOW,
+          };
+          await noShowRepo.saveNoShow(noShowAttrs);
+          const pushNotificationInput = {
+            appointmentId: rescheduleAppointmentAttrs.appointment.id,
+            notificationType: NotificationType.INITIATE_RESCHEDULE,
+          };
+          const notificationResult = sendNotification(
+            pushNotificationInput,
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+          console.log(notificationResult, 'notificationResult');
+        }
       }
     });
   }
