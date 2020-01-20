@@ -1089,7 +1089,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               rowData.message !== autoMessageStrings.followupconsult ? (
                 <div>
                   <span>{rowData.automatedText || rowData.message}</span>
-                  <div className={classes.chatTime}>
+                  <div className={rowData.automatedText ? classes.chatTime : `${classes.chatTime} ${classes.defaultChatTime}`}>
                     {chatTimeConvertion(rowData.messageDate)}
                   </div>
                 </div>
