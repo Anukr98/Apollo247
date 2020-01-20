@@ -2571,7 +2571,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <h3>The patient is no more there in the consult room, please take necessary action.</h3>
+            <h3>
+              We are sorry, but it seems your patient is no longer active on the application. You
+              may wish to reschedule this consult.
+            </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
               Continue
