@@ -126,7 +126,7 @@ const ConfigurationQA = {
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   iOS_Version: '1.8',
-  Android_Version: '1.17',
+  Android_Version: '1.22',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
 };
 

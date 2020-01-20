@@ -68,6 +68,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log(res, 'PrefetchAPIReuqest')
     );
   }, []);
+
   useEffect(() => {
     try {
       if (Platform.OS === 'android') {
@@ -177,10 +178,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
   };
-
-  useEffect(() => {
-    getData('ConsultRoom');
-  }, []);
 
   const pushTheView = (routeName: String) => {
     console.log('pushTheView', routeName);
