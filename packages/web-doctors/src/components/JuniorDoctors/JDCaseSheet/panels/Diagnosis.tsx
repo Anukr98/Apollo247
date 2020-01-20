@@ -275,7 +275,7 @@ export const Diagnosis: React.FC = () => {
               {part.text}
             </span>
           ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Condition
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
         </div>
       )
     );

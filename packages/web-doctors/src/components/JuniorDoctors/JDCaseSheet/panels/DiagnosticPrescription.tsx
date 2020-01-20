@@ -360,7 +360,7 @@ export const DiagnosticPrescription: React.FC = () => {
               {part.text}
             </span>
           ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
         </div>
       )
     );
