@@ -1903,7 +1903,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.backButton}
                 disabled={
-                  isPastAppointment() ||
+                  (isPastAppointment() && !isConsultStarted) ||
                   (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
                   props.appointmentStatus === STATUS.NO_SHOW ||
                   props.appointmentStatus === STATUS.CALL_ABANDON ||
@@ -1968,7 +1968,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 disabled={
                   props.appointmentStatus === STATUS.COMPLETED ||
                   props.appointmentStatus === STATUS.CANCELLED ||
-                  isPastAppointment()
+                  (isPastAppointment() && !isConsultStarted)
                 }
               >
                 <img src={require('images/ic_call.svg')} />
@@ -2040,7 +2040,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   props.appointmentStatus === STATUS.CANCELLED ||
                   props.isAppointmentEnded ||
                   disableOnCancel ||
-                  isPastAppointment() ||
+                  (isPastAppointment() && !isConsultStarted) ||
                   (appointmentInfo!.appointmentState !== 'NEW' &&
                     appointmentInfo!.appointmentState !== 'TRANSFER' &&
                     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
