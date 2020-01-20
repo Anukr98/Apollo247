@@ -206,10 +206,6 @@ export const Header: React.FC = (props) => {
     }
     return '';
   }
-  let isInCall = false;
-  setInterval(() => {
-    isInCall = getCookieValue() === 'audiocall' || getCookieValue() === 'videocall' ? true : false;
-  }, 1000);
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 3;
   const changeDoctorStatus = () => {
@@ -224,9 +220,6 @@ export const Header: React.FC = (props) => {
             setShowIdleTimer(false);
           }
           setShowLoader(false);
-          // signOut();
-          // localStorage.removeItem('loggedInMobileNumber');
-          // sessionStorage.removeItem('mobileNumberSession');
         })
         .catch((e: ApolloError) => {
           setShowLoader(false);
@@ -245,17 +238,20 @@ export const Header: React.FC = (props) => {
   });
   return (
     <header className={classes.header}>
-      {!isJuniorDoctor && isSignedIn && !isInCall && (
-        <IdleTimer
-          ref={idleTimerRef}
-          element={document}
-          onIdle={(e) => {
-            setShowIdleTimer(true);
-          }}
-          debounce={250}
-          timeout={1000 * 60 * idleTimeValueInMinutes}
-        />
-      )}
+      {!isJuniorDoctor &&
+        isSignedIn &&
+        getCookieValue() !== 'audiocall' &&
+        getCookieValue() !== 'videocall' && (
+          <IdleTimer
+            ref={idleTimerRef}
+            element={document}
+            onIdle={(e) => {
+              setShowIdleTimer(true);
+            }}
+            debounce={250}
+            timeout={1000 * 60 * idleTimeValueInMinutes}
+          />
+        )}
       <div className={classes.container}>
         <div className={classes.logo}>
           <Link to="/">
