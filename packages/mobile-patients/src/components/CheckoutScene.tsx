@@ -428,7 +428,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm a')}`}
+                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
                 </Text>
               </View>
             </>

@@ -219,7 +219,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const menuOptions: menuOptions[] = [
     {
       id: 1,
-      title: 'Find A Doctor',
+      title: 'Find a Doctor',
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => props.navigation.navigate(AppRoutes.DoctorSearch),
     },
@@ -909,6 +909,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   style={{
                     ...theme.viewStyles.cardViewStyle,
                     shadowOffset: { width: 0, height: 5 },
+                    elevation: 15,
                     flexDirection: 'row',
                     minHeight: 59,
                     width: width / 2 - 28,

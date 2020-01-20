@@ -217,7 +217,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       const time = `Today, ${moment
         .utc(data.appointmentDateTime)
         .local()
-        .format('hh:mm a')}`;
+        .format('hh:mm A')}`;
       setAppointmentTime(time);
     } else {
       const time = `${moment
