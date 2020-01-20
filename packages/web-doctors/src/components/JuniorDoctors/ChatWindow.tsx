@@ -394,6 +394,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -476,7 +477,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== covertVideoMsg &&
           message.message.message !== covertAudioMsg &&
           message.message.message !== cancelConsultInitiated &&
-          message.message.message !== callAbandonment
+          message.message.message !== callAbandonment &&
+          message.message.message !== appointmentComplete
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -603,7 +605,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
-      rowData.message !== callAbandonment
+      rowData.message !== callAbandonment &&
+      rowData.message !== appointmentComplete
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -694,7 +697,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
-      rowData.message !== callAbandonment
+      rowData.message !== callAbandonment &&
+      rowData.message !== appointmentComplete
     ) {
       leftComponent = 0;
       rightComponent++;

@@ -846,6 +846,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const secondMessage = '^^#secondMessage';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -1399,7 +1400,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
-        lastMsg.message.message !== callAbandonment
+        lastMsg.message.message !== callAbandonment &&
+        lastMsg.message.message !== appointmentComplete
       ) {
         setIsNewMsg(true);
       } else {
