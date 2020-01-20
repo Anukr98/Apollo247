@@ -32,6 +32,47 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
+app.get('/invokeNoShowReminder', (req, res) => {
+  const requestJSON = {
+    query: 'query { noShowReminderNotification {status apptsListCount noCaseSheetCount}}',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(
+        response.data.data.noShowReminderNotification.noCaseSheetCount,
+        'notifications response is....'
+      );
+      const fileName =
+        '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+        new Date().getFullYear() +
+        '-' +
+        (new Date().getMonth() + 1) +
+        '-' +
+        new Date().getDate() +
+        '-apptNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.noShowReminderNotification.noCaseSheetCount +
+        ' - ' +
+        response.data.data.noShowReminderNotification.apptsListCount;
+      ('\n-------------------\n');
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
 app.get('/invokeApptReminder', (req, res) => {
   console.log(req.query.inNextMin, 'inn ext mins');
   const requestJSON = {
