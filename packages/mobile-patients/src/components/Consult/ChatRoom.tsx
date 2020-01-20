@@ -3875,7 +3875,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
-    if (textChange) {
+    if (textChange && !jrDoctorJoined) {
       time = 'Consult is In-progress';
     } else {
       if (diffMin <= 0) {

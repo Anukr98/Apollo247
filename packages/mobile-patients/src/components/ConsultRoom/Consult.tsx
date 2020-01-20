@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    width: 112,
+    minWidth: 112,
   },
   imageView: {
     margin: 16,
@@ -808,7 +808,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             zIndex: 1,
             shadowOpacity: 0.4,
             shadowRadius: 5,
-            elevation: 5,
+            elevation: 15,
           }
         : {};
     return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
@@ -816,7 +816,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const renderProfileChangeView = () => {
     return (
-      <View style={{ backgroundColor: theme.colors.WHITE, paddingHorizontal: 20 }}>
+      <View style={{ backgroundColor: theme.colors.WHITE, paddingHorizontal: 20, elevation: 15 }}>
         <ProfileList
           navigation={props.navigation}
           saveUserChange={true}
@@ -902,13 +902,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         selectedTitleStyle={{ fontSize: 14 }}
         style={{
           borderRadius: 0,
-
           backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
           shadowColor: colors.SHADOW_GRAY,
           shadowOffset: { width: 0, height: 10 },
           shadowOpacity: 0.4,
           shadowRadius: 8,
-          elevation: 4,
+          elevation: 14,
+        }}
+        tabViewStyle={{
+          backgroundColor: colors.CARD_BG,
         }}
         data={tabs}
         onChange={(selectedTab: string) => {
