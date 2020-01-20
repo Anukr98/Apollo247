@@ -33,7 +33,7 @@ import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
@@ -239,7 +239,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       id: 4,
       title: 'Manage Diabetes',
       image: <Diabetes style={styles.menuOptionIconStyle} />,
-      onPress: () => {},
+      onPress: () => {
+        getTokenforCM();
+      },
     },
     {
       id: 5,
@@ -315,10 +317,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
-    currentPatient && getTokenforCM(currentPatient);
-  }, [currentPatient]);
-
-  useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
@@ -329,59 +327,78 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
     callDeviceTokenAPI();
-    // currentPatient && getTokenforCM(currentPatient);
     checkForVersionUpdate();
   }, []);
 
-  const getTokenforCM = (currentPatient: any) => {
-    const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(currentPatient, 'lastName') ||
+  const getTokenforCM = async () => {
+    setshowSpinner(true);
+
+    const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+    const item = JSON.parse(retrievedItem);
+
+    const allPatients =
+      item && item.data && item.data.getCurrentPatients
+        ? item.data.getCurrentPatients.patients
+        : null;
+
+    const patientDetails = allPatients
+      ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+      : null;
+
+    const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;
 
     GenerateTokenforCM(
-      currentPatient ? (currentPatient.uhid ? currentPatient.uhid : currentPatient.id) : '',
+      patientDetails ? (patientDetails.uhid ? patientDetails.uhid : patientDetails.id) : '',
       fullName,
-      currentPatient ? (currentPatient.gender ? currentPatient.gender : '') : '',
-      currentPatient ? (currentPatient.emailAddress ? currentPatient.emailAddress : '') : '',
-      currentPatient ? (currentPatient.mobileNumber ? currentPatient.mobileNumber : '') : ''
-    ).then((token: any) => {
-      console.log(token, 'getTokenforCM');
+      patientDetails ? (patientDetails.gender ? patientDetails.gender : '') : '',
+      patientDetails ? (patientDetails.emailAddress ? patientDetails.emailAddress : '') : '',
+      patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+    )
+      .then((token: any) => {
+        console.log(token, 'getTokenforCM');
 
-      const testArray = menuOptions;
-      for (const i in testArray) {
-        if (testArray[i].id == 4) {
-          testArray[i].onPress = () => {
-            async function fetchTokenData() {
-              const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
-              console.log(tokenValue, 'tokenValue');
-              if (Platform.OS === 'ios') {
-                Vitals.vitalsToExport(tokenValue);
-                setTimeout(() => {
-                  Vitals.goToReactNative(tokenValue);
-                }, 500);
-              } else {
-                const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(
-                  currentPatient,
-                  'lastName'
-                ) || ''}`;
-                const UHID = `${g(currentPatient, 'uhid') || ''}`;
+        // const testArray = menuOptions;
+        // for (const i in testArray) {
+        // if (testArray[i].id == 4) {
+        // testArray[i].onPress = () => {
+        async function fetchTokenData() {
+          setshowSpinner(false);
 
-                tokenValue &&
-                  KotlinBridge.show(
-                    tokenValue,
-                    UHID,
-                    fullName,
-                    '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android'
-                  );
-              }
-            }
+          const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
+          console.log(tokenValue, 'tokenValue');
+          if (Platform.OS === 'ios') {
+            Vitals.vitalsToExport(tokenValue);
+            setTimeout(() => {
+              Vitals.goToReactNative(tokenValue);
+            }, 500);
+          } else {
+            const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(
+              patientDetails,
+              'lastName'
+            ) || ''}`;
+            const UHID = `${g(patientDetails, 'uhid') || ''}`;
 
-            fetchTokenData();
-          };
-          break; //Stop this loop, we found it!
+            tokenValue &&
+              KotlinBridge.show(
+                tokenValue,
+                UHID,
+                fullName,
+                '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android'
+              );
+          }
         }
-      }
-      setListValues(testArray);
-    });
+
+        fetchTokenData();
+        // };
+        // break; //Stop this loop, we found it!
+        // }
+        // }
+        // setListValues(testArray);
+      })
+      .catch(() => {
+        setshowSpinner(false);
+      });
   };
 
   useEffect(() => {
@@ -417,7 +434,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .messaging()
       .getToken()
       .then((token) => {
-        // console.log('token', token);
+        console.log('token', token);
         // console.log('DeviceInfo', DeviceInfo);
         if (token !== deviceToken2.deviceToken) {
           const input = {

@@ -31,134 +31,15 @@ import { useUIElements } from './UIElementsProvider';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 const styles = StyleSheet.create({
-  viewName: {
-    backgroundColor: theme.colors.WHITE,
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 5,
-  },
   nameTextStyle: {
     paddingTop: 2,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(13),
     letterSpacing: 0.5,
   },
-  seperatorStyle: {
-    height: 2,
-    backgroundColor: '#00b38e',
-    marginTop: 5,
-    marginHorizontal: 5,
-  },
-  hiTextStyle: {
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  descriptionTextStyle: {
-    marginTop: 12,
-    color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
-  },
-  buttonStyles: {
-    height: 40,
-    width: 180,
-    // paddingHorizontal: 26
-    marginTop: 16,
-  },
-  textStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-    paddingVertical: 8,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
   nameTextContainerStyle: {
     maxWidth: '60%',
     flexDirection: 'row',
-  },
-  textViewStyle: {
-    borderBottomWidth: 1,
-    borderColor: '#dddddd',
-    marginHorizontal: 16,
-  },
-  labelStyle: {
-    paddingVertical: 16,
-    color: theme.colors.FILTER_CARD_LABEL,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  labelViewStyle: {
-    marginHorizontal: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: theme.colors.SEPARATOR_LINE,
-  },
-  cardContainerStyle: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: Platform.OS === 'ios' ? 174 : 184,
-    zIndex: 3,
-    elevation: 5,
-  },
-  doctorView: {
-    marginHorizontal: 8,
-    ...theme.viewStyles.cardViewStyle,
-    marginVertical: 6, //16,
-    borderRadius: 10,
-  },
-  availableView: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    width: 112,
-  },
-  imageView: {
-    margin: 16,
-    marginTop: 32,
-    width: 60,
-  },
-  doctorNameStyles: {
-    paddingTop: 40,
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SEARCH_DOCTOR_NAME,
-  },
-  doctorSpecializationStyles: {
-    paddingTop: 4,
-    paddingBottom: 11.5,
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-    color: theme.colors.SKY_BLUE,
-  },
-  consultTextStyles: {
-    paddingVertical: 11.5,
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.LIGHT_BLUE,
-  },
-  separatorStyle: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
-  },
-  gotItStyles: {
-    height: 60,
-    paddingRight: 25,
-    backgroundColor: 'transparent',
-  },
-  gotItTextStyles: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
-  },
-  prepareForConsult: {
-    ...theme.viewStyles.yellowTextStyle,
-    ...theme.fonts.IBMPlexSansBold(13),
-    textAlign: 'right',
-    paddingHorizontal: 15,
-    paddingTop: 11,
-    paddingBottom: 16,
   },
 });
 export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
