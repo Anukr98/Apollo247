@@ -87,4 +87,6 @@ target 'ApolloPatient' do
 
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
 
+  pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
+
 end

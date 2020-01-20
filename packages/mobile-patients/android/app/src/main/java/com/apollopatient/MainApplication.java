@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.imagepicker.ImagePickerPackage;
 import com.opentokreactnative.OTPackage;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
@@ -88,6 +89,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new StreamPackage());
                     packages.add(new RNFirebaseRemoteConfigPackage());
                     packages.add(new RNFirebaseDatabasePackage());
+                    // packages.add(new ReactNativeExceptionHandlerPackage());
                     return packages;
                 }
 
