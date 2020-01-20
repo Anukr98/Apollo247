@@ -210,10 +210,16 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       paddingTop: 5,
     },
+    loadMorButtonDiv: {
+      textAlign: 'right',
+      paddingRight: 72,
+      paddingBottom: 23,
+    },
     loadMorButton: {
       width: 125,
       height: 32,
       paddingTop: 6,
+      paddingBottom: 6,
       borderRadius: 16,
       backgroundColor: '#fc9916',
       textAlign: 'center',
@@ -505,10 +511,11 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     <AllPatient patientData={patientList} />
                   </TabContainer>
                 )}
-
-                <AphButton className={classes.loadMorButton} onClick={() => loadMoreFunction()}>
-                  Load More
-                </AphButton>
+                <div className={classes.loadMorButtonDiv}>
+                  <AphButton className={classes.loadMorButton} onClick={() => loadMoreFunction()}>
+                    Load More
+                  </AphButton>
+                </div>
               </div>
             )}
           </div>
