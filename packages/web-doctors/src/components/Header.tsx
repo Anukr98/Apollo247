@@ -508,7 +508,7 @@ export const Header: React.FC = (props) => {
             <DialogContentText>
               {isOnline
                 ? "Hi! Seems like you've gone offline. Please click on 'Cancel' to continue."
-                : "Please make yourself online by clicking on 'Ok' button"}
+                : "You have been marked as 'Away', please click on 'Ok' to make yourself 'Online'"}
               <div className={classes.countdownLoader}>
                 <ReactCountdownClock
                   seconds={60}
