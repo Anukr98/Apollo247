@@ -48,32 +48,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: any | null,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion!.itemName, query);
-  const parts = parse(suggestion!.itemName, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span
-          key={part.text}
-          style={{
-            fontWeight: part.highlight ? 500 : 400,
-            whiteSpace: 'pre',
-          }}
-          title={suggestion!.itemName} //added by Vishal
-        >
-          {part.text}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </div>
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -426,6 +400,33 @@ export const DiagnosticPrescription: React.FC = () => {
     });
   };
 
+  function renderSuggestion(
+    suggestion: any | null,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(suggestion!.itemName, query);
+    const parts = parse(suggestion!.itemName, matches);
+
+    return (
+      otherDiagnostic.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+              title={suggestion!.itemName} //added by Vishal
+            >
+              {part.text}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
   const handleDelete = (item: any, idx: number) => {
     // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
