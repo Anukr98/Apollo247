@@ -178,6 +178,20 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
         }
       : {};
   console.log(patientAge, patientGender);
+
+  const customListner = (data) => {
+    console.log('Hmm... no more option ..time to navigate to', data);
+    let specialities = [];
+    if (data && data.specialists && data.specialists.length) {
+      specialities = data.specialists.map((item: { speciality: string }) => item.speciality.trim());
+      console.log(specialities, 'customListner specialities');
+    }
+    props.navigation.push(AppRoutes.DoctorSearchListing, {
+      specialities: specialities,
+      MoveDoctor: 'MoveDoctor',
+    });
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -244,6 +258,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
             showDocBtn={() => <CustomComponent navigation={props.navigation} />}
             {...patientGender}
             {...patientAge}
+            searchDoctorlistner={customListner}
           />
         </ErrorBoundary>
       </SafeAreaView>
