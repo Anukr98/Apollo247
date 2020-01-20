@@ -584,7 +584,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         : ''
     }`;
   };
-  
+
   const convertConsultMode = (value: any) => {
     if (value === 'PHYSICAL') {
       return 'Physical';

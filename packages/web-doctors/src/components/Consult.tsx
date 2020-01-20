@@ -100,6 +100,7 @@ const useStyles = makeStyles((theme: Theme) => {
     minimizeImg: {
       width: 'auto',
       height: '100%',
+      position: 'relative',
       zIndex: 9,
     },
     timerCls: {

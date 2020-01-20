@@ -379,12 +379,12 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       displayName
       firstName
       isActive
+      onlineStatus
       id
       languages
       lastName
       mobileNumber
       onlineConsultationFees
-      onlineStatus
       photoUrl
       physicalConsultationFees
       qualification
@@ -661,6 +661,45 @@ export const VERIFY_LOGIN_OTP = gql`
     }
   }
 `;
+export const UPDATE_DOCTOR_ONLINE_STATUS = gql`
+  mutation UpdateDoctorOnlineStatus($doctorId: String!, $onlineStatus: DOCTOR_ONLINE_STATUS!) {
+    updateDoctorOnlineStatus(doctorId: $doctorId, onlineStatus: $onlineStatus) {
+      doctor {
+        awards
+        city
+        country
+        dateOfBirth
+        doctorType
+        delegateNumber
+        emailAddress
+        experience
+        firebaseToken
+        displayName
+        firstName
+        isActive
+        id
+        languages
+        lastName
+        mobileNumber
+        onlineConsultationFees
+        onlineStatus
+        photoUrl
+        physicalConsultationFees
+        qualification
+        registrationNumber
+        salutation
+        specialization
+        state
+        streetLine1
+        streetLine2
+        streetLine3
+        zip
+        onlineStatus
+      }
+    }
+  }
+`;
+
 export const GET_CASESHEET = gql`
   query GetCaseSheet($appointmentId: String!) {
     getCaseSheet(appointmentId: $appointmentId) {

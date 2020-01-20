@@ -97,9 +97,9 @@ import {
   StyleSheet,
   AppState,
   AppStateStatus,
+  WebView,
   Image as ImageReact,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
@@ -142,7 +142,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
 import { colors } from '../../theme/colors';
-import { WebView } from 'react-native-webview';
+// import { WebView } from 'react-native-webview';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -280,6 +280,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
+
+  const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -676,6 +678,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
+          startJoinTimer(0);
           console.log(data, 'data res, adding');
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
@@ -1618,7 +1621,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    console.log('pubNubMessages', message);
+    console.log('pubNubMessages', message.message.sentBy);
+    setname(message.message.sentBy);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -2667,7 +2671,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => setUrl(rowData.url))
+          .catch(() => {
+            setUrl(rowData.url);
+          })
           .finally(() => {
             setLoading(false);
             setShowPDF(true);
@@ -2683,7 +2689,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => setUrl(rowData.url))
+          .catch(() => {
+            setUrl(rowData.url);
+          })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
@@ -2701,9 +2709,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               console.error('An error occurred', err)
             );
           })
-          .catch(() =>
-            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err))
-          )
+          .catch(() => {
+            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+          })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
@@ -2716,7 +2724,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
-    // console.log('messageView', rowData.message);
     return (
       <View
         style={{
@@ -4051,9 +4058,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     color: 'white',
                     ...theme.fonts.IBMPlexSansSemiBold(20),
                     textAlign: 'center',
+                    left: 15,
                   }}
                 >
-                  {appointmentData.doctorInfo.displayName}
+                  {name == 'JUNIOR' || 'undefined'
+                    ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
+                    : appointmentData.doctorInfo.displayName}
                 </Text>
               </>
             )}
@@ -4291,9 +4301,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             color: 'white',
             ...theme.fonts.IBMPlexSansSemiBold(20),
             textAlign: 'center',
+            left: 15,
           }}
+          numberOfLines={2}
         >
-          {appointmentData.doctorInfo.displayName}
+          {name == 'JUNIOR' || 'undefined'
+            ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
+            : appointmentData.doctorInfo.displayName}
         </Text>
         <View
           style={{

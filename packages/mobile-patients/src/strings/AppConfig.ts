@@ -11,7 +11,7 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,
@@ -86,7 +86,7 @@ const ConfigurationDev = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
@@ -95,7 +95,7 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
-  Android_Version: '1.76',
+  Android_Version: '1.83',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
 };
 
@@ -117,7 +117,7 @@ const ConfigurationQA = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
@@ -125,10 +125,9 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.9',
-  Android_Version: '1.22',
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
-  // CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  iOS_Version: '1.8',
+  Android_Version: '1.17',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
 };
 
 //Production
@@ -149,7 +148,7 @@ const ConfigurationProd = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', // PRODUCTION
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION

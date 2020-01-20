@@ -47,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 20,
       overflow: 'hidden',
       position: 'relative',
+      textAlign: 'center',
     },
     hideVideoContainer: {
       right: 15,
@@ -91,10 +92,8 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#000',
     },
     minimizeImg: {
-      position: 'absolute',
-      left: 0,
-      bottom: 0,
-      width: '100%',
+      width: 'auto',
+      position: 'relative',
       zIndex: 9,
       height: '100%',
     },

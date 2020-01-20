@@ -579,6 +579,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   patientId: string;
 
+  @Column({ default: () => 0, type: 'float' })
+  preperationTimeInSeconds: number;
+
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
 
@@ -1030,6 +1033,26 @@ export class SdDashboardSummary extends BaseEntity {
   }
 }
 //SD dashboard summary end
+
+//Doctor fee summary starts
+@Entity()
+export class DoctorFeeSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column()
+  doctorId: string;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  amountPaid: number;
+
+  @Column()
+  appointmentsCount: number;
+}
+//Doctor fee summary end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

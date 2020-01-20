@@ -205,17 +205,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatientId]);
 
   useEffect(() => {
-    setDiagnosticSlot!(null);
-    setselectedTimeSlot('');
-  }, [deliveryAddressId]);
-
-  useEffect(() => {
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
         setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
       } else {
         setDate(new Date());
+        setselectedTimeSlot('');
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
@@ -241,16 +237,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setLoading!(false);
+          setAddresses && setAddresses(addressList!);
+        })
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -637,7 +627,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View style={[styles.rowSpaceBetweenStyle, { paddingBottom: 16 }]}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true });
+              setDiagnosticSlot && setDiagnosticSlot(null);
+              setselectedTimeSlot('');
+            }}
           >
             ADD NEW ADDRESS
           </Text>
@@ -653,6 +647,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       if (val && id) {
                         setDeliveryAddressId && setDeliveryAddressId(id);
                         setDiagnosticSlot && setDiagnosticSlot(null);
+                        setselectedTimeSlot('');
                       }
                     },
                   });

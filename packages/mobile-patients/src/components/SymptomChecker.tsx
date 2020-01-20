@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
+// import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
+import { $Generator, NavigatorSDK } from '@praktice/navigator-react-native-sdk';
 // import { Generator } from 'praktice-navigator-react-native-sdk';
 import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import {
@@ -28,6 +29,7 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from './UIElementsProvider';
+import { ErrorBoundary } from '@aph/mobile-patients/src/components/ErrorBoundary';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 const styles = StyleSheet.create({
@@ -227,13 +229,23 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
             ></ProfileList>
           }
         />
-        <NavigatorSDK
-          key={currentPatient ? currentPatient.id : ''}
-          clientId={AppConfig.Configuration.PRAKTISE_API_KEY}
-          showDocBtn={() => <CustomComponent navigation={props.navigation} />}
-          {...patientGender}
-          {...patientAge}
-        />
+        <ErrorBoundary
+          onError={() => {
+            props.navigation.goBack();
+            showAphAlert!({
+              title: 'Uh oh! :(',
+              description: 'Oops! seems like we are having an issue. Please try again.',
+            });
+          }}
+        >
+          <NavigatorSDK
+            key={currentPatient ? currentPatient.id : ''}
+            clientId={AppConfig.Configuration.PRAKTISE_API_KEY}
+            showDocBtn={() => <CustomComponent navigation={props.navigation} />}
+            {...patientGender}
+            {...patientAge}
+          />
+        </ErrorBoundary>
       </SafeAreaView>
       {/* {displayAddProfile && (
         <AddProfile

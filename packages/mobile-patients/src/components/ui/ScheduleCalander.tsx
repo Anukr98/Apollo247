@@ -257,6 +257,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
           props.setselectedTimeSlot('');
           setshowSpinner(true);
           setDropArray([]);
+          setSelectedDrop(undefined);
           getDropArrayData(selectedDate);
         }}
         calendarType={type}
@@ -450,6 +451,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             onPress={() => {
               props.setdisplayoverlay(false);
               setDiagnosticSlot &&
+                selectedDrop &&
                 setDiagnosticSlot({
                   ...diagnosticSlot!,
                   slotStartTime: selectedDrop!.time.split('-')[0].trim(),
@@ -459,7 +461,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                 });
               props.setDropArray && props.setDropArray(dropArray);
               // props.setDate(date);
-              // selectedDrop && props.setselectedTimeSlot(selectedDrop!.time);
+              // props.setselectedTimeSlot(selectedDrop ? selectedDrop.time : '');
             }}
             style={{
               marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,

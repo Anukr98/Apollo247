@@ -1,5 +1,5 @@
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
 
@@ -79,6 +79,13 @@ export const AppCommonDataProvider: React.FC = (props) => {
         const locationFromStorage = await AsyncStorage.multiGet(['locationDetails']);
         const location = locationFromStorage[0][1];
         _setLocationDetails(JSON.parse(location || 'null'));
+        if (location) {
+          doRequestAndAccessLocation()
+            .then((response) => {
+              _setLocationDetails(response);
+            })
+            .catch(() => {});
+        }
       } catch (error) {
         console.log('Failed to get cart items from local storage.');
       }

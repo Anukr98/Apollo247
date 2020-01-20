@@ -6,7 +6,9 @@ import {
   SdDashboardSummary,
   FeedbackDashboardSummary,
   PhrDocumentsSummary,
+  DoctorFeeSummary,
 } from 'consults-service/entities';
+import { ConsultMode } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -14,6 +16,7 @@ import { SdDashboardSummaryRepository } from 'consults-service/repositories/sdDa
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import _isEmpty from 'lodash/isEmpty';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -32,8 +35,13 @@ export const sdDashboardSummaryTypeDefs = gql`
     medDocCount: Int
   }
 
+  type DoctorFeeSummaryResult {
+    status: Boolean
+  }
+
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
+    updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
   }
@@ -44,6 +52,10 @@ type DashboardSummaryResult = {
   doctorName: string;
   appointmentDateTime: Date;
   totalConsultation: number;
+};
+
+type DoctorFeeSummaryResult = {
+  status: boolean;
 };
 
 type FeedbackSummaryResult = {
@@ -195,9 +207,48 @@ const updateSdSummary: Resolver<
   return { doctorId: '', doctorName: '', appointmentDateTime: new Date(), totalConsultation: 0 };
 };
 
+const updateDoctorFeeSummary: Resolver<
+  null,
+  { summaryDate: Date; doctorId: string },
+  ConsultServiceContext,
+  DoctorFeeSummaryResult
+> = async (parent, args, context) => {
+  const { docRepo, dashboardRepo } = getRepos(context);
+  const docsList = await docRepo.getAllDoctors(args.doctorId);
+  docsList.forEach(async (doctor) => {
+    const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
+      doctor.id,
+      args.summaryDate,
+      ConsultMode.BOTH
+    );
+    const totalFee: number[] = [];
+    if (totalConsultations.length) {
+      totalConsultations.forEach(async (consultation) => {
+        const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
+          consultation.id
+        );
+        if (!_isEmpty(paymentDetails) && paymentDetails) {
+          totalFee.push(paymentDetails.amountPaid);
+        }
+      });
+      const feeAmount = totalFee.reduce((total, num) => total + num, 0);
+      const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
+        appointmentDateTime: args.summaryDate,
+        doctorId: doctor.id,
+        amountPaid: feeAmount,
+        appointmentsCount: totalConsultations.length,
+      };
+      await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
+    }
+  });
+
+  return { status: true };
+};
+
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
+    updateDoctorFeeSummary,
     updatePhrDocSummary,
     updateConsultRating,
   },

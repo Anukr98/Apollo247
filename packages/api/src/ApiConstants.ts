@@ -87,6 +87,7 @@ export enum ApiConstants {
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
   PATIENT_INITIATE_REASON = 'initiated by patient',
+  PATIENT_NOSHOW_REASON = 'Patient did not initate the appointment, no casesheet',
 
   //pepipost configurations
   PEPIPOST_API_KEY = '0e396e4e9b5247d267c9a536cd154869',
@@ -155,6 +156,8 @@ export enum ApiConstants {
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
+
+  NOTIFICATION_DEFAULT_SOUND = 'default',
 
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',

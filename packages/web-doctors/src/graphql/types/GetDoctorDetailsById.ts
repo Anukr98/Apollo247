@@ -114,12 +114,12 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   displayName: string | null;
   firstName: string;
   isActive: boolean;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
   id: string;
   languages: string | null;
   lastName: string;
   mobileNumber: string;
   onlineConsultationFees: string;
-  onlineStatus: DOCTOR_ONLINE_STATUS;
   photoUrl: string | null;
   physicalConsultationFees: string;
   qualification: string | null;
