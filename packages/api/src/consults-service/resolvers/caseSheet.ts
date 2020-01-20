@@ -39,6 +39,7 @@ import { PatientLifeStyleRepository } from 'profiles-service/repositories/patien
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
+import { differenceInSeconds } from 'date-fns';
 
 export type DiagnosisJson = {
   name: string;
@@ -735,6 +736,12 @@ const modifyCaseSheet: Resolver<
       medicalHistoryInputs
     );
   }
+
+  getCaseSheetData.updatedDate = new Date();
+  getCaseSheetData.preperationTimeInSeconds = differenceInSeconds(
+    getCaseSheetData.updatedDate,
+    getCaseSheetData.createdDate
+  );
 
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;

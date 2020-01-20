@@ -6,6 +6,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -20,6 +21,8 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
     try {
@@ -64,6 +67,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     console.log('route', route);
   };
+
+  useEffect(() => {
+    if (!currentPatient) {
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const getData = (routeName: String) => {
     async function fetchData() {
@@ -135,7 +144,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
-        props.navigation.navigate('CONSULT ROOM');
+        props.navigation.navigate('APPOINTMENTS');
         break;
 
       case 'Medicine':

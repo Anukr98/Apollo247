@@ -6,8 +6,21 @@ import {
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { format } from 'date-fns';
-import { CASESHEET_STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import { format, subMinutes } from 'date-fns';
+import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
+
+import {
+  CASESHEET_STATUS,
+  APPOINTMENT_TYPE,
+  TRANSFER_STATUS,
+  AppointmentNoShow,
+  STATUS,
+  REQUEST_ROLES,
+  TRANSFER_INITIATED_TYPE,
+} from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
 
 export const appointmentNotificationTypeDefs = gql`
   type ApptReminderResult {
@@ -16,9 +29,16 @@ export const appointmentNotificationTypeDefs = gql`
     apptsListCount: Int
   }
 
+  type noShowReminder {
+    status: Boolean
+    apptsListCount: Int
+    noCaseSheetCount: Int
+  }
+
   extend type Query {
     sendApptReminderNotification(inNextMin: Int): ApptReminderResult!
     sendPhysicalApptReminderNotification(inNextMin: Int): ApptReminderResult!
+    noShowReminderNotification: noShowReminder!
   }
 `;
 
@@ -26,6 +46,12 @@ type ApptReminderResult = {
   status: boolean;
   currentTime: string;
   apptsListCount: number;
+};
+
+type noShowReminder = {
+  status: boolean;
+  apptsListCount: number;
+  noCaseSheetCount: number;
 };
 
 const sendApptReminderNotification: Resolver<
@@ -126,9 +152,60 @@ const sendPhysicalApptReminderNotification: Resolver<
   };
 };
 
+const noShowReminderNotification: Resolver<
+  null,
+  {},
+  ConsultServiceContext,
+  noShowReminder
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const date = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
+  const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointments = await apptsrepo.getAppointmentsByDate(subMinutes(new Date(date), 3));
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const noShowRepo = consultsDb.getCustomRepository(AppointmentNoShowRepository);
+  let noCaseSheet = 0;
+  if (appointments.length) {
+    appointments.forEach(async (appt) => {
+      const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(appt.id);
+      if (caseSheetDetails.length === 0) {
+        noCaseSheet++;
+        const rescheduleAppointmentAttrs = {
+          appointmentId: appt.id,
+          rescheduleReason: ApiConstants.PATIENT_NOSHOW_REASON.toString(),
+          rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+          rescheduleInitiatedId: appt.patientId,
+          autoSelectSlot: 0,
+          rescheduledDateTime: new Date(),
+          rescheduleStatus: TRANSFER_STATUS.INITIATED,
+          appointment: appt,
+        };
+        await rescheduleRepo.rescheduleAppointment(
+          rescheduleAppointmentAttrs,
+          consultsDb,
+          doctorsDb,
+          patientsDb
+        );
+        const noShowAttrs: Partial<AppointmentNoShow> = {
+          noShowType: REQUEST_ROLES.PATIENT,
+          appointment: appt,
+          noShowStatus: STATUS.NO_SHOW,
+        };
+        await noShowRepo.saveNoShow(noShowAttrs);
+      }
+    });
+  }
+  return {
+    status: true,
+    apptsListCount: appointments.length,
+    noCaseSheetCount: noCaseSheet,
+  };
+};
+
 export const appointmentNotificationResolvers = {
   Query: {
     sendApptReminderNotification,
+    noShowReminderNotification,
     sendPhysicalApptReminderNotification,
   },
 };

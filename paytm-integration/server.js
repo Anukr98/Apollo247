@@ -32,6 +32,47 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
+app.get('/invokeNoShowReminder', (req, res) => {
+  const requestJSON = {
+    query: 'query { noShowReminderNotification {status apptsListCount noCaseSheetCount}}',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(
+        response.data.data.noShowReminderNotification.noCaseSheetCount,
+        'notifications response is....'
+      );
+      const fileName =
+        '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
+        new Date().getFullYear() +
+        '-' +
+        (new Date().getMonth() + 1) +
+        '-' +
+        new Date().getDate() +
+        '-apptNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.noShowReminderNotification.noCaseSheetCount +
+        ' - ' +
+        response.data.data.noShowReminderNotification.apptsListCount;
+      ('\n-------------------\n');
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
 app.get('/invokeApptReminder', (req, res) => {
   console.log(req.query.inNextMin, 'inn ext mins');
   const requestJSON = {
@@ -880,6 +921,17 @@ app.get('/processOrders', (req, res) => {
                   orderLineItems.push(lineItem);
                 }
               );
+
+              //logic to add delivery charges line item starts here
+              const orderDetails = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
+              if (orderDetails.orderType == 'CART_ORDER') {
+                const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
+                if (isDeliveryChargeApplicable(amountPaid)) {
+                  orderLineItems.push(getDeliveryChargesLineItem());
+                }
+              }
+              //logic to add delivery charges line item ends here
+
               let prescriptionImages = [];
               let orderType = 'FMCG';
               if (
@@ -1190,24 +1242,30 @@ app.get('/processOrderById', (req, res) => {
         const orderLineItems = [];
         const orderPrescriptionUrl = [];
         let requestType = 'NONCART';
-        if (
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderType == 'CART_ORDER'
-        ) {
+
+        const orderDetails = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
+        if (orderDetails.orderType == 'CART_ORDER') {
           requestType = 'CART';
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderLineItems.map(
-            (item) => {
-              const lineItem = {
-                ItemID: item.medicineSKU,
-                ItemName: item.medicineName,
-                Qty: item.quantity * item.mou,
-                Pack: item.quantity,
-                MOU: item.mou,
-                Price: item.price,
-                Status: true,
-              };
-              orderLineItems.push(lineItem);
-            }
-          );
+
+          orderDetails.medicineOrderLineItems.map((item) => {
+            const lineItem = {
+              ItemID: item.medicineSKU,
+              ItemName: item.medicineName,
+              Qty: item.quantity * item.mou,
+              Pack: item.quantity,
+              MOU: item.mou,
+              Price: item.price,
+              Status: true,
+            };
+            orderLineItems.push(lineItem);
+          });
+
+          //logic to add delivery charges lineItem starts here
+          const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
+          if (isDeliveryChargeApplicable(amountPaid)) {
+            orderLineItems.push(getDeliveryChargesLineItem());
+          }
+          //logic to add delivery charges lineItem ends here
         }
         let prescriptionImages = [];
         let orderType = 'FMCG';
@@ -1386,6 +1444,26 @@ app.get('/processOrderById', (req, res) => {
       });
     });
 });
+
+const isDeliveryChargeApplicable = (totalAmountPaid) => {
+  if (totalAmountPaid === null || totalAmountPaid === '' || isNaN(totalAmountPaid)) {
+    totalAmountPaid = 0;
+  }
+  return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+};
+
+//returns constant response object
+const getDeliveryChargesLineItem = () => {
+  return {
+    ItemID: 'ESH0002',
+    ItemName: 'E SHOP SHIPPING CHARGE',
+    Qty: 1, //Pack* MOU
+    Pack: 1,
+    MOU: 1,
+    Price: 25.0,
+    Status: true,
+  };
+};
 
 app.listen(PORT, () => {
   console.log('Running on ' + PORT);

@@ -187,7 +187,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     return '';
     if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'slotStartTime')) {
       const _date = moment(g(diagnosticSlot, 'date')).format('D MMM YYYY');
-      const _time = moment(g(diagnosticSlot, 'slotStartTime')!.trim(), 'hh:mm').format('hh:mm a');
+      const _time = moment(g(diagnosticSlot, 'slotStartTime')!.trim(), 'hh:mm').format('hh:mm A');
       return `${_date}, ${_time}`;
     } else {
       return '';

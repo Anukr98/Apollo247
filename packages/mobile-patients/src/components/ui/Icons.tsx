@@ -745,3 +745,7 @@ export const PrescriptionMenu: React.FC<IconProps> = (props) => (
 export const Gift: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_gift.png')} />
 );
+
+export const PrescriptionPad: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_prescription_pad.png')} />
+);

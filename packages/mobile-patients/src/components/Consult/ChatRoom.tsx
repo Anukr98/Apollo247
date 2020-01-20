@@ -1414,9 +1414,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
-    '4. Avail 1 free follow-up*\n',
-    '5. Chat with your doctor**\n',
-    '* 7 days after your first consultation.\n\n',
+    '4. Avail 1 free follow-up (Within 7 days after your first consultation.)\n',
+    '5. Chat with your doctor\n\n',
     `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
@@ -1960,7 +1959,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     {moment
                       .utc(rowData.transferInfo.transferDateTime)
                       .local()
-                      .format('Do MMMM, dddd \nhh:mm a')}
+                      .format('Do MMMM, dddd \nhh:mm A')}
                   </Text>
                   <TouchableOpacity
                     activeOpacity={1}
@@ -2330,7 +2329,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   color: 'white',
                 }}
               >
-                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm A')}
               </Text>
               <View
                 style={{
@@ -2524,7 +2523,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 type === 'Followup'
                   ? rowData.transferInfo.folloupDateTime
                   : rowData.transferInfo.transferDateTime
-              ).format('Do MMMM, dddd \nhh:mm a')}
+              ).format('Do MMMM, dddd \nhh:mm A')}
 
               {/* {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
               {/* {moment(rowData.transferDateTime ? rowData.transferDateTime : nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
@@ -5794,7 +5793,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         description="How was your overall experience with the following consultation —"
         info={{
           title: `Dr. ${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
-          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm a')}`,
+          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
           photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
         }}
         type={FEEDBACKTYPE.CONSULT}
