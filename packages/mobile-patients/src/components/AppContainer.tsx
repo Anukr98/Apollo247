@@ -3,22 +3,47 @@ import { NavigatorContainer } from '@aph/mobile-patients/src/components/Navigato
 import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React from 'react';
-import { Text, TextInput } from 'react-native';
+import { Text, TextInput, Alert, BackAndroid } from 'react-native';
 import { DiagnosticsCartProvider } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppCommonDataProvider } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 
-// export const AppContainer: React.FC = () => {
+const reporter = (error: string, type?: 'JS' | 'Native') => {
+  // Logic for reporting to devs
+  // Example : Log issues to github issues using github apis.
+  console.log(error, type);
+};
 
-//   return (
-//     <AuthProvider>
-//       <ShoppingCartProvider>
-//         <UIElementsProvider>
-//           <NavigatorContainer />
-//         </UIElementsProvider>
-//       </ShoppingCartProvider>
-//     </AuthProvider>
-//   );
-// };
+const errorHandler = (e: any, isFatal: boolean) => {
+  if (isFatal) {
+    reporter(e, 'JS');
+    Alert.alert(
+      'Uh oh.. :(',
+      'Oops! Unexpected error occurred. We have reported this to our team. Please close the app and start again.',
+      [
+        {
+          text: 'OK, GOT IT',
+          onPress: () => {
+            BackAndroid.exitApp();
+          },
+        },
+      ]
+    );
+  } else {
+    console.log(e); // So that we can see it in the ADB logs in case of Android if needed
+  }
+};
+
+setJSExceptionHandler(errorHandler);
+
+setNativeExceptionHandler((exceptionString) => {
+  reporter(exceptionString, 'Native');
+  // This is your custom global error handler
+  // You do stuff likehit google analytics to track crashes.
+  // or hit a custom api to inform the dev team.
+  //NOTE: alert or showing any UI change via JS
+  //WILL NOT WORK in case of NATIVE ERRORS.
+});
 
 interface AppContainerTypes {}
 
