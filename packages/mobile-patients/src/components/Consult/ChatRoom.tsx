@@ -266,7 +266,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [heightList, setHeightList] = useState<number>(
     isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
   );
-
+  const [status, setStatus] = useState<STATUS>(appointmentData.status);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
@@ -394,6 +394,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const stopConsultJr = '^^#stopconsultJr';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -1263,7 +1264,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           );
 
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
-
+          setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
           if (toStopTimer) {
             if (appointmentSeniorDoctorStarted) {
               stopCallAbondmentTimer();
@@ -1736,6 +1737,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
         setShowCallAbandmentPopup(true);
+      } else if (message.message.message === appointmentComplete) {
+        setTextChange(false);
+        setStatus(STATUS.COMPLETED);
       }
     } else {
       console.log('succss');
@@ -3882,14 +3886,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
-    if (textChange) {
+    if (textChange && !jrDoctorJoined) {
       time = 'Consult is In-progress';
     } else {
-      if (diffMin <= 0) {
-        time =
-          appointmentData.status === STATUS.COMPLETED
-            ? `Consult is completed`
-            : `Will be joining soon`;
+      if (status === STATUS.COMPLETED) {
+        time = `Consult is completed`;
+      } else if (diffMin <= 0) {
+        time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
         time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
