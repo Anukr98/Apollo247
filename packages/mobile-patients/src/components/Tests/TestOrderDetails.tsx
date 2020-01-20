@@ -152,7 +152,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm a');
+    return moment(time).format('hh:mm A');
   };
 
   const renderOrderHistory = () => {

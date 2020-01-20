@@ -190,8 +190,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         const t = finalaray!
           .slotInfo!.filter((item) => item!.status != 'booked')
           .filter((item) =>
-            moment(item!.startTime!.trim(), 'hh:mm').isSameOrBefore(
-              moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'hh:mm')
+            moment(item!.endTime!.trim(), 'HH:mm').isSameOrBefore(
+              moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
             )
           )
           .filter((item) =>
@@ -201,7 +201,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             moment()
               .format('DMY')
               .toString()
-              ? moment(item!.startTime!.trim(), 'hh:mm').isSameOrAfter(
+              ? moment(item!.startTime!.trim(), 'HH:mm').isSameOrAfter(
                   moment(new Date()).add(
                     AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
                     'minutes'

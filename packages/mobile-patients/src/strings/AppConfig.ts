@@ -11,12 +11,12 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2,
-  DIAGNOSTIC_MAX_SLOT_TIME: '11:30', // 24 hours format
+  DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
 };
 
 const PharmaApiConfig = {
@@ -96,6 +96,7 @@ const ConfigurationDev = {
   ...appStaticVariables,
   iOS_Version: '1.7',
   Android_Version: '1.76',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
 };
 
 // QA
@@ -124,8 +125,10 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.8',
+  iOS_Version: '1.9',
   Android_Version: '1.22',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  // CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
 };
 
 //Production
@@ -156,6 +159,7 @@ const ConfigurationProd = {
   ...appStaticVariables,
   iOS_Version: '1.7',
   Android_Version: '1.16',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
 };
 
 const Configuration =
@@ -330,85 +334,88 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'Payment Issues in online pharmacy payments',
       'Area pharmacy store not found on app',
+      'Cancel the medicine order',
+      'Delay in pharmacy order',
       'Difference in quantity of medicine delivered',
-      'Excess amount charged on delivery Delay in Pharmacy Order',
-      'Medicines not delivered',
+      'Excess amount charged on delivery',
+      'Inappropriate attitude and behavior of pharmacy staff',
       'Incorrect medicines',
-      'Issues in Order confirmations',
+      'Issues in order confirmations',
+      'Medicines not delivered',
+      'Order cancelled, no refund',
       'Orders cancelled without any information',
-      'Order Cancelled, No Refund',
-      'Inappropriate Attitude and Behavior of Pharmacy staff',
-      'Updates in Order delivery or status of the order',
-      'Software - Not User Friendly',
+      'Payment issues in online pharmacy',
+      'Software not user-friendly',
+      'Updates in order delivery or status of the order',
     ],
   },
   {
-    category: 'Virtual Consult',
+    category: 'Virtual/Online Consult',
     options: [
-      'Require Reschedule',
-      'Delay in consult',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
       'Application issues (bandwidth & payment errors)',
+      'Behavior and attitude of the doctor',
+      'Delay in consult',
+      'Delayed prescription',
       'Doctor not available',
-      'No past / Upcoming consultation details',
       'How to consult virtually – demo video',
+      'No past / upcoming consultation details',
+      'No updates on delays, reschedules or cancellations of the consult',
+      'Require reschedule',
+      'Payment issues',
     ],
   },
   {
     category: 'Health Records',
     options: [
+      'Add multiple UHID’s linked to other mobile numbers',
+      'Delay in responses to queries',
       'Incomplete health records',
-      'Delay in responses to Queries',
+      'Issues in downloading the records',
+      'No / Wrong UHID',
+      'No records available for linked UHID',
       'Personal details are not editable',
       'Unable to see my reports',
-      'No / Wrong UHID',
-      'Add multiple UHID’s linked to other mobile numbers',
-      'No records available for linked UHID',
-      'Issues in downloading the records',
     ],
   },
   {
     category: 'Physical Consult',
     options: [
-      'Require Reschedule',
-      'Long Waiting time for Physical consult',
+      'App appointment dishonored at confirmed time slot',
+      'Application issues(bandwidth & payment errors)',
+      'Behavior and attitude of the doctor',
+      "Can't find doctor’s name in respective list",
+      'Delayed prescription',
+      'Doctor not available',
+      'Long waiting time for physical consult',
+      'No past / upcoming consultation details',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
-      'Application issues(bandwidth & payment errors)',
-      'Doctor not available',
-      'App appointment dishonored at confirmed time slot',
-      'No past / Upcoming consultation details',
-      "Can't find Doctor’s name in respective list",
+      'Require reschedule',
     ],
   },
   {
     category: 'Feedback',
     options: [
-      'Feedback on Consultation',
-      'Feedback on Health Records',
-      'Feedback on Medicine Deliver',
+      'Feedback on app',
+      'Feedback on consultation',
+      'Feedback on health records',
+      'Feedback on medicine deliver',
     ],
   },
   {
     category: 'Diagnostics',
     options: [
-      'Require Reschedule',
-      'Payment Issues while ordering',
-      'Sample pick up related',
       'Excess amount related',
-      'Issues in Order confirmation',
+      'Issues in order confirmation',
+      'Payment issues while ordering',
       'Pickup cancelled without any information',
-      'Pickup Cancelled, No Refund',
+      'Pickup cancelled, no refund',
       'Report not received',
-      'Wrong report received',
+      'Require reschedule',
+      'Sample pick up related',
       'Sample pick up staff related',
+      'Wrong report received',
     ],
   },
 ];

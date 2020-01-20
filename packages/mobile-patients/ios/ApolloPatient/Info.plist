@@ -35,13 +35,23 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>apolloPatients</string>
+				<string>apollopatients</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>vita-app-chron</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FirebaseScreenReportingEnabled</key>
+	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>ITunesAppleID</key>
 	<string>1491463275</string>
@@ -73,9 +83,9 @@
 	<key>NSContactsUsageDescription</key>
 	<string>${PRODUCT_NAME} wants to access your contacts list.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>${PRODUCT_NAME} wants to access your health to share data.</string>
+	<string>Please allow access to Health kit so we may show you information about your physical activity.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>${PRODUCT_NAME} wants to access your health to update data.</string>
+	<string>Please allow access to Health kit so we may show you information about your physical activity.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This will enable the nearby location functionality to get nearest doctors. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -105,6 +115,12 @@
 		<string>IBMPlexSans-ExtraLight.ttf</string>
 		<string>IBMPlexSans-Bold.ttf</string>
 		<string>IBMPlexSans-BoldItalic.ttf</string>
+		<string>Comfortaa_Regular.ttf</string>
+		<string>OpenSans-Bold.ttf</string>
+		<string>OpenSans-ExtraBold.ttf</string>
+		<string>OpenSans-Light.ttf</string>
+		<string>OpenSans-Regular.ttf</string>
+		<string>OpenSans-Semibold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -121,6 +137,8 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>
