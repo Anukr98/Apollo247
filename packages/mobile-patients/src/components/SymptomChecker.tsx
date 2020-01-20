@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
+// import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
+import { $Generator, NavigatorSDK } from '@praktice/navigator-react-native-sdk';
 // import { Generator } from 'praktice-navigator-react-native-sdk';
 import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import {
