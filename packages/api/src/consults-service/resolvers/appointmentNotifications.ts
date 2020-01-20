@@ -20,6 +20,7 @@ import {
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
 
 export const appointmentNotificationTypeDefs = gql`
   type ApptReminderResult {
@@ -30,6 +31,8 @@ export const appointmentNotificationTypeDefs = gql`
 
   type noShowReminder {
     status: Boolean
+    apptsListCount: Int
+    noCaseSheetCount: Int
   }
 
   extend type Query {
@@ -47,6 +50,8 @@ type ApptReminderResult = {
 
 type noShowReminder = {
   status: boolean;
+  apptsListCount: number;
+  noCaseSheetCount: number;
 };
 
 const sendApptReminderNotification: Resolver<
@@ -159,13 +164,15 @@ const noShowReminderNotification: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const noShowRepo = consultsDb.getCustomRepository(AppointmentNoShowRepository);
+  let noCaseSheet = 0;
   if (appointments.length) {
     appointments.forEach(async (appt) => {
       const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(appt.id);
       if (caseSheetDetails.length === 0) {
+        noCaseSheet++;
         const rescheduleAppointmentAttrs = {
           appointmentId: appt.id,
-          rescheduleReason: '',
+          rescheduleReason: ApiConstants.PATIENT_NOSHOW_REASON.toString(),
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
           rescheduleInitiatedId: appt.patientId,
           autoSelectSlot: 0,
@@ -190,6 +197,8 @@ const noShowReminderNotification: Resolver<
   }
   return {
     status: true,
+    apptsListCount: appointments.length,
+    noCaseSheetCount: noCaseSheet,
   };
 };
 

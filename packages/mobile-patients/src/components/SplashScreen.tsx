@@ -188,7 +188,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
-        props.navigation.navigate('CONSULT ROOM');
+        props.navigation.navigate('APPOINTMENTS');
         break;
 
       case 'Medicine':
