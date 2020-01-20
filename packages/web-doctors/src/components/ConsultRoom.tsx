@@ -825,7 +825,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span>{rowData.message}</span>
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
                 {rowData!.messageDate && (
-                  <div className={classes.timeStampPatient}>{convertChatTime(rowData.messageDate)}</div>
+                  <div className={classes.timeStampPatient}>
+                    {convertChatTime(rowData.messageDate)}
+                  </div>
                 )}
               </div>
             ) : (
