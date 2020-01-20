@@ -20,6 +20,7 @@ import {
   View,
   TextInputProps,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
@@ -112,6 +113,35 @@ const styles = StyleSheet.create({
   placeholderTextStyle: {
     ...theme.viewStyles.text('M', 18, '#01475b'),
   },
+  paginationStyle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    width: width - 60,
+    paddingLeft: 20,
+  },
+  pastDotStyle: {
+    height: 6,
+    width: 6,
+    backgroundColor: theme.colors.APP_GREEN,
+    borderRadius: 3,
+    marginHorizontal: 2,
+  },
+  nextDotStyle: {
+    backgroundColor: theme.colors.SKY_BLUE,
+    opacity: 0.4,
+  },
+  activeDotStyle: {
+    height: 8,
+    width: 8,
+    backgroundColor: theme.colors.SKY_BLUE,
+    borderRadius: 4,
+    marginHorizontal: 1,
+  },
 });
 
 type Slide = {
@@ -133,8 +163,6 @@ type Slide = {
   onSubmitValidation?: RegExp[];
   validationMessage?: string;
 };
-
-const style = { height: 56, width: 56 };
 
 const slides: Slide[] = [
   {
@@ -336,6 +364,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       </View>
     );
   };
+
   const _renderPrevButton = () => {
     return (
       <View>
@@ -375,8 +404,9 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       setcurrentIndex(index);
     }
   };
+
   const onSlideChange = (index: number) => {
-    console.log(index, 'on chande');
+    Keyboard.dismiss();
     const validations = index > 0 && slides[index - 1].onSubmitValidation;
     if (validations) {
       const inputDataType = slides[index - 1].inputData.filter((i) => i === 'value');
@@ -573,73 +603,22 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
     let a = [];
     if (type === 'p') {
       for (let index = 0; index < count; index++) {
-        a.push(
-          <View
-            style={[
-              {
-                height: 12,
-                width: 12,
-                backgroundColor: theme.colors.APP_GREEN,
-                borderRadius: 6,
-                marginHorizontal: 3,
-              },
-            ]}
-          />
-        );
+        a.push(<View style={styles.pastDotStyle} />);
       }
       return a;
     } else if (type === 'n') {
       for (let index = 0; index < count; index++) {
-        a.push(
-          <View
-            style={[
-              {
-                height: 12,
-                width: 12,
-                backgroundColor: theme.colors.SKY_BLUE,
-                borderRadius: 6,
-                opacity: 0.4,
-                marginHorizontal: 3,
-              },
-            ]}
-          />
-        );
+        a.push(<View style={[styles.pastDotStyle, styles.nextDotStyle]} />);
       }
       return a;
     } else {
-      return [
-        <View
-          style={[
-            {
-              height: 16,
-              width: 16,
-              backgroundColor: theme.colors.SKY_BLUE,
-              borderRadius: 8,
-              marginHorizontal: 1,
-            },
-          ]}
-        />,
-      ];
+      return [<View style={[styles.activeDotStyle]} />];
     }
   };
 
   const renderPagination = (current: number, total: number) => {
     return (
-      <View
-        style={[
-          {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: 'absolute',
-            bottom: 26,
-            left: 20,
-            width: width - 60,
-            paddingLeft: 20,
-          },
-        ]}
-      >
+      <View style={styles.paginationStyle}>
         {renderDots(current, 'p').map((i) => i)}
         {renderDots(1, 'c').map((i) => i)}
         {renderDots(total - current, 'n').map((i) => i)}
@@ -663,8 +642,18 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
           renderNextButton={_renderNextButton}
           renderPrevButton={_renderPrevButton}
           renderDoneButton={_renderNextButton}
-          dotStyle={{ backgroundColor: theme.colors.CLEAR }}
-          activeDotStyle={{ backgroundColor: theme.colors.CLEAR }}
+          dotStyle={[
+            styles.pastDotStyle,
+            {
+              backgroundColor: theme.colors.CLEAR,
+            },
+          ]}
+          activeDotStyle={[
+            styles.activeDotStyle,
+            {
+              backgroundColor: theme.colors.CLEAR,
+            },
+          ]}
           onDone={() => {
             values && props.onDonePress(values);
           }}
