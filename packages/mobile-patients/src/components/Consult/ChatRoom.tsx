@@ -266,7 +266,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [heightList, setHeightList] = useState<number>(
     isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
   );
-
+  const [status, setStatus] = useState<STATUS>(appointmentData.status);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
@@ -392,6 +392,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const stopConsultJr = '^^#stopconsultJr';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -1260,7 +1261,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           );
 
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
-
+          setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
           if (toStopTimer) {
             if (appointmentSeniorDoctorStarted) {
               stopCallAbondmentTimer();
@@ -1280,47 +1281,47 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
     if (Platform.OS === 'ios') {
-       ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+      ExportDeviceToken.getPushNotificationToken(handlePushNotification);
     } else {
-      handlePushNotification('')
+      handlePushNotification('');
     }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
     console.log('Device Token Received', deviceToken);
     try {
-       const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
-    console.log('android:', androidToken.deviceToken);
+      const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
+      const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
+      console.log('android:', androidToken.deviceToken);
 
-    if (Platform.OS === 'ios') {
-      pubnub.push.addChannels(
-        {
-          channels: [channel],
-          device: deviceToken,
-          pushGateway: 'apns',
-        },
-        (status: any) => {
-          if (status.error) {
-            console.log('operation failed w/ error:', status);
-          } else {
-            console.log('operation done!');
+      if (Platform.OS === 'ios') {
+        pubnub.push.addChannels(
+          {
+            channels: [channel],
+            device: deviceToken,
+            pushGateway: 'apns',
+          },
+          (status: any) => {
+            if (status.error) {
+              console.log('operation failed w/ error:', status);
+            } else {
+              console.log('operation done!');
+            }
           }
-        }
-      );
-      console.log('ios:', token);
-      // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
-    } else {
-      console.log('androidtoken:', token);
-      pubnub.push.addChannels({
-        channels: [channel],
-        device: androidToken,
-        pushGateway: 'gcm', // apns, gcm, mpns
-      });
-      // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
-    }
+        );
+        console.log('ios:', token);
+        // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
+      } else {
+        console.log('androidtoken:', token);
+        pubnub.push.addChannels({
+          channels: [channel],
+          device: androidToken,
+          pushGateway: 'gcm', // apns, gcm, mpns
+        });
+        // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+      }
     } catch (error) {
-        console.log('ioserror:', error);
+      console.log('ioserror:', error);
     }
   };
 
@@ -1617,7 +1618,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('pubNubMessages', message);
+    console.log('pubNubMessages', message);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -1732,6 +1733,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
         setShowCallAbandmentPopup(true);
+      } else if (message.message.message === appointmentComplete) {
+        setTextChange(false);
+        setStatus(STATUS.COMPLETED);
       }
     } else {
       console.log('succss');
@@ -3878,11 +3882,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (textChange && !jrDoctorJoined) {
       time = 'Consult is In-progress';
     } else {
-      if (diffMin <= 0) {
-        time =
-          appointmentData.status === STATUS.COMPLETED
-            ? `Consult is completed`
-            : `Will be joining soon`;
+      if (status === STATUS.COMPLETED) {
+        time = `Consult is completed`;
+      } else if (diffMin <= 0) {
+        time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
         time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
