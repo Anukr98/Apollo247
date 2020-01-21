@@ -455,6 +455,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 4,
       },
     },
+    tabBodypadding: {
+      margin: '0 20px',
+      padding: '0 15px 15px 15px',
+    },
     tabBodyTabs: {
       backgroundColor: 'transparent',
       margin: 8,
@@ -2575,7 +2579,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               />
             </Button>
           </div>
-          <div className={classes.tabBody}>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
               We are sorry, but it seems your patient is no longer active on the application. You
               may wish to reschedule this consult.
