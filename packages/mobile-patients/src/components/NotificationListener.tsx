@@ -299,7 +299,29 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Patient_Noshow_Reschedule_Appointment':
         {
-          showChatRoomAlert(data, 'Patient_Noshow_Reschedule_Appointment');
+          showAphAlert!({
+            title: ' ',
+            description: data.content,
+            CTAs: [
+              {
+                text: 'CLAIM REFUND',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'RESCHEDULE',
+                onPress: () => {
+                  console.log(
+                    `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
+                  );
+                  getAppointmentData(data.appointmentId, notificationType, '');
+                },
+                type: 'orange-button',
+              },
+            ],
+          });
         }
         break;
       case 'Patient_Cancel_Appointment': {

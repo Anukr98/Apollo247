@@ -684,9 +684,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                   ) : item.status == STATUS.PENDING ||
                     dateIsAfterconsult ||
-                    item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
+                    item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                    item.status == STATUS.NO_SHOW ||
+                    item.status == STATUS.CALL_ABANDON ? (
                     <View>
-                      {item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
+                      {item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                      item.status == STATUS.NO_SHOW ||
+                      item.status == STATUS.CALL_ABANDON ? (
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
