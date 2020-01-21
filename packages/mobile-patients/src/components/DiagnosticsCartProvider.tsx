@@ -356,6 +356,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPinCode('');
     setClinics([]);
     setCoupon(null);
+    setDiagnosticSlot(null);
   };
 
   useEffect(() => {
