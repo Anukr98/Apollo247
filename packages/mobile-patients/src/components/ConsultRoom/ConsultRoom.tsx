@@ -265,7 +265,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (enableCM) {
       setMenuViewOptions([1, 2, 3, 4, 5, 6]);
     } else {
-      setMenuViewOptions([1, 2, 3, 5, 6]);
+      setMenuViewOptions([1, 2, 3, 5]);
     }
   }, [enableCM]);
 
