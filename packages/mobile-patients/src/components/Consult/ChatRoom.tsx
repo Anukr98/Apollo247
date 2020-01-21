@@ -97,9 +97,9 @@ import {
   StyleSheet,
   AppState,
   AppStateStatus,
+  WebView,
   Image as ImageReact,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
@@ -142,7 +142,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
 import { colors } from '../../theme/colors';
-import { WebView } from 'react-native-webview';
+// import { WebView } from 'react-native-webview';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -266,7 +266,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [heightList, setHeightList] = useState<number>(
     isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
   );
-
+  const [status, setStatus] = useState<STATUS>(appointmentData.status);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
@@ -280,6 +280,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
+
+  const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -392,6 +394,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const stopConsultJr = '^^#stopconsultJr';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -675,6 +678,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
+          startJoinTimer(0);
           console.log(data, 'data res, adding');
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
@@ -1260,7 +1264,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           );
 
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
-
+          setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
           if (toStopTimer) {
             if (appointmentSeniorDoctorStarted) {
               stopCallAbondmentTimer();
@@ -1280,47 +1284,47 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
     if (Platform.OS === 'ios') {
-       ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+      ExportDeviceToken.getPushNotificationToken(handlePushNotification);
     } else {
-      handlePushNotification('')
+      handlePushNotification('');
     }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
     console.log('Device Token Received', deviceToken);
     try {
-       const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
-    console.log('android:', androidToken.deviceToken);
+      const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
+      const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
+      console.log('android:', androidToken.deviceToken);
 
-    if (Platform.OS === 'ios') {
-      pubnub.push.addChannels(
-        {
-          channels: [channel],
-          device: deviceToken,
-          pushGateway: 'apns',
-        },
-        (status: any) => {
-          if (status.error) {
-            console.log('operation failed w/ error:', status);
-          } else {
-            console.log('operation done!');
+      if (Platform.OS === 'ios') {
+        pubnub.push.addChannels(
+          {
+            channels: [channel],
+            device: deviceToken,
+            pushGateway: 'apns',
+          },
+          (status: any) => {
+            if (status.error) {
+              console.log('operation failed w/ error:', status);
+            } else {
+              console.log('operation done!');
+            }
           }
-        }
-      );
-      console.log('ios:', token);
-      // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
-    } else {
-      console.log('androidtoken:', token);
-      pubnub.push.addChannels({
-        channels: [channel],
-        device: androidToken,
-        pushGateway: 'gcm', // apns, gcm, mpns
-      });
-      // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
-    }
+        );
+        console.log('ios:', token);
+        // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
+      } else {
+        console.log('androidtoken:', token);
+        pubnub.push.addChannels({
+          channels: [channel],
+          device: androidToken,
+          pushGateway: 'gcm', // apns, gcm, mpns
+        });
+        // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+      }
     } catch (error) {
-        console.log('ioserror:', error);
+      console.log('ioserror:', error);
     }
   };
 
@@ -1414,9 +1418,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
-    '4. Avail 1 free follow-up*\n',
-    '5. Chat with your doctor**\n',
-    '* 7 days after your first consultation.\n\n',
+    '4. Avail 1 free follow-up (Within 7 days after your first consultation.)\n',
+    '5. Chat with your doctor\n\n',
     `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
@@ -1618,7 +1621,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('pubNubMessages', message);
+    console.log('pubNubMessages', message.message.sentBy);
+    setname(message.message.sentBy);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -1733,6 +1737,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
         setShowCallAbandmentPopup(true);
+      } else if (message.message.message === appointmentComplete) {
+        setTextChange(false);
+        setStatus(STATUS.COMPLETED);
       }
     } else {
       console.log('succss');
@@ -1960,7 +1967,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     {moment
                       .utc(rowData.transferInfo.transferDateTime)
                       .local()
-                      .format('Do MMMM, dddd \nhh:mm a')}
+                      .format('Do MMMM, dddd \nhh:mm A')}
                   </Text>
                   <TouchableOpacity
                     activeOpacity={1}
@@ -2330,7 +2337,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   color: 'white',
                 }}
               >
-                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm A')}
               </Text>
               <View
                 style={{
@@ -2524,7 +2531,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 type === 'Followup'
                   ? rowData.transferInfo.folloupDateTime
                   : rowData.transferInfo.transferDateTime
-              ).format('Do MMMM, dddd \nhh:mm a')}
+              ).format('Do MMMM, dddd \nhh:mm A')}
 
               {/* {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
               {/* {moment(rowData.transferDateTime ? rowData.transferDateTime : nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
@@ -2664,7 +2671,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => setUrl(rowData.url))
+          .catch(() => {
+            setUrl(rowData.url);
+          })
           .finally(() => {
             setLoading(false);
             setShowPDF(true);
@@ -2680,7 +2689,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => setUrl(rowData.url))
+          .catch(() => {
+            setUrl(rowData.url);
+          })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
@@ -2698,9 +2709,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               console.error('An error occurred', err)
             );
           })
-          .catch(() =>
-            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err))
-          )
+          .catch(() => {
+            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+          })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
@@ -2713,7 +2724,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
-    // console.log('messageView', rowData.message);
     return (
       <View
         style={{
@@ -3876,14 +3886,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
-    if (textChange) {
+    if (textChange && !jrDoctorJoined) {
       time = 'Consult is In-progress';
     } else {
-      if (diffMin <= 0) {
-        time =
-          appointmentData.status === STATUS.COMPLETED
-            ? `Consult is completed`
-            : `Will be joining soon`;
+      if (status === STATUS.COMPLETED) {
+        time = `Consult is completed`;
+      } else if (diffMin <= 0) {
+        time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
         time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
@@ -4049,9 +4058,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     color: 'white',
                     ...theme.fonts.IBMPlexSansSemiBold(20),
                     textAlign: 'center',
+                    left: 15,
                   }}
                 >
-                  {appointmentData.doctorInfo.displayName}
+                  {name == 'JUNIOR' || 'undefined'
+                    ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
+                    : appointmentData.doctorInfo.displayName}
                 </Text>
               </>
             )}
@@ -4289,9 +4301,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             color: 'white',
             ...theme.fonts.IBMPlexSansSemiBold(20),
             textAlign: 'center',
+            left: 15,
           }}
+          numberOfLines={2}
         >
-          {appointmentData.doctorInfo.displayName}
+          {name == 'JUNIOR' || 'undefined'
+            ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
+            : appointmentData.doctorInfo.displayName}
         </Text>
         <View
           style={{
@@ -5794,7 +5810,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         description="How was your overall experience with the following consultation —"
         info={{
           title: `Dr. ${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
-          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm a')}`,
+          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
           photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
         }}
         type={FEEDBACKTYPE.CONSULT}

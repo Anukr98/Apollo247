@@ -200,7 +200,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm a');
+    return moment(time).format('hh:mm A');
   };
 
   const reOrder = () => {

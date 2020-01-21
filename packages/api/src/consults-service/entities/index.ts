@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
+import { TEST_COLLECTION_TYPE } from 'profiles-service/entities';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -510,7 +511,15 @@ export type CaseSheetMedicinePrescription = {
   medicineUnit: MEDICINE_UNIT;
 };
 export type CaseSheetDiagnosis = { name: string };
-export type CaseSheetDiagnosisPrescription = { itemname: string };
+export type CaseSheetDiagnosisPrescription = {
+  collectionMethod: TEST_COLLECTION_TYPE;
+  id: string;
+  imageUrl: string;
+  isCustom: boolean;
+  itemId: string;
+  itemname: string;
+  price: string;
+};
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
   details: string;

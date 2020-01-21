@@ -314,7 +314,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             ))}
           </View>
           <TextInputComponent
-            label={'Email Address (Optional)'}
+            label={'Email Address'}
             placeholder={'name@email.com'}
             onChangeText={(text: string) => _setEmail(text)}
             value={email}
