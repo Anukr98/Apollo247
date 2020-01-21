@@ -644,7 +644,9 @@ export enum AdminType {
   JDADMIN = 'JDADMIN',
   QAADMIN = 'QAADMIN',
   SUPERADMIN = 'SUPERADMIN',
+  MANAGEMENT = 'MANAGEMENT',
 }
+
 @Entity()
 export class AdminUsers extends BaseEntity {
   @OneToMany((type) => AdminDoctorMapper, (admindoctormapper) => admindoctormapper.adminuser)
