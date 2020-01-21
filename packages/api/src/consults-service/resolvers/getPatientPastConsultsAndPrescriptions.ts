@@ -34,6 +34,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
     PAYMENT_SUCCESS
+    PAYMENT_FAILED
     ORDER_INITIATED
     ORDER_PLACED
     ORDER_VERIFIED
