@@ -299,7 +299,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Patient_Noshow_Reschedule_Appointment':
         {
-          showContentAlert(data, 'Patient_Noshow_Reschedule_Appointment');
+          showChatRoomAlert(data, 'Patient_Noshow_Reschedule_Appointment');
         }
         break;
       case 'Patient_Cancel_Appointment': {
