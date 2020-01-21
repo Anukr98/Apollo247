@@ -68,7 +68,8 @@ type CustomNotificationType =
   | 'Diagnostic_Order_Success'
   | 'Diagnostic_Order_Payment_Failed'
   | 'Registration_Success'
-  | 'Patient_Cancel_Appointment';
+  | 'Patient_Cancel_Appointment'
+  | 'Patient_Noshow_Reschedule_Appointment';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -184,6 +185,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     });
   };
 
+  const showContentAlert = (
+    data:
+      | { content: string; appointmentId: string /*patientName, doctorName, android_channel_id*/ }
+      | any,
+    notificationType: CustomNotificationType
+  ) => {
+    console.log('-- notificationType --', { notificationType });
+    showAphAlert!({
+      title: ' ',
+      description: data.content,
+    });
+  };
+
   const processNotification = async (notification: Notification) => {
     const { title, body, data } = notification;
     const notificationType = data.type as CustomNotificationType;
@@ -268,7 +282,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Diagnostic_Order_Success':
         {
-          return;
+          return; // Not showing in app because PN overriding in-app notification
           // showTestOrderStatusAlert(data, 'Diagnostic_Order_Success');
         }
         break;
@@ -280,19 +294,39 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'Registration_Success':
         {
+          showContentAlert(data, 'Registration_Success');
+        }
+        break;
+      case 'Patient_Noshow_Reschedule_Appointment':
+        {
           showAphAlert!({
             title: ' ',
             description: data.content,
+            CTAs: [
+              {
+                text: 'CLAIM REFUND',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'RESCHEDULE',
+                onPress: () => {
+                  console.log(
+                    `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
+                  );
+                  getAppointmentData(data.appointmentId, notificationType, '');
+                },
+                type: 'orange-button',
+              },
+            ],
           });
         }
         break;
-
       case 'Patient_Cancel_Appointment': {
-        return;
-        // showAphAlert!({
-        //   title: ' ',
-        //   description: data.content,
-        // });
+        // showContentAlert(data, 'Patient_Cancel_Appointment');
+        return; // Not showing in app because PN overriding in-app notification
       }
 
       case 'Cart_Ready':
