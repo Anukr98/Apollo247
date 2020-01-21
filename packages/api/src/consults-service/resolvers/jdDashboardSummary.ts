@@ -44,10 +44,33 @@ const updateJdSummary: Resolver<
   const docsList = await docRepo.getAllJuniorDoctors(args.doctorId);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
+      const waitTimePerChat = await dashboardRepo.getWaitTimePerChat(args.summaryDate, doctor.id);
+      const caseSheetFillTime = await dashboardRepo.timePerChat(args.summaryDate, doctor.id);
+      const totalCompletedChats = await dashboardRepo.getTotalCompletedChats(
+        args.summaryDate,
+        doctor.id
+      );
+      const audioChats = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
+      const videoChats = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
+      const chatConsults = await dashboardRepo.getCallsCount(doctor.id, 'CHAT', args.summaryDate);
+      const cases15Less = await dashboardRepo.appointmentBefore15(args.summaryDate, doctor.id);
       const dashboardSummaryAttrs: Partial<JdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
         appointmentDateTime: args.summaryDate,
+        waitTimePerChat,
+        caseSheetFillTime,
+        totalCompletedChats,
+        timePerChat: caseSheetFillTime,
+        audioChats,
+        videoChats,
+        chatConsults,
+        jdsUtilization: 0,
+        loggedInHours: 0,
+        awayHours: 0,
+        totalConsultationTime: 0,
+        casesCompleted: totalCompletedChats,
+        cases15Less,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);
     });

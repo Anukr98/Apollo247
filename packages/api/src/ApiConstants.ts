@@ -6,6 +6,9 @@ export enum ApiConstants {
   //RESCHEDULE_INITIATION_BODY = 'Hi {0}, we’re really sorry to keep you waiting. {1} will not be able to make it for this appointment. We request you to reschedule.',
   RESCHEDULE_INITIATION_BODY = 'Hi {0}! Dr. {1} has requested you to reschedule due to an emergency. Please choose the next most suitable slot.',
 
+  PATIENT_NO_SHOW_RESCHEDULE_TITLE = 'Appointment Reschedule Initiation',
+  PATIENT_NO_SHOW_RESCHEDULE_BODY = 'Hi {0}, as you were unable to attend your consultation appointment on time with Dr. {1}, we have rescheduled it. Please accept the new time, or choose another preferred slot. We request you to be on time for your rescheduled consultation.',
+
   //appointment transfer initiated
   TRANSFER_INITIATION_TITLE = 'Appointment Transfer Initiation',
   TRANSFER_INITIATION_BODY = 'You have been referred to {0}. We request you to book an appointment.',
