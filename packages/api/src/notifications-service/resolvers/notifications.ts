@@ -377,6 +377,10 @@ export async function sendNotification(
       '{0}',
       patientDetails.firstName
     );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     const transferRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
     const transferApptDetails = await transferRepo.getTransferDetails(
