@@ -193,9 +193,9 @@ const noShowReminderNotification: Resolver<
             appointment: appt,
             noShowStatus: STATUS.NO_SHOW,
           };
-          apptsrepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+          await apptsrepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
 
-          apptsrepo.updateAppointmentStatus(appt.id, STATUS.NO_SHOW, true);
+          await apptsrepo.updateAppointmentStatus(appt.id, STATUS.NO_SHOW, true);
 
           await noShowRepo.saveNoShow(noShowAttrs);
           const pushNotificationInput = {

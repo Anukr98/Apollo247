@@ -23,7 +23,6 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
 
   getCompletedCaseSheetsByAppointmentId(appointmentId: string) {
     return this.createQueryBuilder('case_sheet')
-      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getMany();
