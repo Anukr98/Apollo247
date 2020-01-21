@@ -17,6 +17,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
+type NewPatientCount = {
+  patientid: string;
+  patientcount: number;
+};
+
 @EntityRepository(SdDashboardSummary)
 export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary> {
   async saveDashboardDetails(dashboardSummaryAttrs: Partial<SdDashboardSummary>) {
@@ -331,5 +336,31 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       }
     }
     return duration;
+  }
+
+  async getPatientTypes(appointmentDate: Date, doctorId: string) {
+    const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
+    const apptsList: NewPatientCount[] = await Appointment.createQueryBuilder('appointment')
+      .select(['patientId as patientid', 'count(patientId) as patientcount'])
+      .where('appointment.doctorId = :doctorId', { doctorId })
+      .andWhere('appointment.appointmentDateTime Between :fromDate and :toDate', {
+        fromDate: startDate,
+        toDate: endDate,
+      })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    let repeatCount = 0,
+      newCount = 0;
+    if (apptsList.length > 0) {
+      apptsList.forEach((appt) => {
+        if (appt.patientcount > 1) {
+          repeatCount++;
+        } else {
+          newCount++;
+        }
+      });
+    }
+    return repeatCount + '-' + newCount;
   }
 }

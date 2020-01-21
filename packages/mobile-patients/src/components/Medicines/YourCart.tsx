@@ -536,7 +536,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
                   <Text style={styles.deliveryTimeStyle}>
                     {moment(deliveryTime).isValid()
-                      ? moment(deliveryTime).format('D MMM YYYY  | hh:mm a')
+                      ? moment(deliveryTime).format('D MMM YYYY  | hh:mm A')
                       : '...' || deliveryError}
                   </Text>
                 </View>

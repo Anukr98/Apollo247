@@ -4,6 +4,7 @@ import _random from 'lodash/random';
 import faker from 'faker';
 import { randomEnum } from 'helpers/factoryHelpers';
 import { Salutation } from 'doctors-service/entities';
+import { TEST_COLLECTION_TYPE } from 'profiles-service/entities';
 
 export const buildRxPdfData = (): RxPdfData => {
   //const caseSheet = buildCaseSheet();
@@ -43,7 +44,17 @@ export const buildRxPdfData = (): RxPdfData => {
 
   const vitals = { height: '', weight: '', temperature: '', bp: '' };
   const appointmentDetails = { displayId: '', consultDate: '', consultType: '' };
-  const diagnosesTests = [{ itemname: '' }];
+  const diagnosesTests = [
+    {
+      collectionMethod: TEST_COLLECTION_TYPE.CENTER,
+      id: '',
+      imageUrl: '',
+      isCustom: false,
+      itemId: '',
+      itemname: '',
+      price: '',
+    },
+  ];
   const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];
   const followUpDetails = '';
 

@@ -115,7 +115,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
   ) => {
     const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
     const statusDate = g(medicineOrdersStatus[0], 'statusDate');
-    return moment(statusDate).format('D MMM YYYY | hh:mm a');
+    return moment(statusDate).format('D MMM YYYY | hh:mm A');
   };
 
   return (

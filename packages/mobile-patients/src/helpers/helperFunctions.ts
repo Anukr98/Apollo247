@@ -224,7 +224,7 @@ export const handleGraphQlError = (
 };
 
 export const timeTo12HrFormat = (time: string) => {
-  return moment(time).format('h:mm a');
+  return moment(time).format('h:mm A');
 };
 
 export const timeDiffFromNow = (toDate: string) => {
