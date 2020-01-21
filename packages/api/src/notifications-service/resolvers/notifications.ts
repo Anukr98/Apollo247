@@ -108,6 +108,7 @@ export enum NotificationType {
   PATIENT_CANCEL_APPOINTMENT = 'PATIENT_CANCEL_APPOINTMENT',
   PHYSICAL_APPT_60 = 'PHYSICAL_APPT_60',
   PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
+  PATIENT_NO_SHOW = 'PATIENT_NO_SHOW',
 }
 
 export enum APPT_CALL_TYPE {
@@ -370,6 +371,12 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
+  } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
+    notificationTitle = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_TITLE;
+    notificationBody = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     const transferRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
     const transferApptDetails = await transferRepo.getTransferDetails(
@@ -500,6 +507,24 @@ export async function sendNotification(
       },
       data: {
         type: 'Reschedule_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Patient_Noshow_Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
