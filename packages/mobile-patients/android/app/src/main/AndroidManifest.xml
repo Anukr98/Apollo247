@@ -31,7 +31,7 @@
       android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher_round"
-        tools:replace="android:allowBackup"
+        tools:replace="android:allowBackup,android:theme"
         android:allowBackup="false"
         android:largeHeap="true"
       android:theme="@style/AppTheme">
@@ -75,7 +75,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-
+        
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="40001b65375e3b0193fe0fb56ac6706df22e3eed" />
