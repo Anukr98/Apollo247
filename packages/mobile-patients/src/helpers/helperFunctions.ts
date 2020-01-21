@@ -118,6 +118,9 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
       statusString = 'Order Initiated';
       break;
+    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+      statusString = 'Payment Failed';
+      break;
   }
   return statusString;
 };
