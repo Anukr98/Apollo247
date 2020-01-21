@@ -255,7 +255,7 @@ export const caseSheetTypeDefs = gql`
     isCustom: Boolean
     itemId: String
     itemname: String
-    price: Float
+    price: String
   }
 
   input DiagnosticPrescriptionInput {
@@ -265,7 +265,7 @@ export const caseSheetTypeDefs = gql`
     isCustom: Boolean
     itemId: String
     itemname: String
-    price: Float
+    price: String
   }
   enum MEDICINE_FORM_TYPES {
     GEL_LOTION_OINTMENT

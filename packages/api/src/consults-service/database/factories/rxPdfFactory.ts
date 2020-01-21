@@ -52,7 +52,7 @@ export const buildRxPdfData = (): RxPdfData => {
       isCustom: false,
       itemId: '',
       itemname: '',
-      price: 0,
+      price: '',
     },
   ];
   const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];

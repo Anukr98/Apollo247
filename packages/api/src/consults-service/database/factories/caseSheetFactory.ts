@@ -18,6 +18,7 @@ import _random from 'lodash/random';
 import _sample from 'lodash/sample';
 import _times from 'lodash/times';
 import { randomEnum } from 'helpers/factoryHelpers';
+import { TEST_COLLECTION_TYPE } from 'profiles-service/entities';
 
 const buildSymptom = (): CaseSheetSymptom => {
   const names = ['fever', 'cough and cold'];
@@ -60,6 +61,12 @@ const buildDiagnosis = (): CaseSheetDiagnosis => {
 
 const buildDiagnosisPrescription = (): CaseSheetDiagnosisPrescription => ({
   itemname: faker.commerce.productName(),
+  collectionMethod: TEST_COLLECTION_TYPE.CENTER,
+  id: '',
+  imageUrl: '',
+  isCustom: false,
+  itemId: '',
+  price: '0',
 });
 
 const buildOtherInstruction = (): CaseSheetOtherInstruction => {
