@@ -194,7 +194,7 @@ const noShowReminderNotification: Resolver<
           await noShowRepo.saveNoShow(noShowAttrs);
           const pushNotificationInput = {
             appointmentId: rescheduleAppointmentAttrs.appointment.id,
-            notificationType: NotificationType.INITIATE_RESCHEDULE,
+            notificationType: NotificationType.PATIENT_NO_SHOW,
           };
           const notificationResult = sendNotification(
             pushNotificationInput,

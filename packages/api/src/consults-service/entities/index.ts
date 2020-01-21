@@ -892,12 +892,14 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   waitTimePerChat: number;
 
+  //Case sheet fill time per chat, Avg time
   @Column({ default: 0 })
   caseSheetFillTime: number;
 
   @Column({ default: 0 })
   totalCompletedChats: number;
 
+  //Total time taken per chat, Avg  time
   @Column({ default: 0 })
   timePerChat: number;
 
