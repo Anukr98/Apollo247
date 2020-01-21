@@ -1,4 +1,7 @@
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_STATUS,
+  Relation,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
 import moment from 'moment';
@@ -495,3 +498,21 @@ export const isValidText = (value: string) =>
 
 export const isValidName = (value: string) =>
   value === '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value);
+
+export const getRelations = (self?: string) => {
+  type RelationArray = {
+    key: Relation;
+    title: string;
+  };
+  let a: RelationArray[] = [];
+  a.push({ key: Relation.ME, title: self || 'Self' });
+  for (let k in Relation) {
+    if (k !== Relation.ME) {
+      a.push({
+        key: k as Relation,
+        title: k[0] + k.substr(1).toLowerCase(),
+      });
+    }
+  }
+  return a;
+};

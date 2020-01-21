@@ -37,7 +37,7 @@ import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 
 const { width, height } = Dimensions.get('window');
@@ -256,46 +256,46 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     return true;
   };
 
-  type options = {
-    name: string;
-    value: Relation;
+  type RelationArray = {
+    key: Relation;
+    title: string;
   };
 
-  const Options: options[] = [
+  const Options2: RelationArray[] = [
     {
-      name: 'Me',
-      value: Relation.ME,
+      title: 'Me',
+      key: Relation.ME,
     },
     {
-      name: 'Mother',
-      value: Relation.MOTHER,
+      title: 'Mother',
+      key: Relation.MOTHER,
     },
     {
-      name: 'Father',
-      value: Relation.FATHER,
+      title: 'Father',
+      key: Relation.FATHER,
     },
     {
-      name: 'Sister',
-      value: Relation.SISTER,
+      title: 'Sister',
+      key: Relation.SISTER,
     },
     {
-      name: 'Brother',
-      value: Relation.BROTHER,
+      title: 'Brother',
+      key: Relation.BROTHER,
     },
     {
-      name: 'Cousin',
-      value: Relation.COUSIN,
+      title: 'Cousin',
+      key: Relation.COUSIN,
     },
     {
-      name: 'Wife',
-      value: Relation.WIFE,
+      title: 'Wife',
+      key: Relation.WIFE,
     },
     {
-      name: 'Husband',
-      value: Relation.HUSBAND,
+      title: 'Husband',
+      key: Relation.HUSBAND,
     },
   ];
-
+  const Options = getRelations('Me') || Options2;
   const Popup = () => (
     <TouchableOpacity
       activeOpacity={1}
@@ -329,13 +329,13 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           paddingBottom: 16,
         }}
       >
-        {Options.map(({ name, value }) => (
+        {Options.map(({ title, key }) => (
           <View style={styles.textViewStyle}>
             <Text
               style={styles.textStyle}
               onPress={() => {
                 if (profiles) {
-                  profiles[relationIndex].relation = Relation[value];
+                  profiles[relationIndex].relation = Relation[key];
                   const result = profiles.filter((obj) => {
                     return obj.relation == Relation['ME'];
                   });
@@ -357,7 +357,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 }
               }}
             >
-              {name}
+              {title}
             </Text>
           </View>
         ))}
