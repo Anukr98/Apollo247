@@ -1043,6 +1043,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [consultStart, setConsultStart] = useState<boolean>(false);
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
@@ -1370,6 +1371,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       setRemainingCallTime(0);
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
+      setConsultStart(false);
+      //isConsultStarted = false;
     }
   }, [props.appointmentStatus]);
   const pubnub = props.pubnub;
@@ -1731,7 +1734,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [timeSelected, setTimeSelected] = useState<string>('');
   const calendarRef = useRef<HTMLDivElement>(null);
-
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1886,6 +1888,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.startAppointmentClick(!props.startAppointment);
                     props.createSessionAction();
                     setCaseSheetEdit(true);
+                    setConsultStart(true);
                     isConsultStarted = true;
                     callIntervalTimer(180);
                   }}
@@ -1905,7 +1908,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.backButton}
                 disabled={
-                  (isPastAppointment() && !isConsultStarted) ||
+                  (isPastAppointment() && !consultStart) ||
                   (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
                   props.appointmentStatus === STATUS.NO_SHOW ||
                   props.appointmentStatus === STATUS.CALL_ABANDON ||
@@ -1970,7 +1973,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 disabled={
                   props.appointmentStatus === STATUS.COMPLETED ||
                   props.appointmentStatus === STATUS.CANCELLED ||
-                  (isPastAppointment() && !isConsultStarted)
+                  (isPastAppointment() && !consultStart)
                 }
               >
                 <img src={require('images/ic_call.svg')} />
@@ -2042,7 +2045,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   props.appointmentStatus === STATUS.CANCELLED ||
                   props.isAppointmentEnded ||
                   disableOnCancel ||
-                  (isPastAppointment() && !isConsultStarted) ||
+                  (isPastAppointment() && !consultStart) ||
                   (appointmentInfo!.appointmentState !== 'NEW' &&
                     appointmentInfo!.appointmentState !== 'TRANSFER' &&
                     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
