@@ -112,7 +112,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
   let statusMsg = '';
   if (medicinePaymentMqInput.paymentStatus == 'TXN_FAILURE') {
-    currentStatus = MEDICINE_ORDER_STATUS.ORDER_FAILED;
+    currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_FAILED;
     errorCode = -1;
     errorMessage = 'Payment failed';
     paymentOrderId = savePaymentDetails.id;
