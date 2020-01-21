@@ -170,7 +170,10 @@ const slides: Slide[] = [
     index: 0,
     title: 'What is your height?',
     inputPlacerholder: 'Enter height…',
-    dropDown: [{ key: '1', value: 'cm' }, { key: '2', value: 'ft' }],
+    dropDown: [
+      { key: '1', value: 'cm' },
+      { key: '2', value: 'ft' },
+    ],
     basedonDropValue: [
       { inputHolder: 'Enter height…', dropValue: 'cm' },
       { inputHolder: 'eg. 5’ 8”', dropValue: 'ft' },
@@ -403,38 +406,40 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   };
 
   const onSlideChange = (index: number) => {
-    Keyboard.dismiss();
-    const validations = index > 0 && slides[index - 1].onSubmitValidation;
-    if (validations) {
-      const inputDataType = slides[index - 1].inputData.filter((i) => i === 'value');
-      let v: any = values && values.find((i) => i.k === slides[index - 1].key);
-      v = v && v.v;
-      if (inputDataType.length === 1) {
-        v = validations.find((i) => i.test(v[0])) || v[0] === '';
-      } else {
-        v = v[0] ? validations.find((i) => i.test(v[0])) : v[1];
-      }
-      console.log(v, 'text');
-      if (v) {
-        onSlideChangeContinue(index);
-      } else {
-        showAphAlert &&
-          showAphAlert({
-            title: 'Alert!',
-            description: slides[index - 1].validationMessage || 'Enter in valid format',
-            onPressOk: () => {
-              hideAphAlert && hideAphAlert();
-              setActiveIndex(index - 1);
-            },
-          });
-        appIntroSliderRef.current.goToSlide(index - 1);
-      }
+    try {
+      Keyboard.dismiss();
+      const validations = index > 0 && slides[index - 1].onSubmitValidation;
+      if (validations) {
+        const inputDataType = slides[index - 1].inputData.filter((i) => i === 'value');
+        let v: any = values && values.find((i) => i.k === slides[index - 1].key);
+        v = v && v.v;
+        if (inputDataType.length === 1) {
+          v = validations.find((i) => i.test(v[0])) || v[0] === '';
+        } else {
+          v = v[0] ? validations.find((i) => i.test(v[0])) || v[0] === '' : v[1] || v[1] === '';
+        }
+        console.log(v, 'text');
+        if (v) {
+          onSlideChangeContinue(index);
+        } else {
+          showAphAlert &&
+            showAphAlert({
+              title: 'Alert!',
+              description: slides[index - 1].validationMessage || 'Enter in valid format',
+              onPressOk: () => {
+                hideAphAlert && hideAphAlert();
+                setActiveIndex(index - 1);
+              },
+            });
+          appIntroSliderRef.current.goToSlide(index - 1);
+        }
 
-      console.log(v, 'final');
-    } else {
-      onSlideChangeContinue(index);
-    }
-    setRefresh(!refresh);
+        console.log(v, 'final');
+      } else {
+        onSlideChangeContinue(index);
+      }
+      setRefresh(!refresh);
+    } catch (error) {}
   };
 
   const returnPlaceHolder = (item: Slide) => {
