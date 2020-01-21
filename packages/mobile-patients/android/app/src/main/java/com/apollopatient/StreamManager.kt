@@ -21,17 +21,27 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
     }
 
         @ReactMethod
-        fun show(vitaToken: String, UHID: String, userName: String, consultSource: String) {
-            System.out.println("In SHOW......" + vitaToken);
+        fun show(vitaToken: String, UHID: String, userName: String, consultSource: String,buildSpecify:String) {
+            System.out.println("In SHOW......" + vitaToken+" "+buildSpecify);
             System.out.println("In UHID......" + UHID + " "+userName+ " "+consultSource);
             val T2DiabetesAndHypertensionProgram = "t2diabetesandhypertension"
             Timber.plant(Timber.DebugTree())
-            VitaInit.setupApp(reactApplicationContext,
-                    VitaEnvironment.SANDBOX,
-                    vitaToken,
-                    T2DiabetesAndHypertensionProgram,
-                    consultSource)
-          //  VitaInit.setupApp(reactApplicationContext, VitaEnvironment.DEV, vitaToken, T2DiabetesAndHypertensionProgram, consultSource, UHID, userName)
+            if(buildSpecify=="QA"||buildSpecify=="DEV"){
+                System.out.println("buildSpecify......" + buildSpecify);
+                VitaInit.setupApp(reactApplicationContext,
+                        VitaEnvironment.SANDBOX,/* staging */
+                        vitaToken,/* staging */
+                        T2DiabetesAndHypertensionProgram,
+                        consultSource)
+            }else{
+                System.out.println("production......" + buildSpecify);
+                VitaInit.setupApp(reactApplicationContext,
+                        VitaEnvironment.PRODUCTION,/* production */
+                        vitaToken,/* production */
+                        T2DiabetesAndHypertensionProgram,
+                        consultSource)
+            }
+
 
             VitaInit.setUpPushToken(reactApplicationContext, "")
 

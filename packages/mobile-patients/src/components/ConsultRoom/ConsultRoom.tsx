@@ -265,7 +265,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (enableCM) {
       setMenuViewOptions([1, 2, 3, 4, 5, 6]);
     } else {
-      setMenuViewOptions([1, 2, 3, 5, 6]);
+      setMenuViewOptions([1, 2, 3, 5]);
     }
   }, [enableCM]);
 
@@ -379,13 +379,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'lastName'
             ) || ''}`;
             const UHID = `${g(patientDetails, 'uhid') || ''}`;
-
+            const buildSpecify = buildName();
             tokenValue &&
               KotlinBridge.show(
                 tokenValue,
                 UHID,
                 fullName,
-                '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android'
+                '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android',
+                buildSpecify
               );
           }
         }
