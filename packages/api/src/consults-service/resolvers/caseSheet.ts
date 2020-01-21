@@ -135,6 +135,11 @@ export const caseSheetTypeDefs = gql`
     OTHER
   }
 
+  enum TEST_COLLECTION_TYPE {
+    HC
+    CENTER
+  }
+
   type Address {
     id: ID!
     addressLine1: String
@@ -244,11 +249,23 @@ export const caseSheetTypeDefs = gql`
   }
 
   type DiagnosticPrescription {
+    collectionMethod: TEST_COLLECTION_TYPE
+    id: String
+    imageUrl: String
+    isCustom: Boolean
+    itemId: String
     itemname: String
+    price: String
   }
 
   input DiagnosticPrescriptionInput {
+    collectionMethod: TEST_COLLECTION_TYPE
+    id: String
+    imageUrl: String
+    isCustom: Boolean
+    itemId: String
     itemname: String
+    price: String
   }
   enum MEDICINE_FORM_TYPES {
     GEL_LOTION_OINTMENT
