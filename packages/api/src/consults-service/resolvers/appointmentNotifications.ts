@@ -11,6 +11,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { format, subMinutes } from 'date-fns';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
+import { APPOINTMENT_STATE } from 'consults-service/entities';
 
 import {
   CASESHEET_STATUS,
@@ -191,6 +192,7 @@ const noShowReminderNotification: Resolver<
             appointment: appt,
             noShowStatus: STATUS.NO_SHOW,
           };
+          await apptsrepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
           await noShowRepo.saveNoShow(noShowAttrs);
           const pushNotificationInput = {
             appointmentId: rescheduleAppointmentAttrs.appointment.id,
