@@ -211,7 +211,7 @@ export const caseSheetTypeDefs = gql`
     symptoms: [SymptomList]
     status: String
     sentToPatient: Boolean
-    upDatedDate: DateTime
+    updatedDate: DateTime
   }
 
   type Diagnosis {

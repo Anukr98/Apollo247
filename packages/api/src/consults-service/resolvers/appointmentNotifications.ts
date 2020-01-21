@@ -162,6 +162,7 @@ const noShowReminderNotification: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const date = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
   const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
+
   const appointments = await apptsrepo.getAppointmentsByDate(subMinutes(new Date(date), 3));
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
@@ -169,7 +170,7 @@ const noShowReminderNotification: Resolver<
   let noCaseSheet = 0;
   if (appointments.length) {
     appointments.forEach(async (appt) => {
-      const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(appt.id);
+      const caseSheetDetails = await caseSheetRepo.getCompletedCaseSheetsByAppointmentId(appt.id);
       if (caseSheetDetails.length === 0) {
         noCaseSheet++;
         const rescheduleAppointmentAttrs = {
@@ -192,7 +193,10 @@ const noShowReminderNotification: Resolver<
             appointment: appt,
             noShowStatus: STATUS.NO_SHOW,
           };
-          await apptsrepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+          apptsrepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+
+          apptsrepo.updateAppointmentStatus(appt.id, STATUS.NO_SHOW, true);
+
           await noShowRepo.saveNoShow(noShowAttrs);
           const pushNotificationInput = {
             appointmentId: rescheduleAppointmentAttrs.appointment.id,

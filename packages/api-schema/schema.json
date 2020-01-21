@@ -11888,7 +11888,7 @@
             "deprecationReason": null
           },
           {
-            "name": "upDatedDate",
+            "name": "updatedDate",
             "description": null,
             "args": [],
             "type": {
