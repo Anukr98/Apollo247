@@ -161,4 +161,21 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     }
     return apptCount;
   }
+
+  getCaseSheetsList(limit: number) {
+    return CaseSheet.find({ where: { updatedDate: null }, take: limit });
+  }
+
+  getCallDetailTime(appointment: string) {
+    return AppointmentCallDetails.find({
+      where: {
+        appointment,
+      },
+      order: { endTime: 'ASC' },
+    });
+  }
+
+  updateCaseSheetEndTime(id: string, updatedDate: Date, duration: number) {
+    return CaseSheet.update(id, { updatedDate, preperationTimeInSeconds: duration });
+  }
 }

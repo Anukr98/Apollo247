@@ -62,7 +62,7 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getAppointmentsByDate(appointmentDateTime: Date) {
     return this.find({
-      where: { appointmentDateTime },
+      where: { appointmentDateTime, status: STATUS.PENDING },
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
