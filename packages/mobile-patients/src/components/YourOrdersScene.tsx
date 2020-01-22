@@ -174,7 +174,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('D MMM YY, hh:mm a');
+    return moment(time).format('D MMM YY, hh:mm A');
   };
 
   const renderOrder = (

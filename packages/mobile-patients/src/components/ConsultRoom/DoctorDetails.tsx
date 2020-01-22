@@ -382,10 +382,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const formatTime = (time: string) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
-    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm a');
+    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
   const formatDateTime = (time: string) => {
-    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm a');
+    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
 
   const renderDoctorDetails = () => {
@@ -410,8 +410,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </Text>
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
-                {doctorDetails.specialty ? doctorDetails.specialty.name : ''} |{' '}
-                {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'}
+                {doctorDetails.specialty && doctorDetails.specialty.name
+                  ? doctorDetails.specialty.name
+                  : ''}{' '}
+                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'}
               </Text>
               <Text style={styles.educationTextStyles}>{doctorDetails.qualification}</Text>
               <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
@@ -423,11 +425,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               {!!clinicAddress && (
                 <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
               )}
-              {doctorDetails.languages && (
+              {doctorDetails.languages ? (
                 <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
                   {doctorDetails.languages.split(',').join(' | ')}
                 </Text>
-              )}
+              ) : null}
               <View style={styles.separatorStyle} />
               <View style={styles.onlineConsultView}>
                 <View style={{ flex: 1 }}>
@@ -522,7 +524,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           <Image
                             source={{
                               uri:
-                                item && item.facility.imageUrl
+                                item && item.facility && item.facility.imageUrl
                                   ? item.facility.imageUrl
                                   : 'https://via.placeholder.com/328x136',
                             }}
@@ -718,7 +720,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     {Moment.utc(item.appointmentDateTime)
                       .local()
-                      .format('DD MMMM, hh:mm a')}
+                      .format('DD MMMM, hh:mm A')}
                   </Text>
                   <View style={styles.separatorStyle} />
                   <View style={{ flexDirection: 'row' }}>

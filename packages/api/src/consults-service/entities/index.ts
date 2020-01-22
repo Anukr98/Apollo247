@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
+import { TEST_COLLECTION_TYPE } from 'profiles-service/entities';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -510,7 +511,15 @@ export type CaseSheetMedicinePrescription = {
   medicineUnit: MEDICINE_UNIT;
 };
 export type CaseSheetDiagnosis = { name: string };
-export type CaseSheetDiagnosisPrescription = { itemname: string };
+export type CaseSheetDiagnosisPrescription = {
+  collectionMethod: TEST_COLLECTION_TYPE;
+  id: string;
+  imageUrl: string;
+  isCustom: boolean;
+  itemId: string;
+  itemname: string;
+  price: string;
+};
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
   details: string;
@@ -578,6 +587,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true })
   patientId: string;
+
+  @Column({ default: () => 0, type: 'float' })
+  preperationTimeInSeconds: number;
 
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
@@ -871,6 +883,96 @@ export class FeedbackDashboardSummary extends BaseEntity {
   }
 }
 
+//JD dashboard summary starts
+@Entity()
+export class JdDashboardSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  doctorId: string;
+
+  @Column()
+  doctorName: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column({ default: 0 })
+  waitTimePerChat: number;
+
+  //Case sheet fill time per chat, Avg time
+  @Column({ default: 0 })
+  caseSheetFillTime: number;
+
+  @Column({ default: 0 })
+  totalCompletedChats: number;
+
+  //Total time taken per chat, Avg  time
+  @Column({ default: 0 })
+  timePerChat: number;
+
+  @Column({ default: 0 })
+  audioChats: number;
+
+  @Column({ default: 0 })
+  videoChats: number;
+
+  @Column({ default: 0 })
+  chatConsults: number;
+
+  @Column({ default: 0 })
+  jdsUtilization: number;
+
+  @Column({ default: 0 })
+  loggedInHours: number;
+
+  @Column({ default: 0 })
+  awayHours: number;
+
+  @Column({ default: 0 })
+  totalConsultationTime: number;
+
+  @Column({ default: 0 })
+  casesCompleted: number;
+
+  //No. of cases started less than 15 mins before scheduled appointment
+  @Column({ default: 0 })
+  cases15Less: number;
+
+  @Column({ default: 0 })
+  casesOngoing: number;
+
+  //% of on-time consultations (start)
+  @Column({ default: 0 })
+  startOnTimeConsults: number;
+
+  //% of consults within 15 mins
+  @Column({ default: 0 })
+  completeWithin15: number;
+
+  //% of consults more than 15 mins
+  @Column({ default: 0 })
+  completeMore15: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//JD dashboard summary end
+
 //SD dashboard summary starts
 @Entity()
 export class SdDashboardSummary extends BaseEntity {
@@ -942,6 +1044,26 @@ export class SdDashboardSummary extends BaseEntity {
   }
 }
 //SD dashboard summary end
+
+//Doctor fee summary starts
+@Entity()
+export class DoctorFeeSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column()
+  doctorId: string;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  amountPaid: number;
+
+  @Column()
+  appointmentsCount: number;
+}
+//Doctor fee summary end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

@@ -769,7 +769,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <TextInputComponent label={'Relation'} noInput={true} />
         {renderRelation()}
         <TextInputComponent
-          label={'Email Address (Optional)'}
+          label={'Email Address'}
           value={`${email}`}
           onChangeText={(email) => setEmail(email)}
           placeholder={'name@email.com'}
@@ -820,7 +820,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   validationMessage = 'Enter valid email';
                 }
                 if (validationMessage) {
-                  Alert.alert('Error', validationMessage);
+                  showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
+                  // Alert.alert('Error', validationMessage);
                 } else {
                   isEdit ? updateUserProfile() : newProfile();
                 }

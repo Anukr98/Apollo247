@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TouchableOpacityProps,
   ViewStyle,
+  View,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -33,6 +34,15 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', isIphone5s() ? 12 : 14, theme.colors.BUTTON_TEXT),
     textAlign: 'center',
   },
+  thornStyle: {
+    backgroundColor: 'white',
+    transform: [{ rotate: '45deg' }],
+    height: 10,
+    width: 10,
+    position: 'absolute',
+    top: -4,
+    borderRadius: 0,
+  },
 });
 
 export interface ButtonProps {
@@ -42,6 +52,8 @@ export interface ButtonProps {
   onPress?: TouchableOpacityProps['onPress'];
   disabled?: boolean;
   disabledStyle?: StyleProp<ViewStyle>;
+  displayThorn?: boolean;
+  thornStyle?: StyleProp<ViewStyle>;
 }
 
 export const Button: React.FC<ButtonProps> = (props) => {
@@ -55,6 +67,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
       ]}
       onPress={props.disabled ? () => {} : props.onPress}
     >
+      {props.displayThorn && <View style={[styles.thornStyle, props.thornStyle]} />}
       <Text style={[styles.titleTextStyle, props.titleTextStyle]}>{props.title}</Text>
     </TouchableOpacity>
   );

@@ -61,34 +61,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: OptionType,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span
-          key={part.text}
-          style={{
-            fontWeight: part.highlight ? 500 : 400,
-            whiteSpace: 'pre',
-          }}
-          title={suggestion.label}
-        >
-          {part.text.length > 46
-            ? part.text.substring(0, 45).toLowerCase() + '...'
-            : part.text.toLowerCase()}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </div>
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -351,6 +323,15 @@ const useStyles = makeStyles((theme: Theme) =>
           outline: 'none',
         },
       },
+      '& input': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+          outlineColor: 'transparent',
+        },
+      },
     },
     daysInWeek: {
       margin: '0 0 10px 0 !important',
@@ -480,10 +461,14 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     unitsSelect: {
       marginTop: 0,
-      '& div': {
-        '&:focus': {
-          boxShadow: '0 8px 6px -6px rgba(128, 128, 128, 0.3)',
-          transition: 'all 0.2s',
+      '& > div': {
+        '& > div': {
+          '&:focus': {
+            transition: 'all 0.2s',
+            backgroundColor: 'rgba(240, 244, 245, 0.3)',
+            borderTopLeftRadius: 5,
+            borderTopRightRadius: 5,
+          },
         },
       },
     },
@@ -513,6 +498,17 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     inputField: {
       padding: '0 20px 0 20px',
+    },
+    tabletCountField: {
+      '& input': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+          outlineColor: 'transparent',
+        },
+      },
     },
   })
 );
@@ -756,6 +752,35 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ];
+  function renderSuggestion(
+    suggestion: OptionType,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(suggestion.label, query);
+    const parts = parse(suggestion.label, matches);
+
+    return (
+      medicine.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+              title={suggestion.label}
+            >
+              {part.text.length > 46
+                ? part.text.substring(0, 45).toLowerCase() + '...'
+                : part.text.toLowerCase()}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
   const [medicine, setMedicine] = useState('');
@@ -1863,6 +1888,7 @@ export const MedicinePrescription: React.FC = () => {
                           <Grid item lg={6} md={6} xs={6}>
                             <h6>Take</h6>
                             <AphTextField
+                              className={classes.tabletCountField}
                               autoFocus
                               inputProps={{ maxLength: 6 }}
                               value={tabletsCount === 0 ? '' : tabletsCount}

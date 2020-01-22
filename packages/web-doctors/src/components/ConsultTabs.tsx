@@ -1143,6 +1143,21 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         endCallNotificationAction(false);
         setAppointmentStatus('COMPLETED');
+        const text = {
+          id: doctorId,
+          message: '^^#appointmentComplete',
+          isTyping: true,
+          messageDate: new Date(),
+          sentBy: REQUEST_ROLES.DOCTOR,
+        };
+        pubnub.publish(
+          {
+            message: text,
+            channel: appointmentId,
+            storeInHistory: true,
+          },
+          (status: any, response: any) => {}
+        );
         setIsPdfPageOpen(true);
       })
       .catch((e) => {

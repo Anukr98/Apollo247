@@ -220,7 +220,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
               {moment
                 .utc(rowData.availableSlot)
                 .local()
-                .format('Do MMMM, dddd, hh:mm a')}
+                .format('Do MMMM, dddd, hh:mm A')}
             </Text>
           </View>
         </TouchableOpacity>

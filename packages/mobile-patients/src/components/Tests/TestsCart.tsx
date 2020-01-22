@@ -67,6 +67,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import Geolocation from '@react-native-community/geolocation';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -210,6 +211,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
       } else {
         setDate(new Date());
+        setselectedTimeSlot('');
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
@@ -235,16 +237,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setLoading!(false);
+          setAddresses && setAddresses(addressList!);
+        })
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -258,7 +254,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (testCentresLoaded) {
       if (!(locationDetails && locationDetails.pincode)) {
-        navigator.geolocation.getCurrentPosition(
+        Geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
             getPlaceInfoByLatLng(latitude, longitude)
@@ -521,24 +517,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const t = finalaray!
             .slotInfo!.filter((item) => item!.status != 'booked')
             .filter((item) =>
+              moment(item!.endTime!.trim(), 'HH:mm').isSameOrBefore(
+                moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+              )
+            )
+            .filter((item) =>
               moment(date)
                 .format('DMY')
                 .toString() ===
               moment()
                 .format('DMY')
                 .toString()
-                ? parseInt(item!.startTime!.split(':')[0], 10) >=
-                  parseInt(
-                    moment()
-                      .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                      .format('k'),
-                    10
+                ? moment(item!.startTime!.trim(), 'HH:mm').isSameOrAfter(
+                    moment(new Date()).add(
+                      AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+                      'minutes'
+                    )
                   )
-                  ? parseInt(item!.startTime!.split(':')[1], 10) >
-                    moment()
-                      .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                      .minute()
-                  : false
                 : true
             )
             .map((item) => {
@@ -561,9 +556,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const noHubSlots = g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS';
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description: noHubSlots
-              ? 'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.'
-              : 'Oops! seems like we are having an issue. Please try again.',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
           });
         })
         .finally(() => {
@@ -633,7 +627,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View style={[styles.rowSpaceBetweenStyle, { paddingBottom: 16 }]}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true });
+              setDiagnosticSlot && setDiagnosticSlot(null);
+              setselectedTimeSlot('');
+            }}
           >
             ADD NEW ADDRESS
           </Text>
@@ -649,6 +647,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       if (val && id) {
                         setDeliveryAddressId && setDeliveryAddressId(id);
                         setDiagnosticSlot && setDiagnosticSlot(null);
+                        setselectedTimeSlot('');
                       }
                     },
                   });
@@ -1421,6 +1420,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           dropdownArray={timeArray}
           setDropArray={(array) => settimeArray(array)}
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
+          maxDate={moment()
+            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .toDate()}
         />
       )}
       {/* {displayAddProfile && (

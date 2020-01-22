@@ -695,4 +695,23 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
   }
+
+  getAllJuniorDoctors(doctorId: string) {
+    if (doctorId == '0') {
+      return this.find({
+        where: {
+          isActive: true,
+          doctorType: DoctorType.JUNIOR,
+        },
+      });
+    } else {
+      return this.find({
+        where: {
+          id: doctorId,
+          isActive: true,
+          doctorType: DoctorType.JUNIOR,
+        },
+      });
+    }
+  }
 }

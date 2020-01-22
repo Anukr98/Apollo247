@@ -10,7 +10,7 @@
     "book_apointment": "BOOK APPOINTMENT",
     "available_in": "AVAILABLE IN",
     "greatPopup": "Great! :)",
-    "prepareForConsult": "PREPARE FOR CONSULT",
+    "prepareForConsult": "FILL CASE SHEET",
     "continueConsult": "CONTINUE CONSULT"
   },
   "login": {
@@ -230,7 +230,7 @@
     "book_follow_up": "BOOK FOLLOW-UP",
     "tabs": [
       {
-        "title": "Consults/Prescriptions",
+        "title": "Consults & Rx",
         "count": "0"
       },
       {

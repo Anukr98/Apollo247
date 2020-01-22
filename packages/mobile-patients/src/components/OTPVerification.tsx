@@ -32,7 +32,9 @@ import {
   AppState,
   AppStateStatus,
   TextInput,
+  WebView,
 } from 'react-native';
+// import { WebView } from 'react-native-webview';
 import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
@@ -358,7 +360,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         db.ref('ApolloPatients/')
           .child(dbChildKey)
           .update({
-            OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+            OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
           });
 
         const { loginId } = props.navigation.state.params!;
@@ -374,7 +376,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               db.ref('ApolloPatients/')
                 .child(dbChildKey)
                 .update({
-                  OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                  OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
                 });
 
               _removeFromStore();
@@ -407,7 +409,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
                   .update({
-                    wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                    wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
                   });
 
                 db.ref('ApolloPatients/')
@@ -445,7 +447,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               db.ref('ApolloPatients/')
                 .child(dbChildKey)
                 .update({
-                  wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                  wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
                 });
 
               db.ref('ApolloPatients/')
@@ -541,7 +543,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     db.ref('ApolloPatients/')
       .child(dbChildKey)
       .update({
-        ResendOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+        ResendOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
       });
 
     getNetStatus().then((status) => {

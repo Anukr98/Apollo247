@@ -236,7 +236,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       }}
                     >
                       {moment(props.reschduleDateTime && props.reschduleDateTime).format(
-                        ' DD MMMM YYYY, hh:mm a'
+                        ' DD MMMM YYYY, hh:mm A'
                       )}
                     </Text>
                   ) : (

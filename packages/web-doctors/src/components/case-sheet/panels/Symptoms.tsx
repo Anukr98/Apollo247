@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
     display: 'flex',
     flexFlow: 'column',
-    padding: '0px 0 10px 10px',
+    padding: '0px 65px 10px 10px',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     borderRadius: 5,

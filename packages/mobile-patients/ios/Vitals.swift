@@ -14,29 +14,33 @@ import JWTDecode
 class Vitals: NSObject {
   @objc
   func vitalsToExport(_ token: String) -> Void {
-    print("vitalsToExport")
+    print("vitalsToExport", token)
     
     let vitaToken = String(format:"Open %@", token)
-    UserDefaults.standard.set(vitaToken, forKey: "CONDITIONMANAGEMENT_VITA_TOKEN");
-    
+   UserDefaults.standard.set(vitaToken, forKey: "CONDITIONMANAGEMENT_VITA_TOKEN");
+   
     #if DEVELOPMENT
     UserDefaults.standard.set("play", forKey: "environment")
     #else
     UserDefaults.standard.set("prod", forKey: "environment")
     #endif
+    UserDefaults.standard.set(true, forKey: "isComingFrom24x7")
+//    UserDefaults.standard.set("prod", forKey: "environment")  while production enable it..
 
     UserDefaults.standard.synchronize();
   }
   
   @objc func goToReactNative(_ token: String) -> Void {
-    print("goToReactNative")
+    print("goToReactNative", token)
 
    DispatchQueue.main.async {
     if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
       let resourcesBundle = Bundle.init(identifier:"com.apollo.ApolloVitalsFramework")
 
       let storyboard = UIStoryboard(name: "AV_Main", bundle: resourcesBundle)
-      
+
+      // let storyboard = UIStoryboard(name: "AV_Main", bundle: nil)
+
       let jwt = try? decode(jwt: token as String)
       print("the data: \(jwt!.body)")
       let tokenBody = jwt!.body as? [String : Any]

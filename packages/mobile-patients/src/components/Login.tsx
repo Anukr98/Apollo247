@@ -28,6 +28,7 @@ import {
   View,
   Dimensions,
 } from 'react-native';
+//import { WebView } from 'react-native-webview';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
@@ -242,7 +243,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     db.ref('ApolloPatients/')
       .push({
         mobileNumber: phoneNumber,
-        mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+        mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
         mobileNumberSuccess: '',
         OTPEntered: '',
         ResendOTP: '',
@@ -289,7 +290,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
                   .update({
-                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
                   });
 
                 console.log('confirmResult login', confirmResult);

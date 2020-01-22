@@ -375,6 +375,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         width: '100% !important',
         color: '#0087ba !important',
       },
+      blueRadio: {
+        '& svg': {
+          '& path': {
+            color: '#0087ba !important',
+          },
+        },
+      },
       consultHoursRange: {
         marginBottom: 15,
       },
@@ -577,6 +584,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         : ''
     }`;
   };
+
   const convertConsultMode = (value: any) => {
     if (value === 'PHYSICAL') {
       return 'Physical';
@@ -1085,7 +1093,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
                                   <FormGroup>
                                     <FormControlLabel
-                                      className={classes.formContainer}
+                                      className={`${classes.formContainer} ${classes.blueRadio}`}
                                       control={<Checkbox value="checkedA" />}
                                       label={convertTocunsultBlockStartEndTime(item)}
                                       onChange={() => {

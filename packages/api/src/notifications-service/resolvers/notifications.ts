@@ -15,7 +15,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInHours } from 'date-fns';
+import { addMilliseconds, format, differenceInHours, differenceInMinutes } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -108,6 +108,7 @@ export enum NotificationType {
   PATIENT_CANCEL_APPOINTMENT = 'PATIENT_CANCEL_APPOINTMENT',
   PHYSICAL_APPT_60 = 'PHYSICAL_APPT_60',
   PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
+  PATIENT_NO_SHOW = 'PATIENT_NO_SHOW',
 }
 
 export enum APPT_CALL_TYPE {
@@ -191,18 +192,22 @@ export async function sendCallsNotification(
   //if (patientDetails.patientDeviceTokens.length == 0) return;
 
   //if notiifcation of type reschedule & check for reschedule notification setting
-  if (
-    patientDetails.patientNotificationSettings &&
-    pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
-    !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
-  ) {
-    return;
-  }
+  // if (
+  //   patientDetails.patientNotificationSettings &&
+  //   pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
+  //   !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
+  // ) {
+  //   return;
+  // }
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
   notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
-  notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+  notificationBody = ApiConstants.AVCALL_APPOINTMENT_BODY;
+  if (callType == APPT_CALL_TYPE.CHAT) {
+    notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
+  }
+  notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace(
     '{1}',
     doctorDetails.firstName + ' ' + doctorDetails.lastName
@@ -221,6 +226,7 @@ export async function sendCallsNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: 'incallmanager_ringtone.mp3',
     },
     data: {
       type: 'call_started',
@@ -332,6 +338,7 @@ export async function sendNotification(
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
+  const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
   const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
@@ -357,6 +364,16 @@ export async function sendNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
     notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+  } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
+    notificationTitle = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_TITLE;
+    notificationBody = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_BODY.replace(
       '{0}',
       patientDetails.firstName
     );
@@ -428,8 +445,6 @@ export async function sendNotification(
               ' ' +
               facilityDets.streetLine1 +
               ' ' +
-              facilityDets.streetLine2 +
-              ' ' +
               facilityDets.city +
               ' ' +
               facilityDets.state
@@ -464,6 +479,7 @@ export async function sendNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: notificationSound,
     },
     data: {},
   };
@@ -473,13 +489,13 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Book_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -491,13 +507,31 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Patient_Noshow_Reschedule_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -509,13 +543,13 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Patient_Cancel_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -530,13 +564,13 @@ export async function sendNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'chat_room',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
@@ -634,6 +668,7 @@ export async function sendReminderNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {},
   };
@@ -646,6 +681,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_15',
@@ -660,18 +696,16 @@ export async function sendReminderNotification(
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-      notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      //notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
         if (facilityDets) {
           notificationBody = notificationBody.replace(
-            '{1}',
+            '{2}',
             facilityDets.name +
               ' ' +
               facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.streetLine2 +
               ' ' +
               facilityDets.city +
               ' ' +
@@ -686,6 +720,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_15',
@@ -699,8 +734,12 @@ export async function sendReminderNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY;
+    let diffMins = Math.ceil(
+      Math.abs(differenceInMinutes(new Date(), appointment.appointmentDateTime))
+    );
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+      notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
@@ -711,20 +750,29 @@ export async function sendReminderNotification(
               ' ' +
               facilityDets.streetLine1 +
               ' ' +
-              facilityDets.streetLine2 +
-              ' ' +
               facilityDets.city +
               ' ' +
               facilityDets.state
           );
         }
       }
+    } else {
+      if (diffMins <= 1) {
+        diffMins = 1;
+        notificationBody = ApiConstants.APPOINTMENT_REMINDER_1_BODY;
+        notificationBody = notificationBody.replace('{1}', doctorDetails.displayName);
+        notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
+      } else {
+        notificationBody = notificationBody.replace('{1}', diffMins.toString());
+        notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+      }
     }
-    notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+
     payload = {
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_15',
@@ -748,6 +796,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reminder_Appointment_Casesheet_15',
@@ -777,6 +826,7 @@ export async function sendReminderNotification(
       notification: {
         title: notificationTitle,
         body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
         type: 'Reschedule-Appointment',
@@ -905,6 +955,7 @@ export async function sendCartNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: 'Cart_Ready',
@@ -1086,6 +1137,7 @@ export async function sendPatientRegistrationNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: 'Registration_Success',
@@ -1176,6 +1228,7 @@ export async function sendMedicineOrderStatusNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: payloadDataType,
@@ -1261,6 +1314,7 @@ export async function sendDiagnosticOrderStatusNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: payloadDataType,

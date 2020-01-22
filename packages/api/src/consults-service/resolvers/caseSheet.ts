@@ -39,6 +39,7 @@ import { PatientLifeStyleRepository } from 'profiles-service/repositories/patien
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
+import { differenceInSeconds } from 'date-fns';
 
 export type DiagnosisJson = {
   name: string;
@@ -134,6 +135,11 @@ export const caseSheetTypeDefs = gql`
     OTHER
   }
 
+  enum TEST_COLLECTION_TYPE {
+    HC
+    CENTER
+  }
+
   type Address {
     id: ID!
     addressLine1: String
@@ -205,6 +211,7 @@ export const caseSheetTypeDefs = gql`
     symptoms: [SymptomList]
     status: String
     sentToPatient: Boolean
+    updatedDate: DateTime
   }
 
   type Diagnosis {
@@ -243,11 +250,23 @@ export const caseSheetTypeDefs = gql`
   }
 
   type DiagnosticPrescription {
+    collectionMethod: TEST_COLLECTION_TYPE
+    id: String
+    imageUrl: String
+    isCustom: Boolean
+    itemId: String
     itemname: String
+    price: String
   }
 
   input DiagnosticPrescriptionInput {
+    collectionMethod: TEST_COLLECTION_TYPE
+    id: String
+    imageUrl: String
+    isCustom: Boolean
+    itemId: String
     itemname: String
+    price: String
   }
   enum MEDICINE_FORM_TYPES {
     GEL_LOTION_OINTMENT
@@ -735,6 +754,12 @@ const modifyCaseSheet: Resolver<
       medicalHistoryInputs
     );
   }
+
+  getCaseSheetData.updatedDate = new Date();
+  getCaseSheetData.preperationTimeInSeconds = differenceInSeconds(
+    getCaseSheetData.updatedDate,
+    getCaseSheetData.createdDate
+  );
 
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;

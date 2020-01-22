@@ -50,7 +50,22 @@ const login: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const { mobileNumber, loginType } = args;
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
-  const otp = generateOTP();
+  let otp = generateOTP();
+
+  //if performance environment(as), use the static otp
+  if (process.env.NODE_ENV === 'as' && process.env.PERFORMANCE_ENV_STATIC_OTP) {
+    otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
+  }
+
+  //if production environment, and specifin mobileNumber, use the static otp
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP &&
+    mobileNumber == process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER
+  ) {
+    otp = process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP.toString();
+  }
 
   const optAttrs: Partial<LoginOtp> = {
     loginType,
@@ -60,6 +75,29 @@ const login: Resolver<
   };
 
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
+
+  //if performance environment(as), return the response without sending SMS
+  if (process.env.NODE_ENV === 'as') {
+    return {
+      status: true,
+      loginId: otpSaveResponse.id,
+      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
+    };
+  }
+
+  //if production environment, and specific mobileNumber, return the response without sending SMS
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP &&
+    mobileNumber == process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER
+  ) {
+    return {
+      status: true,
+      loginId: otpSaveResponse.id,
+      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
+    };
+  }
 
   //call sms gateway service to send the OTP here
   const smsResult = await sendSMS(mobileNumber, otp);
@@ -99,7 +137,13 @@ const resendOtp: Resolver<
     };
   }
 
-  const otp = generateOTP();
+  let otp = generateOTP();
+
+  //if performance environment(as), use the static otp
+  if (process.env.NODE_ENV === 'as' && process.env.PERFORMANCE_ENV_STATIC_OTP) {
+    otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
+  }
+
   const optAttrs: Partial<LoginOtp> = {
     mobileNumber,
     otp,
@@ -111,6 +155,15 @@ const resendOtp: Resolver<
 
   //archive the old resend record and then delete it
   archiveOtpRecord(validResendRecord[0].id, profilesDb);
+
+  //if performance environment(as), return the response without sending SMS
+  if (process.env.NODE_ENV === 'as') {
+    return {
+      status: true,
+      loginId: otpSaveResponse.id,
+      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
+    };
+  }
 
   //call sms gateway service to send the OTP here
   const smsResult = await sendSMS(mobileNumber, otp);

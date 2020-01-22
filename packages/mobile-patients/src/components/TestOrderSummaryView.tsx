@@ -93,13 +93,13 @@ export interface TestOrderSummaryViewProps {
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orderDetails }) => {
   const getFormattedDateTime = (time: string) => {
-    return moment(time).format('D MMM YYYY | hh:mm a');
+    return moment(time).format('D MMM YYYY | hh:mm A');
   };
 
   const formatSlot = (slot: string /*07:00-07:30 */) => {
     return slot
       .split('-')
-      .map((item) => moment(item.trim(), 'hh:mm').format('hh:mm a'))
+      .map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A'))
       .join(' - ');
   };
 

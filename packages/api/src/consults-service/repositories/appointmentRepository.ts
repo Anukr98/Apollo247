@@ -60,6 +60,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getAppointmentsByDate(appointmentDateTime: Date) {
+    return this.find({
+      where: { appointmentDateTime, status: STATUS.PENDING },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
   checkPatientCancelledHistory(patientId: string, doctorId: string) {
     const newStartDate = new Date(format(addDays(new Date(), -9), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30');
@@ -1372,7 +1382,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getPatientFutureAppointmentsCount(patientId: string, maxConsultationMinutes: number) {
     return this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', {
-        apptDate: subMinutes(new Date(), maxConsultationMinutes),
+        apptDate: new Date(),
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {

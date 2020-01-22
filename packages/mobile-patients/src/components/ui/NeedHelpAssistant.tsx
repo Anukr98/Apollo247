@@ -53,6 +53,7 @@ export const NeedHelpAssistant: React.FC<NeedHelpAssistantProps> = (props) => {
         title="Need Help?"
         style={styles.needhelpbuttonStyles}
         titleTextStyle={styles.titleBtnStyles}
+        displayThorn={true}
       />
     </View>
   );

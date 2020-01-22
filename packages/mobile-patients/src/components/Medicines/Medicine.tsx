@@ -13,6 +13,7 @@ import {
   MedicineRxIcon,
   SearchSendIcon,
   SyrupBottleIcon,
+  PrescriptionPad,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -123,7 +124,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } | null;
 
   useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient.id) {
+    if (currentPatient && profile && profile.id !== currentPatient.id) {
       globalLoading!(true);
       setProfile(currentPatient);
       ordersRefetch().then(({ data }) => {
@@ -352,7 +353,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             title={'UPLOAD PRESCRIPTION'}
           />
         </View>
-        <FileBig style={{ height: 60, width: 40 }} />
+        <PrescriptionPad style={{ height: 57, width: 42 }} />
       </View>
     );
   };

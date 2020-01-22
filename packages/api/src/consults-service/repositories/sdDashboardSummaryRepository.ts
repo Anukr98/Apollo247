@@ -7,12 +7,20 @@ import {
   FeedbackDashboardSummary,
   APPOINTMENT_TYPE,
   PhrDocumentsSummary,
+  AppointmentPayments,
+  DoctorFeeSummary,
   AppointmentDocuments,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
+import { ConsultMode } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+
+type NewPatientCount = {
+  patientid: string;
+  patientcount: number;
+};
 
 @EntityRepository(SdDashboardSummary)
 export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary> {
@@ -42,6 +50,22 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
       });
+  }
+
+  saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+    return DoctorFeeSummary.create(doctorFeeAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_DOCTORFEESUMMARY_ERROR, undefined, {
+          createErrors,
+        });
+      });
+  }
+
+  getAppointmentPaymentDetailsByApptId(appointment: string) {
+    return AppointmentPayments.findOne({ where: appointment }).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+    });
   }
 
   saveDocumentSummary(phrDocSummaryAttrs: Partial<PhrDocumentsSummary>) {
@@ -96,6 +120,45 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           status2: STATUS.PAYMENT_PENDING,
         })
         .getCount();
+    }
+  }
+
+  getAppointmentsDetailsByDoctorId(
+    doctorId: string,
+    appointmentDate: Date,
+    appointmentType: string
+  ) {
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    const startDate = new Date(inputStartDate + 'T18:30');
+    if (appointmentType == ConsultMode.BOTH) {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getMany();
+    } else {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.appointmentType = :appointmentType', {
+          appointmentType: APPOINTMENT_TYPE.ONLINE,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getMany();
     }
   }
 
@@ -273,5 +336,31 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       }
     }
     return duration;
+  }
+
+  async getPatientTypes(appointmentDate: Date, doctorId: string) {
+    const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
+    const apptsList: NewPatientCount[] = await Appointment.createQueryBuilder('appointment')
+      .select(['patientId as patientid', 'count(patientId) as patientcount'])
+      .where('appointment.doctorId = :doctorId', { doctorId })
+      .andWhere('appointment.appointmentDateTime Between :fromDate and :toDate', {
+        fromDate: startDate,
+        toDate: endDate,
+      })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    let repeatCount = 0,
+      newCount = 0;
+    if (apptsList.length > 0) {
+      apptsList.forEach((appt) => {
+        if (appt.patientcount > 1) {
+          repeatCount++;
+        } else {
+          newCount++;
+        }
+      });
+    }
+    return repeatCount + '-' + newCount;
   }
 }

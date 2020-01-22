@@ -55,28 +55,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span
-          key={part.text}
-          style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
-          title={suggestion.label}
-        >
-          {part.text.length > 46
-            ? part.text.substring(0, 45).toLowerCase() + '...'
-            : part.text.toLowerCase()}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </div>
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -164,6 +142,16 @@ const useStyles = makeStyles((theme: Theme) =>
     numberOfTimes: {
       width: '100%',
       margin: '0 0 20px 0',
+      '& > div': {
+        '& > div': {
+          '&:focus': {
+            transition: 'all 0.2s',
+            backgroundColor: 'rgba(240, 244, 245, 0.3)',
+            borderTopLeftRadius: 5,
+            borderTopRightRadius: 5,
+          },
+        },
+      },
     },
     instructionsWrapper: {
       padding: '0 0 8px 0 !important',
@@ -483,6 +471,22 @@ const useStyles = makeStyles((theme: Theme) =>
         paddingTop: '3px !important',
       },
     },
+    focusInputs: {
+      '&:focus': {
+        transition: 'all 0.2s',
+        backgroundColor: 'rgba(240, 244, 245, 0.3)',
+        borderTopLeftRadius: 5,
+        borderTopRightRadius: 5,
+      },
+      '& input': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+        },
+      },
+    },
   })
 );
 
@@ -772,6 +776,33 @@ export const MedicinePrescription: React.FC = () => {
         }
       });
   };
+  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
+    const matches = match(suggestion.label, query);
+    const parts = parse(suggestion.label, matches);
+
+    return (
+      medicine.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+              title={suggestion.label}
+            >
+              {part.text.length > 46
+                ? part.text.substring(0, 45).toLowerCase() + '...'
+                : part.text.toLowerCase()}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
+
   const fetchMedicines = async (value: any) => {
     const CancelToken = axios.CancelToken;
     cancel && cancel();
@@ -1392,6 +1423,7 @@ export const MedicinePrescription: React.FC = () => {
                               Take
                             </div>
                             <AphTextField
+                              className={classes.focusInputs}
                               autoFocus
                               inputProps={{ maxLength: 6 }}
                               value={tabletsCount === 0 ? '' : tabletsCount}
@@ -1436,6 +1468,11 @@ export const MedicinePrescription: React.FC = () => {
                                   horizontal: 'right',
                                 },
                               }}
+                              inputProps={{
+                                classes: {
+                                  root: classes.focusInputs,
+                                },
+                              }}
                               onChange={(e: any) => {
                                 setMedicineUnit(e.target.value as string);
                               }}
@@ -1466,6 +1503,9 @@ export const MedicinePrescription: React.FC = () => {
                                   vertical: 'top',
                                   horizontal: horizontal,
                                 },
+                              }}
+                              inputProps={{
+                                classes: { root: classes.focusInputs },
                               }}
                               onChange={(e: any) => {
                                 setFrequency(e.target.value as string);
@@ -1512,6 +1552,7 @@ export const MedicinePrescription: React.FC = () => {
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>For</div>
                           <AphTextField
+                            className={classes.focusInputs}
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
                             value={consumptionDuration}
@@ -1534,7 +1575,6 @@ export const MedicinePrescription: React.FC = () => {
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             &nbsp;
                           </div>
-                          {/* <div className={classes.unitsSelect}> */}
                           <AphSelect
                             style={{ paddingTop: 3 }}
                             value={forUnit}
@@ -1551,13 +1591,17 @@ export const MedicinePrescription: React.FC = () => {
                                 horizontal: 'left',
                               },
                             }}
+                            inputProps={{
+                              classes: {
+                                root: classes.focusInputs,
+                              },
+                            }}
                             onChange={(e: any) => {
                               setforUnit(e.target.value as string);
                             }}
                           >
                             {forOptionHtml}
                           </AphSelect>
-                          {/* </div> */}
                         </div>
                       </div>
                     </div>

@@ -299,6 +299,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
+        maxHeight: 'calc(100vh - 212px)',
       },
     },
     timeStamp: {
@@ -308,6 +309,15 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: -7,
       marginBottom: -5,
       paddingTop: 5,
+    },
+    timeStampPatient: {
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'left',
+      marginRight: -7,
+      marginBottom: -5,
+      paddingTop: 5,
+      paddingLeft: 94,
     },
     timeStampImg: {
       fontSize: 10,
@@ -385,6 +395,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -533,7 +544,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
-        lastMsg.message.message !== callAbandonment
+        lastMsg.message.message !== callAbandonment &&
+        lastMsg.message.message !== appointmentComplete
       ) {
         setIsNewMsg(true);
       } else {
@@ -688,7 +700,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
-      rowData.message !== callAbandonment
+      rowData.message !== callAbandonment &&
+      rowData.message !== appointmentComplete
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -789,7 +802,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
-      rowData.message !== callAbandonment
+      rowData.message !== callAbandonment &&
+      rowData.message !== appointmentComplete
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -815,7 +829,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span>{rowData.message}</span>
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
                 {rowData!.messageDate && (
-                  <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  <div className={classes.timeStampPatient}>
+                    {convertChatTime(rowData.messageDate)}
+                  </div>
                 )}
               </div>
             ) : (
@@ -882,7 +898,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
-      rowData.message !== callAbandonment
+      rowData.message !== callAbandonment &&
+      rowData.message !== appointmentComplete
     ) {
       jrDrComponent++;
       leftComponent = 0;

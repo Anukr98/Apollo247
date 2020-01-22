@@ -11,10 +11,12 @@ enum AppEnv {
   PROD = 'PROD',
 }
 
-const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,
+  DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2,
+  DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
 };
 
 const PharmaApiConfig = {
@@ -84,7 +86,7 @@ const ConfigurationDev = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
@@ -93,7 +95,8 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
-  Android_Version: '1.76',
+  Android_Version: '1.83',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
 };
 
 // QA
@@ -114,7 +117,7 @@ const ConfigurationQA = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
@@ -122,8 +125,9 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.8',
-  Android_Version: '1.22',
+  iOS_Version: '1.9',
+  Android_Version: '1.24',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
 };
 
 //Production
@@ -144,7 +148,7 @@ const ConfigurationProd = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', // PRODUCTION
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
@@ -154,6 +158,7 @@ const ConfigurationProd = {
   ...appStaticVariables,
   iOS_Version: '1.7',
   Android_Version: '1.16',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
 };
 
 const Configuration =
@@ -328,85 +333,88 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'Payment Issues in online pharmacy payments',
       'Area pharmacy store not found on app',
+      'Cancel the medicine order',
+      'Delay in pharmacy order',
       'Difference in quantity of medicine delivered',
-      'Excess amount charged on delivery Delay in Pharmacy Order',
-      'Medicines not delivered',
+      'Excess amount charged on delivery',
+      'Inappropriate attitude and behavior of pharmacy staff',
       'Incorrect medicines',
-      'Issues in Order confirmations',
+      'Issues in order confirmations',
+      'Medicines not delivered',
+      'Order cancelled, no refund',
       'Orders cancelled without any information',
-      'Order Cancelled, No Refund',
-      'Inappropriate Attitude and Behavior of Pharmacy staff',
-      'Updates in Order delivery or status of the order',
-      'Software - Not User Friendly',
+      'Payment issues in online pharmacy',
+      'Software not user-friendly',
+      'Updates in order delivery or status of the order',
     ],
   },
   {
-    category: 'Virtual Consult',
+    category: 'Virtual/Online Consult',
     options: [
-      'Require Reschedule',
-      'Delay in consult',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
       'Application issues (bandwidth & payment errors)',
+      'Behavior and attitude of the doctor',
+      'Delay in consult',
+      'Delayed prescription',
       'Doctor not available',
-      'No past / Upcoming consultation details',
       'How to consult virtually – demo video',
+      'No past / upcoming consultation details',
+      'No updates on delays, reschedules or cancellations of the consult',
+      'Require reschedule',
+      'Payment issues',
     ],
   },
   {
     category: 'Health Records',
     options: [
+      'Add multiple UHID’s linked to other mobile numbers',
+      'Delay in responses to queries',
       'Incomplete health records',
-      'Delay in responses to Queries',
+      'Issues in downloading the records',
+      'No / Wrong UHID',
+      'No records available for linked UHID',
       'Personal details are not editable',
       'Unable to see my reports',
-      'No / Wrong UHID',
-      'Add multiple UHID’s linked to other mobile numbers',
-      'No records available for linked UHID',
-      'Issues in downloading the records',
     ],
   },
   {
     category: 'Physical Consult',
     options: [
-      'Require Reschedule',
-      'Long Waiting time for Physical consult',
+      'App appointment dishonored at confirmed time slot',
+      'Application issues(bandwidth & payment errors)',
+      'Behavior and attitude of the doctor',
+      "Can't find doctor’s name in respective list",
+      'Delayed prescription',
+      'Doctor not available',
+      'Long waiting time for physical consult',
+      'No past / upcoming consultation details',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
-      'Application issues(bandwidth & payment errors)',
-      'Doctor not available',
-      'App appointment dishonored at confirmed time slot',
-      'No past / Upcoming consultation details',
-      "Can't find Doctor’s name in respective list",
+      'Require reschedule',
     ],
   },
   {
     category: 'Feedback',
     options: [
-      'Feedback on Consultation',
-      'Feedback on Health Records',
-      'Feedback on Medicine Deliver',
+      'Feedback on app',
+      'Feedback on consultation',
+      'Feedback on health records',
+      'Feedback on medicine deliver',
     ],
   },
   {
     category: 'Diagnostics',
     options: [
-      'Require Reschedule',
-      'Payment Issues while ordering',
-      'Sample pick up related',
       'Excess amount related',
-      'Issues in Order confirmation',
+      'Issues in order confirmation',
+      'Payment issues while ordering',
       'Pickup cancelled without any information',
-      'Pickup Cancelled, No Refund',
+      'Pickup cancelled, no refund',
       'Report not received',
-      'Wrong report received',
+      'Require reschedule',
+      'Sample pick up related',
       'Sample pick up staff related',
+      'Wrong report received',
     ],
   },
 ];

@@ -48,31 +48,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: any | null,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion!.itemName, query);
-  const parts = parse(suggestion!.itemName, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span
-          key={part.text}
-          style={{
-            fontWeight: part.highlight ? 500 : 400,
-            whiteSpace: 'pre',
-          }}
-        >
-          {part.text}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </div>
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -425,6 +400,33 @@ export const DiagnosticPrescription: React.FC = () => {
     });
   };
 
+  function renderSuggestion(
+    suggestion: any | null,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(suggestion!.itemName, query);
+    const parts = parse(suggestion!.itemName, matches);
+
+    return (
+      otherDiagnostic.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+              title={suggestion!.itemName} //added by Vishal
+            >
+              {part.text}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
   const handleDelete = (item: any, idx: number) => {
     // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
@@ -587,7 +589,7 @@ export const DiagnosticPrescription: React.FC = () => {
             )}
           </Typography>
         </Grid>
-        {!showAddCondition && caseSheetEdit && favTests && favTests.length > 0 && (
+        {favTests && favTests.length > 0 && (
           <Grid item lg={6} xs={6}>
             <Typography component="h5" variant="h5">
               Favorite Tests
@@ -601,27 +603,29 @@ export const DiagnosticPrescription: React.FC = () => {
                       key={idx}
                       label={favTest && favTest.itemname}
                     />
-                    <AphButton
-                      className={classes.btnAddDoctorright}
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        const favTestValue = {
-                          itemName: favTest.itemname,
-                          id: favTest.id,
-                          __typename: favTest.__typename,
-                        };
-                        selectedValues!.push(favTestValue);
-                        setShowFavMedicine(true);
-                        setState({
-                          single: '',
-                          popper: '',
-                        });
-                        // handleChange('single');
-                      }}
-                    >
-                      <img src={require('images/add_doctor_white.svg')} alt="" />
-                    </AphButton>
+                    {caseSheetEdit && (
+                      <AphButton
+                        className={classes.btnAddDoctorright}
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          const favTestValue = {
+                            itemName: favTest.itemname,
+                            id: favTest.id,
+                            __typename: favTest.__typename,
+                          };
+                          selectedValues!.push(favTestValue);
+                          setShowFavMedicine(true);
+                          setState({
+                            single: '',
+                            popper: '',
+                          });
+                          // handleChange('single');
+                        }}
+                      >
+                        <img src={require('images/add_doctor_white.svg')} alt="" />
+                      </AphButton>
+                    )}
                   </Typography>
                 );
               })}

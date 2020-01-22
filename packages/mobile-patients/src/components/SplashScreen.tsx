@@ -6,6 +6,45 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
+import { AppConfig } from '../strings/AppConfig';
+import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
+// The moment we import from sdk @praktice/navigator-react-native-sdk,
+// finally not working on all promises.
+
+(function() {
+  /**
+   * Praktice.ai
+   * Polyfill for Promise.prototype.finally
+   *
+   * [ Temporary FIX ] => Add this code just below the import of SDK,
+   * [ Update ] => In the next version it will part of SDK, user will not be required to add this code-block
+   */
+  let globalObject;
+  // if (typeof global !== 'undefined') {
+  globalObject = global;
+  // } else if (typeof window !== 'undefined' && window.document) {
+  // globalObject = window;
+  // }
+  if (typeof Promise.prototype['finally'] === 'function') {
+    return;
+  }
+  globalObject.Promise.prototype['finally'] = function(callback) {
+    const constructor = this.constructor;
+    return this.then(
+      function(value) {
+        return constructor.resolve(callback()).then(function() {
+          return value;
+        });
+      },
+      function(reason) {
+        return constructor.resolve(callback()).then(function() {
+          throw reason;
+        });
+      }
+    );
+  };
+})();
 
 const styles = StyleSheet.create({
   mainView: {
@@ -20,6 +59,15 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    getData('ConsultRoom');
+    PrefetchAPIReuqest({ clientId: AppConfig.Configuration.PRAKTISE_API_KEY }).then((res) =>
+      console.log(res, 'PrefetchAPIReuqest')
+    );
+  }, []);
 
   useEffect(() => {
     try {
@@ -64,6 +112,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     console.log('route', route);
   };
+
+  useEffect(() => {
+    if (!currentPatient) {
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const getData = (routeName: String) => {
     async function fetchData() {
@@ -125,17 +179,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     fetchData();
   };
 
-  useEffect(() => {
-    getData('ConsultRoom');
-  }, []);
-
   const pushTheView = (routeName: String) => {
     console.log('pushTheView', routeName);
 
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
-        props.navigation.navigate('CONSULT ROOM');
+        props.navigation.navigate('APPOINTMENTS');
         break;
 
       case 'Medicine':
