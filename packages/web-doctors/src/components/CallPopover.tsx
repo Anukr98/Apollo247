@@ -10,6 +10,7 @@ import {
   FormHelperText,
   Typography,
 } from '@material-ui/core';
+import Scrollbars from 'react-custom-scrollbars';
 import { Prompt, Link } from 'react-router-dom';
 import moment from 'moment';
 import { createMuiTheme } from '@material-ui/core';
@@ -455,6 +456,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 4,
       },
     },
+    tabbodyothers: {
+      paddingBottom: 10,
+      marginBottom: 50,
+    },
     tabBodypadding: {
       margin: '0 20px',
       padding: '0 15px 15px 15px',
@@ -498,7 +503,8 @@ const useStyles = makeStyles((theme: Theme) => {
     selectText: {
       position: 'absolute',
       marginTop: 17,
-      color: '#d3d3d3',
+      color: '#01475b',
+      opacity: 0.7,
     },
     cancelBtn: {
       minWidth: 30,
@@ -1916,13 +1922,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             {props.appointmentStatus !== STATUS.COMPLETED && (
               <Button
                 className={classes.backButton}
-                disabled={
+                /* disabled={
                   (isPastAppointment() && !consultStart) ||
                   (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
                   props.appointmentStatus === STATUS.NO_SHOW ||
                   props.appointmentStatus === STATUS.CALL_ABANDON ||
                   isCallAccepted
-                }
+                } */
                 onClick={() => {
                   setLoading(true);
                   const rescheduleCountByDoctor =
@@ -2129,136 +2135,136 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   />
                 </Button>
               </div>
-              <div className={classes.tabBody}>
-                <p>The following slot will be suggested —</p>
-                {doctorNextAvailableSlot === '' || loading ? (
-                  <CircularProgress />
-                ) : (
-                  <div className={classes.dateAndTieWrapper}>
-                    <div className={classes.flexGrow}>
-                      <Typography component="h5" variant="h5" className={classes.header}>
-                        Date
-                      </Typography>
-                      <div className={classes.data}>
-                        {dateSelected && timeSelected
-                          ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
-                              'ddd, DD/MM/YYYY'
-                            )
-                          : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY')}
+              <Scrollbars autoHide={true} style={{ minHeight: 'calc(52vh)' }}>
+                <div className={classes.tabBody}>
+                  <p>The following slot will be suggested —</p>
+                  {doctorNextAvailableSlot === '' || loading ? (
+                    <CircularProgress />
+                  ) : (
+                    <div className={classes.dateAndTieWrapper}>
+                      <div className={classes.flexGrow}>
+                        <Typography component="h5" variant="h5" className={classes.header}>
+                          Date
+                        </Typography>
+                        <div className={classes.data}>
+                          {dateSelected && timeSelected
+                            ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
+                                'ddd, DD/MM/YYYY'
+                              )
+                            : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY')}
+                        </div>
+                      </div>
+                      <div className={classes.flexGrow}>
+                        <Typography component="h5" variant="h5" className={classes.header}>
+                          Time
+                        </Typography>
+                        <div className={classes.data}>
+                          {dateSelected && timeSelected
+                            ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
+                            : moment(doctorNextAvailableSlot).format('h:mm a')}
+                        </div>
                       </div>
                     </div>
-                    <div className={classes.flexGrow}>
-                      <Typography component="h5" variant="h5" className={classes.header}>
-                        Time
-                      </Typography>
-                      <div className={classes.data}>
-                        {dateSelected && timeSelected
-                          ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
-                          : moment(doctorNextAvailableSlot).format('h:mm a')}
-                      </div>
-                    </div>
-                  </div>
 
-                  // <form noValidate>
-                  //   <TextField
-                  //     id="datetime-local"
-                  //     label="Date & Time"
-                  //     type="datetime-local"
-                  //     defaultValue={dateSelected || doctorNextAvailableSlot}
-                  //     className={classes.textField}
-                  //     InputLabelProps={{
-                  //       shrink: true
-                  //     }}
-                  //   />
-                  // </form>
-                )}
-                <AphButton
-                  className={classes.suggestSlot}
-                  onClick={() => {
-                    setIsSlotPopoverOpen(true);
-                  }}
-                >
-                  SUGGEST ANOTHER SLOT
-                </AphButton>
-              </div>
-              <div className={classes.tabBody}>
-                <p>Why do you want to reschedule?</p>
-                {reason.trim() === '' && (
-                  <span className={classes.selectText}>Select a Reason</span>
-                )}
-                <AphSelect
-                  value={reason}
-                  MenuProps={{
-                    classes: { paper: classes.menuPopover },
-                    anchorOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right',
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right',
-                    },
-                  }}
-                  onChange={(e: any) => {
-                    setReason(e.target.value as string);
-                  }}
-                >
-                  <MenuItem
-                    value="I am running late from previous consult"
-                    classes={{ selected: classes.menuSelected }}
+                    // <form noValidate>
+                    //   <TextField
+                    //     id="datetime-local"
+                    //     label="Date & Time"
+                    //     type="datetime-local"
+                    //     defaultValue={dateSelected || doctorNextAvailableSlot}
+                    //     className={classes.textField}
+                    //     InputLabelProps={{
+                    //       shrink: true
+                    //     }}
+                    //   />
+                    // </form>
+                  )}
+                  <AphButton
+                    className={classes.suggestSlot}
+                    onClick={() => {
+                      setIsSlotPopoverOpen(true);
+                    }}
                   >
-                    I am running late from previous consult
-                  </MenuItem>
-                  <MenuItem
-                    value="I have personal engagement"
-                    classes={{ selected: classes.menuSelected }}
+                    SUGGEST ANOTHER SLOT
+                  </AphButton>
+                </div>
+
+                <div className={`${classes.tabBody} ${classes.tabbodyothers}`}>
+                  <p>Why do you want to reschedule?</p>
+                  {!reason.trim() && <span className={classes.selectText}>Select a Reason</span>}
+                  <AphSelect
+                    value={reason}
+                    MenuProps={{
+                      classes: { paper: classes.menuPopover },
+                      anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                    onChange={(e: any) => {
+                      setReason(e.target.value as string);
+                    }}
                   >
-                    I have personal engagement
-                  </MenuItem>
-                  <MenuItem
-                    value="I have a parallel appointment/ procedure"
-                    classes={{ selected: classes.menuSelected }}
-                  >
-                    I have a parallel appointment/ procedure
-                  </MenuItem>
-                  <MenuItem
-                    value="Patient was not reachable"
-                    classes={{ selected: classes.menuSelected }}
-                  >
-                    Patient was not reachable
-                  </MenuItem>
-                  <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
-                    Other
-                  </MenuItem>
-                </AphSelect>
-                {textOther && (
-                  <div className={classes.othercases}>
-                    <AphTextField
-                      classes={{ root: classes.searchInput }}
-                      placeholder="Enter here...."
-                      onChange={(e: any) => {
-                        setOtherTextValue(e.target.value);
-                      }}
-                      value={otherTextValue}
-                      error={errorStateReshedule.otherError}
-                    />
-                    {errorStateReshedule.otherError && (
-                      <FormHelperText
-                        className={classes.helpText}
-                        component="div"
+                    <MenuItem
+                      value="I am running late from previous consult"
+                      classes={{ selected: classes.menuSelected }}
+                    >
+                      I am running late from previous consult
+                    </MenuItem>
+                    <MenuItem
+                      value="I have personal engagement"
+                      classes={{ selected: classes.menuSelected }}
+                    >
+                      I have personal engagement
+                    </MenuItem>
+                    <MenuItem
+                      value="I have a parallel appointment/ procedure"
+                      classes={{ selected: classes.menuSelected }}
+                    >
+                      I have a parallel appointment/ procedure
+                    </MenuItem>
+                    <MenuItem
+                      value="Patient was not reachable"
+                      classes={{ selected: classes.menuSelected }}
+                    >
+                      Patient was not reachable
+                    </MenuItem>
+                    <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
+                      Other
+                    </MenuItem>
+                  </AphSelect>
+                  {textOther && (
+                    <div className={classes.othercases}>
+                      <AphTextField
+                        classes={{ root: classes.searchInput }}
+                        placeholder="Enter here...."
+                        onChange={(e: any) => {
+                          setOtherTextValue(e.target.value);
+                        }}
+                        value={otherTextValue}
                         error={errorStateReshedule.otherError}
-                      >
-                        Please write other reason
-                      </FormHelperText>
-                    )}
-                  </div>
-                )}
-              </div>
-
+                      />
+                      {errorStateReshedule.otherError && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorStateReshedule.otherError}
+                        >
+                          Please write other reason
+                        </FormHelperText>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Scrollbars>
               <div className={classes.tabFooter}>
                 <Button
                   className={classes.ResheduleCosultButton}
-                  disabled={reason === ''}
+                  disabled={!reason}
                   onClick={() => {
                     rescheduleConsultAction();
                   }}
