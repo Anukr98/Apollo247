@@ -332,12 +332,15 @@ const SaveDiagnosticOrder: Resolver<
     if (patientDetails.gender != null) {
       patientGender = patientDetails.gender;
     }
-    const preBookingInput = {
-      UserName: 'ASKAPOLLO',
-      Password: '3HAQbAb9wrsykr8TMLnV',
-      InterfaceClient: 'ASKAPOLLO',
+
+    const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';
+
+    const preBookingInputParameters = {
+      UserName: process.env.DIAGNOSTICS_PREBOOKING_API_USERNAME,
+      Password: process.env.DIAGNOSTICS_PREBOOKING_API_PASSWORD,
+      InterfaceClient: process.env.DIAGNOSTICS_PREBOOKING_API_INTERFACE_CLIENT,
       Patient_ID: patientDetails.id.toString(),
-      Title: 'Mr.',
+      Title: patientTitle,
       PName: patientDetails.firstName + '' + patientDetails.lastName,
       House_No: '',
       LocalityID: '0',
@@ -393,6 +396,12 @@ const SaveDiagnosticOrder: Resolver<
       DoctorID: '',
       OtherDoctor: '',
     };
+
+    const preBookingInput =
+      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+        ? [preBookingInputParameters]
+        : preBookingInputParameters;
+
     const preBookingUrl = process.env.DIAGNOSTIC_PREBOOKING_URL
       ? process.env.DIAGNOSTIC_PREBOOKING_URL
       : '';
@@ -473,7 +482,7 @@ const SaveDiagnosticOrder: Resolver<
             Patient_ID: patientDetails.id,
             visit_id: '',
             doctor_id: '',
-            title: 'Mr',
+            title: patientTitle,
             payment_mode_id: '1',
             locality_id: '0',
             house_no: '',
