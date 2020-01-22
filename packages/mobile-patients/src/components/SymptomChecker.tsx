@@ -109,7 +109,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
   const showAlert = () => {
     showAphAlert!({
       title: 'Hi!',
-      description: 'who is the patient today?',
+      description: 'Who is the patient today?',
       ctaContainerStyle: { marginTop: 50 },
       CTAs: [
         {

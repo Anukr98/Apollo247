@@ -1,1 +1,1 @@
-declare module 'praktice-navigator-react-native-sdk';
+declare module '@praktice/navigator-react-native-sdk';

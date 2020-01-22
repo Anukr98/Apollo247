@@ -281,13 +281,13 @@ const slides: Slide[] = [
     onSubmitValidation: [/^\d{1,3}(\/|\\)\d{1,3}$/],
     validationMessage: 'Enter blood pressure in valid format (eg. 120/80)',
   },
-  {
-    key: 'familyHistory',
-    index: 12,
-    title: 'Does anyone in your family suffer from — COPD,Cancer, Hypertension or Diabetes?',
-    buttonText: ['Yes', 'No'],
-    inputData: ['value'],
-  },
+  // {
+  //   key: 'familyHistory',
+  //   index: 12,
+  //   title: 'Does anyone in your family suffer from — COPD,Cancer, Hypertension or Diabetes?',
+  //   buttonText: ['Yes', 'No'],
+  //   inputData: ['value'],
+  // },
 ];
 
 export interface ChatQuestionsProps {
