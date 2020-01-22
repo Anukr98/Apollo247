@@ -110,7 +110,6 @@
     "react-pdf": "^4.1.0",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
-   
     "unfetch": "^4.1.0",
     "validator": "^11.1.0"
   }
