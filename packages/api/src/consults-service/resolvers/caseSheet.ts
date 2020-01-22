@@ -250,24 +250,18 @@ export const caseSheetTypeDefs = gql`
   }
 
   type DiagnosticPrescription {
-    collectionMethod: TEST_COLLECTION_TYPE
-    id: String
-    imageUrl: String
-    isCustom: Boolean
-    itemId: String
     itemname: String
-    price: String
+    additionalDetails: DiagnosticDetailsInCaseSheet @provides(fields: "itemName")
   }
 
   input DiagnosticPrescriptionInput {
-    collectionMethod: TEST_COLLECTION_TYPE
-    id: String
-    imageUrl: String
-    isCustom: Boolean
-    itemId: String
     itemname: String
-    price: String
   }
+
+  extend type DiagnosticDetailsInCaseSheet @key(fields: "itemName") {
+    itemName: String @external
+  }
+
   enum MEDICINE_FORM_TYPES {
     GEL_LOTION_OINTMENT
     OTHERS
@@ -939,6 +933,11 @@ const updatePatientPrescriptionSentStatus: Resolver<
 };
 
 export const caseSheetResolvers = {
+  DiagnosticPrescription: {
+    additionalDetails(tests: CaseSheetDiagnosisPrescription) {
+      return { __typename: 'DiagnosticDetailsInCaseSheet', itemName: tests.itemname };
+    },
+  },
   Appointment: {
     doctorInfo(appointments: Appointment) {
       return { __typename: 'Profile', id: appointments.doctorId };
