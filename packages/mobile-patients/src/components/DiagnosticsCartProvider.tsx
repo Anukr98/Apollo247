@@ -60,6 +60,7 @@ export interface DiagnosticsCartContextProps {
 
   ePrescriptions: EPrescription[];
   addEPrescription: ((item: EPrescription) => void) | null;
+  addMultipleEPrescriptions: ((items: EPrescription[]) => void) | null;
   setEPrescriptions: ((items: EPrescription[]) => void) | null;
   removeEPrescription: ((id: EPrescription['id']) => void) | null;
 
@@ -122,6 +123,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   ePrescriptions: [],
   addEPrescription: null,
+  addMultipleEPrescriptions: null,
   setEPrescriptions: null,
   removeEPrescription: null,
 
@@ -249,6 +251,18 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setEPrescriptions(newItems);
   };
 
+  const addMultipleEPrescriptions: DiagnosticsCartContextProps['addMultipleEPrescriptions'] = (
+    itemsToAdd
+  ) => {
+    const existingFilteredEPres = ePrescriptions.filter(
+      (item) => !itemsToAdd.find((val) => val.id == item.id)
+    );
+    // console.log('existingFilteredEPres\n', { existingFilteredEPres });
+    const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
+    // console.log('updatedEPres\n', { updatedEPres });
+    setEPrescriptions(updatedEPres);
+  };
+
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);
   };
@@ -268,13 +282,20 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
   };
 
-  const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (items) => {
-    // TODO
-    // if (cartItems.find((item) => item.id == itemToAdd.id)) {
-    //   return;
-    // }
-    // const newCartItems = [itemToAdd, ...cartItems];
-    // setCartItems(newCartItems);
+  const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (
+    itemsToAdd
+  ) => {
+    // If tried to add same items(by id) which already exists in the cart, it will update with new values.
+    const existingFilteredCartItems = cartItems.filter(
+      (item) => !itemsToAdd.find((val) => val.id == item.id)
+    );
+    // console.log('existingFilteredCartItems\n', { existingFilteredCartItems });
+    const newCartItems = [
+      ...existingFilteredCartItems,
+      ...itemsToAdd.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i),
+    ];
+    // console.log('newCartItems\n', { newCartItems });
+    setCartItems(newCartItems);
   };
 
   const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id) => {
@@ -428,6 +449,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
         ePrescriptions,
         addEPrescription,
+        addMultipleEPrescriptions,
         removeEPrescription,
         setEPrescriptions,
 
