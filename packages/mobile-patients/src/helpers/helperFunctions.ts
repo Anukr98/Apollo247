@@ -1,16 +1,22 @@
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import {
+  getPackageData,
+  getPlaceInfoByLatLng,
+  GooglePlacesType,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { GraphQLError } from 'graphql';
+import Geolocation from '@react-native-community/geolocation';
+import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import { Alert, AsyncStorage, Dimensions, Platform } from 'react-native';
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
-import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import NetInfo from '@react-native-community/netinfo';
-import Geolocation from '@react-native-community/geolocation';
+import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
+import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
+import { apiRoutes } from './apiRoutes';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -495,3 +501,61 @@ export const isValidText = (value: string) =>
 
 export const isValidName = (value: string) =>
   value === '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value);
+
+export const addTestsToCart = (
+  testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] // testsIncluded will not come from API
+) => {
+  const items = testPrescription
+    .filter((val) => !val.isCustom)
+    .map(
+      (item) =>
+        ({
+          id: `${item.itemId}`,
+          name: item.itemname!,
+          price: parseInt(item.price!, 10),
+          specialPrice: undefined,
+          mou: 1,
+          thumbnail: item.imageUrl || '',
+          collectionMethod: item.collectionMethod!,
+        } as DiagnosticsCartItem)
+    );
+
+  return new Promise((resolve, reject) => {
+    Promise.all(items.map((d) => getPackageData(d.id)))
+      .then((response) => {
+        console.log('response::', { response });
+        const testsArray = response.map((item, idx) => {
+          if (!g(item, 'data', 'status')) return null;
+          return {
+            ...items[idx],
+            mou: g(item, 'data', 'data', 'length') || 1, // updating testsIncluded
+          } as DiagnosticsCartItem;
+        });
+        const nonNullTestsArray = testsArray.filter((item) => !!item);
+        console.log('testsArray to be added to cart', { nonNullTestsArray });
+        resolve(nonNullTestsArray);
+      })
+      .catch(() => {
+        reject('Oops! an error occurred, unable to get test details.');
+      });
+  });
+};
+
+export const getBuildEnvironment = () => {
+  switch (apiRoutes.graphql()) {
+    case 'https://aph.dev.api.popcornapps.com//graphql':
+      return 'DEV';
+    case 'https://aph.staging.api.popcornapps.com//graphql':
+      return 'QA';
+    case 'https://aph.uat.api.popcornapps.com//graphql':
+      return 'UAT';
+    case 'https://aph.vapt.api.popcornapps.com//graphql':
+      return 'VAPT';
+    case 'https://api.apollo247.com//graphql':
+      return 'PROD';
+    case 'https://asapi.apollo247.com//graphql':
+      return 'PRF';
+    default:
+      return '';
+  }
+};

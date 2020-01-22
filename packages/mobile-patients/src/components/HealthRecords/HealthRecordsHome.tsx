@@ -563,20 +563,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           {renderProfileChangeView()}
           {renderTabSwitch()}
-          {!loading ? (
-            selectedTab === tabs[0].title ? (
-              renderConsults()
-            ) : (
-              <MedicalRecords
-                navigation={props.navigation}
-                MedicalRecordData={medicalRecords}
-                renderDeleteMedicalOrder={renderDeleteMedicalOrder}
-                labTestsData={labTests}
-                healthChecksData={healthChecks}
-                hospitalizationsData={hospitalizations}
-              />
-            )
-          ) : null}
+          {selectedTab === tabs[0].title ? (
+            renderConsults()
+          ) : (
+            <MedicalRecords
+              navigation={props.navigation}
+              MedicalRecordData={medicalRecords}
+              renderDeleteMedicalOrder={renderDeleteMedicalOrder}
+              labTestsData={labTests}
+              healthChecksData={healthChecks}
+              hospitalizationsData={hospitalizations}
+            />
+          )}
         </ScrollView>
       </SafeAreaView>
       {displayFilter && (
