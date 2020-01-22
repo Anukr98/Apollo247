@@ -186,6 +186,8 @@ const searchDiagnosticsById: Resolver<
   ProfilesServiceContext,
   SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
+  if (args.itemIds.trim().length == 0)
+    throw new AphError(AphErrorMessages.INVALID_SEARCH_VALUE, undefined, {});
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
   const itemIds: string[] = args.itemIds.split(',');
   const diagnostics: Diagnostics[] = [];
