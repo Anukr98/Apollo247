@@ -1922,13 +1922,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             {props.appointmentStatus !== STATUS.COMPLETED && (
               <Button
                 className={classes.backButton}
-                /* disabled={
+                disabled={
                   (isPastAppointment() && !consultStart) ||
                   (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
                   props.appointmentStatus === STATUS.NO_SHOW ||
                   props.appointmentStatus === STATUS.CALL_ABANDON ||
                   isCallAccepted
-                } */
+                }
                 onClick={() => {
                   setLoading(true);
                   const rescheduleCountByDoctor =
