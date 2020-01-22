@@ -140,6 +140,9 @@ export const GET_PATIENT_LOG = gql`
           gender
           uhid
           photoUrl
+          addressList {
+            city
+          }
         }
       }
       totalResultCount
@@ -403,6 +406,7 @@ export const GET_CASESHEET = gql`
         notes
       }
       pastAppointments {
+        id
         appointmentDateTime
         appointmentState
         doctorId
@@ -410,7 +414,23 @@ export const GET_CASESHEET = gql`
         patientId
         parentId
         status
+        doctorInfo {
+          firstName
+          lastName
+          salutation
+        }
         caseSheet {
+          appointment {
+            id
+          }
+          blobName
+          createdDate
+          doctorType
+          createdDoctorProfile {
+            firstName
+            lastName
+            salutation
+          }
           consultType
           appointment {
             id

@@ -43,6 +43,7 @@ import { ChatDoctor } from '@aph/mobile-doctors/src/components/ChatDoctor';
 import { Sample } from '@aph/mobile-doctors/src/components/Sample';
 import { PatientDetailsPage } from '@aph/mobile-doctors/src/components/PatientDetailsPage';
 import { MedicineAddScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineAddScreen';
+import { CaseSheetDetails } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/CaseSheetDetails';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -85,6 +86,7 @@ export enum AppRoutes {
   Sample = 'Sample',
   PatientDetailsPage = 'PatientDetailsPage',
   MedicineAddScreen = 'MedicineAddScreen',
+  CaseSheetDetails = 'CaseSheetDetails',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -214,6 +216,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineAddScreen]: {
     screen: MedicineAddScreen,
+  },
+  [AppRoutes.CaseSheetDetails]: {
+    screen: CaseSheetDetails,
   },
 };
 
