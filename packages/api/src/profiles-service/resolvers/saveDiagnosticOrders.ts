@@ -335,7 +335,7 @@ const SaveDiagnosticOrder: Resolver<
 
     const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';
 
-    let preBookingInputParameters = {
+    const preBookingInputParameters = {
       UserName: process.env.DIAGNOSTICS_PREBOOKING_API_USERNAME,
       Password: process.env.DIAGNOSTICS_PREBOOKING_API_PASSWORD,
       InterfaceClient: process.env.DIAGNOSTICS_PREBOOKING_API_INTERFACE_CLIENT,
