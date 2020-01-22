@@ -297,7 +297,6 @@ export const diagnosticsResolvers = {
     async __resolveReference(object: Diagnostics) {
       const connection = getConnection();
       const diagnosticRepo = connection.getCustomRepository(DiagnosticsRepository);
-      console.log('object...', object);
       return await diagnosticRepo.getDiagnosticByName(object.itemName.toString());
     },
   },
