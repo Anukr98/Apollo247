@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import bugsnag from '@bugsnag/js'
 import bugsnagReact from '@bugsnag/plugin-react'
 const bugsnagClient= bugsnag({
-  apiKey:`${process.env.bugsnagApiKey}`,
+  apiKey:`${process.env.BUGSNAG_API_KEY}`,
   notifyReleaseStages: [ 'local','development','production', 'staging' ],
   releaseStage: process.env.NODE_ENV 
 })
