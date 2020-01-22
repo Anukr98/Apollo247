@@ -6,7 +6,7 @@ import { JdDashboardSummary } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { JdDashboardSummaryRepository } from 'consults-service/repositories/jdDashboardSummaryRepository';
-import { differenceInSeconds } from 'date-fns';
+import { differenceInSeconds, addMinutes } from 'date-fns';
 
 export const jdDashboardSummaryTypeDefs = gql`
   type JdDashboardSummaryResult {
@@ -57,16 +57,14 @@ const updateCaseSheetTime: Resolver<
   if (casesheets.length > 0) {
     casesheets.forEach(async (sheet) => {
       const callDetails = await dashboardRepo.getCallDetailTime(sheet.appointment.id);
+      let updatedDate;
       if (callDetails.length > 0) {
-        const duration = Math.abs(
-          differenceInSeconds(callDetails[callDetails.length - 1].endTime, sheet.createdDate)
-        );
-        await dashboardRepo.updateCaseSheetEndTime(
-          sheet.id,
-          callDetails[callDetails.length - 1].endTime,
-          duration
-        );
+        updatedDate = callDetails[callDetails.length - 1].endTime;
+      } else {
+        updatedDate = addMinutes(sheet.createdDate, 5);
       }
+      const duration = Math.abs(differenceInSeconds(updatedDate, sheet.createdDate));
+      await dashboardRepo.updateCaseSheetEndTime(sheet.id, updatedDate, duration);
     });
   }
   return { status: true, caseSheetCount: casesheets.length };
