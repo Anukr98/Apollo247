@@ -192,24 +192,12 @@ const cancelAppointment: Resolver<
     console.log(adminDetails, 'adminDetails');
     if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
 
-    const listOfEmails: string[] = [
-      'ravikirangambhire599@gmail.com',
-      'chanti.reddy@popcornapps.com',
-    ];
+    const listOfEmails: string[] = [];
 
-    /*adminDetails.length > 0 &&
-      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));*/
+    adminDetails.length > 0 &&
+      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
     console.log('listOfEmails', listOfEmails);
-    const adminEmailContent: EmailMessage = {
-      ccEmail: ccEmailIds.toString(),
-      toEmail: 'chanti.reddy@popcornapps.com',
-      subject: mailSubject.toString(),
-      fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-      fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-      messageContent: mailContent,
-    };
-    sendMail(adminEmailContent);
-    /*listOfEmails.forEach(async (adminemail) => {
+    listOfEmails.forEach(async (adminemail) => {
       const adminEmailContent: EmailMessage = {
         ccEmail: ccEmailIds.toString(),
         toEmail: adminemail.toString(),
@@ -219,7 +207,7 @@ const cancelAppointment: Resolver<
         messageContent: mailContent,
       };
       sendMail(adminEmailContent);
-    });*/
+    });
   }
   //send mail to doctor admin end
   return { status: STATUS.CANCELLED };

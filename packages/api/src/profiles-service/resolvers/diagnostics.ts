@@ -189,16 +189,24 @@ const searchDiagnosticsById: Resolver<
   if (args.itemIds.trim().length == 0)
     throw new AphError(AphErrorMessages.INVALID_SEARCH_VALUE, undefined, {});
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
-  const itemIds: string[] = args.itemIds.split(',');
   const diagnostics: Diagnostics[] = [];
-  if (itemIds.length > 0) {
-    itemIds.forEach(async (id) => {
-      const diagnostic = await diagnosticsRepo.findDiagnosticById(parseInt(id, 0));
+  function getDiagnosticData(itemId: number) {
+    return new Promise<Diagnostics>(async (resolve) => {
+      const diagnostic = await diagnosticsRepo.findDiagnosticById(itemId);
       if (diagnostic) {
         diagnostics.push(diagnostic);
       }
+      resolve(diagnostic);
     });
   }
+  const itemIds: string[] = args.itemIds.split(',');
+  const promises: object[] = [];
+  if (itemIds.length > 0) {
+    itemIds.forEach(async (id) => {
+      promises.push(getDiagnosticData(parseInt(id, 0)));
+    });
+  }
+  await Promise.all(promises);
   return { diagnostics };
 };
 
