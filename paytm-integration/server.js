@@ -450,6 +450,8 @@ app.post('/paymed-response', (req, res) => {
 
   /* make success and failure response */
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
+  const responseMessage = payload.RESPMSG;
+  const responseCode = payload.RESPCODE;
 
   /* never execute a transaction if the payment status is failed */
   if (transactionStatus === 'failed') {
@@ -457,7 +459,9 @@ app.post('/paymed-response', (req, res) => {
       const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
       res.redirect(redirectUrl);
     } else {
-      res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
+      res.redirect(
+        `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=responseMessage&responseCode=responseCode`
+      );
     }
   }
 
