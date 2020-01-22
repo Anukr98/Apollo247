@@ -36,6 +36,9 @@ import {
   Start,
   ToogleOff,
   ToogleOn,
+  GreenOnline,
+  AddIcon,
+  PlusOrange,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
@@ -95,6 +98,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -253,8 +257,6 @@ const styles = StyleSheet.create({
     borderColor: '#30c1a3',
     marginTop: 10,
     color: '#01475b',
-    marginLeft: 20,
-    marginRight: 20,
     marginBottom: 10,
   },
 
@@ -277,7 +279,6 @@ const styles = StyleSheet.create({
   notes: {
     ...theme.fonts.IBMPlexSansMedium(17),
     color: '#0087ba',
-    marginLeft: 20,
     marginTop: 16,
   },
   symptomsInputView: {
@@ -502,9 +503,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [patientHealthWallet, setPatientHealthWallet] = useState(false);
   const [diagonisticPrescription, setdiagonisticPrescription] = useState(false);
   const [medicinePrescription, setMedicinePrescription] = useState(false);
+  const [adviceInstructions, setAdviceInstructions] = useState(false);
   const [followup, setFollowUp] = useState(false);
   const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
-  const [switchValue, setSwitchValue] = useState(false);
+  const [switchValue, setSwitchValue] = useState(true);
   const [sliderValue, setSliderValue] = useState(2);
   const [stepValue, setStepValue] = useState(3);
   const [diagnosisView, setDiagnosisView] = useState(false);
@@ -525,6 +527,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { isDelegateLogin, setIsDelegateLogin } = useAuth();
 
   const [consultationType, setConsultationType] = useState<'ONLINE' | 'PHYSICAL' | ''>('');
+  const [consultationPayType, setConsultationPayType] = useState<'PAID' | 'FREE' | ''>('');
+  const [followupDays, setFollowupDays] = useState<number | string>();
+  const [folloUpNotes, setFolloUpNotes] = useState<string>('');
+
+  const [addedAdvices, setAddedAdvices] = useState<string[]>(['Drink plenty of water']);
+  const [favAdvices, setFavAdvices] = useState<string[]>([
+    'Use sunscreen every day',
+    'Avoid outside food for a few days',
+    'Avoid stepping out with wet hair',
+  ]);
+
   let Delegate = '';
   const [showstyles, setShowStyles] = useState<any>([
     {
@@ -540,7 +553,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
+  const { favList, favListError, favlistLoading } = CaseSheetAPI();
 
+  useEffect(() => {
+    if (favList) {
+      const data = favList.getDoctorFavouriteAdviceList?.adviceList?.map(
+        (item) => item?.instruction
+      );
+      data && setFavAdvices(data);
+    }
+  }, [favList]);
   useEffect(() => {
     // client
     //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -612,15 +634,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setConsultationType(consultType as typeof consultationType);
         setLoading(false);
         try {
-          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+          setSysmptonsList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
+          );
+          setDiagonsisList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
+          );
+          setDiagnosticPrescriptionDataList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+          );
+          setMedicineList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+          );
         } catch (error) {
           console.log({ error });
         }
@@ -1155,6 +1184,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       marginBottom: 0,
     });
   };
+
   const renderFollowUpView = () => {
     return (
       <View>
@@ -1163,165 +1193,193 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={followup}
           onPress={() => setFollowUp(!followup)}
         >
-          <View
-            style={{
-              marginLeft: 16,
-              marginBottom: 20,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Text style={styles.medicineText}>Do you recommend a follow up?</Text>
-            {!switchValue ? (
-              <View style={{ marginRight: 20 }}>
-                <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
-                  <View>
-                    <ToogleOff />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={{ marginRight: 20 }}>
-                <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
-                  <View>
-                    <ToogleOn />
-                  </View>
-                </TouchableOpacity>
-              </View>
+          <View style={{ marginHorizontal: 16 }}>
+            {switchValue && (
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#02474b', 1, undefined, 0.02),
+                  marginRight: 20,
+                  marginBottom: 10,
+                }}
+              >
+                (The first follow up for the patient will be free for upto 7 days)
+              </Text>
             )}
-          </View>
-          {switchValue ? (
-            <View>
-              <View style={styles.medicineunderline}></View>
-              <View style={{ marginLeft: 16, marginBottom: 20, marginRight: 25 }}>
-                <Text style={[styles.medicineText, { marginBottom: 7 }]}>Follow Up After:</Text>
-                <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Slider
-                    value={sliderValue}
-                    step={stepValue}
-                    onValueChange={(sliderValue) => setSliderValue(sliderValue)}
-                    minimumValue={2}
-                    maximumValue={12}
-                    thumbTouchSize={{ width: 20, height: 20 }}
-                  />
-
-                  <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-between' }}>
-                    <Text style={sliderValue == 2 ? styles.normalSliderText : styles.sliderText}>
-                      2{'\n'}days
-                    </Text>
-
-                    <Text style={sliderValue == 5 ? styles.normalSliderText : styles.sliderText}>
-                      5{'\n'}days
-                    </Text>
-                    <Text style={sliderValue == 8 ? styles.normalSliderText : styles.sliderText}>
-                      7{'\n'}days
-                    </Text>
-                    <Text
-                      style={
-                        sliderValue == 11 || sliderValue == 12
-                          ? styles.normalSliderText
-                          : styles.sliderText
-                      }
-                    >
-                      Custom
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              {sliderValue > 10 ? (
+            <View
+              style={{
+                marginBottom: 20,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text style={styles.medicineText}>Do you recommend a follow up?</Text>
+              {!switchValue ? (
                 <View>
-                  <View style={showstyles}>
-                    <Text
-                      style={{
-                        color: 'rgba(2, 71, 91, 0.6)',
-                        ...theme.fonts.IBMPlexSansMedium(14),
-                        marginBottom: 12,
-                      }}
-                    >
-                      Follow Up on
-                    </Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      {selectDate == 'dd/mm/yyyy' ? (
-                        <Text
-                          style={{
-                            color: 'rgba(2, 71, 91, 0.6)',
-                            ...theme.fonts.IBMPlexSansMedium(18),
-                          }}
-                        >
-                          {selectDate}
-                        </Text>
-                      ) : (
-                        <Text
-                          style={{
-                            color: '#01475b',
-                            ...theme.fonts.IBMPlexSansMedium(18),
-                          }}
-                        >
-                          {selectDate}
-                        </Text>
-                      )}
-                      <TouchableOpacity onPress={() => showCalender()}>
-                        <View style={{ marginTop: 4 }}>
-                          <CalendarIcon />
-                        </View>
-                      </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
+                    <View>
+                      <ToogleOff />
                     </View>
-                  </View>
-                  <View style={{ elevation: 1000 }}>
-                    {calenderShow ? (
-                      <View
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                  <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
+                    <View>
+                      <ToogleOn />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+            {switchValue ? (
+              <View>
+                <View style={styles.medicineunderline}></View>
+                <View style={{ marginBottom: 20, marginRight: 25 }}>
+                  <Text style={[styles.medicineText, { marginBottom: 7 }]}>Follow Up After</Text>
+                  <View style={{ flex: 1, justifyContent: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View>
+                        <TextInput
+                          autoCorrect={false}
+                          keyboardType={'number-pad'}
+                          multiline={false}
+                          maxLength={4}
+                          style={{
+                            marginTop: 5,
+                            width: width / 3,
+                            ...theme.fonts.IBMPlexSansMedium(16),
+                          }}
+                          value={followupDays?.toString()}
+                          blurOnSubmit={false}
+                          // returnKeyType="send"
+                          onChangeText={(value) => {
+                            setFollowupDays(parseInt(value) || '');
+                          }}
+                        />
+                        <View
+                          style={{
+                            marginTop: 4,
+                            height: 2,
+                            width: width / 3,
+                            backgroundColor: '#00b38e',
+                          }}
+                        />
+                      </View>
+                      <Text
                         style={{
-                          borderRadius: 10,
-                          shadowColor: '#000000',
-                          shadowOffset: {
-                            width: 0,
-                            height: 5,
-                          },
-                          shadowRadius: 10,
-                          shadowOpacity: 0.2,
-                          elevation: 10000,
-                          zIndex: 100,
+                          ...theme.viewStyles.text('M', 14, '#02475b', 1, undefined, 0.02),
+                          marginBottom: 7,
+                          marginLeft: 8,
                         }}
                       >
-                        {renderCalenderView()}
-                      </View>
-                    ) : null}
+                        Days
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              ) : null}
-              <View style={{ marginLeft: 16, marginBottom: 20, zIndex: -1 }}>
-                <Text
-                  style={{
-                    color: 'rgba(2, 71, 91, 0.6)',
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                    marginBottom: 12,
-                  }}
-                >
-                  Recommended Consult Type
-                </Text>
-                <View style={{ flexDirection: 'row' }}>
-                  <View>
-                    <SelectableButton
-                      containerStyle={{ marginRight: 20 }}
-                      onChange={() => {}}
-                      title="Online"
-                      isChecked={consultationType == 'ONLINE'}
-                      icon={<InpersonIcon />}
-                    />
+                <TextInputComponent
+                  placeholder={'Add instructions here..'}
+                  inputStyle={styles.inputView}
+                  multiline={true}
+                  value={folloUpNotes}
+                  onChangeText={(value) => setFolloUpNotes(value)}
+                  autoCorrect={true}
+                />
+                <View style={{ marginBottom: 20, zIndex: -1 }}>
+                  <Text
+                    style={{
+                      color: 'rgba(2, 71, 91, 0.6)',
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      marginBottom: 12,
+                    }}
+                  >
+                    Recommended Consult Type
+                  </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          setConsultationPayType('PAID');
+                        }}
+                        title="Paid"
+                        isChecked={consultationPayType == 'PAID'}
+                      />
+                    </View>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          setConsultationPayType('FREE');
+                        }}
+                        title="Free"
+                        isChecked={consultationPayType == 'FREE'}
+                      />
+                    </View>
                   </View>
-                  <View>
-                    <SelectableButton
-                      containerStyle={{ marginRight: 20, borderColor: '#00b38e', borderWidth: 1 }}
-                      onChange={() => {}}
-                      title="In-person"
-                      isChecked={consultationType == 'PHYSICAL'}
-                      icon={<PhysicalIcon />}
-                    />
+                </View>
+                <View style={{ borderColor: '#00b38e', marginBottom: 20, zIndex: -1 }}>
+                  <Text
+                    style={{
+                      color: 'rgba(2, 71, 91, 0.6)',
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      marginBottom: 12,
+                    }}
+                  >
+                    Recommended Consult Type
+                  </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          setConsultationType('ONLINE');
+                        }}
+                        title="Online"
+                        isChecked={consultationType == 'ONLINE'}
+                        icon={consultationType == 'ONLINE' ? <PhysicalIcon /> : <GreenOnline />}
+                      />
+                    </View>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          setConsultationType('PHYSICAL');
+                        }}
+                        title="In-person"
+                        isChecked={consultationType == 'PHYSICAL'}
+                        icon={consultationType == 'PHYSICAL' ? <InpersonIcon /> : <InpersonIcon />}
+                      />
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          ) : null}
+            ) : null}
+          </View>
         </CollapseCard>
       </View>
     );
@@ -1711,6 +1769,86 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+
+  const renderAdviceInstruction = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="Advice/Instructions"
+          collapse={adviceInstructions}
+          onPress={() => setAdviceInstructions(!adviceInstructions)}
+        >
+          <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
+            <Text style={styles.medicineText}>Instructions to the patient</Text>
+            {addedAdvices.map((item) => (
+              <TouchableOpacity activeOpacity={1}>
+                <View
+                  style={{
+                    minHeight: 44,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderWidth: 1,
+                    marginVertical: 6,
+                    borderColor: 'rgba(2, 71, 91, 0.2)',
+                    paddingHorizontal: 16,
+                    borderRadius: 5,
+                    backgroundColor: '#F9F9F9',
+                    flexDirection: 'row',
+                  }}
+                >
+                  <Text
+                    style={{ ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02) }}
+                  >
+                    {item}
+                  </Text>
+                  <Selected />
+                </View>
+              </TouchableOpacity>
+            ))}
+            <Text style={styles.medicineText}>Favorite Diagnostics</Text>
+            {favAdvices.map((item) => (
+              <TouchableOpacity activeOpacity={1}>
+                <View
+                  style={{
+                    minHeight: 44,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderWidth: 1,
+                    marginVertical: 6,
+                    borderColor: 'rgba(2, 71, 91, 0.2)',
+                    paddingHorizontal: 16,
+                    borderRadius: 5,
+                    backgroundColor: '#F9F9F9',
+                    flexDirection: 'row',
+                  }}
+                >
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
+                      flex: 1,
+                      marginVertical: 8,
+                    }}
+                  >
+                    {item}
+                  </Text>
+                  <Green />
+                </View>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity activeOpacity={1}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                <PlusOrange />
+                <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916'), marginLeft: 4 }}>
+                  ADD INSTRUCTIONS
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.casesheetView}>
       <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
@@ -1726,6 +1864,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderDiagnosisView()}
           {renderMedicinePrescription()}
           {renderDiagonisticPrescription()}
+          {renderAdviceInstruction()}
           {renderFollowUpView()}
 
           <View style={{ zIndex: -1 }}>
@@ -1733,15 +1872,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={styles.underlineend} />
 
             <View style={styles.inputBorderView}>
-              <Text style={styles.notes}>Personal Notes</Text>
-              <TextInputComponent
-                placeholder={string.LocalStrings.placeholder_message}
-                inputStyle={styles.inputView}
-                multiline={true}
-                value={value}
-                onChangeText={(value) => setValue(value)}
-                autoCorrect={true}
-              />
+              <View style={{ marginHorizontal: 16 }}>
+                <Text style={styles.notes}>Personal Notes</Text>
+                <TextInputComponent
+                  placeholder={string.LocalStrings.placeholder_message}
+                  inputStyle={styles.inputView}
+                  multiline={true}
+                  value={value}
+                  onChangeText={(value) => setValue(value)}
+                  autoCorrect={true}
+                />
+              </View>
             </View>
             {loading ? <Loader flex1 /> : null}
             {/* {renderButtonsView()} */}

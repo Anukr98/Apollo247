@@ -20,6 +20,7 @@ import {
   ScrollView,
 } from 'react-navigation';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -45,6 +46,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
   const isNewPatient = (id: string) => {
     return props.newPatientsList.indexOf(id) > -1;
   };
+  const { doctorDetails } = useAuth();
 
   const getStatusCircle = (status: Appointments['timeslottype']) =>
     status == 'past' ? (
@@ -124,7 +126,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     }
   };
 
-  const formatTiming = (appointmentDateTime: string) => {
+  const formatTiming = (appointmentDateTime: string, consultDuration?: number) => {
     const aptmtDate = moment
       .utc(appointmentDateTime)
       .local()
@@ -132,7 +134,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     const slotStartTime = moment(aptmtDate).format('h:mm') || '';
     const slotEndTime =
       moment(aptmtDate)
-        .add(15, 'minutes')
+        .add(consultDuration, 'minutes')
         .format('h:mm A') || '';
     return `${slotStartTime} - ${slotEndTime}`;
   };
@@ -146,6 +148,14 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       >
         {props.appointmentsHistory.map((_i, index, array) => {
           const i = _i!;
+          const consultDuration =
+            doctorDetails?.consultHours?.filter(
+              (item) =>
+                item?.weekDay ===
+                moment(i.appointmentDateTime)
+                  .format('dddd')
+                  .toUpperCase()
+            )[0]?.consultDuration || 15;
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
@@ -165,7 +175,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 <CalendarCard
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
-                    console.log('appppp', appId);
+                    console.log('appppp', appId, i);
                     props.navigation.push(AppRoutes.ConsultRoomScreen, {
                       DoctorId: doctorId,
                       PatientId: patientId,
@@ -177,7 +187,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     });
                   }}
                   doctorname={i.patientInfo!.firstName || ''}
-                  timing={formatTiming(i.appointmentDateTime)}
+                  timing={formatTiming(i.appointmentDateTime, consultDuration)}
                   symptoms={[]}
                   doctorId={i.doctorId}
                   patientId={i.patientId}

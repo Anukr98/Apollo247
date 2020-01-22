@@ -98,6 +98,7 @@ export interface ReSchedulePopUpProps {
   appointmentId: string;
   date: string;
   loading: (val: boolean) => void;
+  onDone: (reschduleObject: any) => void;
 }
 
 export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
@@ -196,7 +197,18 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
             },
           },
         })
-        .then(() => {})
+        .then((data) => {
+          const reschduleObject: any = {
+            appointmentId: props.appointmentId,
+            transferDateTime:
+              data.data?.initiateRescheduleAppointment.rescheduleAppointment?.rescheduledDateTime ||
+              '',
+            doctorId: props.doctorId,
+            reschduleCount: data.data?.initiateRescheduleAppointment.rescheduleCount || '',
+            reschduleId: data.data?.initiateRescheduleAppointment.rescheduleAppointment?.id || '',
+          };
+          props.onDone(reschduleObject);
+        })
         .catch((e) => {
           console.log('Error occured while searching for Initiate reschdule apppointment', e);
         })

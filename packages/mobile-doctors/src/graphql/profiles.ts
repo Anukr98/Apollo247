@@ -39,6 +39,9 @@ export const GET_DOCTOR_DETAILS = gql`
         startTime
         endTime
         weekDay
+        isActive
+        consultDuration
+        consultBuffer
       }
       packages {
         name
@@ -602,6 +605,129 @@ export const GET_AVAILABLE_SLOTS = gql`
   query getDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput!) {
     getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
       availableSlots
+    }
+  }
+`;
+
+export const GET_DOCTOR_FAVOURITE_TEST_LIST = gql`
+  query GetDoctorFavouriteTestList {
+    getDoctorFavouriteTestList {
+      testList {
+        id
+        itemname
+      }
+    }
+  }
+`;
+
+export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
+  mutation SaveDoctorsFavouriteMedicine(
+    $saveDoctorsFavouriteMedicineInput: SaveDoctorsFavouriteMedicineInput
+  ) {
+    saveDoctorsFavouriteMedicine(
+      saveDoctorsFavouriteMedicineInput: $saveDoctorsFavouriteMedicineInput
+    ) {
+      medicineList {
+        id
+      }
+    }
+  }
+`;
+
+export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
+  mutation UpdateDoctorFavouriteMedicine(
+    $updateDoctorsFavouriteMedicineInput: UpdateDoctorsFavouriteMedicineInput
+  ) {
+    updateDoctorFavouriteMedicine(
+      updateDoctorsFavouriteMedicineInput: $updateDoctorsFavouriteMedicineInput
+    ) {
+      medicineList {
+        id
+      }
+    }
+  }
+`;
+
+export const REMOVE_FAVOURITE_MEDICINE = gql`
+  mutation RemoveFavouriteMedicine($id: String) {
+    removeFavouriteMedicine(id: $id) {
+      medicineList {
+        id
+      }
+    }
+  }
+`;
+
+export const ADD_DOCTOR_FAVOURITE_TEST = gql`
+  mutation AddDoctorFavouriteTest($itemname: String!) {
+    addDoctorFavouriteTest(itemname: $itemname) {
+      testList {
+        itemname
+      }
+    }
+  }
+`;
+
+export const UPDATE_DOCTOR_FAVOURITE_TEST = gql`
+  mutation UpdateDoctorFavouriteTest($id: ID!, $itemname: String!) {
+    updateDoctorFavouriteTest(id: $id, itemname: $itemname) {
+      testList {
+        id
+      }
+    }
+  }
+`;
+
+export const DELETE_DOCTOR_FAVOURITE_TEST = gql`
+  mutation DeleteDoctorFavouriteTest($testId: ID!) {
+    deleteDoctorFavouriteTest(testId: $testId) {
+      testList {
+        itemname
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_FAVOURITE_ADVICE_LIST = gql`
+  query GetDoctorFavouriteAdviceList {
+    getDoctorFavouriteAdviceList {
+      adviceList {
+        id
+        instruction
+      }
+    }
+  }
+`;
+
+export const ADD_DOCTOR_FAVOURITE_ADVICE = gql`
+  mutation AddDoctorFavouriteAdvice($instruction: String!) {
+    addDoctorFavouriteAdvice(instruction: $instruction) {
+      adviceList {
+        id
+        instruction
+      }
+    }
+  }
+`;
+
+export const UPDATE_DOCTOR_FAVOURITE_ADVICE = gql`
+  mutation UpdateDoctorFavouriteAdvice($id: ID!, $instruction: String!) {
+    updateDoctorFavouriteAdvice(id: $id, instruction: $instruction) {
+      adviceList {
+        id
+        instruction
+      }
+    }
+  }
+`;
+
+export const DELETE_DOCTOR_FAVOURITE_ADVICE = gql`
+  mutation DeleteDoctorFavouriteAdvice($instructionId: ID!) {
+    deleteDoctorFavouriteAdvice(instructionId: $instructionId) {
+      adviceList {
+        id
+        instruction
+      }
     }
   }
 `;

@@ -542,6 +542,14 @@ export const Plus: React.FC<IconProps> = (props) => (
   />
 );
 
+export const PlusOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_plus_onorange.png')}
+  />
+);
+
 export const AddPlus: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 24, width: 24 }}
@@ -704,9 +712,17 @@ export const InpersonIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const GreenOnline: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 12, width: 18 }}
+    {...props}
+    source={require('../../images/icons/round_video_consult.png')}
+  />
+);
+
 export const PhysicalIcon: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 20, width: 20 }}
+    style={{ height: 12, width: 18 }}
     {...props}
     source={require('../../images/icons/round_video_consult_24_px.png')}
   />
