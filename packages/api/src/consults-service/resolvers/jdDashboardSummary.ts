@@ -6,6 +6,7 @@ import { JdDashboardSummary } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { JdDashboardSummaryRepository } from 'consults-service/repositories/jdDashboardSummaryRepository';
+import { differenceInSeconds } from 'date-fns';
 
 export const jdDashboardSummaryTypeDefs = gql`
   type JdDashboardSummaryResult {
@@ -15,8 +16,14 @@ export const jdDashboardSummaryTypeDefs = gql`
     totalConsultation: Int
   }
 
+  type UpdateCasesheetResult {
+    status: Boolean
+    caseSheetCount: Int
+  }
+
   extend type Mutation {
     updateJdSummary(summaryDate: Date, doctorId: String): JdDashboardSummaryResult!
+    updateCaseSheetTime(limit: Int): UpdateCasesheetResult!
   }
 `;
 
@@ -27,12 +34,43 @@ type JdDashboardSummaryResult = {
   totalConsultation: number;
 };
 
+type UpdateCasesheetResult = {
+  status: Boolean;
+  caseSheetCount: number;
+};
+
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
   apptRepo: consultsDb.getCustomRepository(AppointmentRepository),
   patRepo: patientsDb.getCustomRepository(PatientRepository),
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
   dashboardRepo: consultsDb.getCustomRepository(JdDashboardSummaryRepository),
 });
+
+const updateCaseSheetTime: Resolver<
+  null,
+  { limit: number },
+  ConsultServiceContext,
+  UpdateCasesheetResult
+> = async (parent, args, context) => {
+  const { dashboardRepo } = getRepos(context);
+  const casesheets = await dashboardRepo.getCaseSheetsList(args.limit);
+  if (casesheets.length > 0) {
+    casesheets.forEach(async (sheet) => {
+      const callDetails = await dashboardRepo.getCallDetailTime(sheet.appointment.id);
+      if (callDetails.length > 0) {
+        const duration = Math.abs(
+          differenceInSeconds(callDetails[callDetails.length - 1].endTime, sheet.createdDate)
+        );
+        await dashboardRepo.updateCaseSheetEndTime(
+          sheet.id,
+          callDetails[callDetails.length - 1].endTime,
+          duration
+        );
+      }
+    });
+  }
+  return { status: true, caseSheetCount: casesheets.length };
+};
 
 const updateJdSummary: Resolver<
   null,
@@ -82,5 +120,6 @@ const updateJdSummary: Resolver<
 export const jdDashboardSummaryResolvers = {
   Mutation: {
     updateJdSummary,
+    updateCaseSheetTime,
   },
 };
