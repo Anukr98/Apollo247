@@ -100,7 +100,7 @@ export const diagnosticsTypeDefs = gql`
       patientId: String
       searchText: String!
     ): SearchDiagnosticsResult!
-    searchDiagnosticsById(itemId: String): SearchDiagnosticsResult!
+    searchDiagnosticsById(itemIds: String): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
     getDiagnosticSlots(
       patientId: String

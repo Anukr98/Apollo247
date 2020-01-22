@@ -663,7 +663,7 @@
             "description": null,
             "args": [
               {
-                "name": "itemId",
+                "name": "itemIds",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
