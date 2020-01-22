@@ -192,10 +192,13 @@ const cancelAppointment: Resolver<
     console.log(adminDetails, 'adminDetails');
     if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
 
-    const listOfEmails: string[] = [];
+    const listOfEmails: string[] = [
+      'ravikirangambhire599@gmail.com',
+      'chanti.reddy@popcornapps.com',
+    ];
 
-    adminDetails.length > 0 &&
-      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
+    /*adminDetails.length > 0 &&
+      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));*/
     console.log('listOfEmails', listOfEmails);
     listOfEmails.forEach(async (adminemail) => {
       const adminEmailContent: EmailMessage = {
