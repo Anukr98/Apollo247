@@ -860,7 +860,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
                 ).length || 'no') +
                 ' upcoming appointment(s)!'
-              : 'You have ' + selectedTabval + ' past appointments(s)!'
+              : 'You have ' +
+                (consultations.filter((item) =>
+                  moment(item.appointmentDateTime).isBefore(moment(new Date()))
+                ).length || 'no') +
+                ' past appointments(s)!'
             : string.consult_room.description}
         </Text>
       </View>

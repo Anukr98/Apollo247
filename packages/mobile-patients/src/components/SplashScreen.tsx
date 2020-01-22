@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Linking } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  AsyncStorage,
+  Platform,
+  ActivityIndicator,
+  Linking,
+  AppStateStatus,
+  AppState,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -9,6 +18,9 @@ import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { AppConfig } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
+import { Button } from './ui/Button';
+import { useUIElements } from './UIElementsProvider';
+import { apiRoutes } from '../helpers/apiRoutes';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -29,15 +41,15 @@ import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function(callback) {
+  globalObject.Promise.prototype['finally'] = function(callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function(value) {
+      function(value: any) {
         return constructor.resolve(callback()).then(function() {
           return value;
         });
       },
-      function(reason) {
+      function(reason: any) {
         return constructor.resolve(callback()).then(function() {
           throw reason;
         });
@@ -61,12 +73,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     getData('ConsultRoom');
-    PrefetchAPIReuqest({ clientId: AppConfig.Configuration.PRAKTISE_API_KEY }).then((res) =>
-      console.log(res, 'PrefetchAPIReuqest')
-    );
+    AppState.addEventListener('change', _handleAppStateChange);
+    checkForVersionUpdate();
+
+    PrefetchAPIReuqest({
+      clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
+    }).then((res: any) => console.log(res, 'PrefetchAPIReuqest'));
   }, []);
 
   useEffect(() => {
@@ -225,6 +241,158 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   //   SplashScreenView.hide();
   // }, [props.navigation, signInError, signOut]);
+
+  const buildName = () => {
+    switch (apiRoutes.graphql()) {
+      case 'https://aph.dev.api.popcornapps.com//graphql':
+        return 'DEV';
+      case 'https://aph.staging.api.popcornapps.com//graphql':
+        return 'QA';
+      case 'https://aph.uat.api.popcornapps.com//graphql':
+        return 'UAT';
+      case 'https://aph.vapt.api.popcornapps.com//graphql':
+        return 'VAPT';
+      case 'https://api.apollo247.com//graphql':
+        return 'PROD';
+      case 'https://asapi.apollo247.com//graphql':
+        return 'PRF';
+      default:
+        return '';
+    }
+  };
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (nextAppState === 'active') {
+      // checkForVersionUpdate();
+    }
+  };
+
+  const checkForVersionUpdate = () => {
+    console.log('checkForVersionUpdate');
+
+    if (__DEV__) {
+      firebase.config().enableDeveloperMode();
+    }
+
+    firebase
+      .config()
+      .fetch(30 * 0) // 30 min
+      .then(() => {
+        return firebase.config().activateFetched();
+      })
+      .then(() => {
+        return firebase
+          .config()
+          .getValues([
+            'Android_mandatory',
+            'android_latest_version',
+            'ios_mandatory',
+            'ios_Latest_version',
+            'QA_Android_mandatory',
+            'QA_android_latest_version',
+            'QA_ios_mandatory',
+            'QA_ios_latest_version',
+            'Enable_Conditional_Management',
+          ]);
+      })
+      .then((snapshot) => {
+        const myValye = snapshot;
+        let index: number = 0;
+        const nietos = [];
+        const Android_version: string = AppConfig.Configuration.Android_Version;
+        const iOS_version: string = AppConfig.Configuration.iOS_Version;
+
+        for (const val in myValye) {
+          if (myValye.hasOwnProperty(val)) {
+            index++;
+            const element = myValye[val];
+            nietos.push({ index: index, value: element.val() });
+            if (nietos.length === 9) {
+              console.log(
+                'nietos',
+                parseFloat(nietos[1].value),
+                parseFloat(iOS_version),
+                parseFloat(Android_version),
+                parseFloat(nietos[5].value),
+                parseFloat(nietos[7].value),
+                nietos[8].value
+              );
+
+              AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
+
+              if (Platform.OS === 'ios') {
+                if (buildName() === 'QA') {
+                  if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
+                    showUpdateAlert(nietos[6].value);
+                  }
+                } else {
+                  if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
+                    showUpdateAlert(nietos[2].value);
+                  }
+                }
+              } else {
+                if (buildName() === 'QA') {
+                  if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[4].value);
+                  }
+                } else {
+                  if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
+                    showUpdateAlert(nietos[0].value);
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+      .catch((error) => console.log(`Error processing config: ${error}`));
+  };
+
+  const showUpdateAlert = (mandatory: boolean) => {
+    showAphAlert!({
+      title: `Hi there :)`,
+      description: 'There is a new version available for this app. Please update it.',
+      unDismissable: true,
+      children: (
+        <View
+          style={{
+            flexDirection: 'row',
+            marginHorizontal: 20,
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            marginVertical: 18,
+          }}
+        >
+          {!mandatory ? (
+            <Button
+              style={{
+                flex: 1,
+                marginRight: 16,
+              }}
+              title={'CANCEL'}
+              onPress={() => {
+                hideAphAlert!();
+              }}
+            />
+          ) : null}
+
+          <Button
+            style={{ flex: 1 }}
+            title={'UPDATE'}
+            onPress={() => {
+              hideAphAlert!();
+
+              Linking.openURL(
+                Platform.OS === 'ios'
+                  ? 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
+                  : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
+              ).catch((err) => console.error('An error occurred', err));
+            }}
+          />
+        </View>
+      ),
+    });
+  };
 
   return (
     <View style={styles.mainView}>

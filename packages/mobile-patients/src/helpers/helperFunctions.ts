@@ -1,11 +1,14 @@
 import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPackageData,
   getPlaceInfoByLatLng,
   GooglePlacesType,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  MEDICINE_ORDER_STATUS,
+  Relation,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
@@ -558,4 +561,22 @@ export const getBuildEnvironment = () => {
     default:
       return '';
   }
+};
+
+export const getRelations = (self?: string) => {
+  type RelationArray = {
+    key: Relation;
+    title: string;
+  };
+  let a: RelationArray[] = [];
+  a.push({ key: Relation.ME, title: self || 'Self' });
+  for (let k in Relation) {
+    if (k !== Relation.ME) {
+      a.push({
+        key: k as Relation,
+        title: k[0] + k.substr(1).toLowerCase(),
+      });
+    }
+  }
+  return a;
 };
