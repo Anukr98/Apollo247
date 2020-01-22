@@ -511,11 +511,13 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     <AllPatient patientData={patientList} />
                   </TabContainer>
                 )}
-                <div className={classes.loadMorButtonDiv}>
-                  <AphButton className={classes.loadMorButton} onClick={() => loadMoreFunction()}>
-                    Load More
-                  </AphButton>
-                </div>
+                {offset <= patientList.length && (
+                  <div className={classes.loadMorButtonDiv}>
+                    <AphButton className={classes.loadMorButton} onClick={() => loadMoreFunction()}>
+                      Show More
+                    </AphButton>
+                  </div>
+                )}
               </div>
             )}
           </div>
