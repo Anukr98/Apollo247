@@ -495,6 +495,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent !important',
       color: '#00b38e !important',
     },
+    selectText: {
+      position: 'absolute',
+      marginTop: 17,
+      color: '#d3d3d3',
+    },
     cancelBtn: {
       minWidth: 30,
       margin: theme.spacing(1),
@@ -1019,7 +1024,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isSlotPopoverOpen, setIsSlotPopoverOpen] = useState<boolean>(false);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = useState<boolean>(false);
-  const [reason, setReason] = useState<string>('I am running late from previous consult');
+  const [reason, setReason] = useState<string>('');
   const [cancelReason, setCancelReason] = useState<string>('Not related to my specialty');
   const [textOther, setTextOther] = useState(false);
   const [otherTextValue, setOtherTextValue] = useState('');
@@ -2178,7 +2183,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
               <div className={classes.tabBody}>
                 <p>Why do you want to reschedule?</p>
-
+                {reason.trim() === '' && (
+                  <span className={classes.selectText}>Select a Reason</span>
+                )}
                 <AphSelect
                   value={reason}
                   MenuProps={{
@@ -2251,6 +2258,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div className={classes.tabFooter}>
                 <Button
                   className={classes.ResheduleCosultButton}
+                  disabled={reason === ''}
                   onClick={() => {
                     rescheduleConsultAction();
                   }}
