@@ -482,7 +482,7 @@ const SaveDiagnosticOrder: Resolver<
             Patient_ID: patientDetails.id,
             visit_id: '',
             doctor_id: '',
-            title: 'Mr',
+            title: patientTitle,
             payment_mode_id: '1',
             locality_id: '0',
             house_no: '',
