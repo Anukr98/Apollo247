@@ -167,6 +167,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
   }
 
   getCallDetailTime(appointment: string) {
+    console.log('call details time', appointment);
     return AppointmentCallDetails.find({
       where: {
         appointment,

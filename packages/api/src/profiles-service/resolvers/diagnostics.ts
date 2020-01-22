@@ -100,6 +100,7 @@ export const diagnosticsTypeDefs = gql`
       patientId: String
       searchText: String!
     ): SearchDiagnosticsResult!
+    searchDiagnosticsById(itemId: String): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
     getDiagnosticSlots(
       patientId: String
@@ -179,6 +180,28 @@ const searchDiagnostics: Resolver<
   return { diagnostics };
 };
 
+const searchDiagnosticsById: Resolver<
+  null,
+  { itemIds: string },
+  ProfilesServiceContext,
+  SearchDiagnosticsResult
+> = async (parent, args, { profilesDb }) => {
+  if (args.itemIds.trim().length == 0)
+    throw new AphError(AphErrorMessages.INVALID_SEARCH_VALUE, undefined, {});
+  const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const itemIds: string[] = args.itemIds.split(',');
+  const diagnostics: Diagnostics[] = [];
+  if (itemIds.length > 0) {
+    itemIds.forEach(async (id) => {
+      const diagnostic = await diagnosticsRepo.findDiagnosticById(parseInt(id, 0));
+      if (diagnostic) {
+        diagnostics.push(diagnostic);
+      }
+    });
+  }
+  return { diagnostics };
+};
+
 const getDiagnosticsCites: Resolver<
   null,
   { patientId: String; cityName: string },
@@ -250,5 +273,6 @@ export const diagnosticsResolvers = {
     getDiagnosticsCites,
     getDiagnosticSlots,
     getDiagnosticsData,
+    searchDiagnosticsById,
   },
 };

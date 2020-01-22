@@ -200,7 +200,16 @@ const cancelAppointment: Resolver<
     /*adminDetails.length > 0 &&
       adminDetails.map((value) => listOfEmails.push(value.adminuser.email));*/
     console.log('listOfEmails', listOfEmails);
-    listOfEmails.forEach(async (adminemail) => {
+    const adminEmailContent: EmailMessage = {
+      ccEmail: ccEmailIds.toString(),
+      toEmail: 'chanti.reddy@popcornapps.com',
+      subject: mailSubject.toString(),
+      fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
+      fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
+      messageContent: mailContent,
+    };
+    sendMail(adminEmailContent);
+    /*listOfEmails.forEach(async (adminemail) => {
       const adminEmailContent: EmailMessage = {
         ccEmail: ccEmailIds.toString(),
         toEmail: adminemail.toString(),
@@ -210,7 +219,7 @@ const cancelAppointment: Resolver<
         messageContent: mailContent,
       };
       sendMail(adminEmailContent);
-    });
+    });*/
   }
   //send mail to doctor admin end
   return { status: STATUS.CANCELLED };
