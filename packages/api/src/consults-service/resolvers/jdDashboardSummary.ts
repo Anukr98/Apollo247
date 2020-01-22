@@ -56,14 +56,14 @@ const updateCaseSheetTime: Resolver<
   const casesheets = await dashboardRepo.getCaseSheetsList(args.limit);
   if (casesheets.length > 0) {
     casesheets.forEach(async (sheet) => {
-      const callDets = await dashboardRepo.getCallDetailTime(sheet.appointment.id);
-      if (callDets.length > 0) {
+      const callDetails = await dashboardRepo.getCallDetailTime(sheet.appointment.id);
+      if (callDetails.length > 0) {
         const duration = Math.abs(
-          differenceInSeconds(callDets[callDets.length - 1].endTime, sheet.createdDate)
+          differenceInSeconds(callDetails[callDetails.length - 1].endTime, sheet.createdDate)
         );
         await dashboardRepo.updateCaseSheetEndTime(
           sheet.id,
-          callDets[callDets.length - 1].endTime,
+          callDetails[callDetails.length - 1].endTime,
           duration
         );
       }
