@@ -10,6 +10,9 @@ const bugsnagClient = bugsnag({
   apiKey: `${process.env.BUGSNAG_API_KEY}`,
   // notifyReleaseStages: ['local', 'development', 'production', 'staging'],
   releaseStage: `${process.env.NODE_ENV}`,
+  autoBreadcrumbs: true,
+  autoCaptureSessions: true,
+  autoNotify: true,
 });
 bugsnagClient.use(bugsnagReact, React);
 const ErrorBoundary = bugsnagClient.getPlugin('react');
