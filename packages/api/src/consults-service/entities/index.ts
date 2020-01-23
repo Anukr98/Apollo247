@@ -948,6 +948,10 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   completeMore15: number;
 
+  //Avg. time for consult
+  @Column({ default: 0 })
+  avgTimePerConsult: number;
+
   @Column()
   createdDate: Date;
 
