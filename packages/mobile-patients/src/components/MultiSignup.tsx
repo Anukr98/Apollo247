@@ -19,6 +19,8 @@ import {
   ActivityIndicator,
   BackHandler,
   Keyboard,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -328,42 +330,44 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           shadowOpacity: 0.8,
           shadowRadius: 10,
           elevation: 5,
-          paddingTop: 8,
-          paddingBottom: 16,
+          marginTop: Platform.OS === 'ios' ? 10 : 8,
+          marginBottom: Platform.OS === 'ios' ? 16 : 30,
         }}
       >
-        {Options.map(({ title, key }) => (
-          <View style={styles.textViewStyle}>
-            <Text
-              style={styles.textStyle}
-              onPress={() => {
-                if (profiles) {
-                  profiles[relationIndex].relation = Relation[key];
-                  const result = profiles.filter((obj) => {
-                    return obj.relation == Relation['ME'];
-                  });
+        <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
+          {Options.map(({ title, key }) => (
+            <View style={styles.textViewStyle}>
+              <Text
+                style={styles.textStyle}
+                onPress={() => {
+                  if (profiles) {
+                    profiles[relationIndex].relation = Relation[key];
+                    const result = profiles.filter((obj) => {
+                      return obj.relation == Relation['ME'];
+                    });
 
-                  if (result.length > 1) {
-                    profiles[relationIndex].relation = null;
-                    Alert.alert('Apollo', 'Me is already choosen for another profile.');
-                    CommonLogEvent(
-                      AppRoutes.MultiSignup,
-                      'Me is already choosen for another profile.'
-                    );
+                    if (result.length > 1) {
+                      profiles[relationIndex].relation = null;
+                      Alert.alert('Apollo', 'Me is already choosen for another profile.');
+                      CommonLogEvent(
+                        AppRoutes.MultiSignup,
+                        'Me is already choosen for another profile.'
+                      );
+                    }
+                    console.log('result', result);
+                    console.log('result length', result.length);
+
+                    setProfiles(profiles);
+                    setShowPopup(false);
+                    CommonLogEvent(AppRoutes.MultiSignup, 'Select the relations for the profile');
                   }
-                  console.log('result', result);
-                  console.log('result length', result.length);
-
-                  setProfiles(profiles);
-                  setShowPopup(false);
-                  CommonLogEvent(AppRoutes.MultiSignup, 'Select the relations for the profile');
-                }
-              }}
-            >
-              {title}
-            </Text>
-          </View>
-        ))}
+                }}
+              >
+                {title}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
       </View>
     </TouchableOpacity>
   );

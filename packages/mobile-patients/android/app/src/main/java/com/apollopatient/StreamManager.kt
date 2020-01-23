@@ -25,7 +25,7 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
             System.out.println("In SHOW......" + vitaToken+" "+buildSpecify);
             System.out.println("In UHID......" + UHID + " "+userName+ " "+consultSource);
             val T2DiabetesAndHypertensionProgram = "t2diabetesandhypertension"
-            Timber.plant(Timber.DebugTree())
+//            Timber.plant(Timber.DebugTree())
             if(buildSpecify=="QA"||buildSpecify=="DEV"){
                 System.out.println("buildSpecify......" + buildSpecify);
                 VitaInit.setupApp(reactApplicationContext,

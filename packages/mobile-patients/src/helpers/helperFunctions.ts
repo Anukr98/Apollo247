@@ -571,12 +571,17 @@ export const getRelations = (self?: string) => {
   let a: RelationArray[] = [];
   a.push({ key: Relation.ME, title: self || 'Self' });
   for (let k in Relation) {
-    if (k !== Relation.ME) {
+    if (k !== Relation.ME && k !== Relation.OTHER) {
       a.push({
         key: k as Relation,
         title: k[0] + k.substr(1).toLowerCase(),
       });
     }
   }
+  a.push({
+    key: Relation.OTHER,
+    title: Relation.OTHER[0] + Relation.OTHER.substr(1).toLowerCase(),
+  });
+
   return a;
 };

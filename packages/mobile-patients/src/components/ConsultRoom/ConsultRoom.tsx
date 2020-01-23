@@ -349,10 +349,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
           console.log(tokenValue, 'tokenValue');
           if (Platform.OS === 'ios') {
-            Vitals.vitalsToExport(tokenValue);
-            setTimeout(() => {
-              Vitals.goToReactNative(tokenValue);
-            }, 500);
+            if (tokenValue) {
+              Vitals.vitalsToExport(tokenValue);
+              setTimeout(() => {
+                Vitals.goToReactNative(tokenValue);
+              }, 500);
+            }
           } else {
             const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(
               patientDetails,
