@@ -227,6 +227,7 @@
     "description": "Find all your consults, prescriptions and health records right here!",
     "view_consult": "VIEW CONSULT",
     "order_medicine": "ORDER MEDICINES",
+    "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "tabs": [
       {

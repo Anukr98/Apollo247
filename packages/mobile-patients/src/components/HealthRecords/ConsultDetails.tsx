@@ -8,6 +8,7 @@ import {
   getCaseSheet,
   getCaseSheetVariables,
   getCaseSheet_getCaseSheet_caseSheetDetails,
+  getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -53,8 +54,16 @@ import {
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '../UIElementsProvider';
 import { mimeType } from '../../helpers/mimeType';
-import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  g,
+  addTestsToCart,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import {
+  useDiagnosticsCart,
+  DiagnosticsCartItem,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -334,17 +343,51 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
   const { addMultipleCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
-  // const {
-  //   addMultipleCartItems: addMultipleTestCartItems,
-  //   addMultipleEPrescriptions: addMultipleTestEPrescriptions,
-  // } = useDiagnosticsCart();
+  const {
+    addMultipleCartItems: addMultipleTestCartItems,
+    addMultipleEPrescriptions: addMultipleTestEPrescriptions,
+  } = useDiagnosticsCart();
+
+  const onAddTestsToCart = () => {
+    setLoading && setLoading(true);
+    const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
+      []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
+
+    const presToAdd = {
+      id: caseSheetDetails!.id,
+      date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: g(data, 'displayName') || '',
+      forPatient: (currentPatient && currentPatient.firstName) || '',
+      medicines: '',
+      uploadedUrl: docUrl,
+    } as EPrescription;
+
+    // Adding tests to DiagnosticsCart
+    addTestsToCart(testPrescription)
+      .then((tests) => {
+        addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
+        // Adding ePrescriptions to DiagnosticsCart
+        if ((tests as DiagnosticsCartItem[]).length)
+          addMultipleTestEPrescriptions!([
+            {
+              ...presToAdd,
+              medicines: (tests as DiagnosticsCartItem[]).map((item) => item.name).join(', '),
+            },
+          ]);
+      })
+      .catch((e) => {
+        Alert.alert('Uh oh.. :(', e);
+      });
+    props.navigation.push(AppRoutes.TestsCart, {
+      isComingFromConsult: true,
+    });
+  };
 
   const onAddToCart = () => {
     setLoading && setLoading(true);
 
     const medPrescription = caseSheetDetails!.medicinePrescription || [];
-    // const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
-    //   []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
@@ -388,7 +431,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
         if (medPrescription.length > medicines.length) {
           const outOfStockCount = medPrescription.length - medicines.length;
-          Alert.alert('Alert', `${outOfStockCount} item(s) are out of stock.`);
+          const outOfStockItems = medPrescription
+            .filter((item) => !medicines.find((val) => val!.id == item!.id))
+            .map((item, idx) => `${idx + 1}. ${item!.medicineName}\n`)
+            .join('');
+
+          Alert.alert(
+            'Uh oh.. :(',
+            `Below ${outOfStockCount} item(s) are out of stock.\n${outOfStockItems}`
+          );
           // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
         }
 
@@ -411,19 +462,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           ]);
         }
         props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
-        // Adding tests to DiagnosticsCart
-        // addTestsToCart(testPrescription)
-        //   .then((tests) => {
-        //     addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
-        //     // Adding ePrescriptions to DiagnosticsCart
-        //     addMultipleTestEPrescriptions!([presToAdd]);
-        //   })
-        //   .catch((e) => {
-        //     Alert.alert('Uh oh.. :(', e);
-        //   });
-        // props.navigation.push(AppRoutes.MedAndTestCart, {
-        //   isComingFromConsult: true,
-        // });
       })
       .catch((e) => {
         CommonBugFender('ConsultDetails_onAddToCart', e);
@@ -699,6 +737,21 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
                 })}
+                <TouchableOpacity
+                  style={{ marginTop: 12 }}
+                  onPress={() => {
+                    onAddTestsToCart();
+                  }}
+                >
+                  <Text
+                    style={[
+                      theme.viewStyles.yellowTextStyle,
+                      { textAlign: 'right', paddingBottom: 16 },
+                    ]}
+                  >
+                    {strings.health_records_home.order_test}
+                  </Text>
+                </TouchableOpacity>
               </View>
             ) : (
               <View>

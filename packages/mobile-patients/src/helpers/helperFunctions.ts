@@ -102,7 +102,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Verified';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Out For Delivery';
+      statusString = 'Order Shipped';
       break;
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
@@ -516,17 +516,17 @@ export const addTestsToCart = (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] // testsIncluded will not come from API
 ) => {
   const items = testPrescription
-    .filter((val) => !val.isCustom)
+    .filter((val) => val.itemname)
     .map(
       (item) =>
         ({
-          id: `${item.itemId}`,
+          id: `${item.additionalDetails!.itemId}`,
           name: item.itemname!,
-          price: parseInt(item.price!, 10),
+          price: item.additionalDetails!.rate,
           specialPrice: undefined,
           mou: 1,
-          thumbnail: item.imageUrl || '',
-          collectionMethod: item.collectionMethod!,
+          thumbnail: '',
+          collectionMethod: item.additionalDetails!.collectionType,
         } as DiagnosticsCartItem)
     );
 

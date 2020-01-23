@@ -444,9 +444,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                                 if (medPrescription.length > medicines.length) {
                                   const outOfStockCount = medPrescription.length - medicines.length;
+                                  const outOfStockItems = medPrescription
+                                    .filter((item) => !medicines.find((val) => val!.id == item.id))
+                                    .map((item, idx) => `${idx + 1}. ${item.medicineName}\n`)
+                                    .join('');
                                   Alert.alert(
                                     'Uh oh.. :(',
-                                    `${outOfStockCount} item(s) are out of stock.`
+                                    `Below ${outOfStockCount} item(s) are out of stock.\n${outOfStockItems}`
                                   );
                                   // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
                                 }

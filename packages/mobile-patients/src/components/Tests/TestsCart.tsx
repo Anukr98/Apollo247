@@ -28,8 +28,8 @@ import {
 import {
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
-  SEARCH_DIAGNOSTICS,
   UPLOAD_DOCUMENT,
+  SEARCH_DIAGNOSTICS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -42,11 +42,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-  searchDiagnostics_searchDiagnostics_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
   Clinic,
@@ -71,6 +66,11 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
+import {
+  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
+  searchDiagnosticsById,
+  searchDiagnosticsByIdVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -363,24 +363,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchPackageDetails = (
-    name: string,
-    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+    itemIds: string,
+    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
   ) => {
     {
       setLoading!(true);
       client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
+        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
+          query: SEARCH_DIAGNOSTICS_BY_ID,
           variables: {
-            searchText: name,
-            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-            patientId: (currentPatient && currentPatient.id) || '',
+            itemIds: itemIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           console.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {
@@ -441,7 +439,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
-                fetchPackageDetails(test.name, (product) => {
+                fetchPackageDetails(test.id, (product) => {
                   props.navigation.navigate(AppRoutes.TestDetails, {
                     testDetails: {
                       ItemID: test.id,

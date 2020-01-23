@@ -877,7 +877,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 (consultations.filter((item) =>
                   moment(item.appointmentDateTime).isBefore(moment(new Date()))
                 ).length || 'no') +
-                ' past appointments(s)!'
+                ' past appointment(s)!'
             : string.consult_room.description}
         </Text>
       </View>

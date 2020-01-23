@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, TEST_COLLECTION_TYPE, DoctorType, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_UNIT, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
+import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, TEST_COLLECTION_TYPE, DIAGNOSTICS_TYPE, DoctorType, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_UNIT, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPastConsultsAndPrescriptions
@@ -13,15 +13,27 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   name: string | null;
 }
 
+export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription_additionalDetails {
+  __typename: "DiagnosticDetailsInCaseSheet";
+  city: string | null;
+  collectionType: TEST_COLLECTION_TYPE | null;
+  fromAgeInDays: number | null;
+  gender: string | null;
+  id: string | null;
+  itemId: number | null;
+  itemName: string | null;
+  itemRemarks: string | null;
+  itemType: DIAGNOSTICS_TYPE | null;
+  rate: number | null;
+  state: string | null;
+  testPreparationData: string | null;
+  toAgeInDays: number | null;
+}
+
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  collectionMethod: TEST_COLLECTION_TYPE | null;
-  id: string | null;
-  imageUrl: string | null;
-  isCustom: boolean | null;
-  itemId: string | null;
   itemname: string | null;
-  price: string | null;
+  additionalDetails: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription_additionalDetails | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription {

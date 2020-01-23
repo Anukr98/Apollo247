@@ -27,6 +27,7 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   SEARCH_DIAGNOSTICS,
   SAVE_SEARCH,
+  SEARCH_DIAGNOSTICS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -90,6 +91,11 @@ import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  searchDiagnosticsById,
+  searchDiagnosticsByIdVariables,
+  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -907,7 +913,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         addCartItem!({
           id: `${diagnostics!.itemId!}`,
           mou: tests.length,
-          name: diagnostics!.itemName,
+          name: packageName!,
           price: diagnostics!.rate,
           specialPrice: specialPrice,
           thumbnail: packageImage,
@@ -1137,25 +1143,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const fetchPackageDetails = (
-    name: string,
-    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+    itemIds: string,
+    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
   ) => {
     {
       setLoadingContext!(true);
       client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
+        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
+          query: SEARCH_DIAGNOSTICS_BY_ID,
           variables: {
-            searchText: name,
-            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-            patientId: (currentPatient && currentPatient.id) || '',
+            itemIds: itemIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           setLoadingContext!(false);
           aphConsole.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {
@@ -1234,7 +1238,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 },
                 !!cartItems.find((_item) => _item.id == item.ItemID),
                 () => {
-                  fetchPackageDetails(item.ItemName, (product) => {
+                  fetchPackageDetails(item.ItemID, (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
                         ...item,
@@ -1245,7 +1249,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   });
                 },
                 () => {
-                  fetchPackageDetails(item.ItemName, (product) => {
+                  fetchPackageDetails(item.ItemID, (product) => {
                     addCartItem!({
                       id: item.ItemID,
                       name: item.ItemName,
