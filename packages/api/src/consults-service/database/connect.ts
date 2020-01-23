@@ -37,6 +37,7 @@ import {
   Packages,
   Secretary,
   StarTeam,
+  Auditor,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -124,6 +125,7 @@ export const connect = async () => {
         Packages,
         Secretary,
         StarTeam,
+        Auditor,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
