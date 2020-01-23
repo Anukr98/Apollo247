@@ -952,6 +952,10 @@ export class JdDashboardSummary extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   avgTimePerConsult: number;
 
+  //total allocated chats
+  @Column({ default: 0 })
+  totalAllocatedChats: number;
+
   @Column()
   createdDate: Date;
 

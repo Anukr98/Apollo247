@@ -66,6 +66,17 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     });
   }
 
+  getTotalAllocatedChats(selDate: Date, doctorId: string) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return ConsultQueueItem.count({
+      where: {
+        doctorId,
+        createdDate: Between(newStartDate, newEndDate),
+      },
+    });
+  }
+
   async getWaitTimePerChat(selDate: Date, doctorId: string) {
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
