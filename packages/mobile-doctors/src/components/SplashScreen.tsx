@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { firebaseUser, doctorDetails } = useAuth();
+  const { firebaseUser, doctorDetails, getDoctorDetailsApi } = useAuth();
 
   const handleOpenURL = (url: string) => {
     console.log(url);
@@ -42,6 +42,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
     }
   };
+  useEffect(() => {
+    if (!doctorDetails) {
+      getDoctorDetailsApi && getDoctorDetailsApi();
+    }
+  }, [doctorDetails]);
 
   const getRegistrationToken = async () => {
     // const fcmToken = await firebase.messaging().getToken();
