@@ -116,6 +116,10 @@ const updateJdSummary: Resolver<
         doctor.id,
         0
       );
+      const totalAllocatedChats = await dashboardRepo.getTotalAllocatedChats(
+        args.summaryDate,
+        doctor.id
+      );
       const dashboardSummaryAttrs: Partial<JdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
@@ -137,6 +141,7 @@ const updateJdSummary: Resolver<
         completeWithin15,
         startOnTimeConsults: 0,
         avgTimePerConsult,
+        totalAllocatedChats,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);
     });
