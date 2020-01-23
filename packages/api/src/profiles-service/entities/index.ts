@@ -69,6 +69,7 @@ export enum MEDICINE_ORDER_STATUS {
   PRESCRIPTION_CART_READY = 'PRESCRIPTION_CART_READY',
   ORDER_CONFIRMED = 'ORDER_CONFIRMED',
   CANCEL_REQUEST = 'CANCEL_REQUEST',
+  READY_AT_STORE = 'READY_AT_STORE',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -613,6 +614,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @Column({ nullable: true })
+  uhidCreatedDate: Date;
 
   @BeforeInsert()
   updateDateCreation() {
