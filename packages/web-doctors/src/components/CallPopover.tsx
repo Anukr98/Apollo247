@@ -25,6 +25,7 @@ import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
+
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
@@ -48,6 +49,22 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
+
+import bugsnag from '@bugsnag/js';
+import bugsnagReact from '@bugsnag/plugin-react';
+
+const bugsnagClient = bugsnag({
+  apiKey: `${process.env.BUGSNAG_API_KEY}`,
+  // notifyReleaseStages: ['local', 'development', 'production', 'staging'],
+  releaseStage: `${process.env.NODE_ENV}`,
+  autoBreadcrumbs: true,
+  autoCaptureSessions: true,
+  autoNotify: true,
+});
+
+const sessionClient = bugsnagClient.startSession();
+
+// this error is reported with session information
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -840,9 +857,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const params = useParams<Params>();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserType } = useAuthContext();
-  const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
-    CaseSheetContext
-  );
+  const {
+    appointmentInfo,
+    followUpDate,
+    followUpAfterInDays,
+    followUp,
+    patientDetails,
+  } = useContext(CaseSheetContext);
   const apiDateFormat = new Date();
 
   const covertVideoMsg = '^^convert`video^^';
@@ -1012,6 +1033,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
+          const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+          const logObject = {
+            appointmentId: props.appointmentId,
+            doctorId: props.doctorId,
+            doctorDisplayName: currentPatient!.displayName,
+            patientId: params.patientId,
+            patientName: patientName,
+            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+            appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+              'MMMM DD YYYY h:mm:ss a'
+            ),
+            error: JSON.stringify(e),
+          };
+
+          sessionClient.notify(JSON.stringify(logObject));
           console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
           alert(errorMessage);
         });
@@ -1720,6 +1756,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           errorMessage,
           error
         );
+        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+        const logObject = {
+          appointmentId: props.appointmentId,
+          doctorId: props.doctorId,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(e),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
+        sessionClient.leaveBreadcrumb(error, logObject, 'error', 'UTC');
         alert(errorMessage);
       });
   };
@@ -1966,13 +2018,49 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             );
                           }
                         } catch (error) {
+                          const patientName =
+                            patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                          const logObject = {
+                            appointmentId: props.appointmentId,
+                            doctorId: props.doctorId,
+                            doctorDisplayName: currentPatient!.displayName,
+                            patientId: params.patientId,
+                            patientName: patientName,
+                            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                            appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+                              'MMMM DD YYYY h:mm:ss a'
+                            ),
+                            error: JSON.stringify(error),
+                          };
+
+                          sessionClient.notify(JSON.stringify(logObject));
+                          sessionClient.leaveBreadcrumb(error, logObject, 'error', 'UTC');
                           setDoctorNextAvailableSlot('');
                           alert(error);
                         } finally {
                           setLoading(false);
                         }
                       })
-                      .catch((e) => console.log(e));
+                      .catch((e) => {
+                        console.log(e);
+                        const patientName =
+                          patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                        const logObject = {
+                          appointmentId: props.appointmentId,
+                          doctorId: props.doctorId,
+                          doctorDisplayName: currentPatient!.displayName,
+                          patientId: params.patientId,
+                          patientName: patientName,
+                          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+                            'MMMM DD YYYY h:mm:ss a'
+                          ),
+                          error: JSON.stringify(e),
+                        };
+
+                        sessionClient.notify(JSON.stringify(logObject));
+                        sessionClient.leaveBreadcrumb(e, logObject, 'error', 'UTC');
+                      });
                   }
                 }}
               >
@@ -2465,6 +2553,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       );
                     })
                     .catch((e: ApolloError) => {
+                      const patientName =
+                        patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                      const logObject = {
+                        appointmentId: props.appointmentId,
+                        doctorId: props.doctorId,
+                        doctorDisplayName: currentPatient!.displayName,
+                        patientId: params.patientId,
+                        patientName: patientName,
+                        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                        appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+                          'MMMM DD YYYY h:mm:ss a'
+                        ),
+                        error: JSON.stringify(e),
+                      };
+
+                      sessionClient.notify(JSON.stringify(logObject));
+                      // sessionClient.leaveBreadcrumb(e, logObject, 'error', 'UTC')
                       setCancelError(e.graphQLErrors[0].message);
                     });
                 }}
@@ -2562,6 +2667,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     );
                   })
                   .catch((e: ApolloError) => {
+                    const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                    const logObject = {
+                      appointmentId: props.appointmentId,
+                      doctorId: props.doctorId,
+                      doctorDisplayName: currentPatient!.displayName,
+                      patientId: params.patientId,
+                      patientName: patientName,
+                      currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                      appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+                        'MMMM DD YYYY h:mm:ss a'
+                      ),
+                      error: JSON.stringify(e),
+                    };
+
+                    sessionClient.notify(JSON.stringify(logObject));
+                    // sessionClient.leaveBreadcrumb(e, logObject, 'error', 'UTC')
                     setCancelError(e.graphQLErrors[0].message);
                     setIsCancelDialogOpen(false);
                   });
