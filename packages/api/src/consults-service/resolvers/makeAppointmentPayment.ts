@@ -113,6 +113,16 @@ const makeAppointmentPayment: Resolver<
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
+    //check if any appointment already exists in this slot before confirming payment
+    const apptCount = await apptsRepo.checkIfAppointmentExist(
+      processingAppointment.doctorId,
+      processingAppointment.appointmentDateTime
+    );
+
+    if (apptCount > 0) {
+      throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+    }
+
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
     sendPatientAcknowledgements(processingAppointment, consultsDb, doctorsDb, patientsDb);
 
