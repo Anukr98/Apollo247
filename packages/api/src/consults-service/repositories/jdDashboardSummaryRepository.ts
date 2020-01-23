@@ -276,7 +276,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
       .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
-    console.log(caseSheetRows, 'caseSheetRows');
+    //console.log(caseSheetRows, 'caseSheetRows');
     if (caseSheetRows[0].totalrows > 0) {
       if (needAvg == 0) {
         return caseSheetRows[0].totalduration / caseSheetRows[0].totalrows;
