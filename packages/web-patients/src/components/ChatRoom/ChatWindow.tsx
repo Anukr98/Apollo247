@@ -1521,7 +1521,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       className={
                         rowData.message === documentUpload ? classes.chatImgBubble : ''
                       }
-
                     >
                       {leftComponent == 1 && rowData.duration && (
                         <div className={classes.doctorAvatar}>
