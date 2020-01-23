@@ -891,18 +891,18 @@ export class JdDashboardSummary extends BaseEntity {
   @Column()
   appointmentDateTime: Date;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   waitTimePerChat: number;
 
   //Case sheet fill time per chat, Avg time
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   caseSheetFillTime: number;
 
   @Column({ default: 0 })
   totalCompletedChats: number;
 
   //Total time taken per chat, Avg  time
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerChat: number;
 
   @Column({ default: 0 })
@@ -949,7 +949,7 @@ export class JdDashboardSummary extends BaseEntity {
   completeMore15: number;
 
   //Avg. time for consult
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   avgTimePerConsult: number;
 
   @Column()
