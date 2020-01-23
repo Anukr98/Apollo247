@@ -659,6 +659,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     };
   }, []);
 
+  const chatTimeConvertion = (timeStamp: string) => {
+    const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
+      moment(timeStamp).format('YYYY-MM-DD')
+    );
+    if (dateValidate === 0) {
+      return moment
+        .utc(timeStamp)
+        .local()
+        .format('h:mm A');
+    } else {
+      return moment
+        .utc(timeStamp)
+        .local()
+        .format('DD MMM, YYYY h:mm A');
+    }
+    return '--';
+  };
+
   // End of Explaining the steps to patient with message.
 
   // Start of first Text to patient if junior doctor doesn't attent the consult
@@ -878,9 +896,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <AphButton className={classes.viewButton}>Download</AphButton>
         <AphButton className={classes.viewButton}>View</AphButton>
       </div>
-      <div className={classes.chatTime}>
-        {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
-      </div>
+      <div className={classes.chatTime}>{chatTimeConvertion(rowData.messageDate)}</div>
     </div>
   );
 
@@ -913,9 +929,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           Reschedule
         </AphButton>
       </div>
-      <div className={classes.chatTime}>
-        {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
-      </div>
+      <div className={classes.chatTime}>{chatTimeConvertion(rowData.messageDate)}</div>
     </div>
   );
 
@@ -1007,7 +1021,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <div>
                 <span>{rowData.message}</span>
                 <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>
-                  {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
+                  {chatTimeConvertion(rowData.messageDate)}
                 </div>
               </div>
             )}
@@ -1069,8 +1083,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             rowData.message !== autoMessageStrings.followupconsult ? (
               <div>
                 <span>{rowData.automatedText || rowData.message}</span>
-                <div className={classes.chatTime}>
-                  {moment(rowData.messageDate).format('DD MMM YYYY,hh:mm a')}
+                <div
+                  className={
+                    rowData.automatedText
+                      ? classes.chatTime
+                      : `${classes.chatTime} ${classes.defaultChatTime}`
+                  }
+                >
+                  {chatTimeConvertion(rowData.messageDate)}
                 </div>
               </div>
             ) : null}

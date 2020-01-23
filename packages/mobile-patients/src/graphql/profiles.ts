@@ -850,7 +850,13 @@ export const GET_CASESHEET_DETAILS = gql`
           name
         }
         diagnosticPrescription {
+          collectionMethod
+          id
+          imageUrl
+          isCustom
+          itemId
           itemname
+          price
         }
         blobName
         doctorId
@@ -1457,7 +1463,13 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             name
           }
           diagnosticPrescription {
+            collectionMethod
+            id
+            imageUrl
+            isCustom
+            itemId
             itemname
+            price
           }
           doctorId
           doctorType

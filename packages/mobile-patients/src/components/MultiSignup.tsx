@@ -147,27 +147,30 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       if (!allCurrentPatients[0].relation) allCurrentPatients[0].relation = Relation.ME;
     }
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
+    if (allCurrentPatients && allCurrentPatients.length > 0) {
+      setShowText(true);
+    }
     AsyncStorage.setItem('multiSignUp', 'true');
   }, [allCurrentPatients]);
 
-  useEffect(() => {
-    setProfiles(allCurrentPatients ? allCurrentPatients : []);
-    const length =
-      profiles &&
-      (profiles.length == 1 ? profiles.length + ' account' : profiles.length + ' accounts');
-    const baseString =
-      'We have found ' +
-      length +
-      ' registered with this mobile number. Please tell us who is who ? :)';
-    setDiscriptionText(baseString);
+  // useEffect(() => {
+  //   setProfiles(allCurrentPatients ? allCurrentPatients : []);
+  //   const length =
+  //     profiles &&
+  //     (profiles.length == 1 ? profiles.length + ' account' : profiles.length + ' accounts');
+  //   const baseString =
+  //     'We have found ' +
+  //     length +
+  //     ' registered with this mobile number. Please tell us who is who ? :)';
+  //   setDiscriptionText(baseString);
 
-    if (length !== 'undefined accounts') {
-      setShowText(true);
-      console.log('length', length);
-    }
-    console.log('discriptionText', discriptionText);
-    console.log('allCurrentPatients', allCurrentPatients);
-  }, [currentPatient, allCurrentPatients, analytics, profiles, discriptionText, showText]);
+  //   if (length !== 'undefined accounts') {
+  //     setShowText(true);
+  //     // console.log('length', length);
+  //   }
+  //   // console.log('discriptionText', discriptionText);
+  //   // console.log('allCurrentPatients', allCurrentPatients);
+  // }, [currentPatient, allCurrentPatients, analytics, profiles, discriptionText, showText]);
 
   const renderUserForm = (
     allCurrentPatients: GetCurrentPatients_getCurrentPatients_patients | null,
@@ -512,7 +515,15 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               }}
               headingTextStyle={{ paddingBottom: 20 }}
               heading={string.login.welcome_text}
-              description={showText ? discriptionText : string.login.multi_signup_desc}
+              description={
+                showText
+                  ? 'We have found ' +
+                    ((profiles || []).length == 1
+                      ? (profiles || []).length + ' account'
+                      : (profiles || []).length + ' accounts') +
+                    ' registered with this mobile number. Please tell us who is who ? :)'
+                  : string.login.multi_signup_desc
+              }
               descriptionTextStyle={{ paddingBottom: 50 }}
             >
               <View style={styles.mascotStyle}>

@@ -137,7 +137,13 @@ const resendOtp: Resolver<
     };
   }
 
-  const otp = generateOTP();
+  let otp = generateOTP();
+
+  //if performance environment(as), use the static otp
+  if (process.env.NODE_ENV === 'as' && process.env.PERFORMANCE_ENV_STATIC_OTP) {
+    otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
+  }
+
   const optAttrs: Partial<LoginOtp> = {
     mobileNumber,
     otp,
@@ -149,6 +155,15 @@ const resendOtp: Resolver<
 
   //archive the old resend record and then delete it
   archiveOtpRecord(validResendRecord[0].id, profilesDb);
+
+  //if performance environment(as), return the response without sending SMS
+  if (process.env.NODE_ENV === 'as') {
+    return {
+      status: true,
+      loginId: otpSaveResponse.id,
+      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
+    };
+  }
 
   //call sms gateway service to send the OTP here
   const smsResult = await sendSMS(mobileNumber, otp);

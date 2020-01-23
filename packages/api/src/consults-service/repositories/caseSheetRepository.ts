@@ -1,7 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { CaseSheet } from 'consults-service/entities';
+import { CaseSheet, CASESHEET_STATUS } from 'consults-service/entities';
 import { DoctorType } from 'doctors-service/entities';
 
 @EntityRepository(CaseSheet)
@@ -18,6 +18,13 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .getMany();
+  }
+
+  getCompletedCaseSheetsByAppointmentId(appointmentId: string) {
+    return this.createQueryBuilder('case_sheet')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getMany();
   }
 

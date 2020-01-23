@@ -14,8 +14,25 @@ import { format } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
+import { getConnection } from 'typeorm';
 
 export const diagnosticsTypeDefs = gql`
+  type DiagnosticDetailsInCaseSheet @key(fields: "itemName") {
+    city: String
+    collectionType: TEST_COLLECTION_TYPE
+    fromAgeInDays: Int
+    gender: String
+    id: ID
+    itemId: Int
+    itemName: String
+    itemRemarks: String
+    itemType: DIAGNOSTICS_TYPE
+    rate: Int
+    state: String
+    testPreparationData: String
+    toAgeInDays: Int
+  }
+
   enum DIAGNOSTICS_TYPE {
     TEST
     PACKAGE
@@ -100,6 +117,7 @@ export const diagnosticsTypeDefs = gql`
       patientId: String
       searchText: String!
     ): SearchDiagnosticsResult!
+    searchDiagnosticsById(itemIds: String): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
     getDiagnosticSlots(
       patientId: String
@@ -179,6 +197,36 @@ const searchDiagnostics: Resolver<
   return { diagnostics };
 };
 
+const searchDiagnosticsById: Resolver<
+  null,
+  { itemIds: string },
+  ProfilesServiceContext,
+  SearchDiagnosticsResult
+> = async (parent, args, { profilesDb }) => {
+  if (args.itemIds.trim().length == 0)
+    throw new AphError(AphErrorMessages.INVALID_SEARCH_VALUE, undefined, {});
+  const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const diagnostics: Diagnostics[] = [];
+  function getDiagnosticData(itemId: number) {
+    return new Promise<Diagnostics>(async (resolve) => {
+      const diagnostic = await diagnosticsRepo.findDiagnosticById(itemId);
+      if (diagnostic) {
+        diagnostics.push(diagnostic);
+      }
+      resolve(diagnostic);
+    });
+  }
+  const itemIds: string[] = args.itemIds.split(',');
+  const promises: object[] = [];
+  if (itemIds.length > 0) {
+    itemIds.forEach(async (id) => {
+      promises.push(getDiagnosticData(parseInt(id, 0)));
+    });
+  }
+  await Promise.all(promises);
+  return { diagnostics };
+};
+
 const getDiagnosticsCites: Resolver<
   null,
   { patientId: String; cityName: string },
@@ -245,10 +293,18 @@ const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, Diagnostics
 };
 
 export const diagnosticsResolvers = {
+  DiagnosticDetailsInCaseSheet: {
+    async __resolveReference(object: Diagnostics) {
+      const connection = getConnection();
+      const diagnosticRepo = connection.getCustomRepository(DiagnosticsRepository);
+      return await diagnosticRepo.getDiagnosticByName(object.itemName.toString());
+    },
+  },
   Query: {
     searchDiagnostics,
     getDiagnosticsCites,
     getDiagnosticSlots,
     getDiagnosticsData,
+    searchDiagnosticsById,
   },
 };
