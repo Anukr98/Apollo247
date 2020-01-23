@@ -12,8 +12,23 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInMinutes } from 'date-fns';
 
 type CasesheetPrepTime = {
-  totalDuration: number;
+  totalduration: number;
   appointmentidcount: number;
+};
+
+type AvCount = {
+  appointmentid: string;
+  appointmentidcount: number;
+};
+
+type ApptCreateDates = {
+  casesheetcreatedate: Date;
+  appointmentdatetime: Date;
+};
+
+type TotalConsultation = {
+  totalduration: number;
+  totalrows: number;
 };
 
 @EntityRepository(JdDashboardSummary)
@@ -54,28 +69,47 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
     const apptIds = await ConsultQueueItem.createQueryBuilder('consult_queue_item')
-      .where('conult_queue_item.doctorId = :docId', { docId: doctorId })
+      .where('consult_queue_item.doctorId = :docId', { docId: doctorId })
       .andWhere('consult_queue_item.createdDate Between :fromDate AND :toDate', {
         fromDate: newStartDate,
         toDate: newEndDate,
       })
       .getMany();
+
     let totalMins = 0;
-    if (apptIds.length > 0) {
-      apptIds.forEach(async (appt) => {
+    const promises: object[] = [];
+    async function getCasesheetTime(appt: ConsultQueueItem) {
+      return new Promise<number>(async (resolve) => {
+        //console.log(appt, 'came here inside the appt');
         const caseSheetDets = await CaseSheet.findOne({
-          where: { appointment: appt, doctorType: 'JUNIOR' },
+          where: { appointment: appt.appointmentId, doctorType: 'JUNIOR' },
         });
+        //console.log(caseSheetDets, 'case sheet detsila');
         if (caseSheetDets) {
           const diffMins = Math.abs(
             differenceInMinutes(caseSheetDets.createdDate, appt.createdDate)
           );
           totalMins += diffMins;
+          //console.log(totalMins, 'total mins');
+        } else {
+          totalMins += 0;
         }
+        resolve(totalMins);
       });
     }
-    console.log(apptIds.length, totalMins, 'wait time percasesheet');
-    return totalMins / apptIds.length;
+    //console.log(apptIds, apptIds.length);
+    if (apptIds.length > 0) {
+      apptIds.forEach(async (appt) => {
+        promises.push(getCasesheetTime(appt));
+      });
+    }
+    await Promise.all(promises);
+    //console.log(apptIds.length, totalMins, 'wait time percasesheet');
+    if (totalMins == 0 && apptIds.length == 0) {
+      return 0;
+    } else {
+      return totalMins / apptIds.length;
+    }
   }
 
   async timePerChat(selDate: Date, doctorId: string) {
@@ -86,16 +120,21 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         'sum("preperationTimeInSeconds") as totalduration',
         'count("appointmentId") as appointmentidcount',
       ])
-      .where('case_sheet.createdDate Betwen :fromDate and :toDate', {
+      .where('case_sheet.createdDate Between :fromDate and :toDate', {
         fromDate: newStartDate,
         toDate: newEndDate,
       })
       .andWhere('case_sheet.doctorId = :docId', { docId: doctorId })
       .getRawMany();
-    console.log(casesheetRows, 'timeperchat casesheet rows');
+    //console.log(casesheetRows, 'timeperchat casesheet rows');
     if (casesheetRows.length > 0) {
-      const duration = parseFloat((casesheetRows[0].totalDuration / 60).toFixed(2));
-      return duration / casesheetRows[0].appointmentidcount;
+      const duration = parseFloat((casesheetRows[0].totalduration / 60).toFixed(2));
+      //console.log(duration, 'duration in imin', casesheetRows[0].appointmentidcount);
+      if (duration && duration > 0) {
+        return duration / casesheetRows[0].appointmentidcount;
+      } else {
+        return 0;
+      }
     } else {
       return 0;
     }
@@ -117,13 +156,17 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         apptIds.push(appt.appointmentId);
       });
       console.log(apptIds, 'apptIds in ontime consultation');
-      const callDetails = await AppointmentCallDetails.createQueryBuilder(
+      const callDetails: AvCount[] = await AppointmentCallDetails.createQueryBuilder(
         'appointment_call_details'
       )
+        .select([
+          '"appointmentId" as appointmentid',
+          'count("appointmentId") as appointmentidcount',
+        ])
         .where('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
         .andWhere('appointment_call_details."callType" = :callType', { callType })
         .groupBy('appointment_call_details."appointmentId"')
-        .getMany();
+        .getRawMany();
       if (callDetails && callDetails.length > 0) {
         return callDetails.length;
       } else {
@@ -141,21 +184,27 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
   async appointmentBefore15(selDate: Date, doctorId: string) {
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
-    const getCaseSheetList = await CaseSheet.find({
-      where: { doctorId, createdDate: Between(newStartDate, newEndDate) },
-    });
+    const caseSheetDetails: ApptCreateDates[] = await CaseSheet.createQueryBuilder('case_sheet')
+      .select([
+        'case_sheet."createdDate" as casesheetcreatedate',
+        'appointment."appointmentDateTime" as appointmentdatetime',
+      ])
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .where('case_sheet."createdDate" between :fromDate and :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+      .getRawMany();
     let apptCount = 0;
-    console.log(getCaseSheetList.length, 'case sheet length');
-    if (getCaseSheetList.length > 0) {
-      getCaseSheetList.forEach(async (caseSheet) => {
-        const apptDetails = await this.getAppointmentDetails(caseSheet.appointment.id);
-        if (apptDetails) {
-          const startedMins = Math.abs(
-            differenceInMinutes(caseSheet.createdDate, apptDetails.appointmentDateTime)
-          );
-          if (startedMins <= 15) {
-            apptCount++;
-          }
+    if (caseSheetDetails.length > 0) {
+      caseSheetDetails.forEach((appt) => {
+        const startedMins = Math.abs(
+          differenceInMinutes(appt.casesheetcreatedate, appt.appointmentdatetime)
+        );
+        console.log(startedMins, 'start mins');
+        if (startedMins <= 15) {
+          apptCount++;
         }
       });
     }
@@ -163,11 +212,14 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
   }
 
   getCaseSheetsList(limit: number) {
-    return CaseSheet.find({ where: { updatedDate: null }, take: limit });
+    return CaseSheet.find({
+      where: { updatedDate: null },
+      take: limit,
+      relations: ['appointment'],
+    });
   }
 
   getCallDetailTime(appointment: string) {
-    console.log('call details time', appointment);
     return AppointmentCallDetails.find({
       where: {
         appointment,
@@ -178,5 +230,57 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
 
   updateCaseSheetEndTime(id: string, updatedDate: Date, duration: number) {
     return CaseSheet.update(id, { updatedDate, preperationTimeInSeconds: duration });
+  }
+
+  async getConsultationTime(selDate: Date, doctorId: string, timeCheck: number) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    //.select(['case_sheet."preperationTimeInSeconds" as callduration'])
+    if (timeCheck == 0) {
+      const caseSheetRows = await CaseSheet.createQueryBuilder('case_sheet')
+        .where('case_sheet."createdDate" between :fromDate and :toDate', {
+          fromDate: newStartDate,
+          toDate: newEndDate,
+        })
+        .andWhere('case_sheet."preperationTimeInSeconds" <= :givenTime', { givenTime: 900 })
+        .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
+        .getMany();
+      return caseSheetRows.length;
+    } else {
+      const caseSheetRows = await CaseSheet.createQueryBuilder('case_sheet')
+        .where('case_sheet."createdDate" between :fromDate and :toDate', {
+          fromDate: newStartDate,
+          toDate: newEndDate,
+        })
+        .andWhere('case_sheet."preperationTimeInSeconds" > :givenTime', { givenTime: 900 })
+        .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
+        .getMany();
+      return caseSheetRows.length;
+    }
+  }
+
+  async getTotalConsultationTime(selDate: Date, doctorId: string, needAvg: number) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    const caseSheetRows: TotalConsultation[] = await CaseSheet.createQueryBuilder('case_sheet')
+      .select([
+        'sum(case_sheet."preperationTimeInSeconds") as totalduration',
+        'count(case_sheet."preperationTimeInSeconds") as totalrows',
+      ])
+      .where('case_sheet."createdDate" between :fromDate and :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
+      .getRawMany();
+    if (caseSheetRows.length > 0) {
+      if (needAvg == 0) {
+        return caseSheetRows[0].totalduration / caseSheetRows[0].totalrows;
+      } else {
+        return caseSheetRows[0].totalduration;
+      }
+    } else {
+      return 0;
+    }
   }
 }

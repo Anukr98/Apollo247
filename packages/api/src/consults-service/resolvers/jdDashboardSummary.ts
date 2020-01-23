@@ -19,6 +19,7 @@ export const jdDashboardSummaryTypeDefs = gql`
   type UpdateCasesheetResult {
     status: Boolean
     caseSheetCount: Int
+    appointmentId: String
   }
 
   extend type Mutation {
@@ -37,6 +38,7 @@ type JdDashboardSummaryResult = {
 type UpdateCasesheetResult = {
   status: Boolean;
   caseSheetCount: number;
+  appointmentId: string;
 };
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
@@ -67,7 +69,11 @@ const updateCaseSheetTime: Resolver<
       await dashboardRepo.updateCaseSheetEndTime(sheet.id, updatedDate, duration);
     });
   }
-  return { status: true, caseSheetCount: casesheets.length };
+  return {
+    status: true,
+    caseSheetCount: casesheets.length,
+    appointmentId: '',
+  };
 };
 
 const updateJdSummary: Resolver<
@@ -90,6 +96,26 @@ const updateJdSummary: Resolver<
       const videoChats = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
       const chatConsults = await dashboardRepo.getCallsCount(doctor.id, 'CHAT', args.summaryDate);
       const cases15Less = await dashboardRepo.appointmentBefore15(args.summaryDate, doctor.id);
+      const completeMore15 = await dashboardRepo.getConsultationTime(
+        args.summaryDate,
+        doctor.id,
+        1
+      );
+      const completeWithin15 = await dashboardRepo.getConsultationTime(
+        args.summaryDate,
+        doctor.id,
+        0
+      );
+      const totalConsultationTime = await dashboardRepo.getTotalConsultationTime(
+        args.summaryDate,
+        doctor.id,
+        1
+      );
+      const avgTimePerConsult = await dashboardRepo.getTotalConsultationTime(
+        args.summaryDate,
+        doctor.id,
+        0
+      );
       const dashboardSummaryAttrs: Partial<JdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
@@ -104,9 +130,13 @@ const updateJdSummary: Resolver<
         jdsUtilization: 0,
         loggedInHours: 0,
         awayHours: 0,
-        totalConsultationTime: 0,
+        totalConsultationTime,
         casesCompleted: totalCompletedChats,
         cases15Less,
+        completeMore15,
+        completeWithin15,
+        startOnTimeConsults: 0,
+        avgTimePerConsult,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);
     });
