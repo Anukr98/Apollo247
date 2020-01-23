@@ -22,7 +22,7 @@ class Vitals: NSObject {
     #if DEVELOPMENT
     UserDefaults.standard.set("play", forKey: "environment")
     #else
-    UserDefaults.standard.set("prod", forKey: "environment")
+    UserDefaults.standard.set("play", forKey: "environment")
     #endif
     UserDefaults.standard.set(true, forKey: "isComingFrom24x7")
 //    UserDefaults.standard.set("prod", forKey: "environment")  while production enable it..
