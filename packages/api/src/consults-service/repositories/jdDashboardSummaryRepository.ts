@@ -59,7 +59,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
     return CaseSheet.count({
       where: {
-        doctorId,
+        createdDoctorId: doctorId,
         status: CASESHEET_STATUS.COMPLETED,
         createdDate: Between(newStartDate, newEndDate),
       },
@@ -125,7 +125,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .getRawMany();
     //console.log(casesheetRows, 'timeperchat casesheet rows');
     if (casesheetRows.length > 0) {
@@ -195,7 +195,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .getRawMany();
     let apptCount = 0;
     if (caseSheetDetails.length > 0) {
@@ -243,7 +243,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
           fromDate: newStartDate,
           toDate: newEndDate,
         })
-        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+        .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
         .andWhere('case_sheet."preperationTimeInSeconds" <= :givenTime', { givenTime: 900 })
         .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
         .getMany();
@@ -254,7 +254,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
           fromDate: newStartDate,
           toDate: newEndDate,
         })
-        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+        .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
         .andWhere('case_sheet."preperationTimeInSeconds" > :givenTime', { givenTime: 900 })
         .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
         .getMany();
@@ -274,7 +274,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
     //console.log(caseSheetRows, 'caseSheetRows');
