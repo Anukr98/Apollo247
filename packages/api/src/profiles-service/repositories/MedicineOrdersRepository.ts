@@ -160,6 +160,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
       MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
       MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY,
+      MEDICINE_ORDER_STATUS.READY_AT_STORE,
     ];
     const newStartDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
