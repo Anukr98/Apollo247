@@ -21,7 +21,8 @@ const aphTheme: ThemeOptions = {
       contrastText: '#fff',
     },
     text: {
-      primary: '#f7f8f5',
+      primary: '#02475b',
+      secondary: '#f7f8f5',
     },
     background: {
       default: '#dcdfce',
