@@ -60,7 +60,7 @@ const updateCaseSheetTime: Resolver<
     casesheets.forEach(async (sheet) => {
       const callDetails = await dashboardRepo.getCallDetailTime(sheet.appointment.id);
       let updatedDate;
-      if (callDetails.length > 0) {
+      if (callDetails.length > 0 && callDetails[callDetails.length - 1].endTime != null) {
         updatedDate = callDetails[callDetails.length - 1].endTime;
       } else {
         updatedDate = addMinutes(sheet.createdDate, 5);
