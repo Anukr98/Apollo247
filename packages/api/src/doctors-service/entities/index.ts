@@ -907,3 +907,43 @@ export class DoctorLoginSessionHistory extends BaseEntity {
   offlineTimeInSeconds: number;
 }
 //Login session ends
+//Auditor starts
+@Entity()
+export class Auditor extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  displayName: string;
+
+  @Column()
+  auditorType: string;
+
+  @Column()
+  firstName: string;
+
+  @Column()
+  middleName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
+  emailAddress: string;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  gender: string;
+
+  @Column({ nullable: true })
+  photo: string;
+
+  @Column()
+  password: string;
+
+  @Column({ default: true })
+  isActive: Boolean;
+}
+//Auditor end
