@@ -120,6 +120,7 @@ const updateJdSummary: Resolver<
         args.summaryDate,
         doctor.id
       );
+      const casesOngoing = await dashboardRepo.getOngoingCases(args.summaryDate, doctor.id);
       const dashboardSummaryAttrs: Partial<JdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
@@ -142,6 +143,7 @@ const updateJdSummary: Resolver<
         startOnTimeConsults: 0,
         avgTimePerConsult,
         totalAllocatedChats,
+        casesOngoing,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);
     });

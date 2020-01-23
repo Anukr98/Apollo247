@@ -66,6 +66,18 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     });
   }
 
+  getOngoingCases(selDate: Date, doctorId: string) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return CaseSheet.count({
+      where: {
+        createdDoctorId: doctorId,
+        status: CASESHEET_STATUS.PENDING,
+        createdDate: Between(newStartDate, newEndDate),
+      },
+    });
+  }
+
   getTotalAllocatedChats(selDate: Date, doctorId: string) {
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
@@ -143,7 +155,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       const duration = parseFloat((casesheetRows[0].totalduration / 60).toFixed(2));
       //console.log(duration, 'duration in imin', casesheetRows[0].appointmentidcount);
       if (duration && duration > 0) {
-        return duration / casesheetRows[0].appointmentidcount;
+        return parseFloat((duration / casesheetRows[0].appointmentidcount).toFixed(2));
       } else {
         return 0;
       }
@@ -290,10 +302,11 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       .getRawMany();
     //console.log(caseSheetRows, 'caseSheetRows');
     if (caseSheetRows[0].totalrows > 0) {
+      const totalDurationInMins = parseFloat((caseSheetRows[0].totalduration / 60).toFixed(2));
       if (needAvg == 0) {
-        return parseFloat((caseSheetRows[0].totalduration / caseSheetRows[0].totalrows).toFixed(2));
+        return parseFloat((totalDurationInMins / caseSheetRows[0].totalrows).toFixed(2));
       } else {
-        return parseFloat(caseSheetRows[0].totalduration.toFixed(2));
+        return totalDurationInMins;
       }
     } else {
       return 0;
