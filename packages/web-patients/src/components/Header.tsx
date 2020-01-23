@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, useMediaQuery } from '@material-ui/core';
+import { useTheme } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
@@ -92,6 +93,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
+  const theme = useTheme();
   const avatarRef = useRef(null);
   const { signOut, isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();

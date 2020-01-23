@@ -1781,7 +1781,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       <div className={classes.callActions}>
                         <Button
                           className={classes.callPickIcon}
-                        // onClick={() => actionBtn()}
+                          // onClick={() => actionBtn()}
                         >
                           <img src={require('images/ic_callpick.svg')} alt="" />
                         </Button>
