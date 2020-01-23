@@ -248,7 +248,6 @@ const sendSMS = async (mobileNumber: string, otp: string) => {
     JSON.stringify(smsResponse),
     ''
   );
-
   return smsResponse;
 };
 
