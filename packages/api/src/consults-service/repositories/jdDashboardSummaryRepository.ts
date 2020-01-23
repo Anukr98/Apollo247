@@ -7,6 +7,7 @@ import {
   ConsultQueueItem,
   AppointmentCallDetails,
 } from 'consults-service/entities';
+import { DoctorType } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInMinutes } from 'date-fns';
@@ -82,7 +83,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       return new Promise<number>(async (resolve) => {
         //console.log(appt, 'came here inside the appt');
         const caseSheetDets = await CaseSheet.findOne({
-          where: { appointment: appt.appointmentId, doctorType: 'JUNIOR' },
+          where: { appointment: appt.appointmentId, doctorType: DoctorType.JUNIOR },
         });
         //console.log(caseSheetDets, 'case sheet detsila');
         if (caseSheetDets) {
@@ -202,7 +203,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         const startedMins = Math.abs(
           differenceInMinutes(appt.casesheetcreatedate, appt.appointmentdatetime)
         );
-        console.log(startedMins, 'start mins');
+        //console.log(startedMins, 'start mins');
         if (startedMins <= 15) {
           apptCount++;
         }
