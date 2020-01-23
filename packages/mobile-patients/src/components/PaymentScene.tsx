@@ -249,7 +249,15 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       clearCartInfo && clearCartInfo();
     }
     if (isMatchesFailUrl) {
-      handleOrderFailure();
+      const responseMessage = getParameterByName('responseMessage', redirectedUrl!);
+      const responseCode = getParameterByName('responseCode', redirectedUrl!);
+      console.log({ responseMessage, responseCode });
+      if (responseCode == '141' && responseMessage == 'User has not completed transaction.') {
+        // To handle Paytm PG page back button
+        props.navigation.goBack();
+      } else {
+        handleOrderFailure();
+      }
     }
   };
 
