@@ -850,13 +850,22 @@ export const GET_CASESHEET_DETAILS = gql`
           name
         }
         diagnosticPrescription {
-          collectionMethod
-          id
-          imageUrl
-          isCustom
-          itemId
           itemname
-          price
+          additionalDetails {
+            city
+            collectionType
+            fromAgeInDays
+            gender
+            id
+            itemId
+            itemName
+            itemRemarks
+            itemType
+            rate
+            state
+            testPreparationData
+            toAgeInDays
+          }
         }
         blobName
         doctorId
@@ -1463,13 +1472,22 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             name
           }
           diagnosticPrescription {
-            collectionMethod
-            id
-            imageUrl
-            isCustom
-            itemId
             itemname
-            price
+            additionalDetails {
+              city
+              collectionType
+              fromAgeInDays
+              gender
+              id
+              itemId
+              itemName
+              itemRemarks
+              itemType
+              rate
+              state
+              testPreparationData
+              toAgeInDays
+            }
           }
           doctorId
           doctorType
@@ -1725,6 +1743,29 @@ export const DELETE_DEVICE_TOKEN = gql`
 export const SEARCH_DIAGNOSTICS = gql`
   query searchDiagnostics($city: String, $patientId: String, $searchText: String!) {
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSTICS_BY_ID = gql`
+  query searchDiagnosticsById($itemIds: String) {
+    searchDiagnosticsById(itemIds: $itemIds) {
       diagnostics {
         id
         itemId

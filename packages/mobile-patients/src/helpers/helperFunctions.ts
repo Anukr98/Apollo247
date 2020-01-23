@@ -101,7 +101,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Verified';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Out For Delivery';
+      statusString = 'Order Shipped';
       break;
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
@@ -509,17 +509,17 @@ export const addTestsToCart = (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] // testsIncluded will not come from API
 ) => {
   const items = testPrescription
-    .filter((val) => !val.isCustom)
+    .filter((val) => val.itemname)
     .map(
       (item) =>
         ({
-          id: `${item.itemId}`,
+          id: `${item.additionalDetails!.itemId}`,
           name: item.itemname!,
-          price: parseInt(item.price!, 10),
+          price: item.additionalDetails!.rate,
           specialPrice: undefined,
           mou: 1,
-          thumbnail: item.imageUrl || '',
-          collectionMethod: item.collectionMethod!,
+          thumbnail: '',
+          collectionMethod: item.additionalDetails!.collectionType,
         } as DiagnosticsCartItem)
     );
 
@@ -571,12 +571,17 @@ export const getRelations = (self?: string) => {
   let a: RelationArray[] = [];
   a.push({ key: Relation.ME, title: self || 'Self' });
   for (let k in Relation) {
-    if (k !== Relation.ME) {
+    if (k !== Relation.ME && k !== Relation.OTHER) {
       a.push({
         key: k as Relation,
         title: k[0] + k.substr(1).toLowerCase(),
       });
     }
   }
+  a.push({
+    key: Relation.OTHER,
+    title: Relation.OTHER[0] + Relation.OTHER.substr(1).toLowerCase(),
+  });
+
   return a;
 };

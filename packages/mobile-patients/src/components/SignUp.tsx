@@ -104,9 +104,9 @@ const GenderOptions: genderOptions[] = [
   {
     name: 'Female',
   },
-  {
-    name: 'Other',
-  },
+  // {
+  //   name: 'Other',
+  // },
 ];
 
 export interface SignUpProps extends NavigationScreenProps {}
@@ -181,40 +181,40 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     };
   }, [backPressCount]);
 
-  const renderReferral = () => {
-    return (
-      <View
-        style={{
-          backgroundColor: theme.colors.SKY_BLUE,
-          marginHorizontal: -20,
-          paddingVertical: 20,
-          marginTop: 20,
-        }}
-      >
-        <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
-          <Gift style={{ marginRight: 20 }} />
-          <TextInputComponent
-            label={
-              referredBy
-                ? `${referredBy} Has Sent You A Referral Code!`
-                : 'Do You Have A Referral Code? (Optional)'
-            }
-            labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
-            placeholder={'Enter referral code'}
-            placeholderTextColor={'rgba(255,255,255,0.6)'}
-            inputStyle={{
-              borderColor: theme.colors.WHITE,
-              color: theme.colors.WHITE,
-            }}
-            conatinerstyles={{ width: '78%' }}
-            value={referral}
-            onChangeText={(text) => setReferral(text)}
-            icon={referredBy ? <Check /> : null}
-          />
-        </View>
-      </View>
-    );
-  };
+  // const renderReferral = () => {
+  //   return (
+  //     <View
+  //       style={{
+  //         backgroundColor: theme.colors.SKY_BLUE,
+  //         marginHorizontal: -20,
+  //         paddingVertical: 20,
+  //         marginTop: 20,
+  //       }}
+  //     >
+  //       <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
+  //         <Gift style={{ marginRight: 20 }} />
+  //         <TextInputComponent
+  //           label={
+  //             referredBy
+  //               ? `${referredBy} Has Sent You A Referral Code!`
+  //               : 'Do You Have A Referral Code? (Optional)'
+  //           }
+  //           labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
+  //           placeholder={'Enter referral code'}
+  //           placeholderTextColor={'rgba(255,255,255,0.6)'}
+  //           inputStyle={{
+  //             borderColor: theme.colors.WHITE,
+  //             color: theme.colors.WHITE,
+  //           }}
+  //           conatinerstyles={{ width: '78%' }}
+  //           value={referral}
+  //           onChangeText={(text) => setReferral(text)}
+  //           icon={referredBy ? <Check /> : null}
+  //         />
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   const renderCard = () => {
     return (
