@@ -945,5 +945,28 @@ export class Auditor extends BaseEntity {
 
   @Column({ default: true })
   isActive: Boolean;
+
+  @OneToMany((type) => AdminAuditorMapper, (adminauditormapper) => adminauditormapper.auditor)
+  adminauditormapper: AdminAuditorMapper[];
 }
 //Auditor end
+// QAadmin_auditor_mapper starts
+
+@Entity()
+export class AdminAuditorMapper extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @ManyToOne((type) => Auditor, (auditor) => auditor.adminauditormapper)
+  auditor: Auditor;
+
+  @ManyToOne((type) => AdminUsers, (adminuser) => adminuser.admindoctormapper)
+  adminuser: AdminUsers;
+}
+// QAadmin_auditor_mapper ends
