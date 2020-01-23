@@ -118,7 +118,7 @@ let dbChildKey: string = '';
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { sendOtp, isSendingOtp, signOut } = useAuth();
+  const { signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);

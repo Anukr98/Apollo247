@@ -169,6 +169,11 @@ export enum Salutation {
   MRS = "MRS",
 }
 
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
+}
+
 export enum TRANSFER_INITIATED_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
@@ -232,7 +237,13 @@ export interface DiagnosisInput {
 }
 
 export interface DiagnosticPrescriptionInput {
+  collectionMethod?: TEST_COLLECTION_TYPE | null;
+  id?: string | null;
+  imageUrl?: string | null;
+  isCustom?: boolean | null;
+  itemId?: string | null;
   itemname?: string | null;
+  price?: string | null;
 }
 
 export interface DoctorAvailabilityInput {

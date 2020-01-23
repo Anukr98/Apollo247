@@ -15,7 +15,6 @@ import org.wonday.pdf.RCTPdfView;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
-import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.corbt.keepawake.KCKeepAwakePackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
