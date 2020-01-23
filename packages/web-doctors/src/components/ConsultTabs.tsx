@@ -714,6 +714,24 @@ export const ConsultTabs: React.FC = () => {
                 );
               })
               .catch((e: ApolloError) => {
+                const patientName =
+                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+                  ' ' +
+                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+                const logObject = {
+                  appointmentId: appointmentId,
+                  doctorId: currentPatient!.id,
+                  doctorDisplayName: currentPatient!.displayName,
+                  patientId: params.patientId,
+                  patientName: patientName,
+                  currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                  appointmentDateTime: appointmentDateTime
+                    ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+                    : '',
+                  error: JSON.stringify(e),
+                };
+
+                sessionClient.notify(JSON.stringify(logObject));
                 setError('Unable to load Consult.');
               });
           }
