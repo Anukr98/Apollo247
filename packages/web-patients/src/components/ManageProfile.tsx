@@ -18,21 +18,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     mascotCircle: {
       cursor: 'pointer',
-      [theme.breakpoints.up(768)]: {
-        marginLeft: 'auto',
-        marginBottom: 12,
-        marginRight: 15,
-      },
-      [theme.breakpoints.up(1134)]: {
+      [theme.breakpoints.up('sm')]: {
         marginLeft: 'auto',
         position: 'fixed',
-        bottom: 0,
-        right: 0,
+        bottom: 10,
+        right: 15,
       },
       '& img': {
         maxWidth: 72,
         maxHeight: 72,
-        verticalAlign: 'middle',
       },
     },
     bottomPopover: {
