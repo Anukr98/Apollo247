@@ -54,7 +54,7 @@ const login: Resolver<
 
   //if performance environment(as), use the static otp
   if (
-    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'development') &&
+    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') &&
     process.env.PERFORMANCE_ENV_STATIC_OTP
   ) {
     otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
@@ -80,7 +80,7 @@ const login: Resolver<
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
 
   //if performance environment(as), return the response without sending SMS
-  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
     return {
       status: true,
       loginId: otpSaveResponse.id,
@@ -144,7 +144,7 @@ const resendOtp: Resolver<
 
   //if performance environment(as), use the static otp
   if (
-    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'development') &&
+    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') &&
     process.env.PERFORMANCE_ENV_STATIC_OTP
   ) {
     otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
@@ -163,7 +163,7 @@ const resendOtp: Resolver<
   archiveOtpRecord(validResendRecord[0].id, profilesDb);
 
   //if performance environment(as), return the response without sending SMS
-  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
     return {
       status: true,
       loginId: otpSaveResponse.id,
