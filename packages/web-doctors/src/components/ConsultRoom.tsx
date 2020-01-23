@@ -32,7 +32,7 @@ const bugsnagClient = bugsnag({
   autoNotify: true,
 });
 
-var sessionClient = bugsnagClient.startSession();
+const sessionClient = bugsnagClient.startSession();
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME

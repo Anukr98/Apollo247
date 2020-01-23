@@ -61,7 +61,7 @@ const bugsnagClient = bugsnag({
   autoNotify: true,
 });
 
-var sessionClient = bugsnagClient.startSession();
+const sessionClient = bugsnagClient.startSession();
 
 // this error is reported with session information
 

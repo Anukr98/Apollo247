@@ -99,7 +99,7 @@ const bugsnagClient = bugsnag({
   autoNotify: true,
 });
 
-var sessionClient = bugsnagClient.startSession();
+const sessionClient = bugsnagClient.startSession();
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
@@ -698,24 +698,6 @@ export const ConsultTabs: React.FC = () => {
           setJrdName(`${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
-          const patientName =
-            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-            ' ' +
-            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-          const logObject = {
-            appointmentId: appointmentId,
-            doctorId: currentPatient!.id,
-            doctorDisplayName: currentPatient!.displayName,
-            patientId: params.patientId,
-            patientName: patientName,
-            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-            appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-              'MMMM DD YYYY h:mm:ss a'
-            ),
-            error: JSON.stringify(error),
-          };
-
-          sessionClient.notify(JSON.stringify(logObject));
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
           const allMessages = error.graphQLErrors
             .map((e) => e.message)
