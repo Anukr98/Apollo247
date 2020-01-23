@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, TEST_COLLECTION_TYPE, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getCaseSheet
@@ -30,7 +30,13 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
+  collectionMethod: TEST_COLLECTION_TYPE | null;
+  id: string | null;
+  imageUrl: string | null;
+  isCustom: boolean | null;
+  itemId: string | null;
   itemname: string | null;
+  price: string | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {

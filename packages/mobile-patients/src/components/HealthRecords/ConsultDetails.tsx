@@ -50,7 +50,8 @@ import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceH
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '../UIElementsProvider';
 import { mimeType } from '../../helpers/mimeType';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -328,12 +329,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </View>
     );
   };
-  const { setCartItems, cartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const { addMultipleCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  // const {
+  //   addMultipleCartItems: addMultipleTestCartItems,
+  //   addMultipleEPrescriptions: addMultipleTestEPrescriptions,
+  // } = useDiagnosticsCart();
 
   const onAddToCart = () => {
     setLoading && setLoading(true);
 
     const medPrescription = caseSheetDetails!.medicinePrescription || [];
+    // const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
+    //   []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
@@ -373,11 +380,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           })
           .filter((item) => (item ? true : false));
 
-        const filteredItemsFromCart = cartItems.filter(
-          (cartItem) => !medicines.find((item) => (item && item.id) == cartItem.id)
-        );
-
-        setCartItems!([...filteredItemsFromCart, ...(medicines as ShoppingCartItem[])]);
+        addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
         if (medPrescription.length > medicines.length) {
           const outOfStockCount = medPrescription.length - medicines.length;
@@ -391,7 +394,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const presToAdd = {
           id: caseSheetDetails!.id,
           date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
-          doctorName: '',
+          doctorName: g(data, 'displayName') || '',
           forPatient: (currentPatient && currentPatient.firstName) || '',
           medicines: (medicines || []).map((item) => item!.name).join(', '),
           uploadedUrl: docUrl,
@@ -404,6 +407,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           ]);
         }
         props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        // Adding tests to DiagnosticsCart
+        // addTestsToCart(testPrescription)
+        //   .then((tests) => {
+        //     addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
+        //     // Adding ePrescriptions to DiagnosticsCart
+        //     addMultipleTestEPrescriptions!([presToAdd]);
+        //   })
+        //   .catch((e) => {
+        //     Alert.alert('Uh oh.. :(', e);
+        //   });
+        // props.navigation.push(AppRoutes.MedAndTestCart, {
+        //   isComingFromConsult: true,
+        // });
       })
       .catch((e) => {
         setLoading && setLoading(false);
@@ -661,7 +677,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="TESTS SECTION"
+          heading="PRESCRIBED TESTS"
           collapse={testShow}
           onPress={() => setTestShow(!testShow)}
         >
@@ -669,16 +685,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             {caseSheetDetails!.diagnosticPrescription &&
             caseSheetDetails!.diagnosticPrescription !== null ? (
               <View>
-                <Text style={styles.labelStyle}>
-                  {/* {caseSheetDetails!.diagnosticPrescription[0]!.itemname} */}
-                  {caseSheetDetails!
-                    .diagnosticPrescription!.map((item, i) => {
-                      if (item && item.itemname !== '') {
-                        return `${i + 1}. ${item.itemname}`;
-                      }
-                    })
-                    .join('\n')}
-                </Text>
+                {caseSheetDetails!.diagnosticPrescription.map((item, index, array) => {
+                  return (
+                    <>
+                      <Text style={styles.labelStyle}>{item!.itemname}</Text>
+                      <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
+                    </>
+                  );
+                })}
               </View>
             ) : (
               <View>
@@ -697,9 +711,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         <View>
           {renderSymptoms()}
           {renderPrescriptions()}
+          {renderTestNotes()}
           {renderDiagnosis()}
           {renderGenerealAdvice()}
-          {renderTestNotes()}
           {renderFollowUp()}
         </View>
       );

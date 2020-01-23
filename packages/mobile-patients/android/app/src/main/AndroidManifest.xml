@@ -79,7 +79,7 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="40001b65375e3b0193fe0fb56ac6706df22e3eed" />
-        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="7839e425f4acbd8e6ff3f907281addca"/>
+        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="53a0b9fd23719632a22d2c262a06bb4e"/>
 
         <meta-data android:name=
             "com.google.firebase.messaging.default_notification_channel_id"

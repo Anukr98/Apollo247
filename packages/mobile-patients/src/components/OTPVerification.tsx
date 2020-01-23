@@ -42,7 +42,6 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { BottomPopUp } from './ui/BottomPopUp';
 import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
-import { useApolloClient } from 'react-apollo-hooks';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
 
@@ -311,7 +310,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
           if (currentPatient.relation == null) {
             navigateTo(AppRoutes.MultiSignup);
-            // props.navigation.replace(AppRoutes.MultiSignup);
           } else {
             AsyncStorage.setItem('userLoggedIn', 'true');
             navigateTo(AppRoutes.ConsultRoom);
@@ -319,7 +317,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         } else {
           if (currentPatient.firstName == '') {
             navigateTo(AppRoutes.SignUp);
-            // props.navigation.replace(AppRoutes.SignUp);
           } else {
             AsyncStorage.setItem('userLoggedIn', 'true');
             navigateTo(AppRoutes.ConsultRoom);
