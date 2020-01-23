@@ -291,9 +291,9 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     //console.log(caseSheetRows, 'caseSheetRows');
     if (caseSheetRows[0].totalrows > 0) {
       if (needAvg == 0) {
-        return caseSheetRows[0].totalduration / caseSheetRows[0].totalrows;
+        return parseFloat((caseSheetRows[0].totalduration / caseSheetRows[0].totalrows).toFixed(2));
       } else {
-        return caseSheetRows[0].totalduration;
+        return parseFloat(caseSheetRows[0].totalduration.toFixed(2));
       }
     } else {
       return 0;
