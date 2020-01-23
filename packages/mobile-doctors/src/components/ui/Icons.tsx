@@ -666,6 +666,23 @@ export const DropdownBlueUp: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/up.png')}
   />
 );
+
+export const CheckboxSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/check_box_checked.png')}
+  />
+);
+
+export const CheckboxUnSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/check_box_unchecked.png')}
+  />
+);
+
 export const Selected: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 20, width: 20 }}
