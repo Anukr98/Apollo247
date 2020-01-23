@@ -26,7 +26,10 @@ import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import RNFetchBlob from 'rn-fetch-blob';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
@@ -173,7 +176,8 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           setPlaceImage(uploadUrlscheck);
           console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('RecordDetails_DOWNLOAD_DOCUMENT', e);
           setshowSpinner(false);
           console.log('Error occured', e);
         })
@@ -209,6 +213,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
       if (resuts) {
       }
     } catch (error) {
+      CommonBugFender('RecordDetails_requestReadSmsPermission_try', error);
       console.log('error', error);
     }
   };
@@ -495,6 +500,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                             }
                           })
                           .catch((err) => {
+                            CommonBugFender('RecordDetails_DOWNLOAD', err);
                             console.log('error ', err);
                             setLoading && setLoading(false);
                           });

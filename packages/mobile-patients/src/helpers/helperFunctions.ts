@@ -20,6 +20,7 @@ import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -318,10 +319,14 @@ export function g(obj: any, ...props: string[]) {
 }
 
 export const getNetStatus = async () => {
-  const status = await NetInfo.fetch().then((connectionInfo) => {
-    //console.log(connectionInfo, 'connectionInfo');
-    return connectionInfo.type !== 'none';
-  });
+  const status = await NetInfo.fetch()
+    .then((connectionInfo) => {
+      //console.log(connectionInfo, 'connectionInfo');
+      return connectionInfo.type !== 'none';
+    })
+    .catch((e) => {
+      CommonBugFender('helperFunctions_getNetStatus', e);
+    });
   return status;
 };
 
@@ -397,9 +402,8 @@ const getlocationData = (
             });
           }
         })
-        .catch((_) => {
-          console.log('erryug', _);
-
+        .catch((e) => {
+          CommonBugFender('helperFunctions_getlocationData', e);
           reject('Unable to get location.');
         });
     },
@@ -425,7 +429,8 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
               .then(() => {
                 getlocationData(resolve, reject);
               })
-              .catch(() => {
+              .catch((e: Error) => {
+                CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
@@ -435,7 +440,8 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
           reject('Unable to get location.');
         }
       })
-      .catch((_) => {
+      .catch((e) => {
+        CommonBugFender('helperFunctions_doRequestAndAccessLocation', e);
         reject('Unable to get location.');
       });
   });
@@ -485,6 +491,7 @@ export const getUserCurrentPosition = async () => {
           }
         })
         .catch((error) => {
+          CommonBugFender('helperFunctions_getUserCurrentPosition', error);
           console.log(error, 'error permission');
         });
     });
@@ -538,7 +545,8 @@ export const addTestsToCart = (
         console.log('testsArray to be added to cart', { nonNullTestsArray });
         resolve(nonNullTestsArray);
       })
-      .catch(() => {
+      .catch((e) => {
+        CommonBugFender('helperFunctions_addTestsToCart', e);
         reject('Oops! an error occurred, unable to get test details.');
       });
   });

@@ -13,7 +13,10 @@ import { CrossYellow, FileBig } from '@aph/mobile-patients/src/components/ui/Ico
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SAVE_PRESCRIPTION_MEDICINE_ORDER,
   UPLOAD_DOCUMENT,
@@ -154,6 +157,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         renderSuccessPopup();
       })
       .catch((e) => {
+        CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
         console.log({ e });
         renderErrorAlert(`Something went wrong, please try later.`);
       })
@@ -206,6 +210,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     } catch (error) {
       console.log({ error });
       setLoading!(false);
+      CommonBugFender('UploadPrescription_onPressSubmit_try', error);
       renderErrorAlert('Error occurred while uploading physical prescription(s).');
     }
   };

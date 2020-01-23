@@ -37,7 +37,10 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import RNFetchBlob from 'rn-fetch-blob';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { mimeType } from '../../helpers/mimeType';
 import { useDiagnosticsCart, DiagnosticsCartItem } from '../DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../../graphql/types/getCaseSheet';
@@ -193,6 +196,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
             : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
         })
         .catch((err) => {
+          CommonBugFender('HealthConsultView_downloadPrescription', err);
           console.log('error ', err);
           setLoading(false);
           // ...
@@ -218,6 +222,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       if (resuts) {
       }
     } catch (error) {
+      CommonBugFender('HealthConsultView_requestReadSmsPermission_try', error);
       console.log('error', error);
     }
   };
@@ -480,6 +485,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   ]);
                               })
                               .catch((e) => {
+                                CommonBugFender('HealthConsultView_getMedicineDetailsApi', e);
                                 console.log({ e });
                                 // Alert.alert('Uh oh.. :(', e);
                                 handleGraphQlError(e);

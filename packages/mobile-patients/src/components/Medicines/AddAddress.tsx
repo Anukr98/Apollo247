@@ -12,6 +12,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   CommonLogEvent,
   DeviceHelper,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DELETE_PATIENT_ADDRESS,
@@ -206,9 +207,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                     //   })
                     // );
                   }
-                } catch {}
+                } catch (e) {
+                  CommonBugFender('AddAddress_getCurrentPosition_try', e);
+                }
               })
               .catch((error) => {
+                CommonBugFender('AddAddress_getCurrentPosition', error);
                 console.log(error, 'geocode error');
               });
           },
@@ -276,9 +280,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               console.log('updateapicalled', _data);
               props.navigation.pop(2, { immediate: true });
               props.navigation.push(AppRoutes.AddressBook);
-            } catch (error) {}
+            } catch (error) {
+              CommonBugFender('AddAddress_onSavePress_try', error);
+            }
           })
           .catch((e: any) => {
+            CommonBugFender('AddAddress_onSavePress', e);
             setshowSpinner(false);
             const error = JSON.parse(JSON.stringify(e));
             console.log('Error occured while updateapicalled', error);
@@ -332,6 +339,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           });
         }
       } catch (error) {
+        CommonBugFender('AddAddress_SetOnSave_try', error);
         setshowSpinner(false);
         handleGraphQlError(error);
       }
@@ -433,9 +441,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   //   })
                   // );
                 }
-              } catch {}
+              } catch (e) {
+                CommonBugFender('AddAddress_updateCityStateByPincode_try', e);
+              }
             })
             .catch((error) => {
+              CommonBugFender('AddAddress_updateCityStateByPincode', error);
               console.log(error, 'geocode error');
             });
           //if (results.length == 0) return;
@@ -454,9 +465,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           // let val = city.concat(', ').concat(state);
           // setcity(val || '');
           // setstate(state || '');
-        } catch (error) {}
+        } catch (error) {
+          CommonBugFender('AddAddress_getPlaceInfoByPincode_try', error);
+        }
       })
       .catch((e) => {
+        CommonBugFender('AddAddress_getPlaceInfoByPincode', e);
         aphConsole.error({ e });
       });
   };
@@ -728,6 +742,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                     props.navigation.push(AppRoutes.AddressBook);
                   })
                   .catch((e) => {
+                    CommonBugFender('AddAddress_DELETE_PATIENT_ADDRESS', e);
                     console.log('Error occured while render Delete MedicalOrder', { e });
                     handleGraphQlError(e);
                   })

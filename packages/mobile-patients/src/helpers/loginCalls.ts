@@ -11,6 +11,7 @@ import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verify
 import { LOGIN_TYPE } from '../graphql/types/globalTypes';
 import { VERIFY_LOGIN_OTP, LOGIN, RESEND_OTP } from '../graphql/profiles';
 import { resendOtp, resendOtpVariables } from '../graphql/types/resendOtp';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
@@ -75,6 +76,7 @@ export const loginAPI = (mobileNumber: string) => {
         res(data.data.login);
       })
       .catch((e) => {
+        CommonBugFender('loginCalls_loginAPI', e);
         rej(e);
       });
   });
@@ -99,6 +101,7 @@ export const verifyOTP = (mobileNumber: string, otp: string) => {
         res(data.data.verifyLoginOtp);
       })
       .catch((e) => {
+        CommonBugFender('loginCalls_verifyOTP', e);
         rej(e);
       });
   });
@@ -122,6 +125,7 @@ export const resendOTP = (mobileNumber: string, id: string) => {
         res(data.data.resendOtp);
       })
       .catch((e) => {
+        CommonBugFender('loginCalls_resendOTP', e);
         rej(e);
       });
   });

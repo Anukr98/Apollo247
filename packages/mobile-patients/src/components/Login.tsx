@@ -132,7 +132,9 @@ export const Login: React.FC<LoginProps> = (props) => {
       fireBaseFCM();
       signOut();
       setLoading && setLoading(false);
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('Login_useEffect_try', error);
+    }
   }, [signOut]);
 
   const fireBaseFCM = async () => {
@@ -150,6 +152,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         // User has authorised
       } catch (error) {
         // User has rejected permissions
+        CommonBugFender('Login_fireBaseFCM_try', error);
         console.log('not enabled error', error);
       }
     }
@@ -232,6 +235,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         });
       }
     } catch (error) {
+      CommonBugFender('Login_getTimerData_try', error);
       console.log(error.message);
     }
     return isNoBlocked;
@@ -260,73 +264,78 @@ export const Login: React.FC<LoginProps> = (props) => {
       })
       .catch((error: Error) => {
         //error callback
+        CommonBugFender('Login_onClickOkay', error);
         console.log('error ', error);
       });
 
     Keyboard.dismiss();
-    getNetStatus().then(async (status) => {
-      if (status) {
-        if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
-          null;
-        } else {
-          const isBlocked = await _getTimerData();
-          if (isBlocked) {
-            props.navigation.navigate(AppRoutes.OTPVerification, {
-              otpString,
-              phoneNumber: phoneNumber,
-            });
+    getNetStatus()
+      .then(async (status) => {
+        if (status) {
+          if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
+            null;
           } else {
-            CommonSetUserBugsnag(phoneNumber);
-            AsyncStorage.setItem('phoneNumber', phoneNumber);
-            setShowSpinner(true);
-
-            loginAPI('+91' + phoneNumber)
-              .then((confirmResult: any) => {
-                console.log(confirmResult, 'confirmResult');
-                setShowSpinner(false);
-
-                CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-
-                db.ref('ApolloPatients/')
-                  .child(dbChildKey)
-                  .update({
-                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-                  });
-
-                console.log('confirmResult login', confirmResult);
-
-                props.navigation.navigate(AppRoutes.OTPVerification, {
-                  otpString,
-                  phoneNumber: phoneNumber,
-                  dbChildKey,
-                  loginId: confirmResult.loginId,
-                });
-              })
-              .catch((error: Error) => {
-                console.log(error, 'error');
-                console.log(error.message, 'errormessage');
-                setShowSpinner(false);
-
-                db.ref('ApolloPatients/')
-                  .child(dbChildKey)
-                  .update({
-                    mobileNumberFailed: error && error.message,
-                  });
-
-                CommonLogEvent('OTP_SEND_FAIL', error.message);
-                CommonBugFender('OTP_SEND_FAIL', error);
-                Alert.alert(
-                  'Error',
-                  (error && error.message) || 'The interaction was cancelled by the user.'
-                );
+            const isBlocked = await _getTimerData();
+            if (isBlocked) {
+              props.navigation.navigate(AppRoutes.OTPVerification, {
+                otpString,
+                phoneNumber: phoneNumber,
               });
+            } else {
+              CommonSetUserBugsnag(phoneNumber);
+              AsyncStorage.setItem('phoneNumber', phoneNumber);
+              setShowSpinner(true);
+
+              loginAPI('+91' + phoneNumber)
+                .then((confirmResult: any) => {
+                  console.log(confirmResult, 'confirmResult');
+                  setShowSpinner(false);
+
+                  CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
+
+                  db.ref('ApolloPatients/')
+                    .child(dbChildKey)
+                    .update({
+                      mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
+                    });
+
+                  console.log('confirmResult login', confirmResult);
+
+                  props.navigation.navigate(AppRoutes.OTPVerification, {
+                    otpString,
+                    phoneNumber: phoneNumber,
+                    dbChildKey,
+                    loginId: confirmResult.loginId,
+                  });
+                })
+                .catch((error: Error) => {
+                  console.log(error, 'error');
+                  console.log(error.message, 'errormessage');
+                  setShowSpinner(false);
+
+                  db.ref('ApolloPatients/')
+                    .child(dbChildKey)
+                    .update({
+                      mobileNumberFailed: error && error.message,
+                    });
+
+                  CommonLogEvent('OTP_SEND_FAIL', error.message);
+                  CommonBugFender('OTP_SEND_FAIL', error);
+                  Alert.alert(
+                    'Error',
+                    (error && error.message) || 'The interaction was cancelled by the user.'
+                  );
+                });
+            }
           }
+        } else {
+          setshowOfflinePopup(true);
+          setShowSpinner(false);
         }
-      } else {
-        setshowOfflinePopup(true);
-        setShowSpinner(false);
-      }
-    });
+      })
+      .catch((e) => {
+        CommonBugFender('Login_getNetStatus', e);
+      });
   };
 
   const openWebView = () => {

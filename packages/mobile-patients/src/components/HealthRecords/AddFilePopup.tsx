@@ -13,7 +13,10 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import ImagePicker from 'react-native-image-crop-picker';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Image as PickerImage } from 'react-native-image-crop-picker';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -71,9 +74,13 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
       // useFrontCamera: true,
       includeBase64: true,
       compressImageQuality: 0.1,
-    }).then((image) => {
-      props.getData([image]);
-    });
+    })
+      .then((image) => {
+        props.getData([image]);
+      })
+      .catch((e: Error) => {
+        CommonBugFender('AddFilePopup_onClickTakePhoto', e);
+      });
   };
 
   const onClickGallery = () => {
@@ -85,9 +92,13 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
       multiple: true,
       includeBase64: true,
       compressImageQuality: 0.1,
-    }).then((image) => {
-      props.getData(image as PickerImage[]);
-    });
+    })
+      .then((image) => {
+        props.getData(image as PickerImage[]);
+      })
+      .catch((e: Error) => {
+        CommonBugFender('AddFilePopup_onClickTakePhoto', e);
+      });
   };
 
   return (

@@ -40,7 +40,10 @@ import {
   ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { APPOINTMENT_STATE, STATUS } from '../../graphql/types/globalTypes';
 import { colors } from '../../theme/colors';
 import { ProfileList } from '../ui/ProfileList';
@@ -191,14 +194,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       // setLoading && setLoading(true);
       //setconsultations([]);
-      getNetStatus().then((status) => {
-        if (status) {
-          fetchAppointments();
-        } else {
-          setLoading && setLoading(false);
-          setshowOfflinePopup(true);
-        }
-      });
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            fetchAppointments();
+          } else {
+            setLoading && setLoading(false);
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('Consult_getNetStatus', e);
+        });
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
@@ -231,6 +238,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       calculateCount = 3 - calculateCount;
       setNewRescheduleCount(calculateCount);
     } catch (error) {
+      CommonBugFender('Consult_setNewAppointmentTime_try', error);
       setNewRescheduleCount(1);
     }
   }, [currentPatient]);
@@ -269,14 +277,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    getNetStatus().then((status) => {
-      if (status) {
-        fetchAppointments();
-      } else {
-        setLoading && setLoading(false);
-        setshowOfflinePopup(true);
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchAppointments();
+        } else {
+          setLoading && setLoading(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('Consult_getNetStatus_useEffect', e);
+      });
   }, [currentPatient]);
 
   // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
@@ -310,7 +322,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           setconsultations([]);
         }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('Consult_fetchAppointments', e);
         console.log('Error occured', e);
       })
       .finally(() => {

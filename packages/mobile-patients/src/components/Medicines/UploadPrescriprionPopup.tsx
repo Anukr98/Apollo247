@@ -10,7 +10,10 @@ import {
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
@@ -92,10 +95,7 @@ export interface UploadPrescriprionPopupProps {
   instructions?: string[];
   hideTAndCs?: boolean;
   onClickClose: () => void;
-  onResponse: (
-    selectedType: EPrescriptionDisableOption,
-    response: (PhysicalPrescription)[]
-  ) => void;
+  onResponse: (selectedType: EPrescriptionDisableOption, response: PhysicalPrescription[]) => void;
   isProfileImage?: boolean;
 }
 
@@ -156,7 +156,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           formatResponse([response] as ImageCropPickerResponse[])
         );
       })
-      .catch((e) => {
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
         // aphConsole.log({ e });
         setshowSpinner(false);
       });
@@ -214,7 +215,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           formatResponse(response as ImageCropPickerResponse[])
         );
       })
-      .catch((e) => {
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
         //aphConsole.log({ e });
         setshowSpinner(false);
       });

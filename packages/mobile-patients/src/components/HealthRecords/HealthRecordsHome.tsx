@@ -14,7 +14,10 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
   DELETE_PATIENT_MEDICAL_RECORD,
@@ -235,6 +238,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
       })
       .catch((e) => {
+        CommonBugFender('HealthRecordsHome_fetchPastData', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
         //Alert.alert('Error', error);
@@ -258,6 +262,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setmedicalRecords(records);
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchData', error);
         console.log('Error occured', { error });
         //Alert.alert('Error', error.message);
       })
@@ -284,6 +289,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         sethospitalizations(hospitalizationsData);
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchTestData', error);
         console.log('Error occured', { error });
         handleGraphQlError(error);
       })
@@ -323,6 +329,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setmedicalRecords(newRecords);
       })
       .catch((e) => {
+        CommonBugFender('HealthRecordsHome_renderDeleteMedicalOrder', e);
         console.log('Error occured while render Delete MedicalOrder', { e });
         handleGraphQlError(e);
       });
@@ -546,6 +553,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         });
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_onFollowUpClick', error);
         console.log('Error occured', { error });
       });
   };

@@ -30,6 +30,7 @@ import { TextInputComponent } from '../ui/TextInputComponent';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useUIElements } from '../UIElementsProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -439,7 +440,9 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         onSlideChangeContinue(index);
       }
       setRefresh(!refresh);
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('ChatQuestions_onSlideChange_try', error);
+    }
   };
 
   const returnPlaceHolder = (item: Slide) => {

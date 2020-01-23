@@ -9,7 +9,10 @@ import React, { useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -71,6 +74,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
             setStores && setStores(stores_count > 0 ? Stores : []);
           })
           .catch((e) => {
+            CommonBugFender('StorePickupScene_searchPickupStoresApi', e);
             aphConsole.log({ e });
             setStorePickUpLoading(false);
           });
