@@ -731,3 +731,24 @@ export const DELETE_DOCTOR_FAVOURITE_ADVICE = gql`
     }
   }
 `;
+
+export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
+  query GetDoctorFavouriteMedicineList {
+    getDoctorFavouriteMedicineList {
+      medicineList {
+        externalId
+        id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
+      }
+    }
+  }
+`;

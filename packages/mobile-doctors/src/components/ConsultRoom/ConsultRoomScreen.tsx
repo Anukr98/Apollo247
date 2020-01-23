@@ -137,7 +137,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
-
+  const [caseSheetOverlay, setCaseSheetOverlay] = useState<React.ReactNode>(null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
@@ -1843,6 +1843,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               onStopConsult={onStopConsult}
               startConsult={startConsult}
               navigation={props.navigation}
+              overlayDisplay={(overlay) => setCaseSheetOverlay(overlay)}
             />
           ) : (
             <View
@@ -2044,6 +2045,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      {caseSheetOverlay}
       <StatusBar hidden={hideStatusBar} />
       {showHeaderView()}
       {displayReSchedulePopUp && (
