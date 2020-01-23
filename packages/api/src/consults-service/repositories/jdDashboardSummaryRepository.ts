@@ -124,7 +124,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('case_sheet.doctorId = :docId', { docId: doctorId })
+      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
       .getRawMany();
     //console.log(casesheetRows, 'timeperchat casesheet rows');
     if (casesheetRows.length > 0) {
@@ -242,6 +242,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
           fromDate: newStartDate,
           toDate: newEndDate,
         })
+        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
         .andWhere('case_sheet."preperationTimeInSeconds" <= :givenTime', { givenTime: 900 })
         .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
         .getMany();
@@ -252,6 +253,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
           fromDate: newStartDate,
           toDate: newEndDate,
         })
+        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
         .andWhere('case_sheet."preperationTimeInSeconds" > :givenTime', { givenTime: 900 })
         .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
         .getMany();
@@ -271,9 +273,11 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
+      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
       .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
-    if (caseSheetRows.length > 0) {
+    console.log(caseSheetRows, 'caseSheetRows');
+    if (caseSheetRows[0].totalrows > 0) {
       if (needAvg == 0) {
         return caseSheetRows[0].totalduration / caseSheetRows[0].totalrows;
       } else {
