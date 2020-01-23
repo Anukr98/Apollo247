@@ -203,11 +203,11 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
             transferDateTime:
-              data.data?.initiateRescheduleAppointment.rescheduleAppointment?.rescheduledDateTime ||
+              data.data!.initiateRescheduleAppointment.rescheduleAppointment!.rescheduledDateTime ||
               '',
             doctorId: props.doctorId,
-            reschduleCount: data.data?.initiateRescheduleAppointment.rescheduleCount || '',
-            reschduleId: data.data?.initiateRescheduleAppointment.rescheduleAppointment?.id || '',
+            reschduleCount: data.data!.initiateRescheduleAppointment.rescheduleCount || '',
+            reschduleId: data.data!.initiateRescheduleAppointment.rescheduleAppointment!.id || '',
           };
           props.onDone(reschduleObject);
         })

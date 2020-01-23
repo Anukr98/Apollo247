@@ -95,6 +95,8 @@
     "react-native-gesture-handler": "^1.3.0",
     "react-native-highlight-words": "^1.0.1",
     "react-native-hyperlink": "0.0.19",
+    "react-native-image-crop-picker": "^0.27.0",
+    "react-native-image-picker": "^2.0.0",
     "react-native-iphone-x-helper": "^1.2.1",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
     "react-native-material-dropdown": "^0.11.1",

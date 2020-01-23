@@ -178,6 +178,25 @@ export const Login: React.FC<LoginProps> = (props) => {
       });
   };
 
+  // useEffect(() => {
+  //   const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
+  //     const newOtp = message.body.match(/-*[0-9]+/);
+  //     otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
+  //   });
+  //   setSubscriptionId(subscriptionId);
+
+  //   didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
+  //     setPhoneNumber('');
+  //   });
+  // }, [subscriptionId]);
+
+  // useEffect(() => {
+  //   return () => {
+  //     subscriptionId && subscriptionId.remove();
+  //     didBlurSubscription && didBlurSubscription.remove();
+  //   };
+  // }, [subscriptionId]);
+
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);

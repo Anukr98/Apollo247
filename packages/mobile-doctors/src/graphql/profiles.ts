@@ -751,3 +751,21 @@ export const DELETE_DOCTOR_FAVOURITE_ADVICE = gql`
     }
   }
 `;
+export const UPLOAD_CHAT_FILE = gql`
+  mutation uploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
+    uploadChatDocument(
+      fileType: $fileType
+      base64FileInput: $base64FileInput
+      appointmentId: $appointmentId
+    ) {
+      filePath
+    }
+  }
+`;
+export const DOWNLOAD_DOCUMENT = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
+    }
+  }
+`;

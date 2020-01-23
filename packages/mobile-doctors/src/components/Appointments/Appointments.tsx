@@ -155,6 +155,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
+  console.log(error, 'errorerror');
 
   const getAppointments = data && data.getDoctorAppointments;
   const todayDateStyle = moment(calendarDate).format('YYYY-MM-DD');
