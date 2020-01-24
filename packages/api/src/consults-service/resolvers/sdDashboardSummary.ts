@@ -167,7 +167,7 @@ const updateSdSummary: Resolver<
       );
       const auidoCount = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
       const videoCount = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
-      const reschduleCount = 0; //await dashboardRepo.getRescheduleCount(doctor.id, args.summaryDate);
+      const reschduleCount = await dashboardRepo.getRescheduleCount(doctor.id, args.summaryDate);
       const slotsCount = await dashboardRepo.getDoctorSlots(
         doctor.id,
         args.summaryDate,

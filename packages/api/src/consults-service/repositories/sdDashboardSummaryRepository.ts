@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Connection, Between } from 'typeorm';
+import { EntityRepository, Repository, Connection, Between, Not } from 'typeorm';
 import {
   Appointment,
   AppointmentCallDetails,
@@ -308,6 +308,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       where: {
         doctorId,
         appointmentDateTime: Between(startDate, endDate),
+        status: Not(STATUS.CANCELLED),
       },
     });
     const apptIds: string[] = [];
