@@ -769,3 +769,35 @@ export const DOWNLOAD_DOCUMENT = gql`
     }
   }
 `;
+
+export const LOGIN = gql`
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+      status
+      message
+      loginId
+    }
+  }
+`;
+
+export const VERIFY_LOGIN_OTP = gql`
+  query verifyLoginOtp($otpVerificationInput: OtpVerificationInput) {
+    verifyLoginOtp(otpVerificationInput: $otpVerificationInput) {
+      status
+      authToken
+      isBlocked
+      reason
+      incorrectAttempts
+    }
+  }
+`;
+
+export const RESEND_OTP = gql`
+  query resendOtp($mobileNumber: String!, $loginType: LOGIN_TYPE!, $id: String!) {
+    resendOtp(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      message
+      loginId
+    }
+  }
+`;

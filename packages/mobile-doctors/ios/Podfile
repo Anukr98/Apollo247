@@ -51,5 +51,7 @@ target 'ApolloPatient' do
   use_native_modules!
   pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
   pod 'QBImagePickerController', :path => '../node_modules/react-native-image-crop-picker/ios/QBImagePicker/QBImagePickerController.podspec'
+  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+
 
 end

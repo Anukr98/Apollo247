@@ -20,19 +20,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 import { useAuth } from 'hooks/authHooks';
-import bugsnag from '@bugsnag/js';
-import bugsnagReact from '@bugsnag/plugin-react';
 
-const bugsnagClient = bugsnag({
-  apiKey: `${process.env.BUGSNAG_API_KEY}`,
-  // notifyReleaseStages: ['local', 'development', 'production', 'staging'],
-  releaseStage: `${process.env.NODE_ENV}`,
-  autoBreadcrumbs: true,
-  autoCaptureSessions: true,
-  autoNotify: true,
-});
-
-const sessionClient = bugsnagClient.startSession();
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
@@ -360,6 +348,7 @@ interface ConsultRoomProps {
   doctorId: string;
   patientId: string;
   pubnub: any;
+  sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
 }
@@ -636,9 +625,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .catch((error: ApolloError) => {
         const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
         const logObject = {
+          api: 'AddChatDocument',
+          inputParam: JSON.stringify({ appointmentId: props.appointmentId, documentPath: url }),
           appointmentId: props.appointmentId,
           doctorId: doctorId,
-          // doctorDisplayName: currentPatient!.displayName,
+          doctorDisplayName: currentPatient!.displayName,
           patientId: patientId,
           patientName: patientName,
           currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
@@ -647,9 +638,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ),
           error: JSON.stringify(error),
         };
-
-        sessionClient.notify(JSON.stringify(logObject));
-        // console.log(error);
+        props.sessionClient.notify(JSON.stringify(logObject));
       });
   };
   const convertChatTime = (timeStamp: any) => {

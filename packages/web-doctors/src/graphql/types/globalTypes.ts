@@ -140,12 +140,18 @@ export enum REQUEST_ROLES {
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
+  DAUGHTER = "DAUGHTER",
   FATHER = "FATHER",
+  GRANDDAUGHTER = "GRANDDAUGHTER",
+  GRANDFATHER = "GRANDFATHER",
+  GRANDMOTHER = "GRANDMOTHER",
+  GRANDSON = "GRANDSON",
   HUSBAND = "HUSBAND",
   ME = "ME",
   MOTHER = "MOTHER",
   OTHER = "OTHER",
   SISTER = "SISTER",
+  SON = "SON",
   WIFE = "WIFE",
 }
 
@@ -167,11 +173,6 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
-}
-
-export enum TEST_COLLECTION_TYPE {
-  CENTER = "CENTER",
-  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
@@ -237,13 +238,7 @@ export interface DiagnosisInput {
 }
 
 export interface DiagnosticPrescriptionInput {
-  collectionMethod?: TEST_COLLECTION_TYPE | null;
-  id?: string | null;
-  imageUrl?: string | null;
-  isCustom?: boolean | null;
-  itemId?: string | null;
   itemname?: string | null;
-  price?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
