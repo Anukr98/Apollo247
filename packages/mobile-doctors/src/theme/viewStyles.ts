@@ -19,6 +19,15 @@ export const viewStyles = {
     elevation: 16,
     backgroundColor: colors.CARD_BG,
   },
+  cardViewStyle: {
+    borderRadius: 10,
+    backgroundColor: colors.WHITE,
+    shadowColor: colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   whiteRoundedCornerCard: {
     backgroundColor: colors.WHITE,
     shadowColor: colors.CARD_SHADOW_COLOR,

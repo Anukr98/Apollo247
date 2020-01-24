@@ -98,6 +98,7 @@ export interface ReSchedulePopUpProps {
   appointmentId: string;
   date: string;
   loading: (val: boolean) => void;
+  onDone: (reschduleObject: any) => void;
 }
 
 export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
@@ -189,14 +190,27 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           variables: {
             RescheduleAppointmentInput: {
               appointmentId: props.appointmentId,
-              rescheduleReason: reasons.find((i) => i.key === selectedReason)?.value || 'Other',
+              rescheduleReason: reasons.find((i) => i.key === selectedReason)
+                ? reasons.find((i) => i.key === selectedReason)!.value
+                : 'Other',
               rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
               rescheduleInitiatedId: props.doctorId,
               rescheduledDateTime: selectedTimeSlot,
             },
           },
         })
-        .then(() => {})
+        .then((data) => {
+          const reschduleObject: any = {
+            appointmentId: props.appointmentId,
+            transferDateTime:
+              data.data!.initiateRescheduleAppointment.rescheduleAppointment!.rescheduledDateTime ||
+              '',
+            doctorId: props.doctorId,
+            reschduleCount: data.data!.initiateRescheduleAppointment.rescheduleCount || '',
+            reschduleId: data.data!.initiateRescheduleAppointment.rescheduleAppointment!.id || '',
+          };
+          props.onDone(reschduleObject);
+        })
         .catch((e) => {
           console.log('Error occured while searching for Initiate reschdule apppointment', e);
         })

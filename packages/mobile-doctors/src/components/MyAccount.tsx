@@ -6,7 +6,6 @@ import React from 'react';
 import { Alert, View, AsyncStorage } from 'react-native';
 import { NavigationScreenProps, StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
-import console = require('console');
 
 export interface MyAccountProps extends NavigationScreenProps {}
 

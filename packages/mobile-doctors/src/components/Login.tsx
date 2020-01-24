@@ -139,7 +139,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const [subscriptionId, setSubscriptionId] = useState<any>();
   const [showTAC, setshowTAC] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
@@ -151,6 +150,18 @@ export const Login: React.FC<LoginProps> = (props) => {
     setOnboardingDone(true);
     analytics && analytics.setCurrentScreen(AppRoutes.Login);
     Platform.OS === 'android' && requestReadSmsPermission();
+    const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
+      const newOtp = message.body.match(/-*[0-9]+/);
+      otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
+    });
+
+    didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
+      setPhoneNumber('');
+    });
+    return () => {
+      subscriptionId && subscriptionId.remove();
+      didBlurSubscription && didBlurSubscription.remove();
+    };
   }, []);
 
   const requestReadSmsPermission = () => {
@@ -167,24 +178,24 @@ export const Login: React.FC<LoginProps> = (props) => {
       });
   };
 
-  useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-      const newOtp = message.body.match(/-*[0-9]+/);
-      otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
-    });
-    setSubscriptionId(subscriptionId);
+  // useEffect(() => {
+  //   const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
+  //     const newOtp = message.body.match(/-*[0-9]+/);
+  //     otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
+  //   });
+  //   setSubscriptionId(subscriptionId);
 
-    didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
-      setPhoneNumber('');
-    });
-  }, [subscriptionId]);
+  //   didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
+  //     setPhoneNumber('');
+  //   });
+  // }, [subscriptionId]);
 
-  useEffect(() => {
-    return () => {
-      subscriptionId && subscriptionId.remove();
-      didBlurSubscription && didBlurSubscription.remove();
-    };
-  }, [subscriptionId]);
+  // useEffect(() => {
+  //   return () => {
+  //     subscriptionId && subscriptionId.remove();
+  //     didBlurSubscription && didBlurSubscription.remove();
+  //   };
+  // }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
