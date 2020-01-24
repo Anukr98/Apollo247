@@ -399,8 +399,6 @@ export const ConsultTabs: React.FC = () => {
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
   const [jrdName, setJrdName] = useState<string>('');
-  //const [jrdUpdatedDate, setJrdUpdatedDate] = useState<string>('');
-
   const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
   const isSecretary = currentUserType === LoggedInUserType.SECRETARY;
   const [lastMsg, setLastMsg] = useState<any>(null);
