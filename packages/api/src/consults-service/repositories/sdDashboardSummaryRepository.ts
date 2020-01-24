@@ -319,7 +319,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .getRawMany();
     console.log(prepTimeRows, 'case sheet prep time');
     if (prepTimeRows[0].totalrows > 0) {
-      return parseFloat(prepTimeRows[0].totaltime.toFixed(2));
+      return parseFloat((prepTimeRows[0].totaltime / 60).toFixed(2));
     } else {
       return 0;
     }
