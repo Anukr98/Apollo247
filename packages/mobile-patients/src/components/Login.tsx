@@ -304,7 +304,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               })
               .catch((error: Error) => {
                 console.log(error, 'error');
-                console.log(error.message, 'errormessage');
                 setShowSpinner(false);
 
                 db.ref('ApolloPatients/')
