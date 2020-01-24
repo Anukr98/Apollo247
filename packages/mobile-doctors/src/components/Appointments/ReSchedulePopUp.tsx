@@ -199,17 +199,21 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
             },
           },
         })
-        .then((data) => {
-          const reschduleObject: any = {
-            appointmentId: props.appointmentId,
-            transferDateTime:
-              data.data!.initiateRescheduleAppointment.rescheduleAppointment!.rescheduledDateTime ||
-              '',
-            doctorId: props.doctorId,
-            reschduleCount: data.data!.initiateRescheduleAppointment.rescheduleCount || '',
-            reschduleId: data.data!.initiateRescheduleAppointment.rescheduleAppointment!.id || '',
-          };
-          props.onDone(reschduleObject);
+        .then(({ data }) => {
+          if (data) {
+            const reschduleObject: any = {
+              appointmentId: props.appointmentId,
+              transferDateTime: data.initiateRescheduleAppointment.rescheduleAppointment
+                ? data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime
+                : '',
+              doctorId: props.doctorId,
+              reschduleCount: data.initiateRescheduleAppointment.rescheduleCount || '',
+              reschduleId: data.initiateRescheduleAppointment.rescheduleAppointment
+                ? data.initiateRescheduleAppointment.rescheduleAppointment.id
+                : '',
+            };
+            props.onDone(reschduleObject);
+          }
         })
         .catch((e) => {
           console.log('Error occured while searching for Initiate reschdule apppointment', e);

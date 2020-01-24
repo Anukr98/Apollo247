@@ -132,7 +132,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
             }}
           >
             {leftIcon === 'backArrow' && <BackArrow />}
-            {leftIcon === 'close' && <Remove />}
+            {leftIcon === 'close' && <Remove style={{ height: 24, width: 24 }} />}
 
             {/* {leftIcon === 'backArrowWhite' && <BackArrowWhite />} */}
           </TouchableOpacity>
