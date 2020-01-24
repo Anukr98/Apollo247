@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import {
   SdDashboardSummary,
   FeedbackDashboardSummary,
@@ -17,6 +18,8 @@ import { PatientFeedbackRepository } from 'profiles-service/repositories/patient
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import _isEmpty from 'lodash/isEmpty';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AphError } from 'AphError';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -39,11 +42,19 @@ export const sdDashboardSummaryTypeDefs = gql`
     status: Boolean
   }
 
+  type getopenTokFileUrlResult {
+    urls: [String]
+  }
+
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
+  }
+
+  extend type Query {
+    getopenTokFileUrl(appointmentId: String): getopenTokFileUrlResult
   }
 `;
 
@@ -56,6 +67,10 @@ type DashboardSummaryResult = {
 
 type DoctorFeeSummaryResult = {
   status: boolean;
+};
+
+type getopenTokFileUrlResult = {
+  urls: string[];
 };
 
 type FeedbackSummaryResult = {
@@ -249,11 +264,29 @@ const updateDoctorFeeSummary: Resolver<
   return { status: true };
 };
 
+const getopenTokFileUrl: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  getopenTokFileUrlResult
+> = async (parent, args, context) => {
+  const { dashboardRepo } = getRepos(context);
+  if (!args.appointmentId) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+  const fileUrls = await dashboardRepo.getFileDownloadUrls(args.appointmentId);
+  return { urls: fileUrls };
+};
+
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
     updateDoctorFeeSummary,
     updatePhrDocSummary,
     updateConsultRating,
+  },
+
+  Query: {
+    getopenTokFileUrl,
   },
 };

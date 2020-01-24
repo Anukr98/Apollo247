@@ -16,10 +16,15 @@ import { ConsultMode } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { AppointmentSessions } from 'consults-service/entities';
 
 type NewPatientCount = {
   patientid: string;
   patientcount: number;
+};
+
+type archive = {
+  id: string;
 };
 
 @EntityRepository(SdDashboardSummary)
@@ -362,5 +367,49 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     }
     return repeatCount + '-' + newCount;
+  }
+
+  async getFileDownloadUrls(appointmentId: string) {
+    const openTok = require('opentok');
+    const opentok = new openTok(process.env.OPENTOK_KEY, process.env.OPENTOK_SECRET);
+    // const opentok = new openTok('46422952', '1243e5b8c48f3a5f8430936cb8f829ed8950a7d3');
+    const sessions = await AppointmentSessions.find({ where: { appointment: appointmentId } });
+    return new Promise<string[]>((resolve, reject) => {
+      if (sessions.length === 0) {
+        resolve([]);
+      } else {
+        const urls: string[] = [];
+        let count = 0;
+        const getUrl = async (sessions: AppointmentSessions[]) => {
+          if (count === sessions.length) {
+            resolve(urls);
+          } else {
+            if (sessions[count]) {
+              opentok.listArchives(
+                {
+                  sessionId: sessions[count].sessionId,
+                },
+                (err: string, archives: archive[], counter: number) => {
+                  if (!err) {
+                    if (archives && archives.length) {
+                      archives.forEach((archive) => {
+                        const url =
+                          'https://apolloaudiovideosprod.blob.core.windows.net/audiovideos/46422952/' +
+                          archive.id +
+                          '/archive.mp4?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-12-24T10%3A52%3A03Z&se=2020-01-28T10%3A52%3A00Z&sig=QrKoK7bAHTMzz3lLyxDRVcQXauhM9ySvgQDJHeLhmFc%3D';
+                        urls.push(url);
+                      });
+                    }
+                  }
+                  count++;
+                  getUrl(sessions);
+                }
+              );
+            }
+          }
+        };
+        getUrl(sessions);
+      }
+    });
   }
 }
