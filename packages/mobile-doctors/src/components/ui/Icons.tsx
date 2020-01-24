@@ -73,7 +73,7 @@ export const ArrowStep3: React.FC<IconProps> = (props) => (
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_cross.png')} />
+  <IconBase {...props} size="sm" source={require('../../images/icons/ic_cross.png')} />
 );
 
 export const Reload: React.FC<IconProps> = (props) => (
