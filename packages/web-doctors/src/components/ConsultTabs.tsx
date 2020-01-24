@@ -88,11 +88,9 @@ import {
 } from 'graphql/types/SendCallNotification';
 import moment from 'moment';
 import bugsnag from '@bugsnag/js';
-import bugsnagReact from '@bugsnag/plugin-react';
 
 const bugsnagClient = bugsnag({
   apiKey: `${process.env.BUGSNAG_API_KEY}`,
-  // notifyReleaseStages: ['local', 'development', 'production', 'staging'],
   releaseStage: `${process.env.NODE_ENV}`,
   autoBreadcrumbs: true,
   autoCaptureSessions: true,
@@ -323,11 +321,6 @@ export const ConsultTabs: React.FC = () => {
   });
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
-
-  // setAppointmentId(paramId);
-  // setpatientId(params.patientId);
-  // setdoctorId(currentPatient.id);
-
   const [tabValue, setTabValue] = useState<number>(
     params && params!.tabValue && params!.tabValue !== null && params!.tabValue !== ''
       ? parseInt(params!.tabValue, 10)
@@ -719,6 +712,7 @@ export const ConsultTabs: React.FC = () => {
                   ' ' +
                   casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
                 const logObject = {
+                  api: 'CreateSeniorDoctorCaseSheet',
                   appointmentId: appointmentId,
                   doctorId: currentPatient!.id,
                   doctorDisplayName: currentPatient!.displayName,
@@ -979,6 +973,7 @@ export const ConsultTabs: React.FC = () => {
             ' ' +
             casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
           const logObject = {
+            api: 'GetJuniorDoctorCaseSheet',
             appointmentId: appointmentId,
             doctorId: currentPatient!.id,
             doctorDisplayName: currentPatient!.displayName,
@@ -1044,6 +1039,12 @@ export const ConsultTabs: React.FC = () => {
           ' ' +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
+          api: 'SendCallNotification',
+          inputParam: JSON.stringify({
+            appointmentId: appointmentId,
+            callType: callType,
+            doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          }),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
@@ -1092,6 +1093,11 @@ export const ConsultTabs: React.FC = () => {
           ' ' +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
+          api: 'UpdatePatientPrescriptionSentStatus',
+          inputParam: JSON.stringify({
+            caseSheetId: caseSheetId,
+            sentToPatient: true,
+          }),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
@@ -1154,40 +1160,41 @@ export const ConsultTabs: React.FC = () => {
     // this needs to be fixed.
     const followupISODate = new Date(followUpDate[0]).toISOString();
     const followupDateArray = followupISODate.split('T');
+    const inputVariables = {
+      symptoms: symptomsFinal,
+      notes: notes,
+      diagnosis: diagnosisFinal,
+      diagnosticPrescription: diagnosticPrescriptionFinal,
+      followUp: followUp[0],
+      followUpDate: followupDateArray[0],
+      followUpAfterInDays:
+        followUp[0] && followUpAfterInDays[0] !== 'Custom'
+          ? parseInt(followUpAfterInDays[0], 10)
+          : 0,
+      followUpConsultType:
+        followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
+          ? APPOINTMENT_TYPE.PHYSICAL
+          : APPOINTMENT_TYPE.ONLINE,
+      otherInstructions: otherInstructionsFinal,
+      medicinePrescription: medicinePrescriptionFinal,
+      id: caseSheetId,
+      lifeStyle: lifeStyle,
+      familyHistory: familyHistory,
+      dietAllergies: dietAllergies,
+      drugAllergies: drugAllergies,
+      height: height,
+      menstrualHistory: menstrualHistory,
+      pastMedicalHistory: pastMedicalHistory,
+      pastSurgicalHistory: pastSurgicalHistory,
+      temperature: temperature,
+      weight: weight,
+      bp: bp,
+    };
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
         variables: {
-          ModifyCaseSheetInput: {
-            symptoms: symptomsFinal,
-            notes: notes,
-            diagnosis: diagnosisFinal,
-            diagnosticPrescription: diagnosticPrescriptionFinal,
-            followUp: followUp[0],
-            followUpDate: followupDateArray[0],
-            followUpAfterInDays:
-              followUp[0] && followUpAfterInDays[0] !== 'Custom'
-                ? parseInt(followUpAfterInDays[0], 10)
-                : 0,
-            followUpConsultType:
-              followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
-                ? APPOINTMENT_TYPE.PHYSICAL
-                : APPOINTMENT_TYPE.ONLINE,
-            otherInstructions: otherInstructionsFinal,
-            medicinePrescription: medicinePrescriptionFinal,
-            id: caseSheetId,
-            lifeStyle: lifeStyle,
-            familyHistory: familyHistory,
-            dietAllergies: dietAllergies,
-            drugAllergies: drugAllergies,
-            height: height,
-            menstrualHistory: menstrualHistory,
-            pastMedicalHistory: pastMedicalHistory,
-            pastSurgicalHistory: pastSurgicalHistory,
-            temperature: temperature,
-            weight: weight,
-            bp: bp,
-          },
+          ModifyCaseSheetInput: inputVariables,
         },
         fetchPolicy: 'no-cache',
       })
@@ -1206,6 +1213,8 @@ export const ConsultTabs: React.FC = () => {
           ' ' +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
+          api: 'ModifyCaseSheet',
+          inputParam: JSON.stringify(inputVariables),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
@@ -1269,6 +1278,11 @@ export const ConsultTabs: React.FC = () => {
           ' ' +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
+          api: 'EndAppointmentSession',
+          inputParam: JSON.stringify({
+            appointmentId: appointmentId,
+            status: STATUS.COMPLETED,
+          }),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
@@ -1315,6 +1329,11 @@ export const ConsultTabs: React.FC = () => {
           ' ' +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
+          api: 'CreateAppointmentSession',
+          inputParam: JSON.stringify({
+            appointmentId: paramId,
+            requestRole: REQUEST_ROLES.DOCTOR,
+          }),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
@@ -1488,6 +1507,7 @@ export const ConsultTabs: React.FC = () => {
                 isAppointmentEnded={isAppointmentEnded}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
                 pubnub={pubnub}
+                sessionClient={sessionClient}
                 lastMsg={lastMsg}
                 presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
@@ -1542,6 +1562,7 @@ export const ConsultTabs: React.FC = () => {
                             doctorId={doctorId}
                             patientId={patientId}
                             pubnub={pubnub}
+                            sessionClient={sessionClient}
                             lastMsg={lastMsg}
                             messages={messages}
                           />
