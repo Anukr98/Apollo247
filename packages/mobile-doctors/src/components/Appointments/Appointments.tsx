@@ -27,7 +27,15 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from 'react-native';
 import { CalendarList, PeriodMarking } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
@@ -329,7 +337,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <DotIcon />,
             onPress: () => {
-              null;
+              setDropdownVisible(true);
             },
           },
         ]}
@@ -348,6 +356,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
               icon: <Block />,
               onPress: () => {
                 setDropdownVisible(false);
+                props.navigation.push(AppRoutes.BlockHomePage);
               },
             },
             {
