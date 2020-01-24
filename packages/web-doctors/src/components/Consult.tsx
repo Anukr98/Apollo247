@@ -72,6 +72,9 @@ const useStyles = makeStyles((theme: Theme) => {
     hidePublisherVideo: {
       display: 'none',
     },
+    hidePublisherVideoSD: {
+      height: 170,
+    },
     minimizeBtns: {
       position: 'absolute',
       width: 170,
@@ -98,10 +101,17 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#000',
     },
     minimizeImg: {
-      width: 'auto',
-      height: '100%',
-      position: 'relative',
-      zIndex: 9,
+    position: 'absolute',
+    minWidth: 48,
+    minHeight: 48,
+    top: 0,
+    right: 0,
+    zIndex: 9,
+    borderRadius: 10,
+    width: 264,
+    height: 198,
+    overflow: 'hidden',
+    backgroundColor: '#000',
     },
     timerCls: {
       position: 'absolute',
@@ -115,6 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 20,
       fontWeight: 600,
     },
+  
   };
 });
 interface ConsultProps {
@@ -250,6 +261,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           )}
 
           {isCall && (
+            <div className={'sdCall'}
+            
+            >
             <OTSession
               apiKey={apikey}
               sessionId={props.sessionId}
@@ -421,6 +435,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 )}
               </div>
             </OTSession>
+            </div>
           )}
         </div>
       </div>
