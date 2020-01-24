@@ -257,6 +257,7 @@ export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet {
   __typename: "CaseSheet";
   createdDate: any | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile | null;
+  updatedDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet {
