@@ -503,6 +503,13 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
+          const logObject = {
+            api: 'getCasesheet',
+            data: JSON.stringify(_data.data),
+            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          };
+
+          sessionClient.notify(JSON.stringify(logObject));
           setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails &&
           _data!.data!.getCaseSheet!.caseSheetDetails.id
