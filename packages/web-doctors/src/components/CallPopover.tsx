@@ -50,22 +50,6 @@ import {
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
 
-import bugsnag from '@bugsnag/js';
-import bugsnagReact from '@bugsnag/plugin-react';
-
-const bugsnagClient = bugsnag({
-  apiKey: `${process.env.BUGSNAG_API_KEY}`,
-  // notifyReleaseStages: ['local', 'development', 'production', 'staging'],
-  releaseStage: `${process.env.NODE_ENV}`,
-  autoBreadcrumbs: true,
-  autoCaptureSessions: true,
-  autoNotify: true,
-});
-
-const sessionClient = bugsnagClient.startSession();
-
-// this error is reported with session information
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
@@ -820,6 +804,7 @@ interface CallPopoverProps {
   setIsPdfPageOpen: (flag: boolean) => void;
   endCallNotificationAction: (callId: boolean) => void;
   pubnub: any;
+  sessionClient: any;
   lastMsg: any;
   presenceEventObject: any;
 }
@@ -1035,6 +1020,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           const errorMessage = error && error.message;
           const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
           const logObject = {
+            api: 'EndAppointmentSession',
+            inputParam: JSON.stringify({
+              appointmentId: props.appointmentId,
+              status: status,
+              noShowBy: REQUEST_ROLES.PATIENT,
+            }),
             appointmentId: props.appointmentId,
             doctorId: props.doctorId,
             doctorDisplayName: currentPatient!.displayName,
@@ -1047,7 +1038,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             error: JSON.stringify(e),
           };
 
-          sessionClient.notify(JSON.stringify(logObject));
+          props.sessionClient.notify(JSON.stringify(logObject));
           console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
           alert(errorMessage);
         });
@@ -1758,6 +1749,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         );
         const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
         const logObject = {
+          api: 'INITIATE_RESCHDULE_APPONITMENT',
+          inputParam: JSON.stringify(rescheduleParam),
           appointmentId: props.appointmentId,
           doctorId: props.doctorId,
           doctorDisplayName: currentPatient!.displayName,
@@ -1770,8 +1763,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           error: JSON.stringify(e),
         };
 
-        sessionClient.notify(JSON.stringify(logObject));
-        sessionClient.leaveBreadcrumb(error, logObject, 'error', 'UTC');
+        props.sessionClient.notify(JSON.stringify(logObject));
         alert(errorMessage);
       });
   };
@@ -2033,8 +2025,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             error: JSON.stringify(error),
                           };
 
-                          sessionClient.notify(JSON.stringify(logObject));
-                          sessionClient.leaveBreadcrumb(error, logObject, 'error', 'UTC');
+                          props.sessionClient.notify(JSON.stringify(logObject));
                           setDoctorNextAvailableSlot('');
                           alert(error);
                         } finally {
@@ -2046,6 +2037,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         const patientName =
                           patientDetails!.firstName + ' ' + patientDetails!.lastName;
                         const logObject = {
+                          api: 'getDoctorNextAvailableSlots',
+                          inputParam: JSON.stringify({
+                            doctorIds: [props.doctorId],
+                            availableDate: format(new Date(), 'yyyy-MM-dd'),
+                          }),
                           appointmentId: props.appointmentId,
                           doctorId: props.doctorId,
                           doctorDisplayName: currentPatient!.displayName,
@@ -2057,9 +2053,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           ),
                           error: JSON.stringify(e),
                         };
-
-                        sessionClient.notify(JSON.stringify(logObject));
-                        sessionClient.leaveBreadcrumb(e, logObject, 'error', 'UTC');
+                        props.sessionClient.notify(JSON.stringify(logObject));
                       });
                   }
                 }}
@@ -2556,6 +2550,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       const patientName =
                         patientDetails!.firstName + ' ' + patientDetails!.lastName;
                       const logObject = {
+                        api: 'CancelAppointment',
+                        inputParam: JSON.stringify({
+                          appointmentId: params.id,
+                          cancelReason:
+                            cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
+                          cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
+                          cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
+                        }),
                         appointmentId: props.appointmentId,
                         doctorId: props.doctorId,
                         doctorDisplayName: currentPatient!.displayName,
@@ -2568,8 +2570,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         error: JSON.stringify(e),
                       };
 
-                      sessionClient.notify(JSON.stringify(logObject));
-                      // sessionClient.leaveBreadcrumb(e, logObject, 'error', 'UTC')
+                      props.sessionClient.notify(JSON.stringify(logObject));
                       setCancelError(e.graphQLErrors[0].message);
                     });
                 }}
@@ -2669,6 +2670,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   .catch((e: ApolloError) => {
                     const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
                     const logObject = {
+                      api: 'CancelAppointment',
+                      inputParam: JSON.stringify({
+                        appointmentId: params.id,
+                        cancelReason: 'MAX_RESCHEDULES_EXCEEDED',
+                        cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
+                        cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
+                      }),
                       appointmentId: props.appointmentId,
                       doctorId: props.doctorId,
                       doctorDisplayName: currentPatient!.displayName,
@@ -2681,8 +2689,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       error: JSON.stringify(e),
                     };
 
-                    sessionClient.notify(JSON.stringify(logObject));
-                    // sessionClient.leaveBreadcrumb(e, logObject, 'error', 'UTC')
+                    props.sessionClient.notify(JSON.stringify(logObject));
                     setCancelError(e.graphQLErrors[0].message);
                     setIsCancelDialogOpen(false);
                   });

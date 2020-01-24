@@ -221,21 +221,25 @@ const updateDoctorFeeSummary: Resolver<
       args.summaryDate,
       ConsultMode.BOTH
     );
-    const totalFee: number[] = [];
+    let totalFee: number = 0;
     if (totalConsultations.length) {
-      totalConsultations.forEach(async (consultation) => {
+      totalConsultations.forEach(async (consultation, index, array) => {
         const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
           consultation.id
         );
         if (!_isEmpty(paymentDetails) && paymentDetails) {
-          totalFee.push(paymentDetails.amountPaid);
+          totalFee += parseFloat(paymentDetails.amountPaid.toString());
+        }
+        if (index + 1 === array.length) {
+          saveDetails();
         }
       });
-      const feeAmount = totalFee.reduce((total, num) => total + num, 0);
+    }
+    async function saveDetails() {
       const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
         appointmentDateTime: args.summaryDate,
         doctorId: doctor.id,
-        amountPaid: feeAmount,
+        amountPaid: totalFee,
         appointmentsCount: totalConsultations.length,
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);

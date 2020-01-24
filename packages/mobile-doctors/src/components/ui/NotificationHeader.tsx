@@ -79,6 +79,7 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
           {leftIcons &&
             leftIcons.map((icon, i) => (
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={icon.onPress}
                 key={i}
                 style={{
@@ -105,6 +106,7 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
           {rightIcons &&
             rightIcons.map((icon, i) => (
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={icon.onPress}
                 key={i}
                 style={{

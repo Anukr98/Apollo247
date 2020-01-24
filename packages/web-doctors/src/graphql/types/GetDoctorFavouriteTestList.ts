@@ -7,13 +7,13 @@
 // ====================================================
 
 export interface GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList {
-  __typename: "DoctorsFavouriteTests";
-  id: string;
-  itemname: string;
+  __typename: "TestsWithAdditionalDetails";
+  id: string | null;
+  itemname: string | null;
 }
 
 export interface GetDoctorFavouriteTestList_getDoctorFavouriteTestList {
-  __typename: "FavouriteTestList";
+  __typename: "FormatedTestLists";
   testList: (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[] | null;
 }
 

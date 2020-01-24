@@ -347,10 +347,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setshowSpinner(false);
 
           const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
-          console.log(tokenValue, 'tokenValue');
+          const buildSpecify = buildName();
+          let keyHash;
+          if (buildSpecify === 'QA' || buildSpecify === 'DEV') {
+            keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
+          } else {
+            keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~247Android';
+          }
+          console.log('tokenValue', tokenValue, keyHash);
+
           if (Platform.OS === 'ios') {
             if (tokenValue) {
-              Vitals.vitalsToExport(tokenValue);
+              Vitals.vitalsToExport(tokenValue, buildSpecify);
               setTimeout(() => {
                 Vitals.goToReactNative(tokenValue);
               }, 500);
@@ -361,15 +369,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'lastName'
             ) || ''}`;
             const UHID = `${g(patientDetails, 'uhid') || ''}`;
-            const buildSpecify = buildName();
-            tokenValue &&
-              KotlinBridge.show(
-                tokenValue,
-                UHID,
-                fullName,
-                '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android',
-                buildSpecify
-              );
+            tokenValue && KotlinBridge.show(tokenValue, UHID, fullName, keyHash, buildSpecify);
           }
         }
 

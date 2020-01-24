@@ -63,7 +63,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
   }
 
   getAppointmentPaymentDetailsByApptId(appointment: string) {
-    return AppointmentPayments.findOne({ where: appointment }).catch((createErrors) => {
+    return AppointmentPayments.findOne({ where: { appointment } }).catch((createErrors) => {
       throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
   }
