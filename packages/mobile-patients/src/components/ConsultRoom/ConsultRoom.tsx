@@ -45,12 +45,9 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  AppState,
-  AppStateStatus,
   AsyncStorage,
   Dimensions,
   ImageBackground,
-  ImageSourcePropType,
   Linking,
   Platform,
   SafeAreaView,
@@ -63,15 +60,13 @@ import {
   NativeModules,
 } from 'react-native';
 import firebase from 'react-native-firebase';
-import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientFutureAppointmentCount } from '../../graphql/types/getPatientFutureAppointmentCount';
 import { apiRoutes } from '../../helpers/apiRoutes';
-import { AppConfig } from '../../strings/AppConfig';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { ListCard } from '../ui/ListCard';
-import { useUIElements } from '../UIElementsProvider';
 import KotlinBridge from '../../KotlinBridge';
 import { GenerateTokenforCM } from '../../helpers/apiCalls';
 
@@ -120,17 +115,6 @@ const styles = StyleSheet.create({
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
-  },
-  doctorView: {
-    width: '100%',
-    height: 277,
-    ...theme.viewStyles.cardContainer,
-  },
-  doctorStyle: {
-    marginLeft: 20,
-    marginTop: 16,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(15),
   },
   labelView: {
     position: 'absolute',
@@ -199,7 +183,7 @@ export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
 
-  const startDoctor = string.home.startDoctor;
+  // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [selectedProfile, setSelectedProfile] = useState<string>('');
 
@@ -208,14 +192,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics, getPatientApiCall } = useAuth();
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
-  const { showAphAlert, hideAphAlert } = useUIElements();
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
-  const [enableCM, setEnableCM] = useState<boolean>(false);
+  const [enableCM, setEnableCM] = useState<boolean>(true);
 
   const menuOptions: menuOptions[] = [
     {
@@ -314,7 +297,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           .finally(() => setAppointmentLoading(false));
       }
     }
-    AppState.addEventListener('change', _handleAppStateChange);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
@@ -325,10 +307,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else {
         setshowPopUp(true);
       }
+      const CMEnabled = await AsyncStorage.getItem('CMEnable');
+      const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
+      setEnableCM(eneabled);
     }
     fetchData();
     callDeviceTokenAPI();
-    checkForVersionUpdate();
   }, []);
 
   const getTokenforCM = async () => {
@@ -359,44 +343,37 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((token: any) => {
         console.log(token, 'getTokenforCM');
 
-        // const testArray = menuOptions;
-        // for (const i in testArray) {
-        // if (testArray[i].id == 4) {
-        // testArray[i].onPress = () => {
         async function fetchTokenData() {
           setshowSpinner(false);
 
           const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
-          console.log(tokenValue, 'tokenValue');
+          const buildSpecify = buildName();
+          let keyHash;
+          if (buildSpecify === 'QA' || buildSpecify === 'DEV') {
+            keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
+          } else {
+            keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~247Android';
+          }
+          console.log('tokenValue', tokenValue, keyHash);
+
           if (Platform.OS === 'ios') {
-            Vitals.vitalsToExport(tokenValue);
-            setTimeout(() => {
-              Vitals.goToReactNative(tokenValue);
-            }, 500);
+            if (tokenValue) {
+              Vitals.vitalsToExport(tokenValue, buildSpecify);
+              setTimeout(() => {
+                Vitals.goToReactNative(tokenValue);
+              }, 500);
+            }
           } else {
             const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(
               patientDetails,
               'lastName'
             ) || ''}`;
             const UHID = `${g(patientDetails, 'uhid') || ''}`;
-            const buildSpecify = buildName();
-            tokenValue &&
-              KotlinBridge.show(
-                tokenValue,
-                UHID,
-                fullName,
-                '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android',
-                buildSpecify
-              );
+            tokenValue && KotlinBridge.show(tokenValue, UHID, fullName, keyHash, buildSpecify);
           }
         }
 
         fetchTokenData();
-        // };
-        // break; //Stop this loop, we found it!
-        // }
-        // }
-        // setListValues(testArray);
       })
       .catch(() => {
         setshowSpinner(false);
@@ -471,139 +448,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }
         }
       });
-  };
-
-  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
-    if (nextAppState === 'active') {
-      checkForVersionUpdate();
-    }
-  };
-
-  const checkForVersionUpdate = () => {
-    console.log('checkForVersionUpdate');
-
-    if (__DEV__) {
-      firebase.config().enableDeveloperMode();
-    }
-
-    firebase
-      .config()
-      .fetch(30 * 0) // 30 min
-      .then(() => {
-        return firebase.config().activateFetched();
-      })
-      .then(() => {
-        return firebase
-          .config()
-          .getValues([
-            'Android_mandatory',
-            'android_latest_version',
-            'ios_mandatory',
-            'ios_Latest_version',
-            'QA_Android_mandatory',
-            'QA_android_latest_version',
-            'QA_ios_mandatory',
-            'QA_ios_latest_version',
-            'Enable_Conditional_Management',
-          ]);
-      })
-      .then((snapshot) => {
-        const myValye = snapshot;
-        let index: number = 0;
-        const nietos = [];
-        const Android_version: string = AppConfig.Configuration.Android_Version;
-        const iOS_version: string = AppConfig.Configuration.iOS_Version;
-
-        for (const val in myValye) {
-          if (myValye.hasOwnProperty(val)) {
-            index++;
-            const element = myValye[val];
-            nietos.push({ index: index, value: element.val() });
-            if (nietos.length === 9) {
-              console.log(
-                'nietos',
-                parseFloat(nietos[1].value),
-                parseFloat(iOS_version),
-                parseFloat(Android_version),
-                parseFloat(nietos[5].value),
-                parseFloat(nietos[7].value),
-                nietos[8].value
-              );
-
-              setEnableCM(nietos[8].value);
-
-              if (Platform.OS === 'ios') {
-                if (buildName() === 'QA') {
-                  if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
-                    showUpdateAlert(nietos[6].value);
-                  }
-                } else {
-                  if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
-                    showUpdateAlert(nietos[2].value);
-                  }
-                }
-              } else {
-                if (buildName() === 'QA') {
-                  if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
-                    showUpdateAlert(nietos[4].value);
-                  }
-                } else {
-                  if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-                    showUpdateAlert(nietos[0].value);
-                  }
-                }
-              }
-            }
-          }
-        }
-      })
-      .catch((error) => console.log(`Error processing config: ${error}`));
-  };
-
-  const showUpdateAlert = (mandatory: boolean) => {
-    showAphAlert!({
-      title: `Hi there :)`,
-      description: 'There is a new version available for this app. Please update it.',
-      unDismissable: true,
-      children: (
-        <View
-          style={{
-            flexDirection: 'row',
-            marginHorizontal: 20,
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            marginVertical: 18,
-          }}
-        >
-          {!mandatory ? (
-            <Button
-              style={{
-                flex: 1,
-                marginRight: 16,
-              }}
-              title={'CANCEL'}
-              onPress={() => {
-                hideAphAlert!();
-              }}
-            />
-          ) : null}
-
-          <Button
-            style={{ flex: 1 }}
-            title={'UPDATE'}
-            onPress={() => {
-              hideAphAlert!();
-
-              Linking.openURL(
-                Platform.OS === 'ios'
-                  ? 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-                  : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => console.error('An error occurred', err));
-            }}
-          />
-        </View>
-      ),
-    });
   };
 
   const renderBottomTabBar = () => {
@@ -715,7 +559,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View>
         <ListCard
           container={{ marginTop: 14 }}
-          title={'Upcoming Appointments'}
+          title={'Active Appointments'}
           leftIcon={renderListCount(currentAppointments)}
           onPress={() => props.navigation.navigate('APPOINTMENTS')}
         />

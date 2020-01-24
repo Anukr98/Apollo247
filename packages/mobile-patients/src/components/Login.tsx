@@ -10,7 +10,7 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -118,7 +118,7 @@ let dbChildKey: string = '';
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { sendOtp, isSendingOtp, signOut } = useAuth();
+  const { signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
@@ -304,7 +304,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               })
               .catch((error: Error) => {
                 console.log(error, 'error');
-                console.log(error.message, 'errormessage');
                 setShowSpinner(false);
 
                 db.ref('ApolloPatients/')
@@ -315,10 +314,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
                 CommonLogEvent('OTP_SEND_FAIL', error.message);
                 CommonBugFender('OTP_SEND_FAIL', error);
-                Alert.alert(
-                  'Error',
-                  (error && error.message) || 'The interaction was cancelled by the user.'
-                );
+                handleGraphQlError(error);
               });
           }
         }

@@ -172,7 +172,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     try {
       // Physical Prescription Upload
       const uploadedPhyPrescriptionsData = await uploadMultipleFiles(PhysicalPrescriptions);
-      console.log('API call success');
+      console.log('upload of prescriptions done');
 
       const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
         ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
@@ -199,9 +199,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+          isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
         },
       };
-      aphConsole.log(JSON.stringify(prescriptionMedicineInput));
+      console.log({ prescriptionMedicineInput });
+      console.log(JSON.stringify(prescriptionMedicineInput));
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
       console.log({ error });

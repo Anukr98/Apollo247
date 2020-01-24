@@ -86,7 +86,18 @@ import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
+import moment from 'moment';
+import bugsnag from '@bugsnag/js';
 
+const bugsnagClient = bugsnag({
+  apiKey: `${process.env.BUGSNAG_API_KEY}`,
+  releaseStage: `${process.env.NODE_ENV}`,
+  autoBreadcrumbs: true,
+  autoCaptureSessions: true,
+  autoNotify: true,
+});
+
+const sessionClient = bugsnagClient.startSession();
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
@@ -310,11 +321,6 @@ export const ConsultTabs: React.FC = () => {
   });
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
-
-  // setAppointmentId(paramId);
-  // setpatientId(params.patientId);
-  // setdoctorId(currentPatient.id);
-
   const [tabValue, setTabValue] = useState<number>(
     params && params!.tabValue && params!.tabValue !== null && params!.tabValue !== ''
       ? parseInt(params!.tabValue, 10)
@@ -701,6 +707,25 @@ export const ConsultTabs: React.FC = () => {
                 );
               })
               .catch((e: ApolloError) => {
+                const patientName =
+                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+                  ' ' +
+                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+                const logObject = {
+                  api: 'CreateSeniorDoctorCaseSheet',
+                  appointmentId: appointmentId,
+                  doctorId: currentPatient!.id,
+                  doctorDisplayName: currentPatient!.displayName,
+                  patientId: params.patientId,
+                  patientName: patientName,
+                  currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                  appointmentDateTime: appointmentDateTime
+                    ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+                    : '',
+                  error: JSON.stringify(e),
+                };
+
+                sessionClient.notify(JSON.stringify(logObject));
                 setError('Unable to load Consult.');
               });
           }
@@ -943,6 +968,25 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((error: ApolloError) => {
+          const patientName =
+            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+            ' ' +
+            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+          const logObject = {
+            api: 'GetJuniorDoctorCaseSheet',
+            appointmentId: appointmentId,
+            doctorId: currentPatient!.id,
+            doctorDisplayName: currentPatient!.displayName,
+            patientId: params.patientId,
+            patientName: patientName,
+            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+            appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+              'MMMM DD YYYY h:mm:ss a'
+            ),
+            error: JSON.stringify(error),
+          };
+
+          sessionClient.notify(JSON.stringify(logObject));
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
           const allMessages = error.graphQLErrors
             .map((e) => e.message)
@@ -990,6 +1034,30 @@ export const ConsultTabs: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'SendCallNotification',
+          inputParam: JSON.stringify({
+            appointmentId: appointmentId,
+            callType: callType,
+            doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
         console.log('An error occurred while sending notification to Client.');
       });
   };
@@ -1020,6 +1088,29 @@ export const ConsultTabs: React.FC = () => {
         setUrlToPatient(true);
       })
       .catch((e) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'UpdatePatientPrescriptionSentStatus',
+          inputParam: JSON.stringify({
+            caseSheetId: caseSheetId,
+            sentToPatient: true,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
         setError('Error occured while sending prescription to patient');
         console.log('Error occured while sending prescription to patient', e);
         setSaving(false);
@@ -1069,40 +1160,41 @@ export const ConsultTabs: React.FC = () => {
     // this needs to be fixed.
     const followupISODate = new Date(followUpDate[0]).toISOString();
     const followupDateArray = followupISODate.split('T');
+    const inputVariables = {
+      symptoms: symptomsFinal,
+      notes: notes,
+      diagnosis: diagnosisFinal,
+      diagnosticPrescription: diagnosticPrescriptionFinal,
+      followUp: followUp[0],
+      followUpDate: followupDateArray[0],
+      followUpAfterInDays:
+        followUp[0] && followUpAfterInDays[0] !== 'Custom'
+          ? parseInt(followUpAfterInDays[0], 10)
+          : 0,
+      followUpConsultType:
+        followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
+          ? APPOINTMENT_TYPE.PHYSICAL
+          : APPOINTMENT_TYPE.ONLINE,
+      otherInstructions: otherInstructionsFinal,
+      medicinePrescription: medicinePrescriptionFinal,
+      id: caseSheetId,
+      lifeStyle: lifeStyle,
+      familyHistory: familyHistory,
+      dietAllergies: dietAllergies,
+      drugAllergies: drugAllergies,
+      height: height,
+      menstrualHistory: menstrualHistory,
+      pastMedicalHistory: pastMedicalHistory,
+      pastSurgicalHistory: pastSurgicalHistory,
+      temperature: temperature,
+      weight: weight,
+      bp: bp,
+    };
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
         variables: {
-          ModifyCaseSheetInput: {
-            symptoms: symptomsFinal,
-            notes: notes,
-            diagnosis: diagnosisFinal,
-            diagnosticPrescription: diagnosticPrescriptionFinal,
-            followUp: followUp[0],
-            followUpDate: followupDateArray[0],
-            followUpAfterInDays:
-              followUp[0] && followUpAfterInDays[0] !== 'Custom'
-                ? parseInt(followUpAfterInDays[0], 10)
-                : 0,
-            followUpConsultType:
-              followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
-                ? APPOINTMENT_TYPE.PHYSICAL
-                : APPOINTMENT_TYPE.ONLINE,
-            otherInstructions: otherInstructionsFinal,
-            medicinePrescription: medicinePrescriptionFinal,
-            id: caseSheetId,
-            lifeStyle: lifeStyle,
-            familyHistory: familyHistory,
-            dietAllergies: dietAllergies,
-            drugAllergies: drugAllergies,
-            height: height,
-            menstrualHistory: menstrualHistory,
-            pastMedicalHistory: pastMedicalHistory,
-            pastSurgicalHistory: pastSurgicalHistory,
-            temperature: temperature,
-            weight: weight,
-            bp: bp,
-          },
+          ModifyCaseSheetInput: inputVariables,
         },
         fetchPolicy: 'no-cache',
       })
@@ -1116,6 +1208,26 @@ export const ConsultTabs: React.FC = () => {
         setSaving(false);
       })
       .catch((e) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'ModifyCaseSheet',
+          inputParam: JSON.stringify(inputVariables),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(e),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
@@ -1161,6 +1273,29 @@ export const ConsultTabs: React.FC = () => {
         setIsPdfPageOpen(true);
       })
       .catch((e) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'EndAppointmentSession',
+          inputParam: JSON.stringify({
+            appointmentId: appointmentId,
+            status: STATUS.COMPLETED,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(e),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while End casesheet', errorMessage, error);
@@ -1189,6 +1324,29 @@ export const ConsultTabs: React.FC = () => {
         setSaving(false);
       })
       .catch((e: any) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'CreateAppointmentSession',
+          inputParam: JSON.stringify({
+            appointmentId: paramId,
+            requestRole: REQUEST_ROLES.DOCTOR,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
         setError('Error occured creating session');
         console.log('Error occured creating session', e);
         setSaving(false);
@@ -1349,6 +1507,7 @@ export const ConsultTabs: React.FC = () => {
                 isAppointmentEnded={isAppointmentEnded}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
                 pubnub={pubnub}
+                sessionClient={sessionClient}
                 lastMsg={lastMsg}
                 presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
@@ -1403,6 +1562,7 @@ export const ConsultTabs: React.FC = () => {
                             doctorId={doctorId}
                             patientId={patientId}
                             pubnub={pubnub}
+                            sessionClient={sessionClient}
                             lastMsg={lastMsg}
                             messages={messages}
                           />

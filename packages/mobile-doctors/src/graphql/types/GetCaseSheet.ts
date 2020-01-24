@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, STATUS } from "./globalTypes";
+import { Gender, Relation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, STATUS, Salutation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -92,9 +92,23 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   notes: string | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_pastAppointments_doctorInfo {
+  __typename: "Profile";
+  firstName: string | null;
+  lastName: string | null;
+  salutation: Salutation | null;
+}
+
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_appointment {
   __typename: "Appointment";
   id: string;
+}
+
+export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_createdDoctorProfile {
+  __typename: "Profile";
+  firstName: string | null;
+  lastName: string | null;
+  salutation: Salutation | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
@@ -130,8 +144,12 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstr
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   __typename: "CaseSheet";
-  consultType: string | null;
   appointment: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_appointment | null;
+  blobName: string | null;
+  createdDate: any | null;
+  doctorType: DoctorType | null;
+  createdDoctorProfile: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_createdDoctorProfile | null;
+  consultType: string | null;
   diagnosis: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] | null;
   symptoms: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms | null)[] | null;
@@ -144,6 +162,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
   __typename: "Appointment";
+  id: string;
   appointmentDateTime: any;
   appointmentState: string | null;
   doctorId: string;
@@ -151,6 +170,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   patientId: string;
   parentId: string | null;
   status: STATUS;
+  doctorInfo: GetCaseSheet_getCaseSheet_pastAppointments_doctorInfo | null;
   caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
 }
 

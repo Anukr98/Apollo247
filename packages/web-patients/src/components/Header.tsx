@@ -5,11 +5,8 @@ import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
+import { AphButton } from '@aph/web-ui-components';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -29,6 +26,14 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 20px 0 20px',
       [theme.breakpoints.down('xs')]: {
         padding: '0 20px 0 20px',
+      },
+      [theme.breakpoints.down(900)]: {
+        paddingRight: 0,
+      },
+      '& $userAccountLogin': {
+        [theme.breakpoints.down(900)]: {
+          paddingRight: 20,
+        },
       },
     },
     logo: {
@@ -57,9 +62,15 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.between('sm', 'md')]: {
         marginLeft: 10,
       },
+      [theme.breakpoints.down(990)]: {
+        display: 'none',
+      },
     },
     userAccountLogin: {
       marginLeft: 'auto',
+      [theme.breakpoints.down(990)]: {
+        display: 'block',
+      },
     },
     userCircle: {
       display: 'flex',
@@ -86,6 +97,21 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+    },
+    logoutModal: {
+      padding: '12px 0',
+      '& h3': {
+        fontSize: 18,
+        fontWeight: 500,
+        margin: 0,
+      },
+    },
+    bottomActions: {
+      textAlign: 'right',
+      paddingTop: 20,
+      '& button': {
+        marginLeft: 15,
+      },
     },
   };
 });
@@ -125,24 +151,21 @@ export const Header: React.FC = (props) => {
           )}
         </ProtectedWithLoginPopup>
         {isSignedIn ? (
-          <>
-            <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-              <DialogTitle>{''}</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  You are successfully Logged in with Apollo 24x7
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button color="primary" onClick={() => signOut()}>
-                  Sign out
-                </Button>
-                <Button color="primary" onClick={() => setIsDialogOpen(false)} autoFocus>
-                  Close
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </>
+          <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+            <DialogContent>
+              <div className={classes.logoutModal}>
+                <h3>You are successfully Logged in with Apollo 24x7</h3>
+                <div className={classes.bottomActions}>
+                  <AphButton color="secondary" onClick={() => setIsDialogOpen(false)} autoFocus>
+                    Cancel
+                  </AphButton>
+                  <AphButton color="primary" onClick={() => signOut()}>
+                    Sign out
+                  </AphButton>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         ) : (
           <Popover
             open={isLoginPopupVisible}

@@ -35,7 +35,6 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
-import { TrackJS } from 'trackjs';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -184,7 +183,6 @@ export const AuthProvider: React.FC = (props) => {
       setSendOtpError(false);
       return loginResult.data.login.loginId;
     } else {
-      TrackJS.track(`phoneNumber: ${mobileNumber}, phoneAuthError: ${loginError}`);
       setSendOtpError(true);
       return false;
     }
@@ -211,7 +209,6 @@ export const AuthProvider: React.FC = (props) => {
       setSendOtpError(false);
       return resendOtpResult.data.resendOtp.loginId;
     } else {
-      TrackJS.track(`phoneNumber: ${mobileNumber}, phoneAuthError: ${resendOtpError}`);
       setSendOtpError(true);
       return false;
     }
@@ -262,10 +259,8 @@ export const AuthProvider: React.FC = (props) => {
       verifyLoginOtpResult.data.verifyLoginOtp &&
       verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
     ) {
-      TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error-block`);
       return false;
     } else {
-      TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error`);
       return false;
     }
   };
@@ -285,7 +280,6 @@ export const AuthProvider: React.FC = (props) => {
         resolve();
       });
     }).finally(() => {
-      TrackJS.track(`loginId:${loginId} otp:${otp} finally-block-otp-Error`);
       setVerifyOtpError(true);
     });
   };
@@ -363,7 +357,6 @@ export const AuthProvider: React.FC = (props) => {
           );
           if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
             if (signInError) console.error(signInError);
-            TrackJS.track(signInError);
             setSignInError(true);
             setIsSigningIn(false);
             app.auth().signOut();

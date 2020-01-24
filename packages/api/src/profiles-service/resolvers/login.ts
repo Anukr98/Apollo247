@@ -53,11 +53,14 @@ const login: Resolver<
   let otp = generateOTP();
 
   //if performance environment(as), use the static otp
-  if (process.env.NODE_ENV === 'as' && process.env.PERFORMANCE_ENV_STATIC_OTP) {
+  if (
+    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') &&
+    process.env.PERFORMANCE_ENV_STATIC_OTP
+  ) {
     otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
   }
 
-  //if production environment, and specifin mobileNumber, use the static otp
+  //if production environment, and specific mobileNumber, use the static otp
   if (
     process.env.NODE_ENV === 'production' &&
     process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
@@ -77,7 +80,7 @@ const login: Resolver<
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
 
   //if performance environment(as), return the response without sending SMS
-  if (process.env.NODE_ENV === 'as') {
+  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
     return {
       status: true,
       loginId: otpSaveResponse.id,
@@ -140,7 +143,10 @@ const resendOtp: Resolver<
   let otp = generateOTP();
 
   //if performance environment(as), use the static otp
-  if (process.env.NODE_ENV === 'as' && process.env.PERFORMANCE_ENV_STATIC_OTP) {
+  if (
+    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') &&
+    process.env.PERFORMANCE_ENV_STATIC_OTP
+  ) {
     otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
   }
 
@@ -157,7 +163,7 @@ const resendOtp: Resolver<
   archiveOtpRecord(validResendRecord[0].id, profilesDb);
 
   //if performance environment(as), return the response without sending SMS
-  if (process.env.NODE_ENV === 'as') {
+  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
     return {
       status: true,
       loginId: otpSaveResponse.id,
@@ -242,7 +248,6 @@ const sendSMS = async (mobileNumber: string, otp: string) => {
     JSON.stringify(smsResponse),
     ''
   );
-
   return smsResponse;
 };
 

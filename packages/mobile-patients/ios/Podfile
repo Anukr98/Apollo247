@@ -72,7 +72,6 @@ target 'ApolloPatient' do
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
   pod 'ReactNativePermissions', :path => '../node_modules/react-native-permissions'
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
-  pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'

@@ -155,6 +155,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
+  console.log(error, 'errorerror');
 
   const getAppointments = data && data.getDoctorAppointments;
   const todayDateStyle = moment(calendarDate).format('YYYY-MM-DD');
@@ -180,7 +181,13 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const renderMonthSelection = () => {
     return (
       <TouchableOpacity
-        style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: 12,
+          paddingBottom: 12,
+        }}
         onPress={() => setCalendarVisible(!isCalendarVisible)}
       >
         <Text style={{ color: '#02475b', ...theme.fonts.IBMPlexSansBold(14), marginRight: 4 }}>

@@ -35,7 +35,8 @@ const updateDoctorOnlineStatus: Resolver<
   await docRepo.update(doctor.id, { onlineStatus });
 
   //update login session
-  if (doctor.statusChangeTime == null) docRepo.update(doctor.id, { statusChangeTime: new Date() });
+  if (doctor.statusChangeTime == null || typeof doctor.statusChangeTime == undefined)
+    docRepo.update(doctor.id, { statusChangeTime: new Date() });
   else {
     if (doctor.onlineStatus !== onlineStatus) {
       //calculate hours between now and sessionChangeTime
@@ -77,6 +78,7 @@ const updateDoctorOnlineStatus: Resolver<
         //update the existing record.
       }
       loginSessionRepo.updateLoginSession(sessionRecord);
+      docRepo.update(doctor.id, { statusChangeTime: undefined });
     }
   }
 

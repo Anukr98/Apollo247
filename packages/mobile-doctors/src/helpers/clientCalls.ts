@@ -1,6 +1,7 @@
 import ApolloClient from 'apollo-client';
 import { GetDoctorNextAvailableSlot } from '../graphql/types/GetDoctorNextAvailableSlot';
-import { NEXT_AVAILABLE_SLOT } from '../graphql/profiles';
+import { NEXT_AVAILABLE_SLOT, DOWNLOAD_DOCUMENT } from '../graphql/profiles';
+import { downloadDocuments } from '@aph/mobile-doctors/src/graphql/types/downloadDocuments';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -32,6 +33,33 @@ export const getNextAvailableSlots = (
       })
       .catch((e: string) => {
         console.log('Error occured while searching Doctor', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getPrismUrls = (
+  client: ApolloClient<object>,
+  patientId: string,
+  fileIds: string[]
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<downloadDocuments>({
+        query: DOWNLOAD_DOCUMENT,
+        fetchPolicy: 'no-cache',
+        variables: {
+          downloadDocumentsInput: {
+            patientId: patientId,
+            fileIds: fileIds,
+          },
+        },
+      })
+      .then(({ data }) => {
+        res({ urls: data.downloadDocuments.downloadPaths });
+      })
+      .catch((e: any) => {
+        const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
   });

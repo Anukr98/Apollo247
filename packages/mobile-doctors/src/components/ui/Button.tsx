@@ -42,7 +42,7 @@ export interface ButtonProps {
   title?: string;
   onPress?: TouchableOpacityProps['onPress'];
   disabled?: boolean;
-  variant?: 'white' | 'orange';
+  variant?: 'white' | 'orange' | 'green';
   buttonIcon?: React.ReactNode;
 }
 
@@ -51,7 +51,11 @@ export const Button: React.FC<ButtonProps> = (props) => {
     <TouchableOpacity
       style={[
         styles.containerStyles,
-        props.variant == 'white' ? { backgroundColor: theme.colors.WHITE } : {},
+        props.variant == 'white'
+          ? { backgroundColor: theme.colors.WHITE }
+          : props.variant == 'green'
+          ? { backgroundColor: theme.colors.APP_GREEN }
+          : {},
         props.style,
         props.disabled ? styles.disabledStyle : null,
       ]}
@@ -63,7 +67,11 @@ export const Button: React.FC<ButtonProps> = (props) => {
         <Text
           style={[
             styles.titleTextStyle,
-            props.variant == 'white' ? { color: theme.colors.BUTTON_BG } : {},
+            props.variant == 'white'
+              ? { color: theme.colors.BUTTON_BG }
+              : props.variant == 'green'
+              ? { backgroundColor: theme.colors.APP_GREEN }
+              : {},
             props.titleTextStyle,
           ]}
         >

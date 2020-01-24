@@ -36,6 +36,8 @@ import {
   Packages,
   Secretary,
   StarTeam,
+  Auditor,
+  AdminAuditorMapper,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -93,6 +95,8 @@ export const connect = async () => {
         Packages,
         Secretary,
         StarTeam,
+        Auditor,
+        AdminAuditorMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

@@ -907,3 +907,66 @@ export class DoctorLoginSessionHistory extends BaseEntity {
   offlineTimeInSeconds: number;
 }
 //Login session ends
+//Auditor starts
+@Entity()
+export class Auditor extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  displayName: string;
+
+  @Column()
+  auditorType: string;
+
+  @Column()
+  firstName: string;
+
+  @Column()
+  middleName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
+  emailAddress: string;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  gender: string;
+
+  @Column({ nullable: true })
+  photo: string;
+
+  @Column()
+  password: string;
+
+  @Column({ default: true })
+  isActive: Boolean;
+
+  @OneToMany((type) => AdminAuditorMapper, (adminauditormapper) => adminauditormapper.auditor)
+  adminauditormapper: AdminAuditorMapper[];
+}
+//Auditor end
+// QAadmin_auditor_mapper starts
+
+@Entity()
+export class AdminAuditorMapper extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @ManyToOne((type) => Auditor, (auditor) => auditor.adminauditormapper)
+  auditor: Auditor;
+
+  @ManyToOne((type) => AdminUsers, (adminuser) => adminuser.admindoctormapper)
+  adminuser: AdminUsers;
+}
+// QAadmin_auditor_mapper ends

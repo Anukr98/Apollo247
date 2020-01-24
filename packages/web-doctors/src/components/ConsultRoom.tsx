@@ -19,6 +19,7 @@ import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
+import { useAuth } from 'hooks/authHooks';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -347,6 +348,7 @@ interface ConsultRoomProps {
   doctorId: string;
   patientId: string;
   pubnub: any;
+  sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
 }
@@ -369,7 +371,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
-  const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
+  const { currentPatient, isSignedIn } = useAuth();
+  const { documentArray, setDocumentArray, patientDetails, appointmentInfo } = useContext(
+    CaseSheetContext
+  );
 
   const apolloClient = useApolloClient();
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
@@ -618,7 +623,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       })
       .catch((error: ApolloError) => {
-        // console.log(error);
+        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+        const logObject = {
+          api: 'AddChatDocument',
+          inputParam: JSON.stringify({ appointmentId: props.appointmentId, documentPath: url }),
+          appointmentId: props.appointmentId,
+          doctorId: doctorId,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentInfo!.appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+        props.sessionClient.notify(JSON.stringify(logObject));
       });
   };
   const convertChatTime = (timeStamp: any) => {
@@ -1076,7 +1096,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     }}
                   />
                 </Button>
-                )}
                 <AphTextField
                   autoFocus
                   className={classes.inputWidth}

@@ -1,9 +1,10 @@
-import { theme } from '@aph/mobile-doctors//src/theme/theme';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import {
   StyleProp,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
@@ -27,7 +28,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     color: theme.colors.CARD_HEADER,
     ...theme.fonts.IBMPlexSansSemiBold(36),
-    marginTop: 28,
   },
   descriptionText: {
     lineHeight: 24,
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     position: 'absolute',
-    bottom: 15,
+    bottom: 7,
     right: -25,
     height: 64,
     width: 64,
@@ -46,7 +46,8 @@ const styles = StyleSheet.create({
 export interface CardProps {
   cardContainer?: StyleProp<ViewStyle>;
   heading?: string;
-  descriptionTextStyle?: StyleProp<ViewStyle>;
+  descriptionTextStyle?: StyleProp<TextStyle>;
+  headingTextStyle?: StyleProp<TextStyle>;
   description?: string;
   disableButton?: boolean;
   buttonIcon?: React.ReactNode;
@@ -56,12 +57,12 @@ export interface CardProps {
 export const Card: React.FC<CardProps> = (props) => {
   return (
     <View style={[styles.cardContainer, props.cardContainer]}>
-      <Text style={styles.headingText}>{props.heading}</Text>
+      <Text style={[styles.headingText, props.headingTextStyle]}>{props.heading}</Text>
       <Text style={[styles.descriptionText, props.descriptionTextStyle]}>{props.description}</Text>
       <TouchableOpacity
+        activeOpacity={1}
         style={styles.buttonStyle}
         onPress={props.disableButton ? () => {} : props.onClickButton}
-        activeOpacity={props.disableButton ? 1 : 0.5}
       >
         {props.buttonIcon}
       </TouchableOpacity>

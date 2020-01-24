@@ -13,19 +13,21 @@ import JWTDecode
 @objc(Vitals)
 class Vitals: NSObject {
   @objc
-  func vitalsToExport(_ token: String) -> Void {
-    print("vitalsToExport", token)
+  func vitalsToExport(_ token: String, buildSpecify specify: String) -> Void {
+    print("vitalsToExport", token, specify)
     
     let vitaToken = String(format:"Open %@", token)
    UserDefaults.standard.set(vitaToken, forKey: "CONDITIONMANAGEMENT_VITA_TOKEN");
+    
+    if (specify == "QA" || specify == "DEV") {
+      print("vitalsToExport QA")
+      UserDefaults.standard.set("play", forKey: "environment")
+    } else {
+      print("vitalsToExport PROD")
+      UserDefaults.standard.set("prod", forKey: "environment")
+    }
    
-    #if DEVELOPMENT
-    UserDefaults.standard.set("play", forKey: "environment")
-    #else
-    UserDefaults.standard.set("prod", forKey: "environment")
-    #endif
     UserDefaults.standard.set(true, forKey: "isComingFrom24x7")
-//    UserDefaults.standard.set("prod", forKey: "environment")  while production enable it..
 
     UserDefaults.standard.synchronize();
   }

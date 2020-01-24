@@ -519,6 +519,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
+            setSendAnswers(6);
           } catch (error) {}
           break;
         case 'weight':
@@ -678,7 +679,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
-          startJoinTimer(0);
           console.log(data, 'data res, adding');
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
@@ -1668,6 +1668,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         abondmentStarted = false;
         APIForUpdateAppointmentData(true);
         setTextChange(false);
+        try {
+          Keyboard.dismiss()
+        } catch (error) {
+          
+        }
 
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
@@ -3399,7 +3404,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === acceptedCallMsg ||
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
-      rowData.message === callAbandonment
+      rowData.message === callAbandonment || 
+      rowData.message === appointmentComplete
     ) {
       return null;
     }

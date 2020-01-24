@@ -1,3 +1,5 @@
+import { Star } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { getPatientLog_getPatientLog_patientInfo } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 import React from 'react';
 import {
   Image,
@@ -6,18 +8,12 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
   View,
   ViewStyle,
-  TouchableOpacityProps,
-  TouchableOpacity,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { Star } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { type } from 'os';
-import {
-  getPatientLog,
-  getPatientLog_getPatientLog_patientInfo,
-} from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -92,7 +88,7 @@ export interface CalendarCardProps {
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
   icon?: Element;
-  consults?: string;
+  consults?: string | null;
   lastconsult?: string;
   icon2?: Element;
   typeValue?: boolean;
@@ -102,8 +98,8 @@ export interface CalendarCardProps {
 
 export const PatientCard: React.FC<CalendarCardProps> = (props) => {
   return (
-    <TouchableOpacity onPress={props.onPress}>
-      <View style={[styles.containerStyle, props.containerStyle]}>
+    <TouchableOpacity style={[styles.containerStyle, props.containerStyle]} onPress={props.onPress}>
+      <View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={[styles.imageView, { marginTop: 15 }]}>
             <Image
@@ -140,23 +136,31 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
               <View style={{ marginBottom: 4 }}>{props.icon}</View>
             </View>
             <View style={styles.seperatorline}></View>
-            <View style={[styles.iconview, { marginTop: 7, marginBottom: 5 }]}>
-              <Text style={styles.lastconsult} numberOfLines={1}>
-                {props.lastconsult}
-              </Text>
-            </View>
+            {props.lastconsult && (
+              <View style={[styles.iconview, { marginTop: 7, marginBottom: 5 }]}>
+                <Text style={styles.lastconsult} numberOfLines={1}>
+                  Last Consult: {props.lastconsult}
+                </Text>
+              </View>
+            )}
             <View style={{ flexDirection: 'row', marginBottom: 3 }}>
-              <Text style={styles.consultstyles}>Total Revenue — Rs. {props.revenue}</Text>
-              <View
-                style={{
-                  height: 12,
-                  borderRightWidth: 0.5,
-                  borderColor: 'rgba(2, 71, 91, 0.6)',
-                  marginHorizontal: 7,
-                }}
-              />
+              {props.revenue && (
+                <>
+                  <Text style={styles.consultstyles}>
+                    Total Revenue — Rs. {props.revenue || '-'}
+                  </Text>
+                  <View
+                    style={{
+                      height: 12,
+                      borderRightWidth: 0.5,
+                      borderColor: 'rgba(2, 71, 91, 0.6)',
+                      marginHorizontal: 7,
+                    }}
+                  />
+                </>
+              )}
               <Text style={styles.consultstyles} numberOfLines={1}>
-                {props.consults}
+                {`${props.consults} Consult${Number(props.consults) !== 1 ? 's' : ''}`}
               </Text>
             </View>
           </View>

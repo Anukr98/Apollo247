@@ -12,7 +12,6 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
-import { TEST_COLLECTION_TYPE } from 'profiles-service/entities';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -512,13 +511,7 @@ export type CaseSheetMedicinePrescription = {
 };
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
-  collectionMethod: TEST_COLLECTION_TYPE;
-  id: string;
-  imageUrl: string;
-  isCustom: boolean;
-  itemId: string;
   itemname: string;
-  price: string;
 };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
@@ -898,18 +891,18 @@ export class JdDashboardSummary extends BaseEntity {
   @Column()
   appointmentDateTime: Date;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   waitTimePerChat: number;
 
   //Case sheet fill time per chat, Avg time
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   caseSheetFillTime: number;
 
   @Column({ default: 0 })
   totalCompletedChats: number;
 
   //Total time taken per chat, Avg  time
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerChat: number;
 
   @Column({ default: 0 })
@@ -930,7 +923,7 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   awayHours: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   totalConsultationTime: number;
 
   @Column({ default: 0 })
@@ -954,6 +947,14 @@ export class JdDashboardSummary extends BaseEntity {
   //% of consults more than 15 mins
   @Column({ default: 0 })
   completeMore15: number;
+
+  //Avg. time for consult
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  avgTimePerConsult: number;
+
+  //total allocated chats
+  @Column({ default: 0 })
+  totalAllocatedChats: number;
 
   @Column()
   createdDate: Date;
