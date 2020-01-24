@@ -22,7 +22,6 @@ const aphTheme: ThemeOptions = {
     },
     text: {
       primary: '#02475b',
-      secondary: '#f7f8f5',
     },
     background: {
       default: '#dcdfce',
