@@ -97,6 +97,7 @@ const ConfigurationDev = {
   iOS_Version: '1.7',
   Android_Version: '1.83',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
 
 // QA
@@ -126,8 +127,9 @@ const ConfigurationQA = {
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   iOS_Version: '1.9',
-  Android_Version: '1.24',
+  Android_Version: '1.19',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
 
 //Production
@@ -158,7 +160,8 @@ const ConfigurationProd = {
   ...appStaticVariables,
   iOS_Version: '1.7',
   Android_Version: '1.16',
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
 
 const Configuration =

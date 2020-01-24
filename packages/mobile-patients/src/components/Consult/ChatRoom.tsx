@@ -521,6 +521,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
+            setSendAnswers(6);
           } catch (error) {
             CommonBugFender('ChatRoom_Answers0_try', error);
           }
@@ -1712,6 +1713,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         abondmentStarted = false;
         APIForUpdateAppointmentData(true);
         setTextChange(false);
+        try {
+          Keyboard.dismiss()
+        } catch (error) {
+          
+        }
 
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
