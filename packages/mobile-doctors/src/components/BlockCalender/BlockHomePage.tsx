@@ -156,7 +156,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
       .filter((i) => i !== false);
   };
 
-  const showErrorMessage = (error) => {
+  const showErrorMessage = (error: any) => {
     let message = '';
     try {
       message = error.message.split(':')[1].trim();
