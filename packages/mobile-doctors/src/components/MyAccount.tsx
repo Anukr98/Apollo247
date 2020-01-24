@@ -10,7 +10,7 @@ import { NavigationActions } from 'react-navigation';
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
-  const { clearFirebaseUser } = useAuth();
+  const { signOut } = useAuth();
 
   return (
     <View
@@ -25,20 +25,21 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         style={{ width: '80%' }}
         title="LOGOUT"
         onPress={() => {
-          Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData(), CheckDelegate])
-            .then(() => {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
-                })
-              );
-            })
-            .catch((e) => {
-              console.log(e);
-              Alert.alert('Error', 'Something went wrong while signing you out.');
-            });
+          signOut && signOut();
+          // Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData(), CheckDelegate])
+          //   .then(() => {
+          //     props.navigation.dispatch(
+          //       StackActions.reset({
+          //         index: 0,
+          //         key: null,
+          //         actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
+          //       })
+          //     );
+          //   })
+          //   .catch((e) => {
+          //     console.log(e);
+          //     Alert.alert('Error', 'Something went wrong while signing you out.');
+          //   });
         }}
       />
     </View>

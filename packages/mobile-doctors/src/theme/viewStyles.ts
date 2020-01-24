@@ -1,5 +1,5 @@
 import { colors } from './colors';
-import { getTextStyle } from '@aph/mobile-doctors/src/theme/fonts';
+import { getTextStyle, fonts } from '@aph/mobile-doctors/src/theme/fonts';
 
 export const viewStyles = {
   container: {
@@ -64,10 +64,23 @@ export const viewStyles = {
     borderBottomColor: 'rgba(2, 71, 91, 0.2)',
   },
   shadowStyle: {
-    shadowColor: '#808080',
+    shadowColor: colors.SHADOW_GRAY,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 16,
+  },
+  mediumSeparatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+  },
+  darkSeparatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.TEXT_LIGHT_BLUE,
+  },
+  yellowTextStyle: {
+    ...fonts.IBMPlexSansBold(13),
+    color: colors.APP_YELLOW,
+    lineHeight: 24,
   },
 };

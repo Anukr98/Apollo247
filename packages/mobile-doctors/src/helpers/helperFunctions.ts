@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { NetInfo } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 
 export const timeTo12HrFormat = (time: string) => {
   return moment(time).format('h:mm a');
@@ -77,7 +77,7 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
 };
 
 export const getNetStatus = async () => {
-  const status = await NetInfo.getConnectionInfo().then((connectionInfo) => {
+  const status = await NetInfo.fetch().then((connectionInfo) => {
     //console.log(connectionInfo, 'connectionInfo');
     return connectionInfo.type !== 'none';
   });

@@ -556,12 +556,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { favList, favListError, favlistLoading } = CaseSheetAPI();
 
   useEffect(() => {
-    // if (favList) {
-    //   const data = favList.getDoctorFavouriteAdviceList!.adviceList!.map(
-    //     (item) => item!.instruction
-    //   );
-    //   data && setFavAdvices(data);
-    // }
+    if (favList) {
+      const data =
+        favList.getDoctorFavouriteAdviceList &&
+        favList.getDoctorFavouriteAdviceList.adviceList &&
+        favList.getDoctorFavouriteAdviceList.adviceList.map((item) => item && item.instruction);
+      data && setFavAdvices(data);
+    }
   }, [favList]);
   useEffect(() => {
     // client
@@ -1242,7 +1243,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             width: width / 3,
                             ...theme.fonts.IBMPlexSansMedium(16),
                           }}
-                          value={followupDays && followupDays!.toString()}
+                          value={followupDays ? followupDays.toString() : ''}
                           blurOnSubmit={false}
                           // returnKeyType="send"
                           onChangeText={(value) => {
