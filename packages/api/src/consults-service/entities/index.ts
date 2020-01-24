@@ -989,6 +989,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column()
   appointmentDateTime: Date;
 
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  casesheetPrepTime: number;
+
   @Column({ default: 0 })
   totalConsultations: number;
 
@@ -1021,6 +1024,9 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column({ default: 0 })
   consultSlots: number;
+
+  @Column({ default: 0 })
+  totalFollowUp: number;
 
   @Column({ default: 0 })
   paidFollowUp: number;
