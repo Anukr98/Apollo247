@@ -1046,6 +1046,12 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   unPaidFollowUp: number;
 
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  loggedInHours: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  awayHours: number;
+
   @Column()
   createdDate: Date;
 

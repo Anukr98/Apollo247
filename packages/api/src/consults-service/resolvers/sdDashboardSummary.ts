@@ -19,6 +19,7 @@ import { PatientHelpTicketRepository } from 'profiles-service/repositories/patie
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import { LoginHistoryRepository } from 'doctors-service/repositories/loginSessionRepository';
 import _isEmpty from 'lodash/isEmpty';
 
 export const sdDashboardSummaryTypeDefs = gql`
@@ -85,6 +86,7 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   medOrderRepo: patientsDb.getCustomRepository(MedicineOrdersRepository),
   adminMapRepo: doctorsDb.getCustomRepository(AdminDoctorMap),
   medRecordRepo: patientsDb.getCustomRepository(MedicalRecordsRepository),
+  loginSessionRepo: doctorsDb.getCustomRepository(LoginHistoryRepository),
 });
 
 const updateConsultRating: Resolver<
@@ -158,10 +160,20 @@ const updateSdSummary: Resolver<
   ConsultServiceContext,
   DashboardSummaryResult
 > = async (parent, args, context) => {
-  const { docRepo, dashboardRepo, adminMapRepo } = getRepos(context);
+  const { docRepo, dashboardRepo, adminMapRepo, loginSessionRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
+      const loginSessionData = await loginSessionRepo.getLoginDetailsByDocId(
+        doctor.id,
+        args.summaryDate
+      );
+      let loggedInHours = 0,
+        awayHours = 0;
+      if (loginSessionData) {
+        loggedInHours = parseFloat((loginSessionData.onlineTimeInSeconds / 60 / 60).toFixed(2));
+        awayHours = parseFloat((loginSessionData.offlineTimeInSeconds / 60 / 60).toFixed(2));
+      }
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,
         args.summaryDate,
@@ -244,6 +256,8 @@ const updateSdSummary: Resolver<
         casesheetPrepTime,
         within15Consultations,
         adminIds,
+        loggedInHours,
+        awayHours,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });
