@@ -12,6 +12,7 @@ import {
   AppointmentDocuments,
   CaseSheet,
   CASESHEET_STATUS,
+  TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
 import { ConsultMode, DoctorType } from 'doctors-service/entities';
@@ -127,6 +128,21 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           status2: STATUS.PAYMENT_PENDING,
         })
         .getCount();
+    } else if (appointmentType == 'PHYSICAL') {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.appointmentType = :appointmentType', {
+          appointmentType: APPOINTMENT_TYPE.PHYSICAL,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getCount();
     } else {
       return Appointment.createQueryBuilder('appointment')
         .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
@@ -204,7 +220,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .groupBy('appointment_call_details."appointmentId"')
       .getRawMany();
     if (callDetails && callDetails.length > 0) {
-      return callDetails[0].totalrows;
+      return callDetails.length;
     } else {
       return 0;
     }
@@ -222,20 +238,35 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     // }
   }
 
-  getRescheduleCount(doctorId: string, appointmentDate: Date) {
+  getRescheduleCount(
+    doctorId: string,
+    appointmentDate: Date,
+    rescheduleType: TRANSFER_INITIATED_TYPE
+  ) {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
-    return Appointment.createQueryBuilder('appointment')
-      .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)', {
-        fromDate: startDate,
-        toDate: endDate,
-      })
-      .andWhere('appointment."rescheduleCountByDoctor" > 0')
-      .andWhere('appointment."doctorId" = :doctorId', { doctorId: doctorId })
-      .getCount();
+    if (rescheduleType == TRANSFER_INITIATED_TYPE.DOCTOR) {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment."rescheduleCountByDoctor" > 0')
+        .andWhere('appointment."doctorId" = :doctorId', { doctorId: doctorId })
+        .getCount();
+    } else {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment."rescheduleCount" > 0')
+        .andWhere('appointment."doctorId" = :doctorId', { doctorId: doctorId })
+        .getCount();
+    }
   }
 
   async getDoctorSlots(doctorId: string, appointmentDate: Date, doctorsDb: Connection) {
@@ -298,6 +329,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         totalHours =
           parseFloat(totalHours.toString()) + parseFloat(apptTime.callDuration.toString());
       });
+      totalHours = parseFloat((totalHours / 60).toFixed(2));
     }
     return totalHours;
   }
@@ -392,7 +424,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       console.log(callDetails, 'callDetails');
 
       if (callDetails.length > 0) {
-        duration = callDetails[0].totalduration;
+        duration = parseFloat((callDetails[0].totalduration / 60).toFixed(2));
       }
     }
     return duration;

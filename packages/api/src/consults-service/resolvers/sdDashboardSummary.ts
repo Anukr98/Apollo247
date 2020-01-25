@@ -7,6 +7,7 @@ import {
   FeedbackDashboardSummary,
   PhrDocumentsSummary,
   DoctorFeeSummary,
+  TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
 import { ConsultMode } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
@@ -17,6 +18,7 @@ import { PatientFeedbackRepository } from 'profiles-service/repositories/patient
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
+import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import _isEmpty from 'lodash/isEmpty';
 
 export const sdDashboardSummaryTypeDefs = gql`
@@ -81,6 +83,7 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   feedbackRepo: patientsDb.getCustomRepository(PatientFeedbackRepository),
   helpTicketRepo: patientsDb.getCustomRepository(PatientHelpTicketRepository),
   medOrderRepo: patientsDb.getCustomRepository(MedicineOrdersRepository),
+  adminMapRepo: doctorsDb.getCustomRepository(AdminDoctorMap),
   medRecordRepo: patientsDb.getCustomRepository(MedicalRecordsRepository),
 });
 
@@ -155,7 +158,7 @@ const updateSdSummary: Resolver<
   ConsultServiceContext,
   DashboardSummaryResult
 > = async (parent, args, context) => {
-  const { docRepo, dashboardRepo } = getRepos(context);
+  const { docRepo, dashboardRepo, adminMapRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
@@ -169,10 +172,24 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         'ONLINE'
       );
+      const totalPhysicalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
+        doctor.id,
+        args.summaryDate,
+        'PHYSICAL'
+      );
       const auidoCount = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
       const videoCount = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
       const chatCount = await dashboardRepo.getCallsCount(doctor.id, 'CHAT', args.summaryDate);
-      const reschduleCount = await dashboardRepo.getRescheduleCount(doctor.id, args.summaryDate);
+      const reschduleCount = await dashboardRepo.getRescheduleCount(
+        doctor.id,
+        args.summaryDate,
+        TRANSFER_INITIATED_TYPE.DOCTOR
+      );
+      const patientReschduleCount = await dashboardRepo.getRescheduleCount(
+        doctor.id,
+        args.summaryDate,
+        TRANSFER_INITIATED_TYPE.PATIENT
+      );
       const slotsCount = await dashboardRepo.getDoctorSlots(
         doctor.id,
         args.summaryDate,
@@ -199,17 +216,26 @@ const updateSdSummary: Resolver<
         doctor.id,
         0
       );
+      const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
+      let adminIds = '';
+      if (adminIdRows.length > 0) {
+        adminIdRows.forEach((adminId) => {
+          adminIds += adminId.adminuser + ',';
+        });
+      }
       const dashboardSummaryAttrs: Partial<SdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
         totalConsultations,
         totalVirtualConsultations: virtaulConsultations,
+        totalPhysicalConsultations,
         appointmentDateTime: args.summaryDate,
         audioConsultations: auidoCount,
         videoConsultations: videoCount,
         chatConsultations: chatCount,
         totalFollowUp: paidFollowUpCount + unpaidFollowUpCount,
         rescheduledByDoctor: reschduleCount,
+        rescheduledByPatient: patientReschduleCount,
         consultSlots: slotsCount,
         timePerConsult: consultHours,
         paidFollowUp: paidFollowUpCount,
@@ -217,6 +243,7 @@ const updateSdSummary: Resolver<
         onTimeConsultations: callDuration,
         casesheetPrepTime,
         within15Consultations,
+        adminIds,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });

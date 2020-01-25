@@ -7,6 +7,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { JdDashboardSummaryRepository } from 'consults-service/repositories/jdDashboardSummaryRepository';
 import { differenceInSeconds, addMinutes } from 'date-fns';
+import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 
 export const jdDashboardSummaryTypeDefs = gql`
   type JdDashboardSummaryResult {
@@ -46,6 +47,7 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   patRepo: patientsDb.getCustomRepository(PatientRepository),
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
   dashboardRepo: consultsDb.getCustomRepository(JdDashboardSummaryRepository),
+  adminMapRepo: doctorsDb.getCustomRepository(AdminDoctorMap),
 });
 
 const updateCaseSheetTime: Resolver<
@@ -82,7 +84,7 @@ const updateJdSummary: Resolver<
   ConsultServiceContext,
   JdDashboardSummaryResult
 > = async (parent, args, context) => {
-  const { docRepo, dashboardRepo } = getRepos(context);
+  const { docRepo, dashboardRepo, adminMapRepo } = getRepos(context);
   const docsList = await docRepo.getAllJuniorDoctors(args.doctorId);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
@@ -121,10 +123,18 @@ const updateJdSummary: Resolver<
         doctor.id
       );
       const casesOngoing = await dashboardRepo.getOngoingCases(args.summaryDate, doctor.id);
+      const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
+      let adminIds = '';
+      if (adminIdRows.length > 0) {
+        adminIdRows.forEach((adminId) => {
+          adminIds += adminId.adminuser + ',';
+        });
+      }
       const dashboardSummaryAttrs: Partial<JdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
         appointmentDateTime: args.summaryDate,
+        adminIds,
         waitTimePerChat,
         caseSheetFillTime,
         totalCompletedChats,

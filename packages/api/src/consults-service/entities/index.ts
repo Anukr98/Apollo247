@@ -888,6 +888,9 @@ export class JdDashboardSummary extends BaseEntity {
   @Column()
   doctorName: string;
 
+  @Column({ default: '' })
+  adminIds: string;
+
   @Column()
   appointmentDateTime: Date;
 
@@ -986,6 +989,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column()
   doctorName: string;
 
+  @Column({ default: '' })
+  adminIds: string;
+
   @Column()
   appointmentDateTime: Date;
 
@@ -997,6 +1003,9 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column({ default: 0 })
   totalVirtualConsultations: number;
+
+  @Column({ default: 0 })
+  totalPhysicalConsultations: number;
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   onTimeConsultations: number;
@@ -1018,6 +1027,9 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column({ default: 0 })
   rescheduledByDoctor: number;
+
+  @Column({ default: 0 })
+  rescheduledByPatient: number;
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerConsult: number;
