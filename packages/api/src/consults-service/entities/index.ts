@@ -1082,11 +1082,39 @@ export class DoctorFeeSummary extends BaseEntity {
   @Column()
   doctorId: string;
 
+  @Column({ default: '' })
+  doctorName: string;
+
+  @Column({ default: '' })
+  specialtiyId: string;
+
+  @Column({ default: '' })
+  specialityName: string;
+
+  @Column({ default: '' })
+  areaName: string;
+
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   amountPaid: number;
 
   @Column()
   appointmentsCount: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 //Doctor fee summary end
 

@@ -232,7 +232,7 @@ const updateSdSummary: Resolver<
       let adminIds = '';
       if (adminIdRows.length > 0) {
         adminIdRows.forEach((adminId) => {
-          adminIds += adminId.adminuser + ',';
+          adminIds += adminId.adminuser.id + ',';
         });
       }
       const dashboardSummaryAttrs: Partial<SdDashboardSummary> = {
@@ -298,7 +298,11 @@ const updateDoctorFeeSummary: Resolver<
       const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
         appointmentDateTime: args.summaryDate,
         doctorId: doctor.id,
+        doctorName: doctor.firstName + ' ' + doctor.lastName,
         amountPaid: totalFee,
+        specialtiyId: doctor.specialty.id,
+        specialityName: doctor.specialty.name,
+        areaName: doctor.doctorHospital[0].facility.city,
         appointmentsCount: totalConsultations.length,
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
