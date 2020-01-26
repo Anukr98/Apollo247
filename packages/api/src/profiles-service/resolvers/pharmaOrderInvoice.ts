@@ -8,7 +8,6 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
-  DEVICE_TYPE,
   MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 

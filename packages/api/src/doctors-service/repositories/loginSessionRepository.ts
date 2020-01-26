@@ -18,4 +18,8 @@ export class LoginHistoryRepository extends Repository<DoctorLoginSessionHistory
       });
     });
   }
+
+  getLoginDetailsByDocId(doctor: string, sessionDate: Date) {
+    return this.findOne({ where: { doctor, sessionDate } });
+  }
 }
