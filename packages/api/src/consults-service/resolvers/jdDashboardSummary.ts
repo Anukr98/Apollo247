@@ -139,7 +139,7 @@ const updateJdSummary: Resolver<
       let adminIds = '';
       if (adminIdRows.length > 0) {
         adminIdRows.forEach((adminId) => {
-          adminIds += adminId.adminuser + ',';
+          adminIds += adminId.adminuser.id + ',';
         });
       }
       const dashboardSummaryAttrs: Partial<JdDashboardSummary> = {
