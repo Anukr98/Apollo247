@@ -29,7 +29,7 @@ import {
   Dimensions,
 } from 'react-native';
 //import { WebView } from 'react-native-webview';
-import firebase, { RNFirebase } from 'react-native-firebase';
+import firebase from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
 import { db } from '../strings/FirebaseConfig';
@@ -38,7 +38,6 @@ import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { loginAPI } from '../helpers/loginCalls';
-import { useApolloClient } from 'react-apollo-hooks';
 import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window');
@@ -125,7 +124,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
-  const client = useApolloClient();
 
   useEffect(() => {
     try {
@@ -294,6 +292,9 @@ export const Login: React.FC<LoginProps> = (props) => {
                   });
 
                 console.log('confirmResult login', confirmResult);
+                try {
+                  signOut();
+                } catch (error) {}
 
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
