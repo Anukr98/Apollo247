@@ -598,6 +598,8 @@ interface ChatWindowProps {
   nextSlotAvailable: string;
   availableNextSlot: (slotDoctorId: string, todayDate: Date) => void;
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
+  jrDoctorJoined: boolean;
+  setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
 }
 
 interface AutoMessageStrings {
@@ -674,7 +676,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const [playing, setPlaying] = useState(false);
   const toggle = () => setPlaying(!playing);
-  const [jrDoctorJoined, setJrDoctorJoined] = React.useState<boolean>(false);
   const [doctorJoined, setDoctorJoined] = React.useState<boolean>(false);
   const [reschedule, setReschedule] = React.useState<boolean>(false);
   // const client = useApolloClient();
@@ -806,13 +807,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
       if (messages.length !== newmessage.length) {
         if (newmessage[newmessage.length - 1].message === autoMessageStrings.startConsult) {
-          setJrDoctorJoined(false);
+          props.setJrDoctorJoined(false);
           // updateSessionAPI();
           // checkingAppointmentDates();
         }
 
         if (newmessage[newmessage.length - 1].message === autoMessageStrings.startConsultjr) {
-          setJrDoctorJoined(true);
+          props.setJrDoctorJoined(true);
           // updateSessionAPI();
           // checkingAppointmentDates();
         }
@@ -861,7 +862,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         }
 
         if (message.message.message === autoMessageStrings.startConsultjr) {
-          setJrDoctorJoined(true);
+          props.setJrDoctorJoined(true);
         }
 
         if (
@@ -917,7 +918,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const startTimerForFirstTextMessageToPatient = () => {
     thirtySecondTimer = setTimeout(function() {
-      if (jrDoctorJoined == false) {
+      if (props.jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.firstMessage;
         });
@@ -1009,7 +1010,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const startTimerForSecondTextMessageToPatient = () => {
     minuteTimer = setTimeout(function() {
-      if (jrDoctorJoined == false) {
+      if (props.jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.secondMessage;
         });
