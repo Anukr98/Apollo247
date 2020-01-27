@@ -508,7 +508,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 <View style={styles.amountPaidStyles}>
                   <Text style={styles.descriptionStyle}>Amount Paid</Text>
                   <Text style={styles.descriptionStyle}>
-                    {data.doctorInfo.onlineConsultationFees}
+                    {/* {data.doctorInfo.onlineConsultationFees} */}
+                    <Text
+                      style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}
+                    >
+                      (Rs. 999)
+                    </Text>{' '}
+                    Rs. 1
                   </Text>
                 </View>
               </View>
