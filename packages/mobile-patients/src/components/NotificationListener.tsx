@@ -721,25 +721,33 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               notificationType == 'Reschedule_Appointment' ||
               notificationType == 'Patient_Noshow_Reschedule_Appointment'
             ) {
-              appointmentData[0]!.appointmentType === 'ONLINE'
-                ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                    data: appointmentData[0],
-                    from: 'notification',
-                  })
-                : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                    data: appointmentData[0],
-                    from: 'notification',
-                  });
+              try {
+                if (appointmentData[0]!.doctorInfo !== null) {
+                  appointmentData[0]!.appointmentType === 'ONLINE'
+                    ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                        data: appointmentData[0],
+                        from: 'notification',
+                      })
+                    : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                        data: appointmentData[0],
+                        from: 'notification',
+                      });
+                }
+              } catch (error) {}
             } else if (
               notificationType == 'call_started' ||
               notificationType == 'chat_room' ||
               notificationType == 'Reminder_Appointment_15' ||
               notificationType == 'Reminder_Appointment_Casesheet_15'
             ) {
-              props.navigation.navigate(AppRoutes.ChatRoom, {
-                data: appointmentData[0],
-                callType: callType,
-              });
+              try {
+                if (appointmentData[0]!.doctorInfo !== null) {
+                  props.navigation.navigate(AppRoutes.ChatRoom, {
+                    data: appointmentData[0],
+                    callType: callType,
+                  });
+                }
+              } catch (error) {}
             }
           }
         } catch (error) {

@@ -262,34 +262,38 @@ export const Login: React.FC<LoginProps> = (props) => {
       })
       .catch((error: Error) => {
         //error callback
-        CommonBugFender('Login_onClickOkay', error);
         console.log('error ', error);
       });
 
     Keyboard.dismiss();
-    getNetStatus()
-      .then(async (status) => {
-        if (status) {
-          if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
-            null;
+    getNetStatus().then(async (status) => {
+      if (status) {
+        if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
+          null;
+        } else {
+          const isBlocked = await _getTimerData();
+          if (isBlocked) {
+            props.navigation.navigate(AppRoutes.OTPVerification, {
+              otpString,
+              phoneNumber: phoneNumber,
+            });
           } else {
-            const isBlocked = await _getTimerData();
-            if (isBlocked) {
-              props.navigation.navigate(AppRoutes.OTPVerification, {
-                otpString,
-                phoneNumber: phoneNumber,
-              });
-            } else {
-              CommonSetUserBugsnag(phoneNumber);
-              AsyncStorage.setItem('phoneNumber', phoneNumber);
-              setShowSpinner(true);
+            CommonSetUserBugsnag(phoneNumber);
+            AsyncStorage.setItem('phoneNumber', phoneNumber);
+            setShowSpinner(true);
 
-              loginAPI('+91' + phoneNumber)
-                .then((confirmResult: any) => {
-                  console.log(confirmResult, 'confirmResult');
-                  setShowSpinner(false);
+            loginAPI('+91' + phoneNumber)
+              .then((confirmResult: any) => {
+                console.log(confirmResult, 'confirmResult');
+                setShowSpinner(false);
 
-                  CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
+                CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
+
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
+                  });
 
                 console.log('confirmResult login', confirmResult);
                 try {
@@ -307,31 +311,23 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(error, 'error');
                 setShowSpinner(false);
 
-                  props.navigation.navigate(AppRoutes.OTPVerification, {
-                    otpString,
-                    phoneNumber: phoneNumber,
-                    dbChildKey,
-                    loginId: confirmResult.loginId,
+                db.ref('ApolloPatients/')
+                  .child(dbChildKey)
+                  .update({
+                    mobileNumberFailed: error && error.message,
                   });
-                })
-                .catch((error: Error) => {
-                  console.log(error, 'error');
-                  console.log(error.message, 'errormessage');
-                  setShowSpinner(false);
 
                 CommonLogEvent('OTP_SEND_FAIL', error.message);
                 CommonBugFender('OTP_SEND_FAIL', error);
                 handleGraphQlError(error);
               });
           }
-        } else {
-          setshowOfflinePopup(true);
-          setShowSpinner(false);
         }
-      })
-      .catch((e) => {
-        CommonBugFender('Login_getNetStatus', e);
-      });
+      } else {
+        setshowOfflinePopup(true);
+        setShowSpinner(false);
+      }
+    });
   };
 
   const openWebView = () => {

@@ -507,16 +507,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 activeOpacity={1}
                 style={[styles.doctorView]}
                 onPress={() => {
-                  CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-                  item.appointmentType === 'ONLINE'
-                    ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                        data: item,
-                        from: 'Consult',
-                      })
-                    : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                        data: item,
-                        from: 'Consult',
-                      });
+                  if (item.doctorInfo !== null) {
+                    console.log('doctorInfo', item.doctorInfo);
+                    CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
+                    item.appointmentType === 'ONLINE'
+                      ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                          data: item,
+                          from: 'Consult',
+                        })
+                      : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                          data: item,
+                          from: 'Consult',
+                        });
+                  }
                 }}
               >
                 <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
@@ -707,16 +710,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
-                            item.appointmentType === 'ONLINE'
-                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                                  data: item,
-                                  from: 'notification',
-                                })
-                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                  data: item,
-                                  from: 'notification',
-                                });
+                            if (item.doctorInfo !== null) {
+                              CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
+                              item.appointmentType === 'ONLINE'
+                                ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                    data: item,
+                                    from: 'notification',
+                                  })
+                                : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                    data: item,
+                                    from: 'notification',
+                                  });
+                            }
                           }}
                         >
                           <Text style={styles.prepareForConsult}>RESCHEDULE</Text>
@@ -725,11 +730,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                            props.navigation.navigate(AppRoutes.ChatRoom, {
-                              data: item,
-                              callType: '',
-                            });
+                            if (item.doctorInfo !== null) {
+                              CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                              props.navigation.navigate(AppRoutes.ChatRoom, {
+                                data: item,
+                                callType: '',
+                              });
+                            }
                           }}
                         >
                           <Text style={styles.prepareForConsult}>
@@ -745,11 +752,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                          props.navigation.navigate(AppRoutes.ChatRoom, {
-                            data: item,
-                            callType: '',
-                          });
+                          if (item.doctorInfo !== null) {
+                            CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+                            props.navigation.navigate(AppRoutes.ChatRoom, {
+                              data: item,
+                              callType: '',
+                            });
+                          }
                         }}
                       >
                         <Text style={[styles.prepareForConsult, { paddingBottom: -16 }]}>
