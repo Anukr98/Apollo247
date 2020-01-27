@@ -15,7 +15,10 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { timeTo12HrFormat, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -241,7 +244,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         }
         props.setDate(selectedDate);
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ScheduleCalander_getDropArrayData', e);
         props.setDate(selectedDate);
         setshowSpinner(false);
       })

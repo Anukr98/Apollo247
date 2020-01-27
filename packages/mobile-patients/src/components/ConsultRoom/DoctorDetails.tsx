@@ -50,6 +50,7 @@ import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/Avai
 import {
   CommonLogEvent,
   CommonScreenLog,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
@@ -195,15 +196,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
-    getNetStatus().then((status) => {
-      if (status) {
-        fetchDoctorDetails();
-        fetchAppointmentHistory();
-      } else {
-        setshowSpinner(false);
-        setshowOfflinePopup(true);
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchDoctorDetails();
+          fetchAppointmentHistory();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
   }, []);
 
   useEffect(() => {
@@ -234,9 +239,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ) {
             setAppointmentHistory(data.getAppointmentHistory.appointmentsHistory);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('DoctorDetails_fetchAppointmentHistory_try', e);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_fetchAppointmentHistory', e);
         console.log('Error occured', e);
       });
   };
@@ -287,9 +295,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               setavailableInMinPhysical(timeDiff);
             }
           }
-        } catch (error) {}
+        } catch (error) {
+          CommonBugFender('DoctorDetails_fetchNextAvailableSlots_try', error);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_fetchNextAvailableSlots', e);
         setshowSpinner(false);
         console.log('Error occured ', e);
       });
@@ -312,9 +323,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('DoctorDetails_fetchDoctorDetails_try', e);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
         setshowSpinner(false);
         console.log('Error occured', e);
       });
@@ -763,6 +777,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         // dismissed
       }
     } catch (error) {
+      CommonBugFender('DoctorDetails_onShare_try', error);
       // Alert(error.message);
     }
   };
@@ -803,13 +818,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <Button
               title={'BOOK APPOINTMENT'}
               onPress={() => {
-                getNetStatus().then((status) => {
-                  if (status) {
-                    setdisplayoverlay(true);
-                  } else {
-                    setshowOfflinePopup(true);
-                  }
-                });
+                getNetStatus()
+                  .then((status) => {
+                    if (status) {
+                      setdisplayoverlay(true);
+                    } else {
+                      setshowOfflinePopup(true);
+                    }
+                  })
+                  .catch((e) => {
+                    CommonBugFender('DoctorDetails_getNetStatus', e);
+                  });
               }}
               style={{ marginHorizontal: 60, flex: 1 }}
             />

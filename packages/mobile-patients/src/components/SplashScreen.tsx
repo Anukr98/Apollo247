@@ -21,6 +21,7 @@ import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -82,22 +83,32 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
     PrefetchAPIReuqest({
       clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
-    }).then((res: any) => console.log(res, 'PrefetchAPIReuqest'));
+    })
+      .then((res: any) => console.log(res, 'PrefetchAPIReuqest'))
+      .catch((e: Error) => {
+        CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
+      });
   }, []);
 
   useEffect(() => {
     try {
       if (Platform.OS === 'android') {
-        Linking.getInitialURL().then((url) => {
-          handleOpenURL(url);
-          console.log('linking', url);
-        });
+        Linking.getInitialURL()
+          .then((url) => {
+            handleOpenURL(url);
+            console.log('linking', url);
+          })
+          .catch((e) => {
+            CommonBugFender('SplashScreen_Linking_URL', e);
+          });
       } else {
         console.log('linking');
         Linking.addEventListener('url', handleOpenURL);
       }
       AsyncStorage.removeItem('location');
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('SplashScreen_Linking_URL_try', error);
+    }
   }, []);
 
   const handleOpenURL = (event: any) => {
@@ -345,7 +356,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           }
         }
       })
-      .catch((error) => console.log(`Error processing config: ${error}`));
+      .catch((error) => {
+        CommonBugFender('SplashScreen_checkForVersionUpdate', error);
+        console.log(`Error processing config: ${error}`);
+      });
   };
 
   const showUpdateAlert = (mandatory: boolean) => {

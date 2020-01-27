@@ -66,6 +66,7 @@ import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
 } from '../graphql/types/GetMedicineOrdersList';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -275,6 +276,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
+        CommonBugFender('OrderDetailsScene_reOrder', e);
         setLoading!(false);
         showErrorPopup('Something went wrong.');
       });
@@ -559,28 +561,34 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             .then(() => {
               setInitialSate();
             })
-            .catch(() => {
+            .catch((e) => {
+              CommonBugFender('OrderDetailsScene_refetch', e);
               setInitialSate();
             });
           refetchOrders &&
-            refetchOrders().then((data) => {
-              const _orders = (
-                g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || []
-              ).filter(
-                (item) =>
-                  !(
-                    (item!.medicineOrdersStatus || []).length == 1 &&
-                    (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-                  )
-              );
-              console.log(_orders, 'hdub');
-              setOrders(_orders);
-            });
+            refetchOrders()
+              .then((data) => {
+                const _orders = (
+                  g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || []
+                ).filter(
+                  (item) =>
+                    !(
+                      (item!.medicineOrdersStatus || []).length == 1 &&
+                      (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+                    )
+                );
+                console.log(_orders, 'hdub');
+                setOrders(_orders);
+              })
+              .catch((e) => {
+                CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
+              });
         } else {
           Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
         }
       })
       .catch((e) => {
+        CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder_SAVE_ORDER_CANCEL_STATUS', e);
         setShowSpinner(false);
         handleGraphQlError(e);
       });

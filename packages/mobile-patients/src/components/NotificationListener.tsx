@@ -37,6 +37,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { FEEDBACKTYPE } from '../graphql/types/globalTypes';
 import { FeedbackPopup } from './FeedbackPopup';
 import { MedicalIcon } from './ui/Icons';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -416,11 +417,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   });
                 })
                 .catch((e) => {
+                  CommonBugFender('NotificationListener_getMedicineDetailsApi', e);
                   showAphAlert!({
                     title: 'Uh oh.. :(',
                     description: 'Something went wrong.',
                   });
                 });
+            })
+            .catch((e) => {
+              CommonBugFender('NotificationListener_GET_MEDICINE_ORDER_DETAILS', e);
             });
         }
         break;
@@ -566,12 +571,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 .notifications()
                 .removeDeliveredNotification(_notificationOpen.notification.notificationId);
             } catch (error) {
+              CommonBugFender('NotificationListener_firebase_try', error);
               aphConsole.log('notificationOpen error', error);
             }
           }
         }
       })
-      .catch(() => {});
+      .catch((e) => {
+        CommonBugFender('NotificationListener_firebase', e);
+      });
 
     try {
       const channel = new firebase.notifications.Android.Channel(
@@ -582,6 +590,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       // .setSound('incallmanager_ringtone.mp3');
       firebase.notifications().android.createChannel(channel);
     } catch (error) {
+      CommonBugFender('NotificationListener_channel_try', error);
       aphConsole.log('error in notification channel', error);
     }
 
@@ -668,11 +677,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             getAppointmentData(appointmentId, notificationType, callType);
           }
         } catch (error) {
+          CommonBugFender('NotificationListener_getCallStatus_try', error);
           setLoading && setLoading(false);
           hideAphAlert && hideAphAlert();
         }
       })
       .catch((e: any) => {
+        CommonBugFender('NotificationListener_getCallStatus', e);
         setLoading && setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('getCallStatus error', error);
@@ -732,11 +743,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             }
           }
         } catch (error) {
+          CommonBugFender('NotificationListener_getAppointmentData_try', error);
           hideAphAlert && hideAphAlert();
           setLoading && setLoading(false);
         }
       })
       .catch((e) => {
+        CommonBugFender('NotificationListener_getAppointmentData', e);
         console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setLoading && setLoading(false);
         handleGraphQlError(e);

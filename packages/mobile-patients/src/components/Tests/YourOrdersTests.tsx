@@ -24,6 +24,7 @@ import { useUIElements } from '../UIElementsProvider';
 import { TestOrderNewCard } from '../ui/TestOrderNewCard';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { ScrollableFooter } from '../ui/ScrollableFooter';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -66,11 +67,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   useEffect(() => {
     setLoading!(true);
-    refetch().then((data: any) => {
-      const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-      setOrders(_orders);
-      setLoading!(false);
-    });
+    refetch()
+      .then((data: any) => {
+        const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrders(_orders);
+        setLoading!(false);
+      })
+      .catch((e) => {
+        CommonBugFender('YourOrdersTest_refetch', e);
+      });
   }, []);
 
   // console.log('', currentPatient);

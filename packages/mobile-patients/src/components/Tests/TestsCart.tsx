@@ -21,7 +21,10 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
@@ -254,6 +257,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         )
         .catch((e) => {
+          CommonBugFender('TestsCart_GET_PATIENT_ADDRESS_LIST', e);
           setLoading!(false);
           showAphAlert!({
             title: `Uh oh.. :(`,
@@ -285,9 +289,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     ).long_name;
                     filterClinics(_pincode || '');
                   }
-                } catch {}
+                } catch (e) {
+                  CommonBugFender('TestsCart_getPlaceInfoByLatLng_try', e);
+                }
               })
               .catch((error) => {
+                CommonBugFender('TestsCart_getPlaceInfoByLatLng', error);
                 console.log(error, 'geocode error');
               });
           },
@@ -385,6 +392,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((e) => {
+          CommonBugFender('TestsCart_fetchPackageDetails', e);
           console.log({ e });
           errorAlert();
         })
@@ -561,6 +569,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setDisplaySchedule(true);
         })
         .catch((e) => {
+          CommonBugFender('TestsCart_checkServicability', e);
           console.log('Error occured', { e });
           setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticSlot && setDiagnosticSlot(null);
@@ -693,6 +702,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         updateClinicSelection();
       })
       .catch((e) => {
+        CommonBugFender('TestsCart_searchClinicApi', e);
         setStorePickUpLoading(false);
       });
   };
@@ -728,7 +738,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               setClinicDetails(filterArray || []);
               setSlicedStoreList((filterArray || []).slice(0, 2));
             })
-            .catch(() => {
+            .catch((e) => {
+              CommonBugFender('TestsCart_filterClinics', e);
               setClinicDetails([]);
             })
             .finally(() => {
@@ -1150,6 +1161,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setisPhysicalUploadComplete(true);
         })
         .catch((e) => {
+          CommonBugFender('TestsCart_physicalPrescriptionUpload', e);
           aphConsole.log({ e });
           setLoading!(false);
           showAphAlert!({

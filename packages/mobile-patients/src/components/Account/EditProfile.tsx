@@ -14,7 +14,10 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   ADD_NEW_PROFILE,
   DELETE_PROFILE,
@@ -392,6 +395,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               title: 'Network Error!',
               description: 'Please try again later.',
             });
+            CommonBugFender('EditProfile_deleteUserProfile', e);
           });
         // .finally(() => {
         //   setLoading && setLoading(false);
@@ -452,6 +456,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             title: 'Network Error!',
             description: 'Please try again later.',
           });
+          CommonBugFender('EditProfile_updateUserProfile', e);
         });
       // .finally(() => {
       //   // setLoading && setLoading(false);
@@ -502,6 +507,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           title: 'Network Error!',
           description: 'Please try again later.',
         });
+        CommonBugFender('EditProfile_newProfile', e);
       });
     // .finally(() => {
     //   setLoading && setLoading(false);
@@ -538,6 +544,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 console.log(data);
                 data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
                 setUploadVisible(false);
+              })
+              .catch((e) => {
+                CommonBugFender('EditProfile_renderUploadSelection', e);
               })
           );
           setUploadVisible(false);
