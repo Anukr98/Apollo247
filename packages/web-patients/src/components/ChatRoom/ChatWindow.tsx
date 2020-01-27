@@ -1346,9 +1346,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       rowData.message === autoMessageStrings.audioCallMsg ||
       rowData.message === autoMessageStrings.videoCallMsg ||
       rowData.message === autoMessageStrings.acceptedcallMsg ||
-      rowData.message === autoMessageStrings.stopConsult ||
-      rowData.message === autoMessageStrings.consultPatientStartedMsg
-
+      rowData.message === autoMessageStrings.stopConsult
     ) {
       return null;
     }

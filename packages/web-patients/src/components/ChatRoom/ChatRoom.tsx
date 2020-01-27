@@ -384,13 +384,10 @@ export const ChatRoom: React.FC = (props) => {
                   <span className={classes.caseNumber}>Case #362079 </span>
                   <div className={classes.headerActions}>
                     <AphButton
-                      // disabled={hasDoctorJoined}
                       className={classes.viewButton}
                       onClick={() => {
                         nextAvailableSlot(params.doctorId, new Date());
                         setIsPopoverOpen(true);
-                        console.log("hasDoctorJoined", hasDoctorJoined);
-
                       }}
                     >
                       Reschedule
