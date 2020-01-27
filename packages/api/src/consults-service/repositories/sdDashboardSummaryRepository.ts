@@ -20,13 +20,14 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentSessions } from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
 
 type NewPatientCount = {
   patientid: string;
   patientcount: number;
 };
 
-type archive = {
+type Archive = {
   id: string;
 };
 type CasesheetPrepTime = {
@@ -479,14 +480,11 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
                 {
                   sessionId: sessions[count].sessionId,
                 },
-                (err: string, archives: archive[], counter: number) => {
+                (err: string, archives: Archive[], counter: number) => {
                   if (!err) {
                     if (archives && archives.length) {
                       archives.forEach((archive) => {
-                        const url =
-                          'https://apolloaudiovideosprod.blob.core.windows.net/audiovideos/46422952/' +
-                          archive.id +
-                          '/archive.mp4?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-12-24T10%3A52%3A03Z&se=2020-01-28T10%3A52%3A00Z&sig=QrKoK7bAHTMzz3lLyxDRVcQXauhM9ySvgQDJHeLhmFc%3D';
+                        const url = ApiConstants.OPENTOK_URL.replace('{1}', archive.id);
                         urls.push(url);
                       });
                     }

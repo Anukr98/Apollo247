@@ -45,7 +45,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     status: Boolean
   }
 
-  type getopenTokFileUrlResult {
+  type GetopenTokFileUrlResult {
     urls: [String]
   }
 
@@ -57,7 +57,7 @@ export const sdDashboardSummaryTypeDefs = gql`
   }
 
   extend type Query {
-    getopenTokFileUrl(appointmentId: String): getopenTokFileUrlResult
+    getopenTokFileUrl(appointmentId: String): GetopenTokFileUrlResult
   }
 `;
 
@@ -72,7 +72,7 @@ type DoctorFeeSummaryResult = {
   status: boolean;
 };
 
-type getopenTokFileUrlResult = {
+type GetopenTokFileUrlResult = {
   urls: string[];
 };
 
@@ -330,7 +330,7 @@ const getopenTokFileUrl: Resolver<
   null,
   { appointmentId: string },
   ConsultServiceContext,
-  getopenTokFileUrlResult
+  GetopenTokFileUrlResult
 > = async (parent, args, context) => {
   const { dashboardRepo } = getRepos(context);
   if (!args.appointmentId) {
