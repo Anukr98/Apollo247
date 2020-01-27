@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import {
   SdDashboardSummary,
   FeedbackDashboardSummary,
