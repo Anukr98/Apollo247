@@ -218,7 +218,7 @@ const useStyles = makeStyles((theme: Theme) => {
     loadMorButton: {
       width: 125,
       height: 32,
-      paddingTop: 6,
+      paddingTop: 5,
       paddingBottom: 6,
       borderRadius: 16,
       backgroundColor: '#fc9916',
@@ -228,6 +228,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       display: 'inline-block',
       color: '#fff',
+      '&:hover': {
+        backgroundColor: '#fc9916',
+      },
     },
     menuPopover: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
