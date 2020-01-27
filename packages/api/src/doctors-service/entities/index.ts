@@ -176,11 +176,11 @@ export class ConsultHours extends BaseEntity {
   @Column({ default: true })
   isActive: Boolean;
 
-  @Column({ type: 'time' })
-  startTime: string;
-
   @Column({ nullable: true, default: 60 / 15 })
   slotsPerHour: number;
+
+  @Column({ type: 'time' })
+  startTime: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
