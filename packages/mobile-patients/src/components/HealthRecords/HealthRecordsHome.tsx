@@ -416,14 +416,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <View style={styles.filterViewStyle}>
         <TouchableOpacity
           activeOpacity={1}
-          // onPress={() => {
-          //   CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
-          //   props.navigation.navigate(AppRoutes.AddRecord);
-          // }}
+          onPress={() => {
+            CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
+            props.navigation.navigate(AppRoutes.AddRecord);
+          }}
         >
-          {/* <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 20)}>
+          <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 20)}>
             {'UPLOAD PRESCRIPTION'}
-          </Text> */}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
