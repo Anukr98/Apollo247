@@ -19,12 +19,17 @@ import { ConsultMode, DoctorType } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { AppointmentSessions } from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
 
 type NewPatientCount = {
   patientid: string;
   patientcount: number;
 };
 
+type Archive = {
+  id: string;
+};
 type CasesheetPrepTime = {
   totaltime: number;
   totalrows: number;
@@ -456,6 +461,45 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     return repeatCount + '-' + newCount;
   }
 
+  async getFileDownloadUrls(appointmentId: string) {
+    const openTok = require('opentok');
+    const opentok = new openTok(process.env.OPENTOK_KEY, process.env.OPENTOK_SECRET);
+    const sessions = await AppointmentSessions.find({ where: { appointment: appointmentId } });
+    return new Promise<string[]>((resolve, reject) => {
+      if (sessions.length === 0) {
+        resolve([]);
+      } else {
+        const urls: string[] = [];
+        let count = 0;
+        const getUrl = async (sessions: AppointmentSessions[]) => {
+          if (count === sessions.length) {
+            resolve(urls);
+          } else {
+            if (sessions[count]) {
+              opentok.listArchives(
+                {
+                  sessionId: sessions[count].sessionId,
+                },
+                (err: string, archives: Archive[], counter: number) => {
+                  if (!err) {
+                    if (archives && archives.length) {
+                      archives.forEach((archive) => {
+                        const url = ApiConstants.OPENTOK_URL.replace('{1}', archive.id);
+                        urls.push(url);
+                      });
+                    }
+                  }
+                  count++;
+                  getUrl(sessions);
+                }
+              );
+            }
+          }
+        };
+        getUrl(sessions);
+      }
+    });
+  }
   async get15ConsultationTime(selDate: Date, doctorId: string, timeCheck: number) {
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');

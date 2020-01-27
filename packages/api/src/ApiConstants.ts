@@ -175,4 +175,6 @@ export enum ApiConstants {
   MEDMANTRA_FLAG = 1,
   MEDMANTRA_APPOINTMENT_MODE = 'Apollo247',
   MEDMANTRA_PAYTYPE = 'NETBANKING',
+
+  OPENTOK_URL = 'https://apolloaudiovideosprod.blob.core.windows.net/audiovideos/46422952/{1}/archive.mp4?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-12-24T10%3A52%3A03Z&se=2020-01-28T10%3A52%3A00Z&sig=QrKoK7bAHTMzz3lLyxDRVcQXauhM9ySvgQDJHeLhmFc%3D',
 }

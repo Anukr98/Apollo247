@@ -21,6 +21,8 @@ import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalR
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { LoginHistoryRepository } from 'doctors-service/repositories/loginSessionRepository';
 import _isEmpty from 'lodash/isEmpty';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AphError } from 'AphError';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -43,11 +45,19 @@ export const sdDashboardSummaryTypeDefs = gql`
     status: Boolean
   }
 
+  type GetopenTokFileUrlResult {
+    urls: [String]
+  }
+
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
+  }
+
+  extend type Query {
+    getopenTokFileUrl(appointmentId: String): GetopenTokFileUrlResult
   }
 `;
 
@@ -60,6 +70,10 @@ type DashboardSummaryResult = {
 
 type DoctorFeeSummaryResult = {
   status: boolean;
+};
+
+type GetopenTokFileUrlResult = {
+  urls: string[];
 };
 
 type FeedbackSummaryResult = {
@@ -312,11 +326,29 @@ const updateDoctorFeeSummary: Resolver<
   return { status: true };
 };
 
+const getopenTokFileUrl: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  GetopenTokFileUrlResult
+> = async (parent, args, context) => {
+  const { dashboardRepo } = getRepos(context);
+  if (!args.appointmentId) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+  const fileUrls = await dashboardRepo.getFileDownloadUrls(args.appointmentId);
+  return { urls: fileUrls };
+};
+
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
     updateDoctorFeeSummary,
     updatePhrDocSummary,
     updateConsultRating,
+  },
+
+  Query: {
+    getopenTokFileUrl,
   },
 };
