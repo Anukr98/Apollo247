@@ -363,7 +363,11 @@ export const AuthProvider: React.FC = (props) => {
             return;
           }
           const doctors = signInResult.data.getDoctorDetails;
-          if (doctors && doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY) {
+          if (
+            doctors &&
+            doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY &&
+            doctors.doctorType !== 'JUNIOR'
+          ) {
             updateDoctorOnlineStatusCall(doctors.id).then((res) => {
               if (res) {
                 setCurrentUser(doctors);
