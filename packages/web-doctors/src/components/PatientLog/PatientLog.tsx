@@ -514,7 +514,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     <AllPatient patientData={patientList} />
                   </TabContainer>
                 )}
-                {offset <= patientList.length && (
+                {offset <= patientList.length && selectedTabIndex === 0 && (
                   <div className={classes.loadMorButtonDiv}>
                     <AphButton className={classes.loadMorButton} onClick={() => loadMoreFunction()}>
                       Show More
