@@ -28,7 +28,7 @@ type NewPatientCount = {
 
 type archive = {
   id: string;
-}
+};
 type CasesheetPrepTime = {
   totaltime: number;
   totalrows: number;
@@ -463,7 +463,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
   async getFileDownloadUrls(appointmentId: string) {
     const openTok = require('opentok');
     const opentok = new openTok(process.env.OPENTOK_KEY, process.env.OPENTOK_SECRET);
-    // const opentok = new openTok('46422952', '1243e5b8c48f3a5f8430936cb8f829ed8950a7d3');
     const sessions = await AppointmentSessions.find({ where: { appointment: appointmentId } });
     return new Promise<string[]>((resolve, reject) => {
       if (sessions.length === 0) {
@@ -502,6 +501,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         getUrl(sessions);
       }
     });
+  }
   async get15ConsultationTime(selDate: Date, doctorId: string, timeCheck: number) {
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
