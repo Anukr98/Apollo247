@@ -130,6 +130,12 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
       statusString = 'Payment Failed';
       break;
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      statusString = 'Ready At Store';
+      break;
+    case 'TO_BE_DELIVERED' as any:
+      statusString = 'Expected Order Delivery';
+      break;
   }
   return statusString;
 };
