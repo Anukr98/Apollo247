@@ -572,7 +572,7 @@ export const DiagnosticPrescription: React.FC = () => {
                       itemName: otherDiagnostic,
                       __typename: 'DiagnosticPrescription',
                     });
-                    selectedValues && selectedValues.push(daignosisValue);
+                    //selectedValues && selectedValues.push(daignosisValue);
                     setShowAddOtherTests(false);
                     setShowAddCondition(false);
                     setIdx(selectedValues!.length + 1);
