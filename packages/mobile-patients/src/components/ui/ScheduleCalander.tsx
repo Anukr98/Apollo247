@@ -212,7 +212,10 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
           .map((item) => {
             return {
               label: (item!.slot || '').toString(),
-              time: `${item!.startTime} - ${item!.endTime}`,
+              time: `${moment(item!.startTime || '', 'HH:mm').format('hh:mm A')} - ${moment(
+                item!.endTime || '',
+                'HH:mm'
+              ).format('hh:mm A')}`,
             };
           });
 
@@ -409,8 +412,12 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             setDiagnosticSlot &&
               setDiagnosticSlot({
                 ...diagnosticSlot!,
-                slotStartTime: selectedDrop!.time.split('-')[0].trim(),
-                slotEndTime: selectedDrop!.time.split('-')[1].trim(),
+                slotStartTime: moment(selectedDrop!.time.split('-')[0].trim(), 'hh:mm A').format(
+                  'HH:mm'
+                ),
+                slotEndTime: moment(selectedDrop!.time.split('-')[1].trim(), 'hh:mm A').format(
+                  'HH:mm'
+                ),
                 date: date.getTime(),
                 employeeSlotId: parseInt(selectedDrop!.label),
               });
@@ -454,8 +461,12 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                 selectedDrop &&
                 setDiagnosticSlot({
                   ...diagnosticSlot!,
-                  slotStartTime: selectedDrop!.time.split('-')[0].trim(),
-                  slotEndTime: selectedDrop!.time.split('-')[1].trim(),
+                  slotStartTime: moment(selectedDrop!.time.split('-')[0].trim(), 'hh:mm A').format(
+                    'HH:mm'
+                  ),
+                  slotEndTime: moment(selectedDrop!.time.split('-')[1].trim(), 'hh:mm A').format(
+                    'HH:mm'
+                  ),
                   date: date.getTime(),
                   employeeSlotId: parseInt(selectedDrop!.label),
                 });
