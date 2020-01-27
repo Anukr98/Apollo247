@@ -37,12 +37,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.primary.main,
       textDecoration: 'underline',
     },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-    },
     container: {
       maxWidth: 1064,
       margin: 'auto',

@@ -36,20 +36,8 @@ export interface DoctorDetailsProps {
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 61,
-      },
-    },
-    headerSticky: {
-      position: 'fixed',
+    root: {
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -57,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorDetailsPage: {
       borderRadius: '0 0 10px 10px',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
       },
@@ -282,12 +270,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     // console.log(availableForPhysicalConsultation, availableForVirtualConsultation);
 
     return (
-      <div className={classes.welcome}>
-        <div className={classes.headerSticky}>
-          <div className={classes.container}>
-            <Header />
-          </div>
-        </div>
+      <div className={classes.root}>
+        <Header />
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
