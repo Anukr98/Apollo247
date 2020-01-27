@@ -39,8 +39,8 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import {
   NavigationActions,
   NavigationScreenProps,
@@ -53,6 +53,7 @@ import {
 } from '../../graphql/types/GetMedicineOrdersList';
 import { TabHeader } from '../ui/TabHeader';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '../../strings/AppConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -483,7 +484,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${DeviceInfo.getVersion()}.${DeviceInfo.getBuildNumber()}`}
+              {`${buildName()} - v ${
+                Platform.OS === 'ios'
+                  ? AppConfig.Configuration.iOS_Version
+                  : AppConfig.Configuration.Android_Version
+              }`}
             </Text>
           </View>
         </ScrollView>

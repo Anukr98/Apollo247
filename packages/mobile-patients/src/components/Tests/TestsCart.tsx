@@ -211,7 +211,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
-        setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
+        setselectedTimeSlot(
+          `${moment(diagnosticSlot.slotStartTime || '', 'HH:mm').format('hh:mm A')} - ${moment(
+            diagnosticSlot.slotEndTime || '',
+            'HH:mm'
+          ).format('hh:mm A')}`
+        );
+        // setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
       } else {
         setDate(new Date());
         setselectedTimeSlot('');
@@ -551,7 +557,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             .map((item) => {
               return {
                 label: (item!.slot || '').toString(),
-                time: `${item!.startTime} - ${item!.endTime}`,
+                time: `${moment(item!.startTime || '', 'HH:mm').format('hh:mm A')} - ${moment(
+                  item!.endTime || '',
+                  'HH:mm'
+                ).format('hh:mm A')}`,
               };
             });
           console.log(t, 'finalaray');

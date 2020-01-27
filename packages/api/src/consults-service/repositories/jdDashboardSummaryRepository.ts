@@ -59,8 +59,31 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
     return CaseSheet.count({
       where: {
-        doctorId,
+        createdDoctorId: doctorId,
         status: CASESHEET_STATUS.COMPLETED,
+        createdDate: Between(newStartDate, newEndDate),
+      },
+    });
+  }
+
+  getOngoingCases(selDate: Date, doctorId: string) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return CaseSheet.count({
+      where: {
+        createdDoctorId: doctorId,
+        status: CASESHEET_STATUS.PENDING,
+        createdDate: Between(newStartDate, newEndDate),
+      },
+    });
+  }
+
+  getTotalAllocatedChats(selDate: Date, doctorId: string) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return ConsultQueueItem.count({
+      where: {
+        doctorId,
         createdDate: Between(newStartDate, newEndDate),
       },
     });
@@ -125,14 +148,14 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .getRawMany();
     //console.log(casesheetRows, 'timeperchat casesheet rows');
     if (casesheetRows.length > 0) {
       const duration = parseFloat((casesheetRows[0].totalduration / 60).toFixed(2));
       //console.log(duration, 'duration in imin', casesheetRows[0].appointmentidcount);
       if (duration && duration > 0) {
-        return duration / casesheetRows[0].appointmentidcount;
+        return parseFloat((duration / casesheetRows[0].appointmentidcount).toFixed(2));
       } else {
         return 0;
       }
@@ -195,7 +218,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .getRawMany();
     let apptCount = 0;
     if (caseSheetDetails.length > 0) {
@@ -243,7 +266,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
           fromDate: newStartDate,
           toDate: newEndDate,
         })
-        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+        .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
         .andWhere('case_sheet."preperationTimeInSeconds" <= :givenTime', { givenTime: 900 })
         .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
         .getMany();
@@ -254,7 +277,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
           fromDate: newStartDate,
           toDate: newEndDate,
         })
-        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+        .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
         .andWhere('case_sheet."preperationTimeInSeconds" > :givenTime', { givenTime: 900 })
         .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
         .getMany();
@@ -274,15 +297,16 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
     //console.log(caseSheetRows, 'caseSheetRows');
     if (caseSheetRows[0].totalrows > 0) {
+      const totalDurationInMins = parseFloat((caseSheetRows[0].totalduration / 60).toFixed(2));
       if (needAvg == 0) {
-        return caseSheetRows[0].totalduration / caseSheetRows[0].totalrows;
+        return parseFloat((totalDurationInMins / caseSheetRows[0].totalrows).toFixed(2));
       } else {
-        return caseSheetRows[0].totalduration;
+        return totalDurationInMins;
       }
     } else {
       return 0;

@@ -68,12 +68,13 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
   const onClickTakePhoto = () => {
     CommonLogEvent('ADD_FILE_POP', 'On Click Take Photo');
     ImagePicker.openCamera({
-      width: 400,
-      height: 400,
       cropping: false,
       // useFrontCamera: true,
       includeBase64: true,
-      compressImageQuality: 0.1,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 4096,
+      compressImageMaxWidth: 4096,
+      writeTempFile: false,
     })
       .then((image) => {
         props.getData([image]);
@@ -86,12 +87,13 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
   const onClickGallery = () => {
     CommonLogEvent('ADD_FILE_POP', 'On Click Gallery');
     ImagePicker.openPicker({
-      width: 400,
-      height: 400,
       cropping: false,
       multiple: true,
       includeBase64: true,
-      compressImageQuality: 0.1,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 4096,
+      compressImageMaxWidth: 4096,
+      writeTempFile: false,
     })
       .then((image) => {
         props.getData(image as PickerImage[]);

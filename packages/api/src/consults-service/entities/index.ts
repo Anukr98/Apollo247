@@ -888,21 +888,24 @@ export class JdDashboardSummary extends BaseEntity {
   @Column()
   doctorName: string;
 
+  @Column({ default: '' })
+  adminIds: string;
+
   @Column()
   appointmentDateTime: Date;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   waitTimePerChat: number;
 
   //Case sheet fill time per chat, Avg time
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   caseSheetFillTime: number;
 
   @Column({ default: 0 })
   totalCompletedChats: number;
 
   //Total time taken per chat, Avg  time
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerChat: number;
 
   @Column({ default: 0 })
@@ -923,7 +926,7 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   awayHours: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   totalConsultationTime: number;
 
   @Column({ default: 0 })
@@ -949,8 +952,12 @@ export class JdDashboardSummary extends BaseEntity {
   completeMore15: number;
 
   //Avg. time for consult
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   avgTimePerConsult: number;
+
+  //total allocated chats
+  @Column({ default: 0 })
+  totalAllocatedChats: number;
 
   @Column()
   createdDate: Date;
@@ -982,14 +989,23 @@ export class SdDashboardSummary extends BaseEntity {
   @Column()
   doctorName: string;
 
+  @Column({ default: '' })
+  adminIds: string;
+
   @Column()
   appointmentDateTime: Date;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  casesheetPrepTime: number;
 
   @Column({ default: 0 })
   totalConsultations: number;
 
   @Column({ default: 0 })
   totalVirtualConsultations: number;
+
+  @Column({ default: 0 })
+  totalPhysicalConsultations: number;
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   onTimeConsultations: number;
@@ -1012,6 +1028,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   rescheduledByDoctor: number;
 
+  @Column({ default: 0 })
+  rescheduledByPatient: number;
+
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerConsult: number;
 
@@ -1019,10 +1038,19 @@ export class SdDashboardSummary extends BaseEntity {
   consultSlots: number;
 
   @Column({ default: 0 })
+  totalFollowUp: number;
+
+  @Column({ default: 0 })
   paidFollowUp: number;
 
   @Column({ default: 0 })
   unPaidFollowUp: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  loggedInHours: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  awayHours: number;
 
   @Column()
   createdDate: Date;
@@ -1054,11 +1082,39 @@ export class DoctorFeeSummary extends BaseEntity {
   @Column()
   doctorId: string;
 
+  @Column({ default: '' })
+  doctorName: string;
+
+  @Column({ default: '' })
+  specialtiyId: string;
+
+  @Column({ default: '' })
+  specialityName: string;
+
+  @Column({ default: '' })
+  areaName: string;
+
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   amountPaid: number;
 
   @Column()
   appointmentsCount: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 //Doctor fee summary end
 

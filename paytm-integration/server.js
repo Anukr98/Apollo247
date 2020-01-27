@@ -460,7 +460,7 @@ app.post('/paymed-response', (req, res) => {
       res.redirect(redirectUrl);
     } else {
       res.redirect(
-        `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=responseMessage&responseCode=responseCode`
+        `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=${responseMessage}&responseCode=${responseCode}`
       );
     }
   }

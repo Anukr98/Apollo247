@@ -10,7 +10,7 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -29,7 +29,7 @@ import {
   Dimensions,
 } from 'react-native';
 //import { WebView } from 'react-native-webview';
-import firebase, { RNFirebase } from 'react-native-firebase';
+import firebase from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
 import { db } from '../strings/FirebaseConfig';
@@ -38,7 +38,6 @@ import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { loginAPI } from '../helpers/loginCalls';
-import { useApolloClient } from 'react-apollo-hooks';
 import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window');
@@ -125,7 +124,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
-  const client = useApolloClient();
 
   useEffect(() => {
     try {
@@ -293,13 +291,21 @@ export const Login: React.FC<LoginProps> = (props) => {
 
                   CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
 
-                  db.ref('ApolloPatients/')
-                    .child(dbChildKey)
-                    .update({
-                      mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-                    });
+                console.log('confirmResult login', confirmResult);
+                try {
+                  signOut();
+                } catch (error) {}
 
-                  console.log('confirmResult login', confirmResult);
+                props.navigation.navigate(AppRoutes.OTPVerification, {
+                  otpString,
+                  phoneNumber: phoneNumber,
+                  dbChildKey,
+                  loginId: confirmResult.loginId,
+                });
+              })
+              .catch((error: Error) => {
+                console.log(error, 'error');
+                setShowSpinner(false);
 
                   props.navigation.navigate(AppRoutes.OTPVerification, {
                     otpString,
@@ -313,20 +319,10 @@ export const Login: React.FC<LoginProps> = (props) => {
                   console.log(error.message, 'errormessage');
                   setShowSpinner(false);
 
-                  db.ref('ApolloPatients/')
-                    .child(dbChildKey)
-                    .update({
-                      mobileNumberFailed: error && error.message,
-                    });
-
-                  CommonLogEvent('OTP_SEND_FAIL', error.message);
-                  CommonBugFender('OTP_SEND_FAIL', error);
-                  Alert.alert(
-                    'Error',
-                    (error && error.message) || 'The interaction was cancelled by the user.'
-                  );
-                });
-            }
+                CommonLogEvent('OTP_SEND_FAIL', error.message);
+                CommonBugFender('OTP_SEND_FAIL', error);
+                handleGraphQlError(error);
+              });
           }
         } else {
           setshowOfflinePopup(true);

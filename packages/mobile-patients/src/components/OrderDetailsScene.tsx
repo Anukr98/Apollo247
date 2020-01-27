@@ -25,6 +25,7 @@ import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetailsVariables,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -285,29 +286,66 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isDelivered = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
     );
+    const isCancelled = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+    );
+    const isDeliveryOrder = orderDetails.patientAddressId;
+    const tatInfo = orderDetails.orderTat;
+    const expectedDeliveryDiff = moment.duration(
+      moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
+      // moment('27-JAN-2020 10:51 AM').diff(moment())
+    );
+    const hours = expectedDeliveryDiff.asHours();
+    // const formattedDateDeliveryTime =
+    //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
+
+    const showExpectedDelivery =
+      isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
+    const statusList = orderStatusList
+      .filter(
+        (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+      )
+      .concat(
+        showExpectedDelivery
+          ? [
+              {
+                statusDate: tatInfo,
+                id: 'idToBeDelivered',
+                orderStatus: 'TO_BE_DELIVERED' as any,
+              } as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
+            ]
+          : []
+      );
 
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {orderStatusList
-            .filter(
-              (item, idx, array) =>
-                array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
-            )
-            .map((order, index, array) => {
-              return (
-                <OrderProgressCard
-                  style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-                  key={index}
-                  description={''}
-                  status={getOrderStatusText(order!.orderStatus!)}
-                  date={getFormattedDate(order!.statusDate)}
-                  time={getFormattedTime(order!.statusDate)}
-                  isStatusDone={true}
-                  nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
-                />
-              );
-            })}
+          {statusList.map((order, index, array) => {
+            return (
+              <OrderProgressCard
+                style={index < array.length - 1 ? { marginBottom: 8 } : {}}
+                key={index}
+                description={
+                  order!.id == 'idToBeDelivered'
+                    ? `To Be Delivered Within — ${expectedDeliveryDiff
+                        .humanize()
+                        .replace(' hours', 'hrs')}`
+                    : ''
+                }
+                status={getOrderStatusText(order!.orderStatus!)}
+                date={getFormattedDate(order!.statusDate)}
+                time={getFormattedTime(order!.statusDate)}
+                isStatusDone={order!.id != 'idToBeDelivered'}
+                nextItemStatus={
+                  index == array.length - 1
+                    ? 'NOT_EXIST'
+                    : order!.id != 'idToBeDelivered' && showExpectedDelivery
+                    ? 'NOT_DONE'
+                    : 'DONE'
+                }
+              />
+            );
+          })}
         </View>
         {isDelivered ? (
           <Button

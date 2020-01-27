@@ -41,7 +41,15 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
       paddingBottom: 20,
       [theme.breakpoints.down('xs')]: {
-        paddingBottom: 90,
+        paddingTop: 75,
+      },
+      [theme.breakpoints.down(990)]: {
+        paddingBottom: 60,
+      },
+    },
+    appNotSignedIn: {
+      [theme.breakpoints.down(990)]: {
+        paddingBottom: 0,
       },
     },
   };

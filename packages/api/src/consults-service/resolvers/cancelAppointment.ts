@@ -105,11 +105,6 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelReason
   );
 
-  //cancel medmantra appointment
-  if (appointment.apolloAppointmentId) {
-    appointmentRepo.cancelMedMantraAppointment(appointment, cancelAppointmentInput.cancelReason);
-  }
-
   //remove from consult queue
   const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
   const existingQueueItem = await cqRepo.findByAppointmentId(appointment.id);

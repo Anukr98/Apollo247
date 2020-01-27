@@ -27,6 +27,7 @@ export const OTPVerificationApiCall: React.FC<OTPVerificationApiCallProps> = (pr
   if (!loading) {
     console.log('OTPVerificationApiCall', { loading, data });
     if (error) {
+      console.log(error, 'error GetDoctorDetails');
       props.navigation.goBack();
       Alert.alert(
         'Error',

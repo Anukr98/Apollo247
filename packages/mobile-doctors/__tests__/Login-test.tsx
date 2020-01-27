@@ -19,7 +19,7 @@ type JestJsonTreeType = {
 };
 
 // It's throwing " TypeError: Cannot read property 'TabBar' of undefined "
-jest.mock('../src/components/NavigatorContainer.tsx', () => {});
+// jest.mock('../src/components/NavigatorContainer.tsx', () => {});
 // jest.mock('react-native-gesture-handler', () => { });
 // jest.mock('../src/components/TabBar.tsx', () => { });
 // jest.mock('../node_modules/react-native-gesture-handler/Directions.js', () => { })
@@ -39,11 +39,7 @@ beforeEach(() => {});
 
 it('renders correctly', () => {
   const c = renderer.create(<Login navigation={{} as any} />);
-
-  console.log(c.root);
-  console.log(c.toJSON());
-  console.log(c.toTree());
-  console.log(c.getInstance());
+  // console.log(c.toJSON());
 });
 
 test('testing functions', () => {

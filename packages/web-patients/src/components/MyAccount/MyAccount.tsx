@@ -10,19 +10,7 @@ import { useCurrentPatient } from 'hooks/authHooks';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    headerSticky: {
-      position: 'fixed',
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -140,11 +128,7 @@ export const MyAccount: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+      <Header />
       <div className={classes.container}>
         <div className={classes.myAccountPage}>
           <div className={classes.breadcrumbs}>

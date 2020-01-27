@@ -143,11 +143,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       // height: 400,
       cropping: props.isProfileImage ? true : false,
       hideBottomControls: true,
-      width: props.isProfileImage ? 800 : undefined,
-      height: props.isProfileImage ? 800 : undefined,
+      width: props.isProfileImage ? 4096 : undefined,
+      height: props.isProfileImage ? 4096 : undefined,
       includeBase64: true,
       multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.1,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 4096,
+      compressImageMaxWidth: 4096,
+      writeTempFile: false,
     })
       .then((response) => {
         setshowSpinner(false);
@@ -200,11 +203,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
-      width: props.isProfileImage ? 800 : undefined,
-      height: props.isProfileImage ? 800 : undefined,
+      width: props.isProfileImage ? 4096 : undefined,
+      height: props.isProfileImage ? 4096 : undefined,
       includeBase64: true,
       multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.1,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 4096,
+      compressImageMaxWidth: 4096,
+      writeTempFile: false,
     })
       .then((response) => {
         //console.log('res', response);

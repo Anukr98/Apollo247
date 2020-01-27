@@ -51,6 +51,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
@@ -107,6 +112,13 @@ export enum MEDICINE_UNIT {
   TABLET = "TABLET",
 }
 
+export enum OTP_STATUS {
+  BLOCKED = "BLOCKED",
+  EXPIRED = "EXPIRED",
+  NOT_VERIFIED = "NOT_VERIFIED",
+  VERIFIED = "VERIFIED",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
@@ -143,6 +155,11 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+}
+
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
@@ -189,7 +206,13 @@ export interface DiagnosisInput {
 }
 
 export interface DiagnosticPrescriptionInput {
+  collectionMethod?: TEST_COLLECTION_TYPE | null;
+  id?: string | null;
+  imageUrl?: string | null;
+  isCustom?: boolean | null;
+  itemId?: string | null;
   itemname?: string | null;
+  price?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -200,6 +223,11 @@ export interface DoctorAvailabilityInput {
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
+}
+
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
 }
 
 export interface EndAppointmentSessionInput {
@@ -253,6 +281,12 @@ export interface OtherInstructionsInput {
   instruction?: string | null;
 }
 
+export interface OtpVerificationInput {
+  id: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
+}
+
 export interface RescheduleAppointmentInput {
   appointmentId: string;
   rescheduleReason: string;
@@ -267,6 +301,21 @@ export interface SaveDoctorDeviceTokenInput {
   deviceToken: string;
   deviceOS: string;
   doctorId: string;
+}
+
+export interface SaveDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDuration?: string | null;
+  medicineConsumptionDurationInDays: number;
+  medicineConsumptionDurationUnit?: MEDICINE_CONSUMPTION_DURATION | null;
+  medicineDosage: string;
+  medicineFormTypes?: MEDICINE_FORM_TYPES | null;
+  medicineFrequency?: MEDICINE_FREQUENCY | null;
+  medicineInstructions?: string | null;
+  medicineName: string;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineUnit: MEDICINE_UNIT;
 }
 
 export interface SymptomInput {
@@ -285,6 +334,22 @@ export interface TransferAppointmentInput {
   transferNotes?: string | null;
   transferInitiatedBy?: TRANSFER_INITIATED_TYPE | null;
   transferInitiatedId: string;
+}
+
+export interface UpdateDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  id: string;
+  medicineConsumptionDuration?: string | null;
+  medicineConsumptionDurationInDays?: number | null;
+  medicineConsumptionDurationUnit?: MEDICINE_CONSUMPTION_DURATION | null;
+  medicineDosage?: string | null;
+  medicineFormTypes?: MEDICINE_FORM_TYPES | null;
+  medicineFrequency?: MEDICINE_FREQUENCY | null;
+  medicineInstructions?: string | null;
+  medicineName: string;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineUnit?: MEDICINE_UNIT | null;
 }
 
 export interface UpdatePatientInput {
