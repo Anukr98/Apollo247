@@ -8,19 +8,7 @@ import { MedicalRecords } from 'components/HealthRecords/MedicalRecords';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    headerSticky: {
-      position: 'fixed',
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -69,11 +57,7 @@ export const PHRLanding: React.FC = (props) => {
   const [tabValue, setTabValue] = useState<number>(0);
   return (
     <div className={classes.root}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+      <Header />
       <div className={classes.container}>
         <div className={classes.healthRecordsPage}>
           <Tabs
