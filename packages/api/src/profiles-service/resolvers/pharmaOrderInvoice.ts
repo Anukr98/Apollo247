@@ -4,7 +4,12 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { MedicineOrderInvoice } from 'profiles-service/entities';
+import {
+  MedicineOrderInvoice,
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
+  MEDICINE_DELIVERY_TYPE,
+} from 'profiles-service/entities';
 
 export const saveMedicineOrderInvoiceTypeDefs = gql`
   input MedicineOrderInvoiceInput {
@@ -129,6 +134,23 @@ const SaveMedicineOrderInvoice: Resolver<
   };
 
   await medicineOrderRepo.saveMedicineOrderInvoice(orderInvoiceAttrs);
+
+  //Update order status to READY_AT_STORE only if the order is of type STORE_PICKUP
+  if (medicineOrders.deliveryType === MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.READY_AT_STORE,
+      medicineOrders: medicineOrders,
+      statusDate: new Date(),
+      statusMessage: medicineOrderInvoiceInput.remarks,
+    };
+    await medicineOrderRepo.saveMedicineOrderStatus(orderStatusAttrs, medicineOrders.orderAutoId);
+    await medicineOrderRepo.updateMedicineOrderDetails(
+      medicineOrders.id,
+      medicineOrders.orderAutoId,
+      new Date(),
+      MEDICINE_ORDER_STATUS.READY_AT_STORE
+    );
+  }
 
   return {
     requestStatus: 'success',

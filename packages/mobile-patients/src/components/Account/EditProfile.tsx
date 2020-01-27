@@ -58,6 +58,7 @@ import {
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
+import { getRelations } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -206,7 +207,7 @@ type RelationArray = {
   title: string;
 };
 
-const relationArray: RelationArray[] = [
+const relationArray1: RelationArray[] = [
   { key: Relation.ME, title: 'Self' },
   {
     key: Relation.FATHER,
@@ -250,6 +251,7 @@ export interface EditProfileProps extends NavigationScreenProps {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
+  const relationArray: RelationArray[] = getRelations() || relationArray1;
   const isEdit = props.navigation.getParam('isEdit');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
@@ -912,10 +914,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       {renderUploadSelection()}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
-        <KeyboardAvoidingView
-          behavior={Platform.OS == 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
-        >
+        <KeyboardAvoidingView behavior={undefined} style={{ flex: 1 }}>
           <ScrollView bounces={false} style={{ backgroundColor: '#f7f8f5' }}>
             {renderForm()}
             <View style={{ height: 100 }} />

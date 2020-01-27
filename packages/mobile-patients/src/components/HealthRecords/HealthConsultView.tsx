@@ -23,7 +23,11 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  handleGraphQlError,
+  addTestsToCart,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -35,6 +39,9 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { mimeType } from '../../helpers/mimeType';
+import { useDiagnosticsCart, DiagnosticsCartItem } from '../DiagnosticsCartProvider';
+import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../../graphql/types/getCaseSheet';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -126,7 +133,12 @@ export interface HealthConsultViewProps extends NavigationScreenProps {
 }
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
-  const { setCartItems, cartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
+  const { addMultipleCartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
+  const {
+    addMultipleCartItems: addMultipleTestCartItems,
+    addMultipleEPrescriptions: addMultipleTestEPrescriptions,
+  } = useDiagnosticsCart();
+  const { setLoading: setGlobalLoading } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
   // console.log(props.PastData, 'pastData');
@@ -336,7 +348,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     justifyContent: 'space-between',
                   }}
                 >
-                  {g(item, 'medicinePrescription') ? (
+                  {g(item, 'medicinePrescription') || g(item, 'diagnosticPrescription') ? (
                     <Text
                       style={styles.yellowTextStyle}
                       onPress={() => {
@@ -351,13 +363,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                           });
 
                         if (item == undefined) {
-                          Alert.alert('No Medicines');
+                          Alert.alert('Uh oh.. :(', 'No medicines or tests found.');
                           CommonLogEvent('HEALTH_CONSULT_VIEW', 'No medicines prescribed');
                         } else {
-                          if (item.medicinePrescription != null) {
+                          if (item.medicinePrescription || item.diagnosticPrescription) {
                             //write here stock condition
 
-                            setLoading(true);
+                            setGlobalLoading!(true);
 
                             const medPrescription = (item.medicinePrescription ||
                               []) as getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription[];
@@ -365,11 +377,24 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               item!.blobName!
                             );
 
+                            const testPrescription = (item.diagnosticPrescription ||
+                              []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
+
+                            const presToAdd = {
+                              id: item.id,
+                              date: moment(g(props.PastData, 'appointmentDateTime')).format(
+                                'DD MMM YYYY'
+                              ),
+                              doctorName: g(props.PastData, 'doctorInfo', 'displayName') || '',
+                              forPatient: (currentPatient && currentPatient.firstName) || '',
+                              medicines: [].map((item: any) => item!.name).join(', '),
+                              uploadedUrl: docUrl,
+                            } as EPrescription;
+
                             Promise.all(
                               medPrescription.map((item: any) => getMedicineDetailsApi(item!.id!))
                             )
                               .then((result) => {
-                                setLoading(false);
                                 const medicines = result
                                   .map(({ data: { productdp } }, index) => {
                                     const medicineDetails = (productdp && productdp[0]) || {};
@@ -410,21 +435,17 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   })
                                   .filter((item: any) => (item ? true : false));
 
-                                const filteredItemsFromCart = cartItems.filter(
-                                  (cartItem) =>
-                                    !medicines.find((item: any) => (item && item.id) == cartItem.id)
-                                );
-
-                                setCartItems!([
-                                  ...filteredItemsFromCart,
-                                  ...(medicines as ShoppingCartItem[]),
-                                ]);
+                                addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
                                 if (medPrescription.length > medicines.length) {
                                   const outOfStockCount = medPrescription.length - medicines.length;
+                                  const outOfStockItems = medPrescription
+                                    .filter((item) => !medicines.find((val) => val!.id == item.id))
+                                    .map((item, idx) => `${idx + 1}. ${item.medicineName}\n`)
+                                    .join('');
                                   Alert.alert(
-                                    'Alert',
-                                    `${outOfStockCount} item(s) are out of stock.`
+                                    'Uh oh.. :(',
+                                    `Below ${outOfStockCount} item(s) are out of stock.\n${outOfStockItems}`
                                   );
                                   // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
                                 }
@@ -435,53 +456,44 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     : medicines.filter((item: any) => item!.prescriptionRequired)
                                         .length;
 
-                                const presToAdd = {
-                                  id: item!.id!,
-                                  date: moment(g(props.PastData, 'appointmentDateTime')).format(
-                                    'DD MMM YYYY'
-                                  ),
-                                  doctorName: '',
-                                  forPatient: (currentPatient && currentPatient.firstName) || '',
-                                  medicines: (medicines || [])
-                                    .map((item: any) => item!.name)
-                                    .join(', '),
-                                  uploadedUrl: docUrl,
-                                } as EPrescription;
-
                                 if (rxMedicinesCount) {
                                   setEPrescriptions!([
                                     ...ePrescriptions.filter((item) => !(item.id == presToAdd.id)),
-                                    presToAdd,
+                                    {
+                                      ...presToAdd,
+                                      medicines: medicines
+                                        .map((item: any) => item!.name)
+                                        .join(', '),
+                                    },
                                   ]);
                                 }
-                                props.navigation.push(AppRoutes.YourCart, {
-                                  isComingFromConsult: true,
-                                });
+                                // Adding tests to DiagnosticsCart
+                                return addTestsToCart(testPrescription);
+                              })
+                              .then((tests) => {
+                                addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
+                                // Adding ePrescriptions to DiagnosticsCart
+                                if ((tests as DiagnosticsCartItem[]).length)
+                                  addMultipleTestEPrescriptions!([
+                                    {
+                                      ...presToAdd,
+                                      medicines: (tests as DiagnosticsCartItem[])
+                                        .map((item) => item!.name)
+                                        .join(', '),
+                                    },
+                                  ]);
                               })
                               .catch((e) => {
-                                setLoading(false);
                                 console.log({ e });
+                                // Alert.alert('Uh oh.. :(', e);
                                 handleGraphQlError(e);
+                              })
+                              .finally(() => {
+                                setGlobalLoading!(false);
+                                props.navigation.navigate(AppRoutes.MedAndTestCart, {
+                                  isComingFromConsult: true,
+                                });
                               });
-
-                            // const medicines: ShoppingCartItem[] =
-                            //   item.medicinePrescription &&
-                            //   item.medicinePrescription.map(
-                            //     (item: any) =>
-                            //       ({
-                            //         id: item!.id!,
-                            //         mou: '10',
-                            //         name: item!.medicineName!,
-                            //         price: 50,
-                            //         quantity: parseInt(item!.medicineDosage!),
-                            //         prescriptionRequired: false,
-                            //       } as ShoppingCartItem)
-                            //   );
-                            // setCartItems && setCartItems(medicines);
-
-                            props.navigation.push(AppRoutes.YourCart, {
-                              isComingFromConsult: true,
-                            });
                           } else {
                             Alert.alert('No Medicines');
                           }

@@ -198,18 +198,18 @@ const noShowReminderNotification: Resolver<
           await apptsrepo.updateAppointmentStatus(appt.id, STATUS.NO_SHOW, true);
 
           await noShowRepo.saveNoShow(noShowAttrs);
-          const pushNotificationInput = {
-            appointmentId: rescheduleAppointmentAttrs.appointment.id,
-            notificationType: NotificationType.PATIENT_NO_SHOW,
-          };
-          const notificationResult = sendNotification(
-            pushNotificationInput,
-            patientsDb,
-            consultsDb,
-            doctorsDb
-          );
-          console.log(notificationResult, 'notificationResult');
         }
+        const pushNotificationInput = {
+          appointmentId: rescheduleAppointmentAttrs.appointment.id,
+          notificationType: NotificationType.PATIENT_NO_SHOW,
+        };
+        const notificationResult = sendNotification(
+          pushNotificationInput,
+          patientsDb,
+          consultsDb,
+          doctorsDb
+        );
+        console.log(notificationResult, 'notificationResult');
       }
     });
   }

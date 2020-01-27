@@ -140,6 +140,9 @@ export const GET_PATIENT_LOG = gql`
           gender
           uhid
           photoUrl
+          addressList {
+            city
+          }
         }
       }
       totalResultCount
@@ -403,6 +406,7 @@ export const GET_CASESHEET = gql`
         notes
       }
       pastAppointments {
+        id
         appointmentDateTime
         appointmentState
         doctorId
@@ -410,7 +414,23 @@ export const GET_CASESHEET = gql`
         patientId
         parentId
         status
+        doctorInfo {
+          firstName
+          lastName
+          salutation
+        }
         caseSheet {
+          appointment {
+            id
+          }
+          blobName
+          createdDate
+          doctorType
+          createdDoctorProfile {
+            firstName
+            lastName
+            salutation
+          }
           consultType
           appointment {
             id
@@ -728,6 +748,56 @@ export const DELETE_DOCTOR_FAVOURITE_ADVICE = gql`
         id
         instruction
       }
+    }
+  }
+`;
+export const UPLOAD_CHAT_FILE = gql`
+  mutation uploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
+    uploadChatDocument(
+      fileType: $fileType
+      base64FileInput: $base64FileInput
+      appointmentId: $appointmentId
+    ) {
+      filePath
+    }
+  }
+`;
+export const DOWNLOAD_DOCUMENT = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
+    }
+  }
+`;
+
+export const LOGIN = gql`
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+      status
+      message
+      loginId
+    }
+  }
+`;
+
+export const VERIFY_LOGIN_OTP = gql`
+  query verifyLoginOtp($otpVerificationInput: OtpVerificationInput) {
+    verifyLoginOtp(otpVerificationInput: $otpVerificationInput) {
+      status
+      authToken
+      isBlocked
+      reason
+      incorrectAttempts
+    }
+  }
+`;
+
+export const RESEND_OTP = gql`
+  query resendOtp($mobileNumber: String!, $loginType: LOGIN_TYPE!, $id: String!) {
+    resendOtp(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      message
+      loginId
     }
   }
 `;

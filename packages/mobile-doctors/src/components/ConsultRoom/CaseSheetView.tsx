@@ -592,11 +592,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   useEffect(() => {
     if (favList) {
-      const data = favList.getDoctorFavouriteAdviceList?.adviceList?.map(
-        (item) => item?.instruction
-      );
+      const data =
+        favList.getDoctorFavouriteAdviceList &&
+        favList.getDoctorFavouriteAdviceList.adviceList &&
+        favList.getDoctorFavouriteAdviceList.adviceList.map((item) => item && item.instruction);
       // data && setFavAdvices(data);
-      console.log('favs s', data);
     }
   }, [favList]);
   useEffect(() => {
@@ -670,22 +670,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setConsultationType(consultType as typeof consultationType);
         setLoading(false);
         try {
-          setSysmptonsList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
-          );
-          setDiagonsisList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
-          );
-          setDiagnosticPrescriptionDataList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-          );
-          setMedicineList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-          );
+          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
+            .diagnosticPrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
         } catch (error) {
           console.log({ error });
         }
@@ -1399,7 +1392,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             width: width / 3,
                             ...theme.fonts.IBMPlexSansMedium(16),
                           }}
-                          value={followupDays?.toString()}
+                          value={followupDays ? followupDays.toString() : ''}
                           blurOnSubmit={false}
                           // returnKeyType="send"
                           onChangeText={(value) => {

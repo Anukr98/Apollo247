@@ -27,13 +27,19 @@ export enum PATIENT_ADDRESS_TYPE {
 
 export enum Relation {
   ME = 'ME',
-  MOTHER = 'MOTHER',
-  FATHER = 'FATHER',
-  SISTER = 'SISTER',
   BROTHER = 'BROTHER',
   COUSIN = 'COUSIN',
-  WIFE = 'WIFE',
+  DAUGHTER = 'DAUGHTER',
+  FATHER = 'FATHER',
+  GRANDDAUGHTER = 'GRANDDAUGHTER',
+  GRANDFATHER = 'GRANDFATHER',
+  GRANDMOTHER = 'GRANDMOTHER',
+  GRANDSON = 'GRANDSON',
   HUSBAND = 'HUSBAND',
+  MOTHER = 'MOTHER',
+  SISTER = 'SISTER',
+  SON = 'SON',
+  WIFE = 'WIFE',
   OTHER = 'OTHER',
 }
 
@@ -63,6 +69,7 @@ export enum MEDICINE_ORDER_STATUS {
   PRESCRIPTION_CART_READY = 'PRESCRIPTION_CART_READY',
   ORDER_CONFIRMED = 'ORDER_CONFIRMED',
   CANCEL_REQUEST = 'CANCEL_REQUEST',
+  READY_AT_STORE = 'READY_AT_STORE',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -607,6 +614,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @Column({ nullable: true })
+  uhidCreatedDate: Date;
 
   @BeforeInsert()
   updateDateCreation() {

@@ -539,7 +539,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateUhid(id: string, uhid: string) {
-    return this.update(id, { uhid });
+    return this.update(id, { uhid, uhidCreatedDate: new Date() });
   }
 
   updateToken(id: string, athsToken: string) {

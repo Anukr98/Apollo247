@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Connection, Between } from 'typeorm';
+import { EntityRepository, Repository, Connection, Between, Not } from 'typeorm';
 import {
   Appointment,
   AppointmentCallDetails,
@@ -10,9 +10,12 @@ import {
   AppointmentPayments,
   DoctorFeeSummary,
   AppointmentDocuments,
+  CaseSheet,
+  CASESHEET_STATUS,
+  TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
-import { ConsultMode } from 'doctors-service/entities';
+import { ConsultMode, DoctorType } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
@@ -20,6 +23,11 @@ import { DoctorConsultHoursRepository } from 'doctors-service/repositories/docto
 type NewPatientCount = {
   patientid: string;
   patientcount: number;
+};
+
+type CasesheetPrepTime = {
+  totaltime: number;
+  totalrows: number;
 };
 
 @EntityRepository(SdDashboardSummary)
@@ -63,7 +71,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
   }
 
   getAppointmentPaymentDetailsByApptId(appointment: string) {
-    return AppointmentPayments.findOne({ where: appointment }).catch((createErrors) => {
+    return AppointmentPayments.findOne({ where: { appointment } }).catch((createErrors) => {
       throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
   }
@@ -74,6 +82,21 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
       });
+  }
+
+  async getPatientCancelCount(doctorId: string, selDate: Date) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    const cancelCount = await Appointment.createQueryBuilder('appointment')
+      .where('appointment.status = :Status', { status: STATUS.CANCELLED })
+      .andWhere('appointment."cancelledBy" = :cancelledBy', { cancelledBy: 'PATIENT' })
+      .andWhere('appointment."appointmentDateTime" between :fromDate and :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere('appointment."doctorId = :doctorId"', { doctorId })
+      .getCount();
+    return cancelCount;
   }
 
   getDocumentSummary(docDate: Date) {
@@ -98,6 +121,21 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
           fromDate: startDate,
           toDate: endDate,
+        })
+        .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+        .andWhere('appointment.status not in(:status1,:status2)', {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+        })
+        .getCount();
+    } else if (appointmentType == 'PHYSICAL') {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment.appointmentType = :appointmentType', {
+          appointmentType: APPOINTMENT_TYPE.PHYSICAL,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
         .andWhere('appointment.status not in(:status1,:status2)', {
@@ -168,16 +206,19 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id - calls count');
     const startDate = new Date(inputStartDate + 'T18:30');
-    const callDetails = await AppointmentCallDetails.createQueryBuilder('appointment_call_details')
+    const callDetails: CasesheetPrepTime[] = await AppointmentCallDetails.createQueryBuilder(
+      'appointment_call_details'
+    )
       .leftJoinAndSelect('appointment_call_details.appointment', 'appointment')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+      .select(['count(appointment_call_details."appointmentId") as totalrows', '0 as totaltime'])
+      .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)', {
         fromDate: startDate,
         toDate: endDate,
       })
-      .andWhere('appointment_call_details.callType = :callType', { callType: callType })
-      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .groupBy('appointment_call_details.appointmentId')
-      .getMany();
+      .andWhere('appointment_call_details."callType" = :callType', { callType })
+      .andWhere('appointment."doctorId" = :doctorId', { doctorId })
+      .groupBy('appointment_call_details."appointmentId"')
+      .getRawMany();
     if (callDetails && callDetails.length > 0) {
       return callDetails.length;
     } else {
@@ -197,20 +238,35 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     // }
   }
 
-  getRescheduleCount(doctorId: string, appointmentDate: Date) {
+  getRescheduleCount(
+    doctorId: string,
+    appointmentDate: Date,
+    rescheduleType: TRANSFER_INITIATED_TYPE
+  ) {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
-    return Appointment.createQueryBuilder('appointment')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
-        fromDate: startDate,
-        toDate: endDate,
-      })
-      .andWhere('appointment.rescheduleCountByDoctor > 0')
-      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .getCount();
+    if (rescheduleType == TRANSFER_INITIATED_TYPE.DOCTOR) {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment."rescheduleCountByDoctor" > 0')
+        .andWhere('appointment."doctorId" = :doctorId', { doctorId: doctorId })
+        .getCount();
+    } else {
+      return Appointment.createQueryBuilder('appointment')
+        .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)', {
+          fromDate: startDate,
+          toDate: endDate,
+        })
+        .andWhere('appointment."rescheduleCount" > 0')
+        .andWhere('appointment."doctorId" = :doctorId', { doctorId: doctorId })
+        .getCount();
+    }
   }
 
   async getDoctorSlots(doctorId: string, appointmentDate: Date, doctorsDb: Connection) {
@@ -273,20 +329,54 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         totalHours =
           parseFloat(totalHours.toString()) + parseFloat(apptTime.callDuration.toString());
       });
+      totalHours = parseFloat((totalHours / 60).toFixed(2));
     }
     return totalHours;
+  }
+
+  async getCasesheetPrepTime(doctorId: string, appointmentDate: Date) {
+    const newStartDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
+    const prepTimeRows: CasesheetPrepTime[] = await CaseSheet.createQueryBuilder('case_sheet')
+      .select([
+        'sum(case_sheet."preperationTimeInSeconds") as totaltime',
+        'count(case_sheet."preperationTimeInSeconds") as totalrows',
+      ])
+      .where('(case_sheet."createdDate" Between :fromDate AND :toDate)', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere('case_sheet."doctorId" = :doctorId', { doctorId })
+      .andWhere('case_sheet."doctorType" != :docType', { docType: DoctorType.JUNIOR })
+      .getRawMany();
+    console.log(prepTimeRows, 'case sheet prep time');
+    if (prepTimeRows[0].totalrows > 0) {
+      return parseFloat((prepTimeRows[0].totaltime / 60).toFixed(2));
+    } else {
+      return 0;
+    }
   }
 
   getFollowUpBookedCount(doctorId: string, appointmentDate: Date, followUpType: string) {
     const newStartDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
-    if (followUpType == '0') {
+    if (followUpType == '2') {
+      return Appointment.count({
+        where: {
+          doctorId,
+          isFollowUp: true,
+          bookingDate: Between(newStartDate, newEndDate),
+          status: Not(STATUS.CANCELLED),
+        },
+      });
+    } else if (followUpType == '0') {
       return Appointment.count({
         where: {
           doctorId,
           isFollowUp: true,
           isFollowPaid: false,
           bookingDate: Between(newStartDate, newEndDate),
+          status: Not(STATUS.CANCELLED),
         },
       });
     } else {
@@ -296,6 +386,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           isFollowUp: true,
           isFollowPaid: true,
           bookingDate: Between(newStartDate, newEndDate),
+          status: Not(STATUS.CANCELLED),
         },
       });
     }
@@ -308,6 +399,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       where: {
         doctorId,
         appointmentDateTime: Between(startDate, endDate),
+        status: Not(STATUS.CANCELLED),
       },
     });
     const apptIds: string[] = [];
@@ -332,7 +424,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       console.log(callDetails, 'callDetails');
 
       if (callDetails.length > 0) {
-        duration = callDetails[0].totalduration;
+        duration = parseFloat((callDetails[0].totalduration / 60).toFixed(2));
       }
     }
     return duration;
@@ -362,5 +454,36 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     }
     return repeatCount + '-' + newCount;
+  }
+
+  async get15ConsultationTime(selDate: Date, doctorId: string, timeCheck: number) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    //.select(['case_sheet."preperationTimeInSeconds" as callduration'])
+    if (timeCheck == 0) {
+      const caseSheetRows = await CaseSheet.createQueryBuilder('case_sheet')
+        .where('case_sheet."createdDate" between :fromDate and :toDate', {
+          fromDate: newStartDate,
+          toDate: newEndDate,
+        })
+        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+        .andWhere('case_sheet."preperationTimeInSeconds" <= :givenTime', { givenTime: 900 })
+        .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
+        .andWhere('case_sheet."doctorType" != :docType', { docType: DoctorType.JUNIOR })
+        .getMany();
+      return caseSheetRows.length;
+    } else {
+      const caseSheetRows = await CaseSheet.createQueryBuilder('case_sheet')
+        .where('case_sheet."createdDate" between :fromDate and :toDate', {
+          fromDate: newStartDate,
+          toDate: newEndDate,
+        })
+        .andWhere('case_sheet."doctorId" = :docId', { docId: doctorId })
+        .andWhere('case_sheet."preperationTimeInSeconds" > :givenTime', { givenTime: 900 })
+        .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
+        .andWhere('case_sheet."doctorType" != :docType', { docType: DoctorType.JUNIOR })
+        .getMany();
+      return caseSheetRows.length;
+    }
   }
 }

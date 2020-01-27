@@ -149,13 +149,15 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         {props.appointmentsHistory.map((_i, index, array) => {
           const i = _i!;
           const consultDuration =
-            doctorDetails?.consultHours?.filter(
-              (item) =>
-                item?.weekDay ===
-                moment(i.appointmentDateTime)
-                  .format('dddd')
-                  .toUpperCase()
-            )[0]?.consultDuration || 15;
+            (doctorDetails &&
+              doctorDetails!.consultHours!.filter(
+                (item) =>
+                  item!.weekDay ===
+                  moment(i.appointmentDateTime)
+                    .format('dddd')
+                    .toUpperCase()
+              )[0]!.consultDuration) ||
+            15;
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}

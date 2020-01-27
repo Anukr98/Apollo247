@@ -25,13 +25,19 @@ export const getCurrentPatientsTypeDefs = gql`
 
   enum Relation {
     ME
-    MOTHER
-    FATHER
-    SISTER
     BROTHER
     COUSIN
-    WIFE
+    DAUGHTER
+    FATHER
+    GRANDDAUGHTER
+    GRANDFATHER
+    GRANDMOTHER
+    GRANDSON
     HUSBAND
+    MOTHER
+    SISTER
+    SON
+    WIFE
     OTHER
   }
 

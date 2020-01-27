@@ -525,6 +525,7 @@ export const GET_CASESHEET_JRD = gql`
           firstName
           lastName
         }
+        updatedDate
       }
       patientDetails {
         allergies
@@ -877,6 +878,7 @@ export const GET_CASESHEET = gql`
           lastName
           salutation
         }
+        updatedDate
       }
     }
   }

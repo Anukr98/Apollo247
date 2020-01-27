@@ -63,5 +63,6 @@ declare namespace NodeJS {
 
     NOTIFICATIONS_SERVICE_HOST: string;
     NOTIFICATIONS_SERVICE_PORT: string;
+    BUGSNAG_API_KEY:string
   }
 }

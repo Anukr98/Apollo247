@@ -51,6 +51,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
@@ -105,6 +110,13 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+}
+
+export enum OTP_STATUS {
+  BLOCKED = "BLOCKED",
+  EXPIRED = "EXPIRED",
+  NOT_VERIFIED = "NOT_VERIFIED",
+  VERIFIED = "VERIFIED",
 }
 
 export enum REQUEST_ROLES {
@@ -213,6 +225,11 @@ export interface DoctorNextAvailableSlotInput {
   doctorIds: string[];
 }
 
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
+}
+
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
@@ -262,6 +279,12 @@ export interface ModifyCaseSheetInput {
 
 export interface OtherInstructionsInput {
   instruction?: string | null;
+}
+
+export interface OtpVerificationInput {
+  id: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
 }
 
 export interface RescheduleAppointmentInput {
