@@ -33,13 +33,14 @@ import { StoragePoc } from 'components/StoragePoc';
 import { TrackJS } from 'trackjs';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 import { MedicineDetails } from 'components/Medicine/MedicineDetails';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
-      paddingBottom: 20,
+      paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 75,
       },
@@ -57,65 +58,71 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const App: React.FC = () => {
   const classes = useStyles({});
-  const { signInError } = useAuth();
+  const { signInError, isSignedIn } = useAuth();
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
   }, [signInError]);
   return (
-    <div className={classes.app}>
-      <Switch>
-        <Route exact path={clientRoutes.welcome()} component={Welcome} />
-        <Route exact path={clientRoutes.patients()} component={PatientsList} />
-        <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
-        <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
-        <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
-        <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
-        <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-        <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
-        <AuthRouted
-          exact
-          path={clientRoutes.medicinesLandingViewCart()}
-          component={MedicineLanding}
-        />
-        <AuthRouted
-          exact
-          path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
-          component={MedicineLanding}
-        />
-        <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
-        <AuthRouted exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
-        <AuthRouted
-          exact
-          path={clientRoutes.searchByMedicine(':searchMedicineType', ':searchText')}
-          component={SearchByMedicine}
-        />
-        <AuthRouted
-          exact
-          path={clientRoutes.medicineSearchByBrand(':id')}
-          component={SearchByBrand}
-        />
-        <AuthRouted
-          exact
-          path={clientRoutes.prescriptionsLanding()}
-          component={PrescriptionsLanding}
-        />
-        <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
-        <AuthRouted
-          exact
-          path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
-          component={ChatRoom}
-        />
-        <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
-        <AuthRouted
-          exact
-          path={clientRoutes.notificationSettings()}
-          component={NotificationSettings}
-        />
-        <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
-        <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
-        <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
-      </Switch>
-    </div>
+    <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
+      <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
+        <Switch>
+          <Route exact path={clientRoutes.welcome()} component={Welcome} />
+          <Route exact path={clientRoutes.patients()} component={PatientsList} />
+          <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
+          <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
+          <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
+          <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
+          <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
+          <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
+          <AuthRouted
+            exact
+            path={clientRoutes.medicinesLandingViewCart()}
+            component={MedicineLanding}
+          />
+          <AuthRouted
+            exact
+            path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
+            component={MedicineLanding}
+          />
+          <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
+          <AuthRouted
+            exact
+            path={clientRoutes.medicineDetails(':sku')}
+            component={MedicineDetails}
+          />
+          <AuthRouted
+            exact
+            path={clientRoutes.searchByMedicine(':searchMedicineType', ':searchText')}
+            component={SearchByMedicine}
+          />
+          <AuthRouted
+            exact
+            path={clientRoutes.medicineSearchByBrand(':id')}
+            component={SearchByBrand}
+          />
+          <AuthRouted
+            exact
+            path={clientRoutes.prescriptionsLanding()}
+            component={PrescriptionsLanding}
+          />
+          <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
+          <AuthRouted
+            exact
+            path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
+            component={ChatRoom}
+          />
+          <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
+          <AuthRouted
+            exact
+            path={clientRoutes.notificationSettings()}
+            component={NotificationSettings}
+          />
+          <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
+          <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
+          <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
+        </Switch>
+      </div>
+    </Scrollbars>
   );
 };
 

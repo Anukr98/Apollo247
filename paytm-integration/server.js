@@ -156,7 +156,8 @@ app.get('/getCmToken', (req, res) => {
     'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
   axios
     .get(
-      'https://auth.play.vitacloud.io/vitauser/vitatoken?appId=apollo_24_7&appUserId=' +
+      process.env.CM_API_URL +
+        '?appId=apollo_24_7&appUserId=' +
         req.query.appUserId +
         '&name=' +
         req.query.userName +
