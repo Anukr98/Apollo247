@@ -83,3 +83,5 @@ export const getNetStatus = async () => {
   });
   return status;
 };
+
+export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);

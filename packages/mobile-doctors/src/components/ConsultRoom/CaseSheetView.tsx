@@ -670,15 +670,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setConsultationType(consultType as typeof consultationType);
         setLoading(false);
         try {
-          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+          setSysmptonsList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
+          );
+          setDiagonsisList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
+          );
+          setDiagnosticPrescriptionDataList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+          );
+          setMedicineList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+          );
         } catch (error) {
           console.log({ error });
         }
@@ -1194,13 +1201,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
-                    if (!isSelected) {
-                      setSelectedMedicinesId([...selectedMedicinesId, showdata.id]);
-                    } else {
-                      setSelectedMedicinesId([
-                        ...selectedMedicinesId.filter((i) => i != showdata.id),
-                      ]);
-                    }
+                    props.overlayDisplay(
+                      <AddMedicinePopUp
+                        data={showdata}
+                        onClose={() => props.overlayDisplay(null)}
+                      />
+                    );
                   }}
                 >
                   <View
@@ -1210,15 +1216,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     ]}
                   >
                     {renderMedicineDetails(showdata)}
-                    {isSelected ? (
-                      <CheckboxSelected
-                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                      />
-                    ) : (
-                      <CheckboxUnSelected
-                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                      />
-                    )}
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        if (!isSelected) {
+                          setSelectedMedicinesId([...selectedMedicinesId, showdata.id]);
+                        } else {
+                          setSelectedMedicinesId([
+                            ...selectedMedicinesId.filter((i) => i != showdata.id),
+                          ]);
+                        }
+                      }}
+                    >
+                      {isSelected ? (
+                        <CheckboxSelected
+                          style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                        />
+                      ) : (
+                        <CheckboxUnSelected
+                          style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                        />
+                      )}
+                    </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
               );
@@ -2019,7 +2038,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <View style={{ marginHorizontal: 16 }}>
                 <Text style={styles.notes}>Personal Notes</Text>
                 <TextInputComponent
-                  placeholder={string.LocalStrings.placeholder_message}
+                  // placeholder={string.LocalStrings.placeholder_message}
                   inputStyle={styles.inputView}
                   multiline={true}
                   value={value}
