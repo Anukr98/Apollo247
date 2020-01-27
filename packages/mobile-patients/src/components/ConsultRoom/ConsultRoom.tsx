@@ -352,7 +352,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (buildSpecify === 'QA' || buildSpecify === 'DEV') {
             keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
           } else {
-            keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~247Android';
+            keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
           }
           console.log('tokenValue', tokenValue, keyHash);
 
