@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultGroup: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f8f5',
       padding: 10,
       marginTop: 10,
       display: 'inline-block',
