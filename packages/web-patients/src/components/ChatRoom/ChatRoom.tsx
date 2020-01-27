@@ -37,23 +37,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -373,11 +357,7 @@ export const ChatRoom: React.FC = (props) => {
     <LinearProgress />
   ) : (
     <div className={classes.root}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+      <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>

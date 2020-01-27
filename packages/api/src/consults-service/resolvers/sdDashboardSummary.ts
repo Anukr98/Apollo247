@@ -7,6 +7,7 @@ import {
   FeedbackDashboardSummary,
   PhrDocumentsSummary,
   DoctorFeeSummary,
+  TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
 import { ConsultMode } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
@@ -16,6 +17,9 @@ import { SdDashboardSummaryRepository } from 'consults-service/repositories/sdDa
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
+import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import { LoginHistoryRepository } from 'doctors-service/repositories/loginSessionRepository';
 import _isEmpty from 'lodash/isEmpty';
 
 export const sdDashboardSummaryTypeDefs = gql`
@@ -80,6 +84,9 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   feedbackRepo: patientsDb.getCustomRepository(PatientFeedbackRepository),
   helpTicketRepo: patientsDb.getCustomRepository(PatientHelpTicketRepository),
   medOrderRepo: patientsDb.getCustomRepository(MedicineOrdersRepository),
+  adminMapRepo: doctorsDb.getCustomRepository(AdminDoctorMap),
+  medRecordRepo: patientsDb.getCustomRepository(MedicalRecordsRepository),
+  loginSessionRepo: doctorsDb.getCustomRepository(LoginHistoryRepository),
 });
 
 const updateConsultRating: Resolver<
@@ -133,13 +140,15 @@ const updatePhrDocSummary: Resolver<
   ConsultServiceContext,
   DocumentSummaryResult
 > = async (parent, args, context) => {
-  const { dashboardRepo, medOrderRepo } = getRepos(context);
+  const { dashboardRepo, medOrderRepo, medRecordRepo } = getRepos(context);
   const docCount = await dashboardRepo.getDocumentSummary(args.summaryDate);
   const prescritionCount = await medOrderRepo.getPrescriptionsCount(args.summaryDate);
+  const standAloneDoc = await medRecordRepo.getRecordSummary(args.summaryDate);
   const phrDocAttrs: Partial<PhrDocumentsSummary> = {
     documentDate: args.summaryDate,
     appointmentDoc: docCount,
     medicineOrderDoc: prescritionCount,
+    standAloneDoc,
   };
   await dashboardRepo.saveDocumentSummary(phrDocAttrs);
   return { apptDocCount: docCount, medDocCount: prescritionCount };
@@ -151,10 +160,20 @@ const updateSdSummary: Resolver<
   ConsultServiceContext,
   DashboardSummaryResult
 > = async (parent, args, context) => {
-  const { docRepo, dashboardRepo } = getRepos(context);
+  const { docRepo, dashboardRepo, adminMapRepo, loginSessionRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
+      const loginSessionData = await loginSessionRepo.getLoginDetailsByDocId(
+        doctor.id,
+        args.summaryDate
+      );
+      let loggedInHours = 0,
+        awayHours = 0;
+      if (loginSessionData) {
+        loggedInHours = parseFloat((loginSessionData.onlineTimeInSeconds / 60 / 60).toFixed(2));
+        awayHours = parseFloat((loginSessionData.offlineTimeInSeconds / 60 / 60).toFixed(2));
+      }
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,
         args.summaryDate,
@@ -165,9 +184,24 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         'ONLINE'
       );
+      const totalPhysicalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
+        doctor.id,
+        args.summaryDate,
+        'PHYSICAL'
+      );
       const auidoCount = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
       const videoCount = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
-      const reschduleCount = 0; //await dashboardRepo.getRescheduleCount(doctor.id, args.summaryDate);
+      const chatCount = await dashboardRepo.getCallsCount(doctor.id, 'CHAT', args.summaryDate);
+      const reschduleCount = await dashboardRepo.getRescheduleCount(
+        doctor.id,
+        args.summaryDate,
+        TRANSFER_INITIATED_TYPE.DOCTOR
+      );
+      const patientReschduleCount = await dashboardRepo.getRescheduleCount(
+        doctor.id,
+        args.summaryDate,
+        TRANSFER_INITIATED_TYPE.PATIENT
+      );
       const slotsCount = await dashboardRepo.getDoctorSlots(
         doctor.id,
         args.summaryDate,
@@ -185,20 +219,45 @@ const updateSdSummary: Resolver<
         '1'
       );
       const callDuration = await dashboardRepo.getOnTimeConsultations(doctor.id, args.summaryDate);
+      const casesheetPrepTime = await dashboardRepo.getCasesheetPrepTime(
+        doctor.id,
+        args.summaryDate
+      );
+      const within15Consultations = await dashboardRepo.get15ConsultationTime(
+        args.summaryDate,
+        doctor.id,
+        0
+      );
+      const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
+      let adminIds = '';
+      if (adminIdRows.length > 0) {
+        adminIdRows.forEach((adminId) => {
+          adminIds += adminId.adminuser.id + ',';
+        });
+      }
       const dashboardSummaryAttrs: Partial<SdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
         totalConsultations,
         totalVirtualConsultations: virtaulConsultations,
+        totalPhysicalConsultations,
         appointmentDateTime: args.summaryDate,
         audioConsultations: auidoCount,
         videoConsultations: videoCount,
+        chatConsultations: chatCount,
+        totalFollowUp: paidFollowUpCount + unpaidFollowUpCount,
         rescheduledByDoctor: reschduleCount,
+        rescheduledByPatient: patientReschduleCount,
         consultSlots: slotsCount,
         timePerConsult: consultHours,
         paidFollowUp: paidFollowUpCount,
         unPaidFollowUp: unpaidFollowUpCount,
         onTimeConsultations: callDuration,
+        casesheetPrepTime,
+        within15Consultations,
+        adminIds,
+        loggedInHours,
+        awayHours,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });
@@ -239,7 +298,11 @@ const updateDoctorFeeSummary: Resolver<
       const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
         appointmentDateTime: args.summaryDate,
         doctorId: doctor.id,
+        doctorName: doctor.firstName + ' ' + doctor.lastName,
         amountPaid: totalFee,
+        specialtiyId: doctor.specialty.id,
+        specialityName: doctor.specialty.name,
+        areaName: doctor.doctorHospital[0].facility.city,
         appointmentsCount: totalConsultations.length,
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);

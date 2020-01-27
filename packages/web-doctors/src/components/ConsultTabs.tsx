@@ -14,7 +14,6 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { GET_CASESHEET_JRD } from 'graphql/profiles';
 import {
   REQUEST_ROLES,
   Gender,
@@ -54,6 +53,7 @@ import {
 import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET,
+  GET_CASESHEET_JRD,
   END_APPOINTMENT_SESSION,
   CREATE_CASESHEET_FOR_SRD,
   MODIFY_CASESHEET,
@@ -503,13 +503,6 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-          const logObject = {
-            api: 'getCasesheet',
-            data: JSON.stringify(_data.data),
-            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          };
-
-          sessionClient.notify(JSON.stringify(logObject));
           setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails &&
           _data!.data!.getCaseSheet!.caseSheetDetails.id
@@ -667,9 +660,9 @@ export const ConsultTabs: React.FC = () => {
             _data.data &&
             _data.data.getCaseSheet &&
             _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
           ) {
-            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate);
+            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
           }
 
           if (
@@ -696,6 +689,15 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
           }
           setJrdName(`${jrdFirstName} ${jrdLastName}`);
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
+          ) {
+            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
+          }
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -938,10 +940,11 @@ export const ConsultTabs: React.FC = () => {
               _data &&
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet &&
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.updatedDate
             ) {
               setJrdSubmitDate(
-                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDate
+                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.updatedDate
               );
             }
 
