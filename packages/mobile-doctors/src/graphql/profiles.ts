@@ -937,3 +937,42 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
     }
   }
 `;
+
+export const ADD_BLOCKED_CALENDAR_ITEM = gql`
+  mutation AddBlockedCalendarItem($doctorId: String!, $start: DateTime!, $end: DateTime!) {
+    addBlockedCalendarItem(doctorId: $doctorId, start: $start, end: $end) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
+
+export const REMOVE_BLOCKED_CALENDAR_ITEM = gql`
+  mutation RemoveBlockedCalendarItem($id: Int!) {
+    removeBlockedCalendarItem(id: $id) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
+
+export const BLOCK_MULTIPLE_CALENDAR_ITEMS = gql`
+  mutation BlockMultipleCalendarItems($blockCalendarInputs: BlockMultipleItems!) {
+    blockMultipleCalendarItems(blockCalendarInputs: $blockCalendarInputs) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;

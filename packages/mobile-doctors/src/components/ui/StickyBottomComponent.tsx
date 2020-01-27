@@ -1,19 +1,16 @@
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { View, StyleProp, ViewStyle, StyleSheet } from 'react-native';
-import { theme } from '../../theme/theme';
+import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    paddingTop: 10,
     backgroundColor: theme.colors.WHITE,
-    height: 80,
-    alignItems: 'center',
+    height: height === 812 || height === 896 ? 80 : 70,
     paddingHorizontal: 20,
     shadowColor: theme.colors.WHITE,
     shadowOffset: { width: 0, height: -5 },
@@ -21,25 +18,43 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
+  absoluteStyles: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
 });
 
-export interface stickyBottomProps {
+export interface StickyBottomProps {
   style?: StyleProp<ViewStyle>;
   backgroundColor?: string;
   children: React.ReactNode;
+  defaultBG?: boolean;
+  position?: boolean;
 }
 
-export const StickyBottomComponent: React.FC<stickyBottomProps> = (props) => {
+export const StickyBottomComponent: React.FC<StickyBottomProps> = (props) => {
   return (
     <View
       style={[
         styles.container,
-        props.backgroundColor
-          ? { backgroundColor: props.backgroundColor, shadowColor: props.backgroundColor }
+        props.position ? styles.absoluteStyles : {},
+        props.style,
+        props.defaultBG
+          ? {
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+            }
           : null,
       ]}
     >
       {props.children}
     </View>
   );
+};
+
+StickyBottomComponent.defaultProps = {
+  defaultBG: false,
+  position: true,
 };

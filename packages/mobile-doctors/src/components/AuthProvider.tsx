@@ -227,10 +227,12 @@ export const AuthProvider: React.FC = (props) => {
         query: GET_DOCTOR_DETAILS,
         fetchPolicy: 'no-cache',
       })
-      .then((data) => {
+      .then(({ data }) => {
         console.log('GetDoctorDetails', data);
         // AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-        // setAllPatients(data);
+        if (data) {
+          setDoctorDetails(data.getDoctorDetails);
+        }
       })
       .catch(async (error) => {
         // const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
