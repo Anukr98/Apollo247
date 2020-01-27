@@ -36,7 +36,7 @@ export type Option = {
   onPress?: () => void;
 };
 
-type OptionsObject = {
+export type OptionsObject = {
   key: string | number;
   value: string | number;
 };
