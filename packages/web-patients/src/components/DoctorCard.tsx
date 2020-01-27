@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Avatar, Modal } from '@material-ui/core';
@@ -216,7 +215,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   return (
     <>
-      <div className={classes.topContent} onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}>
+      <div
+        className={classes.topContent}
+        onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
+      >
         <Avatar
           alt={doctorDetails.firstName || ''}
           src={
@@ -226,7 +228,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           }
           className={classes.doctorAvatar}
         />
-        <div className={classes.doctorInfo} onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}>
+        <div
+          className={classes.doctorInfo}
+          onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
+        >
           {loading ? <LinearProgress /> : availabilityMarkup()}
           <div className={classes.doctorName}>
             {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
@@ -290,4 +295,3 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     </>
   );
 };
-
