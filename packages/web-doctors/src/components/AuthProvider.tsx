@@ -35,6 +35,17 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
+import bugsnag from '@bugsnag/js';
+
+const bugsnagClient = bugsnag({
+  apiKey: `${process.env.BUGSNAG_API_KEY}`,
+  releaseStage: `${process.env.NODE_ENV}`,
+  autoBreadcrumbs: true,
+  autoCaptureSessions: true,
+  autoNotify: true,
+});
+
+const sessionClient = bugsnagClient.startSession();
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -69,6 +80,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   addDoctorSecretary:
     | ((p: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null) => void)
     | null;
+  sessionClient: any;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -97,6 +109,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setCurrentUserType: null,
   doctorSecretary: null,
   addDoctorSecretary: null,
+  sessionClient: sessionClient,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -415,6 +428,7 @@ export const AuthProvider: React.FC = (props) => {
             setIsLoginPopupVisible,
             doctorSecretary,
             addDoctorSecretary,
+            sessionClient,
           }}
         >
           {props.children}

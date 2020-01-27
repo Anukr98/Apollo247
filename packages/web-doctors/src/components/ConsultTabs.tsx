@@ -87,17 +87,17 @@ import {
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 import moment from 'moment';
-import bugsnag from '@bugsnag/js';
+// import bugsnag from '@bugsnag/js';
 
-const bugsnagClient = bugsnag({
-  apiKey: `${process.env.BUGSNAG_API_KEY}`,
-  releaseStage: `${process.env.NODE_ENV}`,
-  autoBreadcrumbs: true,
-  autoCaptureSessions: true,
-  autoNotify: true,
-});
+// const bugsnagClient = bugsnag({
+//   apiKey: `${process.env.BUGSNAG_API_KEY}`,
+//   releaseStage: `${process.env.NODE_ENV}`,
+//   autoBreadcrumbs: true,
+//   autoCaptureSessions: true,
+//   autoNotify: true,
+// });
 
-const sessionClient = bugsnagClient.startSession();
+// const sessionClient = bugsnagClient.startSession();
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
@@ -309,7 +309,7 @@ export const ConsultTabs: React.FC = () => {
   const params = useParams<Params>();
   const paramId = params.id;
 
-  const { currentPatient, isSignedIn } = useAuth();
+  const { currentPatient, isSignedIn, sessionClient } = useAuth();
 
   const mutationCreateSrdCaseSheet = useMutation<
     CreateSeniorDoctorCaseSheet,
