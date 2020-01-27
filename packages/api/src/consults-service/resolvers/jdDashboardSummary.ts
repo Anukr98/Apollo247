@@ -7,6 +7,8 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { JdDashboardSummaryRepository } from 'consults-service/repositories/jdDashboardSummaryRepository';
 import { differenceInSeconds, addMinutes } from 'date-fns';
+import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import { LoginHistoryRepository } from 'doctors-service/repositories/loginSessionRepository';
 
 export const jdDashboardSummaryTypeDefs = gql`
   type JdDashboardSummaryResult {
@@ -46,6 +48,8 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   patRepo: patientsDb.getCustomRepository(PatientRepository),
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
   dashboardRepo: consultsDb.getCustomRepository(JdDashboardSummaryRepository),
+  adminMapRepo: doctorsDb.getCustomRepository(AdminDoctorMap),
+  loginSessionRepo: doctorsDb.getCustomRepository(LoginHistoryRepository),
 });
 
 const updateCaseSheetTime: Resolver<
@@ -82,7 +86,7 @@ const updateJdSummary: Resolver<
   ConsultServiceContext,
   JdDashboardSummaryResult
 > = async (parent, args, context) => {
-  const { docRepo, dashboardRepo } = getRepos(context);
+  const { docRepo, dashboardRepo, adminMapRepo, loginSessionRepo } = getRepos(context);
   const docsList = await docRepo.getAllJuniorDoctors(args.doctorId);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
@@ -92,6 +96,16 @@ const updateJdSummary: Resolver<
         args.summaryDate,
         doctor.id
       );
+      const loginSessionData = await loginSessionRepo.getLoginDetailsByDocId(
+        doctor.id,
+        args.summaryDate
+      );
+      let loggedInHours = 0,
+        awayHours = 0;
+      if (loginSessionData) {
+        loggedInHours = parseFloat((loginSessionData.onlineTimeInSeconds / 60 / 60).toFixed(2));
+        awayHours = parseFloat((loginSessionData.offlineTimeInSeconds / 60 / 60).toFixed(2));
+      }
       const audioChats = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
       const videoChats = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
       const chatConsults = await dashboardRepo.getCallsCount(doctor.id, 'CHAT', args.summaryDate);
@@ -121,10 +135,18 @@ const updateJdSummary: Resolver<
         doctor.id
       );
       const casesOngoing = await dashboardRepo.getOngoingCases(args.summaryDate, doctor.id);
+      const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
+      let adminIds = '';
+      if (adminIdRows.length > 0) {
+        adminIdRows.forEach((adminId) => {
+          adminIds += adminId.adminuser.id + ',';
+        });
+      }
       const dashboardSummaryAttrs: Partial<JdDashboardSummary> = {
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
         appointmentDateTime: args.summaryDate,
+        adminIds,
         waitTimePerChat,
         caseSheetFillTime,
         totalCompletedChats,
@@ -133,8 +155,8 @@ const updateJdSummary: Resolver<
         videoChats,
         chatConsults,
         jdsUtilization: 0,
-        loggedInHours: 0,
-        awayHours: 0,
+        loggedInHours,
+        awayHours,
         totalConsultationTime,
         casesCompleted: totalCompletedChats,
         cases15Less,

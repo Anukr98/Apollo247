@@ -684,6 +684,7 @@ export class DoctorRepository extends Repository<Doctor> {
           isActive: true,
           doctorType: Not('JUNIOR'),
         },
+        relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
       });
     } else {
       return this.find({
@@ -692,6 +693,7 @@ export class DoctorRepository extends Repository<Doctor> {
           isActive: true,
           doctorType: Not('JUNIOR'),
         },
+        relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
       });
     }
   }

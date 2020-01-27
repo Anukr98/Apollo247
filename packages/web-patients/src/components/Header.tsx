@@ -36,6 +36,16 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    headerSticky: {
+      position: 'fixed',
+      width: '100%',
+      zIndex: 99,
+      top: 0,
+    },
+    container: {
+      maxWidth: 1064,
+      margin: 'auto',
+    },
     logo: {
       paddingTop: 20,
       paddingBottom: 11,
@@ -124,69 +134,77 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   return (
-    <header className={classes.header} data-cypress="Header">
-      <div className={classes.logo}>
-        <Link to="/">
-          <img src={require('images/ic_logo.png')} />
-        </Link>
-      </div>
-      {isSignedIn && (
-        <LocationProvider>
-          <AppLocations />
-        </LocationProvider>
-      )}
-      {isSignedIn && (
-        <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
-      )}
-      <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
-        <ProtectedWithLoginPopup>
-          {({ protectWithLoginPopup, isProtected }) => (
-            <div
-              className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-              onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
-              ref={avatarRef}
-            >
-              {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
-            </div>
+    <div className={classes.headerSticky}>
+      <div className={classes.container}>
+        <header className={classes.header} data-cypress="Header">
+          <div className={classes.logo}>
+            <Link to="/">
+              <img src={require('images/ic_logo.png')} />
+            </Link>
+          </div>
+          {isSignedIn && (
+            <LocationProvider>
+              <AppLocations />
+            </LocationProvider>
           )}
-        </ProtectedWithLoginPopup>
-        {isSignedIn ? (
-          <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-            <DialogContent>
-              <div className={classes.logoutModal}>
-                <h3>You are successfully Logged in with Apollo 24x7</h3>
-                <div className={classes.bottomActions}>
-                  <AphButton color="secondary" onClick={() => setIsDialogOpen(false)} autoFocus>
-                    Cancel
-                  </AphButton>
-                  <AphButton color="primary" onClick={() => signOut()}>
-                    Sign out
-                  </AphButton>
+          {isSignedIn && (
+            <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
+          )}
+          <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
+            <ProtectedWithLoginPopup>
+              {({ protectWithLoginPopup, isProtected }) => (
+                <div
+                  className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                  onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
+                  ref={avatarRef}
+                >
+                  {isSigningIn ? (
+                    <CircularProgress />
+                  ) : (
+                    <img src={require('images/ic_account.svg')} />
+                  )}
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        ) : (
-          <Popover
-            open={isLoginPopupVisible}
-            anchorEl={avatarRef.current}
-            onClose={() => (isSignedIn ? setIsLoginPopupVisible(false) : null)}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.topPopover }}
-          >
-            <Paper className={classes.loginForm}>
-              <SignIn />
-            </Paper>
-          </Popover>
-        )}
+              )}
+            </ProtectedWithLoginPopup>
+            {isSignedIn ? (
+              <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+                <DialogContent>
+                  <div className={classes.logoutModal}>
+                    <h3>You are successfully Logged in with Apollo 24x7</h3>
+                    <div className={classes.bottomActions}>
+                      <AphButton color="secondary" onClick={() => setIsDialogOpen(false)} autoFocus>
+                        Cancel
+                      </AphButton>
+                      <AphButton color="primary" onClick={() => signOut()}>
+                        Sign out
+                      </AphButton>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <Popover
+                open={isLoginPopupVisible}
+                anchorEl={avatarRef.current}
+                onClose={() => (isSignedIn ? setIsLoginPopupVisible(false) : null)}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                classes={{ paper: classes.topPopover }}
+              >
+                <Paper className={classes.loginForm}>
+                  <SignIn />
+                </Paper>
+              </Popover>
+            )}
+          </div>
+        </header>
       </div>
-    </header>
+    </div>
   );
 };
