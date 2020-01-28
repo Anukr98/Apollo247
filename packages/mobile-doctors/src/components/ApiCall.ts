@@ -5,6 +5,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import Axios, { AxiosResponse, Canceler } from 'axios';
+import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 const AUTH_TOKEN = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 
@@ -49,7 +50,7 @@ export type Doseform =
 
 interface PharmaOverview {
   generic: string;
-  Doseform: Doseform;
+  Doseform: MEDICINE_UNIT | '';
   Unit: string;
   Strength: string;
   Strengh: string;

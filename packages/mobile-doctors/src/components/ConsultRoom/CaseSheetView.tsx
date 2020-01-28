@@ -1196,7 +1196,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </Text>
           ) : (
             medicinePrescriptionData.map((showdata: any, i) => {
-              const isSelected = selectedMedicinesId.findIndex((i) => i === showdata.id) >= 0;
+              const isSelected =
+                selectedMedicinesId.findIndex((i) => i === (showdata.externalId || showdata.id)) >=
+                0;
               return (
                 <TouchableOpacity
                   activeOpacity={1}
@@ -1205,6 +1207,24 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       <AddMedicinePopUp
                         data={showdata}
                         onClose={() => props.overlayDisplay(null)}
+                        onAddnew={(data) => {
+                          console.log(medicinePrescriptionData, selectedMedicinesId);
+
+                          setMedicinePrescriptionData([
+                            ...(medicinePrescriptionData.filter(
+                              (i: any) => (i.externalId || i.id) !== (data.externalId || data.id)
+                            ) || []),
+                            data,
+                          ]);
+                          setSelectedMedicinesId(
+                            [
+                              ...selectedMedicinesId.filter(
+                                (i) => i !== (data.externalId || data.id)
+                              ),
+                              data.externalId || '',
+                            ].filter((i) => i !== '')
+                          );
+                        }}
                       />
                     );
                   }}
@@ -1220,10 +1240,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       activeOpacity={1}
                       onPress={() => {
                         if (!isSelected) {
-                          setSelectedMedicinesId([...selectedMedicinesId, showdata.id]);
+                          setSelectedMedicinesId([
+                            ...selectedMedicinesId,
+                            showdata.externalId || showdata.id,
+                          ]);
                         } else {
                           setSelectedMedicinesId([
-                            ...selectedMedicinesId.filter((i) => i != showdata.id),
+                            ...selectedMedicinesId.filter(
+                              (i) => i != (showdata.externalId || showdata.id)
+                            ),
                           ]);
                         }
                       }}
@@ -1259,19 +1284,32 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          if (selectedMedicinesId.findIndex((i) => i === med.id) < 0) {
+                          console.log(
+                            selectedMedicinesId.findIndex((i) => i === med.externalId),
+                            medicinePrescriptionData &&
+                              medicinePrescriptionData.findIndex(
+                                (i: any) => i.id === med.externalId
+                              ),
+                            'tnei'
+                          );
+                          const compareId = med.externalId || med.id;
+                          if (selectedMedicinesId.findIndex((i) => i === compareId) < 0) {
                             if (
                               (medicinePrescriptionData &&
-                                medicinePrescriptionData.findIndex((i: any) => i.id === med.id) <
-                                  0) ||
-                              medicinePrescriptionData === null
+                                medicinePrescriptionData.findIndex(
+                                  (i: any) => (i.externalId || i.id) === compareId
+                                ) < 0) ||
+                              medicinePrescriptionData === null ||
+                              medicinePrescriptionData === undefined
                             ) {
                               setMedicinePrescriptionData([
                                 ...(medicinePrescriptionData || []),
                                 med,
                               ]);
                             }
-                            setSelectedMedicinesId([...selectedMedicinesId, med.id || '']);
+                            setSelectedMedicinesId(
+                              [...selectedMedicinesId, compareId || ''].filter((i) => i !== '')
+                            );
                           }
                         }}
                       >
@@ -1290,7 +1328,26 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               activeOpacity={1}
               onPress={() =>
                 props.overlayDisplay(
-                  <AddMedicinePopUp onClose={() => props.overlayDisplay(null)} />
+                  <AddMedicinePopUp
+                    onClose={() => props.overlayDisplay(null)}
+                    onAddnew={(data) => {
+                      if (
+                        (medicinePrescriptionData &&
+                          medicinePrescriptionData.findIndex(
+                            (i: any) => (i.externalId || i.id) === data.externalId
+                          ) < 0) ||
+                        medicinePrescriptionData === null ||
+                        medicinePrescriptionData === undefined
+                      ) {
+                        setMedicinePrescriptionData([...(medicinePrescriptionData || []), data]);
+                        setSelectedMedicinesId(
+                          [...selectedMedicinesId, data.externalId || ''].filter((i) => i !== '')
+                        );
+                      } else {
+                        Alert.alert('', 'Already Exists');
+                      }
+                    }}
+                  />
                 )
               }
               // onPress={() => props.navigation.push(AppRoutes.AddMedicine)}

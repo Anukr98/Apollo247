@@ -1,40 +1,44 @@
-import React, { useState, useEffect } from 'react';
 import {
-  View,
-  TouchableOpacity,
-  Platform,
-  Text,
-  ScrollView,
-  Dimensions,
-  TextInput,
-  FlatList,
+  getMedicineDetailsApi,
+  MedicineProduct,
+  MedicineProductDetails,
+  searchMedicineApi,
+} from '@aph/mobile-doctors/src/components/ApiCall';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
+import {
+  AddPlus,
+  BackArrow,
+  DropdownGreen,
+  Remove,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
+import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
+import {
+  MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FREQUENCY,
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+  MEDICINE_UNIT,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import {
   ActivityIndicator,
-  StyleSheet,
+  Dimensions,
+  FlatList,
   KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
-import {
-  Remove,
-  BackArrow,
-  AddPlus,
-  DropdownGreen,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import {
-  searchMedicineApi,
-  MedicineProduct,
-  getMedicineDetailsApi,
-  MedicineProductDetails,
-} from '@aph/mobile-doctors/src/components/ApiCall';
-import { isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import axios, { AxiosResponse } from 'axios';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
-import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { Option } from '@aph/mobile-doctors/src/components/ui/DropDown';
-import { GetDoctorFavouriteMedicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -71,10 +75,15 @@ const styles = StyleSheet.create({
 export interface AddMedicinePopUpProps {
   onClose: () => void;
   data?: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList;
+  onAddnew?: (data: any) => void;
 }
 
 export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
-  const { data } = props;
+  const { data, onClose, onAddnew } = props;
+  const nameFormater = (name: string) => {
+    const val = name.replace(/_/g, ' ');
+    return val[0].toUpperCase() + val.slice(1).toLowerCase();
+  };
   const [medName, setMedName] = useState<string>('');
   const [medicineSelected, setMedicineSelected] = useState<MedicineProductDetails>();
   const [medSearchText, setMedSearchText] = useState<string>('');
@@ -84,41 +93,48 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const [renderType, setRenderType] = useState<number>(2);
 
   const forTimeArray: OptionsObject[] = [
-    { key: 'D', value: 'Day(s)' },
-    { key: 'W', value: 'Week(s)' },
-    { key: 'M', value: 'Month(s)' },
+    { key: MEDICINE_CONSUMPTION_DURATION.DAYS, value: 'Day(s)' },
+    { key: MEDICINE_CONSUMPTION_DURATION.WEEKS, value: 'Week(s)' },
+    { key: MEDICINE_CONSUMPTION_DURATION.MONTHS, value: 'Month(s)' },
   ];
   const takeTime: OptionsObject[] = [
-    { key: '1', value: 'Once a day' },
-    { key: '2', value: 'Twice a day' },
-    { key: '3', value: 'Thrice a day' },
-    { key: '4', value: 'Four times a day' },
-    { key: '5', value: 'Five times a day' },
-    { key: 'A', value: 'As needed' },
+    { key: MEDICINE_FREQUENCY.ONCE_A_DAY, value: nameFormater(MEDICINE_FREQUENCY.ONCE_A_DAY) },
+    { key: MEDICINE_FREQUENCY.TWICE_A_DAY, value: nameFormater(MEDICINE_FREQUENCY.TWICE_A_DAY) },
+    { key: MEDICINE_FREQUENCY.THRICE_A_DAY, value: nameFormater(MEDICINE_FREQUENCY.THRICE_A_DAY) },
+    {
+      key: MEDICINE_FREQUENCY.FOUR_TIMES_A_DAY,
+      value: nameFormater(MEDICINE_FREQUENCY.FOUR_TIMES_A_DAY),
+    },
+    {
+      key: MEDICINE_FREQUENCY.FIVE_TIMES_A_DAY,
+      value: nameFormater(MEDICINE_FREQUENCY.FIVE_TIMES_A_DAY),
+    },
+    { key: MEDICINE_FREQUENCY.AS_NEEDED, value: nameFormater(MEDICINE_FREQUENCY.AS_NEEDED) },
   ];
   const typeTakeArray: OptionsObject[] = [
-    { key: 'SYRUP', value: 'Syrup' },
-    { key: 'DROPS', value: 'Drops' },
-    { key: 'CAPSULE', value: 'Capsule' },
-    { key: 'INJECTION', value: 'Injection' },
-    { key: 'TABLET', value: 'Tablet' },
-    { key: 'BOTTLE', value: 'Bottle' },
-    { key: 'SUSPENSION', value: 'Suspension' },
-    { key: 'ROTACAPS', value: 'Rotacaps' },
-    { key: 'SACHET', value: 'Sachet' },
-    { key: 'OTHERS', value: 'Others' },
+    { key: MEDICINE_UNIT.SYRUP, value: nameFormater(MEDICINE_UNIT.SYRUP) },
+    { key: MEDICINE_UNIT.DROPS, value: nameFormater(MEDICINE_UNIT.DROPS) },
+    { key: MEDICINE_UNIT.CAPSULE, value: nameFormater(MEDICINE_UNIT.CAPSULE) },
+    { key: MEDICINE_UNIT.INJECTION, value: nameFormater(MEDICINE_UNIT.INJECTION) },
+    { key: MEDICINE_UNIT.TABLET, value: nameFormater(MEDICINE_UNIT.TABLET) },
+    { key: MEDICINE_UNIT.BOTTLE, value: nameFormater(MEDICINE_UNIT.BOTTLE) },
+    { key: MEDICINE_UNIT.SUSPENSION, value: nameFormater(MEDICINE_UNIT.SUSPENSION) },
+    { key: MEDICINE_UNIT.ROTACAPS, value: nameFormater(MEDICINE_UNIT.ROTACAPS) },
+    { key: MEDICINE_UNIT.SACHET, value: nameFormater(MEDICINE_UNIT.SACHET) },
+    { key: MEDICINE_UNIT.ML, value: 'ml' },
+    { key: MEDICINE_UNIT.OTHERS, value: nameFormater(MEDICINE_UNIT.OTHERS) },
   ];
 
   const typeApplyArray: OptionsObject[] = [
-    { key: 'POWDER', value: 'Powder' },
-    { key: 'CREAM', value: 'Cream' },
-    { key: 'SOAP', value: 'Soap' },
-    { key: 'GEL', value: 'Gel' },
-    { key: 'LOTION', value: 'Lotion' },
-    { key: 'SPRAY', value: 'Spray' },
-    { key: 'SOLUTION', value: 'Solution' },
-    { key: 'OINTMENT', value: 'Ointment' },
-    { key: 'OTHERS', value: 'Others' },
+    { key: MEDICINE_UNIT.POWDER, value: nameFormater(MEDICINE_UNIT.POWDER) },
+    { key: MEDICINE_UNIT.CREAM, value: nameFormater(MEDICINE_UNIT.CREAM) },
+    { key: MEDICINE_UNIT.SOAP, value: nameFormater(MEDICINE_UNIT.SOAP) },
+    { key: MEDICINE_UNIT.GEL, value: nameFormater(MEDICINE_UNIT.GEL) },
+    { key: MEDICINE_UNIT.LOTION, value: nameFormater(MEDICINE_UNIT.LOTION) },
+    { key: MEDICINE_UNIT.SPRAY, value: nameFormater(MEDICINE_UNIT.SPRAY) },
+    { key: MEDICINE_UNIT.SOLUTION, value: nameFormater(MEDICINE_UNIT.SOLUTION) },
+    { key: MEDICINE_UNIT.OINTMENT, value: nameFormater(MEDICINE_UNIT.OINTMENT) },
+    { key: MEDICINE_UNIT.OTHERS, value: nameFormater(MEDICINE_UNIT.OTHERS) },
   ];
 
   const [take, setTake] = useState<string>('');
@@ -138,15 +154,75 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const [instructions, setInstructions] = useState<string>('');
 
   useEffect(() => {
-    if (props.data) {
-      setMedName(data.medicineName);
-      if (data.externalId) {
+    if (data) {
+      setMedName(data.medicineName || medName);
+      if (data.externalId && data.medicineName && data.externalId !== data.medicineName) {
         medDetailsApi(data.externalId);
+      } else if (data.medicineUnit) {
+        setMedType(data.medicineUnit);
       }
-      if (data.medicineTimings && data.medicineTimings.length) {
+      if (data.externalId === data.medicineName) {
+        setMedicineSelected({
+          description: '',
+          id: 1,
+          image: '',
+          is_in_stock: true,
+          is_prescription_required: '',
+          name: data.medicineName,
+          price: 0,
+          sku: data.medicineName,
+          small_image: '',
+          status: '',
+          thumbnail: '',
+          type_id: '',
+        } as MedicineProductDetails);
+      }
+      if (data.medicineTimings) {
+        (data.medicineTimings || []).forEach((i) => {
+          if (i === MEDICINE_TIMINGS.MORNING) {
+            setMorningValue(true);
+          } else if (i === MEDICINE_TIMINGS.NOON) {
+            setNoonValue(true);
+          } else if (i === MEDICINE_TIMINGS.EVENING) {
+            setEveningValue(true);
+          } else if (i === MEDICINE_TIMINGS.NIGHT) {
+            setNightValue(true);
+          } else if (i === MEDICINE_TIMINGS.AS_NEEDED) {
+            setAsNeededValue(true);
+          }
+        });
+      }
+      if (data.medicineToBeTaken) {
+        data.medicineToBeTaken.forEach((i) => {
+          if (i === MEDICINE_TO_BE_TAKEN.AFTER_FOOD) {
+            setAfterFoodValue(true);
+          } else if (i === MEDICINE_TO_BE_TAKEN.BEFORE_FOOD) {
+            setBeforeFoodValue(true);
+          }
+        });
+      }
+      if (data.medicineInstructions) {
+        setInstructions(data.medicineInstructions);
+      }
+      if (data.medicineFrequency) {
+        setTakeDrop({
+          key: data.medicineFrequency,
+          value: nameFormater(data.medicineFrequency),
+        });
+      }
+      if (data.medicineConsumptionDurationUnit) {
+        setForTimeDrop({
+          key: data.medicineConsumptionDurationUnit,
+          value: nameFormater(data.medicineConsumptionDurationUnit),
+        });
+      }
+      if (data.medicineConsumptionDurationInDays) {
+        setForTime(data.medicineConsumptionDurationInDays);
+      }
+      if (data.medicineDosage) {
+        setTake(data.medicineDosage);
       }
     }
-    console.log(props.data, 'dnid');
   }, []);
 
   const renderHeader = () => {
@@ -169,6 +245,9 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         {medName ? (
           <TouchableOpacity
             onPress={() => {
+              if (data) {
+                onClose();
+              }
               setMedName('');
               setMedicineSelected(undefined);
             }}
@@ -210,10 +289,40 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           onPress={() => props.onClose()}
           style={{ width: (width - 110) / 2, marginRight: 16 }}
         />
-        <Button title={'ADD MEDICINE'} style={{ width: (width - 110) / 2 }} />
+        <Button
+          title={'ADD MEDICINE'}
+          onPress={() => {
+            const dataSend = {
+              medicineName: medName,
+              id: data ? data.id : '',
+              externalId: medicineSelected ? medicineSelected.sku : '',
+              medicineDosage: take,
+              medicineUnit: typeDrop.key,
+              medicineInstructions: instructions,
+              medicineFrequency: takeDrop.key,
+              medicineConsumptionDurationUnit: forTimeDrop.key,
+              medicineConsumptionDurationInDays: forTime,
+              medicineTimings: [
+                morningValue ? MEDICINE_TIMINGS.MORNING : '',
+                noonValue ? MEDICINE_TIMINGS.NOON : '',
+                eveningValue ? MEDICINE_TIMINGS.EVENING : '',
+                nightValue ? MEDICINE_TIMINGS.NIGHT : '',
+                asNeededValue ? MEDICINE_TIMINGS.AS_NEEDED : '',
+              ].filter((i) => i !== ''),
+              medicineToBeTaken: [
+                afterFoodValue ? MEDICINE_TO_BE_TAKEN.AFTER_FOOD : '',
+                beforeFoodValue ? MEDICINE_TO_BE_TAKEN.BEFORE_FOOD : '',
+              ].filter((i) => i !== ''),
+            };
+            onAddnew && onAddnew(dataSend);
+            onClose();
+          }}
+          style={{ width: (width - 110) / 2 }}
+        />
       </View>
     );
   };
+
   const renderMedicineType = () => {
     return (
       <View style={{ margin: 16 }}>
@@ -244,7 +353,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             />
           )}
           <MaterialMenu
-            options={renderType === 1 ? typeTakeArray : typeApplyArray}
+            options={renderType === 1 ? typeTakeArray : renderType === 2 ? typeApplyArray : []}
             selectedText={typeDrop.key}
             menuContainerStyle={{
               alignItems: 'flex-end',
@@ -594,7 +703,26 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
       searchMedicineApi(value)
         .then(async ({ data }) => {
           const products = data.products || [];
-          setMedList(products);
+          if (products.length > 0) {
+            setMedList(products);
+          } else {
+            setMedList([
+              {
+                description: '',
+                id: 1,
+                image: '',
+                is_in_stock: true,
+                is_prescription_required: '',
+                name: value,
+                price: 0,
+                sku: value,
+                small_image: '',
+                status: '',
+                thumbnail: '',
+                type_id: '',
+              },
+            ]);
+          }
           setListLoader(false);
         })
         .catch((e) => {
@@ -602,6 +730,20 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             setListLoader(false);
           }
         });
+    }
+  };
+
+  const setMedType = (medType: MEDICINE_UNIT | '') => {
+    if (typeTakeArray.findIndex((i) => i.key === medType) > -1) {
+      setTypeDrop(
+        typeTakeArray.find((i) => i.key === medType) || typeTakeArray[typeApplyArray.length - 1]
+      );
+      setRenderType(1);
+    } else if (typeApplyArray.findIndex((i) => i.key === medType) > -1 || medType === '') {
+      setTypeDrop(
+        typeApplyArray.find((i) => i.key === medType) || typeApplyArray[typeApplyArray.length - 1]
+      );
+      setRenderType(2);
     }
   };
 
@@ -615,37 +757,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           data.data.productdp[0] && data.data.productdp[0].PharmaOverview.length
             ? data.data.productdp[0].PharmaOverview[0].Doseform
             : '';
-        switch (medtype) {
-          case 'SYRUP':
-          case 'DROPS':
-          case 'CAPSULE':
-          case 'INJECTION':
-          case 'TABLET':
-          case 'BOTTLE':
-          case 'SUSPENSION':
-          case 'ROTACAPS':
-          case 'SACHET':
-            setTypeDrop(
-              typeTakeArray.find((i) => i.key === medtype) ||
-                typeTakeArray[typeApplyArray.length - 1]
-            );
-            setRenderType(1);
-            break;
-          case 'POWDER':
-          case 'CREAM':
-          case 'SOAP':
-          case 'GEL':
-          case 'LOTION':
-          case 'SPRAY':
-          case 'SOLUTION':
-          case 'OINTMENT':
-          default:
-            setTypeDrop(
-              typeApplyArray.find((i) => i.key === medtype) ||
-                typeApplyArray[typeApplyArray.length - 1]
-            );
-            setRenderType(2);
-        }
+        setMedType(medtype);
       })
       .finally(() => setMedDetailLoading(false));
   };
@@ -656,7 +768,12 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           setMedName(item.name);
-          medDetailsApi(item.sku);
+          if (item.name === item.sku) {
+            setMedicineSelected(item as MedicineProductDetails);
+            setMedType(MEDICINE_UNIT.OTHERS);
+          } else {
+            medDetailsApi(item.sku);
+          }
         }}
       >
         <View
