@@ -1286,8 +1286,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
-    console.log("videocall", rowData.message);
-
     if (
       rowData.message === autoMessageStrings.typingMsg ||
       rowData.message === autoMessageStrings.stopcallMsg ||
@@ -1412,8 +1410,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <div className={classes.doctorsChat}>
           <div className={rowData.duration ? classes.callMsg : classes.chatBub}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
-            {console.log("msg", rowData.message, rowData.duration)
-            }
             {rowData.duration === '00 : 00' ? (
               <>
                 <span className={classes.none}>
