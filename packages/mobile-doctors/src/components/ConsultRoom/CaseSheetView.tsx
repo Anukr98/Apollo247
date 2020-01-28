@@ -108,6 +108,7 @@ import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/Cas
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
 import { nameFormater, medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { AddInstructionPopUp } from '@aph/mobile-doctors/src/components/ui/AddInstructionPopUp';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -260,15 +261,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputView: {
-    height: 60,
+    borderWidth: 2,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#30c1a3',
-    marginTop: 10,
-    color: '#01475b',
-    marginBottom: 10,
+    height: 80,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingBottom: 12,
+    paddingTop: 12,
+    borderColor: theme.colors.APP_GREEN,
+    ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
   },
-
+  inputSingleView: {
+    borderBottomWidth: 2,
+    width: width / 2.75,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingBottom: 2,
+    paddingTop: 0,
+    borderColor: theme.colors.APP_GREEN,
+    ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
+  },
   inputBorderView: {
     borderRadius: 10,
     backgroundColor: theme.colors.CARD_BG,
@@ -288,7 +300,7 @@ const styles = StyleSheet.create({
   notes: {
     ...theme.fonts.IBMPlexSansMedium(17),
     color: '#0087ba',
-    marginTop: 16,
+    marginBottom: 10,
   },
   symptomsInputView: {
     flex: 1,
@@ -560,16 +572,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [folloUpNotes, setFolloUpNotes] = useState<string>('');
 
   const [addedAdvices, setAddedAdvices] = useState<dataPair[]>([]);
-  const [favAdvices, setFavAdvices] = useState<dataPair[]>([
-    { key: '1', value: 'Drink plenty of water' },
-    { key: '2', value: 'Use sunscreen every day' },
-    { key: '3', value: 'Avoid outside food for a few days' },
-    {
-      key: '4',
-      value:
-        'Avoid stepping out with wet hairAvoid stepping out with wet hairAvoid stepping out with wet hairAvoid stepping out with wet hairAvoid stepping out with wet hairAvoid stepping out with wet hairAvoid stepping out with wet hairAvoid stepping out with wet hair',
-    },
-  ]);
+  const [favAdvices, setFavAdvices] = useState<dataPair[]>([]);
 
   let Delegate = '';
   const [showstyles, setShowStyles] = useState<any>([
@@ -597,8 +600,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   useEffect(() => {
     if (favList) {
-      const data =
-        favList.getDoctorFavouriteAdviceList &&
+      let data: dataPair[] = [];
+      favList.getDoctorFavouriteAdviceList &&
         favList.getDoctorFavouriteAdviceList.adviceList &&
         favList.getDoctorFavouriteAdviceList.adviceList.map((item) => item && item.instruction);
       data && setFavAdvices(data);
@@ -675,22 +678,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setConsultationType(consultType as typeof consultationType);
         setLoading(false);
         try {
-          setSysmptonsList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
-          );
-          setDiagonsisList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
-          );
-          setDiagnosticPrescriptionDataList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-          );
-          setMedicineList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-          );
+          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
+            .diagnosticPrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
         } catch (error) {
           console.log({ error });
         }
@@ -1216,7 +1212,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Text style={[styles.medicineText, { marginBottom: 6 }]}>Medicines</Text>
           {medicinePrescriptionData == null || medicinePrescriptionData.length == 0 ? (
             <Text style={[styles.symptomsText, { marginLeft: 20, marginTop: 0, marginBottom: 6 }]}>
-              No Data
+              No Medicine Added
             </Text>
           ) : (
             medicinePrescriptionData.map((showdata: any, i) => {
@@ -1481,33 +1477,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <Text style={[styles.medicineText, { marginBottom: 7 }]}>Follow Up After</Text>
                   <View style={{ flex: 1, justifyContent: 'center' }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View>
-                        <TextInput
-                          autoCorrect={false}
-                          keyboardType={'number-pad'}
-                          multiline={false}
-                          maxLength={4}
-                          style={{
-                            marginTop: 5,
-                            width: width / 3,
-                            ...theme.fonts.IBMPlexSansMedium(16),
-                          }}
-                          value={followupDays ? followupDays.toString() : ''}
-                          blurOnSubmit={false}
-                          // returnKeyType="send"
-                          onChangeText={(value) => {
-                            setFollowupDays(parseInt(value) || '');
-                          }}
-                        />
-                        <View
-                          style={{
-                            marginTop: 4,
-                            height: 2,
-                            width: width / 3,
-                            backgroundColor: '#00b38e',
-                          }}
-                        />
-                      </View>
+                      <TextInput
+                        autoCorrect={false}
+                        keyboardType={'number-pad'}
+                        multiline={false}
+                        maxLength={4}
+                        style={styles.inputSingleView}
+                        value={followupDays ? followupDays.toString() : ''}
+                        blurOnSubmit={false}
+                        // returnKeyType="send"
+                        onChangeText={(value) => {
+                          setFollowupDays(parseInt(value) || '');
+                        }}
+                      />
                       <Text
                         style={{
                           ...theme.viewStyles.text('M', 14, '#02475b', 1, undefined, 0.02),
@@ -1520,10 +1502,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     </View>
                   </View>
                 </View>
-                <TextInputComponent
+                <TextInput
                   placeholder={'Add instructions here..'}
-                  inputStyle={styles.inputView}
+                  style={styles.inputView}
                   multiline={true}
+                  textAlignVertical={'top'}
+                  placeholderTextColor={theme.colors.placeholderTextColor}
                   value={folloUpNotes}
                   onChangeText={(value) => setFolloUpNotes(value)}
                   autoCorrect={true}
@@ -1534,6 +1518,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       color: 'rgba(2, 71, 91, 0.6)',
                       ...theme.fonts.IBMPlexSansMedium(14),
                       marginBottom: 12,
+                      marginTop: 18,
                     }}
                   >
                     Recommended Consult Type
@@ -1573,7 +1558,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     </View>
                   </View>
                 </View>
-                <View style={{ borderColor: '#00b38e', marginBottom: 20, zIndex: -1 }}>
+                <View style={{ borderColor: '#00b38e', marginBottom: 12, zIndex: -1 }}>
                   <Text
                     style={{
                       color: 'rgba(2, 71, 91, 0.6)',
@@ -2079,7 +2064,21 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 </View>
               </TouchableOpacity>
             ))}
-            <TouchableOpacity activeOpacity={1}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                props.overlayDisplay(
+                  <AddInstructionPopUp
+                    onClose={() => {
+                      props.overlayDisplay(null);
+                    }}
+                    onDone={(val) => {
+                      selectedAdviceAction({ key: val, value: val }, 'a');
+                    }}
+                  />
+                );
+              }}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                 <PlusOrange />
                 <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916'), marginLeft: 4 }}>
@@ -2116,11 +2115,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={styles.underlineend} />
 
             <View style={styles.inputBorderView}>
-              <View style={{ marginHorizontal: 16 }}>
+              <View style={{ margin: 16 }}>
                 <Text style={styles.notes}>Personal Notes</Text>
-                <TextInputComponent
-                  // placeholder={string.LocalStrings.placeholder_message}
-                  inputStyle={styles.inputView}
+                <TextInput
+                  placeholder={'What you enter here won’t be shown to the patient..'}
+                  textAlignVertical={'top'}
+                  placeholderTextColor={theme.colors.placeholderTextColor}
+                  style={styles.inputView}
                   multiline={true}
                   value={value}
                   onChangeText={(value) => setValue(value)}
