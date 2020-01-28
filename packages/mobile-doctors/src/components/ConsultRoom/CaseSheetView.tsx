@@ -109,6 +109,7 @@ import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineL
 import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
 import { nameFormater, medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { AddInstructionPopUp } from '@aph/mobile-doctors/src/components/ui/AddInstructionPopUp';
+import { AddConditionPopUp } from '@aph/mobile-doctors/src/components/ui/AddConditionPopUp';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -554,7 +555,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [calenderShow, setCalenderShow] = useState(false);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [symptonsData, setSymptonsData] = useState<any>([]);
-  const [diagnosisData, setDiagnosisData] = useState<any>([]);
+  const [diagnosisData, setDiagnosisData] = useState<
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null
+  >([]);
   const [diagnosticPrescriptionData, setDiagnosticPrescription] = useState<any>([]);
   const [otherInstructionsData, setOtherInstructionsData] = useState<any>([]);
   const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<any>([]);
@@ -1637,8 +1640,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Text style={[styles.familyText, { marginBottom: 0 }]}>Diagnosed Medical Condition</Text>
           <View
             style={{
-              // flexDirection: 'row',
-              justifyContent: 'space-between',
+              flexDirection: 'row',
+              // justifyContent: 'space-between',
               marginLeft: 16,
               marginRight: 16,
               marginBottom: 19,
@@ -1646,31 +1649,53 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }}
           >
             {diagnosisData == null ? (
-              <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
+              <Text style={[styles.symptomsText]}>No Data</Text>
             ) : (
               diagnosisData.map((showdata: any, i) => {
                 return (
                   <DiagnosisCard
                     diseaseName={showdata.name}
-                    icon={
-                      isDelegateLogin ? null : (
-                        <TouchableOpacity onPress={() => removeDiagonsisValue(showdata.name)}>
-                          <DiagonisisRemove />
-                        </TouchableOpacity>
-                      )
+                    onPressIcon={() =>
+                      setDiagnosisData(diagnosisData.filter((i: any) => i.name != showdata.name))
                     }
+                    icon={<DiagonisisRemove />}
                   />
                 );
               })
             )}
           </View>
           {isDelegateLogin ? null : (
-            <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-              <AddPlus />
-              <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddCondition)}>
+            <TouchableOpacity
+              onPress={() => {
+                props.overlayDisplay(
+                  <AddConditionPopUp
+                    onClose={() => {
+                      props.overlayDisplay(null);
+                    }}
+                    onDone={(val) => {
+                      let newValues: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] = [];
+                      val.forEach((item) => {
+                        if (
+                          diagnosisData &&
+                          diagnosisData.findIndex((i) => item.name === i?.name) < 0
+                        ) {
+                          newValues.push(item);
+                        } else if (diagnosisData === null) {
+                          newValues.push(item);
+                        }
+                      });
+                      setDiagnosisData([...(diagnosisData || []), ...newValues]);
+                    }}
+                  />
+                );
+              }}
+              activeOpacity={1}
+            >
+              <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+                <AddPlus />
                 <Text style={styles.addDoctorText}>ADD CONDITION</Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
           )}
         </CollapseCard>
       </View>
