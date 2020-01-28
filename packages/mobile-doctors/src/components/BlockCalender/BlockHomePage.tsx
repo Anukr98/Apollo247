@@ -25,6 +25,13 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { ConsultMode } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  ConvertDateToWeekDay,
+  ConvertDateTimeToUtc,
+  FormatDateToString,
+  getDateArray,
+} from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -54,10 +61,17 @@ const styles = StyleSheet.create({
 export interface BlockHomePageProps extends NavigationScreenProps {}
 
 export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
+  const { showAphAlert } = useUIElements();
+
   type OptionsType = {
     key: string;
     value: string;
   };
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
   const options: OptionsType[] = [
     {
       key: 'personal leave',
@@ -97,16 +111,19 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
       key: '3',
     },
   ];
+  type CalendarItem = { start: string; end: string; consultMode: ConsultMode };
 
   const [selectedReason, setselectedReason] = useState<OptionsType>(options[0]);
   const [selectedBlockOption, setselectedBlockOption] = useState(blockOptions[0].key);
   const [selectedDay, setselectedDay] = useState<string>(daysArray[0].key);
   const [startDate, setstartDate] = useState<Date>();
   const [endDate, setendDate] = useState<Date>();
-  const [selectedConsultations, setselectedConsultations] = useState<
-    { start: string; end: string; consultMode: ConsultMode }[]
-  >([]);
-  const [customTime, setcustomTime] = useState<{}[]>([{ start: '', end: '' }]);
+  const [selectedConsultations, setselectedConsultations] = useState<CalendarItem[]>([]);
+  const [startDayConsults, setstartDayConsults] = useState<CalendarItem[]>([]);
+  const [customTime, setcustomTime] = useState<
+    { start: Date | undefined; end: Date | undefined }[]
+  >([{ start: undefined, end: undefined }]);
+  const [AllDates, setAllDates] = useState<Date[]>([]);
 
   const { doctorDetails } = useAuth();
   console.log(doctorDetails, 'doctorDetails');
@@ -118,23 +135,26 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   const client = useApolloClient();
   const todayDate = new Date().toISOString().split('T')[0];
 
-  const todayConsultHours = consultHours.map((item) => {
-    return (
-      item &&
-      item.weekDay ===
-        moment(todayDate, 'YYYY-MM-DD')
-          .format('dddd')
-          .toUpperCase() && {
-        start: moment(todayDate + item.startTime, 'YYYY-MM-DDHH:mm:ss').toISOString(),
-        end: moment(todayDate + item.endTime, 'YYYY-MM-DDHH:mm:ss').toISOString(),
-        consultMode: item.consultMode,
-      }
-    );
-  });
+  const getStartDayConsults = (startDate: Date) => {
+    return consultHours
+      .map((item) => {
+        if (item) {
+          const todayDate = FormatDateToString(startDate); //moment(startDate).format('YYYY-MM-DD');
+          return (
+            item.weekDay === ConvertDateToWeekDay(startDate) && {
+              start: ConvertDateTimeToUtc(todayDate, item.startTime),
+              end: ConvertDateTimeToUtc(todayDate, item.endTime),
+              consultMode: item.consultMode,
+            }
+          );
+        }
+      })
+      .filter((i) => i !== false);
+  };
+
+  console.log(startDayConsults, 'startDayConsults', consultHours);
 
   const renderReasons = () => {
-    console.log(selectedReason, 'setselectedReason2');
-
     return (
       <MaterialMenu
         options={options}
@@ -159,7 +179,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
             <Text
               style={[
                 styles.placeholderTextStyle,
-                ,
                 selectedReason !== undefined ? null : styles.placeholderStyle,
               ]}
             >
@@ -174,7 +193,56 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     );
   };
 
-  console.log(moment(todayDate, 'YYYY-MM-DD').format('dddd'), 'dddddddddd');
+  const renderConsultHours = (item: CalendarItem) => {
+    let isSelected: boolean = false;
+    let selected = JSON.parse(JSON.stringify(selectedConsultations));
+    selected.forEach((i: CalendarItem) => {
+      if (item && i.start == item.start) isSelected = true;
+    });
+    return (
+      <View style={{ flexDirection: 'row', marginBottom: 22 }}>
+        <TouchableOpacity
+          onPress={() => {
+            if (isSelected) {
+              selected = selected.filter((i) => i.start !== item.start);
+            } else {
+              selected.push(item);
+            }
+            console.log(selected, 'pushed');
+
+            setselectedConsultations(selected);
+          }}
+        >
+          {isSelected ? <Selected /> : <UnSelected />}
+        </TouchableOpacity>
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
+            marginLeft: 22,
+          }}
+        >
+          {moment(item.start).format('hh:mm A')} - {moment(item.end).format('hh:mm A')}
+        </Text>
+        <View
+          style={{
+            borderRightWidth: 1,
+            borderColor: theme.colors.LIGHT_BLUE,
+            marginHorizontal: 14,
+            marginVertical: 2,
+          }}
+        />
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
+            textTransform: 'capitalize',
+          }}
+        >
+          {item.consultMode}
+        </Text>
+      </View>
+    );
+  };
+  console.log(customTime, 'customTime');
 
   const renderBlockOptions = () => {
     return (
@@ -193,6 +261,9 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           setselectedItem={setselectedBlockOption}
           containerStyle={{ marginTop: 8 }}
           // horizontal
+          disabled={
+            (daysArray[0].key === selectedDay ? startDate : startDate && endDate) ? false : true
+          }
         >
           {selectedBlockOption === blockOptions[0].key ? (
             <View style={{ marginLeft: 32 }}>
@@ -210,82 +281,64 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                 These are your active consult hours for the selected day. Select which ones you’d
                 like to block:
               </Text>
-              {todayConsultHours.map(
-                (item, index) =>
-                  item && (
-                    <View style={{ flexDirection: 'row', marginBottom: 22 }}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          let selected = JSON.parse(JSON.stringify(selectedConsultations));
-                          // const data = {
-                          //   start: moment(
-                          //     todayDate + item.startTime,
-                          //     'YYYY-MM-DDHH:mm:ss'
-                          //   ).toISOString(),
-                          //   end: moment(
-                          //     todayDate + item.endTime,
-                          //     'YYYY-MM-DDHH:mm:ss'
-                          //   ).toISOString(),
-                          //   consultMode: item.consultMode,
-                          // };
-                          // console.log(data, 'dataaaaaaaaa');
-
-                          if (selectedConsultations.includes(item)) {
-                            selected = selected.filter((i) => i !== item);
-                          } else {
-                            selected.push(item);
-                          }
-                          setselectedConsultations(selected);
-                        }}
-                      >
-                        {selectedConsultations.includes(item) ? <Selected /> : <UnSelected />}
-                      </TouchableOpacity>
-                      <Text
-                        style={{
-                          ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
-                          marginLeft: 22,
-                        }}
-                      >
-                        {moment(item.start).format('hh:mm A')} -{' '}
-                        {moment(item.end).format('HH:mm A')}
-                        {/* {item.endTime} */}
-                      </Text>
+              {startDate && daysArray[0].key === selectedDay
+                ? getStartDayConsults(startDate).map(
+                    (item, index) => item && renderConsultHours(item)
+                  )
+                : AllDates &&
+                  AllDates.length &&
+                  startDate &&
+                  endDate &&
+                  AllDates.map((date) => (
+                    <View>
                       <View
                         style={{
-                          borderRightWidth: 1,
-                          borderColor: theme.colors.LIGHT_BLUE,
-                          marginHorizontal: 14,
-                          marginVertical: 2,
-                        }}
-                      />
-                      <Text
-                        style={{
-                          ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
-                          textTransform: 'capitalize',
+                          borderBottomColor: 'rgba(0,0,0,0.2)',
+                          borderBottomWidth: 1,
+                          paddingBottom: 7,
+                          marginBottom: 12,
                         }}
                       >
-                        {item.consultMode}
-                      </Text>
+                        <Text style={theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE)}>
+                          {moment(date).format('ddd, DD/MM/YYYY')}
+                        </Text>
+                      </View>
+                      <View>
+                        {getStartDayConsults(date).map(
+                          (item, index) => item && renderConsultHours(item)
+                        )}
+                      </View>
                     </View>
-                  )
-              )}
+                  ))}
             </View>
           ) : (
             <View style={{ marginLeft: 23, marginRight: 16 }}>
-              {customTime.map((item) => {
+              {customTime.map((item, index) => {
                 return (
                   <View style={{ flexDirection: 'row' }}>
                     <View style={{ flex: 1 }}>
                       <DatePicker
+                        value={item.start}
                         label={'From'}
-                        placeholder={''}
+                        placeholder={'From'}
                         containerStyle={{ marginTop: 10 }}
                         placeholderStyle={{ fontSize: 20 }}
                         placeholderViewStyle={{ borderBottomWidth: 2 }}
-                        minimumDate={new Date()}
-                        onChangeDate={(time) => console.log(time)}
+                        onChangeDate={(time) => {
+                          console.log(time);
+                          const newArray = JSON.parse(JSON.stringify(customTime));
+                          newArray[index] = { start: time, end: item.end };
+                          setcustomTime(newArray);
+                        }}
                         mode={'time'}
                         showCalendarIcon={false}
+                        minimumDate={
+                          item.start &&
+                          FormatDateToString(item.start) === FormatDateToString(new Date())
+                            ? new Date()
+                            : undefined
+                        }
+                        maximumDate={item.end ? item.end : undefined}
                       />
                     </View>
                     <View
@@ -301,13 +354,19 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                     </View>
                     <View style={{ flex: 1 }}>
                       <DatePicker
+                        value={item.end}
                         label={'To'}
-                        placeholder={''}
+                        placeholder={'To'}
                         containerStyle={{ marginTop: 10 }}
                         placeholderStyle={{ fontSize: 20 }}
                         placeholderViewStyle={{ borderBottomWidth: 2 }}
-                        minimumDate={new Date()}
-                        onChangeDate={(time) => console.log(time)}
+                        minimumDate={item.start ? item.start : undefined}
+                        onChangeDate={(time) => {
+                          console.log(time);
+                          const newArray = JSON.parse(JSON.stringify(customTime));
+                          newArray[index] = { start: item.start, end: time };
+                          setcustomTime(newArray);
+                        }}
                         mode={'time'}
                         showCalendarIcon={false}
                       />
@@ -350,7 +409,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     const date = startDate ? startDate.toISOString() : '';
     let variables = {
       doctorId: doctorDetails ? doctorDetails.id : '',
-      reason: selectedReason.key,
     };
     if (selectedBlockOption === blockOptions[0].key) {
       let endDateTime;
@@ -369,6 +427,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         ...variables,
         start: date,
         end: endDateTime, // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
+        reason: selectedReason.key,
       };
       console.log(variables, 'variables');
 
@@ -377,45 +436,61 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           mutation: ADD_BLOCKED_CALENDAR_ITEM,
           variables: variables,
         })
-        .then((res) => console.log(res, 'res ADD_BLOCKED_CALENDAR_ITEM'))
+        .then((res) => {
+          console.log(res, 'res ADD_BLOCKED_CALENDAR_ITEM');
+        })
         .catch((err) => console.log(err, 'err ADD_BLOCKED_CALENDAR_ITEM'));
     } else {
       console.log(selectedConsultations, consultHours, 'consultHours');
-
-      // const itemDetails = selectedConsultations.map((i) => {
-      //   if (consultHours && consultHours.length > i && consultHours[i] && startDate)
-      //     return {
-      //       start: moment(
-      //         moment(startDate).format('YYYY-MM-DD') + consultHours[i].startTime,
-      //         'YYYY-MM-DDhh:mm:ss'
-      //       ).toISOString(),
-      //       end: moment(
-      //         moment(startDate).format('YYYY-MM-DD') + consultHours[i].startTime,
-      //         'YYYY-MM-DDhh:mm:ss'
-      //       ).toISOString(),
-      //       // consultHours[i]
-      //       //   ? moment(
-      //       //       moment(endDate).format('YYYY-MM-DD') + consultHours[i].endTime,
-      //       //       'YYYY-MM-DDhh:mm:ss'
-      //       //     ).toISOString()
-      //       //   : '',
-      //       consultMode: consultHours[i].consultMode,
-      //     };
-      // });
-
-      variables = {
-        ...variables,
-        itemDetails: selectedConsultations,
-      };
+      if (selectedBlockOption === blockOptions[1].key) {
+        variables = {
+          ...variables,
+          reason: '',
+          itemDetails: selectedConsultations,
+        };
+      } else {
+        const consults = customTime.map((item) => {
+          return {
+            start: moment(item.start).toISOString(),
+            end: moment(item.end).toISOString(),
+          };
+        });
+        console.log(consults, 'consults customTime', customTime);
+        variables = {
+          ...variables,
+          reason: '',
+          itemDetails: consults,
+        };
+      }
       console.log(variables, selectedConsultations, 'itemDetails');
 
       client
         .mutate({
           mutation: BLOCK_MULTIPLE_CALENDAR_ITEMS,
-          variables: variables,
+          variables: { blockCalendarInputs: variables },
         })
-        .then((res) => console.log(res, 'res ADD_BLOCKED_CALENDAR_ITEM'))
-        .catch((err) => console.log(err, 'err ADD_BLOCKED_CALENDAR_ITEM'));
+        .then((res) => {
+          console.log(res, 'res BLOCK_MULTIPLE_CALENDAR_ITEMS');
+        })
+        .catch((err) => {
+          console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
+          // setshowSpinner(false);
+          let message = '';
+          try {
+            message = error.message.split(':')[1].trim();
+          } catch (error) {}
+          console.log(message, 'message', error.message);
+
+          if (message == 'BLOCKED_CALENDAR_ITEM_OVERLAPS') {
+            renderErrorPopup(
+              `Oops ! The selected slot is unavailable. Please choose a different one`
+            );
+          } else if (message === 'INVALID_DATES') {
+            renderErrorPopup(`Please select dates`);
+          } else {
+            renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+          }
+        });
     }
   };
 
@@ -451,6 +526,12 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     );
   };
 
+  const getDates = (startDate: Date, endDate: Date) => {
+    const all = getDateArray(startDate, endDate);
+    console.log(all, 'allallllllllllll');
+    setAllDates(all);
+  };
+
   const renderRadioButtons = () => {
     return (
       <RadioButtons
@@ -463,36 +544,50 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         {selectedDay === daysArray[0].key ? (
           <View>
             <DatePicker
+              value={startDate}
               label={'Which day would you like to block your calendar for?'}
               placeholder={'Select a date'}
               containerStyle={{ marginTop: 32 }}
               minimumDate={new Date()}
-              onChangeDate={setstartDate}
+              onChangeDate={(date) => {
+                setstartDate(date);
+                const value = getStartDayConsults(date);
+                setstartDayConsults(value);
+                setselectedConsultations([]);
+              }}
             />
           </View>
         ) : (
           <View>
             <DatePicker
+              value={startDate}
               label={'From'}
               placeholder={'Select from date'}
               containerStyle={{ marginTop: 32 }}
-              onChangeDate={setstartDate}
+              onChangeDate={(date) => {
+                setstartDate(date);
+                date && endDate && getDates(date, endDate);
+              }}
               minimumDate={new Date()}
             />
             <DatePicker
+              value={endDate}
               label={'To'}
               placeholder={'Select to date'}
               containerStyle={{ marginTop: 24.5 }}
-              onChangeDate={setendDate}
               minimumDate={startDate}
+              onChangeDate={(date) => {
+                {
+                  setendDate(date);
+                  date && startDate && getDates(startDate, date);
+                }
+              }}
             />
           </View>
         )}
       </RadioButtons>
     );
   };
-
-  console.log(startDate, 'startDate moment');
 
   return (
     <SafeAreaView
@@ -520,6 +615,21 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           onPress={() => {
             SaveBlockCalendar();
           }}
+          disabled={
+            (daysArray[0].key === selectedDay
+            ? startDate
+            : startDate && endDate)
+              ? //  &&
+                // (blockOptions[1].key === selectedBlockOption && selectedConsultations.length
+                //   ? false
+                //   : blockOptions[2].key === selectedBlockOption &&
+                //     customTime.filter((item) => item.start === undefined || item.end === undefined)
+                //       .length
+                //   ? true
+                //   : false)
+                false
+              : true
+          }
         />
       </StickyBottomComponent>
     </SafeAreaView>
