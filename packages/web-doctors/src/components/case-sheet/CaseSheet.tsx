@@ -199,7 +199,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'diagnosis',
-      value: 'Diagnosis',
+      value: 'Provisional Diagnosis',
       state: diagnosis,
       component: <Diagnosis />,
     },
