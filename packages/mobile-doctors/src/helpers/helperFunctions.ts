@@ -83,3 +83,35 @@ export const getNetStatus = async () => {
   });
   return status;
 };
+
+export const getDateArray = (start: Date, end: Date) => {
+  const arr = [];
+  const dt = new Date(start);
+  arr.push(new Date(dt));
+  while (dt <= end) {
+    dt.setDate(dt.getDate() + 1);
+    arr.push(new Date(dt));
+  }
+  return arr;
+};
+
+export const ConvertTimeToLocal = (time: string /* HH:mm:ss */) => {
+  return moment
+    .utc(time, 'HH:mm:ss')
+    .local()
+    .format('HH:mm:ss');
+};
+
+export const ConvertDateToWeekDay = (date: Date, format: string = 'dddd') => {
+  return moment(date)
+    .format(format)
+    .toUpperCase();
+};
+
+export const ConvertDateTimeToUtc = (date: string /* YYYY-MM-DD */, time: string /* HH:mm:s */) => {
+  return moment(date + ConvertTimeToLocal(time), 'YYYY-MM-DDHH:mm:ss').toISOString();
+};
+
+export const FormatDateToString = (date: Date, format: string = 'YYYY-MM-DD') => {
+  return moment(date).format(format);
+};

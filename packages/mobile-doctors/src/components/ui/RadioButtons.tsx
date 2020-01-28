@@ -11,6 +11,7 @@ export interface RadioButtonsProps {
   selectedItem: string;
   horizontal?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 }
 
 export const RadioButtons: React.FC<RadioButtonsProps> = (props) => {
@@ -20,10 +21,8 @@ export const RadioButtons: React.FC<RadioButtonsProps> = (props) => {
   //   data.length ? data[0].children : null
   // );
 
-  console.log(props.selectedItem, 'selectedItem', data);
-
   return (
-    <View>
+    <View pointerEvents={props.disabled ? 'none' : 'auto'}>
       <View
         style={[
           horizontal ? { flexDirection: 'row', alignItems: 'center' } : null,

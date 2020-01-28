@@ -49,6 +49,7 @@ export interface DatePickerProps {
   showCalendarIcon?: boolean;
   placeholderStyle?: StyleProp<TextStyle>;
   placeholderViewStyle?: StyleProp<ViewStyle>;
+  value?: Date | undefined;
 }
 
 export const DatePicker: React.FC<DatePickerProps> = (props) => {
@@ -88,6 +89,7 @@ export const DatePicker: React.FC<DatePickerProps> = (props) => {
       </TouchableOpacity>
 
       <DateTimePicker
+        date={props.value}
         isVisible={isDateTimePickerVisible}
         onConfirm={(date) => {
           props.handleDatePicked && props.handleDatePicked(date);
