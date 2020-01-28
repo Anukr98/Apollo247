@@ -413,26 +413,16 @@ export const ChatRoom: React.FC = (props) => {
                     hasDoctorJoined={(hasDoctorJoined: boolean) =>
                       setHasDoctorJoined(hasDoctorJoined)
                     }
+                    jrDoctorJoined={jrDoctorJoined}
+                    setJrDoctorJoined={setJrDoctorJoined}
+                    isModalOpen={isModalOpen}
+                    setIsModalOpen={setIsModalOpen}
+                    nextSlotAvailable={nextSlotAvailable}
+                    availableNextSlot={nextAvailableSlot}
+                    rescheduleAPI={rescheduleAPI}
                   />
                 )}
               </div>
-              {data && (
-                <ChatWindow
-                  doctorDetails={data}
-                  appointmentId={appointmentId}
-                  doctorId={doctorId}
-                  hasDoctorJoined={(hasDoctorJoined: boolean) =>
-                    setHasDoctorJoined(hasDoctorJoined)
-                  }
-                  jrDoctorJoined={jrDoctorJoined}
-                  setJrDoctorJoined={setJrDoctorJoined}
-                  isModalOpen={isModalOpen}
-                  setIsModalOpen={setIsModalOpen}
-                  nextSlotAvailable={nextSlotAvailable}
-                  availableNextSlot={nextAvailableSlot}
-                  rescheduleAPI={rescheduleAPI}
-                />
-              )}
             </div>
           </div>
         </div>
