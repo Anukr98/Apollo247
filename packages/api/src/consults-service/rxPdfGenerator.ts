@@ -1,5 +1,7 @@
 import { format, getTime } from 'date-fns';
 import path from 'path';
+import util from 'util';
+
 import PDFDocument from 'pdfkit';
 import {
   RxPdfData,
@@ -20,6 +22,8 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { Connection } from 'typeorm';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { Patient } from 'profiles-service/entities';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -704,10 +708,29 @@ export const uploadRxPdf = async (
   await delay(350);
 
   const blob = await client.uploadFile({ name, filePath });
-  fs.unlink(filePath, (error) => console.log(error));
-  return blob;
+  const blobUrl = client.getBlobUrl(blob.name);
+  console.log('blobUrl===', blobUrl);
+  const base64pdf = convertPdfUrlToBase64(blobUrl);
+  return base64pdf;
+
+  // const blob = await client.uploadFile({ name, filePath });
+  // fs.unlink(filePath, (error) => console.log(error));
+  // return blob;
 
   function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+};
+
+const convertPdfUrlToBase64 = async (pdfUrl: string) => {
+  const pdf2base64 = require('pdf-to-base64');
+  util.promisify(pdf2base64);
+  console.log('blo', pdfUrl);
+  try {
+    const base64pdf = await pdf2base64(pdfUrl);
+    console.log(base64pdf);
+    return base64pdf;
+  } catch (e) {
+    throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
   }
 };

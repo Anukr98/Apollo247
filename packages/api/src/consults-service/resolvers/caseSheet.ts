@@ -928,9 +928,23 @@ const updatePatientPrescriptionSentStatus: Resolver<
     const pdfDocument = generateRxPdfDocument(rxPdfData);
     const blob = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
     if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+
+    console.log(blob);
+
+    //////
+    // getCaseSheetData.prismFileId = blob;
+    // getCaseSheetData.blobName = blob.name; //null incase of prism upload
+
+    // const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
+
+    // await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+    // return getCaseSheetData;
+    ////////
+
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
       blobName: blob.name,
+      prismFileId: blob,
     };
   }
 
