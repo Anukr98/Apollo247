@@ -363,177 +363,177 @@ export const ChatRoom: React.FC = (props) => {
   return !isSignedIn ? (
     <LinearProgress />
   ) : (
-      <div className={classes.root}>
-        <Header />
-        <div className={classes.container}>
-          <div className={classes.doctorListingPage}>
-            <div className={classes.breadcrumbs}>
-              <a onClick={() => (window.location.href = clientRoutes.appointments())}>
-                <div className={classes.backArrow}>
-                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                </div>
-              </a>
-              Consult Room
+    <div className={classes.root}>
+      <Header />
+      <div className={classes.container}>
+        <div className={classes.doctorListingPage}>
+          <div className={classes.breadcrumbs}>
+            <a onClick={() => (window.location.href = clientRoutes.appointments())}>
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </a>
+            Consult Room
           </div>
-            <div className={classes.doctorListingSection}>
-              <div className={classes.leftSection}>
-                {data && (
-                  <ConsultDoctorProfile
-                    doctorDetails={data}
-                    appointmentId={appointmentId}
-                    hasDoctorJoined={hasDoctorJoined}
-                  />
-                )}
-              </div>
-              <div className={classes.rightSection}>
-                <div className={classes.sectionHeader}>
-                  <span className={classes.caseNumber}>Case #362079 </span>
-                  <div className={classes.headerActions}>
-                    <AphButton
-                      disabled={jrDoctorJoined}
-                      classes={{
-                        root: classes.viewButton,
-                        disabled: classes.disabledButton,
-                      }}
-                      onClick={() => {
-                        nextAvailableSlot(params.doctorId, new Date());
-                        setIsPopoverOpen(true);
-                      }}
-                    >
-                      Reschedule
+          <div className={classes.doctorListingSection}>
+            <div className={classes.leftSection}>
+              {data && (
+                <ConsultDoctorProfile
+                  doctorDetails={data}
+                  appointmentId={appointmentId}
+                  hasDoctorJoined={hasDoctorJoined}
+                />
+              )}
+            </div>
+            <div className={classes.rightSection}>
+              <div className={classes.sectionHeader}>
+                <span className={classes.caseNumber}>Case #362079 </span>
+                <div className={classes.headerActions}>
+                  <AphButton
+                    disabled={jrDoctorJoined}
+                    classes={{
+                      root: classes.viewButton,
+                      disabled: classes.disabledButton,
+                    }}
+                    onClick={() => {
+                      nextAvailableSlot(params.doctorId, new Date());
+                      setIsPopoverOpen(true);
+                    }}
+                  >
+                    Reschedule
                   </AphButton>
-                  </div>
                 </div>
-                {data && (
-                  <ChatWindow
-                    doctorDetails={data}
-                    appointmentId={appointmentId}
-                    doctorId={doctorId}
-                    hasDoctorJoined={(hasDoctorJoined: boolean) =>
-                      setHasDoctorJoined(hasDoctorJoined)
-                    }
-                    jrDoctorJoined={jrDoctorJoined}
-                    setJrDoctorJoined={setJrDoctorJoined}
-                    isModalOpen={isModalOpen}
-                    setIsModalOpen={setIsModalOpen}
-                    nextSlotAvailable={nextSlotAvailable}
-                    availableNextSlot={nextAvailableSlot}
-                    rescheduleAPI={rescheduleAPI}
-                  />
-                )}
               </div>
+              {data && (
+                <ChatWindow
+                  doctorDetails={data}
+                  appointmentId={appointmentId}
+                  doctorId={doctorId}
+                  hasDoctorJoined={(hasDoctorJoined: boolean) =>
+                    setHasDoctorJoined(hasDoctorJoined)
+                  }
+                  jrDoctorJoined={jrDoctorJoined}
+                  setJrDoctorJoined={setJrDoctorJoined}
+                  isModalOpen={isModalOpen}
+                  setIsModalOpen={setIsModalOpen}
+                  nextSlotAvailable={nextSlotAvailable}
+                  availableNextSlot={nextAvailableSlot}
+                  rescheduleAPI={rescheduleAPI}
+                />
+              )}
             </div>
           </div>
         </div>
-        {data && (
-          <Modal
-            open={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            disableBackdropClick
-            disableEscapeKeyDown
-          >
-            <Paper className={classes.modalBox}>
-              <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
-                <img src={require('images/ic_cross_popup.svg')} alt="" />
-              </div>
-              <OnlineConsult
-                setIsPopoverOpen={setIsModalOpen}
-                doctorDetails={data}
-                onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
-                isRescheduleConsult={true}
-                appointmentId={params.appointmentId}
-                rescheduleAPI={rescheduleAPI}
-              />
-            </Paper>
-          </Modal>
-        )}
-        <Popover
-          open={isPopoverOpen}
-          anchorEl={mascotRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic_mascot.png')} alt="" />
-              </div>
-              <div className={classes.windowBody}>
-                {/* <Typography variant="h2">hi! :)</Typography> */}
-                <p>
-                  We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.
-              </p>
-                <p>
-                  Next slot for Dr.{' '}
-                  {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName}`} is
-                available on -{moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
-                </p>
-              </div>
-              <div className={classes.actions}>
-                <AphButton onClick={() => setIsModalOpen(true)}>CHANGE SLOT</AphButton>
-                <AphButton
-                  onClick={() => {
-                    const bookRescheduleInput = {
-                      appointmentId: params.appointmentId,
-                      doctorId: params.doctorId,
-                      newDateTimeslot: nextSlotAvailable,
-                      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                      initiatedId: patientId,
-                      patientId: patientId,
-                      rescheduledId: '',
-                    };
-                    rescheduleAPI(bookRescheduleInput);
-                  }}
-                >
-                  ACCEPT
-              </AphButton>
-              </div>
-            </div>
-          </div>
-        </Popover>
-        <Popover
-          open={isRescheduleSuccess}
-          anchorEl={mascotRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic_mascot.png')} alt="" />
-              </div>
-              <div className={classes.windowBody}>
-                <p>Hi! :)</p>
-                <p>
-                  Your appointment with Dr.
-                {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}
-                  has been rescheduled for{' '}
-                  {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
-                </p>
-              </div>
-              <div className={classes.actions}>
-                <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
-                  OK, GOT IT
-              </AphButton>
-              </div>
-            </div>
-          </div>
-        </Popover>
       </div>
-    );
+      {data && (
+        <Modal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox}>
+            <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            <OnlineConsult
+              setIsPopoverOpen={setIsModalOpen}
+              doctorDetails={data}
+              onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
+              isRescheduleConsult={true}
+              appointmentId={params.appointmentId}
+              rescheduleAPI={rescheduleAPI}
+            />
+          </Paper>
+        </Modal>
+      )}
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              {/* <Typography variant="h2">hi! :)</Typography> */}
+              <p>
+                We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.
+              </p>
+              <p>
+                Next slot for Dr.{' '}
+                {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName}`} is
+                available on -{moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton onClick={() => setIsModalOpen(true)}>CHANGE SLOT</AphButton>
+              <AphButton
+                onClick={() => {
+                  const bookRescheduleInput = {
+                    appointmentId: params.appointmentId,
+                    doctorId: params.doctorId,
+                    newDateTimeslot: nextSlotAvailable,
+                    initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                    initiatedId: patientId,
+                    patientId: patientId,
+                    rescheduledId: '',
+                  };
+                  rescheduleAPI(bookRescheduleInput);
+                }}
+              >
+                ACCEPT
+              </AphButton>
+            </div>
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={isRescheduleSuccess}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <p>Hi! :)</p>
+              <p>
+                Your appointment with Dr.
+                {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}
+                has been rescheduled for{' '}
+                {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
+                OK, GOT IT
+              </AphButton>
+            </div>
+          </div>
+        </div>
+      </Popover>
+    </div>
+  );
 };
