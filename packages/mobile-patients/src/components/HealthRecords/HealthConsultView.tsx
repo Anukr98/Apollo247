@@ -552,7 +552,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                         console.log('MedicineConsultDetails', props.PastData);
 
                       props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
-                        data: 'Prescription uploaded by Patient', //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
+                        data:
+                          props.PastData && props.PastData.prescriptionImageUrl.split('/').pop(), //'Prescription uploaded by Patient', //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
                         medicineDate: moment(props.PastData!.quoteDateTime).format('DD MMM YYYY'),
                         PrescriptionUrl: props.PastData!.prescriptionImageUrl,
                         prismPrescriptionFileId: props.PastData!.prismPrescriptionFileId,

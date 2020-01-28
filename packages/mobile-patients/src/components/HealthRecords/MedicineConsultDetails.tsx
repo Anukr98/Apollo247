@@ -374,11 +374,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
 
           <View style={{ marginLeft: 20 }}>
             <Text
+              numberOfLines={1}
               style={{ ...theme.fonts.IBMPlexSansSemiBold(23), color: '#02475b', marginBottom: 4 }}
             >
-              {data === 'Prescription uploaded by Patient'
-                ? 'Prescription uploaded by Patient'
-                : data && data.medicineName}
+              {data === data && !data.medicineSKU ? data : data && data.medicineName}
             </Text>
             <Text
               style={{

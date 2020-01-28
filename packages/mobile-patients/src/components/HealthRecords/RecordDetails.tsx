@@ -273,6 +273,20 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                   (data.dateOfHospitalization && data.dateOfHospitalization) ||
                   (data.appointmentDate && data.appointmentDate) ||
                   (data.labTestDate && data.labTestDate)
+              ).format('DD MMM YYYY')}\nReferring Doctor: Dr. ${
+                !!data.referringDoctor
+                  ? data.referringDoctor
+                  : !!data.signingDocName
+                  ? data.signingDocName
+                  : '-'
+              }`}
+            </Text>
+            {/* <Text style={styles.timeStyle}>
+              {`Check-up Date: ${moment(
+                (data.testDate && data.testDate) ||
+                  (data.dateOfHospitalization && data.dateOfHospitalization) ||
+                  (data.appointmentDate && data.appointmentDate) ||
+                  (data.labTestDate && data.labTestDate)
               ).format('DD MMM YYYY')}\nSource: ${
                 !!data.sourceName
                   ? data.sourceName
@@ -288,7 +302,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                   ? data.signingDocName
                   : '-'
               }`}
-            </Text>
+            </Text> */}
           </View>
           <View style={styles.imageView}>
             <FileBig />
@@ -457,61 +471,61 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           <Header
             title="RECORD DETAILS"
             leftIcon="backArrow"
-            rightComponent={
-              placeImage && (
-                <View style={{ flexDirection: 'row' }}>
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      placeImage.forEach((item: string) => {
-                        let dirs = RNFetchBlob.fs.dirs;
-                        let fileDownloaded: { path: string; name: string }[] = [];
-                        setLoading && setLoading(true);
-                        let fileName: string =
-                          item
-                            .split('/')
-                            .pop()!
-                            .split('=')
-                            .pop() || 'Document';
-                        const downloadPath =
-                          Platform.OS === 'ios'
-                            ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
-                            : dirs.DownloadDir + '/' + fileName;
-                        RNFetchBlob.config({
-                          fileCache: true,
-                          path: downloadPath,
-                          addAndroidDownloads: {
-                            title: fileName,
-                            useDownloadManager: true,
-                            path: downloadPath,
-                            mime: mimeType(downloadPath),
-                            notification: true,
-                            description: 'File downloaded by download manager.',
-                          },
-                        })
-                          .fetch('GET', item, {
-                            //some headers ..
-                          })
-                          .then((res) => {
-                            setLoading && setLoading(false);
-                            fileDownloaded.push({ path: res.path(), name: fileName });
-                            if (fileDownloaded.length > 0) {
-                              showMultiAlert(fileDownloaded);
-                            }
-                          })
-                          .catch((err) => {
-                            CommonBugFender('RecordDetails_DOWNLOAD', err);
-                            console.log('error ', err);
-                            setLoading && setLoading(false);
-                          });
-                      });
-                    }}
-                  >
-                    <Download />
-                  </TouchableOpacity>
-                </View>
-              )
-            }
+            // rightComponent={
+            //   placeImage && (
+            //     <View style={{ flexDirection: 'row' }}>
+            //       <TouchableOpacity
+            //         activeOpacity={1}
+            //         onPress={() => {
+            //           placeImage.forEach((item: string) => {
+            //             let dirs = RNFetchBlob.fs.dirs;
+            //             let fileDownloaded: { path: string; name: string }[] = [];
+            //             setLoading && setLoading(true);
+            //             let fileName: string =
+            //               item
+            //                 .split('/')
+            //                 .pop()!
+            //                 .split('=')
+            //                 .pop() || 'Document';
+            //             const downloadPath =
+            //               Platform.OS === 'ios'
+            //                 ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
+            //                 : dirs.DownloadDir + '/' + fileName;
+            //             RNFetchBlob.config({
+            //               fileCache: true,
+            //               path: downloadPath,
+            //               addAndroidDownloads: {
+            //                 title: fileName,
+            //                 useDownloadManager: true,
+            //                 path: downloadPath,
+            //                 mime: mimeType(downloadPath),
+            //                 notification: true,
+            //                 description: 'File downloaded by download manager.',
+            //               },
+            //             })
+            //               .fetch('GET', item, {
+            //                 //some headers ..
+            //               })
+            //               .then((res) => {
+            //                 setLoading && setLoading(false);
+            //                 fileDownloaded.push({ path: res.path(), name: fileName });
+            //                 if (fileDownloaded.length > 0) {
+            //                   showMultiAlert(fileDownloaded);
+            //                 }
+            //               })
+            //               .catch((err) => {
+            //                 CommonBugFender('RecordDetails_DOWNLOAD', err);
+            //                 console.log('error ', err);
+            //                 setLoading && setLoading(false);
+            //               });
+            //           });
+            //         }}
+            //       >
+            //         <Download />
+            //       </TouchableOpacity>
+            //     </View>
+            //   )
+            // }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <ScrollView bounces={false}>

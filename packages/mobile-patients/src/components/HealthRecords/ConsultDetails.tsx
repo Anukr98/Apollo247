@@ -584,7 +584,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="DIAGNOSIS"
+          heading="PROVISIONAL DIAGNOSIS"
           collapse={showDiagnosis}
           onPress={() => setshowDiagnosis(!showDiagnosis)}
         >
