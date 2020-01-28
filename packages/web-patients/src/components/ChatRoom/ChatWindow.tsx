@@ -384,7 +384,7 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '24px',
     },
     none: {
-      display: 'none',
+      display: 'block',
     },
     doctorAvatar: {
       position: 'absolute',
@@ -1286,6 +1286,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
+    console.log("videocall", rowData.message);
+
     if (
       rowData.message === autoMessageStrings.typingMsg ||
       rowData.message === autoMessageStrings.stopcallMsg ||
@@ -1323,7 +1325,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.none}>
                 <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'video call ended'
+                {rowData.message === 'video call ended'
                   ? 'You missed a video call'
                   : 'You missed a voice call'}
               </span>
@@ -1401,7 +1403,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       rowData.message !== autoMessageStrings.covertVideoMsg &&
       rowData.message !== autoMessageStrings.covertAudioMsg &&
       rowData.message !== autoMessageStrings.cancelConsultInitiated &&
-      rowData.message !== autoMessageStrings.callAbandonment
+      rowData.message !== autoMessageStrings.callAbandonment &&
+      rowData.message !== autoMessageStrings.appointmentComplete
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -1409,14 +1412,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <div className={classes.doctorsChat}>
           <div className={rowData.duration ? classes.callMsg : classes.chatBub}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
+            {console.log("msg", rowData.message, rowData.duration)
+            }
             {rowData.duration === '00 : 00' ? (
               <>
                 <span className={classes.none}>
                   <img src={require('images/ic_missedcall.svg')} />
-                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                  {rowData.message === 'Video call ended'
                     ? 'You missed a video call'
                     : 'You missed a voice call'}
                 </span>
+                {rowData.messageDate && (
+                  <div className={classes.timeStamp}>{chatTimeConvertion(rowData.messageDate)}</div>
+                )}
               </>
             ) : rowData.duration ? (
               <div>
@@ -1466,8 +1474,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                           >
                             {/* show Prescription card */}
                             {rowData.message === autoMessageStrings.stopConsult ||
-                              (rowData.message === autoMessageStrings.appointmentComplete &&
-                                showPrescriptionCard(rowData))}
+                              rowData.message === autoMessageStrings.followupconsult &&
+                              showPrescriptionCard(rowData)}
 
                             {/* show reschedule or followup card */}
 
@@ -1476,14 +1484,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                             getFollowupOrRescheduleCard(rowData)} */}
 
                             {/* show available slots for reschedule */}
-                            {rowData.message === autoMessageStrings.rescheduleconsult ||
-                              rowData.message === autoMessageStrings.followupconsult
+                            {rowData.message === autoMessageStrings.rescheduleconsult
                               ? docNotAvailable(rowData)
                               : null}
 
                             {/* show available slots for reschedule */}
-                            {rowData.message === autoMessageStrings.rescheduleconsult ||
-                              rowData.message === autoMessageStrings.followupconsult
+                            {rowData.message === autoMessageStrings.rescheduleconsult
                               ? getNextAvailableRescheduleSlot(rowData)
                               : null}
                             {/* show other messages when it is not reschedule and followUp   */}
