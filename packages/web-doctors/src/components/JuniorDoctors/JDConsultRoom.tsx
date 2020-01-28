@@ -83,6 +83,7 @@ import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -394,7 +395,7 @@ export const JDConsultRoom: React.FC = () => {
   const [isNewMessage, setIsNewMessage] = React.useState(false);
   const [notesJrd, setNotesJrd] = React.useState('');
 
-  const { currentPatient: currentDoctor, isSignedIn } = useAuth();
+  const { currentPatient: currentDoctor, isSignedIn, sessionClient } = useAuth();
   const doctorId = currentDoctor!.id;
 
   const mutationRemoveConsult = useMutation<
@@ -814,6 +815,25 @@ export const JDConsultRoom: React.FC = () => {
                 });
               })
               .catch((e: ApolloError) => {
+                const patientName =
+                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+                  ' ' +
+                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+                const logObject = {
+                  api: 'CreateJuniorDoctorCaseSheet',
+                  appointmentId: appointmentId,
+                  doctorId: currentDoctor!.id,
+                  doctorDisplayName: currentDoctor!.displayName,
+                  patientId: patientId,
+                  patientName: patientName,
+                  currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                  appointmentDateTime: appointmentDateTime
+                    ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+                    : '',
+                  error: JSON.stringify(e),
+                };
+
+                sessionClient.notify(JSON.stringify(logObject));
                 setError('Unable to load Consult.');
               });
           }
@@ -861,6 +881,30 @@ export const JDConsultRoom: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'SendCallNotification',
+          inputParam: JSON.stringify({
+            appointmentId: appointmentId,
+            callType: callType,
+            doctorType: DOCTOR_CALL_TYPE.JUNIOR,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentDoctor!.id,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: appointmentDateTime
+            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+            : '',
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
         console.log('An error occurred while sending notification to Client.');
       });
   };
@@ -904,35 +948,35 @@ export const JDConsultRoom: React.FC = () => {
         return _omit(instruction, ['__typename']);
       });
     }
-
+    const inputVariables = {
+      symptoms: symptomsFinal,
+      notes: notesJrd.length > 0 ? notesJrd : null,
+      diagnosis: diagnosisFinal,
+      diagnosticPrescription: diagnosticPrescriptionFinal,
+      followUp: false,
+      followUpAfterInDays: 0,
+      otherInstructions: otherInstructionsFinal,
+      medicinePrescription: medicinePrescriptionFinal,
+      id: caseSheetId,
+      status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
+      lifeStyle: lifeStyle,
+      familyHistory: familyHistory,
+      dietAllergies: dietAllergies,
+      drugAllergies: drugAllergies,
+      height: height,
+      menstrualHistory: menstrualHistory,
+      pastMedicalHistory: pastMedicalHistory,
+      pastSurgicalHistory: pastSurgicalHistory,
+      temperature: temperature,
+      weight: weight,
+      bp: bp,
+    };
     setSaving(true);
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
         variables: {
-          ModifyCaseSheetInput: {
-            symptoms: symptomsFinal,
-            notes: notesJrd.length > 0 ? notesJrd : null,
-            diagnosis: diagnosisFinal,
-            diagnosticPrescription: diagnosticPrescriptionFinal,
-            followUp: false,
-            followUpAfterInDays: 0,
-            otherInstructions: otherInstructionsFinal,
-            medicinePrescription: medicinePrescriptionFinal,
-            id: caseSheetId,
-            status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
-            lifeStyle: lifeStyle,
-            familyHistory: familyHistory,
-            dietAllergies: dietAllergies,
-            drugAllergies: drugAllergies,
-            height: height,
-            menstrualHistory: menstrualHistory,
-            pastMedicalHistory: pastMedicalHistory,
-            pastSurgicalHistory: pastSurgicalHistory,
-            temperature: temperature,
-            weight: weight,
-            bp: bp,
-          },
+          ModifyCaseSheetInput: inputVariables,
         },
         fetchPolicy: 'no-cache',
       })
@@ -944,6 +988,26 @@ export const JDConsultRoom: React.FC = () => {
         }
       })
       .catch((e) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'ModifyCaseSheet',
+          inputParam: JSON.stringify(inputVariables),
+          appointmentId: appointmentId,
+          doctorId: currentDoctor!.id,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(e),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
+
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
@@ -991,6 +1055,29 @@ export const JDConsultRoom: React.FC = () => {
         setSaving(false);
       })
       .catch((e: any) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'CreateAppointmentSession',
+          inputParam: JSON.stringify({
+            appointmentId: appointmentId,
+            requestRole: REQUEST_ROLES.DOCTOR,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentDoctor!.id,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
         setError('Error occured creating session');
       });
   };
