@@ -376,8 +376,10 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                             setGlobalLoading!(true);
 
-                            const medPrescription = (item.medicinePrescription ||
-                              []) as getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription[];
+                            const medPrescription = ((item.medicinePrescription ||
+                              []) as getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription[]).filter(
+                              (item) => item!.id
+                            );
                             const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
                               item!.blobName!
                             );
@@ -403,7 +405,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 const medicines = result
                                   .map(({ data: { productdp } }, index) => {
                                     const medicineDetails = (productdp && productdp[0]) || {};
-                                    if (!medicineDetails.is_in_stock) {
+                                    if (medicineDetails.is_in_stock == undefined) {
                                       return null;
                                     }
 
@@ -436,6 +438,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                       prescriptionRequired:
                                         medicineDetails.is_prescription_required == '1',
                                       thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                                      isInStock: !!medicineDetails.is_in_stock,
                                     } as ShoppingCartItem;
                                   })
                                   .filter((item: any) => (item ? true : false));

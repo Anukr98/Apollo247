@@ -705,6 +705,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
         thumbnail,
+        isInStock: true,
       });
     const removeFromCart = () => removeCartItem!(sku);
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
