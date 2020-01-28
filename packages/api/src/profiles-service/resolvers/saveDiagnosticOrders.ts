@@ -336,7 +336,7 @@ const SaveDiagnosticOrder: Resolver<
     const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';
     //start of itdose api
     if (visitType != 'Home Collection') {
-      const preBookingInputParameters = [
+      const preBookingInput = [
         {
           UserName: process.env.DIAGNOSTICS_PREBOOKING_API_USERNAME,
           Password: process.env.DIAGNOSTICS_PREBOOKING_API_PASSWORD,
