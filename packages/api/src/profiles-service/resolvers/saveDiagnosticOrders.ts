@@ -333,6 +333,13 @@ const SaveDiagnosticOrder: Resolver<
       patientGender = patientDetails.gender;
     }
 
+    let patientId = '0';
+    if (patientDetails.uhid != '' && patientDetails.uhid != null) {
+      patientId = patientDetails.uhid;
+    } else {
+      patientId = await patientRepo.createNewUhid(patientDetails.id);
+    }
+
     const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';
     //start of itdose api
     if (visitType != 'Home Collection') {
@@ -341,7 +348,7 @@ const SaveDiagnosticOrder: Resolver<
           UserName: process.env.DIAGNOSTICS_PREBOOKING_API_USERNAME,
           Password: process.env.DIAGNOSTICS_PREBOOKING_API_PASSWORD,
           InterfaceClient: process.env.DIAGNOSTICS_PREBOOKING_API_INTERFACE_CLIENT,
-          Patient_ID: patientDetails.id.toString(),
+          Patient_ID: patientId,
           Title: patientTitle,
           PName: patientDetails.firstName + '' + patientDetails.lastName,
           House_No: '',
@@ -439,11 +446,11 @@ const SaveDiagnosticOrder: Resolver<
         saveOrder.id,
         preBookResp.PreBookingID,
         '',
-        DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
+        DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED
       );
       const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
         diagnosticOrders: saveOrder,
-        orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+        orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
         statusDate: new Date(),
         hideStatus: false,
       };
