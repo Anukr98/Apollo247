@@ -884,6 +884,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             isCallAccepted={isCallAccepted}
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
+            JDPhotoUrl={''}
           />
         )}
         {(!showVideo || showVideoChat) && (
