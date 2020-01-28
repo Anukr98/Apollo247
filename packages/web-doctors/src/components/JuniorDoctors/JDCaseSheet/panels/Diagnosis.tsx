@@ -320,7 +320,7 @@ export const Diagnosis: React.FC = () => {
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
-        <div className={classes.sectionTitle}>Diagnosed Medical Condition</div>
+        <div className={classes.sectionTitle}>Provisional Diagnosed Medical Condition</div>
         <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
