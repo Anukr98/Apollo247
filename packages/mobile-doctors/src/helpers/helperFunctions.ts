@@ -1,5 +1,6 @@
 import moment from 'moment';
 import NetInfo from '@react-native-community/netinfo';
+import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 export const timeTo12HrFormat = (time: string) => {
   return moment(time).format('h:mm a');
@@ -85,3 +86,34 @@ export const getNetStatus = async () => {
 };
 
 export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
+
+export const nameFormater = (name: string) => {
+  const val = name.replace(/_/g, ' ');
+  return val[0].toUpperCase() + val.slice(1).toLowerCase();
+};
+
+export const medUsageType = (med: MEDICINE_UNIT) => {
+  switch (med) {
+    case MEDICINE_UNIT.POWDER:
+    case MEDICINE_UNIT.CREAM:
+    case MEDICINE_UNIT.SOAP:
+    case MEDICINE_UNIT.GEL:
+    case MEDICINE_UNIT.LOTION:
+    case MEDICINE_UNIT.SPRAY:
+    case MEDICINE_UNIT.SOLUTION:
+    case MEDICINE_UNIT.OINTMENT:
+      return 'Apply';
+    case MEDICINE_UNIT.SYRUP:
+    case MEDICINE_UNIT.DROPS:
+    case MEDICINE_UNIT.CAPSULE:
+    case MEDICINE_UNIT.INJECTION:
+    case MEDICINE_UNIT.TABLET:
+    case MEDICINE_UNIT.BOTTLE:
+    case MEDICINE_UNIT.SUSPENSION:
+    case MEDICINE_UNIT.ROTACAPS:
+    case MEDICINE_UNIT.SACHET:
+    case MEDICINE_UNIT.ML:
+    default:
+      return 'Take';
+  }
+};

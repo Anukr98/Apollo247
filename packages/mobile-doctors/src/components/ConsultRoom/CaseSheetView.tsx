@@ -67,7 +67,11 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  REQUEST_ROLES,
+  STATUS,
+  MEDICINE_UNIT,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   UpdateCaseSheet,
   UpdateCaseSheetVariables,
@@ -103,6 +107,7 @@ import {
 import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
+import { nameFormater, medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -1149,7 +1154,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     const str1 = String(item.medicineToBeTaken)
       .toLowerCase()
       .split(',');
-
+    const type = medUsageType(item.medicineUnit);
+    const unit =
+      item.medicineUnit === MEDICINE_UNIT.OTHERS ? 'other' : item.medicineUnit.toLowerCase();
     return (
       <Text
         style={{
@@ -1163,24 +1170,41 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             ...theme.viewStyles.text('S', 12, '#02475b', 1, 14, 0.02),
           }}
         >
-          {item.medicineInstructions +
-            item.medicineDosage +
-            ',' +
-            item.medicineTimings.length +
-            ' times a day' +
-            '(' +
-            str +
-            ')' +
-            ',' +
-            'for ' +
-            item.medicineConsumptionDurationInDays +
-            '' +
-            ' ' +
-            str1}
+          {type + ' '}
+          {item.medicineDosage ? (type === 'Take' ? item.medicineDosage : '') + ' ' : ''}
+          {item.medicineUnit ? (type === 'Take' ? unit + '(s) ' : unit + ' ') : ''}
+          {item.medicineFrequency ? nameFormater(item.medicineFrequency).toLowerCase() + ' ' : ''}
+          {item.medicineConsumptionDurationInDays
+            ? 'for ' +
+              item.medicineConsumptionDurationInDays +
+              ' ' +
+              item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase() +
+              '(s) '
+            : ''}
+          {item.medicineToBeTaken.length
+            ? item.medicineToBeTaken.map((i: any) => nameFormater(i).toLowerCase()).join(', ') + ' '
+            : ''}
+          {item.medicineTimings.length
+            ? 'in the ' +
+              (item.medicineTimings.length > 1
+                ? item.medicineTimings
+                    .slice(0, -1)
+                    .map((i: any) => nameFormater(i).toLowerCase())
+                    .join(', ') +
+                  ' and ' +
+                  nameFormater(
+                    item.medicineTimings[item.medicineTimings.length - 1]
+                  ).toLowerCase() +
+                  ' '
+                : item.medicineTimings.map((i: any) => nameFormater(i).toLowerCase()).join(', ') +
+                  ' ')
+            : ''}
+          {'\n' + item.medicineInstructions}
         </Text>
       </Text>
     );
   };
+
   const renderMedicinePrescription = () => {
     return (
       <CollapseCard
