@@ -931,10 +931,15 @@ app.get('/processOrders', (req, res) => {
               const orderDetails = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
               if (orderDetails.orderType == 'CART_ORDER') {
                 const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
+                console.log('AmtPaid===', amountPaid);
+                console.log('isDeliveryChargeable===', isDeliveryChargeApplicable(amountPaid));
                 if (isDeliveryChargeApplicable(amountPaid)) {
+                  console.log('inside if...');
                   orderLineItems.push(getDeliveryChargesLineItem());
+                  console.log('serviceChargeObject', getDeliveryChargesLineItem());
                 }
               }
+              console.log('orderLineItems-------', orderLineItems);
               //logic to add delivery charges line item ends here
 
               let prescriptionImages = [];
@@ -1032,7 +1037,7 @@ app.get('/processOrders', (req, res) => {
                   PrescUrl: orderPrescriptionUrl,
                 },
               };
-              console.log(pharmaInput, 'pharmaInput');
+              console.log('pharmaInput==========>', pharmaInput, '<===============pharmaInput');
               const fileName =
                 '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
                 new Date().toDateString() +
@@ -1153,6 +1158,7 @@ app.get('/processOrderById', (req, res) => {
         },
       })
         .then((response) => {
+          console.log('response________________', response);
           deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
           deliveryZipcode = response.data.data.getPatientAddressById.patientAddress.zipcode;
           deliveryAddress =
@@ -1267,9 +1273,14 @@ app.get('/processOrderById', (req, res) => {
 
           //logic to add delivery charges lineItem starts here
           const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
+          console.log('AmtPaid===', amountPaid);
+          console.log('isDeliveryChargeable===', isDeliveryChargeApplicable(amountPaid));
           if (isDeliveryChargeApplicable(amountPaid)) {
+            console.log('inside if===');
             orderLineItems.push(getDeliveryChargesLineItem());
+            console.log('chargesItem', getDeliveryChargesLineItem());
           }
+          console.log('orderLineItems------', orderLineItems);
           //logic to add delivery charges lineItem ends here
         }
         let prescriptionImages = [];
@@ -1374,7 +1385,11 @@ app.get('/processOrderById', (req, res) => {
             PrescUrl: orderPrescriptionUrl,
           },
         };
-        console.log(pharmaInput, 'pharmaInput');
+        console.log(
+          'pharmaInput ------------->',
+          JSON.stringify(pharmaInput),
+          '<--------------pharmaInput'
+        );
         const fileName =
           '/home/devdeploy/apollo-hospitals/packages/api/pharmalogs/' +
           new Date().toDateString() +
