@@ -29,6 +29,7 @@ import {
   CommonLogEvent,
   DeviceHelper,
   CommonBugFender,
+  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -252,6 +253,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setMenuViewOptions([1, 2, 3, 5]);
     }
   }, [enableCM]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+        const item = JSON.parse(retrievedItem);
+
+        const allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+
+        const patientDetails = allPatients
+          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+          : null;
+
+        CommonSetUserBugsnag(
+          patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+        );
+      } catch (error) {}
+    }
+
+    fetchData();
+  }, []);
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {

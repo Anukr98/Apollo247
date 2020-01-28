@@ -10,9 +10,10 @@ enum AppEnv {
   QA = 'QA',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
+  VAPT = 'VAPT',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.VAPT as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,
@@ -129,7 +130,7 @@ const ConfigurationQA = {
   ...appStaticVariables,
   iOS_Version: '1.9',
   Android_Version: '1.19',
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
 
@@ -197,6 +198,38 @@ const ConfigurationPERFORM = {
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
 
+//VAPT
+const ConfigurationVAPT = {
+  LOG_ENVIRONMENT: 'VAPT',
+  ANALYTICAL_ENIVRONMENT: 'VAPT',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  iOS_Version: '1.0',
+  Android_Version: '1.0',
+  CONDITIONAL_MANAGENET_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
+};
+
 const Configuration =
   APP_ENV == AppEnv.PROD
     ? ConfigurationProd
@@ -204,6 +237,8 @@ const Configuration =
     ? ConfigurationQA
     : APP_ENV == AppEnv.PERFORM
     ? ConfigurationPERFORM
+    : APP_ENV == AppEnv.VAPT
+    ? ConfigurationVAPT
     : ConfigurationDev;
 
 export const MedicineFeedBackData = {
