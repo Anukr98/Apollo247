@@ -659,6 +659,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             paddingTop: 12,
             borderColor: theme.colors.APP_GREEN,
           }}
+          placeholderTextColor={theme.colors.placeholderTextColor}
           textAlignVertical={'top'}
           multiline={true}
           value={instructions}
