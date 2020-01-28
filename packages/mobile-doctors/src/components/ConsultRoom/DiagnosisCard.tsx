@@ -1,6 +1,17 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+  TouchableOpacity,
+  Platform,
+  Dimensions,
+} from 'react-native';
 import { theme } from '../../theme/theme';
+import { DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -8,9 +19,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#00b38e',
     justifyContent: 'space-between',
     flexDirection: 'row',
-    flex: 1,
     marginTop: 12,
-    flexWrap: 'wrap',
   },
 
   doctorNameStyles: {
@@ -25,15 +34,47 @@ export interface CapsuleViewProps {
   containerStyle?: StyleProp<ViewStyle>;
   diseaseName?: string;
   icon?: Element;
+  onPressIcon?: () => void;
 }
 
 export const DiagnosisCard: React.FC<CapsuleViewProps> = (props) => {
   return (
-    <View style={[styles.containerStyle, props.containerStyle]}>
-      <Text numberOfLines={1} style={[styles.doctorNameStyles, { flex: 0.9 }]}>
+    <View
+      style={{
+        flexDirection: 'row',
+        backgroundColor: theme.colors.APP_GREEN,
+        borderRadius: 100,
+        padding: 6,
+        margin: 5,
+        maxWidth: width - 60,
+      }}
+    >
+      <Text
+        style={{
+          ...theme.viewStyles.text('SB', 14, theme.colors.WHITE),
+          marginHorizontal: 10,
+          padding: 1,
+          marginVertical: Platform.OS === 'android' ? -2 : 0,
+          maxWidth: '90%',
+        }}
+        numberOfLines={1}
+      >
         {props.diseaseName}
       </Text>
-      <View style={{ margin: 5, flex: 0 }}>{props.icon}</View>
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          alignSelf: 'center',
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => props.onPressIcon && props.onPressIcon()}
+        >
+          {props.icon}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
