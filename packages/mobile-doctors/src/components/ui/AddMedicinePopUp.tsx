@@ -21,7 +21,7 @@ import {
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { isValidSearch, nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -80,10 +80,7 @@ export interface AddMedicinePopUpProps {
 
 export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const { data, onClose, onAddnew } = props;
-  const nameFormater = (name: string) => {
-    const val = name.replace(/_/g, ' ');
-    return val[0].toUpperCase() + val.slice(1).toLowerCase();
-  };
+
   const [medName, setMedName] = useState<string>('');
   const [medicineSelected, setMedicineSelected] = useState<MedicineProductDetails>();
   const [medSearchText, setMedSearchText] = useState<string>('');
