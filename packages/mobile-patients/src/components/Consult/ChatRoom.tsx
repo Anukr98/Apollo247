@@ -2770,21 +2770,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
-            Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
-              console.error('An error occurred', err)
-            );
+            console.log(data, 'finaldata');
+
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(true);
+            // Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
+            // console.error('An error occurred', err)
+            // );
           })
-          .catch((e) => {
-            CommonBugFender('ChatRoom_OPEN', e);
-            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+          .catch(() => {
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(true);
+            //Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
           })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
           });
       } else {
+        setUrl(rowData.url);
         setLoading(false);
-        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+        setPatientImageshow(true);
+        // Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
       }
     }
   };
