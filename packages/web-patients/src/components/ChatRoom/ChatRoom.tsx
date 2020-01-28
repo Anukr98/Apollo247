@@ -259,6 +259,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       lineHeight: 1.85,
       backgroundColor: '#fff',
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
+    },
+    disabledButton: {
+      opacity: 0.7,
+      color: '#fc9916 !important',
     },
   };
 });
@@ -275,6 +282,7 @@ export const ChatRoom: React.FC = (props) => {
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
+  const [jrDoctorJoined, setJrDoctorJoined] = useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
@@ -384,7 +392,11 @@ export const ChatRoom: React.FC = (props) => {
                 <span className={classes.caseNumber}>Case #362079 </span>
                 <div className={classes.headerActions}>
                   <AphButton
-                    className={classes.viewButton}
+                    disabled={jrDoctorJoined}
+                    classes={{
+                      root: classes.viewButton,
+                      disabled: classes.disabledButton,
+                    }}
                     onClick={() => {
                       nextAvailableSlot(params.doctorId, new Date());
                       setIsPopoverOpen(true);
@@ -402,6 +414,8 @@ export const ChatRoom: React.FC = (props) => {
                   hasDoctorJoined={(hasDoctorJoined: boolean) =>
                     setHasDoctorJoined(hasDoctorJoined)
                   }
+                  jrDoctorJoined={jrDoctorJoined}
+                  setJrDoctorJoined={setJrDoctorJoined}
                   isModalOpen={isModalOpen}
                   setIsModalOpen={setIsModalOpen}
                   nextSlotAvailable={nextSlotAvailable}
