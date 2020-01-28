@@ -438,7 +438,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 onUpdateCartItem(medicine, unit);
               }}
               isCardExpanded={true}
-              isInStock={true}
+              isInStock={medicine.isInStock}
+              showRemoveWhenOutOfStock={!medicine.isInStock}
               isPrescriptionRequired={medicine.prescriptionRequired}
               subscriptionStatus={'unsubscribed'}
               packOfCount={parseInt(medicine.mou || '0')}
@@ -859,6 +860,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const disableProceedToPay = !(
     cartItems.length > 0 &&
     !showDeliverySpinner &&
+    !cartItems.find((item) => !item.isInStock) &&
     !!(deliveryAddressId || storeId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0

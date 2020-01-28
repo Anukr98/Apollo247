@@ -387,7 +387,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const onAddToCart = () => {
     setLoading && setLoading(true);
 
-    const medPrescription = caseSheetDetails!.medicinePrescription || [];
+    const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
+      (item) => item!.id
+    );
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
@@ -396,7 +398,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const medicines = result
           .map(({ data: { productdp } }, index) => {
             const medicineDetails = (productdp && productdp[0]) || {};
-            if (!medicineDetails.is_in_stock) {
+            if (medicineDetails.is_in_stock == undefined) {
               return null;
             }
             const _qty =
@@ -423,6 +425,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               quantity: qty,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
               thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+              isInStock: !!medicineDetails.is_in_stock,
             } as ShoppingCartItem;
           })
           .filter((item) => (item ? true : false));

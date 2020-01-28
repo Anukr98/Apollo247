@@ -415,6 +415,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       prescriptionRequired: is_prescription_required == '1',
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
+      isInStock: true,
     });
   };
 

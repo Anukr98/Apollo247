@@ -292,6 +292,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       prescriptionRequired: is_prescription_required == '1',
       quantity: 1,
       thumbnail,
+      isInStock: true,
     });
   };
 
