@@ -847,6 +847,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const disableProceedToPay = !(
     cartItems.length > 0 &&
+    !showDeliverySpinner &&
     !!(deliveryAddressId || storeId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
