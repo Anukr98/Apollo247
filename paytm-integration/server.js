@@ -893,6 +893,10 @@ app.get('/processOrders', (req, res) => {
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
             ) {
               console.log(
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
+                '======order details======='
+              );
+              console.log(
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId,
                 'order details233'
               );
@@ -929,6 +933,9 @@ app.get('/processOrders', (req, res) => {
 
               //logic to add delivery charges line item starts here
               const orderDetails = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
+              console.log('orderDetails===>', JSON.stringify(orderDetails));
+              console.log('AmtPaid===', amountPaid);
+              console.log('isDeliveryChargeable===', isDeliveryChargeApplicable(amountPaid));
               if (orderDetails.orderType == 'CART_ORDER') {
                 const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
                 console.log('AmtPaid===', amountPaid);
