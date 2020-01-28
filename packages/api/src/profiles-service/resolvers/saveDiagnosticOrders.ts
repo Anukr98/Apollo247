@@ -400,10 +400,10 @@ const SaveDiagnosticOrder: Resolver<
         },
       ];
 
-      const preBookingInput =
+      /*const preBookingInput =
         process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
           ? [preBookingInputParameters]
-          : preBookingInputParameters;
+          : preBookingInputParameters;*/
 
       const preBookingUrl = process.env.DIAGNOSTIC_PREBOOKING_URL
         ? process.env.DIAGNOSTIC_PREBOOKING_URL
