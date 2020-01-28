@@ -815,17 +815,13 @@ export const JDConsultRoom: React.FC = () => {
                 });
               })
               .catch((e: ApolloError) => {
-                const patientName =
-                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-                  ' ' +
-                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
                 const logObject = {
                   api: 'CreateJuniorDoctorCaseSheet',
                   appointmentId: appointmentId,
                   doctorId: currentDoctor!.id,
                   doctorDisplayName: currentDoctor!.displayName,
                   patientId: patientId,
-                  patientName: patientName,
+                  patientName: getPatientName(),
                   currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
                   appointmentDateTime: appointmentDateTime
                     ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
@@ -881,10 +877,6 @@ export const JDConsultRoom: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
           api: 'SendCallNotification',
           inputParam: JSON.stringify({
@@ -896,7 +888,7 @@ export const JDConsultRoom: React.FC = () => {
           doctorId: currentDoctor!.id,
           doctorDisplayName: currentDoctor!.displayName,
           patientId: patientId,
-          patientName: patientName,
+          patientName: getPatientName(),
           currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
           appointmentDateTime: appointmentDateTime
             ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
@@ -928,9 +920,6 @@ export const JDConsultRoom: React.FC = () => {
       });
     }
     if (diagnosticPrescription && diagnosticPrescription.length > 0) {
-      const diagnosticPrescriptionFinal1 = diagnosticPrescription.map((prescription) => {
-        return _omit(prescription, ['__typename']);
-      });
       // convert itemName to itemname
       diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
         return {
@@ -988,10 +977,6 @@ export const JDConsultRoom: React.FC = () => {
         }
       })
       .catch((e) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
           api: 'ModifyCaseSheet',
           inputParam: JSON.stringify(inputVariables),
@@ -999,7 +984,7 @@ export const JDConsultRoom: React.FC = () => {
           doctorId: currentDoctor!.id,
           doctorDisplayName: currentDoctor!.displayName,
           patientId: patientId,
-          patientName: patientName,
+          patientName: getPatientName(),
           currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
             'MMMM DD YYYY h:mm:ss a'
@@ -1017,7 +1002,28 @@ export const JDConsultRoom: React.FC = () => {
 
   const endConsultAction = () => {
     // open confirmation popup after removing from queue
-    mutationRemoveConsult();
+    mutationRemoveConsult()
+      .then(() => {})
+      .catch((e: ApolloError) => {
+        const logObject = {
+          api: 'RemoveFromConsultQueue',
+          inputParam: JSON.stringify({
+            id: parseInt(queueId, 10),
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentDoctor!.id,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: getPatientName(),
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: appointmentDateTime
+            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+            : '',
+          error: JSON.stringify(e),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
+      });
     saveCasesheetAction(false, true);
   };
 
@@ -1025,13 +1031,40 @@ export const JDConsultRoom: React.FC = () => {
   const endConsultAutoAction = () => {
     endCallNotificationAction(false);
     saveCasesheetAction(true, true);
-    mutationRemoveConsult().then(() => {
-      if (document.getElementById('homeId')) {
-        document.getElementById('homeId')!.click();
-      }
-    });
-  };
+    mutationRemoveConsult()
+      .then(() => {
+        if (document.getElementById('homeId')) {
+          document.getElementById('homeId')!.click();
+        }
+      })
+      .catch((e: ApolloError) => {
+        const logObject = {
+          api: 'RemoveFromConsultQueue',
+          inputParam: JSON.stringify({
+            id: parseInt(queueId, 10),
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentDoctor!.id,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: getPatientName(),
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: appointmentDateTime
+            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+            : '',
+          error: JSON.stringify(e),
+        };
 
+        sessionClient.notify(JSON.stringify(logObject));
+      });
+  };
+  const getPatientName = () => {
+    const patientName =
+      casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+      ' ' +
+      casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+    return patientName ? patientName : '';
+  };
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
@@ -1055,21 +1088,17 @@ export const JDConsultRoom: React.FC = () => {
         setSaving(false);
       })
       .catch((e: any) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
           api: 'CreateAppointmentSession',
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
-            requestRole: REQUEST_ROLES.DOCTOR,
+            requestRole: REQUEST_ROLES.JUNIOR,
           }),
           appointmentId: appointmentId,
           doctorId: currentDoctor!.id,
           doctorDisplayName: currentDoctor!.displayName,
           patientId: patientId,
-          patientName: patientName,
+          patientName: getPatientName(),
           currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
             'MMMM DD YYYY h:mm:ss a'
@@ -1128,6 +1157,23 @@ export const JDConsultRoom: React.FC = () => {
         },
       })
       .catch((error: ApolloError) => {
+        const logObject = {
+          api: 'EndCallNotification',
+          inputParam: JSON.stringify({
+            appointmentCallId: isCall ? callId : chatRecordId,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentDoctor!.id,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: getPatientName(),
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
   };
