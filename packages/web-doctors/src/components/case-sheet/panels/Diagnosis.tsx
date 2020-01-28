@@ -315,7 +315,7 @@ export const Diagnosis: React.FC = () => {
   return (
     <Typography component="div" className={classes.mainContainer}>
       <Typography component="h4" variant="h4">
-        Diagnosed Medical Condition
+        Provisional Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
         {selectedValues !== null &&
