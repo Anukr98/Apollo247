@@ -628,7 +628,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
     );
-    if (cannotCancelOrder || !orderStatusList.length) return null;
+    const isCancelOrderAllowed = orderStatusList.find(
+      (item) =>
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_CONFIRMED
+    );
+    if (!isCancelOrderAllowed || cannotCancelOrder || !orderStatusList.length) return null;
     return (
       <MaterialMenu
         options={['Cancel Order'].map((item) => ({
