@@ -182,7 +182,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <TestOrderNewCard
         key={`${order!.id}`}
-        orderId={`${order!.displayId}${order!.displayId}`}
+        orderId={`${order!.displayId}`}
         dateTime={`Scheduled For: ${dtTm}`}
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
         isCancelled={order.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
