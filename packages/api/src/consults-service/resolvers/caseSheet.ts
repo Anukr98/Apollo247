@@ -940,7 +940,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     const uploadPdfInput = {
       fileType: UPLOAD_FILE_TYPES.PDF,
       base64FileInput: uploadedPdfData.base64pdf,
-      patientId: '',
+      patientId: patientData.id,
       category: PRISM_DOCUMENT_CATEGORY.OpSummary,
     };
 
