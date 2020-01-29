@@ -15,7 +15,10 @@ import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
@@ -116,7 +119,8 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
 
               setClinicDetails(filterArray || []);
             })
-            .catch(() => {
+            .catch((e) => {
+              CommonBugFender('ClinicSelection_filterClinics', e);
               setClinicDetails([]);
             })
             .finally(() => {
@@ -136,6 +140,7 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
         setClinics && setClinics(data.data.data);
       })
       .catch((e) => {
+        CommonBugFender('ClinicSelection_fetchStorePickup', e);
         setStorePickUpLoading(false);
       });
   };

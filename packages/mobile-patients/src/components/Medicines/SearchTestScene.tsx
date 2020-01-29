@@ -7,7 +7,10 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_PAST_MEDICINE_SEARCHES,
   SAVE_SEARCH,
@@ -183,6 +186,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         setPastSearches(getPatientPastMedicineSearches || []);
       })
       .catch((error) => {
+        CommonBugFender('SearchTestScene_GET_PATIENT_PAST_MEDICINE_SEARCHES', error);
         aphConsole.log('Error occured', { error });
       });
   }, [currentPatient]);
@@ -220,6 +224,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           }
         })
         .catch((e) => {
+          CommonBugFender('SearchTestScene_fetchPackageDetails', e);
           aphConsole.log({ e });
           errorAlert();
         })
@@ -242,6 +247,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('SearchTestScene_fetchPackageInclusion', e);
         console.log({ e });
         errorAlert();
       })
@@ -285,6 +291,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           setIsLoading(false);
         })
         .catch((e) => {
+          CommonBugFender('SearchTestScene_onSearchMedicine', e);
           setIsLoading(false);
           showGenericALert(e);
         });

@@ -11,7 +11,10 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
@@ -202,21 +205,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         console.log('location permission denied');
       }
     } catch (err) {
+      CommonBugFender('DoctorSearchListing_requestLocationPermission_try', err);
       console.log(err);
     }
   };
 
   useEffect(() => {
     // Platform.OS === 'android' && requestLocationPermission();
-    getNetStatus().then((status) => {
-      if (status) {
-        // fetchCurrentLocation();
-        fetchSpecialityFilterData(filterMode, FilterData);
-      } else {
-        setshowSpinner(false);
-        setshowOfflinePopup(true);
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          // fetchCurrentLocation();
+          fetchSpecialityFilterData(filterMode, FilterData);
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorSearchListing_getNetStatus', e);
+      });
 
     // const handleBackPress = async () => {
     //   props.navigation.goBack();
@@ -277,6 +285,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       });
                   })
                   .catch((e) => {
+                    CommonBugFender('DoctorSearchListing_ALLOW_AUTO_DETECT', e);
                     showAphAlert!({
                       title: 'Uh oh! :(',
                       description: 'Unable to access location.',
@@ -483,9 +492,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               setshowSpinner(false);
             }
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
         setshowSpinner(false);
         console.log('Error occured while searching Doctor', e);
       });
@@ -496,34 +508,41 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const autoSearch = (searchText: string) => {
-    getNetStatus().then((status) => {
-      if (status) {
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
-          )
-          .then((obj) => {
-            try {
-              if (obj.data.predictions) {
-                const address = obj.data.predictions.map(
-                  (item: {
-                    place_id: string;
-                    structured_formatting: {
-                      main_text: string;
-                    };
-                  }) => {
-                    return { name: item.structured_formatting.main_text, placeId: item.place_id };
-                  }
-                );
-                setlocationSearchList(address);
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          axios
+            .get(
+              `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
+            )
+            .then((obj) => {
+              try {
+                if (obj.data.predictions) {
+                  const address = obj.data.predictions.map(
+                    (item: {
+                      place_id: string;
+                      structured_formatting: {
+                        main_text: string;
+                      };
+                    }) => {
+                      return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                    }
+                  );
+                  setlocationSearchList(address);
+                }
+              } catch (e) {
+                CommonBugFender('DoctorSearchListing_autoSearch_try', e);
               }
-            } catch {}
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-    });
+            })
+            .catch((error) => {
+              CommonBugFender('DoctorSearchListing_autoSearch', error);
+              console.log(error);
+            });
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorSearchListing_getNetStatus_autoSearch', e);
+      });
   };
 
   const findAddrComponents = (
@@ -615,6 +634,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
       })
       .catch((error) => {
+        CommonBugFender('DoctorSearchListing_getPlaceInfoByPlaceId', error);
         console.log('saveLatlong error\n', error);
       });
   };
@@ -697,14 +717,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             activeOpacity={1}
             onPress={() => {
               CommonLogEvent(AppRoutes.DoctorSearchListing, 'Location popup clicked');
-              getNetStatus().then((status) => {
-                if (status) {
-                  setshowLocationpopup(true);
-                  // fetchCurrentLocation();
-                } else {
-                  setshowOfflinePopup(true);
-                }
-              });
+              getNetStatus()
+                .then((status) => {
+                  if (status) {
+                    setshowLocationpopup(true);
+                    // fetchCurrentLocation();
+                  } else {
+                    setshowOfflinePopup(true);
+                  }
+                })
+                .catch((e) => {
+                  CommonBugFender('DoctorSearchListing_getNetStatus_RightHeader', e);
+                });
             }}
           >
             <LocationOff />
@@ -1153,18 +1177,22 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           setData={(selecteddata) => {
             setshowSpinner(true);
             setFilterData(selecteddata);
-            getNetStatus().then((status) => {
-              if (status) {
-                fetchSpecialityFilterData(filterMode, selecteddata);
-                CommonLogEvent(
-                  AppRoutes.DoctorSearchListing,
-                  `Filter selected data ${selecteddata}`
-                );
-              } else {
-                setshowSpinner(false);
-                setshowOfflinePopup(true);
-              }
-            });
+            getNetStatus()
+              .then((status) => {
+                if (status) {
+                  fetchSpecialityFilterData(filterMode, selecteddata);
+                  CommonLogEvent(
+                    AppRoutes.DoctorSearchListing,
+                    `Filter selected data ${selecteddata}`
+                  );
+                } else {
+                  setshowSpinner(false);
+                  setshowOfflinePopup(true);
+                }
+              })
+              .catch((e) => {
+                CommonBugFender('DoctorSearchListing_getNetStatus_FilterScene', e);
+              });
           }}
           filterLength={() => {
             setTimeout(() => {

@@ -18,7 +18,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getCoupons';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '../UIElementsProvider';
@@ -108,6 +111,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         setCouponList(g(getCoupons, 'coupons') || []);
       })
       .catch((e) => {
+        CommonBugFender('ApplyCouponScene_GET_COUPONS', e);
         setLoading && setLoading(false);
         handleGraphQlError(e, 'Unable to fetch coupons');
       });

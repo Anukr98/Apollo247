@@ -1167,6 +1167,8 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         devliveryCharges
         estimatedAmount
         prescriptionImageUrl
+        orderTat
+        patientAddressId
         medicineOrdersStatus {
           id
           orderStatus

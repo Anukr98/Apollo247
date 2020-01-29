@@ -39,8 +39,8 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import {
   NavigationActions,
   NavigationScreenProps,
@@ -52,6 +52,8 @@ import {
   GetMedicineOrdersListVariables,
 } from '../../graphql/types/GetMedicineOrdersList';
 import { TabHeader } from '../ui/TabHeader';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '../../strings/AppConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -200,20 +202,24 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   }, [props.navigation]);
 
   useEffect(() => {
-    getNetStatus().then((status) => {
-      if (status) {
-        if (currentPatient !== profileDetails) {
-          setprofileDetails(currentPatient);
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          if (currentPatient !== profileDetails) {
+            setprofileDetails(currentPatient);
+            setshowSpinner(false);
+          }
+          if (currentPatient === profileDetails) {
+            setshowSpinner(false);
+          }
+        } else {
+          setNetworkStatus(true);
           setshowSpinner(false);
         }
-        if (currentPatient === profileDetails) {
-          setshowSpinner(false);
-        }
-      } else {
-        setNetworkStatus(true);
-        setshowSpinner(false);
-      }
-    });
+      })
+      .catch((e) => {
+        CommonBugFender('MyAccount_getNetStatus', e);
+      });
   }, [currentPatient, profileDetails]);
 
   const renderDetails = () => {
@@ -293,12 +299,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         setshowSpinner(false);
         onPressLogout();
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('MyAccount_deleteDeviceToken', e);
         try {
           console.log('deleteDeviceTokenerror', e);
           setshowSpinner(false);
           onPressLogout();
-        } catch {}
+        } catch (err) {
+          CommonBugFender('MyAccount_deleteDeviceToken_logout_try', err);
+        }
       });
   };
 
@@ -475,7 +484,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${DeviceInfo.getVersion()}.${DeviceInfo.getBuildNumber()}`}
+              {`${buildName()} - v ${
+                Platform.OS === 'ios'
+                  ? AppConfig.Configuration.iOS_Version
+                  : AppConfig.Configuration.Android_Version
+              }`}
             </Text>
           </View>
         </ScrollView>

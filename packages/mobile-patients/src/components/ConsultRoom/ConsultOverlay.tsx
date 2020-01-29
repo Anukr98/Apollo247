@@ -36,7 +36,10 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
@@ -102,9 +105,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           if (!nextSlot && data[0]!.physicalAvailableSlot) {
             tabs.length > 1 && setselectedTab(tabs[1].title);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('ConsultOverlay_getNextAvailableSlots_try', e);
+        }
       })
       .catch((e: any) => {
+        CommonBugFender('ConsultOverlay_getNextAvailableSlots', e);
         console.log('error', e);
       });
   }, []);
@@ -160,11 +166,14 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         });
       })
       .catch((error) => {
+        CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
         setshowSpinner(false);
         let message = '';
         try {
           message = error.message.split(':')[1].trim();
-        } catch (error) {}
+        } catch (error) {
+          CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
+        }
         if (
           message == 'APPOINTMENT_EXIST_ERROR' ||
           message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
@@ -193,46 +202,51 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : props.doctor!.physicalConsultationFees
       }`
     );
-    getNetStatus().then((status) => {
-      // setdisablePay(true);
-      if (status) {
-        if (props.FollowUp == false) {
-          const timeSlot =
-            tabs[0].title === selectedTab &&
-            isConsultOnline &&
-            availableInMin! <= 60 &&
-            0 < availableInMin!
-              ? nextAvailableSlot
-              : selectedTimeSlot;
-          const input = {
-            patientId: props.patientId,
-            doctorId: props.doctorId,
-            appointmentDateTime: timeSlot,
-            appointmentType: APPOINTMENT_TYPE.ONLINE,
-            hospitalId: '',
-            followUpParentId: props.appointmentId,
-          };
-          client
-            .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
-              mutation: BOOK_FOLLOWUP_APPOINTMENT,
-              variables: {
-                followUpAppointmentInput: input,
-              },
-              fetchPolicy: 'no-cache',
-            })
-            .then((_data: any) => {
-              props.navigation.navigate(AppRoutes.Consult);
-            })
-            .catch((e: any) => {
-              handleGraphQlError(e);
-            });
+    getNetStatus()
+      .then((status) => {
+        // setdisablePay(true);
+        if (status) {
+          if (props.FollowUp == false) {
+            const timeSlot =
+              tabs[0].title === selectedTab &&
+              isConsultOnline &&
+              availableInMin! <= 60 &&
+              0 < availableInMin!
+                ? nextAvailableSlot
+                : selectedTimeSlot;
+            const input = {
+              patientId: props.patientId,
+              doctorId: props.doctorId,
+              appointmentDateTime: timeSlot,
+              appointmentType: APPOINTMENT_TYPE.ONLINE,
+              hospitalId: '',
+              followUpParentId: props.appointmentId,
+            };
+            client
+              .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
+                mutation: BOOK_FOLLOWUP_APPOINTMENT,
+                variables: {
+                  followUpAppointmentInput: input,
+                },
+                fetchPolicy: 'no-cache',
+              })
+              .then((_data: any) => {
+                props.navigation.navigate(AppRoutes.Consult);
+              })
+              .catch((e: any) => {
+                CommonBugFender('ConsultOverlay_onPressPay', e);
+                handleGraphQlError(e);
+              });
+          } else {
+            onSubmitBookAppointment();
+          }
         } else {
-          onSubmitBookAppointment();
+          setshowOfflinePopup(true);
         }
-      } else {
-        setshowOfflinePopup(true);
-      }
-    });
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
+      });
   };
 
   const renderBottomButton = () => {

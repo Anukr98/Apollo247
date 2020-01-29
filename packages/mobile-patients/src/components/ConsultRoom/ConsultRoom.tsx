@@ -28,6 +28,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonLogEvent,
   DeviceHelper,
+  CommonBugFender,
+  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -252,6 +254,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   }, [enableCM]);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+        const item = JSON.parse(retrievedItem);
+
+        const allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+
+        const patientDetails = allPatients
+          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+          : null;
+
+        CommonSetUserBugsnag(
+          patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+        );
+      } catch (error) {}
+    }
+
+    fetchData();
+  }, []);
+
   const buildName = () => {
     switch (apiRoutes.graphql()) {
       case 'https://aph.dev.api.popcornapps.com//graphql':
@@ -293,7 +319,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             );
             setAppointmentLoading(false);
           })
-          .catch((e) => {})
+          .catch((e) => {
+            CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
+          })
           .finally(() => setAppointmentLoading(false));
       }
     }
@@ -375,7 +403,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
         fetchTokenData();
       })
-      .catch(() => {
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_getTokenforCM', e);
         setshowSpinner(false);
       });
   };
@@ -383,14 +412,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     try {
       if (Platform.OS === 'android') {
-        Linking.getInitialURL().then((url) => {
-          // this.navigate(url);
-        });
+        Linking.getInitialURL()
+          .then((url) => {
+            // this.navigate(url);
+          })
+          .catch((e) => {
+            CommonBugFender('ConsultRoom_Linking_URL', e);
+          });
       } else {
         console.log('linking');
         Linking.addEventListener('url', handleOpenURL);
       }
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('ConsultRoom_Linking_URL_try', error);
+    }
   }, []);
 
   const handleOpenURL = (event: any) => {
@@ -442,11 +477,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   JSON.stringify(data.data.saveDeviceToken.deviceToken)
                 );
               })
-              .catch((e: string) => {
+              .catch((e) => {
+                CommonBugFender('ConsultRoom_setDeviceTokenApICalled', e);
                 console.log('Error occured while adding Doctor', e);
               });
           }
         }
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_callDeviceTokenAPI', e);
       });
   };
 

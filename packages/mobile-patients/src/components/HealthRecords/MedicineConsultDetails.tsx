@@ -35,7 +35,10 @@ import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
 import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
@@ -163,7 +166,8 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
 
           uploadUrlscheck && setUrls(uploadUrlscheck);
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('MedicineConsultDetails_downloadDocuments', e);
           console.log('Error occured', e);
         })
         .finally(() => {});
@@ -215,6 +219,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         props.navigation.navigate(AppRoutes.YourCart);
       })
       .catch((err) => {
+        CommonBugFender('MedicineConsultDetails_addToCart', err);
         setLoading && setLoading(false);
         console.log(err, 'MedicineDetailsScene err');
         Alert.alert('Alert', 'No medicines found.');
@@ -261,6 +266,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       if (resuts) {
       }
     } catch (error) {
+      CommonBugFender('MedicineConsultDetails_requestReadSmsPermission_try', error);
       console.log('error', error);
     }
   };
@@ -325,13 +331,16 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                               }
                             })
                             .catch((err) => {
+                              CommonBugFender('MedicineConsultDetails_DOWNLOAD', err);
                               console.log('error ', err);
                               setLoading && setLoading(false);
                             });
                         });
                         console.log(fileDownloaded, 'files download');
                       }
-                    } catch (error) {}
+                    } catch (error) {
+                      CommonBugFender('MedicineConsultDetails_DOWNLOAD_try', error);
+                    }
                   }}
                 >
                   <Download />
@@ -365,11 +374,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
 
           <View style={{ marginLeft: 20 }}>
             <Text
+              numberOfLines={1}
               style={{ ...theme.fonts.IBMPlexSansSemiBold(23), color: '#02475b', marginBottom: 4 }}
             >
-              {data === 'Prescription uploaded by Patient'
-                ? 'Prescription uploaded by Patient'
-                : data && data.medicineName}
+              {data === data && !data.medicineSKU ? data : data && data.medicineName}
             </Text>
             <Text
               style={{
