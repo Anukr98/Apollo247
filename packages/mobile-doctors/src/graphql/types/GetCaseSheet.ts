@@ -125,6 +125,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
   __typename: "MedicinePrescription";
   id: string | null;
+  externalId: string | null;
   medicineName: string | null;
   medicineDosage: string | null;
   medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;

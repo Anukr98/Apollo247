@@ -43,6 +43,7 @@ import {
   View,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 
 const { width, height } = Dimensions.get('window');
 
@@ -78,9 +79,13 @@ const styles = StyleSheet.create({
 
 export interface AddMedicinePopUpProps {
   onClose: () => void;
-  data?: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList;
+  data?:
+    | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription;
   onAddnew?: (
-    data: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+    data:
+      | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+      | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   ) => void;
 }
 
@@ -319,7 +324,9 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             };
             onAddnew &&
               onAddnew(
-                dataSend as GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+                dataSend as
+                  | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+                  | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
               );
             onClose();
           }}

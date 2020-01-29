@@ -113,8 +113,9 @@ export const medUsageType = (med: MEDICINE_UNIT) => {
     case MEDICINE_UNIT.ROTACAPS:
     case MEDICINE_UNIT.SACHET:
     case MEDICINE_UNIT.ML:
-    default:
       return 'Take';
+    default:
+      return 'Apply';
   }
 };
 
