@@ -14,6 +14,7 @@ import _without from 'lodash/without';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
 import { usePrevious } from 'hooks/reactCustomHooks';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -23,9 +24,6 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 328,
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        top: 46,
-        zIndex: 1,
         borderRadius: 0,
         paddingTop: 0,
         width: '100%',
@@ -196,6 +194,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
 
   const prevDateSelected = usePrevious(dateSelected);
   const selectedSpecialtyName = existingFilters.specialtyName;
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
 
   const filterOptions = {
     searchKeyword: searchKeyword,
@@ -271,7 +270,11 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           disableFilters ? classes.filterSectionDisabled : ''
         }`}
       >
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 275px'}>
+        <Scrollbars
+          autoHide={true}
+          autoHeight
+          autoHeightMax={isMediumScreen ? 'calc(100vh - 320px)' : 'calc(100vh - 275px)'}
+        >
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
               <div className={classes.filterType}>City</div>
