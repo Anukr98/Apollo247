@@ -840,3 +840,16 @@ export const BLOCK_MULTIPLE_CALENDAR_ITEMS = gql`
     }
   }
 `;
+
+export const GET_BLOCKED_CALENDAR = gql`
+  query GetBlockedCalendar($doctorId: String!) {
+    getBlockedCalendar(doctorId: $doctorId) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
