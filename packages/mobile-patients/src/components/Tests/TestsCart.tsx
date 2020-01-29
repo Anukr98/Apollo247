@@ -1,4 +1,13 @@
-import { aphConsole, formatAddress, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  aphConsole,
+  formatAddress,
+  g,
+  isValidTestSlot,
+  TestSlot,
+  formatTestSlot,
+  getUniqueTestSlots,
+  getTestSlotDetailsByTime,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -71,6 +80,7 @@ import {
   searchDiagnosticsById,
   searchDiagnosticsByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -118,11 +128,6 @@ type clinicHoursData = {
   week: string;
   time: string;
 };
-
-type TimeArray = {
-  label: string;
-  time: string;
-}[];
 
 export interface TestsCartProps extends NavigationScreenProps {
   isComingFromConsult: boolean;
@@ -174,9 +179,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     { title: 'Home Visit', subtitle: 'Appointment Slot' },
     { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
   ];
-  const [timeArray, settimeArray] = useState<TimeArray>([]);
 
-  const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
+  const [slots, setSlots] = useState<TestSlot[]>([]);
+  const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
@@ -211,16 +216,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
-        setselectedTimeSlot(
-          `${moment(diagnosticSlot.slotStartTime || '', 'HH:mm').format('hh:mm A')} - ${moment(
-            diagnosticSlot.slotEndTime || '',
-            'HH:mm'
-          ).format('hh:mm A')}`
-        );
+        setselectedTimeSlot({
+          date: new Date(diagnosticSlot.date),
+          diagnosticBranchCode: '',
+          employeeCode: diagnosticSlot.diagnosticEmployeeCode,
+          employeeName: '', // not sending name to API hence keeping empty
+          slotInfo: {
+            __typename: 'SlotInfo',
+            endTime: diagnosticSlot.slotEndTime,
+            slot: diagnosticSlot.employeeSlotId,
+            startTime: diagnosticSlot.slotStartTime,
+            status: 'empty',
+          },
+        });
         // setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
       } else {
         setDate(new Date());
-        setselectedTimeSlot('');
+        setselectedTimeSlot(undefined);
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
@@ -528,44 +540,41 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           },
         })
         .then(({ data }) => {
+          const diagnosticSlots = g(data, 'getDiagnosticSlots', 'diagnosticSlot') || [];
+          console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+
+          const slotsArray: TestSlot[] = [];
+          diagnosticSlots!.forEach((item) => {
+            item!.slotInfo!.forEach((slot) => {
+              if (isValidTestSlot(slot!, date)) {
+                slotsArray.push({
+                  employeeCode: item!.employeeCode,
+                  employeeName: item!.employeeName,
+                  slotInfo: slot,
+                  date: date,
+                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode'),
+                } as TestSlot);
+              }
+            });
+          });
+
+          const uniqueSlots = getUniqueTestSlots(slotsArray);
+
+          console.log('ARRAY OF SLOTS', { slotsArray });
+          console.log('UNIQUE SLOTS', { uniqueSlots });
+
+          setSlots(slotsArray);
+          uniqueSlots.length &&
+            setselectedTimeSlot(
+              getTestSlotDetailsByTime(
+                slotsArray,
+                uniqueSlots[0].startTime!,
+                uniqueSlots[0].endTime!
+              )
+            );
+
           setDeliveryAddressId!(selectedAddress.id);
           setPinCode!(selectedAddress.zipcode!);
-          console.log({ data, date }, 'GET_DIAGNOSTIC_SLOTS');
-          const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-          const t = finalaray!
-            .slotInfo!.filter((item) => item!.status != 'booked')
-            .filter((item) =>
-              moment(item!.endTime!.trim(), 'HH:mm').isSameOrBefore(
-                moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
-              )
-            )
-            .filter((item) =>
-              moment(date)
-                .format('DMY')
-                .toString() ===
-              moment()
-                .format('DMY')
-                .toString()
-                ? moment(item!.startTime!.trim(), 'HH:mm').isSameOrAfter(
-                    moment(new Date()).add(
-                      AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-                      'minutes'
-                    )
-                  )
-                : true
-            )
-            .map((item) => {
-              return {
-                label: (item!.slot || '').toString(),
-                time: `${moment(item!.startTime || '', 'HH:mm').format('hh:mm A')} - ${moment(
-                  item!.endTime || '',
-                  'HH:mm'
-                ).format('hh:mm A')}`,
-              };
-            });
-          console.log(t, 'finalaray');
-          settimeArray(t);
-          setselectedTimeSlot(g(t, '0' as any, 'time')!);
           setDisplaySchedule(true);
         })
         .catch((e) => {
@@ -574,7 +583,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticSlot && setDiagnosticSlot(null);
           setPinCode && setPinCode('');
-          setselectedTimeSlot('');
+          setselectedTimeSlot(undefined);
           const noHubSlots = g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS';
           showAphAlert!({
             title: 'Uh oh.. :(',
@@ -652,7 +661,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             onPress={() => {
               props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true });
               setDiagnosticSlot && setDiagnosticSlot(null);
-              setselectedTimeSlot('');
+              setselectedTimeSlot(undefined);
             }}
           >
             ADD NEW ADDRESS
@@ -669,7 +678,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       if (val && id) {
                         setDeliveryAddressId && setDeliveryAddressId(id);
                         setDiagnosticSlot && setDiagnosticSlot(null);
-                        setselectedTimeSlot('');
+                        setselectedTimeSlot(undefined);
                       }
                     },
                   });
@@ -846,13 +855,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>
           <Text style={styles.dateTextStyle}>
-            {selectedTimeSlot ? selectedTimeSlot : 'No slot selected'}
+            {selectedTimeSlot
+              ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)} - ${formatTestSlot(
+                  selectedTimeSlot.slotInfo.endTime!
+                )}`
+              : 'No slot selected'}
           </Text>
         </View>
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
           onPress={() => {
-            timeArray ? setDisplaySchedule(true) : null;
+            setDisplaySchedule(true);
           }}
         >
           PICK ANOTHER SLOT
@@ -1431,10 +1444,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       </View>
     );
   };
-
+  const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
+  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   return (
     <View style={{ flex: 1 }}>
-      {displaySchedule && (
+      {/* {displaySchedule && (
         <ScheduleCalander
           date={date}
           setDate={(date) => setDate(date)}
@@ -1449,7 +1463,37 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
         />
-      )}
+      )} */}
+      {
+        <TestSlotSelectionOverlay
+          heading="Schedule Appointment"
+          date={date}
+          maxDate={moment()
+            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .toDate()}
+          isVisible={displaySchedule}
+          onClose={() => setDisplaySchedule(false)}
+          slots={slots}
+          zipCode={parseInt(zipCode, 10)}
+          slotInfo={selectedTimeSlot}
+          onSchedule={(date: Date, slotInfo: TestSlot) => {
+            console.log({ slotInfo });
+
+            setDate(date);
+            setselectedTimeSlot(slotInfo);
+            setDiagnosticSlot!({
+              slotStartTime: slotInfo.slotInfo.startTime!,
+              slotEndTime: slotInfo.slotInfo.endTime!,
+              date: date.getTime(),
+              employeeSlotId: slotInfo.slotInfo.slot!,
+              diagnosticBranchCode: slotInfo.diagnosticBranchCode,
+              diagnosticEmployeeCode: slotInfo.employeeCode,
+              city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+            });
+            setDisplaySchedule(false);
+          }}
+        />
+      }
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
