@@ -70,6 +70,8 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
   GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
+  GetCaseSheet_getCaseSheet_patientDetails_healthVault,
+  GetCaseSheet_getCaseSheet_pastAppointments,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import {
   REQUEST_ROLES,
@@ -577,8 +579,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     medicalHistory,
     setMedicalHistory,
   ] = useState<GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null>();
-  const [healthWalletArrayData, setHealthWalletArrayData] = useState<any>([]);
-  const [pastList, setPastList] = useState<any>([]);
+  const [healthWalletArrayData, setHealthWalletArrayData] = useState<
+    (GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null
+  >([]);
+  const [pastList, setPastList] = useState<
+    (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
+  >([]);
   const { isDelegateLogin, setIsDelegateLogin } = useAuth();
 
   const [consultationType, setConsultationType] = useState<'ONLINE' | 'PHYSICAL' | ''>('');
@@ -1341,91 +1347,84 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         onPress={() => setMedicinePrescription(!medicinePrescription)}
       >
         <View style={{ marginHorizontal: 20 }}>
-          <Text style={[styles.medicineText, { marginBottom: 6 }]}>Medicines</Text>
-          {medicinePrescriptionData == null || medicinePrescriptionData.length == 0 ? (
-            <Text style={[styles.symptomsText, { marginLeft: 20, marginTop: 0, marginBottom: 6 }]}>
-              No Medicine Added
-            </Text>
-          ) : (
-            medicinePrescriptionData.map((showdata: any, i) => {
-              const isSelected =
-                selectedMedicinesId.findIndex((i) => i === (showdata.externalId || showdata.id)) >=
-                0;
-              return (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    props.overlayDisplay(
-                      <AddMedicinePopUp
-                        data={showdata}
-                        onClose={() => props.overlayDisplay(null)}
-                        onAddnew={(data) => {
-                          console.log(medicinePrescriptionData, selectedMedicinesId);
+          {renderHeaderText('Medicines')}
+          {medicinePrescriptionData == null || medicinePrescriptionData.length == 0
+            ? renderInfoText('No Medicine Added')
+            : medicinePrescriptionData.map((showdata: any, i) => {
+                const isSelected =
+                  selectedMedicinesId.findIndex(
+                    (i) => i === (showdata.externalId || showdata.id)
+                  ) >= 0;
+                return (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      props.overlayDisplay(
+                        <AddMedicinePopUp
+                          data={showdata}
+                          onClose={() => props.overlayDisplay(null)}
+                          onAddnew={(data) => {
+                            console.log(medicinePrescriptionData, selectedMedicinesId);
 
-                          setMedicinePrescriptionData([
-                            ...(medicinePrescriptionData.filter(
-                              (i: any) => (i.externalId || i.id) !== (data.externalId || data.id)
-                            ) || []),
-                            data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                          ]);
-                          setSelectedMedicinesId(
-                            [
-                              ...selectedMedicinesId.filter(
-                                (i) => i !== (data.externalId || data.id)
-                              ),
-                              data.externalId || '',
-                            ].filter((i) => i !== '')
-                          );
-                        }}
-                      />
-                    );
-                  }}
-                >
-                  <View
-                    style={[
-                      styles.dataCardsStyle,
-                      !isSelected ? { backgroundColor: theme.colors.WHITE } : {},
-                    ]}
+                            setMedicinePrescriptionData([
+                              ...(medicinePrescriptionData.filter(
+                                (i: any) => (i.externalId || i.id) !== (data.externalId || data.id)
+                              ) || []),
+                              data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                            ]);
+                            setSelectedMedicinesId(
+                              [
+                                ...selectedMedicinesId.filter(
+                                  (i) => i !== (data.externalId || data.id)
+                                ),
+                                data.externalId || '',
+                              ].filter((i) => i !== '')
+                            );
+                          }}
+                        />
+                      );
+                    }}
                   >
-                    {renderMedicineDetails(showdata)}
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => {
-                        if (!isSelected) {
-                          setSelectedMedicinesId([
-                            ...selectedMedicinesId,
-                            showdata.externalId || showdata.id,
-                          ]);
-                        } else {
-                          setSelectedMedicinesId([
-                            ...selectedMedicinesId.filter(
-                              (i) => i != (showdata.externalId || showdata.id)
-                            ),
-                          ]);
-                        }
-                      }}
+                    <View
+                      style={[
+                        styles.dataCardsStyle,
+                        !isSelected ? { backgroundColor: theme.colors.WHITE } : {},
+                      ]}
                     >
-                      {isSelected ? (
-                        <CheckboxSelected
-                          style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                        />
-                      ) : (
-                        <CheckboxUnSelected
-                          style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              );
-            })
-          )}
+                      {renderMedicineDetails(showdata)}
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          if (!isSelected) {
+                            setSelectedMedicinesId([
+                              ...selectedMedicinesId,
+                              showdata.externalId || showdata.id,
+                            ]);
+                          } else {
+                            setSelectedMedicinesId([
+                              ...selectedMedicinesId.filter(
+                                (i) => i != (showdata.externalId || showdata.id)
+                              ),
+                            ]);
+                          }
+                        }}
+                      >
+                        {isSelected ? (
+                          <CheckboxSelected
+                            style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                          />
+                        ) : (
+                          <CheckboxUnSelected
+                            style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
 
-          {favMed
-            ? favMed.length > 0 && (
-                <Text style={[styles.medicineText, { marginBottom: 6 }]}>Favorite Medicines</Text>
-              )
-            : null}
+          {favMed ? favMed.length > 0 && renderHeaderText('Favorite Medicines') : null}
           {favMed
             ? favMed.map(
                 (
@@ -1730,70 +1729,71 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={diagnosisView}
           onPress={() => setDiagnosisView(!diagnosisView)}
         >
-          <Text style={[styles.familyText, { marginBottom: 0 }]}>Diagnosed Medical Condition</Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              // justifyContent: 'space-between',
-              marginLeft: 16,
-              marginRight: 16,
-              marginBottom: 19,
-              flexWrap: 'wrap',
-            }}
-          >
-            {diagnosisData == null ? (
-              <Text style={[styles.symptomsText]}>No Data</Text>
-            ) : (
-              diagnosisData.map((showdata: any, i) => {
-                return (
-                  <DiagnosisCard
-                    diseaseName={showdata.name}
-                    onPressIcon={() =>
-                      setDiagnosisData(diagnosisData.filter((i: any) => i.name != showdata.name))
-                    }
-                    icon={<DiagonisisRemove />}
-                  />
-                );
-              })
+          <View style={{ marginHorizontal: 16 }}>
+            {renderHeaderText('Diagnosed Medical Condition')}
+            <View
+              style={{
+                flexDirection: 'row',
+                // justifyContent: 'space-between',
+                marginBottom: 6,
+                flexWrap: 'wrap',
+              }}
+            >
+              {diagnosisData == null || diagnosisData.length == 0
+                ? renderInfoText('No Data')
+                : diagnosisData.map((showdata: any, i) => {
+                    return (
+                      <DiagnosisCard
+                        diseaseName={showdata.name}
+                        onPressIcon={() =>
+                          setDiagnosisData(
+                            diagnosisData.filter((i: any) => i.name != showdata.name)
+                          )
+                        }
+                        icon={<DiagonisisRemove />}
+                      />
+                    );
+                  })}
+            </View>
+            {isDelegateLogin ? null : (
+              <TouchableOpacity
+                onPress={() => {
+                  props.overlayDisplay(
+                    <AddConditionPopUp
+                      onClose={() => {
+                        props.overlayDisplay(null);
+                      }}
+                      onDone={(val) => {
+                        let newValues: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] = [];
+                        val.forEach((item) => {
+                          if (
+                            diagnosisData &&
+                            diagnosisData.findIndex((i) => item.name === (i && i.name)) < 0
+                          ) {
+                            newValues.push(item);
+                          } else if (diagnosisData === null) {
+                            newValues.push(item);
+                          }
+                        });
+                        setDiagnosisData([...(diagnosisData || []), ...newValues]);
+                      }}
+                    />
+                  );
+                }}
+                activeOpacity={1}
+              >
+                <View style={{ flexDirection: 'row', marginBottom: 19 }}>
+                  <AddPlus />
+                  <Text style={styles.addDoctorText}>ADD CONDITION</Text>
+                </View>
+              </TouchableOpacity>
             )}
           </View>
-          {isDelegateLogin ? null : (
-            <TouchableOpacity
-              onPress={() => {
-                props.overlayDisplay(
-                  <AddConditionPopUp
-                    onClose={() => {
-                      props.overlayDisplay(null);
-                    }}
-                    onDone={(val) => {
-                      let newValues: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] = [];
-                      val.forEach((item) => {
-                        if (
-                          diagnosisData &&
-                          diagnosisData.findIndex((i) => item.name === (i && i.name)) < 0
-                        ) {
-                          newValues.push(item);
-                        } else if (diagnosisData === null) {
-                          newValues.push(item);
-                        }
-                      });
-                      setDiagnosisData([...(diagnosisData || []), ...newValues]);
-                    }}
-                  />
-                );
-              }}
-              activeOpacity={1}
-            >
-              <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-                <AddPlus />
-                <Text style={styles.addDoctorText}>ADD CONDITION</Text>
-              </View>
-            </TouchableOpacity>
-          )}
         </CollapseCard>
       </View>
     );
   };
+
   const removeInstrution = (item: string | null) => {
     console.log('item', item);
     const list = otherInstructionsData.filter(
@@ -1975,7 +1975,35 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const renderHeaderText = (header: string) => {
+    return (
+      <Text
+        style={[
+          theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.6)),
+          { marginVertical: 4 },
+        ]}
+      >
+        {header}
+      </Text>
+    );
+  };
+  const renderInfoText = (text: string) => {
+    return (
+      <Text
+        style={[
+          theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(1)),
+          { marginLeft: 8, marginVertical: 4 },
+        ]}
+      >
+        {text}
+      </Text>
+    );
+  };
   const renderPatientHealthWallet = () => {
+    const patientImages =
+      (healthWalletArrayData && healthWalletArrayData.filter((i) => i && i.imageUrls)) || [];
+    const records =
+      (healthWalletArrayData && healthWalletArrayData.filter((i) => i && i.reportUrls)) || [];
     return (
       <View>
         <CollapseCard
@@ -1983,33 +2011,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={patientHealthWallet}
           onPress={() => setPatientHealthWallet(!patientHealthWallet)}
         >
-          <Text style={[styles.familyText, { marginBottom: 12 }]}>
-            Photos uploaded by the Patient
-          </Text>
-          {healthWalletArrayData.length == 0 ? (
-            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
-          ) : (
-            healthWalletArrayData.map((showdata: any, i) => {
-              return (
-                <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
-                  {/* <HealthCard icon={showdata.imageUrls} /> */}
-                  <Image style={{ width: 90, height: 90 }} source={{ uri: showdata.imageUrls }} />
-                </View>
-              );
-            })
-          )}
-
-          <Text style={[styles.familyText, { marginBottom: 12, marginTop: 16 }]}>
-            Past Consultations
-          </Text>
-
-          {pastList.map((apmnt: any, i) => {
-            return (
-              <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
-                {renderPastAppData(apmnt)}
-              </View>
-            );
-          })}
+          <View style={{ marginHorizontal: 16 }}>
+            {renderHeaderText('Photos uploaded by the Patient')}
+            {patientImages.length > 0 ? <View></View> : renderInfoText('No Data')}
+            {renderHeaderText('Reports')}
+            {records.length > 0 ? <View></View> : renderInfoText('No Data')}
+            {renderHeaderText('Past Consultations')}
+            {pastList &&
+              pastList.map((apmnt: any, i) => {
+                return <View style={{ marginBottom: 0 }}>{renderPastAppData(apmnt)}</View>;
+              })}
+          </View>
         </CollapseCard>
       </View>
     );
@@ -2146,31 +2158,30 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           onPress={() => setAdviceInstructions(!adviceInstructions)}
         >
           <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
-            <Text style={[styles.medicineText, { paddingBottom: 6 }]}>
-              Instructions to the patient
-            </Text>
-            {addedAdvices.length > 0 ? (
-              addedAdvices.map((item) => (
-                <TouchableOpacity activeOpacity={1} onPress={() => selectedAdviceAction(item, 'd')}>
-                  <View style={styles.dataCardsStyle}>
-                    <Text
-                      style={{
-                        ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
-                        flex: 0.95,
-                      }}
-                    >
-                      {item.value}
-                    </Text>
-                    <CheckboxSelected style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
-                  </View>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={[styles.medicineText, { paddingVertical: 6, paddingLeft: 16 }]}>
-                No Advice/Instructions selected
-              </Text>
-            )}
-            <Text style={[styles.medicineText, { paddingVertical: 6 }]}>Favorite Diagnostics</Text>
+            {renderHeaderText('Instructions to the patient')}
+            {addedAdvices.length > 0
+              ? addedAdvices.map((item) => (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => selectedAdviceAction(item, 'd')}
+                  >
+                    <View style={styles.dataCardsStyle}>
+                      <Text
+                        style={{
+                          ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
+                          flex: 0.95,
+                        }}
+                      >
+                        {item.value}
+                      </Text>
+                      <CheckboxSelected
+                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ))
+              : renderInfoText('No Advice/Instructions selected')}
+            {favAdvices.length && renderHeaderText('Favorite Diagnostics')}
             {favAdvices.map((item) => (
               <TouchableOpacity
                 activeOpacity={1}
