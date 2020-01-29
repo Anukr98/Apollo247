@@ -21,7 +21,7 @@ import fs from 'fs';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { Connection } from 'typeorm';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { Patient, PRISM_DOCUMENT_CATEGORY, UPLOAD_FILE_TYPES } from 'profiles-service/entities';
+import { Patient } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
