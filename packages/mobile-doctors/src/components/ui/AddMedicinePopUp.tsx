@@ -345,7 +345,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               placeholder=""
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={take}
-              selectionColor={Platform.OS === 'ios' ? theme.colors.BLACK : ''}
+              selectionColor={theme.colors.INPUT_CURSOR_COLOR}
               onChange={(text) => setTake(text.nativeEvent.text)}
             />
           )}
@@ -484,7 +484,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             placeholder=""
             placeholderTextColor="rgba(1, 71, 91, 0.3)"
             value={forTime}
-            selectionColor={Platform.OS === 'ios' ? theme.colors.BLACK : ''}
+            selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => setForTime(text.nativeEvent.text)}
           />
           <MaterialMenu
@@ -802,7 +802,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           placeholder="Search Medicine"
           placeholderTextColor="rgba(1, 71, 91, 0.3)"
           value={medSearchText}
-          selectionColor={Platform.OS === 'ios' ? theme.colors.BLACK : ''}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
           onChange={(text) => searchMedicine(text.nativeEvent.text.replace(/\\/g, ''))}
         />
         <View>

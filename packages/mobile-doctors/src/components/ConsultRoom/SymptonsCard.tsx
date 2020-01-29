@@ -13,7 +13,7 @@ import { theme } from '../../theme/theme';
 const styles = StyleSheet.create({
   containerStyle: {
     borderRadius: 5,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
     borderStyle: 'solid',
     borderWidth: 1,
     borderColor: 'rgba(2, 71, 91, 0.15)',
@@ -22,20 +22,12 @@ const styles = StyleSheet.create({
   },
 
   doctorNameStyles: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: '#02475b',
+    ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 1),
     marginLeft: 12,
     marginTop: 12,
-    lineHeight: 20,
   },
   tabdata: {
-    fontFamily: 'IBMPlexSans',
-    fontSize: 14,
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    lineHeight: 20,
-    letterSpacing: 0,
-    color: '#01475b',
+    ...theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE, 1, 18, 0),
     marginLeft: 12,
   },
 });
@@ -47,13 +39,27 @@ export interface CapsuleViewProps {
   days?: string;
   howoften?: string;
   seviarity?: string;
-  onPress?: () => void;
+  details?: string;
+  onPressIcon?: () => void;
+  editIcon?: Element;
+  onPressEditIcon?: () => void;
 }
 
 export const SymptonsCard: React.FC<CapsuleViewProps> = (props) => {
+  const {
+    days,
+    howoften,
+    seviarity,
+    details,
+    editIcon,
+    icon,
+    onPressIcon,
+    onPressEditIcon,
+  } = props;
+
   return (
     <View style={[styles.containerStyle, props.containerStyle]}>
-      <View style={{ marginBottom: 14, backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
+      <View style={{ marginBottom: 14 }}>
         <View
           style={{
             flexDirection: 'row',
@@ -63,20 +69,39 @@ export const SymptonsCard: React.FC<CapsuleViewProps> = (props) => {
           <Text numberOfLines={1} style={styles.doctorNameStyles}>
             {props.diseaseName}
           </Text>
-          <TouchableOpacity onPress={() => props.onPress && props.onPress()}>
-            <View style={{ marginTop: 12, marginRight: 12 }}>{props.icon}</View>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row' }}>
+            {editIcon && (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => onPressEditIcon && onPressEditIcon()}
+              >
+                <View style={{ marginTop: 12, marginRight: 20 }}>{editIcon}</View>
+              </TouchableOpacity>
+            )}
+            {icon && (
+              <TouchableOpacity activeOpacity={1} onPress={() => onPressIcon && onPressIcon()}>
+                <View style={{ marginTop: 12, marginRight: 12 }}>{icon}</View>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
         <View style={{ marginTop: -5 }}>
-          <Text numberOfLines={1} style={styles.tabdata}>
-            {props.days}
-          </Text>
-          <Text numberOfLines={1} style={styles.tabdata}>
-            {props.howoften}
-          </Text>
-          <Text numberOfLines={1} style={styles.tabdata}>
-            {props.seviarity}
-          </Text>
+          {days && (
+            <Text numberOfLines={1} style={styles.tabdata}>
+              {days}
+            </Text>
+          )}
+          {howoften && (
+            <Text numberOfLines={1} style={styles.tabdata}>
+              {howoften}
+            </Text>
+          )}
+          {seviarity && (
+            <Text numberOfLines={1} style={styles.tabdata}>
+              {seviarity}
+            </Text>
+          )}
+          {details && <Text style={styles.tabdata}>{details}</Text>}
         </View>
       </View>
     </View>

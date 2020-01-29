@@ -105,6 +105,7 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
           multiline={true}
           value={value}
           onChangeText={(value) => setValue(value)}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
         />
       </View>
     );

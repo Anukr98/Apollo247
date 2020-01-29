@@ -41,6 +41,7 @@ import {
   PlusOrange,
   CheckboxSelected,
   CheckboxUnSelected,
+  Edit,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
@@ -110,6 +111,7 @@ import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedic
 import { nameFormater, medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { AddInstructionPopUp } from '@aph/mobile-doctors/src/components/ui/AddInstructionPopUp';
 import { AddConditionPopUp } from '@aph/mobile-doctors/src/components/ui/AddConditionPopUp';
+import { AddSymptomPopUp } from '@aph/mobile-doctors/src/components/ui/AddSymptomPopUp';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -554,7 +556,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [selectDate, setSelectDate] = useState<string>('mm/dd/yyyy');
   const [calenderShow, setCalenderShow] = useState(false);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
-  const [symptonsData, setSymptonsData] = useState<any>([]);
+  const [symptonsData, setSymptonsData] = useState<
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
+  >([]);
   const [diagnosisData, setDiagnosisData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null
   >([]);
@@ -704,7 +708,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   useEffect(() => {
     const didBlurSubscription = props.navigation.addListener('didFocus', (payload) => {
       console.log('didFocus', payload);
-      setSymptonsData(getSysmptonsList());
+      // setSymptonsData(getSysmptonsList());
       setDiagnosisData(getDiagonsisList());
       setDiagnosticPrescription(getDiagnosticPrescriptionDataList());
       setMedicinePrescriptionData(getMedicineList());
@@ -977,43 +981,98 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   const removeSymptonData = (item: any) => {
     removeSysmptonsList(item);
-    setSymptonsData(getSysmptonsList());
+    // setSymptonsData(getSysmptonsList());
   };
   const renderSymptonsView = () => {
     return (
       <View>
-        <CollapseCard heading="Symptoms" collapse={show} onPress={() => setShow(!show)}>
+        <CollapseCard heading="Chief Complaints" collapse={show} onPress={() => setShow(!show)}>
           {symptonsData == null || symptonsData.length == 0 ? (
             <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
           ) : (
-            symptonsData.map((showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms) => {
-              return (
-                <View>
-                  <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                    <SymptonsCard
-                      diseaseName={showdata.symptom}
-                      icon={
-                        <TouchableOpacity onPress={() => removeSymptonData(showdata.symptom)}>
-                          {isDelegateLogin ? null : <GreenRemove />}
-                        </TouchableOpacity>
-                      }
-                      days={`Since : ${showdata.since == null ? 'N/A' : showdata.since}`}
-                      howoften={`How Often : ${
-                        showdata.howOften == null ? 'N/A' : showdata.howOften
-                      }`}
-                      seviarity={`Severity :${
-                        showdata.severity == null ? 'N/A' : showdata.severity
-                      }`}
-                    />
-                  </View>
-                </View>
-              );
-            })
+            symptonsData.map(
+              (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null) => {
+                if (showdata) {
+                  return (
+                    <View>
+                      <View
+                        style={{
+                          marginLeft: 20,
+                          marginRight: 20,
+                          marginBottom: 12,
+                        }}
+                      >
+                        <SymptonsCard
+                          diseaseName={showdata.symptom}
+                          onPressIcon={() =>
+                            setSymptonsData([
+                              ...symptonsData.filter((i) => i && i.symptom !== showdata.symptom),
+                            ])
+                          }
+                          onPressEditIcon={() =>
+                            props.overlayDisplay(
+                              <AddSymptomPopUp
+                                data={showdata}
+                                onDone={(data) => {
+                                  if (
+                                    (symptonsData || []).findIndex(
+                                      (i) => i && i.symptom === data.symptom
+                                    ) < 0
+                                  ) {
+                                    setSymptonsData([
+                                      ...(symptonsData || []).filter(
+                                        (i) => i && i.symptom !== showdata.symptom
+                                      ),
+                                      data,
+                                    ]);
+                                  } else {
+                                    Alert.alert('', 'Already Exists');
+                                  }
+                                }}
+                                onClose={() => props.overlayDisplay(null)}
+                              />
+                            )
+                          }
+                          icon={<GreenRemove style={{ height: 20, width: 20 }} />}
+                          days={showdata.since ? `Since : ${showdata.since}` : undefined}
+                          howoften={
+                            showdata.howOften ? `How Often : ${showdata.howOften}` : undefined
+                          }
+                          seviarity={
+                            showdata.severity ? `Severity :${showdata.severity}` : undefined
+                          }
+                          editIcon={<Edit style={{ height: 20, width: 20 }} />}
+                          details={showdata.details ? `Details :${showdata.details}` : undefined}
+                        />
+                      </View>
+                    </View>
+                  );
+                }
+              }
+            )
           )}
           {isDelegateLogin ? null : (
             <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
               <AddPlus />
-              <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddSymptons)}>
+              <TouchableOpacity
+                onPress={() =>
+                  props.overlayDisplay(
+                    <AddSymptomPopUp
+                      onDone={(data) => {
+                        console.log(data, 'newdata');
+                        if (
+                          (symptonsData || []).findIndex((i) => i && i.symptom === data.symptom) < 0
+                        ) {
+                          setSymptonsData([...(symptonsData || []), data]);
+                        } else {
+                          Alert.alert('', 'Already Exists');
+                        }
+                      }}
+                      onClose={() => props.overlayDisplay(null)}
+                    />
+                  )
+                }
+              >
                 <Text style={styles.addDoctorText}>ADD SYMPTOM</Text>
               </TouchableOpacity>
             </View>
@@ -1069,7 +1128,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderDiagonisticPrescription = () => {
     return (
       <CollapseCard
-        heading="Diagnoistic Prescription"
+        heading="Test Prescription"
         collapse={diagonisticPrescription}
         onPress={() => setdiagonisticPrescription(!diagonisticPrescription)}
       >
@@ -2136,7 +2195,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderFollowUpView()}
 
           <View style={{ zIndex: -1 }}>
-            {renderOtherInstructionsView()}
+            {/* {renderOtherInstructionsView()} */}
             <View style={styles.underlineend} />
 
             <View style={styles.inputBorderView}>
