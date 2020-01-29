@@ -99,27 +99,30 @@ export const GET_DOCTOR_DETAILS = gql`
 export const GET_DOCTOR_APPOINTMENTS = gql`
   query GetDoctorAppointments($startDate: Date, $endDate: Date) {
     getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
-      newPatientsList
       appointmentsHistory {
-        appointmentType
-        doctorId
-        status
-        hospitalId
         id
         patientId
         appointmentDateTime
+        status
+        doctorId
         bookingDate
+        appointmentType
+        appointmentState
+        caseSheet {
+          symptoms {
+            symptom
+          }
+          status
+          doctorType
+        }
         patientInfo {
+          id
           firstName
           lastName
-          id
-          uhid
-          emailAddress
-          gender
-          dateOfBirth
-          relation
+          photoUrl
         }
       }
+      newPatientsList
     }
   }
 `;

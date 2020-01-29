@@ -1869,7 +1869,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <View style={{ marginHorizontal: 16 }}>
                 <Text style={styles.notes}>Personal Notes</Text>
                 <TextInputComponent
-                  placeholder={string.LocalStrings.placeholder_message}
+                  placeholder={'What you enter here won’t be shown\nto the patient..'}
                   inputStyle={styles.inputView}
                   multiline={true}
                   value={value}
