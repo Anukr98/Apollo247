@@ -174,6 +174,17 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     }
   };
 
+  const navigateWithData = (res: any) => {
+    props.navigation.goBack();
+    props.navigation.state.params &&
+      props.navigation.state.params.onAddBlockCalendar &&
+      res.data &&
+      res.data.addBlockedCalendarItem &&
+      props.navigation.state.params.onAddBlockCalendar(
+        res.data.addBlockedCalendarItem.blockedCalendar
+      );
+  };
+
   const SaveBlockCalendar = () => {
     setshowSpinner(true);
     const date = startDate ? startDate.toISOString() : '';
@@ -209,7 +220,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         .then((res) => {
           setshowSpinner(false);
           console.log(res, 'res ADD_BLOCKED_CALENDAR_ITEM');
-          props.navigation.goBack();
+          navigateWithData(res);
         })
         .catch((err) => {
           setshowSpinner(false);
@@ -227,12 +238,19 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
       } else {
         let consults: any[] = [];
         if (daysArray[0].key === selectedDay && startDate) {
-          const todayDate = FormatDateToString(startDate);
+          const date = FormatDateToString(startDate);
 
           consults = customTime.map((item) => {
+            console.log(
+              date,
+              moment(item.start).format('HH:mm:ss'),
+              moment(item.end).format('HH:mm:ss'),
+              'moment(item.start)'
+            );
+
             return {
-              start: ConvertDateTimeToUtc(todayDate, moment(item.start).format('HH:mm:ss')),
-              end: ConvertDateTimeToUtc(todayDate, moment(item.end).format('HH:mm:ss')),
+              start: ConvertDateTimeToUtc(date, moment(item.start).format('HH:mm:ss')),
+              end: ConvertDateTimeToUtc(date, moment(item.end).format('HH:mm:ss')),
             };
           });
         } else if (daysArray[1].key === selectedDay && startDate && endDate) {
@@ -249,6 +267,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                 ),
               };
             });
+
             consults.concat(array);
           });
         }
@@ -268,7 +287,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         .then((res) => {
           setshowSpinner(false);
           console.log(res, 'res BLOCK_MULTIPLE_CALENDAR_ITEMS');
-          props.navigation.goBack();
+          navigateWithData(res);
         })
         .catch((err) => {
           setshowSpinner(false);

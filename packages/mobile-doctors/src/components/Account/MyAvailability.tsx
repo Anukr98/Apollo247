@@ -22,6 +22,7 @@ import {
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import moment from 'moment';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   container: {
@@ -90,22 +91,24 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   const [blockedCalendar, setblockedCalendar] = useState<
     GetBlockedCalendar_getBlockedCalendar_blockedCalendar[]
   >([]);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
   const client = useApolloClient();
 
   useEffect(() => {
-    fetchBlockedCalendar;
+    fetchBlockedCalendar();
   }, []);
 
-  const fetchBlockedCalendar = (id: string) => {
+  const fetchBlockedCalendar = () => {
     client
       .query<GetBlockedCalendar, GetBlockedCalendarVariables>({
         query: GET_BLOCKED_CALENDAR,
         variables: {
           doctorId: profileData.id,
         },
+        fetchPolicy: 'no-cache',
       })
 
       .then(({ data }) => {
@@ -123,7 +126,12 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
       });
   };
 
-  const onClickUnblock = (id: string) => {
+  const onAddBlockCalendar = (data) => {
+    setblockedCalendar(data);
+  };
+
+  const onClickUnblock = (id: number, index: number) => {
+    setshowSpinner(true);
     client
       .mutate({
         mutation: REMOVE_BLOCKED_CALENDAR_ITEM,
@@ -137,9 +145,15 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
       })
       .then((res) => {
         console.log(res, 'res REMOVE_BLOCKED_CALENDAR_ITEM');
+        setshowSpinner(false);
+        const data = JSON.parse(JSON.stringify(blockedCalendar));
+        data.splice(index, 1);
+        setblockedCalendar(data);
+        index;
       })
       .catch((err) => {
         console.log(err, 'err REMOVE_BLOCKED_CALENDAR_ITEM');
+        setshowSpinner(false);
       });
   };
 
@@ -175,155 +189,167 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View>{showHeaderView()}</View>
-      <ScrollView bounces={false}>
-        {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <View>{showHeaderView()}</View>
+        <ScrollView bounces={false}>
+          {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (
+            <View>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansSemiBold(16),
+                  color: '#02475b',
+                  marginBottom: 16,
+                  marginLeft: 20,
+                  marginTop: 20,
+                }}
+              >
+                Consultation Type
+              </Text>
+              <View
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  marginLeft: 20,
+                  marginRight: 20,
+                  marginBottom: 32,
+                  shadowColor: '#000000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 5,
+                  },
+                  shadowRadius: 10,
+                  shadowOpacity: 0.2,
+                  elevation: 5,
+                }}
+              >
+                <Text style={styles.consultDescText}>
+                  What type of consults will you be available for?
+                </Text>
+                <Text
+                  style={{
+                    marginLeft: 20,
+                    marginTop: 8,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    color: '#02475b',
+                    marginBottom: 20,
+                  }}
+                >
+                  Physical, Online
+                </Text>
+              </View>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansSemiBold(16),
+                  color: '#02475b',
+                  marginLeft: 20,
+                }}
+              >
+                Consultation Hours
+              </Text>
+              <View style={{ marginLeft: 20, marginRight: 20 }}>
+                {profileData!.consultHours!.map((i, idx) => (
+                  <ConsultationHoursCard
+                    days={i!.weekDay}
+                    timing={fromatConsultationHours(i!.startTime, i!.endTime)}
+                    isAvailableForOnlineConsultation={i!.consultMode.toLocaleLowerCase()}
+                    //isAvailableForPhysicalConsultation={i!.consultType}
+                    key={idx}
+                    type="fixed"
+                    containerStyle={{
+                      shadowColor: '#000000',
+                      shadowOffset: {
+                        width: 0,
+                        height: 5,
+                      },
+                      shadowRadius: 10,
+                      shadowOpacity: 0.2,
+                      elevation: 5,
+                    }}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : null}
+
           <View>
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansSemiBold(16),
                 color: '#02475b',
-                marginBottom: 16,
                 marginLeft: 20,
-                marginTop: 20,
+                marginTop: 32,
               }}
             >
-              Consultation Type
+              Blocked Calendar
             </Text>
-            <View
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                marginLeft: 20,
-                marginRight: 20,
-                marginBottom: 32,
-                shadowColor: '#000000',
-                shadowOffset: {
-                  width: 0,
-                  height: 5,
-                },
-                shadowRadius: 10,
-                shadowOpacity: 0.2,
-                elevation: 5,
-              }}
-            >
-              <Text style={styles.consultDescText}>
-                What type of consults will you be available for?
-              </Text>
-              <Text
-                style={{
-                  marginLeft: 20,
-                  marginTop: 8,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  color: '#02475b',
-                  marginBottom: 20,
-                }}
-              >
-                Physical, Online
-              </Text>
-            </View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansSemiBold(16),
-                color: '#02475b',
-                marginLeft: 20,
-              }}
-            >
-              Consultation Hours
-            </Text>
-            <View style={{ marginLeft: 20, marginRight: 20 }}>
-              {profileData!.consultHours!.map((i, idx) => (
-                <ConsultationHoursCard
-                  days={i!.weekDay}
-                  timing={fromatConsultationHours(i!.startTime, i!.endTime)}
-                  isAvailableForOnlineConsultation={i!.consultMode.toLocaleLowerCase()}
-                  //isAvailableForPhysicalConsultation={i!.consultType}
-                  key={idx}
-                  type="fixed"
-                  containerStyle={{
-                    shadowColor: '#000000',
-                    shadowOffset: {
-                      width: 0,
-                      height: 5,
-                    },
-                    shadowRadius: 10,
-                    shadowOpacity: 0.2,
-                    elevation: 5,
-                  }}
-                />
-              ))}
-            </View>
-          </View>
-        ) : null}
-
-        <View>
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansSemiBold(16),
-              color: '#02475b',
-              marginLeft: 20,
-              marginTop: 32,
-            }}
-          >
-            Blocked Calendar
-          </Text>
-          {blockedCalendar.length ? (
-            <View style={{ marginLeft: 20, marginRight: 20 }}>
-              {blockedCalendar.map((item, i) => (
-                <View style={styles.cardContainerStyle}>
-                  <Text style={styles.daysText}>
-                    {moment(item.start)
-                      .local()
-                      .format('ddd, DD/MM/YYYY')}
-                  </Text>
-                  <View style={styles.rowSpaceBetween}>
-                    <Text style={styles.consultationTiming}>
+            {blockedCalendar.length ? (
+              <View style={{ marginLeft: 20, marginRight: 20 }}>
+                {blockedCalendar.map((item, index) => (
+                  <View style={styles.cardContainerStyle}>
+                    <Text style={styles.daysText}>
                       {moment(item.start)
                         .local()
-                        .format('h:mm A')}{' '}
-                      -{' '}
-                      {moment(item.end)
-                        .local()
-                        .format('h:mm A')}
+                        .format('ddd, DD/MM/YYYY')}
                     </Text>
+                    <View style={styles.rowSpaceBetween}>
+                      <Text style={styles.consultationTiming}>
+                        {moment(item.start)
+                          .local()
+                          .format('h:mm A')}{' '}
+                        -{' '}
+                        {moment(item.end)
+                          .local()
+                          .format('h:mm A')}
+                      </Text>
 
-                    <Text style={styles.fixedSlotText} onPress={() => onClickUnblock(item.id)}>
-                      UNBLOCK
-                    </Text>
+                      <Text
+                        style={styles.fixedSlotText}
+                        onPress={() => onClickUnblock(item.id, index)}
+                      >
+                        UNBLOCK
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
+            ) : null}
+            <AddIconLabel
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.BlockHomePage, {
+                  onAddBlockCalendar: onAddBlockCalendar,
+                });
+              }}
+              label={'ADD BLOCKED HOURS'}
+              style={{ marginTop: 32 }}
+            />
+          </View>
+
+          <View style={{ margin: 20, flexDirection: 'row', marginBottom: 10 }}>
+            <View style={{ marginTop: 4 }}>
+              <RoundChatIcon />
             </View>
-          ) : null}
-          <AddIconLabel
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.BlockHomePage);
-            }}
-            label={'ADD BLOCKED HOURS'}
-            style={{ marginTop: 32 }}
-          />
-        </View>
 
-        <View style={{ margin: 20, flexDirection: 'row', marginBottom: 10 }}>
-          <View style={{ marginTop: 4 }}>
-            <RoundChatIcon />
-          </View>
-
-          <View style={{ marginLeft: 14 }}>
-            <Text>
-              <Text style={styles.descriptionview}>Call</Text>
-              <Text
-                style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 }}
-              >
-                {' '}
-                1800 - 3455 - 3455{' '}
+            <View style={{ marginLeft: 14 }}>
+              <Text>
+                <Text style={styles.descriptionview}>Call</Text>
+                <Text
+                  style={{
+                    color: '#fc9916',
+                    ...theme.fonts.IBMPlexSansSemiBold(16),
+                    lineHeight: 22,
+                  }}
+                >
+                  {' '}
+                  1800 - 3455 - 3455{' '}
+                </Text>
+                <Text style={styles.descriptionview}>to make any changes</Text>
               </Text>
-              <Text style={styles.descriptionview}>to make any changes</Text>
-            </Text>
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+      {showSpinner && <Spinner />}
+    </View>
   );
 };
