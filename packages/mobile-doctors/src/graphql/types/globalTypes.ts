@@ -6,6 +6,15 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  AWAITING_RESCHEDULE = "AWAITING_RESCHEDULE",
+  AWAITING_TRANSFER = "AWAITING_TRANSFER",
+  NEW = "NEW",
+  RESCHEDULE = "RESCHEDULE",
+  TRANSFER = "TRANSFER",
+  TRANSFERRED = "TRANSFERRED",
+}
+
 export enum APPOINTMENT_TYPE {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
