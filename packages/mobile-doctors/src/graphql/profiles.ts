@@ -488,6 +488,7 @@ export const GET_CASESHEET = gql`
         }
         medicinePrescription {
           id
+          externalId
           medicineName
           medicineDosage
           medicineToBeTaken
