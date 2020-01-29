@@ -1,5 +1,7 @@
 import { format, getTime } from 'date-fns';
 import path from 'path';
+import util from 'util';
+
 import PDFDocument from 'pdfkit';
 import {
   RxPdfData,
@@ -20,6 +22,10 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { Connection } from 'typeorm';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { Patient } from 'profiles-service/entities';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -704,10 +710,66 @@ export const uploadRxPdf = async (
   await delay(350);
 
   const blob = await client.uploadFile({ name, filePath });
+  const blobUrl = client.getBlobUrl(blob.name);
+  console.log('blobUrl===', blobUrl);
+  const base64pdf = await convertPdfUrlToBase64(blobUrl);
   fs.unlink(filePath, (error) => console.log(error));
-  return blob;
+  const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
+  return uploadData;
+
+  //previous code
+  // const blob = await client.uploadFile({ name, filePath });
+  // return blob;
 
   function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+};
+
+const convertPdfUrlToBase64 = async (pdfUrl: string) => {
+  const pdf2base64 = require('pdf-to-base64');
+  util.promisify(pdf2base64);
+  try {
+    const base64pdf = await pdf2base64(pdfUrl);
+    console.log('pdfData:', base64pdf);
+    return base64pdf;
+  } catch (e) {
+    throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+  }
+};
+
+export const uploadPdfBase64ToPrism = async (
+  uploadDocInput: UploadDocumentInput,
+  patientDetails: Patient,
+  patientsDb: Connection
+) => {
+  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  const mobileNumber = patientDetails.mobileNumber;
+
+  //get authtoken for the logged in user mobile number
+  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+
+  if (!prismAuthToken) return { status: false, fileId: '' };
+
+  //get users list for the mobile number
+  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+
+  //check if current user uhid matches with response uhids
+  const uhid = await patientsRepo.validateAndGetUHID(patientDetails.id, prismUserList);
+
+  if (!uhid) {
+    return { status: false, fileId: '' };
+  }
+
+  //get authtoken for the logged in user mobile number
+  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
+
+  if (!prismUHIDAuthToken) return { status: false, fileId: '' };
+
+  //just call get prism user details with the corresponding uhid
+  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
+
+  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);
+
+  return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };
