@@ -333,112 +333,144 @@ const SaveDiagnosticOrder: Resolver<
       patientGender = patientDetails.gender;
     }
 
+    let patientId = '0';
+    if (patientDetails.uhid != '' && patientDetails.uhid != null) {
+      patientId = patientDetails.uhid;
+    } else {
+      patientId = await patientRepo.createNewUhid(patientDetails.id);
+    }
+
     const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';
+    //start of itdose api
+    if (visitType != 'Home Collection') {
+      const preBookingInput = [
+        {
+          UserName: process.env.DIAGNOSTICS_PREBOOKING_API_USERNAME,
+          Password: process.env.DIAGNOSTICS_PREBOOKING_API_PASSWORD,
+          InterfaceClient: process.env.DIAGNOSTICS_PREBOOKING_API_INTERFACE_CLIENT,
+          Patient_ID: patientId,
+          Title: patientTitle,
+          PName: patientDetails.firstName + '' + patientDetails.lastName,
+          House_No: '',
+          LocalityID: '0',
+          Locality: '',
+          CityID: '',
+          City: '',
+          StateID: '',
+          State: '',
+          PinCode: addressZipcode,
+          Mobile: patientDetails.mobileNumber.substr(3),
+          Email: patientDetails.emailAddress == null ? '' : patientDetails.emailAddress,
+          DOB: patientDob,
+          Gender: patientGender,
+          VisitType: visitType,
+          PatientIDProof: '',
+          PatientIDProofNo: '',
+          Remarks: '',
+          PaymentMode: 'Cash',
+          PaymentModeID: '1',
+          SampleCollectionDateTime: format(diagnosticDate, 'dd-MMM-yyyy hh:mm'),
+          LabReferenceNo: diagnosticOrderInput.centerCode,
+          tests: orderLineItems,
+          Attachments: [],
+          GrossAmt: '0',
+          DiscAmt: '0',
+          NetAmt: '0',
+          PaymentRefNo: '',
+          PayUTransactionID: '',
+          PayUPaymentId: '',
+          CouponCode: '',
+          IsFirstCustomer: '',
+          id: 8152197921,
+          mode: 'NB',
+          status: 'success',
+          unmappedstatus: 'captured',
+          key: 'JnQwXs',
+          txnid: '',
+          productinfo: 'Apollo',
+          hash:
+            'e02266c5a83cc2c2e5b5166e43d275e326f7596f2be556b12001874f965e03ff35822f0e3677986f3ffab080cf2cf8fbd630375a3f29e200620dab0362baeb3d',
+          field8: 'Success',
+          field9: 'Transaction Completed Successfully',
+          payment_source: 'payu',
+          PG_TYPE: 'AIRNB',
+          bank_ref_no: '',
+          ibibo_code: 'AIRNB',
+          error_code: 'E000',
+          Error_Message: 'No Error',
+          is_seamless: 2,
+          surl: 'https://payu.herokuapp.com/success',
+          furl: 'https://payu.herokuapp.com/failure',
+          PGAggregatorName: 'PayU',
+          DoctorID: '',
+          OtherDoctor: '',
+        },
+      ];
 
-    const preBookingInputParameters = [
-      {
-        UserName: process.env.DIAGNOSTICS_PREBOOKING_API_USERNAME,
-        Password: process.env.DIAGNOSTICS_PREBOOKING_API_PASSWORD,
-        InterfaceClient: process.env.DIAGNOSTICS_PREBOOKING_API_INTERFACE_CLIENT,
-        Patient_ID: patientDetails.id.toString(),
-        Title: patientTitle,
-        PName: patientDetails.firstName + '' + patientDetails.lastName,
-        House_No: '',
-        LocalityID: '0',
-        Locality: '',
-        CityID: '',
-        City: '',
-        StateID: '',
-        State: '',
-        PinCode: addressZipcode,
-        Mobile: patientDetails.mobileNumber.substr(3),
-        Email: patientDetails.emailAddress == null ? '' : patientDetails.emailAddress,
-        DOB: patientDob,
-        Gender: patientGender,
-        VisitType: visitType,
-        PatientIDProof: '',
-        PatientIDProofNo: '',
-        Remarks: '',
-        PaymentMode: 'Cash',
-        PaymentModeID: '1',
-        SampleCollectionDateTime: format(diagnosticDate, 'dd-MMM-yyyy hh:mm'),
-        LabReferenceNo: diagnosticOrderInput.centerCode,
-        tests: orderLineItems,
-        Attachments: [],
-        GrossAmt: '0',
-        DiscAmt: '0',
-        NetAmt: '0',
-        PaymentRefNo: '',
-        PayUTransactionID: '',
-        PayUPaymentId: '',
-        CouponCode: '',
-        IsFirstCustomer: '',
-        id: 8152197921,
-        mode: 'NB',
-        status: 'success',
-        unmappedstatus: 'captured',
-        key: 'JnQwXs',
-        txnid: '',
-        productinfo: 'Apollo',
-        hash:
-          'e02266c5a83cc2c2e5b5166e43d275e326f7596f2be556b12001874f965e03ff35822f0e3677986f3ffab080cf2cf8fbd630375a3f29e200620dab0362baeb3d',
-        field8: 'Success',
-        field9: 'Transaction Completed Successfully',
-        payment_source: 'payu',
-        PG_TYPE: 'AIRNB',
-        bank_ref_no: '',
-        ibibo_code: 'AIRNB',
-        error_code: 'E000',
-        Error_Message: 'No Error',
-        is_seamless: 2,
-        surl: 'https://payu.herokuapp.com/success',
-        furl: 'https://payu.herokuapp.com/failure',
-        PGAggregatorName: 'PayU',
-        DoctorID: '',
-        OtherDoctor: '',
-      },
-    ];
+      /*const preBookingInput =
+        process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+          ? [preBookingInputParameters]
+          : preBookingInputParameters;*/
 
-    const preBookingInput =
-      process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
-        ? [preBookingInputParameters]
-        : preBookingInputParameters;
+      const preBookingUrl = process.env.DIAGNOSTIC_PREBOOKING_URL
+        ? process.env.DIAGNOSTIC_PREBOOKING_URL
+        : '';
 
-    const preBookingUrl = process.env.DIAGNOSTIC_PREBOOKING_URL
-      ? process.env.DIAGNOSTIC_PREBOOKING_URL
-      : '';
+      log(
+        'profileServiceLogger',
+        `EXTERNAL_API_CALL_DIAGNOSTICS: ${preBookingUrl}`,
+        'SaveDiagnosticOrder()->preBookingApi()->API_CALL_STARTING',
+        JSON.stringify(preBookingInput),
+        ''
+      );
+      console.log(preBookingInput, preBookingUrl, 'preBookingInput');
+      const preBookingResp = await fetch(preBookingUrl, {
+        method: 'POST',
+        body: JSON.stringify(preBookingInput),
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    log(
-      'profileServiceLogger',
-      `EXTERNAL_API_CALL_DIAGNOSTICS: ${preBookingUrl}`,
-      'SaveDiagnosticOrder()->preBookingApi()->API_CALL_STARTING',
-      JSON.stringify(preBookingInput),
-      ''
-    );
-    console.log(preBookingInput, preBookingUrl, 'preBookingInput');
-    const preBookingResp = await fetch(preBookingUrl, {
-      method: 'POST',
-      body: JSON.stringify(preBookingInput),
-      headers: { 'Content-Type': 'application/json' },
-    });
+      //console.log(preBookingResp, 'pre booking resp');
+      const textRes = await preBookingResp.text();
+      log(
+        'profileServiceLogger',
+        'API_CALL_RESPONSE',
+        'SaveDiagnosticOrder()->preBookingApi()->API_CALL_RESPONSE',
+        textRes,
+        ''
+      );
 
-    //console.log(preBookingResp, 'pre booking resp');
-    const textRes = await preBookingResp.text();
-    log(
-      'profileServiceLogger',
-      'API_CALL_RESPONSE',
-      'SaveDiagnosticOrder()->preBookingApi()->API_CALL_RESPONSE',
-      textRes,
-      ''
-    );
+      const preBookResp: DiagnosticPreBookingResult = JSON.parse(textRes);
+      console.log(preBookResp, preBookResp.PreBookingID, 'text response');
+      await diagnosticOrdersRepo.updateDiagnosticOrder(
+        saveOrder.id,
+        preBookResp.PreBookingID,
+        '',
+        DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED
+      );
+      const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+        diagnosticOrders: saveOrder,
+        orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
+        statusDate: new Date(),
+        hideStatus: false,
+      };
+      await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
 
-    const preBookResp: DiagnosticPreBookingResult = JSON.parse(textRes);
-    console.log(preBookResp, preBookResp.PreBookingID, 'text response');
-    const hubDetails = await diagnosticRepo.getHubDetails(
-      diagnosticOrderInput.diagnosticBranchCode
-    );
+      //send order out for delivery notification
+      sendDiagnosticOrderStatusNotification(
+        NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+        saveOrder,
+        profilesDb
+      );
+    }
+    //end of itdose api
+
     //console.log(diagnosticTimings, 'timings');
+    //start of fareye api
     if (visitType == 'Home Collection') {
+      const hubDetails = await diagnosticRepo.getHubDetails(
+        diagnosticOrderInput.diagnosticBranchCode
+      );
       patientDob = '1 Jan 2000';
       if (patientDetails.dateOfBirth != null) {
         patientDob = format(patientDetails.dateOfBirth, 'dd MMM yyyy');
@@ -583,7 +615,7 @@ const SaveDiagnosticOrder: Resolver<
       } else {
         await diagnosticOrdersRepo.updateDiagnosticOrder(
           saveOrder.id,
-          preBookResp.PreBookingID,
+          '',
           addProceResp.successList[0],
           DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
         );
@@ -602,28 +634,8 @@ const SaveDiagnosticOrder: Resolver<
           profilesDb
         );
       }
-    } else {
-      await diagnosticOrdersRepo.updateDiagnosticOrder(
-        saveOrder.id,
-        preBookResp.PreBookingID,
-        '',
-        DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
-      );
-      const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
-        diagnosticOrders: saveOrder,
-        orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-        statusDate: new Date(),
-        hideStatus: false,
-      };
-      await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
-
-      //send order out for delivery notification
-      sendDiagnosticOrderStatusNotification(
-        NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
-        saveOrder,
-        profilesDb
-      );
     }
+    //end of fareye api
   }
   return {
     errorCode,

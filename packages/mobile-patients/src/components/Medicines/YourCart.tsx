@@ -20,7 +20,10 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
@@ -171,9 +174,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   ).long_name;
                   !pinCode && fetchStorePickup(_pincode || '');
                 }
-              } catch {}
+              } catch (e) {
+                CommonBugFender('YourCart_getPlaceInfoByLatLng_try', e);
+              }
             })
             .catch((error) => {
+              CommonBugFender('YourCart_getPlaceInfoByLatLng', error);
               console.log(error, 'geocode error');
             });
         },
@@ -209,6 +215,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }
           })
           .catch((e) => {
+            CommonBugFender('YourCart_pinCodeServiceabilityApi', e);
             aphConsole.log({ e });
             setCheckingServicability(false);
             handleGraphQlError(e);
@@ -286,11 +293,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 }
               }
             } catch (error) {
+              CommonBugFender('YourCart_getDeliveryTime_try', error);
               console.log(error);
             }
             setshowDeliverySpinner(false);
           })
           .catch((err) => {
+            CommonBugFender('YourCart_getDeliveryTime', err);
             if (!Axios.isCancel(err)) {
               setdeliveryTime('');
               showAphAlert &&
@@ -429,7 +438,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 onUpdateCartItem(medicine, unit);
               }}
               isCardExpanded={true}
-              isInStock={true}
+              isInStock={medicine.isInStock}
+              showRemoveWhenOutOfStock={!medicine.isInStock}
               isPrescriptionRequired={medicine.prescriptionRequired}
               subscriptionStatus={'unsubscribed'}
               packOfCount={parseInt(medicine.mou || '0')}
@@ -464,6 +474,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('YourCart_checkServicability', e);
         aphConsole.log({ e });
         setCheckingServicability(false);
         handleGraphQlError(e);
@@ -566,6 +577,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             setStoreId && setStoreId('');
           })
           .catch((e) => {
+            CommonBugFender('YourCart_fetchStorePickup', e);
             setStorePickUpLoading(false);
           });
       } else {
@@ -847,6 +859,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const disableProceedToPay = !(
     cartItems.length > 0 &&
+    !showDeliverySpinner &&
+    !cartItems.find((item) => !item.isInStock) &&
     !!(deliveryAddressId || storeId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
@@ -905,6 +919,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           setisPhysicalUploadComplete(true);
         })
         .catch((e) => {
+          CommonBugFender('YourCart_physicalPrescriptionUpload', e);
           aphConsole.log({ e });
           setLoading!(false);
           showAphAlert!({

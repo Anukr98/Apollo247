@@ -561,7 +561,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 )}
               />
             )}
-            {lengthOfSuggestions === 0 && otherDiagnostic.trim().length > 2 && (
+            { otherDiagnostic.trim().length > 2 && (
               <AphButton
                 className={classes.darkGreenaddBtn}
                 variant="contained"

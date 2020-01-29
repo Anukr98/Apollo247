@@ -1,7 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
@@ -303,6 +306,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           console.log(data, 'saveSearch result');
         })
         .catch((error) => {
+          CommonBugFender('DoctorCard_navigateToDetails', error);
           console.log('Error occured', { error });
         });
     }

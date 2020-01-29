@@ -34,6 +34,7 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
                         T2DiabetesAndHypertensionProgram,
                         consultSource)
             }else{
+                System.out.println("In_UHID_Production......" + UHID + " "+userName+ " "+consultSource);
                 System.out.println("production......" + buildSpecify);
                 VitaInit.setupApp(reactApplicationContext,
                         VitaEnvironment.PRODUCTION,/* production */

@@ -35,6 +35,7 @@ import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   containerStyles: {
@@ -118,6 +119,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
         props.onComplete && props.onComplete();
       })
       .catch((e) => {
+        CommonBugFender('FeedbackPopup', e);
         aphConsole.log({ e });
         handleGraphQlError(e);
       })

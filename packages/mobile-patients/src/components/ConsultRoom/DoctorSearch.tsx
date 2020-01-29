@@ -52,7 +52,10 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 
 const { width } = Dimensions.get('window');
@@ -240,9 +243,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               setshowSpinner(false);
             }
             setisSearching(false);
-          } catch {}
+          } catch (e) {
+            CommonBugFender('DoctorSearch_fetchSearchData_try', e);
+          }
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('DoctorSearch_fetchSearchData', e);
           console.log('Error occured while searching Doctor', e);
         });
     }
@@ -269,9 +275,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
             AsyncStorage.setItem('APICalledDate', todayDate);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('DoctorSearch_fetchSpecialities_try', e);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorSearch_fetchSpecialities', e);
         setshowSpinner(false);
         console.log('Error occured', e);
       });
@@ -292,19 +301,22 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             // console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }
-           callSpecialityAPI();
-           !!searchText && fetchSearchData();
-        } catch {}
+          callSpecialityAPI();
+          !!searchText && fetchSearchData();
+        } catch (e) {
+          CommonBugFender('DoctorSearch_fetchPastSearches_try', e);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorSearch_fetchPastSearches', e);
         console.log('Error occured', e);
-         callSpecialityAPI();
-         !!searchText && fetchSearchData();
-      })
-      // .finally(() => {
-      //   callSpecialityAPI();
-      //   !!searchText && fetchSearchData();
-      // });
+        callSpecialityAPI();
+        !!searchText && fetchSearchData();
+      });
+    // .finally(() => {
+    //   callSpecialityAPI();
+    //   !!searchText && fetchSearchData();
+    // });
   };
 
   const todayDate = moment(new Date()).format('YYYY-MM-DD');
@@ -325,14 +337,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   useEffect(() => {
-    getNetStatus().then((status) => {
-      if (status) {
-        fetchPastSearches();
-      } else {
-        setshowSpinner(false);
-        setshowOfflinePopup(true);
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchPastSearches();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorSearch_getNetStatus', e);
+      });
   }, []);
 
   useEffect(() => {

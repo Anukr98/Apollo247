@@ -83,6 +83,7 @@ const useStyles = makeStyles(() => ({
     overflow: 'hidden',
     '& img': {
       maxWidth: '100%',
+      maxHeight: 'calc(100vh - 212px)',
     },
   },
   modalHeader: {

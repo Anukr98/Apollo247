@@ -508,7 +508,7 @@ export const DiagnosticPrescription: React.FC = () => {
           )}
         />
       )}
-      {lengthOfSuggestions === 0 && otherDiagnostic.trim().length > 2 && (
+      { otherDiagnostic.trim().length > 2 && (
         <div className={classes.addNewDiagnostic}>
           <AphButton
             onClick={() => {

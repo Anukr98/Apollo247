@@ -201,7 +201,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
         </View>
       )} */}
       {/* <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 20 }]} /> */}
-      {/* <Text
+      <Text
         style={[
           styles.deliveryText,
           { color: '#01475b', opacity: 0.6, marginHorizontal: 25, marginBottom: 25 },
@@ -209,10 +209,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
       >
         Disclaimer:{' '}
         <Text style={{ fontStyle: 'italic' }}>
-          The prescription has been issued based on your inputs during chat/call with the doctor. In
-          case of emergency please visit a nearby hospital.
+          Price may vary when the actual bill is generated.
         </Text>
-      </Text> */}
+      </Text>
     </View>
   );
 };

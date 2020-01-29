@@ -32,6 +32,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   DeviceHelper,
   CommonLogEvent,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -446,6 +447,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         return true;
       }
     } catch (error) {
+      CommonBugFender('ChatRoom_backDataFunctionality_try', error);
       console.log(error, 'error');
     }
   };
@@ -520,7 +522,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
             setSendAnswers(6);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers0_try', error);
+          }
           break;
         case 'weight':
           data.weight = item.v[0] || 'No Idea';
@@ -533,7 +537,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[1] && sendAnswerMessage(text);
             setSendAnswers(1);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers1_try', error);
+          }
           break;
         case 'drug':
           if (item.v[0] === 'No') {
@@ -547,7 +553,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setMessageText('');
               !isSendAnswers[2] && sendAnswerMessage(text);
               setSendAnswers(2);
-            } catch (error) {}
+            } catch (error) {
+              CommonBugFender('ChatRoom_Answers2_try', error);
+            }
           }
           break;
         case 'drugAllergies':
@@ -561,7 +569,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[2] && sendAnswerMessage(text);
             setSendAnswers(2);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers3_try', error);
+          }
           break;
         case 'dite':
           if (item.v[0] === 'No') {
@@ -575,7 +585,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setMessageText('');
               !isSendAnswers[3] && sendAnswerMessage(text);
               setSendAnswers(3);
-            } catch (error) {}
+            } catch (error) {
+              CommonBugFender('ChatRoom_Answers4_try', error);
+            }
           }
           break;
         case 'dietAllergies':
@@ -589,7 +601,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[3] && sendAnswerMessage(text);
             setSendAnswers(3);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers5_try', error);
+          }
           break;
         case 'temperature':
           data.temperature = item.v[0] || 'No Idea';
@@ -602,7 +616,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[4] && sendAnswerMessage(text);
             setSendAnswers(4);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers6_try', error);
+          }
           break;
         case 'bp':
           data.bp = item.v[0] || item.v[1] || 'No Idea';
@@ -615,7 +631,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[5] && sendAnswerMessage(text);
             setSendAnswers(5);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers7_try', error);
+          }
           break;
         case 'familyHistory':
           data.familyHistory = item.v[0] || 'No';
@@ -630,7 +648,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[6] && sendAnswerMessage(text);
             setSendAnswers(6);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers8_try', error);
+          }
           break;
         case 'lifeStyleSmoke':
           data.lifeStyle = data.lifeStyle
@@ -647,7 +667,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[7] && sendAnswerMessage(text);
             setSendAnswers(7);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers9_try', error);
+          }
           break;
         case 'lifeStyleDrink':
           data.lifeStyle = data.lifeStyle
@@ -664,7 +686,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[8] && sendAnswerMessage(text);
             setSendAnswers(8);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers10_try', error);
+          }
           break;
       }
     });
@@ -687,7 +711,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log(queueData, 'queueData res, adding');
           AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
           console.log('Error occured, adding ', e);
         })
         .finally(() => startJoinTimer(0));
@@ -702,7 +727,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log(queueData, 'queueData res');
           AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_addToConsultQueue', e);
           console.log('Error occured ', e);
         })
         .finally(() => startJoinTimer(0));
@@ -738,7 +764,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then(({ data }: any) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_endCallSessionAppointment', e);
         console.log('Error endCallAppointmentSessionAPI ', e);
       });
   };
@@ -767,6 +794,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(data, 'datacancel');
       })
       .catch((e: any) => {
+        CommonBugFender('ChatRoom_cancelAppointmentApi', e);
         setLoading(false);
         console.log('Error occured while adding Doctor', e);
         const message = e.message ? e.message.split(':')[1].trim() : '';
@@ -804,6 +832,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(resuts, 'READ_EXTERNAL_STORAGE');
       }
     } catch (error) {
+      CommonBugFender('ChatRoom_requestReadSmsPermission_try', error);
       console.log('error', error);
     }
   };
@@ -843,7 +872,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
           settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_updateSessionAPI', e);
           console.log('Error occured while adding Doctor', e);
         });
     }
@@ -1133,6 +1163,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           })
           .catch((error) => {
+            CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
             console.log(error);
           });
       },
@@ -1158,7 +1189,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-      } catch (error) {}
+      } catch (error) {
+        CommonBugFender('ChatRoom_cleanup_try', error);
+      }
     };
   }, []);
 
@@ -1238,6 +1271,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }, 1000);
     } catch (error) {
+      CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
       console.log('error in call abandoment', error);
     }
   };
@@ -1273,9 +1307,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             callAbondmentMethod(appointmentSeniorDoctorStarted);
           }
-        } catch (error) {}
+        } catch (error) {
+          CommonBugFender('ChatRoom_APIForUpdateAppointmentData_try', error);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_APIForUpdateAppointmentData', error);
         abondmentStarted = false;
         console.log('Error APIForUpdateAppointmentData ', e);
       });
@@ -1324,6 +1361,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
       }
     } catch (error) {
+      CommonBugFender('ChatRoom_handlePushNotification_try', error);
       console.log('ioserror:', error);
     }
   };
@@ -1351,9 +1389,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           res.messages.forEach((element, index) => {
             let item = element.entry;
             if (item.prismId) {
-              getPrismUrls(client, patientId, item.prismId).then((data: any) => {
-                item.url = (data && data.urls[0]) || item.url;
-              });
+              getPrismUrls(client, patientId, item.prismId)
+                .then((data: any) => {
+                  item.url = (data && data.urls[0]) || item.url;
+                })
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls', e);
+                });
             }
             newmessage[newmessage.length] = item;
           });
@@ -1395,6 +1437,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             checkAutomatedPatientText();
           }
         } catch (error) {
+          CommonBugFender('ChatRoom_getHistory_try', error);
           setLoading(false);
           console.log('error', error);
         }
@@ -1615,7 +1658,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           startInterval(startingTime);
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('ChatRoom_checkingAppointmentDates_try', error);
+    }
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
@@ -1801,7 +1846,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         NextAvailableSlot(result[0] ? result[0] : result, 'Transfer', false);
       }
     } catch (error) {
-      // console.log('checkForRescheduleMessageerror ', error);
+      CommonBugFender('ChatRoom_checkForRescheduleMessage_try', error);
     }
   };
 
@@ -1850,7 +1895,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         },
         (status, response) => {}
       );
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('ChatRoom_send_try', error);
+    }
   };
 
   let leftComponent = 0;
@@ -2053,7 +2100,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         flatListRef.current! &&
                           flatListRef.current!.scrollToEnd({ animated: true });
                       }, 200);
-                    } catch (error) {}
+                    } catch (error) {
+                      CommonBugFender('ChatRoom_RESCHEDULE_try', error);
+                    }
                   }}
                 />
 
@@ -2077,7 +2126,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       console.log(appointmentTransferInput, 'AcceptApi Input');
 
                       transferAppointmentAPI(rowData, appointmentTransferInput);
-                    } catch (error) {}
+                    } catch (error) {
+                      CommonBugFender('ChatRoom_ACCEPT_try', error);
+                    }
                   }}
                 />
               </StickyBottomComponent>
@@ -2230,11 +2281,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
                       })
                       .catch((err: Error) => {
+                        CommonBugFender('ChatRoom_DOWNLOAD_PRESS', err);
                         console.log('error ', err);
                         setLoading(false);
                         // ...
                       });
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('ChatRoom_DOWNLOAD_PRESS_try', error);
+                  }
                 }}
               />
 
@@ -2258,7 +2312,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         rowData.transferInfo.pdfUrl &&
                         rowData.transferInfo.pdfUrl.split('/').pop(),
                     });
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('ChatRoom_VIEW_try', error);
+                  }
                 }}
               />
             </StickyBottomComponent>
@@ -2644,7 +2700,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
                       transferAppointmentAPI(rowData, appointmentTransferInput);
                     }
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('ChatRoom_ACCEPT2_try', error);
+                  }
                 }}
               />
             </StickyBottomComponent>
@@ -2676,7 +2734,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => {
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_PDF', e);
             setUrl(rowData.url);
           })
           .finally(() => {
@@ -2694,7 +2753,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => {
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_IMAGE', e);
             setUrl(rowData.url);
           })
           .finally(() => {
@@ -2710,20 +2770,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
-            Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
-              console.error('An error occurred', err)
-            );
+            console.log(data, 'finaldata');
+
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(true);
+            // Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
+            // console.error('An error occurred', err)
+            // );
           })
           .catch(() => {
-            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(true);
+            //Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
           })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
           });
       } else {
+        setUrl(rowData.url);
         setLoading(false);
-        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+        setPatientImageshow(true);
+        // Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
       }
     }
   };
@@ -3404,7 +3474,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === acceptedCallMsg ||
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
-      rowData.message === callAbandonment || 
+      rowData.message === callAbandonment ||
       rowData.message === appointmentComplete
     ) {
       return null;
@@ -3695,7 +3765,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
         );
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_transferAppointmentAPI', e);
         setLoading(false);
         setBottompopup(true);
       });
@@ -3757,9 +3828,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
             }, 500);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_checkIfRescheduleAppointment_try', error);
+          }
         })
         .catch((e: any) => {
+          CommonBugFender('ChatRoom_checkIfRescheduleAppointment', e);
           setLoading(false);
           const error = JSON.parse(JSON.stringify(e));
           console.log('checkIfRescheduleerror', error);
@@ -3774,6 +3848,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         });
     } catch (error) {
+      CommonBugFender('ChatRoom_checkIfReschduleApi_try', error);
       console.log('creash in checkIfReschduleApi', error);
     }
   };
@@ -3817,15 +3892,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setNextSlotAvailable(data[0].availableSlot);
             checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
           } catch (error) {
+            CommonBugFender('ChatRoom_getNextAvailableSlots_try', error);
             setNextSlotAvailable('');
           }
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_getNextAvailableSlots', e);
           setLoading(false);
           console.log('Error occured ', e);
         })
         .finally(() => {});
     } catch (error) {
+      CommonBugFender('ChatRoom_NextAvailableSlot_try', error);
       console.log('crash in NextAvailableSlot', error);
     }
   };
@@ -3869,7 +3947,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
         );
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_rescheduleAPI', e);
         console.log(e, 'error');
         setLoading(false);
         setBottompopup(true);
@@ -4845,7 +4924,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         PublishAudioVideo();
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_APICallAgain', e);
         console.log('Error occured while adding Doctor', e);
       });
   };
@@ -4964,7 +5044,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   );
                   KeepAwake.activate();
                 })
-                .catch((e: string) => {
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
                   console.log('Error occured', e);
                 })
                 .finally(() => {
@@ -4975,6 +5056,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           })
           .catch((e) => {
+            CommonBugFender('ChatRoom_uploadDocument', e);
             setLoading(false);
             KeepAwake.activate();
             console.log('upload data error', e);

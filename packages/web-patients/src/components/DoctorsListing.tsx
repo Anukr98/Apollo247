@@ -121,18 +121,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 14,
       },
-      '& >div': {
-        [theme.breakpoints.down('xs')]: {
-          marginLeft: -6,
-          marginRight: -6,
-          width: 'calc(100% + 12px)',
-        },
-        '& >div': {
-          [theme.breakpoints.down('xs')]: {
-            padding: '6px !important',
-          },
-        },
-      },
     },
     sectionHead: {
       [theme.breakpoints.down('xs')]: {
