@@ -45,7 +45,7 @@ app.get('/invokeNoShowReminder', (req, res) => {
         'notifications response is....'
       );
       const fileName =
-        proces.env.PHARMA_LOGS_PATH +
+        process.env.PHARMA_LOGS_PATH +
         new Date().getFullYear() +
         '-' +
         (new Date().getMonth() + 1) +
@@ -90,7 +90,7 @@ app.get('/invokeApptReminder', (req, res) => {
         'notifications response is....'
       );
       const fileName =
-        proces.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
       let content =
         new Date().toString() +
         '\n---------------------------\n' +
@@ -127,7 +127,7 @@ app.get('/invokePhysicalApptReminder', (req, res) => {
         'notifications response is....'
       );
       const fileName =
-        proces.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
       let content =
         new Date().toString() +
         '\n---------------------------\n' +
@@ -1051,7 +1051,7 @@ app.get('/processOrders', (req, res) => {
                 };
                 console.log('pharmaInput==========>', pharmaInput, '<===============pharmaInput');
                 const fileName =
-                  proces.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaLogs.txt';
+                  process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaLogs.txt';
                 let content =
                   new Date().toString() +
                   '\n---------------------------\n' +
@@ -1444,7 +1444,7 @@ app.get('/processOrderById', (req, res) => {
             '<--------------pharmaInput'
           );
           const fileName =
-            proces.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaLogs.txt';
+            process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaLogs.txt';
           let content =
             new Date().toString() +
             '\n---------------------------\n' +
