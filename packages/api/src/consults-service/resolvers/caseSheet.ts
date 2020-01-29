@@ -23,6 +23,8 @@ import {
   PatientLifeStyle,
   PatientMedicalHistory,
   Gender,
+  UPLOAD_FILE_TYPES,
+  PRISM_DOCUMENT_CATEGORY,
 } from 'profiles-service/entities';
 import { DoctorType } from 'doctors-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
@@ -32,6 +34,7 @@ import {
   convertCaseSheetToRxPdfData,
   generateRxPdfDocument,
   uploadRxPdf,
+  uploadPdfBase64ToPrism,
 } from 'consults-service/rxPdfGenerator';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/patientFamilyHistoryRepository';
@@ -416,6 +419,7 @@ export const caseSheetTypeDefs = gql`
   type PatientPrescriptionSentResponse {
     success: Boolean
     blobName: String
+    prismFileId: String
   }
 
   extend type Mutation {
@@ -548,6 +552,8 @@ const getCaseSheet: Resolver<
 
 type PatientPrescriptionSentResponse = {
   success: boolean;
+  blobName: string;
+  prismFileId: string;
 };
 
 type ModifyCaseSheetInput = {
@@ -915,6 +921,8 @@ const updatePatientPrescriptionSentStatus: Resolver<
 
   let caseSheetAttrs: Partial<CaseSheet> = {
     sentToPatient: args.sentToPatient,
+    blobName: '',
+    prismFileId: '',
   };
 
   if (args.sentToPatient) {
@@ -926,30 +934,35 @@ const updatePatientPrescriptionSentStatus: Resolver<
 
     const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
     const pdfDocument = generateRxPdfDocument(rxPdfData);
-    const blob = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
-    if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+    const uploadedPdfData = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
+    if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
 
-    console.log(blob);
+    const uploadPdfInput = {
+      fileType: UPLOAD_FILE_TYPES.PDF,
+      base64FileInput: uploadedPdfData.base64pdf,
+      patientId: '',
+      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+    };
 
-    //////
-    // getCaseSheetData.prismFileId = blob;
-    // getCaseSheetData.blobName = blob.name; //null incase of prism upload
-
-    // const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
-
-    // await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
-    // return getCaseSheetData;
-    ////////
+    const prismUploadResponse = await uploadPdfBase64ToPrism(
+      uploadPdfInput,
+      patientData,
+      patientsDb
+    );
 
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
-      blobName: blob.name,
-      prismFileId: blob,
+      blobName: uploadedPdfData.name,
+      prismFileId: prismUploadResponse.fileId,
     };
   }
 
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
-  return { success: true, blobName: caseSheetAttrs.blobName };
+  return {
+    success: true,
+    blobName: caseSheetAttrs.blobName || '',
+    prismFileId: caseSheetAttrs.prismFileId || '',
+  };
 };
 
 export const caseSheetResolvers = {
