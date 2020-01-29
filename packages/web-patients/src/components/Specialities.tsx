@@ -9,7 +9,7 @@ import _toLower from 'lodash/toLower';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { Mutation } from 'react-apollo';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
@@ -41,18 +41,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 14,
       },
-      '& >div': {
-        [theme.breakpoints.down('xs')]: {
-          marginLeft: -8,
-          marginRight: -8,
-          width: 'calc(100% + 16px)',
-        },
-        '& >div': {
-          [theme.breakpoints.down('xs')]: {
-            padding: '8px !important',
-          },
-        },
-      },
     },
     contentBox: {
       backgroundColor: theme.palette.common.white,
@@ -65,28 +53,30 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       textAlign: 'center',
       cursor: 'pointer',
+      minHeight: 88,
       [theme.breakpoints.down('xs')]: {
-        fontSize: 13,
-        color: '#fc9916',
-        fontWeight: 'bold',
+        fontSize: 14,
         marginTop: 0,
-        height: '100%',
-        padding: '12px 10px',
-        textTransform: 'uppercase',
+        padding: '14px 16px',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        minHeight: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        textAlign: 'left',
       },
     },
     bigAvatar: {
       width: 48,
       height: 48,
-      margin: 'auto',
-      marginTop: -20,
-      marginBottom: 5,
-      padding: 8,
-      backgroundColor: '#dcdfcf',
-      [theme.breakpoints.down('xs')]: {
-        marginTop: 0,
-        marginBottom: 10,
+      marginRight: 15,
+      [theme.breakpoints.up('sm')]: {
+        width: 40,
+        height: 40,
+        margin: 'auto',
+        marginTop: -20,
+        marginBottom: 5,
+        padding: 8,
+        backgroundColor: '#dcdfcf',
       },
       '& img': {
         verticalAlign: 'middle',
@@ -94,6 +84,17 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 'auto',
         maxWidth: '100%',
         maxHeight: '100%',
+      },
+    },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
+    rightArrow: {
+      marginLeft: 'auto',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
       },
     },
   });
@@ -115,7 +116,11 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   if (loading) {
-    return <LinearProgress variant="query" />;
+    return (
+      <div className={classes.circlularProgress}>
+        <CircularProgress />
+      </div>
+    );
   }
 
   if (error) {
@@ -170,7 +175,7 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                     {(mutation) => (
                       <Grid
                         item
-                        xs={6}
+                        xs={12}
                         sm={6}
                         md={4}
                         lg={3}
@@ -187,7 +192,10 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                             src={specialityDetails.image || ''}
                             className={classes.bigAvatar}
                           />
-                          {specialityDetails.name}
+                          <span>{specialityDetails.name}</span>
+                          <span className={classes.rightArrow}>
+                            <img src={require('images/ic_arrow_right.svg')} />
+                          </span>
                         </div>
                       </Grid>
                     )}
@@ -201,6 +209,10 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
     );
     return <></>;
   } else {
-    return <LinearProgress variant="query" />;
+    return (
+      <div className={classes.circlularProgress}>
+        <CircularProgress />
+      </div>
+    );
   }
 };
