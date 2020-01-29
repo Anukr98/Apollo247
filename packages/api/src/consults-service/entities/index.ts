@@ -494,6 +494,10 @@ export enum MEDICINE_UNIT {
   TABLET = 'TABLET',
 }
 
+export enum AUDIT_STATUS {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+}
 export type CaseSheetMedicinePrescription = {
   externalId: string;
   id: string;
@@ -605,6 +609,9 @@ export class CaseSheet extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: AUDIT_STATUS.PENDING })
+  auditStatus: AUDIT_STATUS;
 }
 //case sheet ends
 
