@@ -169,10 +169,51 @@ export const END_APPOINTMENT_SESSION = gql`
 export const MODIFY_CASESHEET = gql`
   mutation modifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
-      consultType
       appointment {
         id
+        appointmentDateTime
+        appointmentDocuments {
+          documentPath
+        }
+        appointmentState
+        appointmentType
+        displayId
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        rescheduleCount
+        isFollowUp
+        followUpParentId
+        isTransfer
+        transferParentId
       }
+      blobName
+      createdDate
+      createdDoctorId
+      createdDoctorProfile {
+        city
+        country
+        doctorType
+        delegateNumber
+        emailAddress
+        experience
+        firstName
+        gender
+        id
+        lastName
+        mobileNumber
+        photoUrl
+        qualification
+        salutation
+        state
+        streetLine1
+        streetLine2
+        streetLine3
+        zip
+      }
+      consultType
       diagnosis {
         name
       }
@@ -180,28 +221,38 @@ export const MODIFY_CASESHEET = gql`
         itemname
       }
       doctorId
+      doctorType
       followUp
       followUpAfterInDays
       followUpDate
+      followUpConsultType
       id
       medicinePrescription {
         medicineConsumptionDurationInDays
         medicineName
         medicineDosage
         medicineTimings
+        medicineUnit
         medicineInstructions
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
+      otherInstructions {
+        instruction
+      }
       patientId
       symptoms {
         symptom
         since
         howOften
         severity
+        details
       }
-      otherInstructions {
-        instruction
-      }
+      status
+      sentToPatient
     }
   }
 `;
@@ -355,9 +406,23 @@ export const GET_CASESHEET = gql`
         lifeStyle {
           description
         }
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
         familyHistory {
           description
           relation
+        }
+        patientAddress {
+          city
         }
         dateOfBirth
         emailAddress
@@ -375,6 +440,52 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
+        blobName
+        doctorId
+        sentToPatient
+        appointment {
+          id
+          appointmentDateTime
+          appointmentDocuments {
+            documentPath
+            prismFileId
+          }
+          status
+          appointmentState
+          displayId
+          rescheduleCount
+          rescheduleCountByDoctor
+        }
+        createdDoctorProfile {
+          doctorType
+          emailAddress
+          firstName
+          lastName
+          salutation
+          registrationNumber
+          signature
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+        }
         medicinePrescription {
           id
           medicineName
@@ -382,7 +493,12 @@ export const GET_CASESHEET = gql`
           medicineToBeTaken
           medicineInstructions
           medicineTimings
+          medicineUnit
           medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
         }
         otherInstructions {
           instruction
@@ -392,6 +508,7 @@ export const GET_CASESHEET = gql`
           since
           howOften
           severity
+          details
         }
         diagnosis {
           name
@@ -402,6 +519,7 @@ export const GET_CASESHEET = gql`
         followUp
         followUpDate
         followUpAfterInDays
+        followUpConsultType
         consultType
         notes
       }
@@ -414,27 +532,9 @@ export const GET_CASESHEET = gql`
         patientId
         parentId
         status
-        doctorInfo {
-          firstName
-          lastName
-          salutation
-        }
         caseSheet {
-          appointment {
-            id
-          }
-          blobName
-          createdDate
-          doctorType
-          createdDoctorProfile {
-            firstName
-            lastName
-            salutation
-          }
           consultType
-          appointment {
-            id
-          }
+          doctorType
           diagnosis {
             name
           }
@@ -446,21 +546,35 @@ export const GET_CASESHEET = gql`
             since
             howOften
             severity
+            details
           }
           followUpDate
           followUpAfterInDays
           followUp
           medicinePrescription {
             medicineName
-            medicineName
             medicineTimings
             medicineInstructions
             medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
           }
           otherInstructions {
             instruction
           }
         }
+      }
+      juniorDoctorNotes
+      juniorDoctorCaseSheet {
+        createdDate
+        createdDoctorProfile {
+          firstName
+          lastName
+          salutation
+        }
+        updatedDate
       }
     }
   }
