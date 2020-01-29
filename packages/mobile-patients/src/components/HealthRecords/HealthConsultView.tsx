@@ -402,60 +402,64 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               medPrescription.map((item: any) => getMedicineDetailsApi(item!.id!))
                             )
                               .then((result) => {
-                                const medicines = result
-                                  .map(({ data: { productdp } }, index) => {
-                                    const medicineDetails = (productdp && productdp[0]) || {};
-                                    if (medicineDetails.is_in_stock == undefined) {
-                                      return null;
-                                    }
+                                const medicineAll = result.map(({ data: { productdp } }, index) => {
+                                  const medicineDetails = (productdp && productdp[0]) || {};
+                                  if (medicineDetails.is_in_stock == undefined) {
+                                    return null;
+                                  }
 
-                                    const _qty =
-                                      medPrescription[index]!.medicineUnit ==
-                                        MEDICINE_UNIT.CAPSULE ||
-                                      medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
-                                        ? ((medPrescription[index]!.medicineTimings || []).length ||
-                                            1) *
-                                          parseInt(
-                                            medPrescription[index]!
-                                              .medicineConsumptionDurationInDays || '1'
-                                          )
-                                        : 1;
-                                    const qty = Math.ceil(
-                                      _qty / parseInt(medicineDetails.mou || '1')
-                                    );
+                                  const _qty =
+                                    medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
+                                    medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
+                                      ? ((medPrescription[index]!.medicineTimings || []).length ||
+                                          1) *
+                                        parseInt(
+                                          medPrescription[index]!
+                                            .medicineConsumptionDurationInDays || '1'
+                                        )
+                                      : 1;
+                                  const qty = Math.ceil(
+                                    _qty / parseInt(medicineDetails.mou || '1')
+                                  );
 
-                                    return {
-                                      id: medicineDetails!.sku!,
-                                      mou: medicineDetails.mou,
-                                      name: medicineDetails!.name,
-                                      price: medicineDetails!.price,
-                                      specialPrice: medicineDetails.special_price
-                                        ? typeof medicineDetails.special_price == 'string'
-                                          ? parseInt(medicineDetails.special_price)
-                                          : medicineDetails.special_price
-                                        : undefined,
-                                      quantity: qty,
-                                      prescriptionRequired:
-                                        medicineDetails.is_prescription_required == '1',
-                                      thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-                                      isInStock: !!medicineDetails.is_in_stock,
-                                    } as ShoppingCartItem;
-                                  })
-                                  .filter((item: any) => (item ? true : false));
+                                  return {
+                                    id: medicineDetails!.sku!,
+                                    mou: medicineDetails.mou,
+                                    name: medicineDetails!.name,
+                                    price: medicineDetails!.price,
+                                    specialPrice: medicineDetails.special_price
+                                      ? typeof medicineDetails.special_price == 'string'
+                                        ? parseInt(medicineDetails.special_price)
+                                        : medicineDetails.special_price
+                                      : undefined,
+                                    quantity: qty,
+                                    prescriptionRequired:
+                                      medicineDetails.is_prescription_required == '1',
+                                    thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                                    isInStock: !!medicineDetails.is_in_stock,
+                                  } as ShoppingCartItem;
+                                });
+                                const medicines = medicineAll.filter((item: any) => !!item);
 
                                 addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
-                                if (medPrescription.length > medicines.length) {
-                                  const outOfStockCount = medPrescription.length - medicines.length;
-                                  const outOfStockItems = medPrescription
-                                    .filter((item) => !medicines.find((val) => val!.id == item.id))
-                                    .map((item, idx) => `${idx + 1}. ${item.medicineName}\n`)
-                                    .join('');
-                                  Alert.alert(
-                                    'Uh oh.. :(',
-                                    `Below ${outOfStockCount} item(s) are out of stock.\n${outOfStockItems}`
-                                  );
-                                  // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                                (item.medicinePrescription || []).length;
+
+                                const totalItems = (item.medicinePrescription || []).length;
+                                // const customItems = medicineAll.length - medicines.length;
+                                const outOfStockItems = medicines.filter((item) => !item!.isInStock)
+                                  .length;
+                                const outOfStockMeds = medicines
+                                  .filter((item) => !item!.isInStock)
+                                  .map((item) => `${item!.name}`)
+                                  .join(', ');
+
+                                if (outOfStockItems > 0) {
+                                  const alertMsg =
+                                    totalItems == outOfStockItems
+                                      ? 'Unfortunately, we do not have any medicines available right now.'
+                                      : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
+                                  Alert.alert('Uh oh.. :(', alertMsg);
                                 }
 
                                 const rxMedicinesCount =
