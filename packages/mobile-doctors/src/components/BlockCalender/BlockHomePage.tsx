@@ -32,6 +32,8 @@ import {
   getDateArray,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 
 const { width } = Dimensions.get('window');
 
@@ -124,6 +126,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     { start: Date | undefined; end: Date | undefined }[]
   >([{ start: undefined, end: undefined }]);
   const [AllDates, setAllDates] = useState<Date[]>([]);
+  const [isValidTime, setisValidTime] = useState<boolean>(true);
 
   const { doctorDetails } = useAuth();
   console.log(doctorDetails, 'doctorDetails');
@@ -131,6 +134,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     doctorDetails && doctorDetails.consultHours && doctorDetails.consultHours.length
       ? doctorDetails.consultHours
       : [];
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const client = useApolloClient();
   const todayDate = new Date().toISOString().split('T')[0];
@@ -139,7 +143,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     return consultHours
       .map((item) => {
         if (item) {
-          const todayDate = FormatDateToString(startDate); //moment(startDate).format('YYYY-MM-DD');
+          const todayDate = FormatDateToString(startDate);
           return (
             item.weekDay === ConvertDateToWeekDay(startDate) && {
               start: ConvertDateTimeToUtc(todayDate, item.startTime),
@@ -150,6 +154,129 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         }
       })
       .filter((i) => i !== false);
+  };
+
+  const showErrorMessage = (error) => {
+    let message = '';
+    try {
+      message = error.message.split(':')[1].trim();
+    } catch (error) {}
+    console.log(message, 'message', error.message);
+
+    if (message == 'BLOCKED_CALENDAR_ITEM_OVERLAPS') {
+      renderErrorPopup(
+        'You are trying to duplicate the blocking of same slot, please recheck and try again!'
+      );
+    } else if (message === 'INVALID_DATES') {
+      renderErrorPopup(`Past time slots cannot be blocked`);
+    } else {
+      renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+    }
+  };
+
+  const SaveBlockCalendar = () => {
+    setshowSpinner(true);
+    const date = startDate ? startDate.toISOString() : '';
+    let variables = {
+      doctorId: doctorDetails ? doctorDetails.id : '',
+    };
+    if (selectedBlockOption === blockOptions[0].key) {
+      let endDateTime;
+      if (selectedDay === daysArray[0].key && startDate) {
+        endDateTime = moment(date.split('T')[0] + '23:59:00', 'YYYY-MM-DDHH:mm:ss').toISOString();
+      } else {
+        endDateTime = endDate
+          ? moment(
+              endDate.toISOString().split('T')[0] + '12:59:00',
+              'YYYY-MM-DDhh:mm:ss'
+            ).toISOString()
+          : //moment(endDate.toISOString().split('T')[0] + ' 23:59', 'YYYY-MM-DD HH:MM').toISOString()
+            '';
+      }
+      variables = {
+        ...variables,
+        start: date,
+        end: endDateTime, // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
+        reason: selectedReason.key,
+      };
+      console.log(variables, 'variables');
+
+      client
+        .mutate({
+          mutation: ADD_BLOCKED_CALENDAR_ITEM,
+          variables: variables,
+        })
+        .then((res) => {
+          setshowSpinner(false);
+          console.log(res, 'res ADD_BLOCKED_CALENDAR_ITEM');
+          props.navigation.goBack();
+        })
+        .catch((err) => {
+          setshowSpinner(false);
+          console.log(err, 'err ADD_BLOCKED_CALENDAR_ITEM');
+          showErrorMessage(err);
+        });
+    } else {
+      console.log(selectedConsultations, consultHours, 'consultHours');
+      if (selectedBlockOption === blockOptions[1].key) {
+        variables = {
+          ...variables,
+          reason: '',
+          itemDetails: selectedConsultations,
+        };
+      } else {
+        let consults: any[] = [];
+        if (daysArray[0].key === selectedDay && startDate) {
+          const todayDate = FormatDateToString(startDate);
+
+          consults = customTime.map((item) => {
+            return {
+              start: ConvertDateTimeToUtc(todayDate, moment(item.start).format('HH:mm:ss')),
+              end: ConvertDateTimeToUtc(todayDate, moment(item.end).format('HH:mm:ss')),
+            };
+          });
+        } else if (daysArray[1].key === selectedDay && startDate && endDate) {
+          AllDates.forEach((date) => {
+            const array = customTime.map((item) => {
+              return {
+                start: ConvertDateTimeToUtc(
+                  FormatDateToString(date),
+                  moment(item.start).format('HH:mm:ss')
+                ),
+                end: ConvertDateTimeToUtc(
+                  FormatDateToString(date),
+                  moment(item.end).format('HH:mm:ss')
+                ),
+              };
+            });
+            consults.concat(array);
+          });
+        }
+        console.log(consults, 'consults customTime', customTime);
+        variables = {
+          ...variables,
+          reason: '',
+          itemDetails: consults,
+        };
+      }
+      console.log(variables, selectedConsultations, 'itemDetails');
+      client
+        .mutate({
+          mutation: BLOCK_MULTIPLE_CALENDAR_ITEMS,
+          variables: { blockCalendarInputs: variables },
+        })
+        .then((res) => {
+          setshowSpinner(false);
+          console.log(res, 'res BLOCK_MULTIPLE_CALENDAR_ITEMS');
+          props.navigation.goBack();
+        })
+        .catch((err) => {
+          setshowSpinner(false);
+          console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
+          // setshowSpinner(false);
+          showErrorMessage(err);
+        });
+    }
   };
 
   console.log(startDayConsults, 'startDayConsults', consultHours);
@@ -244,6 +371,24 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   };
   console.log(customTime, 'customTime');
 
+  const checkIsValid = (customTime: { start: Date | undefined; end: Date | undefined }[]) => {
+    const minutesOfDay = (m: Date) => {
+      return m.getMinutes() + m.getHours() * 60;
+    };
+
+    let isValid: boolean = true;
+
+    customTime.forEach((time) => {
+      if (time && time.start && time.end) {
+        if (minutesOfDay(time.start) > minutesOfDay(time.end) && isValid) {
+          isValid = false;
+        }
+      }
+    });
+
+    setisValidTime(isValid);
+  };
+
   const renderBlockOptions = () => {
     return (
       <View>
@@ -289,27 +434,31 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                   AllDates.length &&
                   startDate &&
                   endDate &&
-                  AllDates.map((date) => (
-                    <View>
-                      <View
-                        style={{
-                          borderBottomColor: 'rgba(0,0,0,0.2)',
-                          borderBottomWidth: 1,
-                          paddingBottom: 7,
-                          marginBottom: 12,
-                        }}
-                      >
-                        <Text style={theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE)}>
-                          {moment(date).format('ddd, DD/MM/YYYY')}
-                        </Text>
-                      </View>
-                      <View>
-                        {getStartDayConsults(date).map(
-                          (item, index) => item && renderConsultHours(item)
-                        )}
-                      </View>
-                    </View>
-                  ))}
+                  AllDates.map((date) => {
+                    const consults = getStartDayConsults(date);
+                    if (consults.length)
+                      return (
+                        <View>
+                          <View
+                            style={{
+                              borderBottomColor: 'rgba(0,0,0,0.2)',
+                              borderBottomWidth: 1,
+                              paddingBottom: 7,
+                              marginBottom: 12,
+                            }}
+                          >
+                            <Text style={theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE)}>
+                              {moment(date).format('ddd, DD/MM/YYYY')}
+                            </Text>
+                          </View>
+                          <View>
+                            {getStartDayConsults(date).map(
+                              (item, index) => item && renderConsultHours(item)
+                            )}
+                          </View>
+                        </View>
+                      );
+                  })}
             </View>
           ) : (
             <View style={{ marginLeft: 23, marginRight: 16 }}>
@@ -329,6 +478,9 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                           const newArray = JSON.parse(JSON.stringify(customTime));
                           newArray[index] = { start: time, end: item.end };
                           setcustomTime(newArray);
+                          // if (time && item.end) {
+                          checkIsValid(newArray);
+                          // }
                         }}
                         mode={'time'}
                         showCalendarIcon={false}
@@ -366,6 +518,9 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                           const newArray = JSON.parse(JSON.stringify(customTime));
                           newArray[index] = { start: item.start, end: time };
                           setcustomTime(newArray);
+                          // if (time && item.start) {
+                          checkIsValid(newArray);
+                          // }
                         }}
                         mode={'time'}
                         showCalendarIcon={false}
@@ -374,124 +529,33 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                   </View>
                 );
               })}
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  marginTop: 18,
-                  marginLeft: 20,
-                  alignItems: 'center',
-                }}
-                onPress={() => {
-                  const timeArray = JSON.parse(JSON.stringify(customTime));
-                  timeArray.push({ start: '', end: '' });
-                  setcustomTime(timeArray);
-                }}
-              >
-                <AddPlus />
+              {!isValidTime && (
                 <Text
                   style={{
-                    ...theme.viewStyles.yellowTextStyle,
-                    fontSize: 14,
-                    marginLeft: 8,
+                    ...theme.viewStyles.text('S', 14, theme.colors.INPUT_BORDER_FAILURE),
+                    marginTop: 20,
                   }}
                 >
-                  ADD ANOTHER TIME SLOT
+                  End time should be greater than start time
                 </Text>
-              </TouchableOpacity>
+              )}
+              <AddIconLabel
+                opacity={isValidTime ? 1 : 0.5}
+                onPress={() => {
+                  if (isValidTime) {
+                    const timeArray = JSON.parse(JSON.stringify(customTime));
+                    timeArray.push({ start: undefined, end: undefined });
+                    setcustomTime(timeArray);
+                  }
+                }}
+                label={'ADD ANOTHER TIME SLOT'}
+                style={{ marginTop: 32 }}
+              />
             </View>
           )}
         </RadioButtons>
       </View>
     );
-  };
-
-  const SaveBlockCalendar = () => {
-    const date = startDate ? startDate.toISOString() : '';
-    let variables = {
-      doctorId: doctorDetails ? doctorDetails.id : '',
-    };
-    if (selectedBlockOption === blockOptions[0].key) {
-      let endDateTime;
-      if (selectedDay === daysArray[0].key && startDate) {
-        endDateTime = moment(date.split('T')[0] + '23:59:00', 'YYYY-MM-DDHH:mm:ss').toISOString();
-      } else {
-        endDateTime = endDate
-          ? moment(
-              endDate.toISOString().split('T')[0] + '12:59:00',
-              'YYYY-MM-DDhh:mm:ss'
-            ).toISOString()
-          : //moment(endDate.toISOString().split('T')[0] + ' 23:59', 'YYYY-MM-DD HH:MM').toISOString()
-            '';
-      }
-      variables = {
-        ...variables,
-        start: date,
-        end: endDateTime, // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
-        reason: selectedReason.key,
-      };
-      console.log(variables, 'variables');
-
-      client
-        .mutate({
-          mutation: ADD_BLOCKED_CALENDAR_ITEM,
-          variables: variables,
-        })
-        .then((res) => {
-          console.log(res, 'res ADD_BLOCKED_CALENDAR_ITEM');
-        })
-        .catch((err) => console.log(err, 'err ADD_BLOCKED_CALENDAR_ITEM'));
-    } else {
-      console.log(selectedConsultations, consultHours, 'consultHours');
-      if (selectedBlockOption === blockOptions[1].key) {
-        variables = {
-          ...variables,
-          reason: '',
-          itemDetails: selectedConsultations,
-        };
-      } else {
-        const consults = customTime.map((item) => {
-          return {
-            start: moment(item.start).toISOString(),
-            end: moment(item.end).toISOString(),
-          };
-        });
-        console.log(consults, 'consults customTime', customTime);
-        variables = {
-          ...variables,
-          reason: '',
-          itemDetails: consults,
-        };
-      }
-      console.log(variables, selectedConsultations, 'itemDetails');
-
-      client
-        .mutate({
-          mutation: BLOCK_MULTIPLE_CALENDAR_ITEMS,
-          variables: { blockCalendarInputs: variables },
-        })
-        .then((res) => {
-          console.log(res, 'res BLOCK_MULTIPLE_CALENDAR_ITEMS');
-        })
-        .catch((err) => {
-          console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
-          // setshowSpinner(false);
-          let message = '';
-          try {
-            message = error.message.split(':')[1].trim();
-          } catch (error) {}
-          console.log(message, 'message', error.message);
-
-          if (message == 'BLOCKED_CALENDAR_ITEM_OVERLAPS') {
-            renderErrorPopup(
-              `Oops ! The selected slot is unavailable. Please choose a different one`
-            );
-          } else if (message === 'INVALID_DATES') {
-            renderErrorPopup(`Please select dates`);
-          } else {
-            renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-          }
-        });
-    }
   };
 
   const renderHeader = () => {
@@ -588,50 +652,49 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
       </RadioButtons>
     );
   };
+  console.log(isValidTime, 'isValidTime');
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: '#f7f7f7',
-      }}
-    >
-      {renderHeader()}
-      <ScrollView style={{ flex: 1 }} bounces={false}>
-        <View
-          style={{
-            marginHorizontal: 20,
-          }}
-        >
-          {renderRadioButtons()}
-          {renderBlockOptions()}
-        </View>
-        <View style={{ height: 80 }} />
-      </ScrollView>
-      <StickyBottomComponent>
-        <Button
-          title="BLOCK CALENDAR"
-          style={{ flex: 1, marginHorizontal: 71 }}
-          onPress={() => {
-            SaveBlockCalendar();
-          }}
-          disabled={
-            (daysArray[0].key === selectedDay
-            ? startDate
-            : startDate && endDate)
-              ? //  &&
-                // (blockOptions[1].key === selectedBlockOption && selectedConsultations.length
-                //   ? false
-                //   : blockOptions[2].key === selectedBlockOption &&
-                //     customTime.filter((item) => item.start === undefined || item.end === undefined)
-                //       .length
-                //   ? true
-                //   : false)
-                false
-              : true
-          }
-        />
-      </StickyBottomComponent>
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: '#f7f7f7',
+        }}
+      >
+        {renderHeader()}
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          <View
+            style={{
+              marginHorizontal: 20,
+            }}
+          >
+            {renderRadioButtons()}
+            {renderBlockOptions()}
+          </View>
+          <View style={{ height: 80 }} />
+        </ScrollView>
+        <StickyBottomComponent>
+          <Button
+            title="BLOCK CALENDAR"
+            style={{ flex: 1, marginHorizontal: 71 }}
+            onPress={SaveBlockCalendar}
+            disabled={
+              (daysArray[0].key === selectedDay ? startDate : startDate && endDate) &&
+              (blockOptions[0].key === selectedBlockOption ||
+                (blockOptions[1].key === selectedBlockOption
+                  ? selectedConsultations.length > 0
+                  : blockOptions[2].key === selectedBlockOption &&
+                    customTime.filter((item) => item.start === undefined || item.end === undefined)
+                      .length === 0 &&
+                    isValidTime))
+                ? false
+                : true
+            }
+          />
+        </StickyBottomComponent>
+      </SafeAreaView>
+      {showSpinner && <Spinner />}
+    </View>
   );
 };

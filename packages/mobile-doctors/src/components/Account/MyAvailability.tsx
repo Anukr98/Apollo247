@@ -3,20 +3,31 @@ import { BackArrow, RoundChatIcon, RoundIcon } from '@aph/mobile-doctors/src/com
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { format } from 'date-fns';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import {
+  GetBlockedCalendar,
+  GetBlockedCalendarVariables,
+  GetBlockedCalendar_getBlockedCalendar_blockedCalendar,
+} from '@aph/mobile-doctors/src/graphql/types/GetBlockedCalendar';
+import {
+  GET_BLOCKED_CALENDAR,
+  REMOVE_BLOCKED_CALENDAR_ITEM,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import moment from 'moment';
+import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f7f7f7', //theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
-
   consultDescText: {
     fontFamily: 'IBMPlexSans',
     fontSize: 14,
@@ -29,6 +40,30 @@ const styles = StyleSheet.create({
     color: '#0087ba',
     lineHeight: 24,
     //marginTop: 20,
+  },
+  //
+  cardContainerStyle: {
+    ...theme.viewStyles.whiteRoundedCornerCard,
+    marginTop: 16,
+    padding: 16,
+    paddingTop: 12,
+  },
+  rowSpaceBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  consultationTiming: {
+    ...theme.fonts.IBMPlexSansMedium(20),
+    color: theme.colors.darkBlueColor(),
+    letterSpacing: 0.09,
+  },
+  fixedSlotText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_GREEN, 1, undefined, 0.06),
+  },
+  daysText: {
+    ...theme.viewStyles.text('S', 12, theme.colors.LIGHT_BLUE, 1, undefined, 0.05),
+    marginBottom: 6,
   },
 });
 
@@ -52,8 +87,61 @@ const fromatConsultationHours = (startTime: string, endTime: string /* input eg.
   `${get12HrsFormat(startTime.replace('Z', ''))} - ${get12HrsFormat(endTime.replace('Z', ''))}`;
 
 export const MyAvailability: React.FC<ProfileProps> = (props) => {
+  const [blockedCalendar, setblockedCalendar] = useState<
+    GetBlockedCalendar_getBlockedCalendar_blockedCalendar[]
+  >([]);
+
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
+  const client = useApolloClient();
+
+  useEffect(() => {
+    fetchBlockedCalendar;
+  }, []);
+
+  const fetchBlockedCalendar = (id: string) => {
+    client
+      .query<GetBlockedCalendar, GetBlockedCalendarVariables>({
+        query: GET_BLOCKED_CALENDAR,
+        variables: {
+          doctorId: profileData.id,
+        },
+      })
+
+      .then(({ data }) => {
+        console.log('flitered array', data);
+        if (data && data.getBlockedCalendar && data.getBlockedCalendar.blockedCalendar.length) {
+          setblockedCalendar(data.getBlockedCalendar.blockedCalendar);
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while searching for Doctors', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while searching for Doctors', errorMessage, error);
+        // Alert.alert('Error', errorMessage);
+      });
+  };
+
+  const onClickUnblock = (id: string) => {
+    client
+      .mutate({
+        mutation: REMOVE_BLOCKED_CALENDAR_ITEM,
+        variables: {
+          id: id,
+          refetchQueries: [
+            { query: GET_BLOCKED_CALENDAR, variables: { doctorId: profileData.id } },
+          ],
+          awaitRefetchQueries: true,
+        },
+      })
+      .then((res) => {
+        console.log(res, 'res REMOVE_BLOCKED_CALENDAR_ITEM');
+      })
+      .catch((err) => {
+        console.log(err, 'err REMOVE_BLOCKED_CALENDAR_ITEM');
+      });
+  };
 
   const showHeaderView = () => {
     return (
@@ -139,9 +227,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
               style={{
                 ...theme.fonts.IBMPlexSansSemiBold(16),
                 color: '#02475b',
-                // marginBottom: 16,
                 marginLeft: 20,
-                //marginTop: 20,
               }}
             >
               Consultation Hours
@@ -170,6 +256,54 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
             </View>
           </View>
         ) : null}
+
+        <View>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansSemiBold(16),
+              color: '#02475b',
+              marginLeft: 20,
+              marginTop: 32,
+            }}
+          >
+            Blocked Calendar
+          </Text>
+          {blockedCalendar.length ? (
+            <View style={{ marginLeft: 20, marginRight: 20 }}>
+              {blockedCalendar.map((item, i) => (
+                <View style={styles.cardContainerStyle}>
+                  <Text style={styles.daysText}>
+                    {moment(item.start)
+                      .local()
+                      .format('ddd, DD/MM/YYYY')}
+                  </Text>
+                  <View style={styles.rowSpaceBetween}>
+                    <Text style={styles.consultationTiming}>
+                      {moment(item.start)
+                        .local()
+                        .format('h:mm A')}{' '}
+                      -{' '}
+                      {moment(item.end)
+                        .local()
+                        .format('h:mm A')}
+                    </Text>
+
+                    <Text style={styles.fixedSlotText} onPress={() => onClickUnblock(item.id)}>
+                      UNBLOCK
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          <AddIconLabel
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.BlockHomePage);
+            }}
+            label={'ADD BLOCKED HOURS'}
+            style={{ marginTop: 32 }}
+          />
+        </View>
 
         <View style={{ margin: 20, flexDirection: 'row', marginBottom: 10 }}>
           <View style={{ marginTop: 4 }}>
