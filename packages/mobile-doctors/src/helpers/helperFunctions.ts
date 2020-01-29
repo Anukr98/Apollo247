@@ -117,3 +117,18 @@ export const medUsageType = (med: MEDICINE_UNIT) => {
       return 'Take';
   }
 };
+
+export const formatInt = (value: string) => {
+  let number = value.indexOf('-') === value.length - 1 ? value : parseInt(value);
+  return number || 0;
+};
+
+export const formatFloating = (value: string) => {
+  let number =
+    value.indexOf('.') === value.length - 1 ||
+    value.indexOf('0', value.length - 1) === value.length - 1 ||
+    value.indexOf('-') === value.length - 1
+      ? value
+      : parseFloat(value);
+  return number || 0;
+};

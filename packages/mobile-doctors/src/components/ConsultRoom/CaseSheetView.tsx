@@ -67,6 +67,9 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
+  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
+  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import {
   REQUEST_ROLES,
@@ -531,14 +534,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   //const isDelegateLogin = props.navigation.getParam('DelegateNumberLoginSuccess');
   const [value, setValue] = useState<string>('');
   const [othervalue, setOthervalue] = useState<string>('');
-  const [familyValues, setFamilyValues] = useState<any>([]);
+  const [familyValues, setFamilyValues] = useState<
+    (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
+  >([]);
 
   const [allergiesData, setAllergiesData] = useState<string>('');
-  const [lifeStyleData, setLifeStyleData] = useState<any>([]);
+  const [lifeStyleData, setLifeStyleData] = useState<
+    (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
+  >();
   const [juniordoctornotes, setJuniorDoctorNotes] = useState<string>('');
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
+  const [vitalsShow, setVitalsShow] = useState(false);
   const [juniorshow, setJuniorShow] = useState(false);
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
   const [otherInstructions, setOtherInstructions] = useState(false);
@@ -567,7 +575,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<any>([]);
   const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
   const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
-
+  const [
+    medicalHistory,
+    setMedicalHistory,
+  ] = useState<GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null>();
   const [pickData, setPickData] = useState<{ [id: string]: boolean }>({});
   const [healthWalletArrayData, setHealthWalletArrayData] = useState<any>([]);
   const [pastList, setPastList] = useState<any>([]);
@@ -647,7 +658,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         console.log('GET_JUNIOR_DOCTOR_CASESHEET', result);
         console.log('healthvallet', _data.data.getCaseSheet!.patientDetails!.healthVault!);
         setSymptonsData(_data.data.getCaseSheet!.caseSheetDetails!.symptoms);
-
+        setMedicalHistory(_data.data.getCaseSheet!.patientDetails!.patientMedicalHistory);
         setFamilyValues(_data.data.getCaseSheet!.patientDetails!.familyHistory);
         setAllergiesData(_data.data.getCaseSheet!.patientDetails!.allergies!);
         setLifeStyleData(_data.data.getCaseSheet!.patientDetails!.lifeStyle);
@@ -928,9 +939,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Family History</Text>
         <View style={styles.familyInputView}>
-          {familyValues.length == 0 ? (
+          {familyValues && familyValues.length == 0 ? (
             <Text style={styles.symptomsText}>No Data</Text>
           ) : (
+            familyValues &&
             familyValues.map((showdata: any) => {
               return (
                 <View style={{ flexDirection: 'row' }}>
@@ -959,26 +971,26 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderLifeStylesHabits = () => {
-    return (
-      <View>
-        <Text style={styles.familyText}>Lifestyle & Habits</Text>
-        <View style={styles.familyInputView}>
-          {lifeStyleData.length == 0 ? (
-            <Text style={styles.symptomsText}>No Data</Text>
-          ) : (
-            lifeStyleData.map((showdata: any) => {
-              return (
-                <View>
-                  <Text style={styles.symptomsText}>{showdata.description}</Text>
-                </View>
-              );
-            })
-          )}
-        </View>
-      </View>
-    );
-  };
+  // const renderLifeStylesHabits = () => {
+  //   return (
+  //     <View>
+  //       <Text style={styles.familyText}>Lifestyle & Habits</Text>
+  //       <View style={styles.familyInputView}>
+  //         {lifeStyleData.length == 0 ? (
+  //           <Text style={styles.symptomsText}>No Data</Text>
+  //         ) : (
+  //           lifeStyleData.map((showdata: any) => {
+  //             return (
+  //               <View>
+  //                 <Text style={styles.symptomsText}>{showdata.description}</Text>
+  //               </View>
+  //             );
+  //           })
+  //         )}
+  //       </View>
+  //     </View>
+  //   );
+  // };
   const removeSymptonData = (item: any) => {
     removeSysmptonsList(item);
     // setSymptonsData(getSysmptonsList());
@@ -1082,6 +1094,132 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
+  const renderFields = (
+    heading: string,
+    data: string,
+    onChange?: (text: string) => void,
+    multiline?: boolean
+  ) => {
+    return (
+      <View>
+        <Text style={theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.6))}>
+          {heading}
+        </Text>
+        <View
+          style={{
+            minHeight: 44,
+            marginTop: 8,
+            marginBottom: 16,
+            backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            borderWidth: 1,
+            borderRadius: 5,
+            borderColor: theme.colors.darkBlueColor(0.15),
+          }}
+        >
+          <TextInput
+            style={{
+              minHeight: 44,
+              justifyContent: 'center',
+              paddingTop: 12,
+              paddingBottom: 12,
+              paddingLeft: 12,
+              paddingRight: 12,
+              ...theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(1)),
+            }}
+            value={data}
+            multiline={multiline}
+            textAlignVertical={multiline ? 'top' : undefined}
+            selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+            onChange={(text) => onChange && onChange(text.nativeEvent.text)}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderVitals = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="Vitals"
+          collapse={vitalsShow}
+          onPress={() => setVitalsShow(!vitalsShow)}
+        >
+          <View style={{ marginHorizontal: 16 }}>
+            {renderFields('Height', (medicalHistory && medicalHistory.height) || '', (text) => {
+              setMedicalHistory({
+                ...medicalHistory,
+                height: text,
+              } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+            })}
+            {renderFields(
+              'Weight (kgs)',
+              (medicalHistory && medicalHistory.weight) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  weight: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              }
+            )}
+            {renderFields('BP (mm Hg)', (medicalHistory && medicalHistory.bp) || '', (text) => {
+              setMedicalHistory({
+                ...medicalHistory,
+                bp: text,
+              } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+            })}
+            {renderFields(
+              'Temperature (°F)',
+              (medicalHistory && medicalHistory.temperature) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  temperature: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              }
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
+
+  const getFamilyHistory = () => {
+    if (familyValues) {
+      let familyHistory: string = '';
+      familyValues.forEach((i) => {
+        if (i) {
+          familyHistory += i.relation
+            ? i.relation + ': ' + i.description + '\n'
+            : i.description + '\n';
+        }
+      });
+      return familyHistory.slice(0, -1);
+    } else {
+      return '';
+    }
+  };
+
+  const setFamilyHistory = (text: string) => {
+    let eachMember = text.split('\n');
+    let famHist: GetCaseSheet_getCaseSheet_patientDetails_familyHistory[] = [];
+    eachMember.forEach((item) => {
+      let history = item.split(':');
+      if (history.length > 1) {
+        famHist.push({
+          relation: history[0].trim(),
+          description: history[1].trim(),
+        } as GetCaseSheet_getCaseSheet_patientDetails_familyHistory);
+      } else {
+        famHist.push({
+          relation: null,
+          description: history[0].trim(),
+        } as GetCaseSheet_getCaseSheet_patientDetails_familyHistory);
+      }
+    });
+    setFamilyValues(famHist);
+  };
+
   const renderPatientHistoryLifestyle = () => {
     return (
       <View>
@@ -1090,9 +1228,73 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={patientHistoryshow}
           onPress={() => setpatientHistoryshow(!patientHistoryshow)}
         >
-          {renderFamilyDetails()}
+          <View style={{ marginHorizontal: 16 }}>
+            {renderFields(
+              'Medication History*',
+              (medicalHistory && medicalHistory.pastMedicalHistory) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  pastMedicalHistory: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              },
+              true
+            )}
+            {renderFields(
+              'Drug Allergies',
+              (medicalHistory && medicalHistory.drugAllergies) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  drugAllergies: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              },
+              true
+            )}
+            {renderFields(
+              'Diet Allergies/Restrictions',
+              (medicalHistory && medicalHistory.dietAllergies) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  dietAllergies: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              },
+              true
+            )}
+            {renderFields(
+              'Lifestyle and Habits',
+              (lifeStyleData && lifeStyleData.map((i) => i && i.description).join(',')) || '',
+              (text) => {
+                setLifeStyleData([
+                  { description: text } as GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
+                ]);
+              },
+              true
+            )}
+            {renderFields(
+              'Menstrual History',
+              (medicalHistory && medicalHistory.menstrualHistory) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  menstrualHistory: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              },
+              true
+            )}
+            {renderFields(
+              'Family Medical History',
+              getFamilyHistory(),
+              (text) => {
+                setFamilyHistory(text);
+              },
+              true
+            )}
+          </View>
+          {/* {renderFamilyDetails()}
           {renderAllergiesView()}
-          {renderLifeStylesHabits()}
+          {renderLifeStylesHabits()} */}
         </CollapseCard>
       </View>
     );
@@ -1727,7 +1929,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       val.forEach((item) => {
                         if (
                           diagnosisData &&
-                          diagnosisData.findIndex((i) => item.name === i?.name) < 0
+                          diagnosisData.findIndex((i) => item.name === (i && i.name)) < 0
                         ) {
                           newValues.push(item);
                         } else if (diagnosisData === null) {
@@ -2184,6 +2386,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderPatientImage()}
           {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
           {renderSymptonsView()}
+          {renderVitals()}
           {renderPatientHistoryLifestyle()}
           {renderPatientHealthWallet()}
 
