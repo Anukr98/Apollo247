@@ -104,6 +104,19 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       backgroundColor: '#000',
     },
+    maximizeImg: {
+      position: 'absolute',
+      minWidth: 1020,
+      minHeight: 409,
+      top: 0,
+      right: 0,
+      zIndex: 9,
+      borderRadius: 10,
+      width: 264,
+      height: 198,
+      overflow: 'hidden',
+      backgroundColor: '#000',
+    },
     timerCls: {
       position: 'absolute',
       top: 40,
@@ -131,6 +144,7 @@ interface ConsultProps {
   isCallAccepted: boolean;
   isNewMsg: boolean;
   convertCall: () => void;
+  JDPhotoUrl: string;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -221,12 +235,22 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
                 }
               >
-                {!subscribeToVideo && !props.showVideoChat && (
+                {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'videocall' && (
                   <img
                     className={classes.minimizeImg}
                     src={
-                      patientDetails && patientDetails.photoUrl
-                        ? patientDetails && patientDetails.photoUrl
+                      props.JDPhotoUrl
+                        ? props.JDPhotoUrl
+                        : require('images/DefaultPatient_Video.svg')
+                    }
+                  />
+                )}
+                {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'audiocall' && (
+                  <img
+                    className={classes.maximizeImg}
+                    src={
+                      patientDetails!.photoUrl
+                        ? patientDetails!.photoUrl
                         : require('images/DefaultPatient_Video.svg')
                     }
                   />

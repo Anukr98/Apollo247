@@ -1749,6 +1749,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
+              JDPhotoUrl={currentPatient && currentPatient.photoUrl ? currentPatient.photoUrl : ''}
             />
           )}
         </div>
