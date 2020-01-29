@@ -651,34 +651,41 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               // });
             } catch (error) {}
           } else {
-            setLoading && setLoading(false);
-            console.log('call ongoing');
-            InCallManager.startRingtone('_BUNDLE_');
-            InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+            try {
+              setLoading && setLoading(false);
+              console.log('call ongoing');
+              InCallManager.startRingtone('_BUNDLE_');
+              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
 
-            showAphAlert!({
-              title: `Hi ${userName} :)`,
-              description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
-              unDismissable: true,
-              CTAs: [
-                {
-                  text: 'CANCEL',
-                  type: 'white-button',
-                  onPress: () => {
-                    hideAphAlert && hideAphAlert();
-                    InCallManager.stopRingtone();
-                    InCallManager.stop();
+              setTimeout(() => {
+                InCallManager.stopRingtone();
+                InCallManager.stop();
+              }, 12000);
+
+              showAphAlert!({
+                title: `Hi ${userName} :)`,
+                description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
+                unDismissable: true,
+                CTAs: [
+                  {
+                    text: 'CANCEL',
+                    type: 'white-button',
+                    onPress: () => {
+                      hideAphAlert && hideAphAlert();
+                      InCallManager.stopRingtone();
+                      InCallManager.stop();
+                    },
                   },
-                },
-                {
-                  text: 'CONSULT ROOM',
-                  type: 'orange-button',
-                  onPress: () => {
-                    getAppointmentData(appointmentId, notificationType, callType);
+                  {
+                    text: 'CONSULT ROOM',
+                    type: 'orange-button',
+                    onPress: () => {
+                      getAppointmentData(appointmentId, notificationType, callType);
+                    },
                   },
-                },
-              ],
-            });
+                ],
+              });
+            } catch (error) {}
           }
         } catch (error) {
           CommonBugFender('NotificationListener_getCallStatus_try', error);

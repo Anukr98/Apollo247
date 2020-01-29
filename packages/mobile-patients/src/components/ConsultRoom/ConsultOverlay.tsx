@@ -148,6 +148,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
     };
+
+    const price =
+      VirtualConsultationFee !== props.doctor!.onlineConsultationFees
+        ? VirtualConsultationFee
+        : props.doctor!.onlineConsultationFees;
+
+    console.log('price', price);
     client
       .mutate<bookAppointment>({
         mutation: BOOK_APPOINTMENT,
@@ -163,7 +170,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
           price:
             tabs[0].title === selectedTab
-              ? 1 //props.doctor!.onlineConsultationFees
+              ? price //1 //props.doctor!.onlineConsultationFees
               : props.doctor!.physicalConsultationFees,
         });
       })
