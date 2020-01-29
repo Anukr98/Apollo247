@@ -855,6 +855,7 @@ app.get('/processOrders', (req, res) => {
                   deliveryType
                   patientAddressId
                   prescriptionImageUrl
+                  orderType
                   patient{
                     mobileNumber
                     firstName
@@ -941,8 +942,6 @@ app.get('/processOrders', (req, res) => {
               );
               if (orderDetails.orderType == 'CART_ORDER') {
                 const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
-                console.log('AmtPaid===', amountPaid);
-                console.log('isDeliveryChargeable===', isDeliveryChargeApplicable(amountPaid));
                 if (isDeliveryChargeApplicable(amountPaid)) {
                   console.log('inside if...');
                   orderLineItems.push(getDeliveryChargesLineItem());
@@ -1290,7 +1289,7 @@ app.get('/processOrderById', (req, res) => {
             orderLineItems.push(getDeliveryChargesLineItem());
             console.log('chargesItem', getDeliveryChargesLineItem());
           }
-          console.log('orderLineItems------', orderLineItems);
+          console.log('orderLineItems======', orderLineItems);
           //logic to add delivery charges lineItem ends here
         }
         let prescriptionImages = [];
