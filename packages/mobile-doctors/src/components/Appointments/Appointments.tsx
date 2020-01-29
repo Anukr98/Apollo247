@@ -400,7 +400,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         {renderHeader()}
         <View style={{ flex: 1 }}>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
-      {isDropdownVisible ? renderDropdown() : null}
+      {/* {isDropdownVisible ? renderDropdown() : null} */}
 
       {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
       <View style={{ zIndex: -1, flex: 1, backgroundColor: '#f7f7f7' }}>
