@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 /**
  * New Relic agent configuration.
  *
@@ -9,18 +9,18 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['My Application'],
+  app_name: ['Apollo 247 Local'],
   /**
    * Your New Relic license key.
    */
-  license_key: 'license key here',
+  license_key: '29d36c5e78d3752204bca50c5133f5a32368NRAL',
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
      * issues with the agent, 'info' and higher will impose the least overhead on
      * production applications.
      */
-    level: 'info'
+    level: 'info',
   },
   /**
    * When true, all request headers except for those listed in attributes.exclude
@@ -47,7 +47,7 @@ exports.config = {
       'response.headers.authorization',
       'response.headers.proxyAuthorization',
       'response.headers.setCookie*',
-      'response.headers.x*'
-    ]
-  }
-}
+      'response.headers.x*',
+    ],
+  },
+};
