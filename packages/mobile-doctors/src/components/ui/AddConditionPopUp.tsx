@@ -134,7 +134,7 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
               onPress={() => {
                 setSearchText('');
                 setSearchData([]);
-                if (value.findIndex((s) => s.name === i?.name) < 0) {
+                if (value.findIndex((s) => s.name === (i && i.name)) < 0) {
                   setValue(
                     [
                       ...value,
@@ -163,7 +163,7 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
                     ...theme.viewStyles.text('M', 16, theme.colors.darkBlueColor(1)),
                   }}
                 >
-                  {i?.name}
+                  {i && i.name}
                 </Text>
                 <AddPlus />
               </View>

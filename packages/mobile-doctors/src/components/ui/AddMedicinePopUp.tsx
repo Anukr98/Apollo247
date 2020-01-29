@@ -21,7 +21,11 @@ import {
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { isValidSearch, nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import {
+  isValidSearch,
+  nameFormater,
+  formatInt,
+} from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -75,7 +79,9 @@ const styles = StyleSheet.create({
 export interface AddMedicinePopUpProps {
   onClose: () => void;
   data?: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList;
-  onAddnew?: (data: any) => void;
+  onAddnew?: (
+    data: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+  ) => void;
 }
 
 export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
@@ -311,7 +317,10 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                 beforeFoodValue ? MEDICINE_TO_BE_TAKEN.BEFORE_FOOD : '',
               ].filter((i) => i !== ''),
             };
-            onAddnew && onAddnew(dataSend);
+            onAddnew &&
+              onAddnew(
+                dataSend as GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+              );
             onClose();
           }}
           style={{ width: (width - 110) / 2 }}
@@ -345,8 +354,9 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               placeholder=""
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={take}
+              maxLength={4}
               selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-              onChange={(text) => setTake(text.nativeEvent.text)}
+              onChange={(text) => setTake((formatInt(text.nativeEvent.text) || '').toString())}
             />
           )}
           <MaterialMenu
@@ -399,7 +409,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                     //   : styles.placeholderStyle,
                   ]}
                 >
-                  {typeDrop?.value}
+                  {typeDrop && typeDrop.value}
                 </Text>
                 <View style={[{ flex: 1, alignItems: 'flex-end', marginRight: 10 }]}>
                   <DropdownGreen />
@@ -454,9 +464,6 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               <Text
                 style={[
                   { color: '#01475b', ...theme.fonts.IBMPlexSansMedium(18), paddingBottom: 4 },
-                  // typeofRecord !== undefined
-                  //   ? { textTransform: 'capitalize' }
-                  //   : styles.placeholderStyle,
                 ]}
               >
                 {takeDrop.value}
@@ -485,7 +492,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             placeholderTextColor="rgba(1, 71, 91, 0.3)"
             value={forTime}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-            onChange={(text) => setForTime(text.nativeEvent.text)}
+            onChange={(text) => setForTime((formatInt(text.nativeEvent.text) || '').toString())}
           />
           <MaterialMenu
             options={forTimeArray}
