@@ -2,6 +2,7 @@ import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/
 import { g, doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface LocationData {
   displayName: string;
@@ -84,10 +85,13 @@ export const AppCommonDataProvider: React.FC = (props) => {
             .then((response) => {
               _setLocationDetails(response);
             })
-            .catch(() => {});
+            .catch((e) => {
+              CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage', e);
+            });
         }
       } catch (error) {
         console.log('Failed to get cart items from local storage.');
+        CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage_try', error);
       }
     };
     updateCartItemsFromStorage();

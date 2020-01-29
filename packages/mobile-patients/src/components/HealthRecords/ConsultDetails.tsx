@@ -47,7 +47,10 @@ import {
 import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '../UIElementsProvider';
 import { mimeType } from '../../helpers/mimeType';
@@ -199,6 +202,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
+        CommonBugFender('ConsultDetails_GET_CASESHEET_DETAILS', error);
         setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
         console.log(errorMessage, 'err');
@@ -383,7 +387,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const onAddToCart = () => {
     setLoading && setLoading(true);
 
-    const medPrescription = caseSheetDetails!.medicinePrescription || [];
+    const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
+      (item) => item!.id
+    );
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
@@ -392,7 +398,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const medicines = result
           .map(({ data: { productdp } }, index) => {
             const medicineDetails = (productdp && productdp[0]) || {};
-            if (!medicineDetails.is_in_stock) {
+            if (medicineDetails.is_in_stock == undefined) {
               return null;
             }
             const _qty =
@@ -419,6 +425,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               quantity: qty,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
               thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+              isInStock: !!medicineDetails.is_in_stock,
             } as ShoppingCartItem;
           })
           .filter((item) => (item ? true : false));
@@ -460,6 +467,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
+        CommonBugFender('ConsultDetails_onAddToCart', e);
         setLoading && setLoading(false);
         console.log({ e });
         handleGraphQlError(e);
@@ -576,7 +584,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="DIAGNOSIS"
+          heading="PROVISIONAL DIAGNOSIS"
           collapse={showDiagnosis}
           onPress={() => setshowDiagnosis(!showDiagnosis)}
         >
@@ -685,6 +693,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         setdisplayoverlay(true);
                       })
                       .catch((error) => {
+                        CommonBugFender('ConsultDetails_renderFollowUp', error);
                         console.log('Error occured', { error });
                       });
                   }}
@@ -845,6 +854,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                               );
                         })
                         .catch((err) => {
+                          CommonBugFender('ConsultDetails_renderFollowUp', err);
                           console.log('error ', err);
                           setLoading && setLoading(false);
                           // ...

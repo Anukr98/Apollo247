@@ -19,6 +19,7 @@ import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { useAuth } from 'hooks/authHooks';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -371,6 +372,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
   const apolloClient = useApolloClient();
+  const { currentPatient: currentDoctor, sessionClient } = useAuth();
 
   // this hook is used to send auto chat message when the consult is closed by system
   const covertVideoMsg = '^^convert`video^^';
@@ -417,8 +419,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerSeconds = startingTime - timerMinuts * 60;
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
-  const { patientDetails } = useContext(CaseSheetContext);
-  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
+  const { setDocumentArray, appointmentInfo, patientDetails } = useContext(CaseSheetContextJrd);
   const startIntervalTimer = (timer: number) => {
     setInterval(() => {
       timer = timer + 1;
@@ -551,7 +552,27 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           setDocumentArray((_data.data.addChatDocument as unknown) as appointmentDocument);
         }
       })
-      .catch((error: ApolloError) => {});
+      .catch((error: ApolloError) => {
+        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+        const logObject = {
+          api: 'AddChatDocument',
+          inputParam: JSON.stringify({ appointmentId: props.appointmentId, documentPath: url }),
+          appointmentId: props.appointmentId,
+          doctorId: doctorId,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: appointmentInfo!.appointmentDateTime
+            ? moment(new Date(appointmentInfo!.appointmentDateTime)).format(
+                'MMMM DD YYYY h:mm:ss a'
+              )
+            : '',
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
+      });
   };
 
   const send = () => {

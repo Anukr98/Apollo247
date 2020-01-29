@@ -35,6 +35,7 @@ export const CommonLogEvent = async (stringName: string, parameterName: string) 
         phoneNumber: storedPhoneNumber as string,
       });
     } catch (error) {
+      CommonBugFender('DeviceHelper_CommonLogEvent_try', error);
       aphConsole.log('CommonLogEvent error', error);
     }
   }
@@ -47,6 +48,7 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
 
       firebase.analytics().setCurrentScreen(stringName, parameterName);
     } catch (error) {
+      CommonBugFender('DeviceHelper_CommonScreenLog_try', error);
       aphConsole.log('CommonScreenLog error', error);
     }
   }

@@ -12,7 +12,10 @@ import {
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   CANCEL_APPOINTMENT,
@@ -172,16 +175,20 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const client = useApolloClient();
 
   const NextAvailableSlotAPI = () => {
-    getNetStatus().then((status) => {
-      if (status) {
-        console.log('nextAvailableSlot called');
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          console.log('nextAvailableSlot called');
 
-        nextAvailableSlot();
-      } else {
-        setNetworkStatus(true);
-        setshowSpinner(false);
-      }
-    });
+          nextAvailableSlot();
+        } else {
+          setNetworkStatus(true);
+          setshowSpinner(false);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AppointmentDetails_getNetStatus', e);
+      });
   };
 
   useEffect(() => {
@@ -218,10 +225,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           console.log(data, 'nextavailable res');
           data[0] && setAvailability(data[0].physicalAvailableSlot);
         } catch (error) {
+          CommonBugFender('AppointmentDetails_nextAvailableSlot_try', error);
           setAvailability('');
         }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('AppointmentDetails_nextAvailableSlot', e);
         setshowSpinner(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
@@ -262,9 +271,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               setBelowThree(false);
             }
             setNewRescheduleCount(data);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('AppointmentDetails_CHECK_IF_RESCHDULE_try', error);
+          }
         })
         .catch((e: any) => {
+          CommonBugFender('AppointmentDetails_checkIfReschedule', e);
           setshowSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
           console.log('Error occured while checkIfRescheduleprofile', error);
@@ -273,6 +285,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           setResheduleoverlay(true);
         });
     } catch (error) {
+      CommonBugFender('AppointmentDetails_checkIfReschedule_try', error);
       setshowSpinner(false);
       console.log(error, 'error');
     }
@@ -334,7 +347,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           })
         );
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('AppointmentDetails_rescheduleAPI', e);
         setBottompopup(true);
       });
     // }
@@ -347,6 +361,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
       rescheduleAPI(availability);
     } catch (error) {
+      CommonBugFender('AppointmentDetails_rescheduleAPI_try', error);
       console.log(error, 'error');
     }
   };
@@ -390,6 +405,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         // );
       })
       .catch((e: any) => {
+        CommonBugFender('AppointmentDetails_cancelAppointmentApi', e);
         setshowSpinner(false);
         console.log('Error occured while adding Doctor', e);
         const message = e.message ? e.message.split(':')[1].trim() : '';
@@ -566,7 +582,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   );
                   try {
                     isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('AppointmentDetails_NextAvailableSlotAPI_try', error);
+                  }
                 }
               }}
             />

@@ -57,7 +57,10 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { uploadDocumentVariables, uploadDocument } from '../../graphql/types/uploadDocument';
 import {
@@ -418,6 +421,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                     }
                   })
                   .catch((e) => {
+                    CommonBugFender(
+                      'AddRecord_ADD_MEDICAL_RECORD_multiplePhysicalPrescriptionUpload',
+                      e
+                    );
                     setshowSpinner(false);
                     console.log(JSON.stringify(e), 'eeeee');
                     Alert.alert('Alert', 'Please fill all the details', [
@@ -436,6 +443,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }
           })
           .catch((e) => {
+            CommonBugFender('AddRecord_multiplePhysicalPrescriptionUpload', e);
             showAphAlert!({
               title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
               description: 'Your upload images are failed ',
@@ -476,6 +484,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }
           })
           .catch((e) => {
+            CommonBugFender('AddRecord_ADD_MEDICAL_RECORD', e);
             setshowSpinner(false);
             console.log(JSON.stringify(e), 'eeeee');
             Alert.alert('Alert', 'Please fill all the details', [

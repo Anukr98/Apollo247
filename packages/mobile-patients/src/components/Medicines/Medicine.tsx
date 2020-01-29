@@ -21,7 +21,10 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { GET_MEDICINE_ORDERS_LIST, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -127,17 +130,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (currentPatient && profile && profile.id !== currentPatient.id) {
       globalLoading!(true);
       setProfile(currentPatient);
-      ordersRefetch().then(({ data }) => {
-        const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
-          (item) =>
-            !(
-              (item!.medicineOrdersStatus || []).length == 1 &&
-              (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-            )
-        );
-        globalLoading!(false);
-        setOrdersFetched(ordersData);
-      });
+      ordersRefetch()
+        .then(({ data }) => {
+          const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+            (item) =>
+              !(
+                (item!.medicineOrdersStatus || []).length == 1 &&
+                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+              )
+          );
+          globalLoading!(false);
+          setOrdersFetched(ordersData);
+        })
+        .catch((e) => {
+          CommonBugFender('Medicine_ordersRefetch_useEffect', e);
+        });
     }
   }, [currentPatient]);
 
@@ -159,7 +166,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }
       })
-      .catch(() => {});
+      .catch((e) => {
+        CommonBugFender('Medicine_MEDICINE_LANDING_PAGE_DATA', e);
+      });
 
     getMedicinePageProducts()
       .then((d) => {
@@ -176,6 +185,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setLoading(false);
       })
       .catch((e) => {
+        CommonBugFender('Medicine_getMedicinePageProducts', e);
         setError(e);
         setLoading(false);
         showAphAlert!({
@@ -184,16 +194,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         });
       });
     if (ordersFetched.length === 0) {
-      ordersRefetch().then(({ data }) => {
-        const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
-          (item) =>
-            !(
-              (item!.medicineOrdersStatus || []).length == 1 &&
-              (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-            )
-        );
-        ordersData.length > 0 && setOrdersFetched(ordersData);
-      });
+      ordersRefetch()
+        .then(({ data }) => {
+          const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+            (item) =>
+              !(
+                (item!.medicineOrdersStatus || []).length == 1 &&
+                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+              )
+          );
+          ordersData.length > 0 && setOrdersFetched(ordersData);
+        })
+        .catch((e) => {
+          CommonBugFender('Medicine_ordersRefetch', e);
+        });
     }
   }, []);
 
@@ -691,6 +705,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
         thumbnail,
+        isInStock: true,
       });
     const removeFromCart = () => removeCartItem!(sku);
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
@@ -846,6 +861,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           setsearchSate('success');
         })
         .catch((e) => {
+          CommonBugFender('Medicine_onSearchMedicine', e);
           // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');

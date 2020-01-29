@@ -13,6 +13,7 @@ import {
   EPrescription,
   PhysicalPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface DiagnosticsCartItem {
   id: string;
@@ -397,6 +398,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
       } catch (error) {
+        CommonBugFender('DiagnosticsCartProvider_updateCartItemsFromStorage_try', error);
         showGenericAlert('Failed to get cart items from local storage.');
       }
     };

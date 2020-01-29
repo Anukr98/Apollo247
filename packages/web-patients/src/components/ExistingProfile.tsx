@@ -142,6 +142,12 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     [Relation.WIFE]: 6,
     [Relation.HUSBAND]: 7,
     [Relation.OTHER]: 8,
+    [Relation.SON]: 9,
+    [Relation.GRANDSON]: 10,
+    [Relation.GRANDMOTHER]: 11,
+    [Relation.GRANDFATHER]: 12,
+    [Relation.GRANDDAUGHTER]: 13,
+    [Relation.DAUGHTER]: 14,
   };
 
   const allRelations = Object.values(Relation);

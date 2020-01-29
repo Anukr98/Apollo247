@@ -64,7 +64,7 @@ export const NavigationBottom: React.FC = (props) => {
     <BottomNavigation showLabels className={classes.root}>
       <BottomNavigationAction
         label="Appointments"
-        icon={<img src={require('images/ic_consultroom.svg')} />}
+        icon={<img src={require('images/bottom-nav/ic_appointments.svg')} />}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -73,7 +73,7 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Health Records"
-        icon={<img src={require('images/ic_myhealth.svg')} />}
+        icon={<img src={require('images/bottom-nav/ic_myhealth.svg')} />}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -82,7 +82,7 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Medicines"
-        icon={<img src={require('images/ic_orders.svg')} />}
+        icon={<img src={require('images/bottom-nav/ic_medicines.svg')} />}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -91,7 +91,7 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Tests"
-        icon={<img src={require('images/ic_orders.svg')} />}
+        icon={<img src={require('images/bottom-nav/ic_tests.svg')} />}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -100,7 +100,7 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="My Account"
-        icon={<img src={require('images/ic_account_dark.svg')} />}
+        icon={<img src={require('images/bottom-nav/ic_account.svg')} />}
         onClick={() => setIsDialogOpen(true)}
         classes={{
           root: classes.labelRoot,
