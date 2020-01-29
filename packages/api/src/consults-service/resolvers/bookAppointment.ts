@@ -1,8 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Connection } from 'typeorm';
 import {
-  Appointment,
   STATUS,
   APPOINTMENT_TYPE,
   APPOINTMENT_STATE,
