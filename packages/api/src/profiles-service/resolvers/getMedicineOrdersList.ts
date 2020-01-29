@@ -31,6 +31,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     pharmaRequest: String
     orderTat: String
     orderType: MEDICINE_ORDER_TYPE
+    currentStatus: MEDICINE_ORDER_STATUS
     medicineOrderLineItems: [MedicineOrderLineItems]
     medicineOrdersStatus: [MedicineOrdersStatus]
     medicineOrderPayments: [MedicineOrderPayments]
