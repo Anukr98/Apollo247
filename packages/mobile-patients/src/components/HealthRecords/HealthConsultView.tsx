@@ -446,15 +446,17 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
                                 if (medPrescription.length > medicines.length) {
-                                  const outOfStockCount = medPrescription.length - medicines.length;
+                                  // const outOfStockCount = medPrescription.length - medicines.length;
                                   const outOfStockItems = medPrescription
                                     .filter((item) => !medicines.find((val) => val!.id == item.id))
-                                    .map((item, idx) => `${idx + 1}. ${item.medicineName}\n`)
-                                    .join('');
-                                  Alert.alert(
-                                    'Uh oh.. :(',
-                                    `Below ${outOfStockCount} item(s) are out of stock.\n${outOfStockItems}`
-                                  );
+                                    .map((item) => `${item.medicineName}`)
+                                    .join(', ');
+                                  const alertMsg =
+                                    medPrescription.length == medicines.length
+                                      ? 'Unfortunately, we do not have any medicines available right now.'
+                                      : `Out of ${medPrescription.length} medicines, you are trying to order, following medicines are out of stock.\n${outOfStockItems}\n`;
+
+                                  Alert.alert('Uh oh.. :(', alertMsg);
                                   // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
                                 }
 
