@@ -45,6 +45,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { useDiagnosticsCart, DiagnosticsCartItem } from '../DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../../graphql/types/getCaseSheet';
 import { useUIElements } from '../UIElementsProvider';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -141,6 +142,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
+  const { locationDetails } = useAppCommonData();
   const { setLoading: setGlobalLoading } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
@@ -384,8 +386,16 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               item!.blobName!
                             );
 
-                            const testPrescription = (item.diagnosticPrescription ||
-                              []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
+                            console.log('diagnosticPrescription', {
+                              a: item.diagnosticPrescription,
+                            });
+
+                            const testPrescription = ((item.diagnosticPrescription ||
+                              []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]).filter(
+                              (item) =>
+                                (g(item, 'additionalDetails', 'city') || '').toLowerCase() ==
+                                (g(locationDetails, 'city') || '').toLowerCase()
+                            );
 
                             const presToAdd = {
                               id: item.id,
@@ -443,8 +453,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                                 addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
-                                (item.medicinePrescription || []).length;
-
                                 const totalItems = (item.medicinePrescription || []).length;
                                 // const customItems = medicineAll.length - medicines.length;
                                 const outOfStockItems = medicines.filter((item) => !item!.isInStock)
@@ -480,20 +488,37 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   ]);
                                 }
                                 // Adding tests to DiagnosticsCart
+                                if (!locationDetails) {
+                                  Alert.alert(
+                                    'Uh oh.. :(',
+                                    'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
+                                  );
+                                  return;
+                                }
+                                if (!testPrescription.length) {
+                                  Alert.alert(
+                                    'Uh oh.. :(',
+                                    'No items are available in your location for now.'
+                                  );
+                                  setLoading && setLoading(false);
+                                  return;
+                                }
                                 return addTestsToCart(testPrescription);
                               })
                               .then((tests) => {
-                                addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
-                                // Adding ePrescriptions to DiagnosticsCart
-                                if ((tests as DiagnosticsCartItem[]).length)
-                                  addMultipleTestEPrescriptions!([
-                                    {
-                                      ...presToAdd,
-                                      medicines: (tests as DiagnosticsCartItem[])
-                                        .map((item) => item!.name)
-                                        .join(', '),
-                                    },
-                                  ]);
+                                if (testPrescription.length) {
+                                  addMultipleTestCartItems!((tests || []) as DiagnosticsCartItem[]);
+                                  // Adding ePrescriptions to DiagnosticsCart
+                                  if ((tests as DiagnosticsCartItem[]).length)
+                                    addMultipleTestEPrescriptions!([
+                                      {
+                                        ...presToAdd,
+                                        medicines: (tests as DiagnosticsCartItem[])
+                                          .map((item) => item!.name)
+                                          .join(', '),
+                                      },
+                                    ]);
+                                }
                               })
                               .catch((e) => {
                                 CommonBugFender('HealthConsultView_getMedicineDetailsApi', e);
