@@ -441,15 +441,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderConsultations = () => {
-    const dateIsAfterconsult = consultations.filter((item) =>
-      moment(new Date(item.appointmentDateTime))
-        .add(15, 'minutes')
-        .isAfter(moment(new Date()).add(15, 'minutes'))
-    );
-    console.log(dateIsAfterconsult!.length, 'dateIsAfterconsult');
-    console.log(consultations.length - dateIsAfterconsult!.length, 'past');
-    // moment(item.appointmentDateTime).isAfter(moment(new Date()).add(15, 'minutes'))
-
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
@@ -457,14 +448,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         // horizontal={true}
         data={
           selectedTab === tabs[0].title
-            ? consultations.filter(
-                (item) => moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
-                // moment(new Date(item.appointmentDateTime))
-                //   .add(15, 'minutes')
-                //   .isAfter(moment(new Date()).add(0, 'minutes'))
+            ? consultations.filter((item) =>
+                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY')
+                  .add(6, 'days')
+                  .isAfter(moment(new Date()))
               )
             : consultations.filter((item) =>
-                moment(item.appointmentDateTime).isBefore(moment(new Date()))
+                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY')
+                  .add(6, 'days')
+                  .isBefore(moment(new Date()))
               )
         }
         bounces={false}
@@ -507,19 +499,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 activeOpacity={1}
                 style={[styles.doctorView]}
                 onPress={() => {
-                  if (item.doctorInfo !== null) {
-                    console.log('doctorInfo', item.doctorInfo);
-                    CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-                    item.appointmentType === 'ONLINE'
-                      ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                          data: item,
-                          from: 'Consult',
-                        })
-                      : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                          data: item,
-                          from: 'Consult',
-                        });
-                  }
+                  CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
+                  item.appointmentType === 'ONLINE'
+                    ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                        data: item,
+                        from: 'Consult',
+                      })
+                    : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                        data: item,
+                        from: 'Consult',
+                      });
                 }}
               >
                 <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
@@ -710,33 +699,29 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            if (item.doctorInfo !== null) {
-                              CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
-                              item.appointmentType === 'ONLINE'
-                                ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                                    data: item,
-                                    from: 'notification',
-                                  })
-                                : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                    data: item,
-                                    from: 'notification',
-                                  });
-                            }
+                            CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
+                            item.appointmentType === 'ONLINE'
+                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                  data: item,
+                                  from: 'notification',
+                                })
+                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                  data: item,
+                                  from: 'notification',
+                                });
                           }}
                         >
-                          <Text style={styles.prepareForConsult}>RESCHEDULE</Text>
+                          <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            if (item.doctorInfo !== null) {
-                              CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                              props.navigation.navigate(AppRoutes.ChatRoom, {
-                                data: item,
-                                callType: '',
-                              });
-                            }
+                            CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                            props.navigation.navigate(AppRoutes.ChatRoom, {
+                              data: item,
+                              callType: '',
+                            });
                           }}
                         >
                           <Text style={styles.prepareForConsult}>
@@ -752,13 +737,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          if (item.doctorInfo !== null) {
-                            CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                            props.navigation.navigate(AppRoutes.ChatRoom, {
-                              data: item,
-                              callType: '',
-                            });
-                          }
+                          CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+                          props.navigation.navigate(AppRoutes.ChatRoom, {
+                            data: item,
+                            callType: '',
+                          });
                         }}
                       >
                         <Text style={[styles.prepareForConsult, { paddingBottom: -16 }]}>
@@ -875,16 +858,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         <Text style={styles.descriptionTextStyle}>
           {consultations.length > 0
             ? consultations.filter((item) =>
-                moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
               ).length > -1 && selectedTab === tabs[0].title
               ? 'You have ' +
                 (consultations.filter((item) =>
-                  moment(item.appointmentDateTime).isSameOrAfter(moment(new Date()))
+                  moment(item.appointmentDateTime, 'DD-MM-YYYY')
+                    .add(6, 'days')
+                    .isSameOrAfter(moment(new Date()))
                 ).length || 'no') +
                 ' upcoming appointment(s)!'
               : 'You have ' +
                 (consultations.filter((item) =>
-                  moment(item.appointmentDateTime).isBefore(moment(new Date()))
+                  moment(item.appointmentDateTime, 'DD-MM-YYYY')
+                    .add(6, 'days')
+                    .isBefore(moment(new Date()))
                 ).length || 'no') +
                 ' past appointment(s)!'
             : string.consult_room.description}
@@ -944,16 +931,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         }}
         data={tabs}
         onChange={(selectedTab: string) => {
-          const dateIsAfterconsult = consultations.filter((item) =>
-            moment(new Date(item.appointmentDateTime))
-              .add(15, 'minutes')
-              .isAfter(moment(new Date()).add(15, 'minutes'))
-          );
-          console.log(dateIsAfterconsult!.length, 'dateIsAfterconsult');
-
           setselectedTab(selectedTab);
-          setselectedTabval(consultations.length - dateIsAfterconsult!.length);
-          console.log(selectedTabval, 'pastpast');
         }}
         selectedTab={selectedTab}
       />
