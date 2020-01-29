@@ -543,7 +543,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
   >();
   const [juniordoctornotes, setJuniorDoctorNotes] = useState<string>('');
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
   const [vitalsShow, setVitalsShow] = useState(false);
@@ -558,12 +557,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
   const [switchValue, setSwitchValue] = useState(true);
   const [sliderValue, setSliderValue] = useState(2);
-  const [stepValue, setStepValue] = useState(3);
   const [diagnosisView, setDiagnosisView] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
   const [selectDate, setSelectDate] = useState<string>('mm/dd/yyyy');
-  const [calenderShow, setCalenderShow] = useState(false);
-  const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -572,14 +568,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   >([]);
   const [diagnosticPrescriptionData, setDiagnosticPrescription] = useState<any>([]);
   const [otherInstructionsData, setOtherInstructionsData] = useState<any>([]);
-  const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<any>([]);
+  const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null
+  >();
   const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
   const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
   const [
     medicalHistory,
     setMedicalHistory,
   ] = useState<GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null>();
-  const [pickData, setPickData] = useState<{ [id: string]: boolean }>({});
   const [healthWalletArrayData, setHealthWalletArrayData] = useState<any>([]);
   const [pastList, setPastList] = useState<any>([]);
   const { isDelegateLogin, setIsDelegateLogin } = useAuth();
@@ -593,17 +590,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [favAdvices, setFavAdvices] = useState<dataPair[]>([]);
 
   let Delegate = '';
-  const [showstyles, setShowStyles] = useState<any>([
-    {
-      marginLeft: 16,
-      marginRight: 20,
-      ...theme.fonts.IBMPlexSansMedium(18),
-      width: '90%',
-      borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-      borderBottomWidth: 2,
-      marginBottom: 32,
-    },
-  ]);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
@@ -714,17 +701,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
       });
-  }, []);
-
-  useEffect(() => {
-    const didBlurSubscription = props.navigation.addListener('didFocus', (payload) => {
-      console.log('didFocus', payload);
-      // setSymptonsData(getSysmptonsList());
-      setDiagnosisData(getDiagonsisList());
-      setDiagnosticPrescription(getDiagnosticPrescriptionDataList());
-      setMedicinePrescriptionData(getMedicineList());
-    });
-    () => didBlurSubscription.remove();
   }, []);
 
   const startDate = moment(date).format('YYYY-MM-DD');
@@ -934,67 +910,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const renderFamilyDetails = () => {
-    return (
-      <View>
-        <Text style={styles.familyText}>Family History</Text>
-        <View style={styles.familyInputView}>
-          {familyValues && familyValues.length == 0 ? (
-            <Text style={styles.symptomsText}>No Data</Text>
-          ) : (
-            familyValues &&
-            familyValues.map((showdata: any) => {
-              return (
-                <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.symptomsText}>{showdata.relation}: </Text>
-                  <Text style={styles.symptomsText}>{showdata.description}</Text>
-                </View>
-              );
-            })
-          )}
-        </View>
-      </View>
-    );
-  };
-
-  const renderAllergiesView = () => {
-    return (
-      <View>
-        <Text style={styles.familyText}>Allergies</Text>
-        <View style={styles.AllergiesInputView}>
-          {allergiesData == null || [] ? (
-            <Text style={styles.symptomsText}>No Data</Text>
-          ) : (
-            <Text style={styles.symptomsText}>{allergiesData}</Text>
-          )}
-        </View>
-      </View>
-    );
-  };
-  // const renderLifeStylesHabits = () => {
-  //   return (
-  //     <View>
-  //       <Text style={styles.familyText}>Lifestyle & Habits</Text>
-  //       <View style={styles.familyInputView}>
-  //         {lifeStyleData.length == 0 ? (
-  //           <Text style={styles.symptomsText}>No Data</Text>
-  //         ) : (
-  //           lifeStyleData.map((showdata: any) => {
-  //             return (
-  //               <View>
-  //                 <Text style={styles.symptomsText}>{showdata.description}</Text>
-  //               </View>
-  //             );
-  //           })
-  //         )}
-  //       </View>
-  //     </View>
-  //   );
-  // };
-  const removeSymptonData = (item: any) => {
-    removeSysmptonsList(item);
-    // setSymptonsData(getSysmptonsList());
-  };
   const renderSymptonsView = () => {
     return (
       <View>
@@ -1292,9 +1207,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               true
             )}
           </View>
-          {/* {renderFamilyDetails()}
-          {renderAllergiesView()}
-          {renderLifeStylesHabits()} */}
         </CollapseCard>
       </View>
     );
@@ -1368,52 +1280,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </CollapseCard>
     );
   };
-  const passData = (medicine: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription) => {
-    props.navigation.push(AppRoutes.MedicineUpdate, {
-      medicine,
-    });
-  };
-  // <MedicalCard
-  //   diseaseName={showdata.medicineName}
-  //   icon={
-  //     isDelegateLogin ? null : (
-  //       <TouchableOpacity onPress={() => passData(showdata)}>
-  //         <View>{!pickData[showdata.id] ? <Selected /> : <Selected />}</View>
-  //       </TouchableOpacity>
-  //     )
-  //   }
-  //   tabDesc={
-  //     showdata.medicineInstructions +
-  //     showdata.medicineDosage +
-  //     ',' +
-  //     showdata.medicineTimings.length +
-  //     ' times a day' +
-  //     '(' +
-  //     str +
-  //     ')' +
-  //     ',' +
-  //     'for ' +
-  //     showdata.medicineConsumptionDurationInDays +
-  //     '' +
-  //     ' ' +
-  //     str1
-  //   }
-  //   containerStyle={{
-  //     borderRadius: 5,
-  //     backgroundColor: 'rgba(0, 0, 0, 0.02)',
-  //     borderStyle: 'solid',
-  //     borderWidth: 1,
-  //     borderColor: '#00b38e',
-  //   }}
-  // />;
-  const renderMedicineDetails = (item: any) => {
-    const str = String(item.medicineTimings)
-      .toLowerCase()
-      .split(',');
 
-    const str1 = String(item.medicineToBeTaken)
-      .toLowerCase()
-      .split(',');
+  const renderMedicineDetails = (item: any) => {
     const type = medUsageType(item.medicineUnit);
     const unit =
       item.medicineUnit === MEDICINE_UNIT.OTHERS ? 'other' : item.medicineUnit.toLowerCase();
@@ -1498,7 +1366,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             ...(medicinePrescriptionData.filter(
                               (i: any) => (i.externalId || i.id) !== (data.externalId || data.id)
                             ) || []),
-                            data,
+                            data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                           ]);
                           setSelectedMedicinesId(
                             [
@@ -1588,7 +1456,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             ) {
                               setMedicinePrescriptionData([
                                 ...(medicinePrescriptionData || []),
-                                med,
+                                {
+                                  id: med.id,
+                                  externalId: med.externalId,
+                                  medicineName: med.medicineName,
+                                  medicineDosage: med.medicineDosage,
+                                  medicineToBeTaken: med.medicineToBeTaken,
+                                  medicineInstructions: med.medicineInstructions,
+                                  medicineTimings: med.medicineTimings,
+                                  medicineUnit: med.medicineUnit,
+                                  medicineConsumptionDurationInDays:
+                                    med.medicineConsumptionDurationInDays,
+                                  medicineConsumptionDuration: med.medicineConsumptionDuration,
+                                  medicineFrequency: med.medicineFrequency,
+                                  medicineConsumptionDurationUnit:
+                                    med.medicineConsumptionDurationUnit,
+                                } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                               ]);
                             }
                             setSelectedMedicinesId(
@@ -1623,7 +1506,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         medicinePrescriptionData === null ||
                         medicinePrescriptionData === undefined
                       ) {
-                        setMedicinePrescriptionData([...(medicinePrescriptionData || []), data]);
+                        setMedicinePrescriptionData([
+                          ...(medicinePrescriptionData || []),
+                          data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                        ]);
                         setSelectedMedicinesId(
                           [...selectedMedicinesId, data.externalId || ''].filter((i) => i !== '')
                         );
@@ -1645,47 +1531,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         </View>
       </CollapseCard>
     );
-  };
-
-  const renderCalenderView = () => {
-    return (
-      <View style={styles.calenderView}>
-        <CalendarView
-          date={date}
-          onPressDate={(date) => {
-            console.log('android cale', moment(date).format('MM/DD/YYYY'), 'MM/DD/YYYY');
-            setSelectDate(moment(date).format('YYYY-MM-DD'));
-            setCalenderShow(!calenderShow);
-            setShowStyles({
-              marginLeft: 16,
-              marginRight: 20,
-              ...theme.fonts.IBMPlexSansMedium(18),
-              width: '90%',
-              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-              borderBottomWidth: 2,
-              marginBottom: 32,
-            });
-          }}
-          calendarType={type}
-          onCalendarTypeChanged={(type) => {
-            setType(type);
-          }}
-          minDate={new Date()}
-        />
-      </View>
-    );
-  };
-  const showCalender = () => {
-    setCalenderShow(!calenderShow);
-    setShowStyles({
-      marginLeft: 16,
-      marginRight: 20,
-      ...theme.fonts.IBMPlexSansMedium(18),
-      width: '90%',
-      borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-      borderBottomWidth: 2,
-      marginBottom: 0,
-    });
   };
 
   const renderFollowUpView = () => {
@@ -1876,11 +1721,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const removeDiagonsisValue = (item: string) => {
-    console.log(item, 'item');
-    removeDiagonsisList(item);
-    setDiagnosisData(getDiagonsisList());
-  };
+
   const renderDiagnosisView = () => {
     return (
       <View>
