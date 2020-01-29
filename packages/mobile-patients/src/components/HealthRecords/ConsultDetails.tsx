@@ -64,6 +64,7 @@ import {
   useDiagnosticsCart,
   DiagnosticsCartItem,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -347,13 +348,30 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
+  const { locationDetails } = useAppCommonData();
 
   const onAddTestsToCart = () => {
+    if (!locationDetails) {
+      Alert.alert(
+        'Uh oh.. :(',
+        'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
+      );
+      return;
+    }
     setLoading && setLoading(true);
-    const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
-      []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
+    const testPrescription = ((caseSheetDetails!.diagnosticPrescription ||
+      []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]).filter(
+      (item) =>
+        (g(item, 'additionalDetails', 'city') || '').toLowerCase() ==
+        locationDetails.city.toLowerCase()
+    );
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
+    if (!testPrescription.length) {
+      Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
+      setLoading && setLoading(false);
+      return;
+    }
     const presToAdd = {
       id: caseSheetDetails!.id,
       date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
