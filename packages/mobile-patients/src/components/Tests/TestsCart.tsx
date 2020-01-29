@@ -19,12 +19,10 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CalendarShow, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { ScheduleCalander } from '@aph/mobile-patients/src/components/ui/ScheduleCalander';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -1448,52 +1446,34 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   return (
     <View style={{ flex: 1 }}>
-      {/* {displaySchedule && (
-        <ScheduleCalander
-          date={date}
-          setDate={(date) => setDate(date)}
-          setdisplayoverlay={(val) => setDisplaySchedule(val)}
-          selectedTimeSlot={selectedTimeSlot}
-          setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
-          isDropDown={true}
-          dropdownArray={timeArray}
-          setDropArray={(array) => settimeArray(array)}
-          CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
-          maxDate={moment()
-            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
-            .toDate()}
-        />
-      )} */}
-      {
-        <TestSlotSelectionOverlay
-          heading="Schedule Appointment"
-          date={date}
-          maxDate={moment()
-            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
-            .toDate()}
-          isVisible={displaySchedule}
-          onClose={() => setDisplaySchedule(false)}
-          slots={slots}
-          zipCode={parseInt(zipCode, 10)}
-          slotInfo={selectedTimeSlot}
-          onSchedule={(date: Date, slotInfo: TestSlot) => {
-            console.log({ slotInfo });
+      <TestSlotSelectionOverlay
+        heading="Schedule Appointment"
+        date={date}
+        maxDate={moment()
+          .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+          .toDate()}
+        isVisible={displaySchedule}
+        onClose={() => setDisplaySchedule(false)}
+        slots={slots}
+        zipCode={parseInt(zipCode, 10)}
+        slotInfo={selectedTimeSlot}
+        onSchedule={(date: Date, slotInfo: TestSlot) => {
+          console.log({ slotInfo });
 
-            setDate(date);
-            setselectedTimeSlot(slotInfo);
-            setDiagnosticSlot!({
-              slotStartTime: slotInfo.slotInfo.startTime!,
-              slotEndTime: slotInfo.slotInfo.endTime!,
-              date: date.getTime(),
-              employeeSlotId: slotInfo.slotInfo.slot!,
-              diagnosticBranchCode: slotInfo.diagnosticBranchCode,
-              diagnosticEmployeeCode: slotInfo.employeeCode,
-              city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
-            });
-            setDisplaySchedule(false);
-          }}
-        />
-      }
+          setDate(date);
+          setselectedTimeSlot(slotInfo);
+          setDiagnosticSlot!({
+            slotStartTime: slotInfo.slotInfo.startTime!,
+            slotEndTime: slotInfo.slotInfo.endTime!,
+            date: date.getTime(),
+            employeeSlotId: slotInfo.slotInfo.slot!,
+            diagnosticBranchCode: slotInfo.diagnosticBranchCode,
+            diagnosticEmployeeCode: slotInfo.employeeCode,
+            city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+          });
+          setDisplaySchedule(false);
+        }}
+      />
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
