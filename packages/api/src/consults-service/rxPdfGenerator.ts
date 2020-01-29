@@ -729,10 +729,9 @@ export const uploadRxPdf = async (
 const convertPdfUrlToBase64 = async (pdfUrl: string) => {
   const pdf2base64 = require('pdf-to-base64');
   util.promisify(pdf2base64);
-  console.log('blo', pdfUrl);
   try {
     const base64pdf = await pdf2base64(pdfUrl);
-    console.log(base64pdf);
+    console.log('pdfData:', base64pdf);
     return base64pdf;
   } catch (e) {
     throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
