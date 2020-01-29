@@ -10,6 +10,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
+import { debugLog } from 'customWinstonLogger';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -48,9 +49,14 @@ const login: Resolver<
   ProfilesServiceContext,
   LoginResult
 > = async (parent, args, { profilesDb }) => {
+  const apiCallId = Math.floor(Math.random() * 10000);
+  debugLog('otpVerificationAPILogger', 'API_CALL___START', 'login_API_' + apiCallId);
   const { mobileNumber, loginType } = args;
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
+
+  debugLog('otpVerificationAPILogger', 'OTP_GENERATION_START', 'login_API_' + apiCallId);
   let otp = generateOTP();
+  debugLog('otpVerificationAPILogger', 'OTP_GENERATION_END', 'login_API_' + apiCallId);
 
   //if performance environment(as), use the static otp
   if (
@@ -70,6 +76,7 @@ const login: Resolver<
     otp = process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP.toString();
   }
 
+  debugLog('otpVerificationAPILogger', 'OTP_INSERT_START', 'login_API_' + apiCallId);
   const optAttrs: Partial<LoginOtp> = {
     loginType,
     mobileNumber,
@@ -79,8 +86,11 @@ const login: Resolver<
 
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
 
+  debugLog('otpVerificationAPILogger', 'OTP_INSERT_END', 'login_API_' + apiCallId);
+
   //if performance environment(as), return the response without sending SMS
   if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
+    debugLog('otpVerificationAPILogger', 'STATIC_OTP_API_CALL___END', 'login_API_' + apiCallId);
     return {
       status: true,
       loginId: otpSaveResponse.id,
@@ -95,6 +105,7 @@ const login: Resolver<
     process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP &&
     mobileNumber == process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER
   ) {
+    debugLog('otpVerificationAPILogger', 'STATIC_OTP_API_CALL___END', 'login_API_' + apiCallId);
     return {
       status: true,
       loginId: otpSaveResponse.id,
@@ -103,9 +114,17 @@ const login: Resolver<
   }
 
   //call sms gateway service to send the OTP here
+  debugLog('otpVerificationAPILogger', 'SEND_SMS___START', 'login_API_' + apiCallId);
   const smsResult = await sendSMS(mobileNumber, otp);
+  debugLog('otpVerificationAPILogger', 'SEND_SMS___END', 'login_API_' + apiCallId);
+
   console.log(smsResult.status, smsResult);
   if (smsResult.status != 'OK') {
+    debugLog(
+      'otpVerificationAPILogger',
+      'SEND_SMS_FAILED_API_CALL___END',
+      'login_API_' + apiCallId
+    );
     return {
       status: false,
       loginId: null,
@@ -113,6 +132,7 @@ const login: Resolver<
     };
   }
 
+  debugLog('otpVerificationAPILogger', 'API_CALL___END', 'login_API_' + apiCallId);
   return {
     status: true,
     loginId: otpSaveResponse.id,
@@ -126,13 +146,23 @@ const resendOtp: Resolver<
   ProfilesServiceContext,
   LoginResult
 > = async (parent, args, { profilesDb }) => {
+  const apiCallId = Math.floor(Math.random() * 10000);
+  debugLog('otpVerificationAPILogger', 'API_CALL___START', 'resendOtp_API_' + apiCallId);
+
   const { mobileNumber, id, loginType } = args;
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
   //validate resend params
+  debugLog('otpVerificationAPILogger', 'QUERY___START', 'resendOtp_API_' + apiCallId);
   const validResendRecord = await otpRepo.getValidOtpRecord(id, mobileNumber);
+  debugLog('otpVerificationAPILogger', 'QUERY___END', 'resendOtp_API_' + apiCallId);
 
   if (validResendRecord.length === 0) {
+    debugLog(
+      'otpVerificationAPILogger',
+      'VALIDATION_FAILED_API_CALL___END',
+      'resendOtp_API_' + apiCallId
+    );
     return {
       status: false,
       loginId: null,
@@ -140,7 +170,9 @@ const resendOtp: Resolver<
     };
   }
 
+  debugLog('otpVerificationAPILogger', 'OTP_GENERATION_START', 'resendOtp_API_' + apiCallId);
   let otp = generateOTP();
+  debugLog('otpVerificationAPILogger', 'OTP_GENERATION_END', 'resendOtp_API_' + apiCallId);
 
   //if performance environment(as), use the static otp
   if (
@@ -149,6 +181,8 @@ const resendOtp: Resolver<
   ) {
     otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
   }
+
+  debugLog('otpVerificationAPILogger', 'UPDATION_START', 'resendOtp_API_' + apiCallId);
 
   const optAttrs: Partial<LoginOtp> = {
     mobileNumber,
@@ -162,8 +196,11 @@ const resendOtp: Resolver<
   //archive the old resend record and then delete it
   archiveOtpRecord(validResendRecord[0].id, profilesDb);
 
+  debugLog('otpVerificationAPILogger', 'UPDATION_END', 'resendOtp_API_' + apiCallId);
+
   //if performance environment(as), return the response without sending SMS
   if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
+    debugLog('otpVerificationAPILogger', 'STATIC_OTP_API_CALL___END', 'resendOtp_API_' + apiCallId);
     return {
       status: true,
       loginId: otpSaveResponse.id,
@@ -172,9 +209,17 @@ const resendOtp: Resolver<
   }
 
   //call sms gateway service to send the OTP here
+  debugLog('otpVerificationAPILogger', 'SEND_SMS___START', 'resendOtp_API_' + apiCallId);
   const smsResult = await sendSMS(mobileNumber, otp);
+  debugLog('otpVerificationAPILogger', 'SEND_SMS___END', 'resendOtp_API_' + apiCallId);
+
   console.log(smsResult.status, smsResult);
   if (smsResult.status != 'OK') {
+    debugLog(
+      'otpVerificationAPILogger',
+      'SEND_SMS_FAILED_API_CALL___END',
+      'resendOtp_API_' + apiCallId
+    );
     return {
       status: false,
       loginId: null,
@@ -182,6 +227,7 @@ const resendOtp: Resolver<
     };
   }
 
+  debugLog('otpVerificationAPILogger', 'API_CALL___END', 'resendOtp_API_' + apiCallId);
   return {
     status: true,
     loginId: otpSaveResponse.id,
