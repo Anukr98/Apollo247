@@ -97,6 +97,21 @@ winston.loggers.add('doctorSearchAPILogger', {
   ],
 });
 
+//otp-process-api logger
+winston.loggers.add('otpVerificationAPILogger', {
+  format: combine(label({ label: 'otpVerificationAPILogger' }), timestamp(), winstonFormat.json()),
+  transports: [
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.OTP_VERIFICATION_API_LOG_FILE,
+      level: 'info',
+    }),
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.OTP_VERIFICATION_API_LOG_FILE,
+      level: 'error',
+    }),
+  ],
+});
+
 export const winstonLogger = winston;
 
 export const log = (
