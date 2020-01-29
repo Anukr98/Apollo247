@@ -197,6 +197,18 @@ export enum patientLogType {
   REGULAR = "REGULAR",
 }
 
+export interface BlockMultipleItems {
+  doctorId: string;
+  reason?: string | null;
+  itemDetails?: (CalendarItem | null)[] | null;
+}
+
+export interface CalendarItem {
+  start: any;
+  end: any;
+  consultMode?: ConsultMode | null;
+}
+
 export interface CreateAppointmentSessionInput {
   appointmentId: string;
   requestRole: REQUEST_ROLES;

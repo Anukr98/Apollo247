@@ -83,3 +83,103 @@ export const getNetStatus = async () => {
   });
   return status;
 };
+
+export const getDateArray = (start: Date, end: Date) => {
+  const arr = [];
+  const dt = new Date(start);
+  arr.push(new Date(dt));
+  while (dt <= end) {
+    dt.setDate(dt.getDate() + 1);
+    arr.push(new Date(dt));
+  }
+  return arr;
+};
+
+export const ConvertTimeToLocal = (time: string /* HH:mm:ss */) => {
+  return moment
+    .utc(time, 'HH:mm:ss')
+    .local()
+    .format('HH:mm:ss');
+};
+
+export const ConvertDateToWeekDay = (date: Date, format: string = 'dddd') => {
+  return moment(date)
+    .format(format)
+    .toUpperCase();
+};
+
+export const ConvertDateTimeToUtc = (date: string /* YYYY-MM-DD */, time: string /* HH:mm:s */) => {
+  return moment(date + ConvertTimeToLocal(time), 'YYYY-MM-DDHH:mm:ss').toISOString();
+};
+
+export const FormatDateToString = (date: Date, format: string = 'YYYY-MM-DD') => {
+  return moment(date).format(format);
+};
+
+export function g<T, P1 extends keyof NonNullable<T>>(
+  obj: T,
+  prop1: P1
+): NonNullable<T>[P1] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>
+>(obj: T, prop1: P1, prop2: P2): NonNullable<NonNullable<T>[P1]>[P2] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>,
+  P3 extends keyof NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>
+>(
+  obj: T,
+  prop1: P1,
+  prop2: P2,
+  prop3: P3
+): NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>,
+  P3 extends keyof NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>,
+  P4 extends keyof NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>
+>(
+  obj: T,
+  prop1: P1,
+  prop2: P2,
+  prop3: P3,
+  prop4: P4
+): NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>,
+  P3 extends keyof NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>,
+  P4 extends keyof NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>,
+  P5 extends keyof NonNullable<
+    NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4]
+  >
+>(
+  obj: T,
+  prop1: P1,
+  prop2: P2,
+  prop3: P3,
+  prop4: P4,
+  prop5: P5
+):
+  | NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4]>[P5]
+  | undefined;
+
+// ...and so on...
+
+/**
+ *
+ * @param obj
+ * @param props
+ */
+export function g(obj: any, ...props: string[]) {
+  return obj && props.reduce((result, prop) => (result == null ? undefined : result[prop]), obj);
+}
