@@ -180,6 +180,30 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     console.log('didmout');
+    db.ref('ApolloPatients/')
+      .push({
+        mobileNumber: '',
+        mobileNumberEntered: '',
+        mobileNumberSuccess: '',
+        OTPEntered: '',
+        ResendOTP: '',
+        wrongOTP: '',
+        OTPEnteredSuccess: '',
+        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
+        mobileNumberFailed: '',
+        OTPFailedReason: '',
+        FirebaseTokenSuccess: '',
+        patientApiCallSuccess: '',
+      })
+      .then((data: any) => {
+        //success callback
+        // console.log('data ', data);
+        dbChildKey = data.path.pieces_[1];
+      })
+      .catch((error: Error) => {
+        //error callback
+        console.log('error ', error);
+      });
     // Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
 
@@ -243,26 +267,10 @@ export const Login: React.FC<LoginProps> = (props) => {
     CommonLogEvent(AppRoutes.Login, 'Login clicked');
 
     db.ref('ApolloPatients/')
-      .push({
+      .child(dbChildKey)
+      .update({
         mobileNumber: phoneNumber,
         mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-        mobileNumberSuccess: '',
-        OTPEntered: '',
-        ResendOTP: '',
-        wrongOTP: '',
-        OTPEnteredSuccess: '',
-        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
-        mobileNumberFailed: '',
-        OTPFailedReason: '',
-      })
-      .then((data: any) => {
-        //success callback
-        // console.log('data ', data);
-        dbChildKey = data.path.pieces_[1];
-      })
-      .catch((error: Error) => {
-        //error callback
-        console.log('error ', error);
       });
 
     Keyboard.dismiss();

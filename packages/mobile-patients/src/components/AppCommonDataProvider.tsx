@@ -24,6 +24,8 @@ export interface AppCommonDataContextProps {
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
     | null;
   locationForDiagnostics: { cityId: string; stateId: string; city: string; state: string } | null;
+  VirtualConsultationFee: string;
+  setVirtualConsultationFee: ((arg0: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -32,6 +34,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   diagnosticsCities: [],
   setDiagnosticsCities: null,
   locationForDiagnostics: null,
+  VirtualConsultationFee: '',
+  setVirtualConsultationFee: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -42,6 +46,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
+  const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
 
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
@@ -105,6 +110,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,
+        VirtualConsultationFee,
+        setVirtualConsultationFee,
       }}
     >
       {props.children}

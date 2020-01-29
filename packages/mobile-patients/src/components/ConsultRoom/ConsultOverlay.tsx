@@ -42,6 +42,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -84,6 +85,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
   const { showAphAlert } = useUIElements();
+  const { VirtualConsultationFee } = useAppCommonData();
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -263,12 +265,21 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           title={
             tabs[0].title === selectedTab ? (
               <Text>
-                PAY{' '}
-                <Text style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}>
-                  (Rs. 999)
-                </Text>{' '}
-                Rs. 1
-              </Text> //props.doctor!.onlineConsultationFees
+                {VirtualConsultationFee !== props.doctor!.onlineConsultationFees && (
+                  <>
+                    <Text
+                      style={{
+                        textDecorationLine: 'line-through',
+                        textDecorationStyle: 'solid',
+                      }}
+                    >
+                      {`(Rs. ${props.doctor!.onlineConsultationFees})`}
+                    </Text>
+                    <Text> </Text>
+                  </>
+                )}
+                Rs. {VirtualConsultationFee}
+              </Text>
             ) : (
               `PAY Rs. ${props.doctor!.physicalConsultationFees}`
             )

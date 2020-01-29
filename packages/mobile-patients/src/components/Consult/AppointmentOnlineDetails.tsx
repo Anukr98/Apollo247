@@ -54,6 +54,7 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -196,6 +197,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { VirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -525,12 +527,20 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   <Text style={styles.descriptionStyle}>Amount Paid</Text>
                   <Text style={styles.descriptionStyle}>
                     {/* {data.doctorInfo.onlineConsultationFees} */}
-                    <Text
-                      style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}
-                    >
-                      (Rs. 999)
-                    </Text>{' '}
-                    Rs. 1
+                    {VirtualConsultationFee !== data.doctorInfo.onlineConsultationFees && (
+                      <>
+                        <Text
+                          style={{
+                            textDecorationLine: 'line-through',
+                            textDecorationStyle: 'solid',
+                          }}
+                        >
+                          {`(Rs. ${data.doctorInfo.onlineConsultationFees})`}
+                        </Text>
+                        <Text> </Text>
+                      </>
+                    )}{' '}
+                    Rs. {VirtualConsultationFee}
                   </Text>
                 </View>
               </View>

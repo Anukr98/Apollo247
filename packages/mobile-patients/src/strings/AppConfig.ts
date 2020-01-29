@@ -97,8 +97,8 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
-  Android_Version: '1.89',
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  Android_Version: '1.90',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
 
@@ -129,7 +129,7 @@ const ConfigurationQA = {
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   iOS_Version: '1.9',
-  Android_Version: '1.19',
+  Android_Version: '1.20',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -224,7 +224,7 @@ const ConfigurationVAPT = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '1.0',
+  iOS_Version: '1.1',
   Android_Version: '1.1',
   CONDITIONAL_MANAGENET_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
