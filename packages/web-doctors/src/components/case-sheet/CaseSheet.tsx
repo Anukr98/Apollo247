@@ -221,12 +221,12 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: otherInstructions,
       component: <OtherInstructions />,
     },
-    {
-      key: 'followup',
-      value: 'Follow up (Free)',
-      state: followUpPanel,
-      component: <FollowUp startAppointment={props.startAppointment} />,
-    },
+    // {
+    //   key: 'followup',
+    //   value: 'Follow up (Free)',
+    //   state: followUpPanel,
+    //   component: <FollowUp startAppointment={props.startAppointment} />,
+    // },
   ];
 
   useEffect(() => {
