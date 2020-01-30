@@ -944,6 +944,9 @@ export class Auditor extends BaseEntity {
   photo: string;
 
   @Column()
+  userName: string;
+
+  @Column()
   password: string;
 
   @Column({ default: true })
