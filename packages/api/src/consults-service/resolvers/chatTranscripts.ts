@@ -34,8 +34,8 @@ const generateChatTranscripts: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DATES, undefined, {});
   }
   const pubnub = new Pubnub({
-    publishKey: process.env.PUBNUB_PUBLISH_KEY ? process.env.PUBNUB_PUBLISH_KEY : '',
-    subscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY ? process.env.PUBNUB_SUBSCRIBE_KEY : '',
+    publishKey: process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '',
+    subscribeKey: process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '',
   });
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const allAppts = await apptRepo.getAllAppointmentsByDates(args.startDate, args.endDate);
