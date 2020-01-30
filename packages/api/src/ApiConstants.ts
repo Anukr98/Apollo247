@@ -196,6 +196,4 @@ export enum ApiConstants {
   JUNIOR_DOC_TXT = 'Junior doctor: ',
   SENIOR_DOC_TXT = 'Senior doctor: ',
   PATIENT_TXT = 'Patient: ',
-  PUBNUB_PUBLISH_KEY = 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef',
-  PUBNUB_SUBSCRIBE_KEY = 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5',
 }
