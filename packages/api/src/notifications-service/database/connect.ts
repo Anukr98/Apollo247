@@ -15,6 +15,7 @@ import {
   TransferAppointmentDetails,
   PhrDocumentsSummary,
   JdDashboardSummary,
+  AuditHistory,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -89,6 +90,7 @@ export const connect = async () => {
         FeedbackDashboardSummary,
         PhrDocumentsSummary,
         JdDashboardSummary,
+        AuditHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
