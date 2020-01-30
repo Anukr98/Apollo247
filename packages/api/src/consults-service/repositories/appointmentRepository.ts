@@ -1081,6 +1081,17 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getAllAppointmentsByDates(fromDate: Date, toDate: Date) {
+    const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.bookingDate Between :fromDate AND :toDate)', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .getMany();
+  }
+
   getAllAppointmentsWithOutLimit(fromDate: Date, toDate: Date) {
     const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');

@@ -54,6 +54,10 @@ import {
   chooseDoctorResolvers,
 } from 'consults-service/resolvers/chooseDoctor';
 import {
+  chatTranscriptsTypeDefs,
+  chatTranscriptsResolvers,
+} from 'consults-service/resolvers/chatTranscripts';
+import {
   cancelAppointmentTypeDefs,
   cancelAppointmentResolvers,
 } from 'consults-service/resolvers/cancelAppointment';
@@ -188,6 +192,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: chooseDoctorTypeDefs,
         resolvers: chooseDoctorResolvers,
+      },
+      {
+        typeDefs: chatTranscriptsTypeDefs,
+        resolvers: chatTranscriptsResolvers,
       },
       {
         typeDefs: cancelAppointmentTypeDefs,
