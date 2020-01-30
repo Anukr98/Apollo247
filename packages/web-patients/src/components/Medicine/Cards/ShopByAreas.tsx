@@ -82,7 +82,6 @@ export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
         }
       }
     ]
-
   };
 
   const apiDetails = {

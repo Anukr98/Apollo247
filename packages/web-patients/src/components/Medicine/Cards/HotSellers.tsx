@@ -137,7 +137,6 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         }
       }
     ]
-
   };
 
   const apiDetails = {

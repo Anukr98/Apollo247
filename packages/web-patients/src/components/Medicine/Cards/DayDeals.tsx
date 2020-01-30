@@ -97,7 +97,6 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         }
       }
     ]
-
   };
 
   const apiDetails = {
