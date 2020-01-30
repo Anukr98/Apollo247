@@ -12,6 +12,15 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       position: 'relative',
+      [theme.breakpoints.down(768)]:{
+        padding: '15px 20px 15px 20px',
+        position: 'fixed',
+        width: '100%',
+        top: 74,
+        zIndex: 999,
+        background: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      },
     },
     medicineSearchForm: {
       backgroundColor: '#f7f8f5',
@@ -19,8 +28,27 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       borderRadius: 5,
+      [theme.breakpoints.down(768)]:{
+        padding: 0,
+      },
     },
     searchInput: {
+      '& input': {
+        borderBottom: '2px solid transparent',
+        [theme.breakpoints.down(350)]:{
+          fontSize: 11,
+        }, 
+        [theme.breakpoints.down(768)]:{
+          backgroundColor: '#f7f8f5',
+          padding: '15px 33px 15px 12px',
+          '&:focus':{
+            backgroundColor: '#fff',
+            borderBottom: '2px solid #00b38e',
+            paddingLeft: 0,
+          },
+        }, 
+        
+      },
       '& >div': {
         '&:after': {
           display: 'none',
@@ -36,6 +64,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       backgroundColor: 'transparent !important',
       minWidth: 'auto',
+      [theme.breakpoints.down(768)]:{
+          marginLeft: -30,
+      },
     },
     autoSearchPopover: {
       position: 'absolute',

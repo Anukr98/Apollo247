@@ -29,7 +29,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       cursor: 'pointer',
       maxWidth: 210,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down(768)]: {
+        maxWidth: 180,
+      },
+      [theme.breakpoints.down(500)]: {
         maxWidth: 150,
       },
     },
