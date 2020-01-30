@@ -34,8 +34,8 @@ const generateChatTranscripts: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DATES, undefined, {});
   }
   const pubnub = new Pubnub({
-    publishKey: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef',
-    subscribeKey: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5',
+    publishKey: process.env.PUBNUB_PUBLISH_KEY ? process.env.PUBNUB_PUBLISH_KEY : '',
+    subscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY ? process.env.PUBNUB_SUBSCRIBE_KEY : '',
   });
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const allAppts = await apptRepo.getAllAppointmentsByDates(args.startDate, args.endDate);
