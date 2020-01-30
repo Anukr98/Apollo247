@@ -230,8 +230,8 @@ export class Appointment extends BaseEntity {
   )
   appointmentDocuments: AppointmentDocuments[];
 
-  @OneToMany((type) => AuditHistory, (audithistory) => audithistory.appointment)
-  audithistory: AuditHistory[];
+  @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
+  auditHistory: AuditHistory[];
 }
 //Appointment ends
 
@@ -1137,7 +1137,7 @@ export class AuditHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne((type) => Appointment, (appointment) => appointment.audithistory)
+  @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
   appointment: Appointment;
 
   @Column()
