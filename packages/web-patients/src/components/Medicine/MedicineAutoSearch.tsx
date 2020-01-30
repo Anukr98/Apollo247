@@ -33,10 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     searchInput: {
-      '& input': {
-        [theme.breakpoints.down(350)]:{
-          fontSize: 11,
-        }, 
+      '& input': { 
         [theme.breakpoints.down('xs')]:{
           backgroundColor: '#f7f8f5',
           padding: '15px 33px 15px 12px',
@@ -47,7 +44,6 @@ const useStyles = makeStyles((theme: Theme) => {
             paddingLeft: 0,
           },
         }, 
-        
       },
       '& >div': {
         '&:after': {

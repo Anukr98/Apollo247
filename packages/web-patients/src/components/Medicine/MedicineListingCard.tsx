@@ -21,7 +21,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineStripWrap: {
       display: 'flex',
-
     },
     medicineInformation: {
       paddingRight: 10,

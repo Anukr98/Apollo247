@@ -26,8 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '14px 12px',
       display: 'flex',
       alignItems: 'center',
-      maxHeight: 60,
-      minHeight: 60,
+      height: 60,
     },
     cardIcon: {
       textAlign: 'center',
@@ -81,7 +80,6 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
         }
       }
     ]
-
   };
 
   const apiDetails = {
