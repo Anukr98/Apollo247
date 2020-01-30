@@ -467,7 +467,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     totalItems == outOfStockItems
                                       ? 'Unfortunately, we do not have any medicines available right now.'
                                       : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
-                                  Alert.alert('Uh oh.. :(', alertMsg);
+                                  // Alert.alert('Uh oh.. :(', alertMsg);
                                 }
 
                                 const rxMedicinesCount =
@@ -489,21 +489,22 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 }
                                 // Adding tests to DiagnosticsCart
                                 if (!locationDetails) {
-                                  Alert.alert(
-                                    'Uh oh.. :(',
-                                    'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
-                                  );
+                                  // Alert.alert(
+                                  //   'Uh oh.. :(',
+                                  //   'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
+                                  // );
                                   return;
                                 }
                                 if (!testPrescription.length) {
-                                  Alert.alert(
-                                    'Uh oh.. :(',
-                                    'No items are available in your location for now.'
-                                  );
-                                  setLoading && setLoading(false);
-                                  return;
+                                  // Alert.alert(
+                                  //   'Uh oh.. :(',
+                                  //   'No items are available in your location for now.'
+                                  // );
+                                  setGlobalLoading!(false);
+                                  return Promise.resolve([]);
+                                } else {
+                                  return addTestsToCart(testPrescription);
                                 }
-                                return addTestsToCart(testPrescription);
                               })
                               .then((tests) => {
                                 if (testPrescription.length) {
