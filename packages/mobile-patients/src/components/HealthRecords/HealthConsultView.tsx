@@ -45,6 +45,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { useDiagnosticsCart, DiagnosticsCartItem } from '../DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../../graphql/types/getCaseSheet';
 import { useUIElements } from '../UIElementsProvider';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -141,6 +142,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
+  const { locationDetails } = useAppCommonData();
   const { setLoading: setGlobalLoading } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
@@ -384,8 +386,16 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               item!.blobName!
                             );
 
-                            const testPrescription = (item.diagnosticPrescription ||
-                              []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
+                            console.log('diagnosticPrescription', {
+                              a: item.diagnosticPrescription,
+                            });
+
+                            const testPrescription = ((item.diagnosticPrescription ||
+                              []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]).filter(
+                              (item) =>
+                                (g(item, 'additionalDetails', 'city') || '').toLowerCase() ==
+                                (g(locationDetails, 'city') || '').toLowerCase()
+                            );
 
                             const presToAdd = {
                               id: item.id,
@@ -402,60 +412,62 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               medPrescription.map((item: any) => getMedicineDetailsApi(item!.id!))
                             )
                               .then((result) => {
-                                const medicines = result
-                                  .map(({ data: { productdp } }, index) => {
-                                    const medicineDetails = (productdp && productdp[0]) || {};
-                                    if (medicineDetails.is_in_stock == undefined) {
-                                      return null;
-                                    }
+                                const medicineAll = result.map(({ data: { productdp } }, index) => {
+                                  const medicineDetails = (productdp && productdp[0]) || {};
+                                  if (medicineDetails.is_in_stock == undefined) {
+                                    return null;
+                                  }
 
-                                    const _qty =
-                                      medPrescription[index]!.medicineUnit ==
-                                        MEDICINE_UNIT.CAPSULE ||
-                                      medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
-                                        ? ((medPrescription[index]!.medicineTimings || []).length ||
-                                            1) *
-                                          parseInt(
-                                            medPrescription[index]!
-                                              .medicineConsumptionDurationInDays || '1'
-                                          )
-                                        : 1;
-                                    const qty = Math.ceil(
-                                      _qty / parseInt(medicineDetails.mou || '1')
-                                    );
+                                  const _qty =
+                                    medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
+                                    medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
+                                      ? ((medPrescription[index]!.medicineTimings || []).length ||
+                                          1) *
+                                        parseInt(
+                                          medPrescription[index]!
+                                            .medicineConsumptionDurationInDays || '1'
+                                        )
+                                      : 1;
+                                  const qty = Math.ceil(
+                                    _qty / parseInt(medicineDetails.mou || '1')
+                                  );
 
-                                    return {
-                                      id: medicineDetails!.sku!,
-                                      mou: medicineDetails.mou,
-                                      name: medicineDetails!.name,
-                                      price: medicineDetails!.price,
-                                      specialPrice: medicineDetails.special_price
-                                        ? typeof medicineDetails.special_price == 'string'
-                                          ? parseInt(medicineDetails.special_price)
-                                          : medicineDetails.special_price
-                                        : undefined,
-                                      quantity: qty,
-                                      prescriptionRequired:
-                                        medicineDetails.is_prescription_required == '1',
-                                      thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-                                      isInStock: !!medicineDetails.is_in_stock,
-                                    } as ShoppingCartItem;
-                                  })
-                                  .filter((item: any) => (item ? true : false));
+                                  return {
+                                    id: medicineDetails!.sku!,
+                                    mou: medicineDetails.mou,
+                                    name: medicineDetails!.name,
+                                    price: medicineDetails!.price,
+                                    specialPrice: medicineDetails.special_price
+                                      ? typeof medicineDetails.special_price == 'string'
+                                        ? parseInt(medicineDetails.special_price)
+                                        : medicineDetails.special_price
+                                      : undefined,
+                                    quantity: qty,
+                                    prescriptionRequired:
+                                      medicineDetails.is_prescription_required == '1',
+                                    thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                                    isInStock: !!medicineDetails.is_in_stock,
+                                  } as ShoppingCartItem;
+                                });
+                                const medicines = medicineAll.filter((item: any) => !!item);
 
                                 addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
-                                if (medPrescription.length > medicines.length) {
-                                  const outOfStockCount = medPrescription.length - medicines.length;
-                                  const outOfStockItems = medPrescription
-                                    .filter((item) => !medicines.find((val) => val!.id == item.id))
-                                    .map((item, idx) => `${idx + 1}. ${item.medicineName}\n`)
-                                    .join('');
-                                  Alert.alert(
-                                    'Uh oh.. :(',
-                                    `Below ${outOfStockCount} item(s) are out of stock.\n${outOfStockItems}`
-                                  );
-                                  // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                                const totalItems = (item.medicinePrescription || []).length;
+                                // const customItems = medicineAll.length - medicines.length;
+                                const outOfStockItems = medicines.filter((item) => !item!.isInStock)
+                                  .length;
+                                const outOfStockMeds = medicines
+                                  .filter((item) => !item!.isInStock)
+                                  .map((item) => `${item!.name}`)
+                                  .join(', ');
+
+                                if (outOfStockItems > 0) {
+                                  const alertMsg =
+                                    totalItems == outOfStockItems
+                                      ? 'Unfortunately, we do not have any medicines available right now.'
+                                      : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
+                                  Alert.alert('Uh oh.. :(', alertMsg);
                                 }
 
                                 const rxMedicinesCount =
@@ -476,20 +488,37 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   ]);
                                 }
                                 // Adding tests to DiagnosticsCart
+                                if (!locationDetails) {
+                                  Alert.alert(
+                                    'Uh oh.. :(',
+                                    'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
+                                  );
+                                  return;
+                                }
+                                if (!testPrescription.length) {
+                                  Alert.alert(
+                                    'Uh oh.. :(',
+                                    'No items are available in your location for now.'
+                                  );
+                                  setLoading && setLoading(false);
+                                  return;
+                                }
                                 return addTestsToCart(testPrescription);
                               })
                               .then((tests) => {
-                                addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
-                                // Adding ePrescriptions to DiagnosticsCart
-                                if ((tests as DiagnosticsCartItem[]).length)
-                                  addMultipleTestEPrescriptions!([
-                                    {
-                                      ...presToAdd,
-                                      medicines: (tests as DiagnosticsCartItem[])
-                                        .map((item) => item!.name)
-                                        .join(', '),
-                                    },
-                                  ]);
+                                if (testPrescription.length) {
+                                  addMultipleTestCartItems!((tests || []) as DiagnosticsCartItem[]);
+                                  // Adding ePrescriptions to DiagnosticsCart
+                                  if ((tests as DiagnosticsCartItem[]).length)
+                                    addMultipleTestEPrescriptions!([
+                                      {
+                                        ...presToAdd,
+                                        medicines: (tests as DiagnosticsCartItem[])
+                                          .map((item) => item!.name)
+                                          .join(', '),
+                                      },
+                                    ]);
+                                }
                               })
                               .catch((e) => {
                                 CommonBugFender('HealthConsultView_getMedicineDetailsApi', e);

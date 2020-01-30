@@ -22,6 +22,7 @@ import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -75,6 +76,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     getData('ConsultRoom');
@@ -304,6 +306,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             'QA_ios_mandatory',
             'QA_ios_latest_version',
             'Enable_Conditional_Management',
+            'Virtual_consultation_fee',
           ]);
       })
       .then((snapshot) => {
@@ -318,7 +321,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             index++;
             const element = myValye[val];
             nietos.push({ index: index, value: element.val() });
-            if (nietos.length === 9) {
+            if (nietos.length === 10) {
               console.log(
                 'nietos',
                 parseFloat(nietos[1].value),
@@ -330,6 +333,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               );
 
               AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
+              setVirtualConsultationFee &&
+                setVirtualConsultationFee(JSON.stringify(nietos[9].value));
 
               if (Platform.OS === 'ios') {
                 if (buildName() === 'QA') {
