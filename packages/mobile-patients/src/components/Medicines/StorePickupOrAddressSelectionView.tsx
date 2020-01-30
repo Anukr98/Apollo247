@@ -11,6 +11,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '../../grap
 import { useUIElements } from '../UIElementsProvider';
 import { aphConsole, handleGraphQlError, formatAddress } from '../../helpers/helperFunctions';
 import React, { useState, useEffect } from 'react';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -106,6 +107,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
             setStoreId && setStoreId('');
           })
           .catch((e) => {
+            CommonBugFender('StorePickupOrAddressSelectionView_fetchStorePickup', e);
             setStorePickUpLoading(false);
           });
       } else {
@@ -133,6 +135,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
         }
       })
       .catch((e) => {
+        CommonBugFender('StorePickupOrAddressSelectionView_pinCodeServiceabilityApi', e);
         aphConsole.log({ e });
         setCheckingServicability(false);
         handleGraphQlError(e);

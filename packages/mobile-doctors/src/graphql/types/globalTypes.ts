@@ -6,6 +6,15 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  AWAITING_RESCHEDULE = "AWAITING_RESCHEDULE",
+  AWAITING_TRANSFER = "AWAITING_TRANSFER",
+  NEW = "NEW",
+  RESCHEDULE = "RESCHEDULE",
+  TRANSFER = "TRANSFER",
+  TRANSFERRED = "TRANSFERRED",
+}
+
 export enum APPOINTMENT_TYPE {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -195,6 +204,18 @@ export enum patientLogType {
   All = "All",
   FOLLOW_UP = "FOLLOW_UP",
   REGULAR = "REGULAR",
+}
+
+export interface BlockMultipleItems {
+  doctorId: string;
+  reason?: string | null;
+  itemDetails?: (CalendarItem | null)[] | null;
+}
+
+export interface CalendarItem {
+  start: any;
+  end: any;
+  consultMode?: ConsultMode | null;
 }
 
 export interface CreateAppointmentSessionInput {

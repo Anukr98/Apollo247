@@ -561,7 +561,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 )}
               />
             )}
-            {lengthOfSuggestions === 0 && otherDiagnostic.trim().length > 2 && (
+            { otherDiagnostic.trim().length > 2 && (
               <AphButton
                 className={classes.darkGreenaddBtn}
                 variant="contained"
@@ -572,7 +572,7 @@ export const DiagnosticPrescription: React.FC = () => {
                       itemName: otherDiagnostic,
                       __typename: 'DiagnosticPrescription',
                     });
-                    selectedValues && selectedValues.push(daignosisValue);
+                    //selectedValues && selectedValues.push(daignosisValue);
                     setShowAddOtherTests(false);
                     setShowAddCondition(false);
                     setIdx(selectedValues!.length + 1);

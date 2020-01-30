@@ -52,7 +52,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -272,6 +275,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                       navigateToView();
                     })
                     .catch((e: any) => {
+                      CommonBugFender('OverlayRescheduleView_BOOK_FOLLOWUP_APPOINTMENT', e);
                       console.log('Error occured while BookFollowUpAppointment ', { e });
                       handleGraphQlError(e);
                     });

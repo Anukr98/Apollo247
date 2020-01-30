@@ -8,7 +8,10 @@ import { DoctorPlaceholderImage, More } from '@aph/mobile-patients/src/component
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   CANCEL_APPOINTMENT,
@@ -229,14 +232,18 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   }, []);
 
   const NextAvailableSlotAPI = () => {
-    getNetStatus().then((status) => {
-      if (status) {
-        fetchNextDoctorAvailableData();
-      } else {
-        setNetworkStatus(true);
-        setshowSpinner(false);
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchNextDoctorAvailableData();
+        } else {
+          setNetworkStatus(true);
+          setshowSpinner(false);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AppointmentOnlineDetails_getNetStatus', e);
+      });
   };
 
   const todayDate = moment
@@ -252,11 +259,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         try {
           data[0] && setNextSlotAvailable(data[0].availableSlot);
         } catch (error) {
+          CommonBugFender('AppointmentOnlineDetails_fetchNextDoctorAvailableData_try', error);
           setNextSlotAvailable('');
         }
       })
-      .catch((e: string) => {
+      .catch((e) => {
         setshowSpinner(false);
+        CommonBugFender('AppointmentOnlineDetails_fetchNextDoctorAvailableData', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
       })
@@ -298,6 +307,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         // );
       })
       .catch((e: any) => {
+        CommonBugFender('AppointmentOnlineDetails_cancelAppointmentApi', e);
         setshowSpinner(false);
         console.log('Error occured while adding Doctor', e);
         const message = e.message ? e.message.split(':')[1].trim() : '';
@@ -390,7 +400,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           })
         );
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('AppointmentOnlineDetails_rescheduleAPI', e);
         setshowSpinner(false);
         console.log('Error occured while accept appid', e);
         const error = JSON.parse(JSON.stringify(e));
@@ -433,9 +444,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               setBelowThree(false);
             }
             setNewRescheduleCount(data);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('AppointmentOnlineDetails_CHECK_IF_RESCHDULE_try', error);
+          }
         })
         .catch((e: any) => {
+          CommonBugFender('AppointmentOnlineDetails_checkIfReschedule', e);
           setshowSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
           console.log('Error occured while checkIfRescheduleprofile', error);
@@ -444,6 +458,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           setResheduleoverlay(true);
         });
     } catch (error) {
+      CommonBugFender('AppointmentOnlineDetails_checkIfReschedule_try', error);
       setshowSpinner(false);
       console.log(error, 'error');
     }
@@ -456,6 +471,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       AsyncStorage.setItem('showSchduledPopup', 'true');
       rescheduleAPI(nextSlotAvailable);
     } catch (error) {
+      CommonBugFender('AppointmentOnlineDetails_acceptChange_try', error);
       console.log(error, 'error');
     }
   };
@@ -508,7 +524,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 <View style={styles.amountPaidStyles}>
                   <Text style={styles.descriptionStyle}>Amount Paid</Text>
                   <Text style={styles.descriptionStyle}>
-                    {data.doctorInfo.onlineConsultationFees}
+                    {/* {data.doctorInfo.onlineConsultationFees} */}
+                    <Text
+                      style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}
+                    >
+                      (Rs. 999)
+                    </Text>{' '}
+                    Rs. 1
                   </Text>
                 </View>
               </View>
@@ -555,7 +577,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   );
                   try {
                     isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('AppointmentOnlineDetails_RESCHEDULE_try', error);
+                  }
                 }
               }}
             />

@@ -87,17 +87,17 @@ import {
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 import moment from 'moment';
-import bugsnag from '@bugsnag/js';
+// import bugsnag from '@bugsnag/js';
 
-const bugsnagClient = bugsnag({
-  apiKey: `${process.env.BUGSNAG_API_KEY}`,
-  releaseStage: `${process.env.NODE_ENV}`,
-  autoBreadcrumbs: true,
-  autoCaptureSessions: true,
-  autoNotify: true,
-});
+// const bugsnagClient = bugsnag({
+//   apiKey: `${process.env.BUGSNAG_API_KEY}`,
+//   releaseStage: `${process.env.NODE_ENV}`,
+//   autoBreadcrumbs: true,
+//   autoCaptureSessions: true,
+//   autoNotify: true,
+// });
 
-const sessionClient = bugsnagClient.startSession();
+// const sessionClient = bugsnagClient.startSession();
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
@@ -309,7 +309,7 @@ export const ConsultTabs: React.FC = () => {
   const params = useParams<Params>();
   const paramId = params.id;
 
-  const { currentPatient, isSignedIn } = useAuth();
+  const { currentPatient, isSignedIn, sessionClient } = useAuth();
 
   const mutationCreateSrdCaseSheet = useMutation<
     CreateSeniorDoctorCaseSheet,
@@ -1386,8 +1386,28 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .catch((error: ApolloError) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'EndCallNotification',
+          inputParam: JSON.stringify({
+            appointmentCallId: isCall ? callId : chatRecordId,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
-        //alert('An error occurred while sending notification to Client.');
       });
   };
 

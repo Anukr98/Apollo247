@@ -38,12 +38,16 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
-import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  REQUEST_ROLES,
+  STATUS,
+  APPOINTMENT_STATE,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment, { duration } from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import Pubnub from 'pubnub';
+import Pubnub, { HereNowResponse } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -102,6 +106,11 @@ let intervalId: any;
 let stoppedTimer: number;
 let timerId: any;
 
+let joinTimerId: any;
+let diffInHours: number;
+let callAbandonmentTimer: any;
+let callAbandonmentStoppedTimer: number = 200;
+
 const videoCallMsg = '^^callme`video^^';
 const audioCallMsg = '^^callme`audio^^';
 const acceptedCallMsg = '^^callme`accept^^';
@@ -131,6 +140,7 @@ export interface ConsultRoomScreenProps
     PatientInfoAll: PatientInfoData;
     AppId: string;
     Appintmentdatetime: string; //Date;
+    AppoinementData: any;
 
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
@@ -146,14 +156,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
   const [showLoading, setShowLoading] = useState<boolean>(false);
-  //console.log('hihihi', Appintmentdatetime);
+  const appointmentData = props.navigation.getParam('AppoinementData');
   const [dropdownShow, setDropdownShow] = useState(false);
   const channel = props.navigation.getParam('AppId');
-
   const doctorId = props.navigation.getParam('DoctorId');
-
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
-
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -162,7 +169,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
   const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
-  const [apiKey, setapiKey] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
@@ -244,6 +250,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   const { doctorDetails } = useAuth();
+  let dateIsAfter = moment(new Date()).isAfter(moment(Appintmentdatetime));
 
   const consultTime =
     (doctorDetails &&
@@ -360,16 +367,141 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       console.log('session stream signal!', event);
     },
   };
-
+  let abondmentStarted = false;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b', //'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
     publishKey: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e', //'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
     ssl: true,
+    uuid: REQUEST_ROLES.DOCTOR,
+    restore: true,
+    keepAlive: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
+    presenceTimeout: 20,
+    heartbeatInterval: 20,
   };
 
   const pubnub = new Pubnub(config);
-  // console.log('pubnub', pubnub);
+  //console.log('pubnub', pubnub);
 
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
+  const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
+
+  const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
+    const startConsultJRResult = insertText.filter((obj: any) => {
+      return obj.message === startConsultjr;
+    });
+
+    const stopConsultJRResult = insertText.filter((obj: any) => {
+      return obj.message === stopConsultJr;
+    });
+
+    if (isSeniorConsultStarted) {
+      console.log('callAbondmentMethod scenario');
+      if (appointmentData.status === STATUS.COMPLETED) return;
+      if (appointmentData.status === STATUS.NO_SHOW) return;
+      if (appointmentData.status === STATUS.CALL_ABANDON) return;
+      if (appointmentData.status === STATUS.CANCELLED) return;
+      if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
+      abondmentStarted = true;
+      startCallAbondmentTimer(200, true);
+    } else {
+      console.log(
+        'doctor no show scenario',
+        startConsultJRResult.length,
+        stopConsultJRResult.length,
+        dateIsAfter,
+        isSeniorConsultStarted
+      );
+
+      if (
+        startConsultJRResult.length > 0 &&
+        stopConsultJRResult.length > 0 &&
+        dateIsAfter &&
+        !isSeniorConsultStarted
+      ) {
+        if (appointmentData.status === STATUS.COMPLETED) return;
+        if (appointmentData.status === STATUS.NO_SHOW) return;
+        if (appointmentData.status === STATUS.CALL_ABANDON) return;
+        if (appointmentData.status === STATUS.CANCELLED) return;
+        if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+
+        abondmentStarted = true;
+        startCallAbondmentTimer(200, false);
+      } else {
+        abondmentStarted = false;
+      }
+    }
+  };
+
+  const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
+    try {
+      //setTransferData(appointmentData);
+      callAbandonmentTimer = setInterval(() => {
+        timer = timer - 1;
+        callAbandonmentStoppedTimer = timer;
+        setCallAbundantCallTime(timer);
+
+        // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+
+        if (timer < 1) {
+          // console.log('call Abundant', appointmentData);
+          //endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
+
+          if (isCallAbandment) {
+            setIsDoctorNoShow(true);
+          } else {
+            //NextAvailableSlot(appointmentData, 'Transfer', true);
+          }
+          setCallAbundantCallTime(200);
+          callAbandonmentStoppedTimer = 200;
+          callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+        }
+      }, 1000);
+    } catch (error) {
+      console.log('error in call abandoment', error);
+    }
+  };
+
+  const stopCallAbondmentTimer = () => {
+    console.log('stopCallAbondmentTimer', callAbandonmentTimer);
+    callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+    setCallAbundantCallTime(200);
+    callAbandonmentStoppedTimer = 200;
+    abondmentStarted = false;
+  };
+
+  const APIForUpdateAppointmentData = (toStopTimer: boolean) => {
+    // getAppointmentDataDetails(client, appointmentData.id)
+    //   .then(({ data }: any) => {
+    //     try {
+    //       console.log(data, 'data APIForUpdateAppointmentData');
+    //       const appointmentSeniorDoctorStarted =
+    //         data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
+    //       console.log(
+    //         appointmentSeniorDoctorStarted,
+    //         data.data.getAppointmentData.appointmentsHistory[0],
+    //         'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+    //       );
+    //       appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
+    //       setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
+    //       if (toStopTimer) {
+    //         if (appointmentSeniorDoctorStarted) {
+    //           stopCallAbondmentTimer();
+    //           abondmentStarted = false;
+    //         }
+    //       } else {
+    //         callAbondmentMethod(appointmentSeniorDoctorStarted);
+    //       }
+    //     } catch (error) {
+    //     }
+    //   })
+    //   .catch((e) => {
+    //     abondmentStarted = false;
+    //     console.log('Error APIForUpdateAppointmentData ', e);
+    //   });
+  };
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -377,7 +509,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
 
     getHistory();
-
+    let abondmentStarted = false;
     pubnub.addListener({
       status: (statusEvent) => {
         if (statusEvent.category === Pubnub.CATEGORIES.PNConnectedCategory) {
@@ -446,15 +578,65 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         }
       },
       presence: (presenceEvent) => {
-        console.log('presenceEvent', presenceEvent);
+        // console.log('presenceEvent', presenceEvent);
+        dateIsAfter = moment(new Date()).isAfter(moment(Appintmentdatetime));
+
+        const diff = moment.duration(moment(Appintmentdatetime).diff(new Date()));
+        const diffInMins = diff.asMinutes();
+        console.log('appointmentData', appointmentData);
+
+        pubnub
+          .hereNow({
+            channels: [channel],
+            includeUUIDs: true,
+          })
+          .then((response: HereNowResponse) => {
+            // console.log('hereNowresponse', response);
+
+            const data: any = response.channels[channel].occupants;
+
+            const occupancyDoctor = data.filter((obj: any) => {
+              return obj.uuid === REQUEST_ROLES.DOCTOR;
+            });
+
+            const startConsultResult = insertText.filter((obj: any) => {
+              return obj.message === startConsultMsg;
+            });
+            // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
+            if (diffInMins < 15) {
+              if (response.totalOccupancy >= 2) {
+                if (callAbandonmentStoppedTimer == 200) return;
+                if (callAbandonmentStoppedTimer < 200) {
+                  // console.log('calljoined');
+                  // APIForUpdateAppointmentData(true);
+                }
+              } else {
+                if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
+                  // console.log('abondmentStarted -------> ', abondmentStarted);
+
+                  if (abondmentStarted == false) {
+                    // console.log('callAbondmentMethod', abondmentStarted);
+                    if (startConsultResult.length > 0) {
+                      // APIForUpdateAppointmentData(false);
+                      abondmentStarted = true;
+                    } else {
+                      //callAbondmentMethod(false);
+                    }
+                    //eventsAfterConnectionDestroyed();
+                  }
+                }
+              }
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       },
     });
 
     const addMessages = (message: Pubnub.MessageEvent) => {
       console.log('messages', messages);
-
       console.log('before insertText', insertText);
-
       insertText[insertText.length] = message.message;
       //setMessages(insertText as []);
       setMessages(() => [...(insertText as [])]);

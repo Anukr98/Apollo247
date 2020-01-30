@@ -11,7 +11,10 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   DiagnosticLineItem,
@@ -300,6 +303,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('TestsCheckoutScene_saveOrder', error);
         console.log('SaveDiagnosticOrder API Error\n', { error });
         showAphAlert!({
           unDismissable: true,
@@ -511,7 +515,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           onPress={() => {
             try {
               CommonLogEvent(AppRoutes.TestsCheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
-            } catch (error) {}
+            } catch (error) {
+              CommonBugFender('TestsCheckoutScene_renderPayButton_try', error);
+            }
             initiateOrder();
           }}
           // disabled={isPayDisabled}
@@ -642,7 +648,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     const ontapNumber = (number: string) => {
       Linking.openURL(`tel:${number}`)
         .then(() => {})
-        .catch(() => {});
+        .catch((e) => {
+          CommonBugFender('TestsCheckoutScene_Linking_mobile', e);
+        });
     };
 
     return (

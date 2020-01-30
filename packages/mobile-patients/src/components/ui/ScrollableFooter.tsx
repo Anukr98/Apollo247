@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Animated, Linking, View, Text, StyleProp, ViewStyle } from 'react-native';
 import { theme } from '../../theme/theme';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface ScrollableFooterProps {
   children?: React.ReactNode;
@@ -15,7 +16,9 @@ export const ScrollableFooter: React.FC<ScrollableFooterProps> = (props) => {
   const ontapNumber = (number: string) => {
     Linking.openURL(`tel:${number}`)
       .then(() => {})
-      .catch(() => {});
+      .catch((e) => {
+        CommonBugFender('ScrollableFooter_Linking_Call', e);
+      });
   };
   const { children, show, containerStyle } = props;
   const [bottomOffset] = useState(new Animated.Value(0));

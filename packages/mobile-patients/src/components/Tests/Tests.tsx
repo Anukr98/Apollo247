@@ -90,6 +90,7 @@ import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   searchDiagnosticsById,
   searchDiagnosticsByIdVariables,
@@ -203,11 +204,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (currentPatient && profile && profile.id !== currentPatient.id) {
       setLoadingContext!(true);
       setProfile(currentPatient);
-      ordersRefetch().then((data: any) => {
-        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        setOrdersFetched(orderData);
-        setLoadingContext!(false);
-      });
+      ordersRefetch()
+        .then((data: any) => {
+          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          setOrdersFetched(orderData);
+          setLoadingContext!(false);
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_ordersRefetch_PATIENT_CHANGE', e);
+        });
     }
   }, [currentPatient]);
 
@@ -229,6 +234,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           );
         })
         .catch((e) => {
+          CommonBugFender('Tests_GET_DIAGNOSTICS_CITES', e);
           console.log('getDiagnosticsCites Error\n', { e });
           showAphAlert!({
             unDismissable: true,
@@ -280,6 +286,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     setLocationDetails!(response);
                   })
                   .catch((e) => {
+                    CommonBugFender('Tests_ALLOW_AUTO_DETECT', e);
                     setLoadingContext!(false);
                     showAphAlert!({
                       title: 'Uh oh! :(',
@@ -316,6 +323,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setTestPackages(g(data, 'data') || []);
         })
         .catch((e) => {
+          CommonBugFender('Tests_getTestsPackages', e);
           setLoading(false);
           aphConsole.log('getTestsPackages Error\n', { e });
         });
@@ -355,10 +363,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     hRefetch();
     if (ordersFetched.length == 0) {
-      ordersRefetch().then((data: any) => {
-        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        orderData.length > 0 && setOrdersFetched(orderData);
-      });
+      ordersRefetch()
+        .then((data: any) => {
+          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          orderData.length > 0 && setOrdersFetched(orderData);
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_ordersRefetch_initial', e);
+        });
     }
   }, []);
 
@@ -385,36 +397,43 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const autoSearch = (searchText: string) => {
-    getNetStatus().then((status) => {
-      if (status) {
-        autoCompletePlaceSearch(searchText)
-          .then((obj) => {
-            console.log({});
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          autoCompletePlaceSearch(searchText)
+            .then((obj) => {
+              console.log({});
 
-            try {
-              if (obj.data.predictions) {
-                const address = obj.data.predictions.map(
-                  (item: {
-                    place_id: string;
-                    structured_formatting: {
-                      main_text: string;
-                    };
-                  }) => {
-                    return {
-                      name: item.structured_formatting.main_text,
-                      placeId: item.place_id,
-                    };
-                  }
-                );
-                setlocationSearchList(address);
+              try {
+                if (obj.data.predictions) {
+                  const address = obj.data.predictions.map(
+                    (item: {
+                      place_id: string;
+                      structured_formatting: {
+                        main_text: string;
+                      };
+                    }) => {
+                      return {
+                        name: item.structured_formatting.main_text,
+                        placeId: item.place_id,
+                      };
+                    }
+                  );
+                  setlocationSearchList(address);
+                }
+              } catch (e) {
+                CommonBugFender('Tests_autoSearch_try', e);
               }
-            } catch {}
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-    });
+            })
+            .catch((error) => {
+              CommonBugFender('Tests_autoSearch', error);
+              console.log(error);
+            });
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('Tests_getNetStatus_autoSearch', e);
+      });
   };
 
   const findAddrComponents = (
@@ -469,6 +488,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('Tests_saveLatlong', error);
         console.log('saveLatlong error\n', error);
       });
   };
@@ -575,14 +595,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              getNetStatus().then((status) => {
-                if (status) {
-                  setshowLocationpopup(true);
-                  // fetchCurrentLocation();
-                } else {
-                  setError(true);
-                }
-              });
+              getNetStatus()
+                .then((status) => {
+                  if (status) {
+                    setshowLocationpopup(true);
+                    // fetchCurrentLocation();
+                  } else {
+                    setError(true);
+                  }
+                })
+                .catch((e) => {
+                  CommonBugFender('Tests_getNetStatus', e);
+                });
             }}
           >
             <LocationOff />
@@ -1143,6 +1167,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         })
         .catch((e) => {
+          CommonBugFender('Tests_fetchPackageDetails', e);
           setLoadingContext!(false);
           aphConsole.log({ e });
           errorAlert();
@@ -1167,6 +1192,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('Tests_fetchPackageInclusion', e);
         setLoadingContext!(false);
         console.log('getPackageData Error\n', { e });
         errorAlert();
@@ -1382,6 +1408,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setsearchSate('success');
         })
         .catch((e) => {
+          CommonBugFender('Tests_onSearchMedicine', e);
           // aphConsole.log({ e });
           setsearchSate('fail');
         });

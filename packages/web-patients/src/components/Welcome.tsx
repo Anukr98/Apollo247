@@ -13,16 +13,6 @@ const useStyles = makeStyles((theme: Theme) => {
     welcome: {
       paddingBottom: 30,
     },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-    },
     container: {
       maxWidth: 1064,
       margin: 'auto',
@@ -36,11 +26,7 @@ export const Welcome: React.FC = (props) => {
 
   return (
     <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+      <Header />
       <div className={classes.container}>
         <HeroBanner />
         <ServiceList />

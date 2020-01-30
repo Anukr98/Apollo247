@@ -131,6 +131,7 @@ export enum ApiConstants {
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
   DOCTORS_SEARCH_API_LOG_FILE = '/debug-logs/doctors-search.log',
+  OTP_VERIFICATION_API_LOG_FILE = '/debug-logs/otp-verification.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -175,4 +176,6 @@ export enum ApiConstants {
   MEDMANTRA_FLAG = 1,
   MEDMANTRA_APPOINTMENT_MODE = 'Apollo247',
   MEDMANTRA_PAYTYPE = 'NETBANKING',
+
+  OPENTOK_URL = 'https://apolloaudiovideosprod.blob.core.windows.net/audiovideos/46422952/{1}/archive.mp4?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-12-24T10%3A52%3A03Z&se=2020-01-28T10%3A52%3A00Z&sig=QrKoK7bAHTMzz3lLyxDRVcQXauhM9ySvgQDJHeLhmFc%3D',
 }

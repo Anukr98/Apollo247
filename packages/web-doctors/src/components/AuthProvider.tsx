@@ -2,6 +2,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient, ApolloError } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { ErrorResponse, onError } from 'apollo-link-error';
+import moment from 'moment';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
@@ -35,6 +36,17 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
+import bugsnag from '@bugsnag/js';
+
+const bugsnagClient = bugsnag({
+  apiKey: `${process.env.BUGSNAG_API_KEY}`,
+  releaseStage: `${process.env.NODE_ENV}`,
+  autoBreadcrumbs: true,
+  autoCaptureSessions: true,
+  autoNotify: true,
+});
+
+const sessionClient = bugsnagClient.startSession();
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -69,6 +81,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   addDoctorSecretary:
     | ((p: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null) => void)
     | null;
+  sessionClient: any;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -97,6 +110,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setCurrentUserType: null,
   doctorSecretary: null,
   addDoctorSecretary: null,
+  sessionClient: sessionClient,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -182,7 +196,30 @@ export const AuthProvider: React.FC = (props) => {
     ) {
       setSendOtpError(false);
       return loginResult.data.login.loginId;
+    } else if (loginError) {
+      const logObject = {
+        api: 'Login',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(loginError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      setSendOtpError(true);
+      return false;
     } else {
+      const logObject = {
+        api: 'Login',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(loginResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
       setSendOtpError(true);
       return false;
     }
@@ -208,7 +245,32 @@ export const AuthProvider: React.FC = (props) => {
     ) {
       setSendOtpError(false);
       return resendOtpResult.data.resendOtp.loginId;
+    } else if (resendOtpError) {
+      const logObject = {
+        api: 'ResendOtp',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          id: loginId,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(resendOtpError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      setSendOtpError(true);
+      return false;
     } else {
+      const logObject = {
+        api: 'ResendOtp',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          id: loginId,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(resendOtpResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
       setSendOtpError(true);
       return false;
     }
@@ -259,8 +321,43 @@ export const AuthProvider: React.FC = (props) => {
       verifyLoginOtpResult.data.verifyLoginOtp &&
       verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
     ) {
+      const logObject = {
+        api: 'verifyLoginOtp',
+        inputParam: JSON.stringify({
+          id: loginId,
+          otp: otp,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: `phone number is blocked for loginId: ${loginId}`,
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      return false;
+    } else if (verifyLoginOtpError) {
+      const logObject = {
+        api: 'verifyLoginOtp',
+        inputParam: JSON.stringify({
+          id: loginId,
+          otp: otp,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(verifyLoginOtpError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
       return false;
     } else {
+      const logObject = {
+        api: 'verifyLoginOtp',
+        inputParam: JSON.stringify({
+          id: loginId,
+          otp: otp,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(verifyLoginOtpResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
       return false;
     }
   };
@@ -305,7 +402,28 @@ export const AuthProvider: React.FC = (props) => {
     );
     if (updateDoctorOnlineStatusResult) {
       return true;
+    } else if (updateDoctorOnlineStatusError) {
+      const logObject = {
+        api: 'UpdateDoctorOnlineStatus',
+        inputParam: JSON.stringify({
+          doctorId: doctorId,
+          onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(updateDoctorOnlineStatusError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
     } else {
+      const logObject = {
+        api: 'UpdateDoctorOnlineStatus',
+        inputParam: JSON.stringify({
+          doctorId: doctorId,
+          onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(updateDoctorOnlineStatusResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
       return false;
     }
   };
@@ -330,7 +448,13 @@ export const AuthProvider: React.FC = (props) => {
           >({ mutation: LOGGED_IN_USER_DETAILS })
         );
         if (error || !res.data) {
-          if (error) console.error(signInError);
+          const logObject = {
+            api: 'findLoggedinUserDetails',
+            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+            error: JSON.stringify(error ? error : res),
+          };
+          sessionClient.notify(JSON.stringify(logObject));
+          if (error) console.error(error);
           setSignInError(true);
           setIsSigningIn(false);
           app.auth().signOut();
@@ -356,6 +480,12 @@ export const AuthProvider: React.FC = (props) => {
             })
           );
           if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
+            const logObject = {
+              api: 'GetDoctorDetails',
+              currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+              error: JSON.stringify(signInError ? signInError : signInResult),
+            };
+            sessionClient.notify(JSON.stringify(logObject));
             if (signInError) console.error(signInError);
             setSignInError(true);
             setIsSigningIn(false);
@@ -363,7 +493,11 @@ export const AuthProvider: React.FC = (props) => {
             return;
           }
           const doctors = signInResult.data.getDoctorDetails;
-          if (doctors && doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY) {
+          if (
+            doctors &&
+            doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY &&
+            doctors.doctorType !== 'JUNIOR'
+          ) {
             updateDoctorOnlineStatusCall(doctors.id).then((res) => {
               if (res) {
                 setCurrentUser(doctors);
@@ -411,6 +545,7 @@ export const AuthProvider: React.FC = (props) => {
             setIsLoginPopupVisible,
             doctorSecretary,
             addDoctorSecretary,
+            sessionClient,
           }}
         >
           {props.children}

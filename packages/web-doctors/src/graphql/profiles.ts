@@ -768,6 +768,7 @@ export const GET_CASESHEET = gql`
           salutation
           registrationNumber
           signature
+          photoUrl
           specialty {
             createdDate
             id

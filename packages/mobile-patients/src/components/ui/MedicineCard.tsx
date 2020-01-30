@@ -135,6 +135,7 @@ export interface MedicineCardProps {
   packOfCount?: number;
   unit?: number;
   isInStock: boolean;
+  showRemoveWhenOutOfStock?: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
   onPress: () => void;
@@ -186,13 +187,14 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 }`}</Text>
               )
             : !!packOfCount &&
-              isCardExpanded && (
+              isCardExpanded &&
+              !props.showRemoveWhenOutOfStock && (
                 <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
               )}
           {renderOutOfStock()}
         </View>
-        <View style={{ flex: 0.1, justifyContent: 'flex-start' }}>
-          {isInStock
+        <View style={{ flex: 0.1, justifyContent: 'center' }}>
+          {isInStock || props.showRemoveWhenOutOfStock
             ? isCardExpanded
               ? renderTouchable(<RemoveIcon />, () => onPressRemove())
               : renderTouchable(<AddIcon />, () => onPressAdd())
@@ -357,11 +359,12 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     ) : null;
   };
 
-  const outOfStockContainerStyle: ViewStyle = !isInStock
-    ? {
-        backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-      }
-    : {};
+  const outOfStockContainerStyle: ViewStyle =
+    !isInStock && !props.showRemoveWhenOutOfStock
+      ? {
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+        }
+      : {};
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -373,7 +376,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>
           {renderTitleAndIcon()}
-          {isCardExpanded ? (
+          {isCardExpanded && !props.showRemoveWhenOutOfStock ? (
             <>
               <View style={[styles.separator, { marginTop: 0 }]} />
               {renderUnitDropdownAndPrice()}

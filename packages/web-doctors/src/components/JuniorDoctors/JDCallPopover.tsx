@@ -700,6 +700,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const { sessionClient } = useAuth();
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [errorState, setErrorState] = React.useState<errorObject>({
     reasonError: false,
@@ -935,7 +936,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartAppointmentButton(true);
     }
   };
-  const client = useApolloClient();
   setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
     setRemainingTime(900);
@@ -1159,7 +1159,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     isJuniorDoctor = currentDoctor.doctorType === DoctorType.JUNIOR;
     jrDoctorId = currentDoctor.id;
   }
-
+  const patientName = patientDetails
+    ? patientDetails!.firstName + ' ' + patientDetails!.lastName
+    : '';
   const mutationCancelJrdConsult = useMutation<CancelAppointment, CancelAppointmentVariables>(
     CANCEL_APPOINTMENT,
     {
@@ -1650,7 +1652,30 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     }
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
-                    mutationRemoveConsult();
+                    mutationRemoveConsult()
+                      .then(() => {})
+                      .catch((e: ApolloError) => {
+                        const logObject = {
+                          api: 'RemoveFromConsultQueue',
+                          inputParam: JSON.stringify({
+                            id: parseInt(params.queueId, 10),
+                          }),
+                          appointmentId: params.appointmentId,
+                          doctorId: currentDoctor!.id,
+                          doctorDisplayName: currentDoctor!.displayName,
+                          patientId: params.patientId,
+                          patientName: patientName,
+                          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                          appointmentDateTime: props.appointmentDateTime
+                            ? moment(new Date(props.appointmentDateTime)).format(
+                                'MMMM DD YYYY h:mm:ss a'
+                              )
+                            : '',
+                          error: JSON.stringify(e),
+                        };
+
+                        sessionClient.notify(JSON.stringify(logObject));
+                      });
                     const text = {
                       id: props.doctorId,
                       message: cancelConsultInitiated,
@@ -1674,6 +1699,30 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     //window.location.href = clientRoutes.juniorDoctor();
                   })
                   .catch((e: ApolloError) => {
+                    const logObject = {
+                      api: 'CancelAppointment',
+                      inputParam: JSON.stringify({
+                        appointmentId: params.appointmentId,
+                        cancelReason:
+                          cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
+                        cancelledBy: REQUEST_ROLES.JUNIOR,
+                        cancelledById: currentDoctor!.id,
+                      }),
+                      appointmentId: params.appointmentId,
+                      doctorId: currentDoctor!.id,
+                      doctorDisplayName: currentDoctor!.displayName,
+                      patientId: params.patientId,
+                      patientName: patientName,
+                      currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                      appointmentDateTime: props.appointmentDateTime
+                        ? moment(new Date(props.appointmentDateTime)).format(
+                            'MMMM DD YYYY h:mm:ss a'
+                          )
+                        : '',
+                      error: JSON.stringify(e),
+                    };
+
+                    sessionClient.notify(JSON.stringify(logObject));
                     setCancelError(e.graphQLErrors[0].message);
                   });
               }}
@@ -1700,6 +1749,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
+              JDPhotoUrl={currentPatient && currentPatient.photoUrl ? currentPatient.photoUrl : ''}
             />
           )}
         </div>

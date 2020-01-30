@@ -1,5 +1,4 @@
-import { BottomNavigation, Theme, Grid, CircularProgress } from '@material-ui/core';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { Theme, Grid, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
@@ -16,44 +15,19 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { NavigationBottom } from 'components/NavigationBottom';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
+    root: {
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
+        paddingBottom: 10,
       },
     },
     container: {
       maxWidth: 1064,
       margin: 'auto',
-    },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
     },
     labelRoot: {
       width: '100%',
@@ -73,7 +47,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
-        paddingBottom: 20,
+        position: 'absolute',
+        top: 0,
+        zIndex: 99,
+        width: '100%',
       },
     },
     breadcrumbs: {
@@ -90,10 +67,6 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        zIndex: 2,
-        top: 0,
-        width: '100%',
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
@@ -111,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 328px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingRight: 20,
+        paddingRight: 3,
         paddingTop: 14,
       },
     },
@@ -150,6 +123,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: '50%',
         textAlign: 'center',
         backgroundColor: '#02475b',
+        marginRight: 20,
       },
       '& img': {
         verticalAlign: 'bottom',
@@ -171,18 +145,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 20,
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 14,
-      },
-      '& >div': {
-        [theme.breakpoints.down('xs')]: {
-          marginLeft: -8,
-          marginRight: -8,
-          width: 'calc(100% + 16px)',
-        },
-        '& >div': {
-          [theme.breakpoints.down('xs')]: {
-            padding: '8px !important',
-          },
-        },
       },
     },
     customScroll: {
@@ -218,6 +180,7 @@ export const DoctorsLanding: React.FC = (props) => {
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
 
   let showError = false,
     matchingDoctorsFound = 0,
@@ -272,12 +235,8 @@ export const DoctorsLanding: React.FC = (props) => {
     showError = true;
 
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+    <div className={classes.root}>
+      <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
@@ -305,7 +264,11 @@ export const DoctorsLanding: React.FC = (props) => {
             />
             <div className={classes.searchSection}>
               {!loading ? (
-                <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+                <Scrollbars
+                  autoHide={true}
+                  autoHeight
+                  autoHeightMax={isMediumScreen ? 'calc(100vh - 240px)' : 'calc(100vh - 195px)'}
+                >
                   <div className={classes.customScroll}>
                     {filterOptions.searchKeyword.length <= 0 &&
                     specialitySelected.length === 0 &&
@@ -507,45 +470,7 @@ export const DoctorsLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
-
-      <BottomNavigation showLabels className={classes.bottomMenuRoot}>
-        <BottomNavigationAction
-          label="Consult Room"
-          icon={<img src={require('images/ic_consultroom.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Health Records"
-          icon={<img src={require('images/ic_myhealth.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Tests & Medicines"
-          icon={<img src={require('images/ic_orders.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="My Account"
-          icon={<img src={require('images/ic_account_dark.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-      </BottomNavigation>
+      <NavigationBottom />
     </div>
   );
 };
