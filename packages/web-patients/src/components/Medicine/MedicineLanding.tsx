@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       borderRadius: 5,
-      [theme.breakpoints.down(768)]:{
+      [theme.breakpoints.down('xs')]:{
         padding: 0,
       },
     },
@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 284px)',
-      [theme.breakpoints.down(768)]:{
+      [theme.breakpoints.down('xs')]:{
         width: '100%',
         marginBottom: 15,
       },
@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
     rightSection: {
       marginLeft: 'auto',
       width: 284,
-      [theme.breakpoints.down(768)]:{
+      [theme.breakpoints.down('xs')]:{
         width: '100%',
         padding: '0 20px 30px 20px',
       },
@@ -116,14 +116,14 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
         maxWidth: '100%',
       },
-      [theme.breakpoints.down(768)]:{
+      [theme.breakpoints.down('xs')]:{
         margin: '51px auto 0 auto',
         textAlign: 'center',
       },
     },
     medicineSection: {
       paddingLeft: 15,
-      [theme.breakpoints.down(768)]:{
+      [theme.breakpoints.down('xs')]:{
         paddingLeft: 0,
       },
     },
