@@ -85,6 +85,7 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -155,6 +156,8 @@ export interface ConsultRoomScreenProps
 }
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
+  const { showAphAlert, hideAphAlert } = useUIElements();
+
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [hideView, setHideView] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
@@ -559,8 +562,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (!abondmentStarted && patientJoined) {
                 abondmentStarted = true;
                 startNoShow(60, () => {
-                  console.log('Call abababaab');
-                  endAppointmentApiCall(STATUS.CALL_ABANDON);
+                  console.log('Call abondment Alert');
+                  showAphAlert &&
+                    showAphAlert({
+                      title: '',
+                      description: '',
+                      unDismissable: true,
+                      CTAs: [
+                        {
+                          text: 'CONTINUE',
+                          type: 'white-button',
+                          onPress: () => {
+                            hideAphAlert && hideAphAlert();
+                          },
+                        },
+                        {
+                          text: 'RESCHEDULE',
+                          type: 'orange-button',
+                          onPress: () => {
+                            console.log('Call abondment Started');
+                            endAppointmentApiCall(STATUS.CALL_ABANDON);
+                          },
+                        },
+                      ],
+                    });
                 });
               }
             }
