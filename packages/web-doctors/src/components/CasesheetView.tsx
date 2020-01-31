@@ -643,7 +643,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         ) : null}
         <div className={classes.disclaimer}>
           Disclaimer: The prescription has been issued based on your inputs during chat/call with
-          the doctor. In case of emergency please visit a nearby hospital.
+          the doctor. In case of emergency please visit a nearby hospital. This is an electronically
+          generated prescription and will not require a doctor signature.
         </div>
       </div>
       {isPageContentFull() &&

@@ -392,13 +392,13 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   const renderFooter = () => {
     drawHorizontalDivider(doc.page.height - 80);
     const disclaimerText =
-      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital.';
+      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital. This is an electronically generated prescription and will not require a doctor signature.';
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(10)
       .fillColor('#000000')
       .opacity(0.5)
-      .text(disclaimerText, margin, doc.page.height - 70, { align: 'left' });
+      .text(disclaimerText, margin, doc.page.height - 80, { align: 'left' });
     return doc;
   };
 
