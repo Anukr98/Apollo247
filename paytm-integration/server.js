@@ -215,10 +215,28 @@ app.get('/consulttransaction', (req, res) => {
       req.query.BANKTXNID +
       '" }){appointment { id } }}',
   };
-
+  const fileName = process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptPayments.txt';
+  let content =
+    new Date().toString() +
+    '\n---------------------------\n' +
+    'appt id:' +
+    req.session.appointmentId +
+    '\n' +
+    requestJSON +
+    '\n-------------------\n';
+  fs.appendFile(fileName, content, function(err) {
+    if (err) throw err;
+    console.log('Updated!');
+  });
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
+      let content = new Date().toString() + '\n---------------------------\nupdate response:';
+      response.data.data.makeAppointmentPayment.appointment.id + '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
       console.log(response.data.data.makeAppointmentPayment.appointment.id, 'response is....');
       if (req.query.STATUS == 'TXN_SUCCESS') {
         res.redirect(
