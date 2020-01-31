@@ -168,20 +168,21 @@ export async function sendCallsNotification(
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
   if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-  let doctorDetails;
+
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
-    const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-    const queueDetails = await consultQueueRepo.findByAppointmentId(
-      pushNotificationInput.appointmentId
-    );
-    if (queueDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-    doctorDetails = await doctorRepo.findById(queueDetails.doctorId);
-  } else {
-    doctorDetails = await doctorRepo.findById(appointment.doctorId);
-  }
+  // if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
+  //   const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+  //   const queueDetails = await consultQueueRepo.findByAppointmentId(
+  //     pushNotificationInput.appointmentId
+  //   );
+  //   if (queueDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  //   doctorDetails = await doctorRepo.findById(queueDetails.doctorId);
+  // } else {
+  //   doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  // }
+  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -204,6 +205,9 @@ export async function sendCallsNotification(
   let notificationBody: string = '';
   notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
   notificationBody = ApiConstants.AVCALL_APPOINTMENT_BODY;
+  if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
+    notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
+  }
   if (callType == APPT_CALL_TYPE.CHAT) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
   }
