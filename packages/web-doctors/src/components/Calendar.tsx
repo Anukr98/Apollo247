@@ -325,10 +325,8 @@ export const Calendar: React.FC = () => {
       <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
         <div className={classes.container}>
           <div className={classes.tabHeading}>
-            <Typography variant="h1">{`hello  ${(
-              (currentPatient && currentPatient!.displayName) ||
-              ''
-            ).toLowerCase()} :)`}</Typography>
+            <Typography variant="h1">{`hello  ${(currentPatient && currentPatient!.displayName) ||
+              ''} :)`}</Typography>
             {viewSelection === 'day' ? (
               <p>
                 {`Here’s your schedule for ${isToday(selectedDate) ? ' the day - ' : ''} ${format(
