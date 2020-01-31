@@ -408,16 +408,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
 
-    //get upcoming appointments from current time.
-    /*const upcomingAppts = await this.find({
-      where: {
-        patientId,
-        appointmentDateTime: MoreThan(new Date()),
-        status: Not(STATUS.CANCELLED),
-      },
-      order: { appointmentDateTime: 'ASC' },
-    });*/
-
     const upcomingAppts = await this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
@@ -428,16 +418,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
-
-    //get past appointments till one week
-    /*const weekPastAppts = await this.find({
-      where: {
-        patientId,
-        appointmentDateTime: Between(weekPastDateUTC, new Date()),
-        status: Not(STATUS.CANCELLED),
-      },
-      order: { appointmentDateTime: 'DESC' },
-    });*/
 
     const weekPastAppts = await this.createQueryBuilder('appointment')
       .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
@@ -1408,7 +1388,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     return endTime;
   }
 
-  getPatientFutureAppointmentsCount(patientId: string, maxConsultationMinutes: number) {
+  getPatientFutureAppointmentsCount(patientId: string) {
     return this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', {
         apptDate: new Date(),

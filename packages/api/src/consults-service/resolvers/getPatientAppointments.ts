@@ -125,23 +125,10 @@ const getPatientFutureAppointmentCount: Resolver<
 
   if (patientData.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  //get max consult duration
-  let maxConsultationMinutes = 0;
-  const consultRepository = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
-  const consultationRecord = await consultRepository.getMaxConsultationMinutes();
-  if (consultationRecord) {
-    maxConsultationMinutes = consultationRecord.maxconsultduration;
-  }
-
-  let consultsCount = 0;
-
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  consultsCount = await appointmentRepo.getPatientFutureAppointmentsCount(
-    args.patientId,
-    maxConsultationMinutes
-  );
+  const conultsList = await appointmentRepo.getPatinetUpcomingAppointments(args.patientId);
 
-  return { consultsCount };
+  return { consultsCount: conultsList.length };
 };
 
 const getPatientAllAppointments: Resolver<
