@@ -153,7 +153,7 @@ const getPatientAllAppointments: Resolver<
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const appointments = await appts.getPatientAllAppointments(args.patientId);
 
-  return { appointments: appointments };
+  return { appointments };
 };
 
 export const getPatinetAppointmentsResolvers = {
