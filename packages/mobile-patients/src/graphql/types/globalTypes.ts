@@ -21,6 +21,11 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum AccountType {
+  CURRENT = "CURRENT",
+  SAVINGS = "SAVINGS",
+}
+
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -36,6 +41,11 @@ export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
+}
+
+export enum ConsultType {
+  FIXED = "FIXED",
+  PREFERRED = "PREFERRED",
 }
 
 export enum DEVICETYPE {
@@ -65,6 +75,11 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
+}
+
+export enum DOCTOR_ONLINE_STATUS {
+  AWAY = "AWAY",
+  ONLINE = "ONLINE",
 }
 
 export enum DiscountType {
