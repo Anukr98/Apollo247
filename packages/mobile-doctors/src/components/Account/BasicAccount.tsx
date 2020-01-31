@@ -25,7 +25,6 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
-  ScrollViewBase,
   Image,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -76,7 +75,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
         const result = _data.data.getDoctorDetails;
-        // console.log('doctorDetails', _data!);
+        console.log('doctorDetails', _data!);
         setDoctorDetails && setDoctorDetails(result);
         setLoading(false);
       })
@@ -85,8 +84,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         console.log('Error occured while fetching Doctor', e);
       });
   }, []);
-
-  console.log('doctorDetailsAccount', doctorDetails!);
 
   const renderProfileData = (getDoctorDetails: any) => {
     console.log('getDoctorDetails', getDoctorDetails!.firstName);
