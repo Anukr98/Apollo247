@@ -42,6 +42,10 @@ export const getPatinetAppointmentsTypeDefs = gql`
     patinetAppointments: [PatinetAppointments!]
   }
 
+  type PatientAllAppointmentsResult {
+    appointments: [PatinetAppointments!]
+  }
+
   type AppointmentsCount {
     consultsCount: Int
   }
@@ -51,11 +55,16 @@ export const getPatinetAppointmentsTypeDefs = gql`
       patientAppointmentsInput: PatientAppointmentsInput
     ): PatientAppointmentsResult!
     getPatientFutureAppointmentCount(patientId: String): AppointmentsCount
+    getPatientAllAppointments(patientId: String): PatientAllAppointmentsResult!
   }
 `;
 
 type PatientAppointmentsResult = {
   patinetAppointments: PatinetAppointments[] | null;
+};
+
+type PatientAllAppointmentsResult = {
+  appointments: PatinetAppointments[] | null;
 };
 
 type PatientAppointmentsInput = {
@@ -135,6 +144,18 @@ const getPatientFutureAppointmentCount: Resolver<
   return { consultsCount };
 };
 
+const getPatientAllAppointments: Resolver<
+  null,
+  { patientId: string },
+  ConsultServiceContext,
+  PatientAllAppointmentsResult
+> = async (parent, args, { consultsDb, doctorsDb }) => {
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointments = await appts.getPatientAllAppointments(args.patientId);
+
+  return { appointments };
+};
+
 export const getPatinetAppointmentsResolvers = {
   PatinetAppointments: {
     doctorInfo(appointments: PatinetAppointments) {
@@ -144,5 +165,6 @@ export const getPatinetAppointmentsResolvers = {
   Query: {
     getPatinetAppointments,
     getPatientFutureAppointmentCount,
+    getPatientAllAppointments,
   },
 };
