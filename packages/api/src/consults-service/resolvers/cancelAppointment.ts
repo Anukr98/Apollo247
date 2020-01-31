@@ -111,7 +111,10 @@ const cancelAppointment: Resolver<
   if (existingQueueItem !== undefined && existingQueueItem != null)
     await cqRepo.update(existingQueueItem.id, { isActive: false });
 
-  if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.DOCTOR) {
+  if (
+    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.DOCTOR ||
+    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.JUNIOR
+  ) {
     const pushNotificationInput = {
       appointmentId: appointment.id,
       notificationType: NotificationType.DOCTOR_CANCEL_APPOINTMENT,
