@@ -276,22 +276,6 @@ const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, Diagnostics
   return { diagnosticOrgans, diagnosticHotSellers };
 };
 
-export type DiagnosticDetailsInCaseSheet = {
-  city: string;
-  collectionType: TEST_COLLECTION_TYPE;
-  fromAgeInDays: number;
-  gender: string;
-  id: string;
-  itemId: number;
-  itemName: string;
-  itemRemarks: string;
-  itemType: DIAGNOSTICS_TYPE;
-  rate: number;
-  state: string;
-  testPreparationData: string;
-  toAgeInDays: number;
-};
-
 export const diagnosticsResolvers = {
   Query: {
     searchDiagnostics,
