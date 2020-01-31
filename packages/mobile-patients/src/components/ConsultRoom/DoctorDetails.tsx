@@ -451,21 +451,22 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.onlineConsultLabel}>Online Consult</Text>
                   <Text style={styles.onlineConsultAmount}>
-                    {VirtualConsultationFee !== doctorDetails.onlineConsultationFees &&
-                      Number(VirtualConsultationFee) > 0 && (
-                        <>
-                          <Text
-                            style={{
-                              textDecorationLine: 'line-through',
-                              textDecorationStyle: 'solid',
-                            }}
-                          >
-                            {`(Rs. ${doctorDetails.onlineConsultationFees})`}
-                          </Text>
-                          <Text> </Text>
-                        </>
-                      )}
-                    Rs. {VirtualConsultationFee}
+                    {Number(VirtualConsultationFee) <= 0 ||
+                    VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                    ) : (
+                      <>
+                        <Text
+                          style={{
+                            textDecorationLine: 'line-through',
+                            textDecorationStyle: 'solid',
+                          }}
+                        >
+                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                        </Text>
+                        <Text> Rs. {VirtualConsultationFee}</Text>
+                      </>
+                    )}
                   </Text>
                   <AvailabilityCapsule availableTime={availableTime} />
                 </View>
