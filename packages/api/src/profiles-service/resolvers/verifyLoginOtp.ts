@@ -53,20 +53,30 @@ const verifyLoginOtp: Resolver<
   ProfilesServiceContext,
   OtpVerificationResult
 > = async (parent, { otpVerificationInput }, { profilesDb }) => {
-  const apiCallId = Math.floor(Math.random() * 10000);
-  debugLog('otpVerificationAPILogger', 'API_CALL___START', 'verifyLoginOtp_API_' + apiCallId);
+  const apiCallId = Math.floor(Math.random() * 1000000);
+  const callStartTime = new Date();
+  //create first order curried method with first 3 static parameters being passed.
+  const verifyLogger = debugLog(
+    'otpVerificationAPILogger',
+    'verifyLoginOtp',
+    apiCallId,
+    callStartTime
+  );
+
+  //create second order curried method with loginId as identifier till mobileNumber is received
+  const verifyByIdLogger = verifyLogger(otpVerificationInput.id);
+
+  verifyByIdLogger('API_CALL___START');
+
   //otp verification logic here
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
-  debugLog('otpVerificationAPILogger', 'QUERY_START', 'verifyLoginOtp_API_' + apiCallId);
+  verifyByIdLogger('QUERY_START');
   const matchedOtpRow: LoginOtp[] = await otpRepo.verifyOtp(otpVerificationInput);
-  debugLog('otpVerificationAPILogger', 'QUERY_END', 'verifyLoginOtp_API_' + apiCallId);
+  verifyByIdLogger('QUERY_END');
+
   if (matchedOtpRow.length === 0) {
-    debugLog(
-      'otpVerificationAPILogger',
-      'VALIDATION_FAILED_API_CALL___END',
-      'verifyLoginOtp_API_' + apiCallId
-    );
+    verifyByIdLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
       reason: OTP_STATUS.NOT_VERIFIED,
@@ -76,14 +86,12 @@ const verifyLoginOtp: Resolver<
     };
   }
 
-  debugLog('otpVerificationAPILogger', 'VALIDATION_START', 'verifyLoginOtp_API_' + apiCallId);
+  //create second order curried method with mobileNumber as identifier
+  const verifyByMobileNumLogger = verifyLogger(matchedOtpRow[0].mobileNumber);
 
+  verifyByMobileNumLogger('VALIDATION_START');
   if (matchedOtpRow[0].status === OTP_STATUS.BLOCKED) {
-    debugLog(
-      'otpVerificationAPILogger',
-      'VALIDATION_FAILED_API_CALL___END',
-      'verifyLoginOtp_API_' + apiCallId
-    );
+    verifyByMobileNumLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
       reason: matchedOtpRow[0].status,
@@ -101,11 +109,7 @@ const verifyLoginOtp: Resolver<
     };
     if (incorrectAttempts > 2) updateAttrs.status = OTP_STATUS.BLOCKED;
     await otpRepo.updateOtpStatus(matchedOtpRow[0].id, updateAttrs);
-    debugLog(
-      'otpVerificationAPILogger',
-      'VALIDATION_FAILED_API_CALL___END',
-      'verifyLoginOtp_API_' + apiCallId
-    );
+    verifyByMobileNumLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
       reason: matchedOtpRow[0].status,
@@ -114,11 +118,9 @@ const verifyLoginOtp: Resolver<
       incorrectAttempts: matchedOtpRow[0].incorrectAttempts + 1,
     };
   }
+  verifyByMobileNumLogger('VALIDATION_END');
 
-  debugLog('otpVerificationAPILogger', 'VALIDATION_END', 'verifyLoginOtp_API_' + apiCallId);
-
-  debugLog('otpVerificationAPILogger', 'UPDATION_START', 'verifyLoginOtp_API_' + apiCallId);
-
+  verifyByMobileNumLogger('UPDATION_START');
   //update status of otp
   await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
     status: OTP_STATUS.VERIFIED,
@@ -126,15 +128,14 @@ const verifyLoginOtp: Resolver<
 
   //archive the old otp record and then delete it
   archiveOtpRecord(matchedOtpRow[0].id, profilesDb);
-  debugLog('otpVerificationAPILogger', 'UPDATION_END', 'verifyLoginOtp_API_' + apiCallId);
+  verifyByMobileNumLogger('UPDATION_END');
 
   //generate customToken
-  debugLog('otpVerificationAPILogger', 'CREATE_TOKEN_START', 'verifyLoginOtp_API_' + apiCallId);
+  verifyByMobileNumLogger('CREATE_TOKEN_START');
   const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
-  debugLog('otpVerificationAPILogger', 'CREATE_TOKEN_END', 'verifyLoginOtp_API_' + apiCallId);
+  verifyByMobileNumLogger('CREATE_TOKEN_END');
 
-  debugLog('otpVerificationAPILogger', 'API_CALL___END', 'verifyLoginOtp_API_' + apiCallId);
-
+  verifyByMobileNumLogger('API_CALL___END');
   return {
     status: true,
     reason: matchedOtpRow[0].status,

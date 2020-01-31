@@ -64,17 +64,28 @@ type SearchDoctorAndSpecialtyByNameResult = {
   otherDoctorsNextAvailability?: DoctorSlotAvailability[];
 };
 
+let apiCallId: number;
+let identifier: string;
+let callStartTime: Date;
 const SearchDoctorAndSpecialtyByName: Resolver<
   null,
   { searchText: string; patientId: string; geolocation: Geolocation },
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
-  debugLog(
+  apiCallId = Math.floor(Math.random() * 1000000);
+  callStartTime = new Date();
+  identifier = args.searchText;
+  //create first order curried method with first 4 static parameters being passed.
+  const searchLogger = debugLog(
     'doctorSearchAPILogger',
-    `SEARCH_BY_NAME_CALL___STARTED`,
-    '----------------------SearchDoctorAndSpecialtyByName_API--------------------------------'
+    'SearchDoctorAndSpecialtyByName',
+    apiCallId,
+    callStartTime,
+    identifier
   );
+
+  searchLogger('SEARCH_BY_NAME_CALL___STARTED');
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
 
   let matchedDoctors: Doctor[] = [],
@@ -85,6 +96,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   let otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
@@ -92,32 +104,16 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     //get facility distances from user geolocation
     let facilityDistances: FacilityDistanceMap = {};
     if (args.geolocation) {
-      debugLog(
-        'doctorSearchAPILogger',
-        `GEOLOCATION_API_CALL___START`,
-        'SearchDoctorAndSpecialtyByName_API'
-      );
+      searchLogger('GEOLOCATION_API_CALL___START');
       const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
       facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
-      debugLog(
-        'doctorSearchAPILogger',
-        `GEOLOCATION_API_CALL___END`,
-        'SearchDoctorAndSpecialtyByName_API'
-      );
+      searchLogger('GEOLOCATION_API_CALL___END');
     }
 
-    debugLog(
-      'doctorSearchAPILogger',
-      `GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`,
-      'SearchDoctorAndSpecialtyByName_API'
-    );
+    searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
     matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase);
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
-    debugLog(
-      'doctorSearchAPILogger',
-      `GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`,
-      'SearchDoctorAndSpecialtyByName_API'
-    );
+    searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
     //get Sorted Doctors List
     const { sortedDoctors, sortedDoctorsNextAvailability } = await getSortedDoctors(
@@ -170,11 +166,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
   }
 
-  debugLog(
-    'doctorSearchAPILogger',
-    `SEARCH_BY_NAME_CALL___END`,
-    '----------------------SearchDoctorAndSpecialtyByName_API--------------------------------'
-  );
+  searchLogger(`SEARCH_BY_NAME_CALL___END`);
 
   return {
     doctors: matchedDoctors,
@@ -235,6 +227,15 @@ const getSortedDoctors = async (
   consultsDb: Connection,
   facilityDistances?: FacilityDistanceMap
 ) => {
+  //create first order curried method with first 4 static parameters being passed.
+  const searchLogger = debugLog(
+    'doctorSearchAPILogger',
+    'SearchDoctorAndSpecialtyByName',
+    apiCallId,
+    callStartTime,
+    identifier
+  );
+
   let sortedDoctors: Doctor[] = doctors;
   let sortedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
 
@@ -246,31 +247,19 @@ const getSortedDoctors = async (
     return doctor.id;
   });
 
-  debugLog(
-    'doctorSearchAPILogger',
-    `GET_DOCTORS_NEXT_AVAILABILITY___START`,
-    'SearchDoctorAndSpecialtyByName_API'
-  );
+  searchLogger(`GET_DOCTORS_NEXT_AVAILABILITY___START`);
   const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
     matchedDoctorIds,
     ConsultMode.BOTH,
     doctorsDb,
     consultsDb
   );
-  debugLog(
-    'doctorSearchAPILogger',
-    `GET_DOCTORS_NEXT_AVAILABILITY___END`,
-    'SearchDoctorAndSpecialtyByName_API'
-  );
+  searchLogger(`GET_DOCTORS_NEXT_AVAILABILITY___END`);
 
   sortedDoctorsNextAvailability = doctorNextAvailSlots.doctorAvailalbeSlots;
 
   //apply sort algorithm
-  debugLog(
-    'doctorSearchAPILogger',
-    `APPLY_RANKING_ALGORITHM___START`,
-    'SearchDoctorAndSpecialtyByName_API'
-  );
+  searchLogger(`APPLY_RANKING_ALGORITHM___START`);
   if (doctors.length > 1) {
     //get consult now and book now doctors by available time
     const {
@@ -334,11 +323,7 @@ const getSortedDoctors = async (
 
     sortedDoctors = consultNowDoctors.concat(bookNowDoctors);
   }
-  debugLog(
-    'doctorSearchAPILogger',
-    `APPLY_RANKING_ALGORITHM___END`,
-    'SearchDoctorAndSpecialtyByName_API'
-  );
+  searchLogger(`APPLY_RANKING_ALGORITHM___END`);
 
   return { sortedDoctors, sortedDoctorsNextAvailability };
 };
