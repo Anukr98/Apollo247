@@ -159,6 +159,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   >([]);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [isSearching, setisSearching] = useState<boolean>(false);
+  const [showPastSearchSpinner, setshowPastSearchSpinner] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -256,7 +257,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const fetchSpecialities = () => {
     console.log('fetchSpecialities');
-
+    setshowSpinner(true);
     client
       .query<getAllSpecialties>({
         query: GET_ALL_SPECIALTIES,
@@ -287,6 +288,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const fetchPastSearches = () => {
+    setshowPastSearchSpinner(true);
     client
       .query<getPatientPastSearches>({
         query: GET_PATIENT_PAST_SEARCHES,
@@ -297,20 +299,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       })
       .then(({ data }) => {
         try {
+          setshowPastSearchSpinner(false);
           if (data && data.getPatientPastSearches) {
-            // console.log('fetchPastSearches', data.getPatientPastSearches);
+            console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }
-          callSpecialityAPI();
           !!searchText && fetchSearchData();
         } catch (e) {
           CommonBugFender('DoctorSearch_fetchPastSearches_try', e);
         }
       })
       .catch((e) => {
+        setshowPastSearchSpinner(false);
         CommonBugFender('DoctorSearch_fetchPastSearches', e);
         console.log('Error occured', e);
-        callSpecialityAPI();
         !!searchText && fetchSearchData();
       });
     // .finally(() => {
@@ -341,6 +343,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .then((status) => {
         if (status) {
           fetchPastSearches();
+          callSpecialityAPI();
         } else {
           setshowSpinner(false);
           setshowOfflinePopup(true);
@@ -474,7 +477,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderPastSearch = () => {
-    if (pastSearch && PastSearches.length > 0) {
+    if (showPastSearchSpinner) {
+      return (
+        <View style={{ height: 50, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="small" />
+        </View>
+      );
+    } else if (pastSearch && PastSearches.length > 0) {
       return (
         <View>
           <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
@@ -878,7 +887,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 doctorsList.length === 1 &&
                 otherDoctors &&
                 renderOtherSUggestedDoctors()}
-              {renderHelpView()}
+              {!showSpinner && renderHelpView()}
             </ScrollView>
           )
         ) : null}

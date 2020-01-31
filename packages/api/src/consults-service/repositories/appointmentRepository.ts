@@ -319,6 +319,19 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  //get patient all appointments
+  getPatientAllAppointments(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+      })
+      .getMany();
+  }
+
   async findByDoctorIdsAndDateTimes(
     doctorIds: string[],
     utcAppointmentDateTimes: AppointmentDateTime[]
@@ -1079,6 +1092,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       take: limit,
       relations: ['caseSheet'],
     });
+  }
+
+  getAllAppointmentsByDates(fromDate: Date, toDate: Date) {
+    const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.bookingDate Between :fromDate AND :toDate)', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .getMany();
   }
 
   getAllAppointmentsWithOutLimit(fromDate: Date, toDate: Date) {

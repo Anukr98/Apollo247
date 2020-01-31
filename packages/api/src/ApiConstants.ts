@@ -16,6 +16,7 @@ export enum ApiConstants {
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
   CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the consult room',
+  JUNIOR_CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team is waiting to start your consultation. Please proceed to the consult room",
   AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
   //appointment reminder 15
@@ -178,4 +179,23 @@ export enum ApiConstants {
   MEDMANTRA_PAYTYPE = 'NETBANKING',
 
   OPENTOK_URL = 'https://apolloaudiovideosprod.blob.core.windows.net/audiovideos/46422952/{1}/archive.mp4?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-12-24T10%3A52%3A03Z&se=2020-01-28T10%3A52%3A00Z&sig=QrKoK7bAHTMzz3lLyxDRVcQXauhM9ySvgQDJHeLhmFc%3D',
+
+  CONVERT_VIDEO_MSG = '^^convert`video^^',
+  CONVERT_AUDIO_MSG = '^^convert`audio^^',
+  VIDEO_CALL_MSG = '^^callme`video^^',
+  AUDIO_CALL_MSG = '^^callme`audio^^',
+  STOP_CALL_MSG = '^^callme`stop^^',
+  ACCEPT_CALL_MSG = '^^callme`accept^^',
+  START_CONSULT = '^^#startconsult',
+  START_CONSULT_JR = '^^#startconsultJr',
+  STOP_CONSULT = '^^#stopconsult',
+  TRANSFER_CONSULT = '^^#transferconsult',
+  RESCHEDULE_CONSULT = '^^#rescheduleconsult',
+  FOLLOW_UP_CONSULT = '^^#followupconsult',
+  ASSETS_DIR = '/apollo-hospitals/packages/api/src/assets',
+  LOCAL = 'local',
+  CHAT_TRANSCRIPTS_PATH = '/chat_transcripts',
+  JUNIOR_DOC_TXT = 'Junior doctor: ',
+  SENIOR_DOC_TXT = 'Senior doctor: ',
+  PATIENT_TXT = 'Patient: ',
 }

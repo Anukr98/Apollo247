@@ -681,11 +681,19 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <div
                   className={classes.imageUpload}
                   onClick={() => {
-                    setModalOpen(true);
-                    setImgPrevUrl(rowData.url);
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }
                   }}
                 >
-                  <img src={rowData.url} alt={rowData.url} />
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
+                  ) : (
+                    <a href={rowData.url}>
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}
@@ -776,12 +784,20 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               {rowData.message === documentUpload ? (
                 <div
                   onClick={() => {
-                    setModalOpen(true);
-                    setImgPrevUrl(rowData.url);
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }
                   }}
                   className={classes.imageUpload}
                 >
-                  <img src={rowData.url} alt={rowData.url} />
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
+                  ) : (
+                    <a href={rowData.url} target="_blank">
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}

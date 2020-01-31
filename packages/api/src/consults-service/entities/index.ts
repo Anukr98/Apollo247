@@ -229,6 +229,9 @@ export class Appointment extends BaseEntity {
     (appointmentDocuments) => appointmentDocuments.appointment
   )
   appointmentDocuments: AppointmentDocuments[];
+
+  @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
+  auditHistory: AuditHistory[];
 }
 //Appointment ends
 
@@ -1124,6 +1127,30 @@ export class DoctorFeeSummary extends BaseEntity {
   }
 }
 //Doctor fee summary end
+
+//auditor history table start
+@Entity()
+export class AuditHistory extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
+  appointment: Appointment;
+
+  @Column()
+  auditorId: string;
+
+  @Column({ nullable: true })
+  comment: string;
+
+  @Column({ nullable: true })
+  rating: number;
+}
+
+//auditor history table end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

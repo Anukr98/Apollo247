@@ -441,6 +441,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderConsultations = () => {
+    console.log(moment(new Date()).add(35, 'h'), 'dtat');
+
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
@@ -449,14 +451,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         data={
           selectedTab === tabs[0].title
             ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY')
+                moment(new Date(item.appointmentDateTime).toLocaleDateString())
                   .add(6, 'days')
-                  .isAfter(moment(new Date()))
+                  .startOf('day')
+                  .isSameOrAfter(moment(new Date()).startOf('day'))
               )
             : consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY')
+                moment(new Date(item.appointmentDateTime).toLocaleDateString())
                   .add(6, 'days')
-                  .isBefore(moment(new Date()))
+                  .startOf('day')
+                  .isBefore(moment(new Date()).startOf('day'))
               )
         }
         bounces={false}
@@ -856,25 +860,25 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           unsetloaderDisplay={true}
         ></ProfileList>
         <Text style={styles.descriptionTextStyle}>
-          {consultations.length > 0
-            ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
-              ).length > -1 && selectedTab === tabs[0].title
-              ? 'You have ' +
-                (consultations.filter((item) =>
-                  moment(item.appointmentDateTime, 'DD-MM-YYYY')
-                    .add(6, 'days')
-                    .isSameOrAfter(moment(new Date()))
-                ).length || 'no') +
-                ' upcoming appointment(s)!'
-              : 'You have ' +
-                (consultations.filter((item) =>
-                  moment(item.appointmentDateTime, 'DD-MM-YYYY')
-                    .add(6, 'days')
-                    .isBefore(moment(new Date()))
-                ).length || 'no') +
-                ' past appointment(s)!'
-            : string.consult_room.description}
+          {consultations.filter((item) =>
+            moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
+          ).length > -1 && selectedTab === tabs[0].title
+            ? 'You have ' +
+              (consultations.filter((item) =>
+                moment(new Date(item.appointmentDateTime).toLocaleDateString())
+                  .add(6, 'days')
+                  .startOf('day')
+                  .isSameOrAfter(moment(new Date()).startOf('day'))
+              ).length || 'no') +
+              ' active appointment(s)!'
+            : 'You have ' +
+              (consultations.filter((item) =>
+                moment(new Date(item.appointmentDateTime).toLocaleDateString())
+                  .add(6, 'days')
+                  .startOf('day')
+                  .isBefore(moment(new Date()).startOf('day'))
+              ).length || 'no') +
+              ' past appointment(s)!'}
         </Text>
       </View>
     );
