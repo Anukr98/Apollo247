@@ -33,7 +33,7 @@ import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { FEEDBACKTYPE } from '../graphql/types/globalTypes';
 import { FeedbackPopup } from './FeedbackPopup';
 import { MedicalIcon } from './ui/Icons';
@@ -305,9 +305,16 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             description: data.content,
             CTAs: [
               {
-                text: 'CLAIM REFUND',
+                text: 'GO BACK',
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                    })
+                  );
                 },
                 type: 'white-button',
               },
@@ -660,7 +667,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               setTimeout(() => {
                 InCallManager.stopRingtone();
                 InCallManager.stop();
-              }, 12000);
+              }, 15000);
 
               showAphAlert!({
                 title: `Hi ${userName} :)`,
