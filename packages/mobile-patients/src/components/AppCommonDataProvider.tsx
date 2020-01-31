@@ -3,6 +3,7 @@ import { g, doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getDoctorsBySpecialtyAndFilters } from '../graphql/types/getDoctorsBySpecialtyAndFilters';
 
 export interface LocationData {
   displayName: string;
@@ -26,6 +27,8 @@ export interface AppCommonDataContextProps {
   locationForDiagnostics: { cityId: string; stateId: string; city: string; state: string } | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
+  generalPhysicians: null;
+  setGeneralPhysicians: ((arg0: getDoctorsBySpecialtyAndFilters) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -36,6 +39,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   locationForDiagnostics: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
+  generalPhysicians: null,
+  setGeneralPhysicians: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -47,6 +52,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
+  const [generalPhysicians, setGeneralPhysicians] = useState<{
+    id: string;
+    data: getDoctorsBySpecialtyAndFilters;
+  }>();
 
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
@@ -112,6 +121,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         locationForDiagnostics,
         VirtualConsultationFee,
         setVirtualConsultationFee,
+        generalPhysicians,
+        setGeneralPhysicians,
       }}
     >
       {props.children}

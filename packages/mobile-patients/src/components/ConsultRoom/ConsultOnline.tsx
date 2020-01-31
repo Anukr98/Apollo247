@@ -352,7 +352,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           paddingTop: 15,
           paddingBottom: 20,
           marginTop: 20,
-          marginBottom: 16,
         }}
       >
         {availableInMin ? (
@@ -423,7 +422,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         </View>
       </View>
       {selectedCTA === onlineCTA[1] && (
-        <View>
+        <View style={{ marginTop: 16 }}>
           {renderCalendar()}
           <View
             style={{

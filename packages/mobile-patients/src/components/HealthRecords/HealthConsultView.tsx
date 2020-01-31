@@ -46,6 +46,7 @@ import { useDiagnosticsCart, DiagnosticsCartItem } from '../DiagnosticsCartProvi
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../../graphql/types/getCaseSheet';
 import { useUIElements } from '../UIElementsProvider';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -146,6 +147,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   const { setLoading: setGlobalLoading } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
   // console.log(props.PastData, 'pastData');
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
@@ -390,12 +392,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               a: item.diagnosticPrescription,
                             });
 
-                            const testPrescription = ((item.diagnosticPrescription ||
-                              []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]).filter(
-                              (item) =>
-                                (g(item, 'additionalDetails', 'city') || '').toLowerCase() ==
-                                (g(locationDetails, 'city') || '').toLowerCase()
-                            );
+                            const testPrescription = (item.diagnosticPrescription ||
+                              []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
 
                             const presToAdd = {
                               id: item.id,
@@ -503,14 +501,18 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   setGlobalLoading!(false);
                                   return Promise.resolve([]);
                                 } else {
-                                  return addTestsToCart(testPrescription);
+                                  return addTestsToCart(
+                                    testPrescription,
+                                    client,
+                                    g(locationDetails, 'city') || ''
+                                  );
                                 }
                               })
                               .then((tests) => {
                                 if (testPrescription.length) {
-                                  addMultipleTestCartItems!((tests || []) as DiagnosticsCartItem[]);
+                                  addMultipleTestCartItems!(tests! || []);
                                   // Adding ePrescriptions to DiagnosticsCart
-                                  if ((tests as DiagnosticsCartItem[]).length)
+                                  if ((tests! || []).length)
                                     addMultipleTestEPrescriptions!([
                                       {
                                         ...presToAdd,

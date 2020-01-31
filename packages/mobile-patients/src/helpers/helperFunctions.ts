@@ -22,6 +22,12 @@ import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } fro
 import { apiRoutes } from './apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import ApolloClient from 'apollo-client';
+import {
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -527,44 +533,62 @@ export const isValidText = (value: string) =>
 export const isValidName = (value: string) =>
   value === '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value);
 
-export const addTestsToCart = (
-  testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] // testsIncluded will not come from API
+export const addTestsToCart = async (
+  testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
+  apolloClient: ApolloClient<object>,
+  city: string
 ) => {
-  const items = testPrescription
-    .filter((val) => val.itemname)
-    .map(
-      (item) =>
-        ({
-          id: `${item.additionalDetails!.itemId}`,
-          name: item.itemname!,
-          price: item.additionalDetails!.rate,
-          specialPrice: undefined,
-          mou: 1,
-          thumbnail: '',
-          collectionMethod: item.additionalDetails!.collectionType,
-        } as DiagnosticsCartItem)
+  const searchQuery = (name: string, city: string) =>
+    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
+      query: SEARCH_DIAGNOSTICS,
+      variables: {
+        searchText: name,
+        city: city,
+        patientId: '',
+      },
+      fetchPolicy: 'no-cache',
+    });
+  const detailQuery = (itemId: string) => getPackageData(itemId);
+
+  try {
+    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
+
+    console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
+
+    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
+    const searchQueriesData = (await searchQueries)
+      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
+      .filter((item, index) => g(item, 'itemName')! == items[index])
+      .filter((item) => !!item);
+    const detailQueries = Promise.all(
+      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+    );
+    const detailQueriesData = (await detailQueries).map(
+      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
     );
 
-  return new Promise((resolve, reject) => {
-    Promise.all(items.map((d) => getPackageData(d.id)))
-      .then((response) => {
-        console.log('response::', { response });
-        const testsArray = response.map((item, idx) => {
-          if (!g(item, 'data', 'status')) return null;
-          return {
-            ...items[idx],
-            mou: g(item, 'data', 'data', 'length') || 1, // updating testsIncluded
-          } as DiagnosticsCartItem;
-        });
-        const nonNullTestsArray = testsArray.filter((item) => !!item);
-        console.log('testsArray to be added to cart', { nonNullTestsArray });
-        resolve(nonNullTestsArray);
-      })
-      .catch((e) => {
-        CommonBugFender('helperFunctions_addTestsToCart', e);
-        reject('Oops! an error occurred, unable to get test details.');
-      });
-  });
+    const finalArray: DiagnosticsCartItem[] = Array.from({
+      length: searchQueriesData.length,
+    }).map((_, index) => {
+      const s = searchQueriesData[index];
+      const testIncludedCount = detailQueriesData[index];
+      return {
+        id: `${s.itemId}`,
+        name: s.itemName,
+        price: s.rate,
+        specialPrice: undefined,
+        mou: testIncludedCount,
+        thumbnail: '',
+        collectionMethod: s.collectionType,
+      } as DiagnosticsCartItem;
+    });
+
+    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+    return finalArray;
+  } catch (error) {
+    CommonBugFender('helperFunctions_addTestsToCart', error);
+    throw 'error';
+  }
 };
 
 export const getBuildEnvironment = () => {

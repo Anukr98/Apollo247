@@ -335,6 +335,146 @@ export const GET_PATIENT_APPOINTMENTS = gql`
   }
 `;
 
+export const GET_PATIENT_ALL_APPOINTMENTS = gql`
+  query getPatientAllAppointments($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        symptoms
+        doctorInfo {
+          awards
+          city
+          country
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          languages
+          lastName
+          mobileNumber
+          onlineConsultationFees
+          onlineStatus
+          photoUrl
+          physicalConsultationFees
+          qualification
+          registrationNumber
+          salutation
+          signature
+          specialization
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          thumbnailUrl
+          zip
+          bankAccount {
+            accountHolderName
+            accountNumber
+            accountType
+            bankName
+            city
+            id
+            IFSCcode
+            state
+            streetLine1
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
   query SearchDoctorAndSpecialtyByName($searchText: String!) {
     SearchDoctorAndSpecialtyByName(searchText: $searchText) {
@@ -851,21 +991,6 @@ export const GET_CASESHEET_DETAILS = gql`
         }
         diagnosticPrescription {
           itemname
-          additionalDetails {
-            city
-            collectionType
-            fromAgeInDays
-            gender
-            id
-            itemId
-            itemName
-            itemRemarks
-            itemType
-            rate
-            state
-            testPreparationData
-            toAgeInDays
-          }
         }
         blobName
         doctorId
@@ -1475,21 +1600,6 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           }
           diagnosticPrescription {
             itemname
-            additionalDetails {
-              city
-              collectionType
-              fromAgeInDays
-              gender
-              id
-              itemId
-              itemName
-              itemRemarks
-              itemType
-              rate
-              state
-              testPreparationData
-              toAgeInDays
-            }
           }
           doctorId
           doctorType
