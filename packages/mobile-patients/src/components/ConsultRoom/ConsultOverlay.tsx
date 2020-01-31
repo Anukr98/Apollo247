@@ -43,6 +43,7 @@ import {
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -308,7 +309,27 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       </StickyBottomComponent>
     );
   };
-
+  const renderDisclamer = () => {
+    return (
+      <View
+        style={{
+          margin: 20,
+          padding: 12,
+          borderRadius: 10,
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+        }}
+      >
+        <Text
+          style={[
+            theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 16, 0),
+            { textAlign: 'justify' },
+          ]}
+        >
+          {string.common.DisclaimerText}
+        </Text>
+      </View>
+    );
+  };
   return (
     <View
       style={{
@@ -353,7 +374,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         >
           <View
             style={{
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              backgroundColor: '#f7f8f5',
               marginTop: 16,
               width: width - 40,
               height: 'auto',
@@ -380,24 +401,27 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             />
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab === tabs[0].title ? (
-                <ConsultOnline
-                  doctor={props.doctor}
-                  date={date}
-                  setDate={(date) => {
-                    setDate(date);
-                  }}
-                  nextAvailableSlot={nextAvailableSlot}
-                  setNextAvailableSlot={setNextAvailableSlot}
-                  isConsultOnline={isConsultOnline}
-                  setisConsultOnline={setisConsultOnline}
-                  setavailableInMin={setavailableInMin}
-                  availableInMin={availableInMin}
-                  setselectedTimeSlot={setselectedTimeSlot}
-                  selectedTimeSlot={selectedTimeSlot}
-                  setshowSpinner={setshowSpinner}
-                  scrollToSlots={scrollToSlots}
-                  setshowOfflinePopup={setshowOfflinePopup}
-                />
+                <>
+                  <ConsultOnline
+                    doctor={props.doctor}
+                    date={date}
+                    setDate={(date) => {
+                      setDate(date);
+                    }}
+                    nextAvailableSlot={nextAvailableSlot}
+                    setNextAvailableSlot={setNextAvailableSlot}
+                    isConsultOnline={isConsultOnline}
+                    setisConsultOnline={setisConsultOnline}
+                    setavailableInMin={setavailableInMin}
+                    availableInMin={availableInMin}
+                    setselectedTimeSlot={setselectedTimeSlot}
+                    selectedTimeSlot={selectedTimeSlot}
+                    setshowSpinner={setshowSpinner}
+                    scrollToSlots={scrollToSlots}
+                    setshowOfflinePopup={setshowOfflinePopup}
+                  />
+                  {renderDisclamer()}
+                </>
               ) : (
                 <ConsultPhysical
                   doctor={props.doctor}
@@ -418,7 +442,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
-              <View style={{ height: 96 }} />
+              <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
           </View>
