@@ -14,7 +14,6 @@ import { format } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import { getConnection } from 'typeorm';
 
 export const diagnosticsTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {

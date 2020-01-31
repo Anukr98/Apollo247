@@ -13,7 +13,6 @@ import { PatientDeviceTokenRepository } from 'profiles-service/repositories/pati
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { addMilliseconds, format, differenceInHours, differenceInMinutes } from 'date-fns';
 import path from 'path';
