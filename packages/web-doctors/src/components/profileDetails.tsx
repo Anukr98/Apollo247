@@ -334,19 +334,7 @@ export const MyAccount: React.FC = (props) => {
                         )}
                       </div>
                       <div className={classes.doctorSectionLeft}>
-                        <Typography variant="h4">
-                          {doctorProfile!.salutation &&
-                            doctorProfile!.salutation!.charAt(0).toUpperCase()}
-                          {doctorProfile!.salutation!.slice(1).toLowerCase() + '.'}{' '}
-                          {`${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName!}`
-                            .length < 18
-                            ? `${doctorProfile!.firstName!.split(' ')[0]} ${
-                                doctorProfile!.lastName
-                              }`
-                            : `${
-                                doctorProfile!.firstName!.split(' ')[0]
-                              } ${doctorProfile!.lastName!.charAt(0)}.`}
-                        </Typography>
+                        <Typography variant="h4">{doctorProfile.displayName}</Typography>
                         <Typography variant="h6">
                           <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
                         </Typography>
