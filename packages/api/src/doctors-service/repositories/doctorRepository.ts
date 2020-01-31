@@ -241,6 +241,8 @@ export class DoctorRepository extends Repository<Doctor> {
               onlineSlot = nextSlot;
               break;
             }
+
+            //checking availability for pre-defined days
             if (counter >= ApiConstants.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS) {
               onlineSlot = '';
               break;
@@ -270,6 +272,7 @@ export class DoctorRepository extends Repository<Doctor> {
               physicalSlot = nextSlot;
               break;
             }
+            //checking availability for pre-defined days
             if (counter >= ApiConstants.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS) {
               physicalSlot = '';
               break;

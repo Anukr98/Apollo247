@@ -133,6 +133,7 @@ export enum ApiConstants {
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
   DOCTORS_SEARCH_API_LOG_FILE = '/debug-logs/doctors-search.log',
   OTP_VERIFICATION_API_LOG_FILE = '/debug-logs/otp-verification.log',
+  GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
