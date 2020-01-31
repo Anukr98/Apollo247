@@ -274,7 +274,24 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           title={
             tabs[0].title === selectedTab ? (
               <Text>
-                {VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
+                PAY{' '}
+                {Number(VirtualConsultationFee) <= 0 ||
+                VirtualConsultationFee === props.doctor!.onlineConsultationFees ? (
+                  <Text>{`Rs. ${props.doctor!.onlineConsultationFees}`}</Text>
+                ) : (
+                  <>
+                    <Text
+                      style={{
+                        textDecorationLine: 'line-through',
+                        textDecorationStyle: 'solid',
+                      }}
+                    >
+                      {`(Rs. ${props.doctor!.onlineConsultationFees})`}
+                    </Text>
+                    <Text> Rs. {VirtualConsultationFee}</Text>
+                  </>
+                )}
+                {/* {VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
                   Number(VirtualConsultationFee) > 0 && (
                     <>
                       <Text
@@ -288,7 +305,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                       <Text> </Text>
                     </>
                   )}
-                Rs. {VirtualConsultationFee}
+                Rs. {VirtualConsultationFee} */}
               </Text>
             ) : (
               `PAY Rs. ${props.doctor!.physicalConsultationFees}`
