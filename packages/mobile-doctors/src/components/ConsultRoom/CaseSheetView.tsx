@@ -1921,65 +1921,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {apmnt == [] ? (
           <Text style={styles.symptomsText}>No Data</Text>
         ) : (
-          apmnt.caseSheet.map((_caseSheet: any, i) => {
-            return (
-              <View style={{ marginLeft: 16 }}>
-                {_caseSheet.symptoms == null || [] ? (
-                  <Text style={styles.symptomsText}>No Data</Text>
-                ) : (
-                  _caseSheet.symptoms.map((symptoms: any, i) => {
-                    return (
-                      <View
-                        style={{
-                          backgroundColor: '#ffffff',
-                          borderRadius: 5,
-                          borderStyle: 'solid',
-                          borderWidth: 1,
-                          borderColor: 'rgba(2, 71, 91, 0.15)',
-                          marginBottom: 16,
-                        }}
-                      >
-                        <View style={{ backgroundColor: 'white', flexDirection: 'row' }}>
-                          <Text
-                            style={{
-                              color: '#0087ba',
-                              ...theme.fonts.IBMPlexSansMedium(14),
-                              marginLeft: 14,
-                              marginBottom: 8,
-                              marginTop: 12,
-                              marginRight: 14,
-                            }}
-                          >
-                            {symptoms.symptom}
-                            {symptoms.howOften} {symptoms.since} {symptoms.severity}
-                          </Text>
-                        </View>
-                        <View>
-                          <Text
-                            style={{
-                              fontFamily: 'IBMPlexSans',
-                              fontSize: 10,
-                              fontWeight: '500',
-                              fontStyle: 'normal',
-                              lineHeight: 12,
-                              letterSpacing: 0,
-                              color: 'rgba(2, 71, 91, 0.6)',
-                              marginLeft: 14,
-                              marginBottom: 8,
-                            }}
-                          >
-                            {moment
-                              .unix(apmnt.appointmentDateTime / 1000)
-                              .format('DD MMM  hh:mm a')}
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  })
-                )}
-              </View>
-            );
-          })
+          <View>
+            <Text>{apmnt.status}</Text>
+          </View>
         )}
       </View>
     );
