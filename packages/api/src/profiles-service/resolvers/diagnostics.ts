@@ -17,22 +17,6 @@ import { log } from 'customWinstonLogger';
 import { getConnection } from 'typeorm';
 
 export const diagnosticsTypeDefs = gql`
-  type DiagnosticDetailsInCaseSheet @key(fields: "itemName") {
-    city: String
-    collectionType: TEST_COLLECTION_TYPE
-    fromAgeInDays: Int
-    gender: String
-    id: ID
-    itemId: Int
-    itemName: String
-    itemRemarks: String
-    itemType: DIAGNOSTICS_TYPE
-    rate: Int
-    state: String
-    testPreparationData: String
-    toAgeInDays: Int
-  }
-
   enum DIAGNOSTICS_TYPE {
     TEST
     PACKAGE
@@ -309,40 +293,6 @@ export type DiagnosticDetailsInCaseSheet = {
 };
 
 export const diagnosticsResolvers = {
-  DiagnosticDetailsInCaseSheet: {
-    async __resolveReference(object: Diagnostics) {
-      const connection = getConnection();
-      const diagnosticRepo = connection.getCustomRepository(DiagnosticsRepository);
-      let diagnosticsList: DiagnosticDetailsInCaseSheet[] = [];
-      diagnosticsList = (await diagnosticRepo.getDiagnosticByName(
-        object.itemName.toString()
-      )) as DiagnosticDetailsInCaseSheet[];
-
-      diagnosticsList = diagnosticsList.map((item) => {
-        const convertedItem: DiagnosticDetailsInCaseSheet = <DiagnosticDetailsInCaseSheet>{
-          city: item.city,
-          collectionType: item.collectionType,
-          fromAgeInDays: item.fromAgeInDays,
-          gender: item.gender,
-          id: item.id,
-          itemId: item.itemId,
-          itemName: item.itemName,
-          itemRemarks: item.itemRemarks,
-          itemType: item.itemType,
-          rate: item.rate,
-          state: item.state,
-          testPreparationData: item.testPreparationData,
-          toAgeInDays: item.toAgeInDays,
-        };
-        console.log(':::', typeof convertedItem, convertedItem);
-        return convertedItem;
-      });
-
-      console.log(diagnosticsList);
-
-      return diagnosticsList;
-    },
-  },
   Query: {
     searchDiagnostics,
     getDiagnosticsCites,
