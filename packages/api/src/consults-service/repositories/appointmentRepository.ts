@@ -319,6 +319,19 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  //get patient all appointments
+  getPatientAllAppointments(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+      })
+      .getMany();
+  }
+
   async findByDoctorIdsAndDateTimes(
     doctorIds: string[],
     utcAppointmentDateTimes: AppointmentDateTime[]
