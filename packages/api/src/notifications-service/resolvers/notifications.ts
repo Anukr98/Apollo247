@@ -559,6 +559,25 @@ export async function sendNotification(
     };
   }
 
+  if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Appointment_Canceled',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+        doctorType: 'SENIOR',
+      },
+    };
+  }
+
   if (
     pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT ||
     pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
