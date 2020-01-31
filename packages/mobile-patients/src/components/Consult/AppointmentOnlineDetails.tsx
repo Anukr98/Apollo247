@@ -527,19 +527,20 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   <Text style={styles.descriptionStyle}>Amount Paid</Text>
                   <Text style={styles.descriptionStyle}>
                     {/* {data.doctorInfo.onlineConsultationFees} */}
-                    {VirtualConsultationFee !== data.doctorInfo.onlineConsultationFees && (
-                      <>
-                        <Text
-                          style={{
-                            textDecorationLine: 'line-through',
-                            textDecorationStyle: 'solid',
-                          }}
-                        >
-                          {`(Rs. ${data.doctorInfo.onlineConsultationFees})`}
-                        </Text>
-                        <Text> </Text>
-                      </>
-                    )}{' '}
+                    {VirtualConsultationFee !== data.doctorInfo.onlineConsultationFees &&
+                      Number(VirtualConsultationFee) > 0 && (
+                        <>
+                          <Text
+                            style={{
+                              textDecorationLine: 'line-through',
+                              textDecorationStyle: 'solid',
+                            }}
+                          >
+                            {`(Rs. ${data.doctorInfo.onlineConsultationFees})`}
+                          </Text>
+                          <Text> </Text>
+                        </>
+                      )}{' '}
                     Rs. {VirtualConsultationFee}
                   </Text>
                 </View>

@@ -12,6 +12,7 @@ import {
   GET_PATIENT_PAST_SEARCHES,
   SAVE_SEARCH,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+  DOCTOR_SPECIALITY_BY_FILTERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
@@ -57,6 +58,8 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
+import { getDoctorsBySpecialtyAndFilters } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -163,6 +166,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { setGeneralPhysicians, locationDetails } = useAppCommonData();
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -200,6 +205,74 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   //     });
   //   return [];
   // };
+
+  const fetchDoctorData = (id: string) => {
+    let geolocation = {} as any;
+    if (locationDetails) {
+      geolocation = {
+        geolocation: {
+          latitude: parseFloat(locationDetails.latitude ? locationDetails.latitude.toString() : ''),
+          longitude: parseFloat(
+            locationDetails.longitude ? locationDetails.longitude.toString() : ''
+          ),
+        },
+      };
+    }
+
+    console.log(geolocation, 'geolocation');
+
+    const FilterInput = {
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      specialty: id,
+      ...geolocation,
+    };
+    console.log(FilterInput, 'FilterInput1111');
+
+    client
+      .query<getDoctorsBySpecialtyAndFilters>({
+        query: DOCTOR_SPECIALITY_BY_FILTERS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          filterInput: FilterInput,
+        },
+      })
+      .then(({ data }) => {
+        console.log(data, 'dataaaaa');
+        setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
+        // try {
+        //   const filterGetData =
+        //     data && data.getDoctorsBySpecialtyAndFilters
+        //       ? data.getDoctorsBySpecialtyAndFilters
+        //       : null;
+        //   if (filterGetData) {
+        //     if (filterGetData.doctors) {
+        //       // setDoctorsList(filterGetData.doctors);
+        //     }
+
+        //     if (filterGetData.doctorsAvailability) {
+        //       // setdoctorsAvailability(filterGetData.doctorsAvailability);
+        //       setshowSpinner(false);
+        //     }
+        //     if (filterGetData.specialty) {
+        //       // setspecialities(filterGetData.specialty);
+        //       setshowSpinner(false);
+        //     }
+
+        //     if (filterGetData.doctorsNextAvailability) {
+        //       // setdoctorsNextAvailability(filterGetData.doctorsNextAvailability);
+        //       setshowSpinner(false);
+        //     }
+        //   }
+        // } catch (e) {
+        //   CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
+        // }
+      })
+      .catch((e) => {
+        // CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
+        // setshowSpinner(false);
+        console.log('Error 11111111', e);
+      });
+  };
 
   const fetchSearchData = (searchTextString: string = searchText) => {
     if (searchTextString.length > 2) {
@@ -272,6 +345,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             data.getAllSpecialties.length
           ) {
             setSpecialities(data.getAllSpecialties);
+            fetchDoctorData(data.getAllSpecialties[0].id);
             setshowSpinner(false);
             AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
             AsyncStorage.setItem('APICalledDate', todayDate);
@@ -331,7 +405,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     isToday = checkDate ? checkDate === todayDate : false;
     const specialistData = await AsyncStorage.getItem('SpecialistData');
     if (isToday && specialistData && specialistData.length) {
-      specialistData && setSpecialities(JSON.parse(specialistData));
+      if (specialistData) {
+        setSpecialities(JSON.parse(specialistData));
+        fetchDoctorData(JSON.parse(specialistData)[0].id);
+      }
       setshowSpinner(false);
     } else {
       fetchSpecialities();

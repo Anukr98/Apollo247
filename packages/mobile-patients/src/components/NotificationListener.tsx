@@ -209,7 +209,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     const currentScreenName = await AsyncStorage.getItem('setCurrentName');
     aphConsole.log('setCurrentName', currentScreenName);
 
-    if (notificationType === 'chat_room' || notificationType === 'call_started') {
+    if (
+      notificationType === 'chat_room' ||
+      notificationType === 'call_started' ||
+      notificationType === 'Appointment_Canceled'
+    ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
 
