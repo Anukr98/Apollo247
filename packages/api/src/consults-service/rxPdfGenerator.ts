@@ -307,7 +307,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderSectionHeader = (headerText: string, y?: number) => {
-    if (doc.y > doc.page.height - 150) {
+    if (doc.y > doc.page.height - 170) {
       pageBreak();
     }
     return doc
@@ -435,7 +435,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .moveDown(0.8);
       }
 
-      if (doc.y > doc.page.height - 150) {
+      if (doc.y > doc.page.height - 170) {
         pageBreak();
       }
     });
@@ -446,7 +446,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
     prescriptions.forEach((prescription, index) => {
       // const medicineTimings = prescripti
-      if (doc.y > doc.page.height - 150) {
+      if (doc.y > doc.page.height - 170) {
         pageBreak();
       }
       doc
@@ -479,7 +479,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (generalAdvice) {
       renderSectionHeader('Advise Given');
       generalAdvice.forEach((advice, index) => {
-        if (doc.y > doc.page.height - 150) {
+        if (doc.y > doc.page.height - 170) {
           pageBreak();
         }
         doc
@@ -497,7 +497,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (diagnoses) {
       renderSectionHeader('Provisional Diagnosis');
       diagnoses.forEach((diag, index) => {
-        if (doc.y > doc.page.height - 150) {
+        if (doc.y > doc.page.height - 170) {
           pageBreak();
         }
         doc
@@ -514,7 +514,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (diagnosticTests) {
       renderSectionHeader('Diagnostic Tests');
       diagnosticTests.forEach((diagTest, index) => {
-        if (doc.y > doc.page.height - 150) {
+        if (doc.y > doc.page.height - 170) {
           pageBreak();
         }
 
@@ -579,7 +579,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderFollowUp = (followUpData: RxPdfData['followUpDetails']) => {
     if (followUpData) {
-      if (doc.y > doc.page.height - 150) {
+      if (doc.y > doc.page.height - 170) {
         pageBreak();
       }
       renderSectionHeader('Follow Up');
@@ -594,7 +594,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDoctorData = async (doctorInfo: RxPdfData['doctorInfo']) => {
     if (doctorInfo) {
-      if (doc.y > doc.page.height - 150) {
+      if (doc.y > doc.page.height - 170) {
         pageBreak();
       }
       drawHorizontalDivider(doc.y);
