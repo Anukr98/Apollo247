@@ -260,7 +260,7 @@ export const caseSheetTypeDefs = gql`
 
   type DiagnosticPrescription {
     itemname: String
-    additionalDetails: DiagnosticDetailsInCaseSheet @provides(fields: "itemName")
+    additionalDetails: [DiagnosticDetailsInCaseSheet] @provides(fields: "itemName")
   }
 
   input DiagnosticPrescriptionInput {
@@ -968,7 +968,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
 export const caseSheetResolvers = {
   DiagnosticPrescription: {
     additionalDetails(tests: CaseSheetDiagnosisPrescription) {
-      return { __typename: 'DiagnosticDetailsInCaseSheet', itemName: tests.itemname };
+      return [{ __typename: ['DiagnosticDetailsInCaseSheet'], itemName: tests.itemname }];
     },
   },
   Appointment: {

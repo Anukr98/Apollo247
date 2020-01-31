@@ -292,12 +292,55 @@ const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, Diagnostics
   return { diagnosticOrgans, diagnosticHotSellers };
 };
 
+export type DiagnosticDetailsInCaseSheet = {
+  city: string;
+  collectionType: TEST_COLLECTION_TYPE;
+  fromAgeInDays: number;
+  gender: string;
+  id: string;
+  itemId: number;
+  itemName: string;
+  itemRemarks: string;
+  itemType: DIAGNOSTICS_TYPE;
+  rate: number;
+  state: string;
+  testPreparationData: string;
+  toAgeInDays: number;
+};
+
 export const diagnosticsResolvers = {
   DiagnosticDetailsInCaseSheet: {
     async __resolveReference(object: Diagnostics) {
       const connection = getConnection();
       const diagnosticRepo = connection.getCustomRepository(DiagnosticsRepository);
-      return await diagnosticRepo.getDiagnosticByName(object.itemName.toString());
+      let diagnosticsList: DiagnosticDetailsInCaseSheet[] = [];
+      diagnosticsList = (await diagnosticRepo.getDiagnosticByName(
+        object.itemName.toString()
+      )) as DiagnosticDetailsInCaseSheet[];
+
+      diagnosticsList = diagnosticsList.map((item) => {
+        const convertedItem: DiagnosticDetailsInCaseSheet = <DiagnosticDetailsInCaseSheet>{
+          city: item.city,
+          collectionType: item.collectionType,
+          fromAgeInDays: item.fromAgeInDays,
+          gender: item.gender,
+          id: item.id,
+          itemId: item.itemId,
+          itemName: item.itemName,
+          itemRemarks: item.itemRemarks,
+          itemType: item.itemType,
+          rate: item.rate,
+          state: item.state,
+          testPreparationData: item.testPreparationData,
+          toAgeInDays: item.toAgeInDays,
+        };
+        console.log(':::', typeof convertedItem, convertedItem);
+        return convertedItem;
+      });
+
+      console.log(diagnosticsList);
+
+      return diagnosticsList;
     },
   },
   Query: {
