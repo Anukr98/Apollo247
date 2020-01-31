@@ -322,7 +322,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           consultations !== data.getPatientAllAppointments.appointments
         ) {
           setconsultations(
-            data.getPatientAllAppointments.appointments.filter((item) => item.doctorInfo !== null)
+            data.getPatientAllAppointments.appointments
+            // data.getPatientAllAppointments.appointments.filter((item) => item.doctorInfo !== null)
           );
         } else {
           setconsultations([]);
@@ -511,7 +512,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 style={[styles.doctorView]}
                 onPress={() => {
                   CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-                  if (item.doctorInfo) {
+                  if (item.doctorInfo && selectedTab === tabs[0].title) {
                     item.appointmentType === 'ONLINE'
                       ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                           data: item,
@@ -733,7 +734,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            if (item.doctorInfo) {
+                            if (item.doctorInfo && selectedTab === tabs[0].title) {
                               CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
                               props.navigation.navigate(AppRoutes.ChatRoom, {
                                 data: item,
@@ -742,7 +743,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             }
                           }}
                         >
-                          <Text style={styles.prepareForConsult}>
+                          <Text
+                            style={[
+                              styles.prepareForConsult,
+                              { opacity: selectedTab === tabs[0].title ? 1 : 0.5 },
+                            ]}
+                          >
                             {item.isConsultStarted
                               ? string.common.continueConsult
                               : string.common.prepareForConsult}
@@ -756,7 +762,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         activeOpacity={1}
                         onPress={() => {
                           CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                          if (item.doctorInfo) {
+                          if (item.doctorInfo && selectedTab === tabs[0].title) {
                             props.navigation.navigate(AppRoutes.ChatRoom, {
                               data: item,
                               callType: '',
@@ -764,7 +770,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           }
                         }}
                       >
-                        <Text style={[styles.prepareForConsult, { paddingBottom: -16 }]}>
+                        <Text
+                          style={[
+                            styles.prepareForConsult,
+                            {
+                              paddingBottom: -16,
+                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
+                            },
+                          ]}
+                        >
                           CHAT WITH DOCTOR
                         </Text>
                         {day1.diff(day2, 'days') > -1 ? (
@@ -773,6 +787,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               flexDirection: 'row',
                               alignSelf: 'flex-end',
                               paddingBottom: -16,
+                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
                             }}
                           >
                             <Text
