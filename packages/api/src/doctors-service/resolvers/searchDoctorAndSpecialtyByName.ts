@@ -85,7 +85,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     identifier
   );
 
-  searchLogger('SEARCH_BY_NAME_CALL___STARTED');
+  searchLogger('API_CALL___STARTED');
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
 
   let matchedDoctors: Doctor[] = [],
@@ -166,7 +166,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
   }
 
-  searchLogger(`SEARCH_BY_NAME_CALL___END`);
+  searchLogger(`API_CALL___END`);
 
   return {
     doctors: matchedDoctors,

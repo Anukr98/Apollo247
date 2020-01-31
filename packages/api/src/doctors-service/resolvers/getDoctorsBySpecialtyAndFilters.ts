@@ -150,7 +150,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     identifier
   );
 
-  searchLogger(`FILTER_DOCTORS_BY_SPECIALTY___START`);
+  searchLogger(`API_CALL___START`);
 
   let finalConsultNowDoctors: Doctor[] = [],
     finalBookNowDoctors: Doctor[] = [],
@@ -277,7 +277,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
 
-  searchLogger(`FILTER_DOCTORS_BY_SPECIALTY___END`);
+  searchLogger(`API_CALL___END`);
   return {
     doctors: finalSortedDoctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
