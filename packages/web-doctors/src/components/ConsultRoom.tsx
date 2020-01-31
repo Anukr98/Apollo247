@@ -886,7 +886,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
                       <img src={rowData.url} alt={rowData.url} />
                     ) : (
-                      <a href={rowData.url}>
+                      <a href={rowData.url} target="_blank">
                         <img src={require('images/pdf_thumbnail.png')} />
                       </a>
                     )}
