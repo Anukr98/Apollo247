@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== 'production') {
+  require('newrelic');
+}
+
 import '@aph/universal/dist/global';
 import { ApolloServer } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
@@ -9,7 +13,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-require('newrelic');
 
 console.log('gateway starting');
 
