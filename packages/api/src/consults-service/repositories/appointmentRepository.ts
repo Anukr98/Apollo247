@@ -329,6 +329,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
+      .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
   }
 
