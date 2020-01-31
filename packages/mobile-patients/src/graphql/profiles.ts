@@ -991,21 +991,6 @@ export const GET_CASESHEET_DETAILS = gql`
         }
         diagnosticPrescription {
           itemname
-          additionalDetails {
-            city
-            collectionType
-            fromAgeInDays
-            gender
-            id
-            itemId
-            itemName
-            itemRemarks
-            itemType
-            rate
-            state
-            testPreparationData
-            toAgeInDays
-          }
         }
         blobName
         doctorId
@@ -1615,21 +1600,6 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           }
           diagnosticPrescription {
             itemname
-            additionalDetails {
-              city
-              collectionType
-              fromAgeInDays
-              gender
-              id
-              itemId
-              itemName
-              itemRemarks
-              itemType
-              rate
-              state
-              testPreparationData
-              toAgeInDays
-            }
           }
           doctorId
           doctorType
