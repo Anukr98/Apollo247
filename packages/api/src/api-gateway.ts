@@ -1,7 +1,3 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('newrelic');
-}
-
 import '@aph/universal/dist/global';
 import { ApolloServer } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
