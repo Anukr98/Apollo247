@@ -359,12 +359,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       return;
     }
     setLoading && setLoading(true);
-    const testPrescription = ((caseSheetDetails!.diagnosticPrescription ||
-      []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]).filter(
-      (item) =>
-        (g(item, 'additionalDetails', 'city') || '').toLowerCase() ==
-        locationDetails.city.toLowerCase()
-    );
+
+    const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
+      []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     if (!testPrescription.length) {
@@ -382,17 +379,35 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     } as EPrescription;
 
     // Adding tests to DiagnosticsCart
-    addTestsToCart(testPrescription)
-      .then((tests) => {
-        addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
+    addTestsToCart(testPrescription, client, g(locationDetails, 'city') || '')
+      .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
-        if ((tests as DiagnosticsCartItem[]).length)
+        const unAvailableItemsArray = testPrescription.filter(
+          (item) => !tests.find((val) => val.name == item.itemname!)
+        );
+
+        const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+
+        if (tests.length) {
+          addMultipleTestCartItems!(tests);
           addMultipleTestEPrescriptions!([
             {
               ...presToAdd,
               medicines: (tests as DiagnosticsCartItem[]).map((item) => item.name).join(', '),
             },
           ]);
+        }
+        if (testPrescription.length == unAvailableItemsArray.length) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Unfortunately, we do not have any diagnostic(s) available right now.`
+          );
+        } else if (unAvailableItems) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
+          );
+        }
       })
       .catch((e) => {
         Alert.alert('Uh oh.. :(', e);

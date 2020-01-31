@@ -3871,7 +3871,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .utc(
             Value === 'Followup'
               ? rowData.transferInfo.folloupDateTime
-              : rowData.transferInfo.transferDateTime
+              : rowData.transferInfo&&rowData.transferInfo.transferDateTime
           )
           .local()
           .format('YYYY-MM-DD');

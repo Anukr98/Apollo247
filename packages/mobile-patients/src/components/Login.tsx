@@ -456,7 +456,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   letterSpacing: 0,
                 }}
               >
-                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
               </Text>
             </HyperLink>
           </View>

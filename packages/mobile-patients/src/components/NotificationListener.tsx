@@ -34,7 +34,7 @@ import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { FEEDBACKTYPE } from '../graphql/types/globalTypes';
+import { FEEDBACKTYPE, DoctorType } from '../graphql/types/globalTypes';
 import { FeedbackPopup } from './FeedbackPopup';
 import { MedicalIcon } from './ui/Icons';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -70,7 +70,8 @@ type CustomNotificationType =
   | 'Diagnostic_Order_Payment_Failed'
   | 'Registration_Success'
   | 'Patient_Cancel_Appointment'
-  | 'Patient_Noshow_Reschedule_Appointment';
+  | 'Patient_Noshow_Reschedule_Appointment'
+  | 'Appointment_Canceled';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -208,7 +209,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     const currentScreenName = await AsyncStorage.getItem('setCurrentName');
     aphConsole.log('setCurrentName', currentScreenName);
 
-    if (notificationType === 'chat_room' || notificationType === 'call_started') {
+    if (
+      notificationType === 'chat_room' ||
+      notificationType === 'call_started' ||
+      notificationType === 'Appointment_Canceled'
+    ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
 
@@ -470,7 +475,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'call_started':
         {
-          aphConsole.log('call_started');
+          console.log('call_started', data);
 
           const doctorName = data.doctorName;
           const userName = data.patientName;
@@ -481,7 +486,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             notificationType,
             data.callType,
             doctorName,
-            userName
+            userName,
+            data.doctorType
           );
         }
         break;
@@ -494,6 +500,23 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Reminder_Appointment_Casesheet_15': // 15 min, no case sheet
         {
           showChatRoomAlert(data, 'Reminder_Appointment_Casesheet_15');
+        }
+        break;
+
+      case 'Appointment_Canceled': // 15 min, no case sheet
+        {
+          const doctorName = data.doctorName;
+          const userName = data.patientName;
+          const doctorType = data.doctorType;
+
+          aphConsole.log('Appointment_Canceled');
+          showAphAlert!({
+            title: `Hi ${userName} :)`,
+            description: `We are really sorry. Dr. ${
+              doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team' : doctorName
+            } will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor`,
+            unDismissable: true,
+          });
         }
         break;
 
@@ -602,7 +625,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     notificationType: CustomNotificationType,
     callType: string,
     doctorName: string,
-    userName: string
+    userName: string,
+    doctorType: string
   ) => {
     setLoading && setLoading(true);
 
@@ -671,7 +695,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
               showAphAlert!({
                 title: `Hi ${userName} :)`,
-                description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
+                description: `Dr. ${
+                  doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor ' : doctorName
+                } is waiting for your call response. Please proceed to the Consult Room`,
                 unDismissable: true,
                 CTAs: [
                   {
