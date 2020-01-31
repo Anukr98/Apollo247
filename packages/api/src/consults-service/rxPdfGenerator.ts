@@ -307,7 +307,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderSectionHeader = (headerText: string, y?: number) => {
-    if (doc.y > doc.page.height - 170) {
+    if (doc.y > doc.page.height - 150) {
       pageBreak();
     }
     return doc
@@ -403,7 +403,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderSymptoms = (prescriptions: RxPdfData['caseSheetSymptoms']) => {
-    renderSectionHeader('Chief Complaints', headerEndY + 100);
+    renderSectionHeader('Chief Complaints', headerEndY + 150);
 
     prescriptions.forEach((prescription, index) => {
       const textArray = [];
@@ -435,18 +435,18 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .moveDown(0.8);
       }
 
-      if (doc.y > doc.page.height - 170) {
+      if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
     });
   };
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
-    renderSectionHeader('Medication Prescribed', headerEndY + 100);
+    renderSectionHeader('Medication Prescribed', headerEndY + 150);
 
     prescriptions.forEach((prescription, index) => {
       // const medicineTimings = prescripti
-      if (doc.y > doc.page.height - 170) {
+      if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
       doc
@@ -479,7 +479,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (generalAdvice) {
       renderSectionHeader('Advise Given');
       generalAdvice.forEach((advice, index) => {
-        if (doc.y > doc.page.height - 170) {
+        if (doc.y > doc.page.height - 150) {
           pageBreak();
         }
         doc
@@ -497,7 +497,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (diagnoses) {
       renderSectionHeader('Provisional Diagnosis');
       diagnoses.forEach((diag, index) => {
-        if (doc.y > doc.page.height - 170) {
+        if (doc.y > doc.page.height - 150) {
           pageBreak();
         }
         doc
@@ -514,7 +514,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (diagnosticTests) {
       renderSectionHeader('Diagnostic Tests');
       diagnosticTests.forEach((diagTest, index) => {
-        if (doc.y > doc.page.height - 170) {
+        if (doc.y > doc.page.height - 150) {
           pageBreak();
         }
 
@@ -579,7 +579,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderFollowUp = (followUpData: RxPdfData['followUpDetails']) => {
     if (followUpData) {
-      if (doc.y > doc.page.height - 170) {
+      if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
       renderSectionHeader('Follow Up');
@@ -594,7 +594,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDoctorData = async (doctorInfo: RxPdfData['doctorInfo']) => {
     if (doctorInfo) {
-      if (doc.y > doc.page.height - 170) {
+      if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
       drawHorizontalDivider(doc.y);
@@ -611,6 +611,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       if (doctorInfo.signature) {
         const request = require('sync-request');
         const res = request('GET', doctorInfo.signature);
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
         doc.image(res.body, margin + 15, doc.y, { height: 72, width: 200 });
         doc.moveDown(0.5);
       }
