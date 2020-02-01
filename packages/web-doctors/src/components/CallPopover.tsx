@@ -1843,7 +1843,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           props.setIsPdfPageOpen(false);
                         }}
                       >
-                        { sendToPatientButtonDisable ? 'Please wait...' : 'Edit Case Sheet'}
+                        Edit Case Sheet
                       </Button>
                       <Button
                         className={classes.endconsultButton}
