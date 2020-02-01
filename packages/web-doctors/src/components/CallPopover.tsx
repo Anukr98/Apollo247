@@ -1835,6 +1835,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <Fragment>
                       <Button
                         className={classes.backButton}
+                        disabled={sendToPatientButtonDisable}
                         onClick={() => {
                           setIsClickedOnEdit(true);
                           setIsClickedOnPriview(false);
@@ -1842,7 +1843,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           props.setIsPdfPageOpen(false);
                         }}
                       >
-                        Edit Case Sheet
+                        { sendToPatientButtonDisable ? 'Please wait...' : 'Edit Case Sheet'}
                       </Button>
                       <Button
                         className={classes.endconsultButton}
