@@ -205,9 +205,13 @@ export async function sendCallsNotification(
   notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
   notificationBody = ApiConstants.AVCALL_APPOINTMENT_BODY;
   if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
-    notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
+    if (callType == APPT_CALL_TYPE.CHAT) {
+      notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
+    } else {
+      notificationBody = ApiConstants.JUNIOR_AVCALL_APPOINTMENT_BODY;
+    }
   }
-  if (callType == APPT_CALL_TYPE.CHAT) {
+  if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
   }
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
