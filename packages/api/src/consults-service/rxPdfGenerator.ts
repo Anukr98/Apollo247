@@ -623,6 +623,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       const specialty = doctorInfo.specialty;
       const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
 
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
+
       doc
         .opacity(1)
         .fontSize(12)
