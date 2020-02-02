@@ -320,7 +320,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   //get patient all appointments
-  getPatientAllAppointments(patientId: string) {
+  getPatientAllAppointments(patientId: string, offset?: number, limit?: number) {
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .andWhere('appointment.patientId = :patientId', { patientId })
@@ -329,6 +329,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
+      .offset(offset)
+      .limit(limit)
       .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
   }
