@@ -1714,10 +1714,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         APIForUpdateAppointmentData(true);
         setTextChange(false);
         try {
-          Keyboard.dismiss()
-        } catch (error) {
-          
-        }
+          Keyboard.dismiss();
+        } catch (error) {}
 
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
@@ -3871,7 +3869,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .utc(
             Value === 'Followup'
               ? rowData.transferInfo.folloupDateTime
-              : rowData.transferInfo&&rowData.transferInfo.transferDateTime
+              : rowData.transferInfo && rowData.transferInfo.transferDateTime
           )
           .local()
           .format('YYYY-MM-DD');
@@ -5362,14 +5360,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-              })
-            );
-            handleCallTheEdSessionAPI();
+            if (callhandelBack) {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                })
+              );
+              handleCallTheEdSessionAPI();
+            }
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
