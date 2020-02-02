@@ -522,11 +522,11 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
+    const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
     log(
       'profileServiceLogger',
       `EXTERNAL_API_CALL_PRISM: ${url}`,
-      'getPatientHospitalizations()->API_CALL_STARTING',
+      'getPatientOpPrescriptions()->API_CALL_STARTING',
       '',
       ''
     );
@@ -538,7 +538,7 @@ export class PatientRepository extends Repository<Patient> {
         log(
           'profileServiceLogger',
           'API_CALL_ERROR',
-          'getPatientHospitalizations()->CATCH_BLOCK',
+          'getPatientOpPrescriptions()->CATCH_BLOCK',
           '',
           JSON.stringify(error)
         );
@@ -548,12 +548,12 @@ export class PatientRepository extends Repository<Patient> {
     log(
       'profileServiceLogger',
       'API_CALL_RESPONSE',
-      'getPatientHospitalizations()->API_CALL_RESPONSE',
-      JSON.stringify(hospitalizations),
+      'getPatientOpPrescriptions()->API_CALL_RESPONSE',
+      JSON.stringify(opPrescriptions),
       ''
     );
 
-    return hospitalizations.errorCode == '0' ? opPrescriptions.response : [];
+    return opPrescriptions.errorCode == '0' ? opPrescriptions.response : [];
   }
 
   saveNewProfile(patientAttrs: Partial<Patient>) {
