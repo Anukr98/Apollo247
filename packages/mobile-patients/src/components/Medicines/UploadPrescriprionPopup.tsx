@@ -143,13 +143,13 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       // height: 400,
       cropping: props.isProfileImage ? true : false,
       hideBottomControls: true,
-      width: props.isProfileImage ? 4096 : undefined,
-      height: props.isProfileImage ? 4096 : undefined,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
       includeBase64: true,
       multiple: props.isProfileImage ? false : true,
       compressImageQuality: 0.5,
-      compressImageMaxHeight: 4096,
-      compressImageMaxWidth: 4096,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
       writeTempFile: false,
     })
       .then((response) => {
@@ -203,13 +203,13 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
-      width: props.isProfileImage ? 4096 : undefined,
-      height: props.isProfileImage ? 4096 : undefined,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
       includeBase64: true,
       multiple: props.isProfileImage ? false : true,
       compressImageQuality: 0.5,
-      compressImageMaxHeight: 4096,
-      compressImageMaxWidth: 4096,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
       writeTempFile: false,
     })
       .then((response) => {

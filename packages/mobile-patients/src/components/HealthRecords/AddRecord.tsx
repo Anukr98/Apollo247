@@ -70,6 +70,7 @@ import {
 import { BottomPopUp } from '../ui/BottomPopUp';
 import { string } from '../../strings/string';
 import { useUIElements } from '../UIElementsProvider';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -542,10 +543,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <View style={{ flex: 1 }}>
             <Text>
               {data.path
-                .split('\\')
-                .pop()
-                .split('/')
-                .pop()}
+                ? data.path
+                    .split('\\')
+                    .pop()
+                    .split('/')
+                    .pop()
+                : 'IMG_' + moment(new Date()).format('HH_mm_DD_MM_YYYY')}
             </Text>
           </View>
           <TouchableOpacity

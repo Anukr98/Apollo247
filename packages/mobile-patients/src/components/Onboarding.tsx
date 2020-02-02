@@ -114,7 +114,7 @@ const slides: Slide[] = [
   {
     key: 'somethun1',
     title: 'at your doorstep',
-    text: 'Order medicines from the comfort of your home. Tests and health check-ups coming soon!',
+    text: 'Order medicines, tests and health checkups from the comfort of your home',
     image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 3,
@@ -123,7 +123,7 @@ const slides: Slide[] = [
   {
     key: 'somethun2',
     title: 'care programs',
-    text: 'Learn about Special Care Programs by Apollo. Coming soon!',
+    text: 'Learn about Special Care Programs by Apollo.',
     image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 4,
