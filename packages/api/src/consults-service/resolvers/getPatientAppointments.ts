@@ -54,7 +54,11 @@ export const getPatinetAppointmentsTypeDefs = gql`
       patientAppointmentsInput: PatientAppointmentsInput
     ): PatientAppointmentsResult!
     getPatientFutureAppointmentCount(patientId: String): AppointmentsCount
-    getPatientAllAppointments(patientId: String): PatientAllAppointmentsResult!
+    getPatientAllAppointments(
+      patientId: String
+      offset: Int
+      limit: Int
+    ): PatientAllAppointmentsResult!
   }
 `;
 
@@ -132,12 +136,16 @@ const getPatientFutureAppointmentCount: Resolver<
 
 const getPatientAllAppointments: Resolver<
   null,
-  { patientId: string },
+  { patientId: string; offset: number; limit: number },
   ConsultServiceContext,
   PatientAllAppointmentsResult
 > = async (parent, args, { consultsDb, doctorsDb }) => {
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointments = await appts.getPatientAllAppointments(args.patientId);
+  const appointments = await appts.getPatientAllAppointments(
+    args.patientId,
+    args.offset,
+    args.limit
+  );
 
   return { appointments };
 };
