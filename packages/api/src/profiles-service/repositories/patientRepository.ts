@@ -516,6 +516,46 @@ export class PatientRepository extends Repository<Patient> {
     return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
   }
 
+  async getPatientOpPrescriptions(uhid: string, authToken: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${url}`,
+      'getPatientHospitalizations()->API_CALL_STARTING',
+      '',
+      ''
+    );
+    const opPrescriptions = await fetch(url, prismHeaders)
+      .then((res) => {
+        return res.json();
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'API_CALL_ERROR',
+          'getPatientHospitalizations()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
+      });
+
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'getPatientHospitalizations()->API_CALL_RESPONSE',
+      JSON.stringify(hospitalizations),
+      ''
+    );
+
+    return hospitalizations.errorCode == '0' ? opPrescriptions.response : [];
+  }
+
   saveNewProfile(patientAttrs: Partial<Patient>) {
     return this.create(patientAttrs)
       .save()
