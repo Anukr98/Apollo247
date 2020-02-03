@@ -188,6 +188,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {
