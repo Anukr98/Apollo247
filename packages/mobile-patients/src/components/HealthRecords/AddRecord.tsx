@@ -673,7 +673,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               value={docName}
               placeholder={'Enter doctor name'}
               onChangeText={(docName) => {
-                if (isValidName(docName)) {
+                if (isValidText(docName)) {
                   setDocName(docName);
                 }
               }}
