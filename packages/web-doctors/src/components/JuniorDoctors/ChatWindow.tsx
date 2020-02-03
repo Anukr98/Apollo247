@@ -328,6 +328,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       color: '#02475b',
     },
+    phrMsg: {
+      fontFamily: 'IBM Plex Sans,sans-serif',
+    },
   };
 });
 
@@ -340,6 +343,7 @@ interface MessagesObjectProps {
   url: string;
   messageDate: string;
   sentBy: string;
+  type: string;
 }
 
 interface ConsultRoomProps {
@@ -804,7 +808,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               ) : (
                 <>
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.type === 'PHR' ? (
+                    <pre className={classes.phrMsg}>{getAutomatedMessage(rowData)}</pre>
+                  ) : (
+                    <span>{getAutomatedMessage(rowData)}</span>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}
