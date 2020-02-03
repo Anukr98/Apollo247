@@ -427,10 +427,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
+        console.log('Promise.all medPrescription result', { result });
         setLoading && setLoading(false);
         const medicinesAll = result.map(({ data: { productdp } }, index) => {
           const medicineDetails = (productdp && productdp[0]) || {};
-          if (medicineDetails.is_in_stock == undefined) {
+          if (medicineDetails.id == 0) {
             return null;
           }
           const _qty =
@@ -461,6 +462,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           } as ShoppingCartItem;
         });
         const medicines = medicinesAll.filter((item) => !!item);
+        console.log({ medicinesAll });
+        console.log({ medicines });
 
         addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
