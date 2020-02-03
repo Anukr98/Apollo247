@@ -557,6 +557,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                     }
                   });
                 }
+                setSelectedHealthRecord([]);
                 props.onSubmit(submitValues);
               }}
               style={{ marginHorizontal: 60, marginVertical: 20 }}
