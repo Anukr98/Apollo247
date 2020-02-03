@@ -952,7 +952,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
-
+    console.log(blockedSlots, 'blocked slots');
     if (timeSlot.length > 0) {
       //const duration = Math.floor(60 / timeSlot[0].consultDuration);
       const duration = parseFloat((60 / timeSlot[0].consultDuration).toFixed(1));
