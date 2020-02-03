@@ -509,12 +509,11 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
                     if (selectedHealthRecord.findIndex((i) => i === data.id) > -1) {
                       console.log(data, 'bdfiundskdkkdkdio');
-
                       let message = '';
-                      (data.medicalRecordParameters || data.labTestResultParameters).forEach(
+                      (data.medicalRecordParameters || data.labTestResultParameters || []).forEach(
                         (record: any) => {
                           console.log(record);
-                          if (record) {
+                          if (record && record.parameterName) {
                             message += `${record.parameterName}: ${record.result}${
                               record.unit
                                 ? ` (${record.unit
@@ -528,6 +527,11 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                           }
                         }
                       );
+                      const date =
+                        data.testDate ||
+                        data.labTestDate ||
+                        data.appointmentDate ||
+                        data.dateOfHospitalization;
                       if (message) {
                         message =
                           (data.testName ||
@@ -536,29 +540,32 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                             data.diagnosisNotes ||
                             data.healthCheckName ||
                             data.labTestName) +
-                          ':\n' +
+                          ` ${date ? `(${moment(date).format('DD/MM/YYYY')})` : ``}:\n` +
                           message.slice(0, -1);
                       }
                       let urls = data.documentURLs || '';
-                      if (
-                        data.hospitalizationPrismFileIds ||
-                        data.healthCheckPrismFileIds ||
-                        data.testResultPrismFileIds
-                      ) {
-                        getPrismUrls(
-                          client,
-                          (currentPatient && currentPatient.firstName) || '',
-                          data.hospitalizationPrismFileIds ||
-                            data.healthCheckPrismFileIds ||
-                            data.testResultPrismFileIds
-                        )
-                          .then((item: any) => {
-                            urls = (item && item.urls && item.urls.join(',')) || urls;
-                          })
-                          .catch((e) => {
-                            CommonBugFender('SelectEPrescriptionModal__getPrismUrls', e);
-                          });
+                      if (data.hospitalizationPrismFileIds) {
+                        urls = [];
+                        data.hospitalizationPrismFileIds.forEach((item: any) => {
+                          urls.push(item);
+                        });
+                        urls = urls.join(',');
                       }
+                      if (data.healthCheckPrismFileIds) {
+                        urls = [];
+                        data.healthCheckPrismFileIds.forEach((item: any) => {
+                          urls.push(item);
+                        });
+                        urls = urls.join(',');
+                      }
+                      if (data.testResultPrismFileIds) {
+                        urls = [];
+                        data.testResultPrismFileIds.forEach((item: any) => {
+                          urls.push(item);
+                        });
+                        urls = urls.join(',');
+                      }
+                      urls = ''; //remove this to get images
                       submitValues.push({
                         id: data.id,
                         uploadedUrl: urls,
@@ -570,22 +577,22 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                           data.diagnosisNotes ||
                           data.healthCheckName ||
                           data.labTestName,
-                        date:
-                          data.testDate ||
-                          data.labTestDate ||
-                          data.appointmentDate ||
-                          data.dateOfHospitalization,
+                        date: date,
                         prismPrescriptionFileId:
                           data.prismFileIds ||
-                          data.hospitalizationPrismFileIds ||
-                          data.healthCheckPrismFileIds ||
-                          data.testResultPrismFileIds,
+                          (data.hospitalizationPrismFileIds &&
+                            data.hospitalizationPrismFileIds.join(',')) ||
+                          (data.healthCheckPrismFileIds &&
+                            data.healthCheckPrismFileIds.join(',')) ||
+                          (data.testResultPrismFileIds && data.testResultPrismFileIds.join(',')),
                         message: message,
                         healthRecord: true,
                       } as EPrescription);
                     }
                   });
                 }
+                console.log(submitValues, 'sub anvio');
+
                 setSelectedHealthRecord([]);
                 props.onSubmit(submitValues);
               }}
