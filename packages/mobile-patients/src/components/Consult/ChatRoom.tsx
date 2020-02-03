@@ -5248,7 +5248,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         //selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
-        isVisible={isSelectPrescriptionVisible}
+        isVisible={true}
       />
     );
   };
@@ -5899,7 +5899,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       )}
       {uploadPrescriptionPopup()}
-      {renderPrescriptionModal()}
+      {isSelectPrescriptionVisible && renderPrescriptionModal()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
       <FeedbackPopup

@@ -20,7 +20,11 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  g,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -153,6 +157,22 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       g(medPrismRecords, 'getPatientPrismMedicalRecords', 'hospitalizations') || []
     );
   }, [medPrismRecords]);
+
+  useEffect(() => {
+    if (medPrismerror) {
+      handleGraphQlError(
+        medPrismerror,
+        'Oops! seems like we are having an issue. Please try again.'
+      );
+      CommonBugFender('SelectEPrescriptionModal_medPrismerror', medPrismerror);
+    }
+  }, [medPrismerror]);
+
+  useEffect(() => {
+    if (mederror) {
+      CommonBugFender('SelectEPrescriptionModal_mederror', mederror);
+    }
+  }, [mederror]);
 
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
   const [selectedHealthRecord, setSelectedHealthRecord] = useState<string[]>([]);
@@ -308,7 +328,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   };
 
   const renderNoPrescriptions = () => {
-    if (!loading && formattedEPrescriptions.length == 0) {
+    if (
+      !loading &&
+      formattedEPrescriptions.length == 0 &&
+      ((props.displayPrismRecords && combination && combination?.length === 0) ||
+        !props.displayPrismRecords)
+    ) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
@@ -445,22 +470,26 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             onPressLeftIcon={() => props.onSubmit([])}
           />
           <ScrollView bounces={false}>
-            {renderNoPrescriptions()}
-            <View style={{ height: 16 }} />
-            {prescriptionUpto6months.map((item, index, array) => {
-              return renderEPrescription(item, index, array.length);
-            })}
-            {!!prescriptionOlderThan6months.length && (
-              <SectionHeader
-                style={{ marginTop: 14 }}
-                leftText="PRESCRIPTIOINS OLDER THAN 6 MONTHS"
-              />
+            {!(loading || (props.displayPrismRecords && (medloading || medPrismloading))) && (
+              <>
+                {renderNoPrescriptions()}
+                <View style={{ height: 16 }} />
+                {prescriptionUpto6months.map((item, index, array) => {
+                  return renderEPrescription(item, index, array.length);
+                })}
+                {!!prescriptionOlderThan6months.length && (
+                  <SectionHeader
+                    style={{ marginTop: 14 }}
+                    leftText="PRESCRIPTIOINS OLDER THAN 6 MONTHS"
+                  />
+                )}
+                {prescriptionOlderThan6months.map((item, index, array) => {
+                  return renderEPrescription(item, index, array.length, true);
+                })}
+                {props.displayPrismRecords && renderHealthRecords()}
+                <View style={{ height: 12 }} />
+              </>
             )}
-            {prescriptionOlderThan6months.map((item, index, array) => {
-              return renderEPrescription(item, index, array.length, true);
-            })}
-            {props.displayPrismRecords && renderHealthRecords()}
-            <View style={{ height: 12 }} />
           </ScrollView>
           <View style={{ justifyContent: 'center', alignItems: 'center', marginHorizontal: 60 }}>
             <Button
@@ -564,7 +593,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             />
           </View>
         </SafeAreaView>
-        {loading && <Spinner />}
+        {(loading || (props.displayPrismRecords && (medloading || medPrismloading))) && <Spinner />}
       </View>
     </Overlay>
   );
