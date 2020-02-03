@@ -62,7 +62,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
   }
 
   type LabTestResultParameter {
-    parameterName: String!
+    parameterName: String
     unit: String
     result: String
     range: String
