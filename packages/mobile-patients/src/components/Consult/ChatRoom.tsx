@@ -5194,6 +5194,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           console.log('selectedEPres', selectedEPres);
           setSelectPrescriptionVisible(false);
@@ -5226,12 +5228,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   );
                   KeepAwake.activate();
                 });
+              item.message &&
+                pubnub.publish(
+                  {
+                    channel: channel,
+                    message: {
+                      id: patientId,
+                      message: item.message,
+                      type: 'PHR',
+                      messageDate: new Date(),
+                    },
+                    storeInHistory: true,
+                    sendByPost: true,
+                  },
+                  (status, response) => {}
+                );
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         //selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
-        isVisible={isSelectPrescriptionVisible}
+        isVisible={true}
       />
     );
   };
@@ -5882,7 +5899,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       )}
       {uploadPrescriptionPopup()}
-      {renderPrescriptionModal()}
+      {isSelectPrescriptionVisible && renderPrescriptionModal()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
       <FeedbackPopup
