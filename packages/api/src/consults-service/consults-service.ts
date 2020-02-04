@@ -86,6 +86,10 @@ import {
   appointmentsSummaryResolvers,
 } from 'consults-service/resolvers/appointmentsSummary';
 import {
+  availableDoctorsTypeDefs,
+  availableDoctorsResolvers,
+} from 'consults-service/resolvers/availableDoctors';
+import {
   getAppointmentOverviewTypeDefs,
   getAppointmentOverviewResolvers,
 } from 'consults-service/resolvers/appointmentOverview';
@@ -220,6 +224,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: appointmentsSummaryTypeDefs,
         resolvers: appointmentsSummaryResolvers,
+      },
+      {
+        typeDefs: availableDoctorsTypeDefs,
+        resolvers: availableDoctorsResolvers,
       },
       {
         typeDefs: doctorCallNotificationTypeDefs,
