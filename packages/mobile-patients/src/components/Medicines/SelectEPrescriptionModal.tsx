@@ -129,7 +129,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     getPatientPrismMedicalRecordsVariables
   >(GET_MEDICAL_PRISM_RECORD, {
     variables: {
-      patientId: '78e3e0a0-24a8-4e83-b064-650250c7b542', //currentPatient && currentPatient.id ? currentPatient.id : '',
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
     },
     fetchPolicy: 'no-cache',
   });
