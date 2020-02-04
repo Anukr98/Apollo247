@@ -261,8 +261,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log('No current patients available');
       getPatientApiCall();
     }
-    // setLoading && setLoading(true);
-    // fetchAppointments();
+    setLoading && setLoading(true);
+    fetchAppointments();
   }, [currentPatient]);
 
   useEffect(() => {
@@ -284,7 +284,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     getNetStatus()
       .then((status) => {
         if (status) {
-          setLoading && setLoading(true);
+          // setLoading && setLoading(true);
           fetchAppointments();
         } else {
           setLoading && setLoading(false);
@@ -294,7 +294,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       .catch((e) => {
         CommonBugFender('Consult_getNetStatus_useEffect', e);
       });
-  }, []);
+  }, [currentPatient]);
 
   // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
   const inputData = {

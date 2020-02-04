@@ -132,7 +132,7 @@ const ConfigurationQA = {
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   iOS_Version: '1.4',
-  Android_Version: '1.23',
+  Android_Version: '1.24',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -164,7 +164,7 @@ const ConfigurationProd = {
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   iOS_Version: '1.4',
-  Android_Version: '1.21',
+  Android_Version: '1.22',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
