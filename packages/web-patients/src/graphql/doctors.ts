@@ -14,6 +14,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       languages
       city
       awards
+      displayName
       photoUrl
       registrationNumber
       onlineConsultationFees
