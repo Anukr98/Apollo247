@@ -733,6 +733,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  useEffect(() => {
+    if (props.sessionId !== '') {
+      onStartConsult();
+      startInterval(900);
+    }
+  }, [props.sessionId]);
 
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
@@ -1295,11 +1301,14 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                   appointmentInfo!.status !== STATUS.PENDING)
               }
               onClick={() => {
-                !startAppointment ? onStartConsult() : onStopConsult();
-                !startAppointment ? startInterval(900) : stopInterval();
-                setStartAppointment(!startAppointment);
-                props.createSessionAction();
+                if (startAppointment) {
+                  onStopConsult();
+                  stopInterval();
+                } else {
+                  props.createSessionAction();
+                }
                 setCaseSheetEdit(true);
+                setStartAppointment(!startAppointment);
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
