@@ -129,7 +129,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     getPatientPrismMedicalRecordsVariables
   >(GET_MEDICAL_PRISM_RECORD, {
     variables: {
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      patientId: '78e3e0a0-24a8-4e83-b064-650250c7b542', //currentPatient && currentPatient.id ? currentPatient.id : '',
     },
     fetchPolicy: 'no-cache',
   });
@@ -353,7 +353,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     return (
       <View>
         {combination &&
-          combination.map(({ type, data }) => {
+          combination.map(({ type, data }, index) => {
             // if (item.type === 'medical') {
             //   data = item.data as getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords;
             // } else if (item.type === 'lab') {
@@ -363,15 +363,17 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             // } else if (item.type === 'health') {
             //   data = item.data as getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations;
             // }
-            const selected = selectedHealthRecord.findIndex((i) => i === data.id) > -1;
+            const selected = selectedHealthRecord.findIndex((i) => i === index.toString()) > -1;
             return (
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
                   if (selected) {
-                    setSelectedHealthRecord([...selectedHealthRecord.filter((i) => i !== data.id)]);
+                    setSelectedHealthRecord([
+                      ...selectedHealthRecord.filter((i) => i !== index.toString()),
+                    ]);
                   } else {
-                    setSelectedHealthRecord([...selectedHealthRecord, data.id]);
+                    setSelectedHealthRecord([...selectedHealthRecord, index.toString()]);
                   }
                 }}
               >
@@ -384,7 +386,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                   }}
                 >
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24)}>
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+                        flex: 0.9,
+                      }}
+                    >
                       {data.testName ||
                         data.issuingDoctor ||
                         data.location ||
@@ -396,19 +403,24 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Text
-                      style={theme.viewStyles.text(
-                        'M',
-                        14,
-                        theme.colors.TEXT_LIGHT_BLUE,
-                        1,
-                        20,
-                        0.04
-                      )}
+                      style={{
+                        ...theme.viewStyles.text(
+                          'M',
+                          14,
+                          theme.colors.TEXT_LIGHT_BLUE,
+                          1,
+                          20,
+                          0.04
+                        ),
+                        width: '49%',
+                      }}
                     >
-                      {data.testDate ||
-                        data.labTestDate ||
-                        data.appointmentDate ||
-                        data.dateOfHospitalization}
+                      {moment(
+                        data.testDate ||
+                          data.labTestDate ||
+                          data.appointmentDate ||
+                          data.dateOfHospitalization
+                      ).format('DD MMMM YYYY')}
                     </Text>
                     {data.sourceName ||
                       data.source ||
@@ -424,16 +436,20 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                             }}
                           />
                           <Text
-                            style={theme.viewStyles.text(
-                              'M',
-                              14,
-                              theme.colors.TEXT_LIGHT_BLUE,
-                              1,
-                              20,
-                              0.04
-                            )}
+                            style={{
+                              ...theme.viewStyles.text(
+                                'M',
+                                14,
+                                theme.colors.TEXT_LIGHT_BLUE,
+                                1,
+                                20,
+                                0.04
+                              ),
+                              width: '49%',
+                              textAlign: 'left',
+                            }}
                           >
-                            {data.sourceName || data.source || data.labTestSource}
+                            {(currentPatient && currentPatient.firstName) || ''}
                           </Text>
                         </>
                       ))}
@@ -507,10 +523,10 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                   (item) => selectedPrescription[item!.id]
                 );
                 if (combination) {
-                  combination.forEach(({ type, data }) => {
+                  combination.forEach(({ type, data }, index) => {
                     console.log(data, 'bdfiunio');
 
-                    if (selectedHealthRecord.findIndex((i) => i === data.id) > -1) {
+                    if (selectedHealthRecord.findIndex((i) => i === index.toString()) > -1) {
                       let date = '';
                       let name = '';
                       let message = '';
