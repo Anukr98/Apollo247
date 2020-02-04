@@ -50,6 +50,7 @@ import {
 import { MedicalRecords } from '../HealthRecords/MedicalRecords';
 import { CheckedIcon, UnCheck } from '../ui/Icons';
 import { getPrismUrls } from '../../helpers/clientCalls';
+import { MedicalTest } from '../HealthRecords/AddRecord';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -174,11 +175,13 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     }
   }, [mederror]);
 
-  const [combination, setCombination] = useState<{ type: string; data: any }[]>();
+  const [combination, setCombination] = useState<
+    { type: 'medical' | 'lab' | 'health' | 'hospital'; data: any }[]
+  >();
   const [selectedHealthRecord, setSelectedHealthRecord] = useState<string[]>([]);
 
   useEffect(() => {
-    let mergeArray: { type: string; data: any }[] = [];
+    let mergeArray: { type: 'medical' | 'lab' | 'health' | 'hospital'; data: any }[] = [];
     console.log('combination before', mergeArray);
     medicalRecords &&
       medicalRecords.forEach((item) => {
@@ -188,19 +191,19 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       labTests.forEach((item) => {
         mergeArray.push({ type: 'lab', data: item });
       });
-    healthChecks &&
-      healthChecks.forEach((item) => {
-        mergeArray.push({ type: 'health', data: item });
-      });
-    hospitalizations &&
-      hospitalizations.forEach((item) => {
-        mergeArray.push({ type: 'hospital', data: item });
-      });
+    // healthChecks &&
+    //   healthChecks.forEach((item) => {
+    //     mergeArray.push({ type: 'health', data: item });
+    //   });
+    // hospitalizations &&
+    //   hospitalizations.forEach((item) => {
+    //     mergeArray.push({ type: 'hospital', data: item });
+    //   });
     console.log('combination after', mergeArray);
     setCombination(sordByDate(mergeArray));
   }, [medicalRecords, labTests, healthChecks, hospitalizations]);
 
-  const sordByDate = (array: { type: string; data: any }[]) => {
+  const sordByDate = (array: { type: 'medical' | 'lab' | 'health' | 'hospital'; data: any }[]) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
       let date1 = new Date(
         data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
@@ -508,83 +511,74 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                     console.log(data, 'bdfiunio');
 
                     if (selectedHealthRecord.findIndex((i) => i === data.id) > -1) {
-                      console.log(data, 'bdfiundskdkkdkdio');
+                      let date = '';
+                      let name = '';
                       let message = '';
-                      (data.medicalRecordParameters || data.labTestResultParameters || []).forEach(
-                        (record: any) => {
+                      let urls = '';
+                      let prismImages = '';
+                      if (type === 'lab') {
+                        date = data.labTestDate;
+                        name = data.labTestName || '-';
+                        message = `${data.departmentName} Report\n`;
+                        message += `Test Name: ${name}\n`;
+                        message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
+                        message += `Test Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
+                        message += `${
+                          data.observation ? `Observation Notes: ${data.additionalNotes}\n` : ``
+                        }`;
+                        message += `${
+                          data.additionalNotes ? `Additional Notes: ${data.additionalNotes}\n` : ``
+                        }`;
+                        message += `---------------\n`;
+                        (data.labTestResultParameters || []).forEach((record: any) => {
                           console.log(record);
-                          if (record && record.parameterName) {
-                            message += `${record.parameterName}: ${record.result}${
-                              record.unit
-                                ? ` (${record.unit
-                                    .replace(/_SLASH_/gi, '/')
-                                    .replace(/_PERCENT_/gi, '%')
-                                    .toLowerCase()})`
-                                : ``
-                            }${record.range ? `\nrange:${record.range}` : ``}${
-                              record.minimum ? `\nmin: ${record.minimum}` : ``
-                            }${record.maximum ? `, max: ${record.maximum}` : ``}\n`;
+                          if (record) {
+                            message += `${record.parameterName}\n`;
+                            message += `${
+                              record.result ? `Result: ${record.result} ${record.unit}\n` : ``
+                            }`;
                           }
-                        }
-                      );
-                      const date =
-                        data.testDate ||
-                        data.labTestDate ||
-                        data.appointmentDate ||
-                        data.dateOfHospitalization;
-                      if (message) {
-                        message =
-                          (data.testName ||
-                            data.issuingDoctor ||
-                            data.location ||
-                            data.diagnosisNotes ||
-                            data.healthCheckName ||
-                            data.labTestName) +
-                          ` ${date ? `(${moment(date).format('DD/MM/YYYY')})` : ``}:\n` +
-                          message.slice(0, -1);
-                      }
-                      let urls = data.documentURLs || '';
-                      if (data.hospitalizationPrismFileIds) {
-                        urls = [];
-                        data.hospitalizationPrismFileIds.forEach((item: any) => {
-                          urls.push(item);
                         });
-                        urls = urls.join(',');
-                      }
-                      if (data.healthCheckPrismFileIds) {
-                        urls = [];
-                        data.healthCheckPrismFileIds.forEach((item: any) => {
-                          urls.push(item);
+                        prismImages =
+                          data.testResultPrismFileIds && data.testResultPrismFileIds.join(',');
+                        urls = prismImages;
+                      } else if (type === 'medical') {
+                        date = data.testDate;
+                        name = data.testName;
+                        message = `${data.recordType.replace(/_/g, ' ')} Report\n`;
+                        message += `Test Name: ${name}\n`;
+                        message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
+                        message += `Test Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
+                        message += `${
+                          data.observation ? `Observation Notes: ${data.additionalNotes}\n` : ``
+                        }`;
+                        message += `${
+                          data.additionalNotes ? `Additional Notes: ${data.additionalNotes}\n` : ``
+                        }`;
+                        message += `---------------\n`;
+                        (data.medicalRecordParameters || []).forEach((record: any) => {
+                          console.log(record);
+                          if (record) {
+                            message += `${record.parameterName}\n`;
+                            message += `${
+                              record.result ? `Result: ${record.result} ${record.unit}\n` : ``
+                            }`;
+                          }
                         });
-                        urls = urls.join(',');
+                        prismImages = data.prismFileIds;
+                        urls = data.documentURLs;
+                      } else if (type === 'health') {
+                        //do for health
+                      } else if (type === 'hospital') {
+                        //do for hospitals
                       }
-                      if (data.testResultPrismFileIds) {
-                        urls = [];
-                        data.testResultPrismFileIds.forEach((item: any) => {
-                          urls.push(item);
-                        });
-                        urls = urls.join(',');
-                      }
-                      urls = ''; //remove this to get images
                       submitValues.push({
                         id: data.id,
                         uploadedUrl: urls,
                         forPatient: (currentPatient && currentPatient.firstName) || '',
-                        doctorName:
-                          data.testName ||
-                          data.issuingDoctor ||
-                          data.location ||
-                          data.diagnosisNotes ||
-                          data.healthCheckName ||
-                          data.labTestName,
+                        doctorName: name,
                         date: date,
-                        prismPrescriptionFileId:
-                          data.prismFileIds ||
-                          (data.hospitalizationPrismFileIds &&
-                            data.hospitalizationPrismFileIds.join(',')) ||
-                          (data.healthCheckPrismFileIds &&
-                            data.healthCheckPrismFileIds.join(',')) ||
-                          (data.testResultPrismFileIds && data.testResultPrismFileIds.join(',')),
+                        prismPrescriptionFileId: prismImages,
                         message: message,
                         healthRecord: true,
                       } as EPrescription);
