@@ -409,36 +409,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
 
-  useEffect(() => {
-    try {
-      if (Platform.OS === 'android') {
-        Linking.getInitialURL()
-          .then((url) => {
-            // this.navigate(url);
-          })
-          .catch((e) => {
-            CommonBugFender('ConsultRoom_Linking_URL', e);
-          });
-      } else {
-        console.log('linking');
-        Linking.addEventListener('url', handleOpenURL);
-      }
-    } catch (error) {
-      CommonBugFender('ConsultRoom_Linking_URL_try', error);
-    }
-  }, []);
-
-  const handleOpenURL = (event: any) => {
-    console.log('event', event);
-    const route = event.url.replace('apollopatients://', '');
-
-    if (route == 'ConsultRoom') {
-      console.log('ConsultRoom');
-      // props.navigation.replace(AppRoutes.ConsultRoom);
-    }
-    console.log('route', route);
-  };
-
   const client = useApolloClient();
 
   const callDeviceTokenAPI = async () => {

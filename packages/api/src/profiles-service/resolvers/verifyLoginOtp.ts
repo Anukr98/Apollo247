@@ -5,6 +5,7 @@ import { LOGIN_TYPE, LoginOtp, OTP_STATUS } from 'profiles-service/entities';
 import { archiveOtpRecord } from 'profiles-service/resolvers/login';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import * as firebaseAdmin from 'firebase-admin';
+import { debugLog } from 'customWinstonLogger';
 
 const firebase = firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.applicationDefault(),
@@ -52,11 +53,30 @@ const verifyLoginOtp: Resolver<
   ProfilesServiceContext,
   OtpVerificationResult
 > = async (parent, { otpVerificationInput }, { profilesDb }) => {
+  const apiCallId = Math.floor(Math.random() * 1000000);
+  const callStartTime = new Date();
+  //create first order curried method with first 3 static parameters being passed.
+  const verifyLogger = debugLog(
+    'otpVerificationAPILogger',
+    'verifyLoginOtp',
+    apiCallId,
+    callStartTime
+  );
+
+  //create second order curried method with loginId as identifier till mobileNumber is received
+  const verifyByIdLogger = verifyLogger(otpVerificationInput.id);
+
+  verifyByIdLogger('API_CALL___START');
+
   //otp verification logic here
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
+  verifyByIdLogger('QUERY_START');
   const matchedOtpRow: LoginOtp[] = await otpRepo.verifyOtp(otpVerificationInput);
+  verifyByIdLogger('QUERY_END');
+
   if (matchedOtpRow.length === 0) {
+    verifyByIdLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
       reason: OTP_STATUS.NOT_VERIFIED,
@@ -66,7 +86,12 @@ const verifyLoginOtp: Resolver<
     };
   }
 
+  //create second order curried method with mobileNumber as identifier
+  const verifyByMobileNumLogger = verifyLogger(matchedOtpRow[0].mobileNumber);
+
+  verifyByMobileNumLogger('VALIDATION_START');
   if (matchedOtpRow[0].status === OTP_STATUS.BLOCKED) {
+    verifyByMobileNumLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
       reason: matchedOtpRow[0].status,
@@ -84,6 +109,7 @@ const verifyLoginOtp: Resolver<
     };
     if (incorrectAttempts > 2) updateAttrs.status = OTP_STATUS.BLOCKED;
     await otpRepo.updateOtpStatus(matchedOtpRow[0].id, updateAttrs);
+    verifyByMobileNumLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
       reason: matchedOtpRow[0].status,
@@ -92,7 +118,9 @@ const verifyLoginOtp: Resolver<
       incorrectAttempts: matchedOtpRow[0].incorrectAttempts + 1,
     };
   }
+  verifyByMobileNumLogger('VALIDATION_END');
 
+  verifyByMobileNumLogger('UPDATION_START');
   //update status of otp
   await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
     status: OTP_STATUS.VERIFIED,
@@ -100,10 +128,14 @@ const verifyLoginOtp: Resolver<
 
   //archive the old otp record and then delete it
   archiveOtpRecord(matchedOtpRow[0].id, profilesDb);
+  verifyByMobileNumLogger('UPDATION_END');
 
-  //generate customeToken
+  //generate customToken
+  verifyByMobileNumLogger('CREATE_TOKEN_START');
   const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
+  verifyByMobileNumLogger('CREATE_TOKEN_END');
 
+  verifyByMobileNumLogger('API_CALL___END');
   return {
     status: true,
     reason: matchedOtpRow[0].status,

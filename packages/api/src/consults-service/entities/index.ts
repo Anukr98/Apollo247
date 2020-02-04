@@ -229,6 +229,9 @@ export class Appointment extends BaseEntity {
     (appointmentDocuments) => appointmentDocuments.appointment
   )
   appointmentDocuments: AppointmentDocuments[];
+
+  @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
+  auditHistory: AuditHistory[];
 }
 //Appointment ends
 
@@ -494,6 +497,10 @@ export enum MEDICINE_UNIT {
   TABLET = 'TABLET',
 }
 
+export enum AUDIT_STATUS {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+}
 export type CaseSheetMedicinePrescription = {
   externalId: string;
   id: string;
@@ -605,6 +612,9 @@ export class CaseSheet extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: AUDIT_STATUS.PENDING })
+  auditStatus: AUDIT_STATUS;
 }
 //case sheet ends
 
@@ -1164,6 +1174,29 @@ export class PlannedDoctors extends BaseEntity {
 }
 
 // PlannedDoctors ends
+//auditor history table start
+@Entity()
+export class AuditHistory extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
+  appointment: Appointment;
+
+  @Column()
+  auditorId: string;
+
+  @Column({ nullable: true })
+  comment: string;
+
+  @Column({ nullable: true })
+  rating: number;
+}
+
+//auditor history table end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

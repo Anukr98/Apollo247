@@ -52,6 +52,7 @@ import {
   CommonScreenLog,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { height, width } = Dimensions.get('window');
 
@@ -172,6 +173,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
+  const { VirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -449,13 +451,22 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.onlineConsultLabel}>Online Consult</Text>
                   <Text style={styles.onlineConsultAmount}>
-                    {/* Rs. {doctorDetails.onlineConsultationFees} */}
-                    <Text
-                      style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}
-                    >
-                      (Rs. 999)
-                    </Text>{' '}
-                    Rs. 1
+                    {Number(VirtualConsultationFee) <= 0 ||
+                    VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                    ) : (
+                      <>
+                        <Text
+                          style={{
+                            textDecorationLine: 'line-through',
+                            textDecorationStyle: 'solid',
+                          }}
+                        >
+                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                        </Text>
+                        <Text> Rs. {VirtualConsultationFee}</Text>
+                      </>
+                    )}
                   </Text>
                   <AvailabilityCapsule availableTime={availableTime} />
                 </View>

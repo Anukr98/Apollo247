@@ -15,7 +15,9 @@ export enum ApiConstants {
 
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
-  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the consult room',
+  CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  JUNIOR_CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  JUNIOR_AVCALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting for your call response. Please proceed to the consult room",
   AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
   //appointment reminder 15
@@ -37,7 +39,7 @@ export enum ApiConstants {
 
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
-  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) {1} from Dr. {2}'s team is waiting to start your consultation prep. Please proceed to the Consult Room",
+  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) {1} from Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
 
   //initiate senior doctor session
   SENIOR_APPT_SESSION_TITLE = 'Doctor has joined the consult room',
@@ -116,7 +118,7 @@ export enum ApiConstants {
   PRISM_STATIC_MOBILE_NUMBER = '8019677178',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
-  MAX_DOCTOR_AVAILABILITY_CHECK_DAYS = 7,
+  MAX_DOCTOR_AVAILABILITY_CHECK_DAYS = 2,
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
@@ -131,6 +133,8 @@ export enum ApiConstants {
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
   DOCTORS_SEARCH_API_LOG_FILE = '/debug-logs/doctors-search.log',
+  OTP_VERIFICATION_API_LOG_FILE = '/debug-logs/otp-verification.log',
+  GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',

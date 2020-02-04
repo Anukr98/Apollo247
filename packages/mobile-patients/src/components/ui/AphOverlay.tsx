@@ -129,7 +129,7 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
             </ScrollView>
           </KeyboardAvoidingView>
         </SafeAreaView>
-        {props.loading && <Spinner />}
+        {props.loading && <Spinner style={{ backgroundColor: 'transparent' }} />}
       </View>
     </Overlay>
   );

@@ -669,7 +669,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultGroup: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f8f5',
       padding: 16,
       marginTop: 10,
       marginBottom: 10,
@@ -1086,6 +1086,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [consultStart, setConsultStart] = useState<boolean>(false);
+  const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
@@ -1833,6 +1835,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <Fragment>
                       <Button
                         className={classes.backButton}
+                        disabled={sendToPatientButtonDisable}
                         onClick={() => {
                           setIsClickedOnEdit(true);
                           setIsClickedOnPriview(false);
@@ -1844,13 +1847,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       </Button>
                       <Button
                         className={classes.endconsultButton}
-                        disabled={props.saving}
+                        disabled={sendToPatientButtonDisable}
                         onClick={() => {
-                          //props.sendToPatientAction(true);
+                          setSendToPatientButtonDisable(true);
                           props.saveCasesheetAction(true, true);
                         }}
                       >
-                        Send To Patient
+                        {sendToPatientButtonDisable && 'Please wait...'}
+                        { sendToPatientButtonDisable ? <CircularProgress size={22} /> : 'Send To Patient'}
                       </Button>
                     </Fragment>
                   )}

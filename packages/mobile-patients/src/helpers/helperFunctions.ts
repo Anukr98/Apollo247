@@ -21,6 +21,13 @@ import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import ApolloClient from 'apollo-client';
+import {
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -32,6 +39,14 @@ interface AphConsole {
   trace(message?: any, ...optionalParams: any[]): void;
   debug(message?: any, ...optionalParams: any[]): void;
   table(...data: any[]): void;
+}
+
+export interface TestSlot {
+  employeeCode: string;
+  employeeName: string;
+  diagnosticBranchCode: string;
+  date: Date;
+  slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
 }
 
 const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
@@ -518,44 +533,62 @@ export const isValidText = (value: string) =>
 export const isValidName = (value: string) =>
   value === '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value);
 
-export const addTestsToCart = (
-  testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] // testsIncluded will not come from API
+export const addTestsToCart = async (
+  testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
+  apolloClient: ApolloClient<object>,
+  city: string
 ) => {
-  const items = testPrescription
-    .filter((val) => val.itemname)
-    .map(
-      (item) =>
-        ({
-          id: `${item.additionalDetails!.itemId}`,
-          name: item.itemname!,
-          price: item.additionalDetails!.rate,
-          specialPrice: undefined,
-          mou: 1,
-          thumbnail: '',
-          collectionMethod: item.additionalDetails!.collectionType,
-        } as DiagnosticsCartItem)
+  const searchQuery = (name: string, city: string) =>
+    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
+      query: SEARCH_DIAGNOSTICS,
+      variables: {
+        searchText: name,
+        city: city,
+        patientId: '',
+      },
+      fetchPolicy: 'no-cache',
+    });
+  const detailQuery = (itemId: string) => getPackageData(itemId);
+
+  try {
+    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
+
+    console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
+
+    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
+    const searchQueriesData = (await searchQueries)
+      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
+      .filter((item, index) => g(item, 'itemName')! == items[index])
+      .filter((item) => !!item);
+    const detailQueries = Promise.all(
+      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+    );
+    const detailQueriesData = (await detailQueries).map(
+      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
     );
 
-  return new Promise((resolve, reject) => {
-    Promise.all(items.map((d) => getPackageData(d.id)))
-      .then((response) => {
-        console.log('response::', { response });
-        const testsArray = response.map((item, idx) => {
-          if (!g(item, 'data', 'status')) return null;
-          return {
-            ...items[idx],
-            mou: g(item, 'data', 'data', 'length') || 1, // updating testsIncluded
-          } as DiagnosticsCartItem;
-        });
-        const nonNullTestsArray = testsArray.filter((item) => !!item);
-        console.log('testsArray to be added to cart', { nonNullTestsArray });
-        resolve(nonNullTestsArray);
-      })
-      .catch((e) => {
-        CommonBugFender('helperFunctions_addTestsToCart', e);
-        reject('Oops! an error occurred, unable to get test details.');
-      });
-  });
+    const finalArray: DiagnosticsCartItem[] = Array.from({
+      length: searchQueriesData.length,
+    }).map((_, index) => {
+      const s = searchQueriesData[index];
+      const testIncludedCount = detailQueriesData[index];
+      return {
+        id: `${s.itemId}`,
+        name: s.itemName,
+        price: s.rate,
+        specialPrice: undefined,
+        mou: testIncludedCount,
+        thumbnail: '',
+        collectionMethod: s.collectionType,
+      } as DiagnosticsCartItem;
+    });
+
+    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+    return finalArray;
+  } catch (error) {
+    CommonBugFender('helperFunctions_addTestsToCart', error);
+    throw 'error';
+  }
 };
 
 export const getBuildEnvironment = () => {
@@ -598,4 +631,60 @@ export const getRelations = (self?: string) => {
   });
 
   return a;
+};
+
+export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
+
+export const isValidTestSlot = (
+  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
+  date: Date
+) => {
+  return (
+    slot.status != 'booked' &&
+    (moment(date)
+      .format('DMY')
+      .toString() ===
+    moment()
+      .format('DMY')
+      .toString()
+      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
+          moment(new Date()).add(
+            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+            'minutes'
+          )
+        )
+      : true) &&
+    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
+      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+    )
+  );
+};
+
+export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
+  return slots.find(
+    (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
+  )!;
+};
+
+export const getUniqueTestSlots = (slots: TestSlot[]) => {
+  return slots
+    .filter(
+      (item, idx, array) =>
+        array.findIndex(
+          (_item) =>
+            _item.slotInfo.startTime == item.slotInfo.startTime &&
+            _item.slotInfo.endTime == item.slotInfo.endTime
+        ) == idx
+    )
+    .map((val) => ({
+      startTime: val.slotInfo.startTime!,
+      endTime: val.slotInfo.endTime!,
+    }))
+    .sort((a, b) => {
+      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+        return 1;
+      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+        return -1;
+      return 0;
+    });
 };

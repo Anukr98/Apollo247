@@ -200,6 +200,8 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const getPatientApiCall = async () => {
+    console.log('getPatientApiCall');
+
     const versionInput = {
       appVersion:
         Platform.OS === 'ios'

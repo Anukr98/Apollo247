@@ -83,6 +83,7 @@ const useStyles = makeStyles(() => ({
     overflow: 'hidden',
     '& img': {
       maxWidth: '100%',
+      maxHeight: 'calc(100vh - 212px)',
     },
   },
   modalHeader: {
@@ -399,16 +400,34 @@ export const HealthVault: React.FC = () => {
                   key={index}
                   className={classes.listItem}
                   onClick={() => {
-                    setModalOpen(true);
-                    setImgPrevUrl(item.documentPath as string);
+                    if (
+                      item &&
+                      item.documentPath &&
+                      item.documentPath.substr(-4).toLowerCase() !== '.pdf'
+                    ) {
+                      setModalOpen(true);
+                      setImgPrevUrl(item.documentPath as string);
+                    }
                   }}
                 >
                   <ListItemAvatar>
-                    <Avatar
-                      alt={item.documentPath as string}
-                      src={item.documentPath as string}
-                      className={classes.bigAvatar}
-                    />
+                    {item &&
+                    item.documentPath &&
+                    item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
+                      <Avatar
+                        alt={item.documentPath as string}
+                        src={item.documentPath as string}
+                        className={classes.bigAvatar}
+                      />
+                    ) : (
+                      <a href={item.documentPath as string} target="_blank">
+                        <Avatar
+                          alt={item.documentPath as string}
+                          src={require('images/pdf_thumbnail.png')}
+                          className={classes.bigAvatar}
+                        />
+                      </a>
+                    )}
                   </ListItemAvatar>
                   <div hidden>
                     {prismIdList && prismIdList.push(item && item.prismFileId && item.prismFileId)}{' '}
@@ -496,10 +515,10 @@ export const HealthVault: React.FC = () => {
           </List>
         </Typography>
         <Typography component="div">
-          <Typography component="h5" variant="h5">
+          {/* <Typography component="h5" variant="h5">
             Reports
           </Typography>
-          <span className={classes.nodataFound}>No Data Found</span>
+          <span className={classes.nodataFound}>No Data Found</span> */}
           {/* <List className={classes.listContainer}>
             {appointmentDocuments && appointmentDocuments.length > 0 ? (
               appointmentDocuments!.map((item, index) => (

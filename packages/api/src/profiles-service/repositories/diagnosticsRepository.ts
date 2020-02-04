@@ -61,7 +61,7 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
   async getDiagnosticByName(itemName: string) {
     return this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName = :name', { name: itemName })
-      .getOne()
+      .getMany()
       .catch((getDiagnosticError) => {
         throw new AphError(AphErrorMessages.INVALID_DIAGNOSIS_LIST, undefined, {
           getDiagnosticError,

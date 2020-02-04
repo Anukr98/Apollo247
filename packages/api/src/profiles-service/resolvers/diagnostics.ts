@@ -14,25 +14,8 @@ import { format } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import { getConnection } from 'typeorm';
 
 export const diagnosticsTypeDefs = gql`
-  type DiagnosticDetailsInCaseSheet @key(fields: "itemName") {
-    city: String
-    collectionType: TEST_COLLECTION_TYPE
-    fromAgeInDays: Int
-    gender: String
-    id: ID
-    itemId: Int
-    itemName: String
-    itemRemarks: String
-    itemType: DIAGNOSTICS_TYPE
-    rate: Int
-    state: String
-    testPreparationData: String
-    toAgeInDays: Int
-  }
-
   enum DIAGNOSTICS_TYPE {
     TEST
     PACKAGE
@@ -293,13 +276,6 @@ const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, Diagnostics
 };
 
 export const diagnosticsResolvers = {
-  DiagnosticDetailsInCaseSheet: {
-    async __resolveReference(object: Diagnostics) {
-      const connection = getConnection();
-      const diagnosticRepo = connection.getCustomRepository(DiagnosticsRepository);
-      return await diagnosticRepo.getDiagnosticByName(object.itemName.toString());
-    },
-  },
   Query: {
     searchDiagnostics,
     getDiagnosticsCites,

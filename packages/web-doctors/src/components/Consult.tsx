@@ -113,6 +113,17 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       backgroundColor: '#000',
     },
+    maximizeImg: {
+      position: 'relative',
+      minWidth: 'auto',
+      minHeight: 'calc(100vh - 212px)',
+      zIndex: 9,
+      borderRadius: 0,
+      width: 'auto',
+      height: 'calc(100vh - 212px)',
+      overflow: 'hidden',
+      backgroundColor: '#000',
+    },
     timerCls: {
       position: 'absolute',
       top: 80,
@@ -120,6 +131,7 @@ const useStyles = makeStyles((theme: Theme) => {
       left: 40,
       fontSize: 12,
       fontWeight: 600,
+      color: '#f7f8f5',
     },
     patientName: {
       fontSize: 20,
@@ -160,7 +172,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  const { patientDetails } = useContext(CaseSheetContext);
+  const { patientDetails, createdDoctorProfile } = useContext(CaseSheetContext);
   const apikey = process.env.OPENTOK_KEY;
   const sessionHandler = {
     connectionDestroyed: (event: any) => {
@@ -286,16 +298,30 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
                   }
                 >
-                  {!subscribeToVideo && !props.showVideoChat && (
-                    <img
-                      className={classes.minimizeImg}
-                      src={
-                        patientDetails!.photoUrl
-                          ? patientDetails!.photoUrl
-                          : require('images/DefaultPatient_Video.svg')
-                      }
-                    />
-                  )}
+                  {!subscribeToVideo &&
+                    !props.showVideoChat &&
+                    getCookieValue() === 'videocall' && (
+                      <img
+                        className={classes.minimizeImg}
+                        src={
+                          createdDoctorProfile && createdDoctorProfile.photoUrl
+                            ? createdDoctorProfile.photoUrl
+                            : require('images/DefaultPatient_Video.svg')
+                        }
+                      />
+                    )}
+                  {!subscribeToVideo &&
+                    !props.showVideoChat &&
+                    getCookieValue() === 'audiocall' && (
+                      <img
+                        className={classes.maximizeImg}
+                        src={
+                          patientDetails!.photoUrl
+                            ? patientDetails!.photoUrl
+                            : require('images/DefaultPatient_Video.svg')
+                        }
+                      />
+                    )}
                   {/* <div
                   className={
                     props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer

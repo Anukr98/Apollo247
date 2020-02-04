@@ -207,7 +207,7 @@ export const Header: React.FC = (props) => {
     return '';
   }
   const idleTimerRef = useRef(null);
-  const idleTimeValueInMinutes = 3;
+  const idleTimeValueInMinutes = 10;
   const changeDoctorStatus = () => {
     if (currentPatient && currentPatient.id) {
       setShowLoader(true);

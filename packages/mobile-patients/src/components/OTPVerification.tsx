@@ -310,6 +310,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     if (onOtpClick) {
       if (currentPatient) {
+        db.ref('ApolloPatients/')
+          .child(dbChildKey)
+          .update({
+            patientApiCallSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
+          });
         if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
           if (currentPatient.relation == null) {
             navigateTo(AppRoutes.MultiSignup);
@@ -389,6 +394,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 sendOtp(data.authToken)
                   .then((data) => {
                     // setshowSpinner(true);
+                    db.ref('ApolloPatients/')
+                      .child(dbChildKey)
+                      .update({
+                        FirebaseTokenSuccess: moment(new Date()).format(
+                          'Do MMMM, dddd \nhh:mm:ss A'
+                        ),
+                      });
                   })
                   .catch((e) => {
                     CommonBugFender('OTPVerification_sendOtp', e);
@@ -681,7 +693,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               letterSpacing: 0,
             }}
           >
-            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
           </Text>
         </Hyperlink>
       </View>

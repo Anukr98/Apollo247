@@ -6,8 +6,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorFavouriteTestRepository } from 'doctors-service/repositories/doctorFavouriteTestRepository';
-import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
-import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from 'profiles-service/entities';
 
 export const doctorFavouriteTestTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {
@@ -20,32 +18,6 @@ export const doctorFavouriteTestTypeDefs = gql`
     HC
   }
 
-  type DiagnosticDetails {
-    city: String
-    collectionType: TEST_COLLECTION_TYPE
-    fromAgeInDays: Int
-    gender: String
-    id: ID
-    itemId: Int
-    itemName: String
-    itemRemarks: String
-    itemType: DIAGNOSTICS_TYPE
-    rate: Int
-    state: String
-    testPreparationData: String
-    toAgeInDays: Int
-  }
-
-  type TestsWithAdditionalDetails {
-    additionalDetails: [DiagnosticDetails]
-    id: ID
-    itemname: String
-  }
-
-  type FormatedTestLists {
-    testList: [TestsWithAdditionalDetails]
-  }
-
   type DoctorsFavouriteTests {
     id: ID!
     itemname: String!
@@ -54,7 +26,7 @@ export const doctorFavouriteTestTypeDefs = gql`
     testList: [DoctorsFavouriteTests]
   }
   extend type Query {
-    getDoctorFavouriteTestList: FormatedTestLists
+    getDoctorFavouriteTestList: FavouriteTestList
   }
   extend type Mutation {
     addDoctorFavouriteTest(itemname: String!): FavouriteTestList
@@ -62,32 +34,6 @@ export const doctorFavouriteTestTypeDefs = gql`
     updateDoctorFavouriteTest(id: ID!, itemname: String!): FavouriteTestList
   }
 `;
-
-type DiagnosticDetails = {
-  city: string;
-  collectionType: TEST_COLLECTION_TYPE;
-  fromAgeInDays: number;
-  gender: string;
-  id: string;
-  itemId: string;
-  itemName: string;
-  itemRemarks: string;
-  itemType: DIAGNOSTICS_TYPE;
-  rate: string;
-  state: string;
-  testPreparationData: string;
-  toAgeInDays: number;
-};
-
-type TestsWithAdditionalDetails = {
-  additionalDetails: DiagnosticDetails[];
-  id: string;
-  itemname: string;
-};
-
-type FormatedTestLists = {
-  testList: TestsWithAdditionalDetails[];
-};
 
 type FavouriteTestList = {
   testList: DoctorsFavouriteTests[];
@@ -97,7 +43,7 @@ const getDoctorFavouriteTestList: Resolver<
   null,
   {},
   DoctorsServiceContext,
-  FormatedTestLists
+  FavouriteTestList
 > = async (parent, args, { mobileNumber, doctorsDb, patientsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
@@ -105,19 +51,8 @@ const getDoctorFavouriteTestList: Resolver<
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteTestRepository);
   const favouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
-  const itemName = favouriteTestList.map((item) => item.itemname);
 
-  //get additional details from diagnostics entity
-  const diagnosticRepo = patientsDb.getCustomRepository(DiagnosticsRepository);
-  const diagnosticDetails = await diagnosticRepo.getDiagnosticsByName(itemName);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const formatedTestsList = favouriteTestList.map((item: any) => {
-    item.additionalDetails = diagnosticDetails.filter((data) => item.itemname === data.itemName);
-    return item;
-  });
-
-  return { testList: formatedTestsList };
+  return { testList: favouriteTestList };
 };
 
 const addDoctorFavouriteTest: Resolver<

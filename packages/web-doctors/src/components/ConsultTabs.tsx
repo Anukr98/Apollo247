@@ -302,6 +302,7 @@ interface MessagesObjectProps {
   url: string;
   messageDate: string;
   sentBy: string;
+  type: string;
 }
 let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {

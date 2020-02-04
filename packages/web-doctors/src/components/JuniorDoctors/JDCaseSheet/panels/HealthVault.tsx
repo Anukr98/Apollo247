@@ -69,6 +69,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     overflow: 'hidden',
     '& img': {
       maxWidth: '100%',
+      maxHeight: 'calc(100vh - 212px)',
     },
   },
   modalHeader: {
@@ -343,15 +344,33 @@ export const HealthVault: React.FC = () => {
                 key={index}
                 className={classes.listItem}
                 onClick={() => {
-                  setModalOpen(true);
-                  setImgPrevUrl(item.documentPath as string);
+                  if (
+                    item &&
+                    item.documentPath &&
+                    item.documentPath.substr(-4).toLowerCase() !== '.pdf'
+                  ) {
+                    setModalOpen(true);
+                    setImgPrevUrl(item.documentPath as string);
+                  }
                 }}
               >
-                <Avatar
-                  alt={item.documentPath as string}
-                  src={item.documentPath as string}
-                  className={classes.bigAvatar}
-                />
+                {item &&
+                item.documentPath &&
+                item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
+                  <Avatar
+                    alt={item.documentPath as string}
+                    src={item.documentPath as string}
+                    className={classes.bigAvatar}
+                  />
+                ) : (
+                  <a href={item.documentPath as string} target="_blank">
+                    <Avatar
+                      alt={item.documentPath as string}
+                      src={require('images/pdf_thumbnail.png')}
+                      className={classes.bigAvatar}
+                    />
+                  </a>
+                )}
                 <div className={classes.listData}>
                   <h4 className={classes.fileName}>
                     {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
@@ -369,7 +388,7 @@ export const HealthVault: React.FC = () => {
         </div>
       </div>
       <div className={classes.sectionGroup}>
-        <div className={classes.sectionTitle}>Reports</div>
+        {/* <div className={classes.sectionTitle}>Reports</div> */}
         {/* <div className={classes.listContainer}>
           {appointmentDocuments && appointmentDocuments.length > 0 ? (
             appointmentDocuments!.map((item, index) => (
