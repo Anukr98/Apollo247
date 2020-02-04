@@ -189,6 +189,10 @@ const useStyles = makeStyles((theme: Theme) => {
     patientBubble: {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
+      maxWidth: '100%',
+      '& pre': {
+        whiteSpace: 'pre-wrap',
+      },
     },
     callStatusMessage: {
       paddingTop: 12,
