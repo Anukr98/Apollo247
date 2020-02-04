@@ -252,7 +252,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
       <div
         className={`${classes.videoChatWindow} ${
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
-          }`}
+        }`}
       >
         {!props.showVideoChat && (
           <div className={classes.timerCls}>

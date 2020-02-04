@@ -449,8 +449,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       : '';
   const speciality =
     doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.specialty
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.specialty
       ? doctorDetails.getDoctorDetailsById.specialty.name
       : '';
   const experience =

@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover, CircularProgress} from '@material-ui/core';
+import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(990)]:{
+      [theme.breakpoints.up(990)]: {
         marginBottom: 20,
       },
     },
@@ -40,32 +40,32 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       borderRadius: 5,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         padding: 0,
       },
     },
     medicineTopGroup: {
       display: 'flex',
       paddingTop: 25,
-      [theme.breakpoints.down(768)]:{
+      [theme.breakpoints.down(768)]: {
         display: 'block',
       },
     },
     searchSection: {
       width: 'calc(100% - 284px)',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         width: '100%',
         marginBottom: 15,
       },
     },
-    progressLoader:{
+    progressLoader: {
       textAlign: 'center',
       padding: 20,
     },
     rightSection: {
       marginLeft: 'auto',
       width: 284,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         width: '100%',
         padding: '0 20px 30px 20px',
       },
@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       color: '#02475b',
       lineHeight: '50px',
-      [theme.breakpoints.down(768)]:{
+      [theme.breakpoints.down(768)]: {
         padding: 20,
         position: 'fixed',
         width: '100%',
@@ -116,14 +116,14 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
         maxWidth: '100%',
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         margin: '51px auto 0 auto',
         textAlign: 'center',
       },
     },
     medicineSection: {
       paddingLeft: 15,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         paddingLeft: 0,
       },
     },
