@@ -49,23 +49,31 @@ export const getPatientMedicalRecordsTypeDefs = gql`
   }
 
   type LabTestResult {
-    id: String
-    labTestName: String
-    labTestSource: String
-    labTestDate: String
-    labTestReferredBy: String
     additionalNotes: String
-    testResultPrismFileIds: [String]
-    labTestResultParameters: [LabTestResultParameter]
     departmentName: String
+    id: String
+    labTestDate: String
+    labTestName: String
+    labTestReferredBy: String
+    labTestResultParameters: [LabTestResultParameter]
+    labTestSource: String
+    observation: String
     signingDocName: String
+    testResultPrismFileIds: [String]
   }
 
   type LabTestResultParameter {
-    parameterName: String!
+    parameterName: String
     unit: String
     result: String
     range: String
+    setOutOfRange: Boolean
+    setResultDate: Boolean
+    setUnit: Boolean
+    setParameterName: Boolean
+    setRange: Boolean
+    setResult: Boolean
+    outOfRange: Boolean
   }
 
   type HealthCheckResult {
@@ -263,6 +271,12 @@ const getPatientPrismMedicalRecords: Resolver<
           range: item.range,
           outOfRange: item.outOfRange,
           resultDate: item.resultDate,
+          setOutOfRange: item.setOutOfRange,
+          setResultDate: item.setResultDate,
+          setUnit: item.setUnit,
+          setParameterName: item.setParameterName,
+          setRange: item.setRange,
+          setResult: item.setResult,
         };
       });
     }
@@ -278,6 +292,7 @@ const getPatientPrismMedicalRecords: Resolver<
       labTestResultParameters: labResultParams,
       departmentName: element.departmentName,
       signingDocName: element.signingDocName,
+      observation: element.observation,
     };
 
     formattedLabResults.push(labResult);
