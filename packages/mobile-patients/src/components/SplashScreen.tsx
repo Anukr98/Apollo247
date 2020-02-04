@@ -9,7 +9,7 @@ import {
   AppStateStatus,
   AppState,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import firebase from 'react-native-firebase';
@@ -215,6 +215,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Consult':
         console.log('Consult');
         props.navigation.navigate('APPOINTMENTS');
+        // props.navigation.dispatch(
+        //   StackActions.reset({
+        //     index: 0,
+        //     key: null,
+        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+        //   })
+        // );
         break;
 
       case 'Medicine':
@@ -307,6 +314,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             'QA_ios_latest_version',
             'Enable_Conditional_Management',
             'Virtual_consultation_fee',
+            'QA_Virtual_consultation_fee',
           ]);
       })
       .then((snapshot) => {
@@ -321,7 +329,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             index++;
             const element = myValye[val];
             nietos.push({ index: index, value: element.val() });
-            if (nietos.length === 10) {
+            if (nietos.length === 11) {
               console.log(
                 'nietos',
                 parseFloat(nietos[1].value),
@@ -333,8 +341,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               );
 
               AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
-              setVirtualConsultationFee &&
-                setVirtualConsultationFee(JSON.stringify(nietos[9].value));
+
+              if (buildName() === 'PROD') {
+                setVirtualConsultationFee &&
+                  setVirtualConsultationFee(JSON.stringify(nietos[9].value));
+              } else {
+                setVirtualConsultationFee &&
+                  setVirtualConsultationFee(JSON.stringify(nietos[10].value));
+              }
 
               if (Platform.OS === 'ios') {
                 if (buildName() === 'QA') {
@@ -403,7 +417,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
               Linking.openURL(
                 Platform.OS === 'ios'
-                  ? 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
+                  ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
               ).catch((err) => console.error('An error occurred', err));
             }}

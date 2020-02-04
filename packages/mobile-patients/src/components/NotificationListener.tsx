@@ -212,7 +212,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     if (
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||
-      notificationType === 'Appointment_Canceled'
+      notificationType === 'Appointment_Canceled' ||
+      notificationType === 'Patient_Noshow_Reschedule_Appointment'
     ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }

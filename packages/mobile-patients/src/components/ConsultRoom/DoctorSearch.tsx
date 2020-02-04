@@ -432,17 +432,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const setLocalData = (data) => {
-    const Physicians = data.filter((item) => item.name === 'General Physician/ Internal Medicine');
+    const Physicians = data.filter(
+      (item) => item.name.toLowerCase() === 'General Physician/ Internal Medicine'.toLowerCase()
+    );
     Physicians.length > 0 &&
       fetchDoctorData(Physicians[0].id, 'General Physician/ Internal Medicine');
 
-    const Ent = data.filter((item) => item.name === 'ENT');
+    const Ent = data.filter((item) => item.name.toLowerCase() === 'ENT'.toLowerCase());
     Ent.length > 0 && fetchDoctorData(Ent[0].id, 'ENT');
 
-    const Dermatology = data.filter((item) => item.name === 'Dermatology');
+    const Dermatology = data.filter(
+      (item) => item.name.toLowerCase() === 'Dermatology'.toLowerCase()
+    );
     Dermatology.length > 0 && fetchDoctorData(Dermatology[0].id, 'Dermatology');
 
-    const Urology = data.filter((item) => item.name === 'Urology');
+    const Urology = data.filter((item) => item.name.toLowerCase() === 'Urology'.toLowerCase());
     Urology.length > 0 && fetchDoctorData(Urology[0].id, 'Urology');
   };
 

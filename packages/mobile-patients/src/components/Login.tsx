@@ -361,7 +361,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <WebView
             source={{
-              uri: 'https://www.apollo247.com/TnC.html',
+              uri: 'https://www.apollo247.com/termsandconditions.html',
             }}
             style={{
               flex: 1,
