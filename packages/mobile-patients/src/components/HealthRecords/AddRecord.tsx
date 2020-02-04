@@ -70,6 +70,7 @@ import {
 import { BottomPopUp } from '../ui/BottomPopUp';
 import { string } from '../../strings/string';
 import { useUIElements } from '../UIElementsProvider';
+import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -239,6 +240,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   // };
 
   const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
+    console.log(prescriptions, 'prescriptions');
+
     return Promise.all(
       prescriptions.map((item) =>
         client.mutate<uploadDocument>({
@@ -246,12 +249,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           fetchPolicy: 'no-cache',
           variables: {
             UploadDocumentInput: {
-              base64FileInput: item.data,
+              base64FileInput: item.base64,
               category: 'HealthChecks',
-              fileType:
-                item.path.substring(item.path.lastIndexOf('.') + 1) == 'jpg'
-                  ? 'JPEG'
-                  : item.path.substring(item.path.lastIndexOf('.') + 1).toUpperCase(),
+              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
               patientId: currentPatient && currentPatient.id,
             },
           },
@@ -368,12 +368,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return number || 0;
   };
   const onSavePress = () => {
-    // console.log('images', Images);
+    console.log('images', Images);
     const valid = isValid();
     console.log('valid', valid);
     if (valid.isvalid && !valid.isValidParameter) {
       setshowSpinner(true);
-      let uploadedUrls: any = [];
       if (Images.length > 0) {
         multiplePhysicalPrescriptionUpload(Images)
           .then((data) => {
@@ -501,8 +500,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
+    console.log(data, 'renderImagesRow');
+
     var base64Icon = 'data:image/png;base64,';
-    fin = base64Icon.concat(data.data);
+    fin = base64Icon.concat(data.base64);
+    console.log(fin, 'fin');
     return (
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
@@ -540,13 +542,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {/* <PrescriptionThumbnail /> */}
           </View>
           <View style={{ flex: 1 }}>
-            <Text>
-              {data.path
-                .split('\\')
-                .pop()
-                .split('/')
-                .pop()}
-            </Text>
+            <Text>{data.title}</Text>
           </View>
           <TouchableOpacity
             activeOpacity={1}
@@ -670,7 +666,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               value={docName}
               placeholder={'Enter doctor name'}
               onChangeText={(docName) => {
-                if (isValidName(docName)) {
+                if (isValidText(docName)) {
                   setDocName(docName);
                 }
               }}
@@ -716,11 +712,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }}
         >
           <View style={[styles.cardViewStyle, { paddingTop: 6, paddingBottom: 5 }]}>
-            {/* <TextInputComponent
-              label={'Type Of Record'}
-              value={typeofRecord}
-              onChangeText={(typeofRecord) => settypeofRecord(typeofRecord)}
-            /> */}
             <MaterialMenu
               menuContainerStyle={[
                 {
@@ -771,72 +762,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   </View>
                 </View>
               </View>
-              {/* <TextInputComponent
-                label={'Type Of Record'}
-                noInput={true}
-                conatinerstyles={{
-                  paddingBottom: 0,
-                }}
-              />
-              <InputDropdown
-                setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
-                label={typeofRecord ? typeofRecord.toLowerCase().replace('_', ' ') : ''}
-                containerStyle={{
-                  paddingBottom: 10,
-                }}
-                placeholder={'Select type of record'}
-              /> */}
             </MaterialMenu>
             {inputRecordType()}
-            {/* <TextInputComponent
-              label={'Name Of Test'}
-              value={testName}
-              placeholder={'Enter name of test'}
-              onChangeText={(testName) => {
-                if (isValidText(testName)) {
-                  settestName(testName);
-                }
-              }}
-            />
-            <TextInputComponent
-              label={'Date Of Test'}
-              noInput={true}
-              // value={dateOfTest}
-              // onChangeText={(dateOfTest) => setdateOfTest(dateOfTest)}
-            />
-            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.placeholderViewStyle}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setIsDateTimePickerVisible(true);
-                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
-                }}
-              >
-                <Text
-                  style={[
-                    styles.placeholderTextStyle,
-                    dateOfTest !== '' ? null : styles.placeholderStyle,
-                  ]}
-                >
-                  {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <DatePicker
-              isDateTimePickerVisible={isDateTimePickerVisible}
-              handleDatePicked={(date) => {
-                const formatDate = Moment(date).format('DD/MM/YYYY');
-                setdateOfTest(formatDate);
-                setIsDateTimePickerVisible(false);
-                Keyboard.dismiss();
-              }}
-              hideDateTimePicker={() => {
-                setIsDateTimePickerVisible(false);
-                Keyboard.dismiss();
-              }}
-            /> */}
           </View>
         </CollapseCard>
       </View>
@@ -1111,40 +1038,49 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       </SafeAreaView>
       {renderBottomButton()}
       {displayOrderPopup && (
-        <AddFilePopup
-          onClickClose={() => {
-            setdisplayOrderPopup(false);
+        <UploadPrescriprionPopup
+          isVisible={displayOrderPopup}
+          disabledOption="NONE"
+          //type=""
+          heading={'Upload File'}
+          instructionHeading={'Instructions For Uploading Prescriptions'}
+          instructions={[
+            'Take clear picture of your entire prescription.',
+            'Doctor details & date of the prescription should be clearly visible.',
+            'Medicines will be dispensed as per prescription.',
+          ]}
+          optionTexts={{
+            camera: 'TAKE A PHOTO',
+            gallery: 'CHOOSE\nFROM GALLERY',
           }}
-          getData={(data: (PickerImage | PickerImage[])[]) => {
-            console.log('dataimage', data);
+          onClickClose={() => setdisplayOrderPopup(false)}
+          onResponse={(selectedType: any, response: any) => {
+            setdisplayOrderPopup(false);
+            if (selectedType == 'CAMERA_AND_GALLERY') {
+              if (response.length == 0) return;
+              console.log(response, 'response');
 
-            setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
-            setdisplayOrderPopup(false);
+              setImages(response);
+              setdisplayOrderPopup(false);
+              // props.navigation.navigate(AppRoutes.UploadPrescription, {
+              //   phyPrescriptionsProp: response,
+              // });
+            }
           }}
         />
+        // <AddFilePopup
+        //   onClickClose={() => {
+        //     setdisplayOrderPopup(false);
+        //   }}
+        //   getData={(data: (PickerImage | PickerImage[])[]) => {
+        //     console.log('dataimage', data);
+
+        //     setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
+        //     setdisplayOrderPopup(false);
+        //   }}
+        // />
       )}
-      {/* {showRecordTypePopup && (
-        <MaterialMenu
-          // width={200}
-          options={RecordType}
-          selectedText={typeofRecord}
-          onPress={(data) => {
-            setshowRecordTypePopup(false);
-            settypeofRecord(data.key as MedicalRecordType);
-          }}
-          // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
-        />
-      )} */}
-      {/* {showUnitPopup && (
-        <MaterialMenu
-          Options={MedicalTest}
-          setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
-          setSelectedOption={(value: MedicalTestUnit) => {
-            console.log(value, 'value', selectedUnitIndex);
-            selectedUnitIndex !== undefined && setParametersData('unit', value, selectedUnitIndex);
-          }}
-        />
-      )} */}
+
       {showSpinner && <Spinner />}
       {showPopUp && (
         <BottomPopUp
