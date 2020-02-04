@@ -1156,6 +1156,18 @@ export class PlannedDoctors extends BaseEntity {
   @Column()
   night: Number;
 
+  @Column({ default: 10 })
+  planned_morning: Number;
+
+  @Column({ default: 10 })
+  planned_afternoon: Number;
+
+  @Column({ default: 10 })
+  planned_evening: Number;
+
+  @Column({ default: 10 })
+  planned_night: Number;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
