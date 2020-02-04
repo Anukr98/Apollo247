@@ -130,6 +130,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       fireBaseFCM();
       signOut();
       setLoading && setLoading(false);
+      firebase.auth().appVerificationDisabledForTesting = true;
     } catch (error) {
       CommonBugFender('Login_useEffect_try', error);
     }
