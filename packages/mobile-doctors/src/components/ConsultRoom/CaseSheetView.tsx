@@ -730,15 +730,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setConsultationType(consultType as typeof consultationType);
         setLoading(false);
         try {
-          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+          setSysmptonsList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
+          );
+          setDiagonsisList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
+          );
+          setDiagnosticPrescriptionDataList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+          );
+          setMedicineList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+          );
         } catch (error) {
           console.log({ error });
         }
@@ -2214,19 +2221,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  selectedAdviceAction(item, 'a');
+                  props.overlayDisplay(
+                    <AddInstructionPopUp
+                      onClose={() => {
+                        props.overlayDisplay(null);
+                      }}
+                      onDone={(val) => {
+                        selectedAdviceAction({ key: val, value: val }, 'a');
+                      }}
+                    />
+                  );
                 }}
               >
-                <View style={styles.dataCardsStyle}>
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
-                      flex: 1,
-                    }}
-                  >
-                    {item.value}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                  <PlusOrange />
+                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916'), marginLeft: 4 }}>
+                    ADD INSTRUCTIONS
                   </Text>
-                  <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
                 </View>
               </TouchableOpacity>
             ))}
