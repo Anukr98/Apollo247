@@ -25,7 +25,6 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
-  ScrollViewBase,
   Image,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -76,7 +75,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
         const result = _data.data.getDoctorDetails;
-        // console.log('doctorDetails', _data!);
+        console.log('doctorDetails', _data!);
         setDoctorDetails && setDoctorDetails(result);
         setLoading(false);
       })
@@ -85,8 +84,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         console.log('Error occured while fetching Doctor', e);
       });
   }, []);
-
-  console.log('doctorDetailsAccount', doctorDetails!);
 
   const renderProfileData = (getDoctorDetails: any) => {
     console.log('getDoctorDetails', getDoctorDetails!.firstName);
@@ -129,13 +126,20 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const renderMyStatsView = () => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <SmartPrescription />
-          <Text style={styles.headingText}>My Stats</Text>
-          <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
-            <RightIcon />
+        <TouchableOpacity
+          onPress={() => {
+            console.log('MyStats ');
+            props.navigation.navigate(AppRoutes.MyStats);
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <SmartPrescription />
+            <Text style={styles.headingText}>My Stats</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -200,16 +204,30 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
-  const renderSmartPrescriptionView = () => {
+  const renderSmartPrescriptionView = (data: GetDoctorDetails_getDoctorDetails) => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+        {/* <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
           <SmartPrescription />
           <Text style={styles.headingText}>Smart Prescription</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />
           </View>
-        </View>
+        </View> */}
+        <TouchableOpacity
+          onPress={() => {
+            console.log('smart prescr', data);
+            props.navigation.navigate(AppRoutes.SmartPrescription, { ProfileData: data });
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <SmartPrescription />
+            <Text style={styles.headingText}>Smart Prescription</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -276,7 +294,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                     {renderMyProfileView(doctorDetails)}
                     {renderAvailabilityView(doctorDetails)}
                     {renderFeesView(doctorDetails)}
-                    {renderSmartPrescriptionView()}
+                    {renderSmartPrescriptionView(doctorDetails)}
                     {renderSettingsView()}
                   </View>
                 </>

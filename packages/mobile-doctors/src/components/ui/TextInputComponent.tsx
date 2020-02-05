@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import {
   Platform,
   StyleProp,
@@ -8,8 +8,10 @@ import {
   TextInputProps,
   View,
   ViewStyle,
+  TextStyle,
+  TouchableOpacityProps,
 } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 const styles = StyleSheet.create({
   mainveiw: {
@@ -25,34 +27,48 @@ const styles = StyleSheet.create({
   },
   textInputStyle: {
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    paddingBottom: 12,
-    paddingLeft: Platform.OS === 'ios' ? 12 : 12,
-    paddingTop: 8,
-    color: 'rgba(1, 71, 91, 0.4)',
-    textAlign: 'left',
+    ...theme.fonts.IBMPlexSansMedium(18),
+    borderBottomWidth: 2,
+    paddingBottom: 3,
+    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
+    paddingTop: 0,
+    color: theme.colors.SHARP_BLUE,
   },
   textview: {
     flexDirection: 'row',
+  },
+  iconStyle: {
+    position: 'absolute',
+    right: 0,
+    height: '100%',
+    justifyContent: 'flex-end',
   },
 });
 
 export interface TextInputComponentProps {
   conatinerstyles?: StyleProp<ViewStyle>;
   label?: string;
+  labelStyle?: StyleProp<TextStyle>;
   noInput?: boolean;
   placeholder?: string;
   value?: string;
-  inputStyle?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<TextStyle>;
   multiline?: boolean;
   numberOfLines?: number;
   placeholderTextColor?: TextInputProps['placeholderTextColor'];
   onFocus?: TextInputProps['onFocus'];
+  onBlur?: TextInputProps['onBlur'];
   onChangeText?: TextInputProps['onChangeText'];
   underlineColorAndroid?: string;
   autoCorrect?: boolean;
   width?: number;
   textInputprops?: TextInputProps;
+  editable?: boolean;
+  selectTextOnFocus?: boolean;
+  maxLength?: TextInputProps['maxLength'];
+  keyboardType?: TextInputProps['keyboardType'];
+  icon?: ReactNode;
+  onTouchStart?: TouchableOpacityProps['onPress'];
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -60,7 +76,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
     <View style={[styles.mainveiw, props.conatinerstyles]}>
       {props.label && (
         <View style={styles.textview}>
-          <Text style={styles.labelStyle}>{props.label}</Text>
+          <Text style={[styles.labelStyle, props.labelStyle]}>{props.label}</Text>
         </View>
       )}
       {props.noInput ? null : (
@@ -70,14 +86,26 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           style={[styles.textInputStyle, props.inputStyle]}
           multiline={props.multiline}
           numberOfLines={props.numberOfLines}
-          placeholderTextColor={theme.colors.placeholderTextColor || props.placeholderTextColor}
+          placeholderTextColor={props.placeholderTextColor || theme.colors.placeholderTextColor}
           onFocus={props.onFocus}
+          onBlur={props.onBlur}
           onChangeText={props.onChangeText}
-          underlineColorAndroid={props.underlineColorAndroid}
+          underlineColorAndroid={'transparent'}
           autoCorrect={props.autoCorrect}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+          maxLength={props.maxLength}
+          keyboardType={props.keyboardType}
           {...props.textInputprops}
+          editable={props.editable}
+          returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
+          onTouchStart={props.onTouchStart}
         />
       )}
+      {props.icon && <View style={styles.iconStyle}>{props.icon}</View>}
     </View>
   );
+};
+
+TextInputComponent.defaultProps = {
+  autoCorrect: false,
 };

@@ -5434,7 +5434,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
-          <KeyboardAvoidingView behavior="padding" enabled keyboardVerticalOffset={16}>
+          
             <View
               style={{
                 width: width,
@@ -5534,7 +5534,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               )}
             </View>
-          </KeyboardAvoidingView>
         ) : (
           //  <KeyboardAvoidingView behavior="padding" enabled>
           <View

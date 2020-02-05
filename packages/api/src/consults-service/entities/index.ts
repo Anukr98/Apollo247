@@ -1131,6 +1131,64 @@ export class DoctorFeeSummary extends BaseEntity {
 }
 //Doctor fee summary end
 
+// PlannedDoctors starts
+
+@Entity()
+export class PlannedDoctors extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  availabilityDate: Date;
+
+  @Column()
+  speciality: string;
+
+  @Column()
+  specialityId: string;
+
+  @Column()
+  morning: Number;
+
+  @Column()
+  afternoon: Number;
+
+  @Column()
+  evening: Number;
+
+  @Column()
+  night: Number;
+
+  @Column({ default: 10 })
+  plannedMorning: Number;
+
+  @Column({ default: 10 })
+  plannedAfternoon: Number;
+
+  @Column({ default: 10 })
+  plannedEvening: Number;
+
+  @Column({ default: 10 })
+  plannedNight: Number;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+// PlannedDoctors ends
 //auditor history table start
 @Entity()
 export class AuditHistory extends BaseEntity {

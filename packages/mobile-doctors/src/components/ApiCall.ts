@@ -4,9 +4,10 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import Axios, { AxiosResponse } from 'axios';
+import Axios, { AxiosResponse, Canceler } from 'axios';
+import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
-const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
+const AUTH_TOKEN = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 
 export interface MedicineProductsResponse {
   product_count: number;
@@ -27,13 +28,78 @@ export interface MedicineProduct {
   thumbnail: string;
   type_id: string;
 }
+export type Doseform =
+  | 'TABLET'
+  | 'INJECTION'
+  | 'SYRUP'
+  | 'DROPS'
+  | 'CAPSULE'
+  | 'BOTTLE'
+  | 'SUSPENSION'
+  | 'ROTACAPS'
+  | 'SACHET'
+  | 'POWDER'
+  | 'CREAM'
+  | 'SOAP'
+  | 'GEL'
+  | 'LOTION'
+  | 'SPRAY'
+  | 'SOLUTION'
+  | 'OINTMENT'
+  | '';
+
+interface PharmaOverview {
+  generic: string;
+  Doseform: MEDICINE_UNIT | '';
+  Unit: string;
+  Strength: string;
+  Strengh: string;
+  Overview:
+    | {
+        Caption: string;
+        CaptionDesc: string;
+      }[]
+    | string;
+}
+
+export interface MedicineProductDetails extends MedicineProduct {
+  PharmaOverview: PharmaOverview[];
+}
+
+export interface MedicineProductDetailsResponse {
+  productdp: MedicineProductDetails[];
+  message?: string;
+}
+
+let cancelSearchMedicineApi: Canceler | undefined;
 
 export const searchMedicineApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelSearchMedicineApi && cancelSearchMedicineApi();
   return Axios.post(
-    `http://uat.apollopharmacy.in/searchprd_api.php`,
+    `https://www.apollopharmacy.in/popcsrchprd_api.php`,
     { params: searchText },
+    {
+      headers: {
+        Authorization: AUTH_TOKEN,
+        'Content-Type': 'application/json',
+      },
+      cancelToken: new CancelToken((c) => {
+        // An executor function receives a cancel function as a parameter
+        cancelSearchMedicineApi = c;
+      }),
+    }
+  );
+};
+
+export const getMedicineDetailsApi = (
+  productSku: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return Axios.post(
+    `https://www.apollopharmacy.in//popcsrchpdp_api.php`,
+    { params: productSku },
     {
       headers: {
         Authorization: AUTH_TOKEN,
@@ -41,6 +107,7 @@ export const searchMedicineApi = (
     }
   );
 };
+// ----------
 
 let sysmptonsList: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] = [];
 
@@ -92,7 +159,7 @@ export const getDiagnosticPrescriptionDataList = () => diagnosticPrescriptionDat
 export const addDiagnosticPrescriptionDataList = (
   item: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription
 ) => {
-  const foundIndex = diagnosticPrescriptionDataList.findIndex((s) => s.name == item.name);
+  const foundIndex = diagnosticPrescriptionDataList.findIndex((s) => s.itemname == item.itemname);
   if (foundIndex > -1) {
     return;
   } else {
@@ -108,7 +175,7 @@ export const setDiagnosticPrescriptionDataList = (
 
 export const removeDiagnosticPrescriptionDataList = (name: string) => {
   const lsit = diagnosticPrescriptionDataList.filter(
-    (diagnosticPrescriptionData) => diagnosticPrescriptionData.name != name
+    (diagnosticPrescriptionData) => diagnosticPrescriptionData.itemname != name
   );
   diagnosticPrescriptionDataList = [...lsit];
 };

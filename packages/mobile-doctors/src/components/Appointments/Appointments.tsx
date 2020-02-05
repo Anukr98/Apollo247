@@ -27,10 +27,20 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from 'react-native';
 import { CalendarList, PeriodMarking } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -137,6 +147,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
   const startDate = moment(date).format('YYYY-MM-DD');
@@ -267,7 +278,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true), //props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
           {
             icon: <Notification />,
@@ -329,7 +340,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <DotIcon />,
             onPress: () => {
-              null;
+              setDropdownVisible(true);
             },
           },
         ]}
@@ -341,13 +352,14 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     return (
       <View style={styles.menuDropdown}>
         <DropDown
-          containerStyle={{ marginRight: 20 }}
+          containerStyle={{ marginRight: 20, width: 200 }}
           options={[
             {
               optionText: '  Block Calendar',
               icon: <Block />,
               onPress: () => {
                 setDropdownVisible(false);
+                props.navigation.push(AppRoutes.BlockHomePage);
               },
             },
             {
@@ -391,7 +403,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         {renderHeader()}
         <View style={{ flex: 1 }}>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
-      {isDropdownVisible ? renderDropdown() : null}
+      {/* {isDropdownVisible ? renderDropdown() : null} */}
 
       {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
       <View style={{ zIndex: -1, flex: 1, backgroundColor: '#f7f7f7' }}>
@@ -426,6 +438,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           />
         )}
       </View>
+      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
     </SafeAreaView>
   );
 };
