@@ -379,6 +379,7 @@ interface ConsultDoctorProfileProps {
   doctorDetails: DoctorDetails;
   appointmentId: string;
   hasDoctorJoined: boolean;
+  jrDoctorJoined: boolean;
 }
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
@@ -387,7 +388,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
 
-  const { doctorDetails, appointmentId, hasDoctorJoined } = props;
+  const { doctorDetails, appointmentId, hasDoctorJoined, jrDoctorJoined } = props;
   const currentDate = new Date().toISOString().substring(0, 10);
 
   const [showMore, setShowMore] = useState<boolean>(true);
@@ -637,7 +638,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             <div className={classes.buttonGroup}>
               {!hasDoctorJoined && (
                 <div className={classes.joinInSection}>
-                  <span>Doctor Joining In</span>
+                  <span>Senior Doctor Joining In</span>
                   <span className={classes.joinTime}>{differenceInWords}</span>
                 </div>
               )}
@@ -731,12 +732,15 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           </Scrollbars>
         </div>
         <div className={classes.bottomActions}>
-          {hasDoctorJoined && (
+          {hasDoctorJoined ? (
             <AphButton className={classes.joinBtn} fullWidth>
-              Doctor has joined!
+              Senior Doctor has joined!
             </AphButton>
-          )}
-
+          ) : jrDoctorJoined ? (
+            <AphButton className={classes.joinBtn} fullWidth>
+              Junior Doctor has joined!
+            </AphButton>
+          ) : null}
           {/* <AphButton fullWidth>Reschedule</AphButton> */}
         </div>
       </div>
