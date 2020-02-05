@@ -119,7 +119,16 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           id
           firstName
           lastName
+          relation
           photoUrl
+          uhid
+          dateOfBirth
+          emailAddress
+          mobileNumber
+          gender
+          addressList {
+            city
+          }
         }
       }
       newPatientsList

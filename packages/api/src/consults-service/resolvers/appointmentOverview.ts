@@ -3,9 +3,11 @@ import { Resolver } from 'api-gateway';
 import { Between } from 'typeorm';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { Appointment } from 'consults-service/entities';
+import { Appointment, STATUS } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {
@@ -19,6 +21,9 @@ export const getAppointmentOverviewTypeDefs = gql`
     upcoming: Int
     doctorAway: Int
   }
+  type UpdatePaymentOrderIdResult {
+    status: Boolean
+  }
   input GetAllDoctorAppointmentsInput {
     doctorId: String!
     fromDate: DateTime
@@ -28,11 +33,18 @@ export const getAppointmentOverviewTypeDefs = gql`
     getAppointmentOverview(
       appointmentOverviewInput: GetAllDoctorAppointmentsInput
     ): GetAppointmentOverviewResult!
+    getAppointmentByPaymentOrderId(orderId: String): AppointmentList
+  }
+  extend type Mutation {
+    updatePaymentOrderId(appointmentId: String, orderId: String): UpdatePaymentOrderIdResult
   }
 `;
 
 type AppointmentList = {
   appointment: Appointment;
+};
+type UpdatePaymentOrderIdResult = {
+  status: boolean;
 };
 type getAppointmentOverviewResult = {
   appointments: AppointmentList[];
@@ -104,8 +116,42 @@ const getAppointmentOverview: Resolver<
   return appointmentOverviewOutput;
 };
 
+const updatePaymentOrderId: Resolver<
+  null,
+  { appointmentId: string; orderId: string },
+  ConsultServiceContext,
+  UpdatePaymentOrderIdResult
+> = async (parent, { appointmentId, orderId }, context) => {
+  if (!appointmentId) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (!orderId) throw new AphError(AphErrorMessages.INVALID_ORDER_ID);
+  const { apptRepo } = getRepos(context);
+  const appointmentDetails = await apptRepo.findById(appointmentId);
+  if (!appointmentDetails || appointmentDetails.status !== STATUS.PAYMENT_PENDING)
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  appointmentDetails.paymentOrderId = orderId;
+  await apptRepo.updateMedmantraStatus(appointmentDetails);
+  return { status: true };
+};
+
+const getAppointmentByPaymentOrderId: Resolver<
+  null,
+  { orderId: string },
+  ConsultServiceContext,
+  AppointmentList
+> = async (parent, { orderId }, context) => {
+  if (!orderId) throw new AphError(AphErrorMessages.INVALID_ORDER_ID);
+  const { apptRepo } = getRepos(context);
+  const appointmentDetails = await apptRepo.findByPaymentOrderId(orderId);
+  if (!appointmentDetails) throw new AphError(AphErrorMessages.INVALID_ORDER_ID);
+  return { appointment: appointmentDetails };
+};
+
 export const getAppointmentOverviewResolvers = {
   Query: {
     getAppointmentOverview,
+    getAppointmentByPaymentOrderId,
+  },
+  Mutation: {
+    updatePaymentOrderId,
   },
 };

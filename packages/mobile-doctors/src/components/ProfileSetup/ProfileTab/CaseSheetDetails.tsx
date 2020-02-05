@@ -211,9 +211,10 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           {renderLabelDesc('Diagnosed Medical Condition')}
           {caseSheet.length && (
             <View style={{ marginTop: 10, marginBottom: 20 }}>
-              {caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
-                <CapsuleView diseaseName={itemname} />
-              ))}
+              {caseSheet[0].diagnosticPrescription &&
+                caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
+                  <CapsuleView diseaseName={itemname} />
+                ))}
             </View>
           )}
         </View>
@@ -231,6 +232,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
           {renderLabelDesc('Medicines')}
           {caseSheet.length &&
+            caseSheet[0].medicinePrescription &&
             caseSheet[0].medicinePrescription.map((item: any) => (
               <View>
                 <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>

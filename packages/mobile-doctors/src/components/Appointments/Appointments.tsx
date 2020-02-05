@@ -39,6 +39,8 @@ import {
 import { CalendarList, PeriodMarking } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -145,6 +147,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
   const startDate = moment(date).format('YYYY-MM-DD');
@@ -275,7 +278,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true), //props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
           {
             icon: <Notification />,
@@ -349,7 +352,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     return (
       <View style={styles.menuDropdown}>
         <DropDown
-          containerStyle={{ marginRight: 20 }}
+          containerStyle={{ marginRight: 20, width: 200 }}
           options={[
             {
               optionText: '  Block Calendar',
@@ -435,6 +438,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           />
         )}
       </View>
+      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
     </SafeAreaView>
   );
 };

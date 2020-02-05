@@ -107,6 +107,7 @@ export const getMedicineDetailsApi = (
     }
   );
 };
+// ----------
 
 let sysmptonsList: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] = [];
 
@@ -158,7 +159,7 @@ export const getDiagnosticPrescriptionDataList = () => diagnosticPrescriptionDat
 export const addDiagnosticPrescriptionDataList = (
   item: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription
 ) => {
-  const foundIndex = diagnosticPrescriptionDataList.findIndex((s) => s.name == item.name);
+  const foundIndex = diagnosticPrescriptionDataList.findIndex((s) => s.itemname == item.itemname);
   if (foundIndex > -1) {
     return;
   } else {
@@ -174,7 +175,7 @@ export const setDiagnosticPrescriptionDataList = (
 
 export const removeDiagnosticPrescriptionDataList = (name: string) => {
   const lsit = diagnosticPrescriptionDataList.filter(
-    (diagnosticPrescriptionData) => diagnosticPrescriptionData.name != name
+    (diagnosticPrescriptionData) => diagnosticPrescriptionData.itemname != name
   );
   diagnosticPrescriptionDataList = [...lsit];
 };
