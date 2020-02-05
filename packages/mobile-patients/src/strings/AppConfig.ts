@@ -46,31 +46,6 @@ const PharmaApiConfig = {
     ],
     GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
   },
-  perform: {
-    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
-    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
-    PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
-    SHOP_BY_CITY: [apolloUatBaseUrl],
-    IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
-    GET_DELIVERY_TIME: [
-      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
-      pharmaTokenYXV,
-    ],
-    GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
-    ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
-    GET_TEST_PACKAGES: [
-      `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,
-    ],
-    GET_PACKAGE_DATA: [
-      `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
-    ],
-    GET_CLINICS: ['https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx'],
-  },
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
@@ -218,7 +193,7 @@ const ConfigurationPERFORM = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  ...PharmaApiConfig.perform,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
   Android_Version: '1.83',
