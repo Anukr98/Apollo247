@@ -1544,68 +1544,79 @@ export const ConsultTabs: React.FC = () => {
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
               />
               <div>
-                {!isPdfPageOpen ||
-                isSecretary ||
-                (params && params.tabValue && parseInt(params.tabValue, 10) === 1) ? (
-                  <div>
-                    <div className={classes.stickyConsultTabs}>
-                      <Tabs
-                        value={tabValue}
-                        variant="fullWidth"
+                <div
+                  className={
+                    !isPdfPageOpen ||
+                    isSecretary ||
+                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
+                      ? classes.block
+                      : classes.none
+                  }
+                >
+                  <div className={classes.stickyConsultTabs}>
+                    <Tabs
+                      value={tabValue}
+                      variant="fullWidth"
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
                         classes={{
-                          root: classes.tabsRoot,
-                          indicator: classes.tabsIndicator,
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
                         }}
-                        onChange={(e, newValue) => {
-                          setTabValue(newValue);
+                        label="Case Sheet"
+                      />
+                      <Tab
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
                         }}
-                      >
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Case Sheet"
-                        />
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Chat"
-                        />
-                      </Tabs>
-                    </div>
-                    <div>
-                      <div className={tabValue !== 0 ? classes.none : classes.block}>
-                        {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className={tabValue !== 1 ? classes.none : classes.block}>
-                        <div className={classes.chatContainer}>
-                          <ConsultRoom
-                            startConsult={startConsult}
-                            sessionId={sessionId}
-                            token={token}
-                            appointmentId={paramId}
-                            doctorId={doctorId}
-                            patientId={patientId}
-                            pubnub={pubnub}
-                            sessionClient={sessionClient}
-                            lastMsg={lastMsg}
-                            messages={messages}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                        label="Chat"
+                      />
+                    </Tabs>
                   </div>
-                ) : (
                   <div>
-                    <CasesheetView saving={saving} />
+                    <div className={tabValue !== 0 ? classes.none : classes.block}>
+                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
+                    </div>
                   </div>
-                )}
+
+                  <div>
+                    <div className={tabValue !== 1 ? classes.none : classes.block}>
+                      <div className={classes.chatContainer}>
+                        <ConsultRoom
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={paramId}
+                          doctorId={doctorId}
+                          patientId={patientId}
+                          pubnub={pubnub}
+                          sessionClient={sessionClient}
+                          lastMsg={lastMsg}
+                          messages={messages}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={
+                    !isPdfPageOpen ||
+                    isSecretary ||
+                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
+                      ? classes.none
+                      : classes.block
+                  }
+                >
+                  <CasesheetView saving={saving} />
+                </div>
               </div>
             </div>
           </Scrollbars>
