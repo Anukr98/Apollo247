@@ -237,7 +237,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
 
   const patientProfile = currentPatient && currentPatient.photoUrl;
 
-  const { doctorDetails } = props;
+  const { doctorDetails, videoCall } = props;
   const doctorProfileImage =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.photoUrl
@@ -252,7 +252,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
       <div
         className={`${classes.videoChatWindow} ${
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
-        }`}
+          }`}
       >
         {!props.showVideoChat && (
           <div className={classes.timerCls}>
@@ -292,16 +292,11 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   properties={{
                     publishAudio: mute,
                     publishVideo: subscribeToVideo,
-                    // width: 204,
-                    // height: 154,
                   }}
                 />
               </div>
             </div>
             <div
-              // className={`${classes.videoContainer} ${
-              //   props.showVideoChat ? classes.hideVideoContainer : classes.largeVideoContainer
-              //   }`}
               className={props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer}
             >
               {(!subscribeToVideo && !props.showVideoChat) || docImg ? (
@@ -314,12 +309,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     }
                   />
                 </div>
-              ) : (!subscribeToVideo && !props.showVideoChat) || props.videoCall ? (
+              ) : (!subscribeToVideo && !props.showVideoChat) || videoCall ? (
                 <div className={classes.maximizeImg}>
                   <img
                     src={
-                      doctorProfileImage !== null
-                        ? doctorProfileImage
+                      doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.photoUrl !== null
+                        ? doctorDetails.getDoctorDetailsById.photoUrl
                         : require('images/DefaultPatient_Video.svg')
                     }
                   />
@@ -339,8 +334,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     <div className={classes.minimizeVideoImg}>
                       <img
                         src={
-                          doctorProfileImage !== null
-                            ? doctorProfileImage
+                          doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.photoUrl !== null
+                            ? doctorDetails.getDoctorDetailsById.photoUrl
                             : require('images/DefaultPatient_Video.svg')
                         }
                       />
@@ -362,34 +357,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   </div>
                 </div>
               )}
-              {/* {props.showVideoChat && (
-                <div className={classes.minimizeVideoImg}>
-                  {!subscribeToVideo && (
-                    <img
-                      src={
-                        doctorProfileImage !== null
-                          ? doctorProfileImage
-                          : require('images/DefaultPatient_Video.svg')
-                      }
-                    />
-                  )}
-                  <div className={classes.minimizeBtns}>
-                    <img
-                      src={require('images/ic_stopcall.svg')}
-                      className={classes.stopCallIcon}
-                      onClick={() => {
-                        setIscall(false);
-                        props.stopAudioVideoCall();
-                      }}
-                    />
-                    <img
-                      src={require('images/ic_maximize.svg')}
-                      className={classes.fullscreenIcon}
-                      onClick={() => props.toggelChatVideo()}
-                    />
-                  </div>
-                </div>
-              )} */}
+
               {!props.showVideoChat && (
                 <div className={classes.videoButtonContainer}>
                   <Grid container alignItems="flex-start" spacing={0}>
@@ -421,9 +389,9 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                       {isCall && subscribeToVideo && (
                         <Button
                           onClick={() => {
+                            props.convertCall();
                             setSubscribeToVideo(!subscribeToVideo);
                             setDocImg(true);
-                            props.convertCall();
                           }}
                         >
                           <img src={require('images/ic_videoon.svg')} alt="video on" />
@@ -432,9 +400,9 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                       {isCall && !subscribeToVideo && (
                         <Button
                           onClick={() => {
+                            props.convertCall();
                             setSubscribeToVideo(!subscribeToVideo);
                             setDocImg(false);
-                            props.convertCall();
                           }}
                         >
                           <img src={require('images/ic_videooff.svg')} alt="video off" />
@@ -464,4 +432,52 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
       </div>
     </div>
   );
+  {/* {!subscribeToVideo && !props.showVideoChat && (
+                <img
+                  className={classes.minimizeImg}
+                  src={
+                    patientProfile !== null
+                      ? patientProfile
+                      : require('images/DefaultPatient_Video.svg')
+                  }
+                />
+              )}
+              {!subscribeToVideo && !props.showVideoChat && (
+                <img
+                  className={classes.maximizeImg}
+                  src={
+                    doctorProfileImage !== null
+                      ? doctorProfileImage
+                      : require('images/DefaultPatient_Video.svg')
+                  }
+                />
+              )} */}
+  {/* {props.showVideoChat && (
+                <div className={classes.minimizeVideoImg}>
+                  {!subscribeToVideo && (
+                    <img
+                      src={
+                        doctorProfileImage !== null
+                          ? doctorProfileImage
+                          : require('images/DefaultPatient_Video.svg')
+                      }
+                    />
+                  )}
+                  <div className={classes.minimizeBtns}>
+                    <img
+                      src={require('images/ic_stopcall.svg')}
+                      className={classes.stopCallIcon}
+                      onClick={() => {
+                        setIscall(false);
+                        props.stopAudioVideoCall();
+                      }}
+                    />
+                    <img
+                      src={require('images/ic_maximize.svg')}
+                      className={classes.fullscreenIcon}
+                      onClick={() => props.toggelChatVideo()}
+                    />
+                  </div>
+                </div>
+              )} */}
 };
