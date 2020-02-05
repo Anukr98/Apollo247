@@ -20,6 +20,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -141,6 +142,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
+        CommonBugFender('Patient Details Case sheet', error);
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
       });
   }, []);
