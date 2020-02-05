@@ -212,7 +212,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     if (
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||
-      notificationType === 'Appointment_Canceled'
+      notificationType === 'Appointment_Canceled' ||
+      notificationType === 'Patient_Noshow_Reschedule_Appointment'
     ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
@@ -446,11 +447,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         {
           const doctorName = data.doctorName;
           const userName = data.patientName;
-
+          const doctorType = data.doctorType;
           aphConsole.log('chat_room');
           showAphAlert!({
             title: `Hi ${userName} :)`,
-            description: `Dr. ${doctorName} is waiting to start your consultation. Please proceed to the Consult Room`,
+            description: `Dr. ${
+              doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor' : doctorName
+            } is waiting to start your consultation. Please proceed to the Consult Room`,
             unDismissable: true,
             CTAs: [
               {
@@ -513,7 +516,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showAphAlert!({
             title: `Hi ${userName} :)`,
             description: `We are really sorry. Dr. ${
-              doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team' : doctorName
+              doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor' : doctorName
             } will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor`,
             unDismissable: true,
           });
@@ -696,7 +699,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               showAphAlert!({
                 title: `Hi ${userName} :)`,
                 description: `Dr. ${
-                  doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor ' : doctorName
+                  doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor' : doctorName
                 } is waiting for your call response. Please proceed to the Consult Room`,
                 unDismissable: true,
                 CTAs: [

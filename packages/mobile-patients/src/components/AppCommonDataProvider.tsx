@@ -29,6 +29,12 @@ export interface AppCommonDataContextProps {
   setVirtualConsultationFee: ((arg0: string) => void) | null;
   generalPhysicians: null;
   setGeneralPhysicians: ((arg0: getDoctorsBySpecialtyAndFilters) => void) | null;
+  ent: null;
+  setEnt: ((arg0: getDoctorsBySpecialtyAndFilters) => void) | null;
+  Dermatology: null;
+  setDermatology: ((arg0: getDoctorsBySpecialtyAndFilters) => void) | null;
+  Urology: null;
+  setUrology: ((arg0: getDoctorsBySpecialtyAndFilters) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -41,6 +47,12 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setVirtualConsultationFee: null,
   generalPhysicians: null,
   setGeneralPhysicians: null,
+  ent: null,
+  setEnt: null,
+  Dermatology: null,
+  setDermatology: null,
+  Urology: null,
+  setUrology: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -56,7 +68,18 @@ export const AppCommonDataProvider: React.FC = (props) => {
     id: string;
     data: getDoctorsBySpecialtyAndFilters;
   }>();
-
+  const [ent, setEnt] = useState<{
+    id: string;
+    data: getDoctorsBySpecialtyAndFilters;
+  }>();
+  const [Dermatology, setDermatology] = useState<{
+    id: string;
+    data: getDoctorsBySpecialtyAndFilters;
+  }>();
+  const [Urology, setUrology] = useState<{
+    id: string;
+    data: getDoctorsBySpecialtyAndFilters;
+  }>();
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
     AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
@@ -123,6 +146,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setVirtualConsultationFee,
         generalPhysicians,
         setGeneralPhysicians,
+        Urology,
+        setUrology,
+        Dermatology,
+        setDermatology,
+        ent,
+        setEnt,
       }}
     >
       {props.children}

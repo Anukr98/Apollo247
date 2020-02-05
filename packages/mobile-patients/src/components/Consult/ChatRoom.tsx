@@ -1108,7 +1108,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        // console.log('messageevent', message);
+        // console.log('messageevent', message);]
+        message &&
+          message.message &&
+          message.message.message &&
+          message.message.message === '^^#startconsult' &&
+          setname('DOCTOR');
+        message &&
+          message.message &&
+          message.message.message &&
+          message.message.message === '^^#startconsultJr' &&
+          setname('JUNIOR');
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
@@ -1385,7 +1395,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           const msgs = res.messages;
           console.log('msgs', msgs);
-
+         
           res.messages.forEach((element, index) => {
             let item = element.entry;
             if (item.prismId) {
@@ -1667,7 +1677,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
-    setname(message.message.sentBy);
+   
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -1714,10 +1724,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         APIForUpdateAppointmentData(true);
         setTextChange(false);
         try {
-          Keyboard.dismiss()
-        } catch (error) {
-          
-        }
+          Keyboard.dismiss();
+        } catch (error) {}
 
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
@@ -2048,7 +2056,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </View>
                 {rowData.transferInfo.photoUrl &&
                 rowData.transferInfo.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
                 ) ? (
                   <Image
                     source={{ uri: rowData.transferInfo.photoUrl }}
@@ -2747,7 +2755,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setLoading(false);
         setShowPDF(true);
       }
-    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) {
+    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/)) {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
@@ -2821,7 +2829,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             {appointmentData.doctorInfo.thumbnailUrl &&
             appointmentData.doctorInfo.thumbnailUrl.match(
-              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
             ) ? (
               <Image
                 source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -2848,7 +2856,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View>
           {rowData.message === imageconsult ? (
             <View>
-              {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+              {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
                 <TouchableOpacity
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
@@ -3114,7 +3122,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
                 appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
                 ) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -3234,7 +3242,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
                 appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
                 ) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -3585,7 +3593,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View>
               {rowData.message === imageconsult ? (
                 <View>
-                  {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
@@ -3871,7 +3879,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .utc(
             Value === 'Followup'
               ? rowData.transferInfo.folloupDateTime
-              : rowData.transferInfo&&rowData.transferInfo.transferDateTime
+              : rowData.transferInfo && rowData.transferInfo.transferDateTime
           )
           .local()
           .format('YYYY-MM-DD');
@@ -4005,7 +4013,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View style={styles.imageContainer}>
               {appointmentData.doctorInfo.thumbnailUrl &&
               appointmentData.doctorInfo.thumbnailUrl.match(
-                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
               ) ? (
                 <Image
                   source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -4146,7 +4154,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     left: 15,
                   }}
                 >
-                  {name == 'JUNIOR' || 'undefined'
+                  {name == 'JUNIOR'
                     ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
                     : appointmentData.doctorInfo.displayName}
                 </Text>
@@ -4390,7 +4398,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           numberOfLines={2}
         >
-          {name == 'JUNIOR' || 'undefined'
+          {name == 'JUNIOR'
             ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
             : appointmentData.doctorInfo.displayName}
         </Text>
@@ -4814,7 +4822,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         {appointmentData.doctorInfo.photoUrl &&
         appointmentData.doctorInfo.photoUrl.match(
-          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
         ) ? (
           <Image
             source={{ uri: appointmentData.doctorInfo.photoUrl }}
@@ -5196,6 +5204,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           console.log('selectedEPres', selectedEPres);
           setSelectPrescriptionVisible(false);
@@ -5228,12 +5238,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   );
                   KeepAwake.activate();
                 });
+              item.message &&
+                pubnub.publish(
+                  {
+                    channel: channel,
+                    message: {
+                      id: patientId,
+                      message: item.message,
+                      type: 'PHR',
+                      messageDate: new Date(),
+                    },
+                    storeInHistory: true,
+                    sendByPost: true,
+                  },
+                  (status, response) => {}
+                );
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         //selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
-        isVisible={isSelectPrescriptionVisible}
+        isVisible={true}
       />
     );
   };
@@ -5362,14 +5387,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-              })
-            );
-            handleCallTheEdSessionAPI();
+            if (callhandelBack) {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                })
+              );
+              handleCallTheEdSessionAPI();
+            }
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
@@ -5882,7 +5909,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       )}
       {uploadPrescriptionPopup()}
-      {renderPrescriptionModal()}
+      {isSelectPrescriptionVisible && renderPrescriptionModal()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
       <FeedbackPopup

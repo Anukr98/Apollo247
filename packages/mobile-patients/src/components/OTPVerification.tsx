@@ -640,7 +640,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         >
           <WebView
             source={{
-              uri: 'https://www.apollo247.com/TnC.html',
+              uri: 'https://www.apollo247.com/termsandconditions.html',
             }}
             style={{
               flex: 1,

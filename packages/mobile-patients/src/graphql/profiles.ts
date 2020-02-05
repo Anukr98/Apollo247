@@ -1516,11 +1516,18 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         labTestReferredBy
         additionalNotes
         testResultPrismFileIds
+        observation
         labTestResultParameters {
           parameterName
           unit
           result
           range
+          setOutOfRange
+          setResultDate
+          setUnit
+          setParameterName
+          setRange
+          setResult
         }
         departmentName
         signingDocName

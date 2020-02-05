@@ -284,6 +284,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     getNetStatus()
       .then((status) => {
         if (status) {
+          // setLoading && setLoading(true);
           fetchAppointments();
         } else {
           setLoading && setLoading(false);
@@ -458,13 +459,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         data={
           selectedTab === tabs[0].title
             ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime).toLocaleDateString())
+                moment(new Date(item.appointmentDateTime))
                   .add(6, 'days')
                   .startOf('day')
                   .isSameOrAfter(moment(new Date()).startOf('day'))
               )
             : consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime).toLocaleDateString())
+                moment(new Date(item.appointmentDateTime))
                   .add(6, 'days')
                   .startOf('day')
                   .isBefore(moment(new Date()).startOf('day'))
@@ -900,7 +901,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           ).length > -1 && selectedTab === tabs[0].title
             ? 'You have ' +
               (consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime).toLocaleDateString())
+                moment(new Date(item.appointmentDateTime))
                   .add(6, 'days')
                   .startOf('day')
                   .isSameOrAfter(moment(new Date()).startOf('day'))
@@ -908,7 +909,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ' active appointment(s)!'
             : 'You have ' +
               (consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime).toLocaleDateString())
+                moment(new Date(item.appointmentDateTime))
                   .add(6, 'days')
                   .startOf('day')
                   .isBefore(moment(new Date()).startOf('day'))
