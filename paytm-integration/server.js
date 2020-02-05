@@ -195,9 +195,7 @@ app.get('/consulttransaction', (req, res) => {
   // this needs to be altered later.
   const requestJSON = {
     query:
-      'mutation { makeAppointmentPayment(paymentInput: { appointmentId: "' +
-      req.session.appointmentId +
-      '", amountPaid: ' +
+      'mutation { makeAppointmentPayment(paymentInput: { amountPaid: ' +
       req.query.TXNAMOUNT +
       ', paymentRefId: "' +
       txnId +
@@ -334,6 +332,15 @@ app.get('/consultpayment', (req, res) => {
             })
             .then((resp) => {
               console.log(resp.data, resp.data.Result);
+              const requestJSON = {
+                query:
+                  'mutation { updatePaymentOrderId(appointmentId:"' +
+                  req.query.appointmentId +
+                  '",orderId:"' +
+                  resp.data.Result +
+                  '"){ status }}',
+              };
+              axios.post(process.env.API_URL, requestJSON);
               req.session.appointmentId = req.query.appointmentId;
               res.render('consults.ejs', {
                 athsToken: response.data.data.getAthsToken.patient.athsToken,

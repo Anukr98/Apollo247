@@ -28,7 +28,6 @@ export const makeAppointmentPaymentTypeDefs = gql`
   }
 
   input AppointmentPaymentInput {
-    appointmentId: ID!
     amountPaid: Float!
     paymentRefId: String
     paymentStatus: String!
@@ -77,7 +76,6 @@ type AppointmentPayment = {
 };
 
 type AppointmentPaymentInput = {
-  appointmentId: string;
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
@@ -97,8 +95,8 @@ const makeAppointmentPayment: Resolver<
   AppointmentPaymentResult
 > = async (parent, { paymentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const processingAppointment = await apptsRepo.findByIdAndStatus(
-    paymentInput.appointmentId,
+  const processingAppointment = await apptsRepo.findByOrderIdAndStatus(
+    paymentInput.orderId,
     STATUS.PAYMENT_PENDING
   );
   if (!processingAppointment) {
@@ -127,7 +125,7 @@ const makeAppointmentPayment: Resolver<
     sendPatientAcknowledgements(processingAppointment, consultsDb, doctorsDb, patientsDb);
 
     //update appointment status
-    apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.PENDING, false);
+    apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
   }
 
   return { appointment: paymentInfo };
