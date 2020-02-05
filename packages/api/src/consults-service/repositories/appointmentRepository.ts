@@ -60,6 +60,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  findByPaymentOrderId(paymentOrderId: string) {
+    return this.findOne({
+      where: { paymentOrderId },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
   getAppointmentsByDate(appointmentDateTime: Date) {
     return this.find({
       where: { appointmentDateTime, status: STATUS.PENDING },
