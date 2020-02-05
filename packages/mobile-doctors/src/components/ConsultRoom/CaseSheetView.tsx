@@ -23,6 +23,7 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
   AddPlus,
+  Audio,
   CheckboxSelected,
   CheckboxUnSelected,
   ClosePopup,
@@ -35,22 +36,16 @@ import {
   InpersonIcon,
   PatientPlaceHolderImage,
   PhysicalIcon,
+  PlusOrange,
   RoundCallIcon,
   RoundVideoIcon,
   Selected,
   Start,
   ToogleOff,
   ToogleOn,
-  GreenOnline,
-  AddIcon,
-  PlusOrange,
-  CheckboxSelected,
-  CheckboxUnSelected,
-  Edit,
   UnSelected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { PastConsultCard } from '@aph/mobile-doctors/src/components/ui/PastConsultCard';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { CaseSheetContext } from '@aph/mobile-doctors/src/context/CaseSheetContext';
 import {
@@ -75,16 +70,18 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
-  GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
-  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
-  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
-  GetCaseSheet_getCaseSheet_patientDetails_healthVault,
   GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
+  GetCaseSheet_getCaseSheet_patientDetails_healthVault,
+  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
+  GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
+import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
+  MEDICINE_UNIT,
   REQUEST_ROLES,
   STATUS,
-  MEDICINE_UNIT,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   UpdateCaseSheet,
@@ -116,13 +113,6 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
-import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
-import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
-import { nameFormater, medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { AddInstructionPopUp } from '@aph/mobile-doctors/src/components/ui/AddInstructionPopUp';
-import { AddConditionPopUp } from '@aph/mobile-doctors/src/components/ui/AddConditionPopUp';
-import { AddSymptomPopUp } from '@aph/mobile-doctors/src/components/ui/AddSymptomPopUp';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -441,6 +431,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     flexDirection: 'row',
   },
+  leftTimeLineContainer: {
+    // position: 'absolute',
+    // left: 0,
+    // marginBottom: -40,
+    // marginRight: 9,
+    // marginLeft: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  verticalLine: {
+    flex: 1,
+    width: 1,
+    // backgroundColor: theme.colors.LIGHT_BLUE,
+  },
 });
 
 const renderPatientImage = () => {
@@ -730,22 +734,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setConsultationType(consultType as typeof consultationType);
         setLoading(false);
         try {
-          setSysmptonsList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
-          );
-          setDiagonsisList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
-          );
-          setDiagnosticPrescriptionDataList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-          );
-          setMedicineList(
-            (_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-          );
+          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
+            .diagnosticPrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
         } catch (error) {
           console.log({ error });
         }
@@ -1311,36 +1308,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <CollapseCard
         heading="Test Prescription"
+        collapse={showdiagonisticPrescription}
         onPress={() => setshowdiagonisticPrescription(!showdiagonisticPrescription)}
       >
-        <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
-          <DiagnosicsCard
-            diseaseName={item.itemname}
-            icon={
-              <TouchableOpacity
-                onPress={() => {
-                  // setTests(JSON.parse(JSON.stringify(tests)).slice(index, 1));
-                  // setDiagnosticPrescription([
-                  //   ...diagnosticPrescriptionData,
-                  //   {
-                  //     itemname: name,
-                  //   },
-                  // ] as any);
-                  // addDiagnosticPrescriptionDataList({ itemname: name });
-                  const testsData = JSON.parse(JSON.stringify(tests));
-                  testsData[index] = {
-                    ...testsData[index],
-                    isSelected: testsData[index].isSelected ? false : true,
-                  };
-                  setTests(testsData);
-                }}
-              >
-                {isDelegateLogin ? null : item.isSelected ? <Selected /> : <UnSelected />}
-              </TouchableOpacity>
-            }
-          />
-        </View>
-        ); }) ) : (<Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
+        <Text style={[styles.familyText, { marginBottom: 12 }]}>Tests</Text>
+        {tests.length ? (
+          tests.map((item, index) => {
+            return (
+              <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
+                <DiagnosicsCard
+                  diseaseName={item.itemname}
+                  icon={
+                    <TouchableOpacity
+                      onPress={() => {
+                        // setTests(JSON.parse(JSON.stringify(tests)).slice(index, 1));
+                        // setDiagnosticPrescription([
+                        //   ...diagnosticPrescriptionData,
+                        //   {
+                        //     itemname: name,
+                        //   },
+                        // ] as any);
+                        // addDiagnosticPrescriptionDataList({ itemname: name });
+                        const testsData = JSON.parse(JSON.stringify(tests));
+                        testsData[index] = {
+                          ...testsData[index],
+                          isSelected: testsData[index].isSelected ? false : true,
+                        };
+                        setTests(testsData);
+                      }}
+                    >
+                      {isDelegateLogin ? null : item.isSelected ? <Selected /> : <UnSelected />}
+                    </TouchableOpacity>
+                  }
+                />
+              </View>
+            );
+          })
+        ) : (
+          <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
         )}
         {/* {diagnosticPrescriptionData == null ? (
           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
@@ -2029,6 +2034,101 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </Text>
     );
   };
+
+  const renderLeftTimeLineView = (showTop: boolean, showBottom: boolean) => {
+    return (
+      <View style={styles.leftTimeLineContainer}>
+        <View
+          style={[
+            styles.verticalLine,
+            {
+              backgroundColor: showTop ? theme.colors.SHARP_BLUE : '#f7f7f7',
+            },
+          ]}
+        />
+        <View
+          style={{
+            height: 12,
+            width: 12,
+            backgroundColor: theme.colors.LIGHT_BLUE,
+            borderRadius: 6,
+          }}
+        />
+        <View
+          style={[
+            styles.verticalLine,
+            {
+              backgroundColor: showBottom ? theme.colors.SHARP_BLUE : '#f7f7f7',
+            },
+          ]}
+        />
+      </View>
+    );
+  };
+
+  const renderPastConsults = () => {
+    return (
+      <View>
+        {pastList &&
+          pastList.map((i, index, array) => {
+            return (
+              <>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    // justifyContent: 'center',
+                    // alignItems: 'center',
+                  }}
+                >
+                  {renderLeftTimeLineView(
+                    index == 0 ? false : true,
+                    index == array.length - 1 ? false : true
+                  )}
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: theme.colors.darkBlueColor(0.2),
+                      flexDirection: 'row',
+                      borderRadius: 10,
+                      backgroundColor: theme.colors.WHITE,
+                      height: 50,
+                      alignItems: 'center',
+                      paddingRight: 10,
+                      paddingLeft: 18,
+                      marginVertical: 4.5,
+                      marginRight: 20,
+                      flex: 1,
+                      justifyContent: 'space-between',
+                    }}
+                    // onPress={() =>
+                    //   props.navigation.navigate(AppRoutes.CaseSheetDetails, {
+                    //     consultDetails: i,
+                    //     patientDetails: props.patientDetails,
+                    //   })
+                    // }
+                  >
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('M', 12, theme.colors.darkBlueColor(0.6), 1, 12),
+                      }}
+                    >
+                      {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
+                    </Text>
+                    <View style={{ flexDirection: 'row' }}>
+                      <View style={{ marginRight: 24 }}>
+                        <Audio />
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </>
+            );
+          })}
+      </View>
+    );
+  };
   const renderPatientHealthWallet = () => {
     const patientImages =
       (healthWalletArrayData && healthWalletArrayData.filter((i) => i && i.imageUrls)) || [];
@@ -2051,11 +2151,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               pastList.map((apmnt: any, i) => {
                 return <View style={{ marginBottom: 0 }}>{renderPastAppData(apmnt)}</View>;
               })} */}
-            <PastConsultCard
-              data={pastList}
-              navigation={props.navigation}
-              patientDetails={PatientInfoData}
-            />
+            {renderPastConsults()}
           </View>
         </CollapseCard>
       </View>
