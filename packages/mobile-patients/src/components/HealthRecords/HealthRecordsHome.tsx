@@ -305,7 +305,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
         console.log('Error occured', { error });
-        handleGraphQlError(error);
+        currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
   }, [currentPatient]);
@@ -344,7 +344,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         console.log('Error occured while render Delete MedicalOrder', { e });
-        handleGraphQlError(e);
+        currentPatient && handleGraphQlError(e);
       });
   };
 
@@ -475,22 +475,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setdisplayOrderPopup(true);
         }}
         onClickCard={() => {
-          props.navigation.navigate(AppRoutes.ConsultDetails, {
-            CaseSheet: item.id,
-            DoctorInfo: item.doctorInfo,
-            FollowUp: item.isFollowUp,
-            appointmentType: item.appointmentType,
-            DisplayId: item.displayId,
-            BlobName: g(doctorType(item), 'blobName'),
-          });
+          if (item.doctorInfo) {
+            props.navigation.navigate(AppRoutes.ConsultDetails, {
+              CaseSheet: item.id,
+              DoctorInfo: item.doctorInfo,
+              FollowUp: item.isFollowUp,
+              appointmentType: item.appointmentType,
+              DisplayId: item.displayId,
+              BlobName: g(doctorType(item), 'blobName'),
+            });
+          }
         }}
         PastData={item}
         navigation={props.navigation}
-        onFollowUpClick={() => onFollowUpClick(item)}
+        onFollowUpClick={() => {
+          if (item.doctorInfo) {
+            onFollowUpClick(item);
+          }
+        }}
       />
     );
   };
-
   const renderEmptyConsult = () => {
     if (!loading) {
       return (

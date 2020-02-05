@@ -94,6 +94,10 @@ export type Resolver<Parent, Args, Context, Result> = (
     cors: { origin: corsOrigins },
     schema,
     executor,
+    engine: {
+      apiKey: process.env.ENGINE_API_KEY,
+      schemaTag: process.env.NODE_ENV,
+    },
     context: async ({ req }) => {
       const isNotProduction = process.env.NODE_ENV !== 'production';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';

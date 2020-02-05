@@ -11,7 +11,10 @@ import {
   PhysicalConsult,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_APPOINTMENTS,
+  GET_PATIENT_ALL_APPOINTMENTS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatinetAppointments,
@@ -50,6 +53,7 @@ import { ProfileList } from '../ui/ProfileList';
 import { TabHeader } from '../ui/TabHeader';
 import { TabsComponent } from '../ui/TabsComponent';
 import { useUIElements } from '../UIElementsProvider';
+import { getPatientAllAppointments } from '../../graphql/types/getPatientAllAppointments';
 
 const styles = StyleSheet.create({
   nameTextContainerStyle: {
@@ -280,6 +284,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     getNetStatus()
       .then((status) => {
         if (status) {
+          // setLoading && setLoading(true);
           fetchAppointments();
         } else {
           setLoading && setLoading(false);
@@ -302,22 +307,25 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     // setLoading && setLoading(true);
     console.log('inputdata', inputData);
     client
-      .query<getPatinetAppointments>({
-        query: GET_PATIENT_APPOINTMENTS,
+      .query<getPatientAllAppointments>({
+        query: GET_PATIENT_ALL_APPOINTMENTS,
         fetchPolicy: 'no-cache',
         variables: {
-          patientAppointmentsInput: inputData,
+          patientId: currentPatient ? currentPatient!.id : '',
         },
       })
       .then(({ data }) => {
         console.log(data, 'GET_PATIENT_APPOINTMENTS');
         if (
           data &&
-          data.getPatinetAppointments &&
-          data.getPatinetAppointments.patinetAppointments &&
-          consultations !== data.getPatinetAppointments.patinetAppointments
+          data.getPatientAllAppointments &&
+          data.getPatientAllAppointments.appointments &&
+          consultations !== data.getPatientAllAppointments.appointments
         ) {
-          setconsultations(data.getPatinetAppointments.patinetAppointments);
+          setconsultations(
+            data.getPatientAllAppointments.appointments
+            // data.getPatientAllAppointments.appointments.filter((item) => item.doctorInfo !== null)
+          );
         } else {
           setconsultations([]);
         }
@@ -441,6 +449,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderConsultations = () => {
+    console.log(moment(new Date()).add(35, 'h'), 'dtat');
+
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
@@ -449,17 +459,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         data={
           selectedTab === tabs[0].title
             ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY')
+                moment(new Date(item.appointmentDateTime))
                   .add(6, 'days')
-                  .isAfter(moment(new Date()))
+                  .startOf('day')
+                  .isSameOrAfter(moment(new Date()).startOf('day'))
               )
             : consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY')
+                moment(new Date(item.appointmentDateTime))
                   .add(6, 'days')
-                  .isBefore(moment(new Date()))
+                  .startOf('day')
+                  .isBefore(moment(new Date()).startOf('day'))
               )
         }
         bounces={false}
+        removeClippedSubviews={true}
         showsHorizontalScrollIndicator={false}
         ListEmptyComponent={renderNoAppointments()}
         renderItem={({ item }) => {
@@ -468,7 +481,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             .format('DD MMM');
           // console.log(tomorrow, 'tomorrow');
           let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
-          console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
+          // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
 
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
@@ -500,15 +513,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 style={[styles.doctorView]}
                 onPress={() => {
                   CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-                  item.appointmentType === 'ONLINE'
-                    ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                        data: item,
-                        from: 'Consult',
-                      })
-                    : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                        data: item,
-                        from: 'Consult',
-                      });
+                  if (item.doctorInfo && selectedTab === tabs[0].title) {
+                    item.appointmentType === 'ONLINE'
+                      ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                          data: item,
+                          from: 'Consult',
+                        })
+                      : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                          data: item,
+                          from: 'Consult',
+                        });
+                  }
                 }}
               >
                 <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
@@ -648,7 +663,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                   </View>
                   <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
-                  {item.isFollowUp == 'true' ? (
+                  {item.isFollowUp == 'true' &&
+                  moment(item.appointmentDateTime).isAfter(moment(new Date()).add(-7, 'd')) ? (
                     <View>
                       <Text style={styles.prepareForConsult}>SCHEDULE FOLLOW-UP</Text>
                       <View
@@ -700,15 +716,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           activeOpacity={1}
                           onPress={() => {
                             CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
-                            item.appointmentType === 'ONLINE'
-                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                                  data: item,
-                                  from: 'notification',
-                                })
-                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                  data: item,
-                                  from: 'notification',
-                                });
+                            if (item.doctorInfo) {
+                              item.appointmentType === 'ONLINE'
+                                ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                    data: item,
+                                    from: 'notification',
+                                  })
+                                : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                    data: item,
+                                    from: 'notification',
+                                  });
+                            }
                           }}
                         >
                           <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
@@ -717,14 +735,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                            props.navigation.navigate(AppRoutes.ChatRoom, {
-                              data: item,
-                              callType: '',
-                            });
+                            if (item.doctorInfo && selectedTab === tabs[0].title) {
+                              CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                              props.navigation.navigate(AppRoutes.ChatRoom, {
+                                data: item,
+                                callType: '',
+                              });
+                            }
                           }}
                         >
-                          <Text style={styles.prepareForConsult}>
+                          <Text
+                            style={[
+                              styles.prepareForConsult,
+                              { opacity: selectedTab === tabs[0].title ? 1 : 0.5 },
+                            ]}
+                          >
                             {item.isConsultStarted
                               ? string.common.continueConsult
                               : string.common.prepareForConsult}
@@ -738,54 +763,69 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         activeOpacity={1}
                         onPress={() => {
                           CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                          props.navigation.navigate(AppRoutes.ChatRoom, {
-                            data: item,
-                            callType: '',
-                          });
+                          if (item.doctorInfo && selectedTab === tabs[0].title) {
+                            props.navigation.navigate(AppRoutes.ChatRoom, {
+                              data: item,
+                              callType: '',
+                            });
+                          }
                         }}
                       >
-                        <Text style={[styles.prepareForConsult, { paddingBottom: -16 }]}>
+                        <Text
+                          style={[
+                            styles.prepareForConsult,
+                            {
+                              paddingBottom: -16,
+                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
+                            },
+                          ]}
+                        >
                           CHAT WITH DOCTOR
                         </Text>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignSelf: 'flex-end',
-                            paddingBottom: -16,
-                          }}
-                        >
-                          <Text
+                        {day1.diff(day2, 'days') > -1 ? (
+                          <View
                             style={{
-                              ...theme.fonts.IBMPlexSansMedium(12),
-                              color: '#02475b',
-                              opacity: 0.6,
-                              letterSpacing: 0.04,
-                              textAlign: 'right',
-                              paddingBottom: 16,
+                              flexDirection: 'row',
+                              alignSelf: 'flex-end',
+                              paddingBottom: -16,
+                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
                             }}
                           >
-                            {'You can chat with the doctor for '}
-                          </Text>
+                            <Text
+                              style={{
+                                ...theme.fonts.IBMPlexSansMedium(12),
+                                color: '#02475b',
+                                opacity: 0.6,
+                                letterSpacing: 0.04,
+                                textAlign: 'right',
+                                paddingBottom: 16,
+                              }}
+                            >
+                              {'You can chat with the doctor for '}
+                            </Text>
 
-                          <Text
-                            style={{
-                              ...theme.fonts.IBMPlexSansSemiBold(12),
-                              color: '#02475b',
-                              opacity: 0.6,
-                              letterSpacing: 0.04,
-                              textAlign: 'right',
-                              paddingBottom: 16,
-                              marginRight: 15,
-                              paddingLeft: 3,
-                            }}
-                          >
-                            {day1.diff(day2, 'days') == 0
-                              ? 'Today'
-                              : day1.diff(day2, 'days') +
-                                ' more ' +
-                                (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
-                          </Text>
-                        </View>
+                            <Text
+                              style={{
+                                ...theme.fonts.IBMPlexSansSemiBold(12),
+                                color: '#02475b',
+                                opacity: 0.6,
+                                letterSpacing: 0.04,
+                                textAlign: 'right',
+                                paddingBottom: 16,
+                                marginRight: 15,
+                                paddingLeft: 3,
+                              }}
+                            >
+                              {day1.diff(day2, 'days') == 0
+                                ? 'Today'
+                                : day1.diff(day2, 'days') +
+                                  ' more ' +
+                                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
+                            </Text>
+                          </View>
+                        ) : (
+                          <View style={{ height: 16 }} />
+                        )}
                       </TouchableOpacity>
                     </View>
                   )}
@@ -856,25 +896,25 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           unsetloaderDisplay={true}
         ></ProfileList>
         <Text style={styles.descriptionTextStyle}>
-          {consultations.length > 0
-            ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
-              ).length > -1 && selectedTab === tabs[0].title
-              ? 'You have ' +
-                (consultations.filter((item) =>
-                  moment(item.appointmentDateTime, 'DD-MM-YYYY')
-                    .add(6, 'days')
-                    .isSameOrAfter(moment(new Date()))
-                ).length || 'no') +
-                ' upcoming appointment(s)!'
-              : 'You have ' +
-                (consultations.filter((item) =>
-                  moment(item.appointmentDateTime, 'DD-MM-YYYY')
-                    .add(6, 'days')
-                    .isBefore(moment(new Date()))
-                ).length || 'no') +
-                ' past appointment(s)!'
-            : string.consult_room.description}
+          {consultations.filter((item) =>
+            moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
+          ).length > -1 && selectedTab === tabs[0].title
+            ? 'You have ' +
+              (consultations.filter((item) =>
+                moment(new Date(item.appointmentDateTime))
+                  .add(6, 'days')
+                  .startOf('day')
+                  .isSameOrAfter(moment(new Date()).startOf('day'))
+              ).length || 'no') +
+              ' active appointment(s)!'
+            : 'You have ' +
+              (consultations.filter((item) =>
+                moment(new Date(item.appointmentDateTime))
+                  .add(6, 'days')
+                  .startOf('day')
+                  .isBefore(moment(new Date()).startOf('day'))
+              ).length || 'no') +
+              ' past appointment(s)!'}
         </Text>
       </View>
     );

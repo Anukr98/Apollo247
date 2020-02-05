@@ -182,6 +182,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -189,6 +190,33 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    // console.log(generalPhysicians, 'generalPhysicians 1111111');
+
+    if (doctorsList.length === 0) {
+      if (
+        generalPhysicians &&
+        generalPhysicians.data &&
+        props.navigation.getParam('specialityId') === generalPhysicians.id
+      ) {
+        setData(generalPhysicians.data);
+      }
+      if (ent && ent.data && props.navigation.getParam('specialityId') === ent.id) {
+        setData(ent.data);
+      }
+      if (
+        Dermatology &&
+        Dermatology.data &&
+        props.navigation.getParam('specialityId') === Dermatology.id
+      ) {
+        setData(Dermatology.data);
+      }
+      if (Urology && Urology.data && props.navigation.getParam('specialityId') === Urology.id) {
+        setData(Urology.data);
+      }
+    }
+  }, [generalPhysicians, ent, Urology, Dermatology]);
 
   const client = useApolloClient();
   const params = props.navigation.getParam('specialities') || null;
@@ -339,6 +367,44 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   //     });
   // };
 
+  const setData = (data: getDoctorsBySpecialtyAndFilters) => {
+    try {
+      const filterGetData =
+        data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
+      if (filterGetData) {
+        if (filterGetData.doctors) {
+          // const ids = filterGetData.doctors
+          //   ? filterGetData.doctors.map((item) => item && item.id)
+          //   : [];
+          // const prevIds = [...doctorIds];
+          // if (ids !== prevIds) {
+          //   prevIds.push(...ids);
+          //   setdoctorIds(prevIds);
+          //   prevIds.length > 0 && fetchNextSlots(prevIds);
+          // }
+          // prevIds.length === 0 && setshowSpinner(false);
+          setDoctorsList(filterGetData.doctors);
+        }
+
+        if (filterGetData.doctorsAvailability) {
+          setdoctorsAvailability(filterGetData.doctorsAvailability);
+          setshowSpinner(false);
+        }
+        if (filterGetData.specialty) {
+          setspecialities(filterGetData.specialty);
+          setshowSpinner(false);
+        }
+
+        if (filterGetData.doctorsNextAvailability) {
+          setdoctorsNextAvailability(filterGetData.doctorsNextAvailability);
+          setshowSpinner(false);
+        }
+      }
+    } catch (e) {
+      CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
+    }
+  };
+
   const fetchSpecialityFilterData = (
     filterMode: ConsultMode = ConsultMode.BOTH,
     SearchData: filterDataType[] = FilterData,
@@ -457,44 +523,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         console.log(data, 'dataaaaa');
-
-        try {
-          const filterGetData =
-            data && data.getDoctorsBySpecialtyAndFilters
-              ? data.getDoctorsBySpecialtyAndFilters
-              : null;
-          if (filterGetData) {
-            if (filterGetData.doctors) {
-              // const ids = filterGetData.doctors
-              //   ? filterGetData.doctors.map((item) => item && item.id)
-              //   : [];
-              // const prevIds = [...doctorIds];
-              // if (ids !== prevIds) {
-              //   prevIds.push(...ids);
-              //   setdoctorIds(prevIds);
-              //   prevIds.length > 0 && fetchNextSlots(prevIds);
-              // }
-              // prevIds.length === 0 && setshowSpinner(false);
-              setDoctorsList(filterGetData.doctors);
-            }
-
-            if (filterGetData.doctorsAvailability) {
-              setdoctorsAvailability(filterGetData.doctorsAvailability);
-              setshowSpinner(false);
-            }
-            if (filterGetData.specialty) {
-              setspecialities(filterGetData.specialty);
-              setshowSpinner(false);
-            }
-
-            if (filterGetData.doctorsNextAvailability) {
-              setdoctorsNextAvailability(filterGetData.doctorsNextAvailability);
-              setshowSpinner(false);
-            }
-          }
-        } catch (e) {
-          CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
-        }
+        setData(data);
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);

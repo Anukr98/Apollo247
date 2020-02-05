@@ -6,6 +6,7 @@ export interface PrismLabTestResult {
   departmentName: string;
   id: string;
   identifier: string;
+  laboratoryHod: string;
   labTestDate: number;
   labTestFollowUpDate: number;
   labTestName: string;
@@ -13,6 +14,7 @@ export interface PrismLabTestResult {
   labTestRefferedBy: string;
   labTestResults: PrismLabTestResultParameter[];
   labTestSource: string;
+  observation: string;
   orderId: string;
   packageId: string;
   packageName: string;
@@ -25,6 +27,8 @@ export interface PrismLabTestResult {
   testResultFiles: PrismTestResultFile[];
   testSequence: number;
   uhid: string;
+  visitId: string;
+  userId: string;
 }
 export interface PrismLabTestResultParameter {
   parameterName: string;
@@ -33,6 +37,12 @@ export interface PrismLabTestResultParameter {
   range: string;
   outOfRange: boolean;
   resultDate: number;
+  setOutOfRange: boolean;
+  setResultDate: boolean;
+  setUnit: boolean;
+  setParameterName: boolean;
+  setRange: boolean;
+  setResult: boolean;
 }
 export interface PrismTestResultFile {
   id: string;

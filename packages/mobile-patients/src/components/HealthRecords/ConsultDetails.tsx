@@ -64,6 +64,7 @@ import {
   useDiagnosticsCart,
   DiagnosticsCartItem,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -347,13 +348,27 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
+  const { locationDetails } = useAppCommonData();
 
   const onAddTestsToCart = () => {
+    if (!locationDetails) {
+      Alert.alert(
+        'Uh oh.. :(',
+        'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
+      );
+      return;
+    }
     setLoading && setLoading(true);
+
     const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
       []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
+    if (!testPrescription.length) {
+      Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
+      setLoading && setLoading(false);
+      return;
+    }
     const presToAdd = {
       id: caseSheetDetails!.id,
       date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
@@ -364,17 +379,35 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     } as EPrescription;
 
     // Adding tests to DiagnosticsCart
-    addTestsToCart(testPrescription)
-      .then((tests) => {
-        addMultipleTestCartItems!(tests as DiagnosticsCartItem[]);
+    addTestsToCart(testPrescription, client, g(locationDetails, 'city') || '')
+      .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
-        if ((tests as DiagnosticsCartItem[]).length)
+        const unAvailableItemsArray = testPrescription.filter(
+          (item) => !tests.find((val) => val.name == item.itemname!)
+        );
+
+        const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+
+        if (tests.length) {
+          addMultipleTestCartItems!(tests);
           addMultipleTestEPrescriptions!([
             {
               ...presToAdd,
               medicines: (tests as DiagnosticsCartItem[]).map((item) => item.name).join(', '),
             },
           ]);
+        }
+        if (testPrescription.length == unAvailableItemsArray.length) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Unfortunately, we do not have any diagnostic(s) available right now.`
+          );
+        } else if (unAvailableItems) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
+          );
+        }
       })
       .catch((e) => {
         Alert.alert('Uh oh.. :(', e);
@@ -394,57 +427,66 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
+        console.log('Promise.all medPrescription result', { result });
         setLoading && setLoading(false);
-        const medicines = result
-          .map(({ data: { productdp } }, index) => {
-            const medicineDetails = (productdp && productdp[0]) || {};
-            if (medicineDetails.is_in_stock == undefined) {
-              return null;
-            }
-            const _qty =
-              medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
-              medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
-                ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
-                  parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1') *
-                  (medPrescription[index]!.medicineToBeTaken!.length || 1) *
-                  parseFloat(medPrescription[index]!.medicineDosage! || '1')
-                : 1;
-            const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
+        const medicinesAll = result.map(({ data: { productdp } }, index) => {
+          const medicineDetails = (productdp && productdp[0]) || {};
+          if (medicineDetails.id == 0) {
+            return null;
+          }
+          const _qty =
+            medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
+            medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
+              ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
+                parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1') *
+                (medPrescription[index]!.medicineToBeTaken!.length || 1) *
+                parseFloat(medPrescription[index]!.medicineDosage! || '1')
+              : 1;
+          const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
 
-            return {
-              id: medicineDetails!.sku!,
-              mou: medicineDetails.mou,
-              name: medicineDetails!.name,
-              price: medicineDetails!.price,
-              specialPrice: medicineDetails.special_price
-                ? typeof medicineDetails.special_price == 'string'
-                  ? parseInt(medicineDetails.special_price)
-                  : medicineDetails.special_price
-                : undefined,
-              // quantity: parseInt(medPrescription[index]!.medicineDosage!),
-              quantity: qty,
-              prescriptionRequired: medicineDetails.is_prescription_required == '1',
-              thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-              isInStock: !!medicineDetails.is_in_stock,
-            } as ShoppingCartItem;
-          })
-          .filter((item) => (item ? true : false));
+          return {
+            id: medicineDetails!.sku!,
+            mou: medicineDetails.mou,
+            name: medicineDetails!.name,
+            price: medicineDetails!.price,
+            specialPrice: medicineDetails.special_price
+              ? typeof medicineDetails.special_price == 'string'
+                ? parseInt(medicineDetails.special_price)
+                : medicineDetails.special_price
+              : undefined,
+            // quantity: parseInt(medPrescription[index]!.medicineDosage!),
+            quantity: qty,
+            prescriptionRequired: medicineDetails.is_prescription_required == '1',
+            thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+            isInStock: !!medicineDetails.is_in_stock,
+          } as ShoppingCartItem;
+        });
+        const medicines = medicinesAll.filter((item) => !!item);
+        console.log({ medicinesAll });
+        console.log({ medicines });
 
         addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
-        if (medPrescription.length > medicines.length) {
-          const outOfStockCount = medPrescription.length - medicines.length;
-          const outOfStockItems = medPrescription
-            .filter((item) => !medicines.find((val) => val!.id == item!.id))
-            .map((item, idx) => `${idx + 1}. ${item!.medicineName}\n`)
-            .join('');
+        const totalItems = (caseSheetDetails!.medicinePrescription || []).length;
+        // const customItems = medicinesAll.length - medicines.length;
+        const outOfStockItems = medicines.filter((item) => !item!.isInStock).length;
+        const outOfStockMeds = medicines
+          .filter((item) => !item!.isInStock)
+          .map((item) => `${item!.name}`)
+          .join(', ');
 
-          Alert.alert(
-            'Uh oh.. :(',
-            `Below ${outOfStockCount} item(s) are out of stock.\n${outOfStockItems}`
-          );
-          // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        if (outOfStockItems > 0) {
+          const alertMsg =
+            totalItems == outOfStockItems
+              ? 'Unfortunately, we do not have any medicines available right now.'
+              : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
+          Alert.alert('Uh oh.. :(', alertMsg);
         }
+
+        // if (medPrescription.length > medicines.filter((item) => item!.isInStock).length) {
+        //   // const outOfStockCount = medPrescription.length - medicines.length;
+        //   // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        // }
 
         const rxMedicinesCount =
           medicines.length == 0 ? 0 : medicines.filter((item) => item!.prescriptionRequired).length;

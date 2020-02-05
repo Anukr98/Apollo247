@@ -189,6 +189,10 @@ const useStyles = makeStyles((theme: Theme) => {
     patientBubble: {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
+      maxWidth: '100%',
+      '& pre': {
+        whiteSpace: 'pre-wrap',
+      },
     },
     callStatusMessage: {
       paddingTop: 12,
@@ -328,6 +332,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       color: '#02475b',
     },
+    phrMsg: {
+      fontFamily: 'IBM Plex Sans,sans-serif',
+    },
   };
 });
 
@@ -340,6 +347,7 @@ interface MessagesObjectProps {
   url: string;
   messageDate: string;
   sentBy: string;
+  type: string;
 }
 
 interface ConsultRoomProps {
@@ -681,11 +689,19 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <div
                   className={classes.imageUpload}
                   onClick={() => {
-                    setModalOpen(true);
-                    setImgPrevUrl(rowData.url);
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }
                   }}
                 >
-                  <img src={rowData.url} alt={rowData.url} />
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
+                  ) : (
+                    <a href={rowData.url}>
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}
@@ -776,19 +792,31 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               {rowData.message === documentUpload ? (
                 <div
                   onClick={() => {
-                    setModalOpen(true);
-                    setImgPrevUrl(rowData.url);
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }
                   }}
                   className={classes.imageUpload}
                 >
-                  <img src={rowData.url} alt={rowData.url} />
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
+                  ) : (
+                    <a href={rowData.url} target="_blank">
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}
                 </div>
               ) : (
                 <>
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.type === 'PHR' ? (
+                    <pre className={classes.phrMsg}>{getAutomatedMessage(rowData)}</pre>
+                  ) : (
+                    <span>{getAutomatedMessage(rowData)}</span>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}

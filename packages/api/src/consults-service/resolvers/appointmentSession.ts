@@ -284,6 +284,9 @@ const createAppointmentSession: Resolver<
       appointmentId: createAppointmentSessionInput.appointmentId,
       notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
     };
+    if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+      pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+    }
     const notificationResult = await sendNotification(
       pushNotificationInput,
       patientsDb,
@@ -338,6 +341,9 @@ const createAppointmentSession: Resolver<
     appointmentId: createAppointmentSessionInput.appointmentId,
     notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
   };
+  if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+    pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+  }
   const notificationResult = await sendNotification(
     pushNotificationInput,
     patientsDb,

@@ -319,6 +319,22 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  //get patient all appointments
+  getPatientAllAppointments(patientId: string, offset?: number, limit?: number) {
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+      })
+      .offset(offset)
+      .limit(limit)
+      .orderBy('appointment.appointmentDateTime', 'DESC')
+      .getMany();
+  }
+
   async findByDoctorIdsAndDateTimes(
     doctorIds: string[],
     utcAppointmentDateTimes: AppointmentDateTime[]
@@ -395,16 +411,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
 
-    //get upcoming appointments from current time.
-    /*const upcomingAppts = await this.find({
-      where: {
-        patientId,
-        appointmentDateTime: MoreThan(new Date()),
-        status: Not(STATUS.CANCELLED),
-      },
-      order: { appointmentDateTime: 'ASC' },
-    });*/
-
     const upcomingAppts = await this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
@@ -415,16 +421,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
-
-    //get past appointments till one week
-    /*const weekPastAppts = await this.find({
-      where: {
-        patientId,
-        appointmentDateTime: Between(weekPastDateUTC, new Date()),
-        status: Not(STATUS.CANCELLED),
-      },
-      order: { appointmentDateTime: 'DESC' },
-    });*/
 
     const weekPastAppts = await this.createQueryBuilder('appointment')
       .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
@@ -618,7 +614,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     appointmentType: string
   ) {
     const weekDay = format(selectedDate, 'EEEE').toUpperCase();
-    //console.log('entered here', selDate, weekDay);
+
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     let docConsultHrs: ConsultHours[];
     if (appointmentType == 'ONLINE') {
@@ -633,14 +629,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const currentStartDate = new Date(inputStartDate + 'T18:30');
     const currentEndDate = new Date(format(selectedDate, 'yyyy-MM-dd').toString() + 'T18:29');
     let consultBuffer = 0;
-    /*const doctorAppointments1 = await this.find({
-      where: {
-        doctorId,
-        appointmentDateTime: Between(currentStartDate, currentEndDate),
-        status: Not(STATUS.CANCELLED),
-      },
-      order: { appointmentDateTime: 'ASC' },
-    });*/
+
     const doctorAppointments = await this.createQueryBuilder('appointment')
       .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
         fromDate: currentStartDate,
@@ -651,6 +640,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
       })
       .getMany();
+
+    //calculating doctor consult hours slot intervals
     if (docConsultHrs && docConsultHrs.length > 0) {
       docConsultHrs.map((docConsultHr) => {
         //get the slots of the day first
@@ -708,6 +699,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
         console.log(availableSlotsReturn);
       });
+
+      //removing appt booked slots
       if (doctorAppointments && doctorAppointments.length > 0) {
         doctorAppointments.map((doctorAppointment) => {
           const apptDt = format(doctorAppointment.appointmentDateTime, 'yyyy-MM-dd');
@@ -723,17 +716,23 @@ export class AppointmentRepository extends Repository<Appointment> {
           }
         });
       }
+
+      //get doctor blocked slots
       const doctorBblockedSlots = await this.getDoctorBlockedSlots(
         doctorId,
         selectedDate,
         doctorsDb,
         availableSlots
       );
+
+      //removing blocked slots
       if (doctorBblockedSlots.length > 0) {
         availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
       }
       let finalSlot = '';
       let foundFlag = 0;
+
+      //getting the available slot
       availableSlots.map((slot) => {
         const slotDate = new Date(slot);
 
@@ -744,9 +743,11 @@ export class AppointmentRepository extends Repository<Appointment> {
           foundFlag = 1;
         }
       });
+
       //const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
       //doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
-      return finalSlot;
+
+      return finalSlot; //returning doctors next available time
     } else {
       return '';
     }
@@ -951,7 +952,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
-
+    console.log(blockedSlots, 'blocked slots');
     if (timeSlot.length > 0) {
       //const duration = Math.floor(60 / timeSlot[0].consultDuration);
       const duration = parseFloat((60 / timeSlot[0].consultDuration).toFixed(1));
@@ -1079,6 +1080,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       take: limit,
       relations: ['caseSheet'],
     });
+  }
+
+  getAllAppointmentsByDates(fromDate: Date, toDate: Date) {
+    const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.bookingDate Between :fromDate AND :toDate)', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .getMany();
   }
 
   getAllAppointmentsWithOutLimit(fromDate: Date, toDate: Date) {
@@ -1379,7 +1391,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     return endTime;
   }
 
-  getPatientFutureAppointmentsCount(patientId: string, maxConsultationMinutes: number) {
+  getPatientFutureAppointmentsCount(patientId: string) {
     return this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :apptDate', {
         apptDate: new Date(),

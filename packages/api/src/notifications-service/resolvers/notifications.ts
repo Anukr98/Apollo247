@@ -13,7 +13,6 @@ import { PatientDeviceTokenRepository } from 'profiles-service/repositories/pati
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { addMilliseconds, format, differenceInHours, differenceInMinutes } from 'date-fns';
 import path from 'path';
@@ -168,20 +167,21 @@ export async function sendCallsNotification(
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
   if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-  let doctorDetails;
+
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
-    const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-    const queueDetails = await consultQueueRepo.findByAppointmentId(
-      pushNotificationInput.appointmentId
-    );
-    if (queueDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-    doctorDetails = await doctorRepo.findById(queueDetails.doctorId);
-  } else {
-    doctorDetails = await doctorRepo.findById(appointment.doctorId);
-  }
+  // if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
+  //   const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+  //   const queueDetails = await consultQueueRepo.findByAppointmentId(
+  //     pushNotificationInput.appointmentId
+  //   );
+  //   if (queueDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  //   doctorDetails = await doctorRepo.findById(queueDetails.doctorId);
+  // } else {
+  //   doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  // }
+  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -204,7 +204,14 @@ export async function sendCallsNotification(
   let notificationBody: string = '';
   notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
   notificationBody = ApiConstants.AVCALL_APPOINTMENT_BODY;
-  if (callType == APPT_CALL_TYPE.CHAT) {
+  if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
+    if (callType == APPT_CALL_TYPE.CHAT) {
+      notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
+    } else {
+      notificationBody = ApiConstants.JUNIOR_AVCALL_APPOINTMENT_BODY;
+    }
+  }
+  if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
   }
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
@@ -409,10 +416,6 @@ export async function sendNotification(
       patientDetails.firstName
     );
     notificationBody = notificationBody.replace(
-      '{1}',
-      doctorDetails.firstName + ' ' + doctorDetails.lastName
-    );
-    notificationBody = notificationBody.replace(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
@@ -556,6 +559,25 @@ export async function sendNotification(
     };
   }
 
+  if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Appointment_Canceled',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+        doctorType: 'SENIOR',
+      },
+    };
+  }
+
   if (
     pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT ||
     pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
@@ -573,6 +595,26 @@ export async function sendNotification(
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
+        doctorType: 'SENIOR',
+      },
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.INITIATE_JUNIOR_APPT_SESSION) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'chat_room',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+        doctorType: 'JUNIOR',
       },
     };
   }

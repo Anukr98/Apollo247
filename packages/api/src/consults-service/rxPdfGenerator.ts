@@ -392,18 +392,18 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   const renderFooter = () => {
     drawHorizontalDivider(doc.page.height - 80);
     const disclaimerText =
-      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital.';
+      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital. This is an electronically generated prescription and will not require a doctor signature.';
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(10)
       .fillColor('#000000')
       .opacity(0.5)
-      .text(disclaimerText, margin, doc.page.height - 70, { align: 'left' });
+      .text(disclaimerText, margin, doc.page.height - 80, { align: 'left' });
     return doc;
   };
 
   const renderSymptoms = (prescriptions: RxPdfData['caseSheetSymptoms']) => {
-    renderSectionHeader('Chief Complaints', headerEndY + 100);
+    renderSectionHeader('Chief Complaints', headerEndY + 150);
 
     prescriptions.forEach((prescription, index) => {
       const textArray = [];
@@ -442,7 +442,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
-    renderSectionHeader('Medication Prescribed', headerEndY + 100);
+    renderSectionHeader('Medication Prescribed', headerEndY + 150);
 
     prescriptions.forEach((prescription, index) => {
       // const medicineTimings = prescripti
@@ -611,6 +611,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       if (doctorInfo.signature) {
         const request = require('sync-request');
         const res = request('GET', doctorInfo.signature);
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
         doc.image(res.body, margin + 15, doc.y, { height: 72, width: 200 });
         doc.moveDown(0.5);
       }
@@ -619,6 +622,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
+
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
 
       doc
         .opacity(1)

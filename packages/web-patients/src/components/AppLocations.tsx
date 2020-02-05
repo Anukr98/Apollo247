@@ -30,6 +30,9 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       maxWidth: 210,
       [theme.breakpoints.down('xs')]: {
+        maxWidth: 180,
+      },
+      [theme.breakpoints.down(500)]: {
         maxWidth: 150,
       },
     },
@@ -54,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.down(370)]: {
+      [theme.breakpoints.down(390)]: {
         display: 'none',
       },
     },

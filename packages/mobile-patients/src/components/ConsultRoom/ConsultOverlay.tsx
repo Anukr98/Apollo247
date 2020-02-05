@@ -42,6 +42,8 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useAppCommonData } from '../AppCommonDataProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -84,6 +86,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
   const { showAphAlert } = useUIElements();
+  const { VirtualConsultationFee } = useAppCommonData();
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -146,6 +149,14 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
     };
+
+    const price =
+      VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
+      Number(VirtualConsultationFee) > 0
+        ? VirtualConsultationFee
+        : props.doctor!.onlineConsultationFees;
+
+    console.log('price', price);
     client
       .mutate<bookAppointment>({
         mutation: BOOK_APPOINTMENT,
@@ -161,7 +172,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
           price:
             tabs[0].title === selectedTab
-              ? 1 //props.doctor!.onlineConsultationFees
+              ? price //1 //props.doctor!.onlineConsultationFees
               : props.doctor!.physicalConsultationFees,
         });
       })
@@ -264,11 +275,38 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             tabs[0].title === selectedTab ? (
               <Text>
                 PAY{' '}
-                <Text style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}>
-                  (Rs. 999)
-                </Text>{' '}
-                Rs. 1
-              </Text> //props.doctor!.onlineConsultationFees
+                {Number(VirtualConsultationFee) <= 0 ||
+                VirtualConsultationFee === props.doctor!.onlineConsultationFees ? (
+                  <Text>{`Rs. ${props.doctor!.onlineConsultationFees}`}</Text>
+                ) : (
+                  <>
+                    <Text
+                      style={{
+                        textDecorationLine: 'line-through',
+                        textDecorationStyle: 'solid',
+                      }}
+                    >
+                      {`(Rs. ${props.doctor!.onlineConsultationFees})`}
+                    </Text>
+                    <Text> Rs. {VirtualConsultationFee}</Text>
+                  </>
+                )}
+                {/* {VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
+                  Number(VirtualConsultationFee) > 0 && (
+                    <>
+                      <Text
+                        style={{
+                          textDecorationLine: 'line-through',
+                          textDecorationStyle: 'solid',
+                        }}
+                      >
+                        {`(Rs. ${props.doctor!.onlineConsultationFees})`}
+                      </Text>
+                      <Text> </Text>
+                    </>
+                  )}
+                Rs. {VirtualConsultationFee} */}
+              </Text>
             ) : (
               `PAY Rs. ${props.doctor!.physicalConsultationFees}`
             )
@@ -290,7 +328,27 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       </StickyBottomComponent>
     );
   };
-
+  const renderDisclamer = () => {
+    return (
+      <View
+        style={{
+          margin: 20,
+          padding: 12,
+          borderRadius: 10,
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+        }}
+      >
+        <Text
+          style={[
+            theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 16, 0),
+            { textAlign: 'justify' },
+          ]}
+        >
+          {string.common.DisclaimerText}
+        </Text>
+      </View>
+    );
+  };
   return (
     <View
       style={{
@@ -335,7 +393,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         >
           <View
             style={{
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              backgroundColor: '#f7f8f5',
               marginTop: 16,
               width: width - 40,
               height: 'auto',
@@ -362,24 +420,27 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             />
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab === tabs[0].title ? (
-                <ConsultOnline
-                  doctor={props.doctor}
-                  date={date}
-                  setDate={(date) => {
-                    setDate(date);
-                  }}
-                  nextAvailableSlot={nextAvailableSlot}
-                  setNextAvailableSlot={setNextAvailableSlot}
-                  isConsultOnline={isConsultOnline}
-                  setisConsultOnline={setisConsultOnline}
-                  setavailableInMin={setavailableInMin}
-                  availableInMin={availableInMin}
-                  setselectedTimeSlot={setselectedTimeSlot}
-                  selectedTimeSlot={selectedTimeSlot}
-                  setshowSpinner={setshowSpinner}
-                  scrollToSlots={scrollToSlots}
-                  setshowOfflinePopup={setshowOfflinePopup}
-                />
+                <>
+                  <ConsultOnline
+                    doctor={props.doctor}
+                    date={date}
+                    setDate={(date) => {
+                      setDate(date);
+                    }}
+                    nextAvailableSlot={nextAvailableSlot}
+                    setNextAvailableSlot={setNextAvailableSlot}
+                    isConsultOnline={isConsultOnline}
+                    setisConsultOnline={setisConsultOnline}
+                    setavailableInMin={setavailableInMin}
+                    availableInMin={availableInMin}
+                    setselectedTimeSlot={setselectedTimeSlot}
+                    selectedTimeSlot={selectedTimeSlot}
+                    setshowSpinner={setshowSpinner}
+                    scrollToSlots={scrollToSlots}
+                    setshowOfflinePopup={setshowOfflinePopup}
+                  />
+                  {renderDisclamer()}
+                </>
               ) : (
                 <ConsultPhysical
                   doctor={props.doctor}
@@ -400,7 +461,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
-              <View style={{ height: 96 }} />
+              <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
           </View>

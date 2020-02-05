@@ -130,6 +130,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       fireBaseFCM();
       signOut();
       setLoading && setLoading(false);
+      firebase.auth().appVerificationDisabledForTesting = true;
     } catch (error) {
       CommonBugFender('Login_useEffect_try', error);
     }
@@ -180,6 +181,30 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     console.log('didmout');
+    db.ref('ApolloPatients/')
+      .push({
+        mobileNumber: '',
+        mobileNumberEntered: '',
+        mobileNumberSuccess: '',
+        OTPEntered: '',
+        ResendOTP: '',
+        wrongOTP: '',
+        OTPEnteredSuccess: '',
+        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
+        mobileNumberFailed: '',
+        OTPFailedReason: '',
+        FirebaseTokenSuccess: '',
+        patientApiCallSuccess: '',
+      })
+      .then((data: any) => {
+        //success callback
+        // console.log('data ', data);
+        dbChildKey = data.path.pieces_[1];
+      })
+      .catch((error: Error) => {
+        //error callback
+        console.log('error ', error);
+      });
     // Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
 
@@ -243,26 +268,10 @@ export const Login: React.FC<LoginProps> = (props) => {
     CommonLogEvent(AppRoutes.Login, 'Login clicked');
 
     db.ref('ApolloPatients/')
-      .push({
+      .child(dbChildKey)
+      .update({
         mobileNumber: phoneNumber,
         mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-        mobileNumberSuccess: '',
-        OTPEntered: '',
-        ResendOTP: '',
-        wrongOTP: '',
-        OTPEnteredSuccess: '',
-        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
-        mobileNumberFailed: '',
-        OTPFailedReason: '',
-      })
-      .then((data: any) => {
-        //success callback
-        // console.log('data ', data);
-        dbChildKey = data.path.pieces_[1];
-      })
-      .catch((error: Error) => {
-        //error callback
-        console.log('error ', error);
       });
 
     Keyboard.dismiss();
@@ -352,7 +361,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <WebView
             source={{
-              uri: 'https://www.apollo247.com/TnC.html',
+              uri: 'https://www.apollo247.com/termsandconditions.html',
             }}
             style={{
               flex: 1,
@@ -448,7 +457,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   letterSpacing: 0,
                 }}
               >
-                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
               </Text>
             </HyperLink>
           </View>

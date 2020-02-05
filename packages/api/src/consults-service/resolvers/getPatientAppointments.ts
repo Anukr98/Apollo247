@@ -6,7 +6,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -42,6 +41,10 @@ export const getPatinetAppointmentsTypeDefs = gql`
     patinetAppointments: [PatinetAppointments!]
   }
 
+  type PatientAllAppointmentsResult {
+    appointments: [PatinetAppointments!]
+  }
+
   type AppointmentsCount {
     consultsCount: Int
   }
@@ -51,11 +54,20 @@ export const getPatinetAppointmentsTypeDefs = gql`
       patientAppointmentsInput: PatientAppointmentsInput
     ): PatientAppointmentsResult!
     getPatientFutureAppointmentCount(patientId: String): AppointmentsCount
+    getPatientAllAppointments(
+      patientId: String
+      offset: Int
+      limit: Int
+    ): PatientAllAppointmentsResult!
   }
 `;
 
 type PatientAppointmentsResult = {
   patinetAppointments: PatinetAppointments[] | null;
+};
+
+type PatientAllAppointmentsResult = {
+  appointments: PatinetAppointments[] | null;
 };
 
 type PatientAppointmentsInput = {
@@ -116,23 +128,26 @@ const getPatientFutureAppointmentCount: Resolver<
 
   if (patientData.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  //get max consult duration
-  let maxConsultationMinutes = 0;
-  const consultRepository = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
-  const consultationRecord = await consultRepository.getMaxConsultationMinutes();
-  if (consultationRecord) {
-    maxConsultationMinutes = consultationRecord.maxconsultduration;
-  }
-
-  let consultsCount = 0;
-
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  consultsCount = await appointmentRepo.getPatientFutureAppointmentsCount(
+  const conultsList = await appointmentRepo.getPatinetUpcomingAppointments(args.patientId);
+
+  return { consultsCount: conultsList.length };
+};
+
+const getPatientAllAppointments: Resolver<
+  null,
+  { patientId: string; offset: number; limit: number },
+  ConsultServiceContext,
+  PatientAllAppointmentsResult
+> = async (parent, args, { consultsDb, doctorsDb }) => {
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointments = await appts.getPatientAllAppointments(
     args.patientId,
-    maxConsultationMinutes
+    args.offset,
+    args.limit
   );
 
-  return { consultsCount };
+  return { appointments };
 };
 
 export const getPatinetAppointmentsResolvers = {
@@ -144,5 +159,6 @@ export const getPatinetAppointmentsResolvers = {
   Query: {
     getPatinetAppointments,
     getPatientFutureAppointmentCount,
+    getPatientAllAppointments,
   },
 };

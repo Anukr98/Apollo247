@@ -24,7 +24,7 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
         fun show(vitaToken: String, UHID: String, userName: String, consultSource: String,buildSpecify:String) {
             System.out.println("In SHOW......" + vitaToken+" "+buildSpecify);
             System.out.println("In UHID......" + UHID + " "+userName+ " "+consultSource);
-            val T2DiabetesAndHypertensionProgram = "t2diabetesandhypertension"
+            val T2DiabetesAndHypertensionProgram = "diabetes_24_7"
 //            Timber.plant(Timber.DebugTree())
             if(buildSpecify=="QA"||buildSpecify=="DEV"){
                 System.out.println("buildSpecify......" + buildSpecify);

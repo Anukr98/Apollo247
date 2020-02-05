@@ -12,6 +12,7 @@ import {
   GET_PATIENT_PAST_SEARCHES,
   SAVE_SEARCH,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+  DOCTOR_SPECIALITY_BY_FILTERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
@@ -57,6 +58,8 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
+import { getDoctorsBySpecialtyAndFilters } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -159,9 +162,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   >([]);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [isSearching, setisSearching] = useState<boolean>(false);
+  const [showPastSearchSpinner, setshowPastSearchSpinner] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const {
+    setGeneralPhysicians,
+    locationDetails,
+    setUrology,
+    setDermatology,
+    setEnt,
+  } = useAppCommonData();
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -199,6 +211,83 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   //     });
   //   return [];
   // };
+
+  const fetchDoctorData = (id: string, speciality: string) => {
+    let geolocation = {} as any;
+    if (locationDetails) {
+      geolocation = {
+        geolocation: {
+          latitude: parseFloat(locationDetails.latitude ? locationDetails.latitude.toString() : ''),
+          longitude: parseFloat(
+            locationDetails.longitude ? locationDetails.longitude.toString() : ''
+          ),
+        },
+      };
+    }
+
+    console.log(geolocation, 'geolocation');
+
+    const FilterInput = {
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      specialty: id,
+      ...geolocation,
+    };
+    console.log(FilterInput, 'FilterInput1111');
+
+    client
+      .query<getDoctorsBySpecialtyAndFilters>({
+        query: DOCTOR_SPECIALITY_BY_FILTERS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          filterInput: FilterInput,
+        },
+      })
+      .then(({ data }) => {
+        console.log(data, 'dataaaaa');
+        if (speciality === 'General Physician/ Internal Medicine')
+          setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
+        else if (speciality === 'Urology') {
+          setUrology && setUrology({ id: id, data: data });
+        } else if (speciality === 'ENT') {
+          setEnt && setEnt({ id: id, data: data });
+        } else if (speciality === 'Dermatology') {
+          setDermatology && setDermatology({ id: id, data: data });
+        }
+
+        // try {
+        //   const filterGetData =
+        //     data && data.getDoctorsBySpecialtyAndFilters
+        //       ? data.getDoctorsBySpecialtyAndFilters
+        //       : null;
+        //   if (filterGetData) {
+        //     if (filterGetData.doctors) {
+        //       // setDoctorsList(filterGetData.doctors);
+        //     }
+
+        //     if (filterGetData.doctorsAvailability) {
+        //       // setdoctorsAvailability(filterGetData.doctorsAvailability);
+        //       setshowSpinner(false);
+        //     }
+        //     if (filterGetData.specialty) {
+        //       // setspecialities(filterGetData.specialty);
+        //       setshowSpinner(false);
+        //     }
+
+        //     if (filterGetData.doctorsNextAvailability) {
+        //       // setdoctorsNextAvailability(filterGetData.doctorsNextAvailability);
+        //       setshowSpinner(false);
+        //     }
+        //   }
+        // } catch (e) {
+        //   CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
+        // }
+      })
+      .catch((e) => {
+        // CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
+        // setshowSpinner(false);
+        console.log('Error 11111111', e);
+      });
+  };
 
   const fetchSearchData = (searchTextString: string = searchText) => {
     if (searchTextString.length > 2) {
@@ -256,7 +345,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const fetchSpecialities = () => {
     console.log('fetchSpecialities');
-
+    setshowSpinner(true);
     client
       .query<getAllSpecialties>({
         query: GET_ALL_SPECIALTIES,
@@ -271,6 +360,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             data.getAllSpecialties.length
           ) {
             setSpecialities(data.getAllSpecialties);
+            setLocalData(data.getAllSpecialties);
             setshowSpinner(false);
             AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
             AsyncStorage.setItem('APICalledDate', todayDate);
@@ -287,6 +377,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const fetchPastSearches = () => {
+    setshowPastSearchSpinner(true);
     client
       .query<getPatientPastSearches>({
         query: GET_PATIENT_PAST_SEARCHES,
@@ -297,20 +388,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       })
       .then(({ data }) => {
         try {
+          setshowPastSearchSpinner(false);
           if (data && data.getPatientPastSearches) {
-            // console.log('fetchPastSearches', data.getPatientPastSearches);
+            console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }
-          callSpecialityAPI();
           !!searchText && fetchSearchData();
         } catch (e) {
           CommonBugFender('DoctorSearch_fetchPastSearches_try', e);
         }
       })
       .catch((e) => {
+        setshowPastSearchSpinner(false);
         CommonBugFender('DoctorSearch_fetchPastSearches', e);
         console.log('Error occured', e);
-        callSpecialityAPI();
         !!searchText && fetchSearchData();
       });
     // .finally(() => {
@@ -329,11 +420,34 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     isToday = checkDate ? checkDate === todayDate : false;
     const specialistData = await AsyncStorage.getItem('SpecialistData');
     if (isToday && specialistData && specialistData.length) {
-      specialistData && setSpecialities(JSON.parse(specialistData));
+      if (specialistData) {
+        setSpecialities(JSON.parse(specialistData));
+        setLocalData(JSON.parse(specialistData));
+        // fetchDoctorData(JSON.parse(specialistData)[0].id);
+      }
       setshowSpinner(false);
     } else {
       fetchSpecialities();
     }
+  };
+
+  const setLocalData = (data) => {
+    const Physicians = data.filter(
+      (item) => item.name.toLowerCase() === 'General Physician/ Internal Medicine'.toLowerCase()
+    );
+    Physicians.length > 0 &&
+      fetchDoctorData(Physicians[0].id, 'General Physician/ Internal Medicine');
+
+    const Ent = data.filter((item) => item.name.toLowerCase() === 'ENT'.toLowerCase());
+    Ent.length > 0 && fetchDoctorData(Ent[0].id, 'ENT');
+
+    const Dermatology = data.filter(
+      (item) => item.name.toLowerCase() === 'Dermatology'.toLowerCase()
+    );
+    Dermatology.length > 0 && fetchDoctorData(Dermatology[0].id, 'Dermatology');
+
+    const Urology = data.filter((item) => item.name.toLowerCase() === 'Urology'.toLowerCase());
+    Urology.length > 0 && fetchDoctorData(Urology[0].id, 'Urology');
   };
 
   useEffect(() => {
@@ -341,6 +455,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .then((status) => {
         if (status) {
           fetchPastSearches();
+          callSpecialityAPI();
         } else {
           setshowSpinner(false);
           setshowOfflinePopup(true);
@@ -474,7 +589,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderPastSearch = () => {
-    if (pastSearch && PastSearches.length > 0) {
+    if (showPastSearchSpinner) {
+      return (
+        <View style={{ height: 50, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="small" />
+        </View>
+      );
+    } else if (pastSearch && PastSearches.length > 0) {
       return (
         <View>
           <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
@@ -878,7 +999,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 doctorsList.length === 1 &&
                 otherDoctors &&
                 renderOtherSUggestedDoctors()}
-              {renderHelpView()}
+              {!showSpinner && renderHelpView()}
             </ScrollView>
           )
         ) : null}

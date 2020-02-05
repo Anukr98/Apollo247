@@ -66,7 +66,7 @@ const cancelMedicineOrder: Resolver<
 
   log(
     'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${cancelOrderUrl}`,
+    `EXTERNAL_API_CALL_CANCEL_MED: ${cancelOrderUrl}`,
     'cancelMedicineOrder()->API_CALL_STARTING',
     '',
     ''

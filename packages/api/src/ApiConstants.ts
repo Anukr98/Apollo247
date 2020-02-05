@@ -15,7 +15,9 @@ export enum ApiConstants {
 
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
-  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the consult room',
+  CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  JUNIOR_CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  JUNIOR_AVCALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting for your call response. Please proceed to the consult room",
   AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
   //appointment reminder 15
@@ -37,7 +39,7 @@ export enum ApiConstants {
 
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
-  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) {1} from Dr. {2}'s team is waiting to start your consultation prep. Please proceed to the Consult Room",
+  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
 
   //initiate senior doctor session
   SENIOR_APPT_SESSION_TITLE = 'Doctor has joined the consult room',
@@ -116,7 +118,7 @@ export enum ApiConstants {
   PRISM_STATIC_MOBILE_NUMBER = '8019677178',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
-  MAX_DOCTOR_AVAILABILITY_CHECK_DAYS = 7,
+  MAX_DOCTOR_AVAILABILITY_CHECK_DAYS = 2,
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
@@ -132,6 +134,7 @@ export enum ApiConstants {
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
   DOCTORS_SEARCH_API_LOG_FILE = '/debug-logs/doctors-search.log',
   OTP_VERIFICATION_API_LOG_FILE = '/debug-logs/otp-verification.log',
+  GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -178,4 +181,23 @@ export enum ApiConstants {
   MEDMANTRA_PAYTYPE = 'NETBANKING',
 
   OPENTOK_URL = 'https://apolloaudiovideosprod.blob.core.windows.net/audiovideos/46422952/{1}/archive.mp4?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-12-24T10%3A52%3A03Z&se=2020-01-28T10%3A52%3A00Z&sig=QrKoK7bAHTMzz3lLyxDRVcQXauhM9ySvgQDJHeLhmFc%3D',
+
+  CONVERT_VIDEO_MSG = '^^convert`video^^',
+  CONVERT_AUDIO_MSG = '^^convert`audio^^',
+  VIDEO_CALL_MSG = '^^callme`video^^',
+  AUDIO_CALL_MSG = '^^callme`audio^^',
+  STOP_CALL_MSG = '^^callme`stop^^',
+  ACCEPT_CALL_MSG = '^^callme`accept^^',
+  START_CONSULT = '^^#startconsult',
+  START_CONSULT_JR = '^^#startconsultJr',
+  STOP_CONSULT = '^^#stopconsult',
+  TRANSFER_CONSULT = '^^#transferconsult',
+  RESCHEDULE_CONSULT = '^^#rescheduleconsult',
+  FOLLOW_UP_CONSULT = '^^#followupconsult',
+  ASSETS_DIR = '/apollo-hospitals/packages/api/src/assets',
+  LOCAL = 'local',
+  CHAT_TRANSCRIPTS_PATH = '/chat_transcripts',
+  JUNIOR_DOC_TXT = 'Junior doctor: ',
+  SENIOR_DOC_TXT = 'Senior doctor: ',
+  PATIENT_TXT = 'Patient: ',
 }

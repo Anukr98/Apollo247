@@ -142,6 +142,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
     },
+    none: {
+      display: 'none',
+    },
   };
 });
 
@@ -292,7 +295,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
               key={item.key}
               expanded={item.state}
               onChange={handlePanelExpansion(item.key)}
-              className={classes.expandIcon}
+              className={`${classes.expandIcon} ${item.key === 'followup' && classes.none}`}
             >
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="h3">{item.value}</Typography>

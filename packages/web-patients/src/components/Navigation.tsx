@@ -58,6 +58,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >span': {
         position: 'relative',
       },
+      '&:focus': {
+        outline: 'none',
+      },
     },
     itemCount: {
       width: 14,

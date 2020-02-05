@@ -121,6 +121,10 @@ const SaveMedicineOrderInvoice: Resolver<
     throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
   }
 
+  if (medicineOrders.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+
   const orderInvoiceAttrs: Partial<MedicineOrderInvoice> = {
     orderNo: medicineOrderInvoiceInput.orderNo,
     otp: medicineOrderInvoiceInput.otp,

@@ -436,7 +436,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                 <span>
                   {`hello  ${currentPatient &&
                     currentPatient!.displayName &&
-                    currentPatient!.displayName.toLowerCase()} :)`}
+                    currentPatient!.displayName} :)`}
                 </span>
               </Typography>
               <p>here are all your patients</p>

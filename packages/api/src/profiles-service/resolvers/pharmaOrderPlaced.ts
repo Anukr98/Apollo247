@@ -49,6 +49,10 @@ const saveOrderPlacedStatus: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
+  if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
     medicineOrders: orderDetails,
