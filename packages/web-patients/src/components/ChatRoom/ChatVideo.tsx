@@ -238,14 +238,6 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const patientProfile = currentPatient && currentPatient.photoUrl;
 
   const { doctorDetails, videoCall } = props;
-  const doctorProfileImage =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.photoUrl
-      : '';
-  const displayName =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.displayName
-      : '';
 
   return (
     <div className={classes.root}>
@@ -258,7 +250,9 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
           <div className={classes.timerCls}>
             {doctorDetails && doctorDetails.getDoctorDetailsById && (
               <div className={classes.doctorName}>
-                {`Dr. ${displayName}` + "'s" + ' team has joined'}
+                {`${doctorDetails && doctorDetails.getDoctorDetailsById
+                  ? doctorDetails.getDoctorDetailsById.displayName
+                  : ''}` + "'s" + ' team has joined'}
               </div>
             )}
             {/* {!props.showVideoChat && (
