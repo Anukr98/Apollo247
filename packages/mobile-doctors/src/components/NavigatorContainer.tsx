@@ -44,6 +44,9 @@ import { Sample } from '@aph/mobile-doctors/src/components/Sample';
 import { PatientDetailsPage } from '@aph/mobile-doctors/src/components/PatientDetailsPage';
 import { MedicineAddScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineAddScreen';
 import { CaseSheetDetails } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/CaseSheetDetails';
+import { SmartPrescription } from '@aph/mobile-doctors/src/components/Account/SmartPrescription';
+import { MyStats } from '@aph/mobile-doctors/src/components/Account/MyStats';
+import { PaymentHistory } from '@aph/mobile-doctors/src/components/Account/PaymentHistory';
 import { BlockHomePage } from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage';
 
 export enum AppRoutes {
@@ -88,6 +91,9 @@ export enum AppRoutes {
   PatientDetailsPage = 'PatientDetailsPage',
   MedicineAddScreen = 'MedicineAddScreen',
   CaseSheetDetails = 'CaseSheetDetails',
+  SmartPrescription = 'SmartPrescription',
+  MyStats = 'MyStats',
+  PaymentHistory = 'PaymentHistory',
   BlockHomePage = 'BlockHomePage',
 }
 
@@ -221,6 +227,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CaseSheetDetails]: {
     screen: CaseSheetDetails,
+  },
+  [AppRoutes.SmartPrescription]: {
+    screen: SmartPrescription,
+  },
+  [AppRoutes.MyStats]: {
+    screen: MyStats,
+  },
+  [AppRoutes.PaymentHistory]: {
+    screen: PaymentHistory,
   },
   [AppRoutes.BlockHomePage]: {
     screen: BlockHomePage,

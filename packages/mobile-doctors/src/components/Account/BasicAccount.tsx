@@ -126,13 +126,20 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const renderMyStatsView = () => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <SmartPrescription />
-          <Text style={styles.headingText}>My Stats</Text>
-          <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
-            <RightIcon />
+        <TouchableOpacity
+          onPress={() => {
+            console.log('MyStats ');
+            props.navigation.navigate(AppRoutes.MyStats);
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <SmartPrescription />
+            <Text style={styles.headingText}>My Stats</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -197,16 +204,30 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
-  const renderSmartPrescriptionView = () => {
+  const renderSmartPrescriptionView = (data: GetDoctorDetails_getDoctorDetails) => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+        {/* <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
           <SmartPrescription />
           <Text style={styles.headingText}>Smart Prescription</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />
           </View>
-        </View>
+        </View> */}
+        <TouchableOpacity
+          onPress={() => {
+            console.log('smart prescr', data);
+            props.navigation.navigate(AppRoutes.SmartPrescription, { ProfileData: data });
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <SmartPrescription />
+            <Text style={styles.headingText}>Smart Prescription</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -273,7 +294,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                     {renderMyProfileView(doctorDetails)}
                     {renderAvailabilityView(doctorDetails)}
                     {renderFeesView(doctorDetails)}
-                    {renderSmartPrescriptionView()}
+                    {renderSmartPrescriptionView(doctorDetails)}
                     {renderSettingsView()}
                   </View>
                 </>

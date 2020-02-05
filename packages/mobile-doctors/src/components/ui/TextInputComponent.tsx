@@ -9,6 +9,7 @@ import {
   View,
   ViewStyle,
   TextStyle,
+  TouchableOpacityProps,
 } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
@@ -62,9 +63,12 @@ export interface TextInputComponentProps {
   autoCorrect?: boolean;
   width?: number;
   textInputprops?: TextInputProps;
+  editable?: boolean;
+  selectTextOnFocus?: boolean;
   maxLength?: TextInputProps['maxLength'];
   keyboardType?: TextInputProps['keyboardType'];
   icon?: ReactNode;
+  onTouchStart?: TouchableOpacityProps['onPress'];
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -92,7 +96,9 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           maxLength={props.maxLength}
           keyboardType={props.keyboardType}
           {...props.textInputprops}
+          editable={props.editable}
           returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
+          onTouchStart={props.onTouchStart}
         />
       )}
       {props.icon && <View style={styles.iconStyle}>{props.icon}</View>}
