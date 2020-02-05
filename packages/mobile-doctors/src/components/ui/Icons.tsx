@@ -825,9 +825,6 @@ export const CrossPopup: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/ic_cross_popup.png')}
   />
 );
-export const Edit: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/edit.png')} />
-);
 export const Path: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
@@ -836,5 +833,13 @@ export const Path: React.FC<IconProps> = (props) => (
       width: 12,
     }}
     source={require('../../images/icons/path.png')}
+  />
+);
+
+export const Edit: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/edit.png')}
   />
 );

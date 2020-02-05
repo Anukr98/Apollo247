@@ -90,6 +90,7 @@ export interface CalendarCardProps {
   appId?: string;
   appintmentdatetime: string;
   appointmentStatus: string;
+  showNext?: boolean;
 }
 
 export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
@@ -114,24 +115,26 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
   };
   const renderSlotTiming = (timeSlotType: Appointments['timeslottype'], timing: string) => {
     const formatTiming = (timing: string, type: Appointments['timeslottype']) =>
-      `${type == 'missed' ? 'MISSED: ' : type == 'up-next' ? 'UP NEXT: ' : ''}${timing}`;
+      // `${type == 'missed' ? 'MISSED: ' : type == 'up-next' ? 'UP NEXT: ' : ''}${timing}`;
+      `${props.showNext ? 'UP NEXT: ' : ''}${timing}`;
     return (
       <Text
         style={[
           {
-            color:
-              timeSlotType == 'past' || timeSlotType == 'next'
-                ? '#0087ba'
-                : timeSlotType == 'missed'
-                ? '#890000'
-                : '#ff748e',
+            color: props.showNext ? '#ff748e' : '#0087ba',
+            // : timeSlotType == 'past' || timeSlotType == 'next'
+            // ? '#0087ba'
+            // : '#890000',
+            //   : timeSlotType == 'missed'
+            //   ? '#890000'
+            //   : '#ff748e',
             lineHeight: 18,
             marginRight: 20,
           },
-          timeSlotType == 'past'
-            ? theme.fonts.IBMPlexSansMedium(12)
-            : theme.fonts.IBMPlexSansBold(12),
-          ,
+          // timeSlotType == 'past'
+          //   ? theme.fonts.IBMPlexSansMedium(12)
+          //   : theme.fonts.IBMPlexSansBold(12),
+          theme.fonts.IBMPlexSansBold(12),
         ]}
       >
         {formatTiming(timing, timeSlotType)}
@@ -142,11 +145,12 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
     props.status == 'past' || props.status == 'missed'
       ? {
           borderColor: props.status == 'missed' ? '#e50000' : 'rgba(2, 71, 91, 0.1)',
+          // borderColor: 'rgba(2, 71, 91, 0.1)',
           borderWidth: 1,
           backgroundColor: '#f0f4f5',
         }
       : {
-          borderColor: props.status == 'up-next' ? '#ff748e' : '#0087ba',
+          borderColor: props.showNext ? '#ff748e' : '#0087ba',
           borderWidth: 1,
           backgroundColor: '#ffffff',
           shadowColor: colors.CARD_SHADOW_COLOR,
@@ -155,6 +159,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
           shadowRadius: 5,
           elevation: 5,
         };
+
   return (
     <TouchableOpacity
       activeOpacity={1}

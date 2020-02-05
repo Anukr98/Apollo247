@@ -323,7 +323,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       rightIcons={[
         {
           icon: <RoundIcon />,
-          onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment), //setmodelvisible(true),
+          onPress: () => setmodelvisible(true), // props.navigation.push(AppRoutes.NeedHelpAppointment),
         },
       ]}
     />
@@ -425,7 +425,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const renderNeedHelpModal = () => {
     return modelvisible ? (
       <View>
-        <NeedHelpCard
+        <NeedHelpCard onPress={() => setmodelvisible(false)} />
+        {/* <NeedHelpCard
           onPress={() => setmodelvisible(false)}
           heading="need help?"
           description="You can request a call back for us to resolve your issue ASAP"
@@ -436,7 +437,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -479,7 +480,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 : true
             }
           />
-        </NeedHelpCard>
+        </NeedHelpCard> */}
       </View>
     ) : null;
   };
