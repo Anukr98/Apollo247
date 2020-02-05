@@ -305,7 +305,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
         console.log('Error occured', { error });
-        handleGraphQlError(error);
+        currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
   }, [currentPatient]);
@@ -344,7 +344,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         console.log('Error occured while render Delete MedicalOrder', { e });
-        handleGraphQlError(e);
+        currentPatient && handleGraphQlError(e);
       });
   };
 

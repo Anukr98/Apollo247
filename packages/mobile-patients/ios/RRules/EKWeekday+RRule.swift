@@ -47,7 +47,7 @@ internal extension EKWeekday {
     }
 }
 
-extension EKWeekday: Comparable { }
+//extension EKWeekday: Comparable { }
 
 public func <(lhs: EKWeekday, rhs: EKWeekday) -> Bool {
     return lhs.toNumberSymbol() < rhs.toNumberSymbol()

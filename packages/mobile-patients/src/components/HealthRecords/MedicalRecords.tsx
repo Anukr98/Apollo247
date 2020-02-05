@@ -73,7 +73,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
     });
     console.log('combination after', mergeArray);
     setCombination(sordByDate(mergeArray));
-  }, [MedicalRecordData || labTestsData || healthChecksData || hospitalizationsData]);
+  }, [MedicalRecordData, labTestsData, healthChecksData, hospitalizationsData]);
 
   const sordByDate = (array: { type: string; data: any }[]) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {

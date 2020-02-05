@@ -640,7 +640,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
           extraData={refresh}
           paginationStyle={{ bottom: 10 }}
           // hidePagination
-          // scrollEnabled={false}
+          scrollEnabled={false}
           slides={slides}
           showPrevButton={false}
           showNextButton={true}

@@ -40,6 +40,8 @@ export interface EPrescription {
   medicines: string;
   doctorName: string;
   prismPrescriptionFileId: string;
+  message?: string;
+  healthRecord?: boolean;
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';

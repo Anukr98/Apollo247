@@ -182,7 +182,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { generalPhysicians } = useAppCommonData();
+  const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -192,19 +192,31 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [currentPatient]);
 
   useEffect(() => {
-    console.log(generalPhysicians, 'generalPhysicians 1111111');
+    // console.log(generalPhysicians, 'generalPhysicians 1111111');
 
-    if (
-      doctorsList.length === 0 &&
-      generalPhysicians &&
-      generalPhysicians.data &&
-      props.navigation.getParam('specialityId') === generalPhysicians.id
-    ) {
-      console.log(generalPhysicians, 'generalPhysicians');
-
-      setData(generalPhysicians.data);
+    if (doctorsList.length === 0) {
+      if (
+        generalPhysicians &&
+        generalPhysicians.data &&
+        props.navigation.getParam('specialityId') === generalPhysicians.id
+      ) {
+        setData(generalPhysicians.data);
+      }
+      if (ent && ent.data && props.navigation.getParam('specialityId') === ent.id) {
+        setData(ent.data);
+      }
+      if (
+        Dermatology &&
+        Dermatology.data &&
+        props.navigation.getParam('specialityId') === Dermatology.id
+      ) {
+        setData(Dermatology.data);
+      }
+      if (Urology && Urology.data && props.navigation.getParam('specialityId') === Urology.id) {
+        setData(Urology.data);
+      }
     }
-  }, [generalPhysicians]);
+  }, [generalPhysicians, ent, Urology, Dermatology]);
 
   const client = useApolloClient();
   const params = props.navigation.getParam('specialities') || null;

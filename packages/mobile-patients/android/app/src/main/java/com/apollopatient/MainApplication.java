@@ -27,6 +27,9 @@ import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
+import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
+import android.app.AlertDialog;
 
 
 // import com.reactnative.ivpusic.imagepicker.PickerPackage;
@@ -109,6 +112,19 @@ public class MainApplication extends Application implements ReactApplication {
         Fabric.with(this, new Crashlytics());
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
+
+        ReactNativeExceptionHandlerModule.setNativeExceptionHandler(new NativeExceptionHandlerIfc() {
+            @Override
+            public void handleNativeException(Thread thread, Throwable throwable, Thread.UncaughtExceptionHandler originalHandler) {
+                // Put your error handling code here
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getApplicationContext());
+                alertDialogBuilder.setTitle("Uh oh.. :(");
+                alertDialogBuilder.setMessage("Oops! Unexpected error occurred. We have reported this to our team. Please close the app and start again.");
+                alertDialogBuilder.setPositiveButton("OK, GOT IT",null);
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+            }
+        });
     }
 
     /**

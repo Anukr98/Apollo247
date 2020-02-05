@@ -130,6 +130,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       fireBaseFCM();
       signOut();
       setLoading && setLoading(false);
+      firebase.auth().appVerificationDisabledForTesting = true;
     } catch (error) {
       CommonBugFender('Login_useEffect_try', error);
     }
@@ -360,7 +361,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <WebView
             source={{
-              uri: 'https://www.apollo247.com/TnC.html',
+              uri: 'https://www.apollo247.com/termsandconditions.html',
             }}
             style={{
               flex: 1,

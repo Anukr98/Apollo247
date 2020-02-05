@@ -274,6 +274,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderEPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {

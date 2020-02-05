@@ -71,6 +71,7 @@ import { useShoppingCart } from '../ShoppingCartProvider';
 import { ListCard } from '../ui/ListCard';
 import KotlinBridge from '../../KotlinBridge';
 import { GenerateTokenforCM } from '../../helpers/apiCalls';
+import { useUIElements } from '../UIElementsProvider';
 
 const { Vitals } = NativeModules;
 
@@ -201,6 +202,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
+  const { showAphAlert } = useUIElements();
 
   const menuOptions: menuOptions[] = [
     {
@@ -344,8 +346,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   const getTokenforCM = async () => {
-    setshowSpinner(true);
-
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
     const item = JSON.parse(retrievedItem);
 
@@ -361,52 +361,65 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;
 
-    GenerateTokenforCM(
-      patientDetails ? (patientDetails.uhid ? patientDetails.uhid : patientDetails.id) : '',
-      fullName,
-      patientDetails ? (patientDetails.gender ? patientDetails.gender : '') : '',
-      patientDetails ? (patientDetails.emailAddress ? patientDetails.emailAddress : '') : '',
-      patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-    )
-      .then((token: any) => {
-        console.log(token, 'getTokenforCM');
+    const patientUHID = patientDetails ? (patientDetails.uhid ? patientDetails.uhid : '') : '';
 
-        async function fetchTokenData() {
-          setshowSpinner(false);
+    if (patientUHID) {
+      setshowSpinner(true);
 
-          const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
-          const buildSpecify = buildName();
-          let keyHash;
-          if (buildSpecify === 'QA' || buildSpecify === 'DEV') {
-            keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
-          } else {
-            keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
-          }
-          console.log('tokenValue', tokenValue, keyHash);
+      GenerateTokenforCM(
+        patientDetails ? patientDetails.uhid : '',
+        fullName,
+        patientDetails ? (patientDetails.gender ? patientDetails.gender : '') : '',
+        patientDetails ? (patientDetails.emailAddress ? patientDetails.emailAddress : '') : '',
+        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+      )
+        .then((token: any) => {
+          console.log(token, 'getTokenforCM');
 
-          if (Platform.OS === 'ios') {
-            if (tokenValue) {
-              Vitals.vitalsToExport(tokenValue, buildSpecify);
-              setTimeout(() => {
-                Vitals.goToReactNative(tokenValue);
-              }, 500);
+          async function fetchTokenData() {
+            setshowSpinner(false);
+
+            const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
+            const buildSpecify = buildName();
+            let keyHash;
+            if (buildSpecify === 'QA' || buildSpecify === 'DEV') {
+              keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
+            } else {
+              keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
             }
-          } else {
-            const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(
-              patientDetails,
-              'lastName'
-            ) || ''}`;
-            const UHID = `${g(patientDetails, 'uhid') || ''}`;
-            tokenValue && KotlinBridge.show(tokenValue, UHID, fullName, keyHash, buildSpecify);
-          }
-        }
+            console.log('tokenValue', tokenValue, keyHash);
 
-        fetchTokenData();
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultRoom_getTokenforCM', e);
-        setshowSpinner(false);
-      });
+            if (Platform.OS === 'ios') {
+              if (tokenValue) {
+                Vitals.vitalsToExport(tokenValue, buildSpecify);
+                setTimeout(() => {
+                  Vitals.goToReactNative(tokenValue);
+                }, 500);
+              }
+            } else {
+              const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(
+                patientDetails,
+                'lastName'
+              ) || ''}`;
+              const UHID = `${g(patientDetails, 'uhid') || ''}`;
+              tokenValue && KotlinBridge.show(tokenValue, UHID, fullName, keyHash, buildSpecify);
+            }
+          }
+
+          fetchTokenData();
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultRoom_getTokenforCM', e);
+          setshowSpinner(false);
+        });
+    } else {
+      setshowSpinner(false);
+      showAphAlert &&
+        showAphAlert({
+          title: 'Hi :)',
+          description: 'We’re setting up your profile. Please check back soon!',
+        });
+    }
   };
 
   const client = useApolloClient();

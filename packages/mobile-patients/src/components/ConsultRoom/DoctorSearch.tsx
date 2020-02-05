@@ -166,7 +166,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { setGeneralPhysicians, locationDetails } = useAppCommonData();
+  const {
+    setGeneralPhysicians,
+    locationDetails,
+    setUrology,
+    setDermatology,
+    setEnt,
+  } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -206,7 +212,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   //   return [];
   // };
 
-  const fetchDoctorData = (id: string) => {
+  const fetchDoctorData = (id: string, speciality: string) => {
     let geolocation = {} as any;
     if (locationDetails) {
       geolocation = {
@@ -238,7 +244,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       })
       .then(({ data }) => {
         console.log(data, 'dataaaaa');
-        setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
+        if (speciality === 'General Physician/ Internal Medicine')
+          setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
+        else if (speciality === 'Urology') {
+          setUrology && setUrology({ id: id, data: data });
+        } else if (speciality === 'ENT') {
+          setEnt && setEnt({ id: id, data: data });
+        } else if (speciality === 'Dermatology') {
+          setDermatology && setDermatology({ id: id, data: data });
+        }
+
         // try {
         //   const filterGetData =
         //     data && data.getDoctorsBySpecialtyAndFilters
@@ -345,7 +360,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             data.getAllSpecialties.length
           ) {
             setSpecialities(data.getAllSpecialties);
-            fetchDoctorData(data.getAllSpecialties[0].id);
+            setLocalData(data.getAllSpecialties);
             setshowSpinner(false);
             AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
             AsyncStorage.setItem('APICalledDate', todayDate);
@@ -407,12 +422,32 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (isToday && specialistData && specialistData.length) {
       if (specialistData) {
         setSpecialities(JSON.parse(specialistData));
-        fetchDoctorData(JSON.parse(specialistData)[0].id);
+        setLocalData(JSON.parse(specialistData));
+        // fetchDoctorData(JSON.parse(specialistData)[0].id);
       }
       setshowSpinner(false);
     } else {
       fetchSpecialities();
     }
+  };
+
+  const setLocalData = (data) => {
+    const Physicians = data.filter(
+      (item) => item.name.toLowerCase() === 'General Physician/ Internal Medicine'.toLowerCase()
+    );
+    Physicians.length > 0 &&
+      fetchDoctorData(Physicians[0].id, 'General Physician/ Internal Medicine');
+
+    const Ent = data.filter((item) => item.name.toLowerCase() === 'ENT'.toLowerCase());
+    Ent.length > 0 && fetchDoctorData(Ent[0].id, 'ENT');
+
+    const Dermatology = data.filter(
+      (item) => item.name.toLowerCase() === 'Dermatology'.toLowerCase()
+    );
+    Dermatology.length > 0 && fetchDoctorData(Dermatology[0].id, 'Dermatology');
+
+    const Urology = data.filter((item) => item.name.toLowerCase() === 'Urology'.toLowerCase());
+    Urology.length > 0 && fetchDoctorData(Urology[0].id, 'Urology');
   };
 
   useEffect(() => {

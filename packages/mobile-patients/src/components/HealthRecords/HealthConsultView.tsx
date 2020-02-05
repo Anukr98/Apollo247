@@ -412,7 +412,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               .then((result) => {
                                 const medicineAll = result.map(({ data: { productdp } }, index) => {
                                   const medicineDetails = (productdp && productdp[0]) || {};
-                                  if (medicineDetails.is_in_stock == undefined) {
+                                  if (medicineDetails.id == 0) {
                                     return null;
                                   }
 
