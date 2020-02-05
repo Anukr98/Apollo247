@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.down(370)]: {
+      [theme.breakpoints.down(390)]: {
         display: 'none',
       },
     },

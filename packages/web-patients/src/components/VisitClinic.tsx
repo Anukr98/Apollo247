@@ -366,7 +366,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
         <div className={classes.customScrollBar}>
           <Grid container spacing={2}>
-            <Grid item sm={6}>
+            <Grid item sm={6} xs={12}>
               <div className={classes.consultGroup}>
                 <AphCalendar
                   getDate={(dateSelected: string) => setDateSelected(dateSelected)}
@@ -374,7 +374,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 />
               </div>
             </Grid>
-            <Grid item sm={6}>
+            <Grid item sm={6} xs={12}>
               <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
                 <AphSelect
                   value={clinicSelected === '' ? defaultClinicId : clinicSelected}

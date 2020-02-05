@@ -46,6 +46,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '5px 4px',
         textTransform: 'none',
         padding: '9px 13px',
+        [theme.breakpoints.down('xs')]: {
+          minWidth: 99,
+        },
       },
     },
     noSlotsAvailable: {
