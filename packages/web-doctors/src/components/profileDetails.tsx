@@ -553,16 +553,21 @@ export const MyAccount: React.FC = (props) => {
                     <Button
                       color="primary"
                       onClick={() => {
-                        mutationUpdateDoctorOnlineStatus()
-                          .then((response) => {
-                            console.log(response);
-                            localStorage.removeItem('loggedInMobileNumber');
-                            sessionStorage.removeItem('mobileNumberSession');
-                            signOut();
-                          })
-                          .catch((e: ApolloError) => {
-                            console.log('An error occurred updating doctor status.');
-                          });
+                        if (currentPatient) {
+                          mutationUpdateDoctorOnlineStatus()
+                            .then((response) => {
+                              localStorage.removeItem('loggedInMobileNumber');
+                              sessionStorage.removeItem('mobileNumberSession');
+                              signOut();
+                            })
+                            .catch((e: ApolloError) => {
+                              console.log('An error occurred updating doctor status.');
+                            });
+                        } else {
+                          localStorage.removeItem('loggedInMobileNumber');
+                          sessionStorage.removeItem('mobileNumberSession');
+                          signOut();
+                        }
                       }}
                     >
                       Sign out
