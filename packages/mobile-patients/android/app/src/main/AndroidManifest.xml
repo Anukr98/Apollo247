@@ -36,6 +36,7 @@
         tools:replace="android:allowBackup,android:theme"
         android:allowBackup="false"
         android:largeHeap="true"
+        android:networkSecurityConfig="@xml/network_security_config"
       android:theme="@style/AppTheme">
       <activity
         android:name=".MainActivity"

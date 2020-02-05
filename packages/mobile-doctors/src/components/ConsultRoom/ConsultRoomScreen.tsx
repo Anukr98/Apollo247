@@ -82,7 +82,6 @@ import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/upload
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import {
   EndAppointmentSession,
-  EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
