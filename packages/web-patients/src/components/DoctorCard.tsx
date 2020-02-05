@@ -30,6 +30,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      height: '100%',
+      position: 'relative',
+      paddingBottom: 40,
       [theme.breakpoints.down('sm')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
@@ -103,12 +106,20 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.common.white,
     },
     bottomAction: {
+      position: 'absolute',
       width: '100%',
+      bottom: 0,
     },
     button: {
       width: '100%',
       borderRadius: '0 0 10px 10px',
       boxShadow: 'none',
+    },
+    cardLoader: {
+      position: 'absolute',
+      left: 10,
+      right: 10,
+      top: 0,
     },
   });
 });
@@ -214,7 +225,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   // console.log(clinics);
 
   return (
-    <>
+    <div className={classes.root}>
       <div
         className={classes.topContent}
         onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
@@ -232,7 +243,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           className={classes.doctorInfo}
           onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
         >
-          {loading ? <LinearProgress /> : availabilityMarkup()}
+          {loading ? (
+            <div className={classes.cardLoader}>
+              <LinearProgress />
+            </div>
+          ) : (
+            availabilityMarkup()
+          )}
           <div className={classes.doctorName}>
             {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
               _toLower(doctorDetails.lastName)
@@ -269,18 +286,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         {(mutation) => (
           <div
-            className={classes.root}
             onClick={() => {
               mutation();
             }}
+            className={classes.bottomAction}
           >
-            <div className={classes.bottomAction}>
-              <AphButton fullWidth color="primary" className={classes.button}>
-                {differenceInMinutes >= 0 && differenceInMinutes <= 15
-                  ? 'CONSULT NOW'
-                  : 'BOOK APPOINTMENT'}
-              </AphButton>
-            </div>
+            <AphButton fullWidth color="primary" className={classes.button}>
+              {differenceInMinutes >= 0 && differenceInMinutes <= 15
+                ? 'CONSULT NOW'
+                : 'BOOK APPOINTMENT'}
+            </AphButton>
           </div>
         )}
       </Mutation>
@@ -292,6 +307,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <BookConsult doctorId={doctorDetails.id} setIsPopoverOpen={setIsPopoverOpen} />
       </Modal>
-    </>
+    </div>
   );
 };
