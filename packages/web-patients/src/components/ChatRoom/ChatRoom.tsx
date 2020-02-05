@@ -383,6 +383,7 @@ export const ChatRoom: React.FC = (props) => {
                   doctorDetails={data}
                   appointmentId={appointmentId}
                   hasDoctorJoined={hasDoctorJoined}
+                  jrDoctorJoined={jrDoctorJoined}
                 />
               )}
             </div>
