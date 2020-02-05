@@ -73,7 +73,7 @@ export const ArrowStep3: React.FC<IconProps> = (props) => (
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_cross.png')} />
+  <IconBase {...props} size="sm" source={require('../../images/icons/ic_cross.png')} />
 );
 
 export const Reload: React.FC<IconProps> = (props) => (
@@ -666,6 +666,23 @@ export const DropdownBlueUp: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/up.png')}
   />
 );
+
+export const CheckboxSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/check_box_checked.png')}
+  />
+);
+
+export const CheckboxUnSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/check_box_unchecked.png')}
+  />
+);
+
 export const Selected: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 20, width: 20 }}
@@ -807,6 +824,9 @@ export const CrossPopup: React.FC<IconProps> = (props) => (
     {...props}
     source={require('../../images/icons/ic_cross_popup.png')}
   />
+);
+export const Edit: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/edit.png')} />
 );
 export const Path: React.FC<IconProps> = (props) => (
   <IconBase

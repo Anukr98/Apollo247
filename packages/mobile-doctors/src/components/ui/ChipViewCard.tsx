@@ -62,8 +62,8 @@ export interface ChipViewCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   containerUnSelectedStyle?: StyleProp<ViewStyle>;
   containerSelectedStyle?: StyleProp<ViewStyle>;
-  textStyle?: StyleProp<ViewStyle>;
-  textSelectedStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  textSelectedStyle?: StyleProp<TextStyle>;
   buttonWidth?: number;
   icon?: Element;
 }
@@ -82,6 +82,7 @@ export const ChipViewCard: React.FC<ChipViewCardProps> = (props) => {
   } = props;
   return (
     <TouchableOpacity
+      activeOpacity={1}
       onPress={() => onChange(!isChecked)}
       style={
         isChecked

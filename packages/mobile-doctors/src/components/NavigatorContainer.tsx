@@ -44,6 +44,7 @@ import { Sample } from '@aph/mobile-doctors/src/components/Sample';
 import { PatientDetailsPage } from '@aph/mobile-doctors/src/components/PatientDetailsPage';
 import { MedicineAddScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineAddScreen';
 import { CaseSheetDetails } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/CaseSheetDetails';
+import { BlockHomePage } from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -87,6 +88,7 @@ export enum AppRoutes {
   PatientDetailsPage = 'PatientDetailsPage',
   MedicineAddScreen = 'MedicineAddScreen',
   CaseSheetDetails = 'CaseSheetDetails',
+  BlockHomePage = 'BlockHomePage',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -219,6 +221,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CaseSheetDetails]: {
     screen: CaseSheetDetails,
+  },
+  [AppRoutes.BlockHomePage]: {
+    screen: BlockHomePage,
   },
 };
 
