@@ -65,7 +65,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isReloading, setReloading] = useState<boolean>(false);
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
-  const { setDoctorDetails, isDelegateLogin, doctorDetails } = useAuth();
+  const { setDoctorDetails, doctorDetails } = useAuth();
 
   const client = useApolloClient();
 

@@ -61,6 +61,9 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id"/>
+
+        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="7839e425f4acbd8e6ff3f907281addca"/>
+
         <receiver android:name="io.invertase.firebase.notifications.RNFirebaseNotificationReceiver"/>
         <receiver android:enabled="true" android:exported="true" android:name="io.invertase.firebase.notifications.RNFirebaseNotificationsRebootReceiver">
             <intent-filter>
@@ -70,6 +73,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>

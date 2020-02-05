@@ -229,7 +229,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);
                 console.log('confirmResult login', confirmResult);
-
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
                   phoneNumber: phoneNumber,

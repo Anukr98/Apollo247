@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType } from "./globalTypes";
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, Relation, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorAppointments
@@ -20,12 +20,24 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   doctorType: DoctorType | null;
 }
 
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo_addressList {
+  __typename: "PatientAddress";
+  city: string | null;
+}
+
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo {
   __typename: "Patient";
   id: string;
   firstName: string | null;
   lastName: string | null;
+  relation: Relation | null;
   photoUrl: string | null;
+  uhid: string | null;
+  dateOfBirth: any | null;
+  emailAddress: string | null;
+  mobileNumber: string;
+  gender: Gender | null;
+  addressList: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo_addressList[] | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory {
