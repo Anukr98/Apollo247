@@ -1198,13 +1198,16 @@ export class AuditHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  doctorType: string;
+
   @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
   appointment: Appointment;
 
   @Column()
   auditorId: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'json' })
   comment: string;
 
   @Column({ nullable: true })

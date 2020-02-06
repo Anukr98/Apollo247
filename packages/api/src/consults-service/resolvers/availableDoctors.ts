@@ -149,6 +149,7 @@ export const getSpecialityDetails = async (
       if (index + 1 === array.length) {
         const timeOut = setInterval(async () => {
           if (check) {
+            clearInterval(timeOut);
             const specialityDetails: SpecialityAndCounts = {
               speciality: doctor.specialty.name,
               morning: morning,
@@ -162,7 +163,6 @@ export const getSpecialityDetails = async (
               ...specialityDetails,
             };
             await plannedDoctorsRepo.saveDetails(plannedDoctorsAttrs);
-            clearInterval(timeOut);
             resolve(specialityDetails);
           }
         }, 50);

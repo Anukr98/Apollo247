@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import { CallPopover } from 'components/CallPopover';
+import ApolloClient from 'apollo-client';
 import Pubnub from 'pubnub';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -14,6 +15,8 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import {
   REQUEST_ROLES,
   Gender,
@@ -470,6 +473,28 @@ export const ConsultTabs: React.FC = () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
+  const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
+    return new Promise((res, rej) => {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENTS,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: patientId,
+              fileIds: fileIds,
+            },
+          },
+        })
+        .then(({ data }) => {
+          res({ urls: data.downloadDocuments.downloadPaths });
+        })
+        .catch((e: any) => {
+          const error = JSON.parse(JSON.stringify(e));
+          rej({ error: e });
+        });
+    });
+  };
   const getHistory = (timetoken: number) => {
     pubnub.history(
       {
@@ -482,7 +507,15 @@ export const ConsultTabs: React.FC = () => {
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
         res.messages.forEach((element: any, index: number) => {
-          newmessage.push(element.entry);
+          let item = element.entry;
+          if (item.prismId) {
+            getPrismUrls(client, patientId, item.prismId).then((data: any) => {
+              item.url = (data && data.urls[0]) || item.url;
+            });
+            newmessage[index] = item;
+          } else {
+            newmessage.push(element.entry);
+          }
         });
         insertText = newmessage;
         setMessages(newmessage);
@@ -1544,68 +1577,79 @@ export const ConsultTabs: React.FC = () => {
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
               />
               <div>
-                {!isPdfPageOpen ||
-                isSecretary ||
-                (params && params.tabValue && parseInt(params.tabValue, 10) === 1) ? (
-                  <div>
-                    <div className={classes.stickyConsultTabs}>
-                      <Tabs
-                        value={tabValue}
-                        variant="fullWidth"
+                <div
+                  className={
+                    !isPdfPageOpen ||
+                    isSecretary ||
+                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
+                      ? classes.block
+                      : classes.none
+                  }
+                >
+                  <div className={classes.stickyConsultTabs}>
+                    <Tabs
+                      value={tabValue}
+                      variant="fullWidth"
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
                         classes={{
-                          root: classes.tabsRoot,
-                          indicator: classes.tabsIndicator,
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
                         }}
-                        onChange={(e, newValue) => {
-                          setTabValue(newValue);
+                        label="Case Sheet"
+                      />
+                      <Tab
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
                         }}
-                      >
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Case Sheet"
-                        />
-                        <Tab
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          label="Chat"
-                        />
-                      </Tabs>
-                    </div>
-                    <div>
-                      <div className={tabValue !== 0 ? classes.none : classes.block}>
-                        {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className={tabValue !== 1 ? classes.none : classes.block}>
-                        <div className={classes.chatContainer}>
-                          <ConsultRoom
-                            startConsult={startConsult}
-                            sessionId={sessionId}
-                            token={token}
-                            appointmentId={paramId}
-                            doctorId={doctorId}
-                            patientId={patientId}
-                            pubnub={pubnub}
-                            sessionClient={sessionClient}
-                            lastMsg={lastMsg}
-                            messages={messages}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                        label="Chat"
+                      />
+                    </Tabs>
                   </div>
-                ) : (
                   <div>
-                    <CasesheetView saving={saving} />
+                    <div className={tabValue !== 0 ? classes.none : classes.block}>
+                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
+                    </div>
                   </div>
-                )}
+
+                  <div>
+                    <div className={tabValue !== 1 ? classes.none : classes.block}>
+                      <div className={classes.chatContainer}>
+                        <ConsultRoom
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={paramId}
+                          doctorId={doctorId}
+                          patientId={patientId}
+                          pubnub={pubnub}
+                          sessionClient={sessionClient}
+                          lastMsg={lastMsg}
+                          messages={messages}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={
+                    !isPdfPageOpen ||
+                    isSecretary ||
+                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
+                      ? classes.none
+                      : classes.block
+                  }
+                >
+                  <CasesheetView saving={saving} />
+                </div>
               </div>
             </div>
           </Scrollbars>

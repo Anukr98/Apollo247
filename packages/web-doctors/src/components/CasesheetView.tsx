@@ -1,23 +1,15 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
-import { MEDICINE_TO_BE_TAKEN } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GET_CASESHEET } from 'graphql/profiles';
 import { isEmpty, trim } from 'lodash';
-import { CircularProgress } from '@material-ui/core';
 
 import {
-  GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
 
@@ -207,26 +199,18 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     followUpAfterInDays,
     followUpDate,
     followUpConsultType,
+    diagnosis,
+    otherInstructions,
+    symptoms,
+    diagnosticPrescription,
+    medicinePrescription,
   } = useContext(CaseSheetContext);
-  const [callGetCasesheet, setCallGetCasesheet] = useState<boolean>(true);
-  const [loader, setLoader] = useState<boolean>(true);
+
+  const [loader, setLoader] = useState<boolean>(false);
   let doctorFacilityDetails = null;
   if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
     doctorFacilityDetails = createdDoctorProfile.doctorHospital[0].facility;
   }
-  const [symptoms, setSymptoms] = useState<
-    GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
-  >(null);
-  const [diagnosis, setDiagnosis] = useState<
-    GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
-  >(null);
-  const [otherInstructions, setOtherInstructions] = useState<
-    GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
-  >(null);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
-  const [medicinePrescription, setMedicinePrescription] = useState<
-    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
-  >(null);
   const dosageFrequency = [
     {
       id: 'ONCE_A_DAY',
@@ -259,7 +243,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       selected: false,
     },
   ];
-  const client = useApolloClient();
 
   const getAge = (date: string) => {
     if (date) {
@@ -268,43 +251,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       ).toString();
     }
   };
-  setTimeout(() => {
-    if (callGetCasesheet) setCallGetCasesheet(!callGetCasesheet);
-  }, 3000);
-
-  useEffect(() => {
-    client
-      .query<GetCaseSheet>({
-        query: GET_CASESHEET,
-        fetchPolicy: 'no-cache',
-        variables: { appointmentId: appointmentInfo && appointmentInfo.id },
-      })
-      .then((_data) => {
-        _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-          ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
-          : setDiagnosis([]);
-        _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
-          ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
-          : setSymptoms([]);
-        _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
-          ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
-          : setOtherInstructions([]);
-        _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-          ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
-          : setDiagnosticPrescription([]);
-        _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
-          ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
-          : setMedicinePrescription([]);
-      })
-      .finally(() => {
-        setLoader(false);
-      });
-  }, [callGetCasesheet]);
   const toBeTaken = (value: any) => {
     const tobeTakenObjectList: any = [];
     value.map((slot: any) => {
@@ -312,16 +258,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       tobeTakenObjectList.push(tobeTakenObject);
     });
     return tobeTakenObjectList;
-  };
-  const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
-    if (medicineTiming) {
-      let timing = _toLower(medicineTiming);
-      if (timing.includes('_')) {
-        timing = timing.replace('_', ' ');
-      }
-      return timing;
-    }
-    return '';
   };
   const term = (value: string, char: string) => {
     let changedString = value.substring(0, value.length - 1);
@@ -440,9 +376,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
-  return callGetCasesheet ? (
-    <CircularProgress className={classes.loader} />
-  ) : (
+
+  return (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
       <div className={classes.prescriptionPreview}>
@@ -585,7 +520,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               <div className={classes.medicationList}>
                 <ol>
                   {diagnosticPrescription.map(
-                    (prescription) => prescription.itemname && <li>{prescription.itemname}</li>
+                    (prescription) =>
+                      (prescription.itemname || prescription.itemName) && (
+                        <li>{prescription.itemname || prescription.itemName}</li>
+                      )
                   )}
                 </ol>
               </div>
