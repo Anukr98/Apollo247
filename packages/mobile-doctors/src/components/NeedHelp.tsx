@@ -151,8 +151,8 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
         <View style={styles.needHeight} />
         <OtpCard
           cardContainer={{ marginTop: 0, height: 300 }}
-          heading={string.LocalStrings.needhelp}
-          description={string.LocalStrings.callback}
+          heading={string.login.needhelp}
+          description={string.login.callback}
           onPress={() => props.navigation.goBack()}
         >
           <View
@@ -161,7 +161,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}

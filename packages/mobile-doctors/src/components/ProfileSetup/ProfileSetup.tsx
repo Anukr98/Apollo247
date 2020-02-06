@@ -16,11 +16,7 @@ import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import {
-  setDoctorDetails,
-  setProfileFlowDone,
-  getLocalData,
-} from '@aph/mobile-doctors/src/helpers/localStorage';
+import { setDoctorDetails, setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -46,6 +42,7 @@ import {
   saveDoctorDeviceToken,
   saveDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
@@ -196,9 +193,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
-  const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext, doctorDetails } = useAuth();
+  const { setDoctorDetails: setDoctorDetailsToContext, doctorDetails } = useAuth();
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
-  console.log('isDelegateLogin', isDelegateLogin);
 
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();
@@ -307,6 +303,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       })
       .catch((e) => {
         console.log('Error occured while adding Doctor', e);
+        CommonBugFender('GET_DOCTOR_DETAILS', e);
         setReloading(false);
         Alert.alert('Error', 'Error occured while reloading data');
       });
@@ -323,7 +320,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       rightIcons={[
         {
           icon: <RoundIcon />,
-          onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment), //setmodelvisible(true),
+          onPress: () => setmodelvisible(true), // props.navigation.push(AppRoutes.NeedHelpAppointment),
         },
       ]}
     />
@@ -333,7 +330,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     <ProfileTabHeader
       title={headerContent[tabIndex].heading(data!.lastName)}
       description={headerContent[tabIndex].description}
-      tabs={(data!.doctorType == DoctorType.PAYROLL || isDelegateLogin
+      tabs={(data!.doctorType == DoctorType.PAYROLL
         ? [headerContent[0], headerContent[1]]
         : headerContent
       ).map((content) => content.tab)}
@@ -355,7 +352,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
   const renderFooterButtons = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => {
     const onPressProceed = () => {
-      const tabsCount = data!.doctorType == DoctorType.PAYROLL || isDelegateLogin ? 2 : 3;
+      const tabsCount = data!.doctorType == DoctorType.PAYROLL ? 2 : 3;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);
@@ -425,7 +422,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const renderNeedHelpModal = () => {
     return modelvisible ? (
       <View>
-        <NeedHelpCard
+        <NeedHelpCard onPress={() => setmodelvisible(false)} />
+        {/* <NeedHelpCard
           onPress={() => setmodelvisible(false)}
           heading="need help?"
           description="You can request a call back for us to resolve your issue ASAP"
@@ -436,7 +434,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -479,7 +477,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 : true
             }
           />
-        </NeedHelpCard>
+        </NeedHelpCard> */}
       </View>
     ) : null;
   };

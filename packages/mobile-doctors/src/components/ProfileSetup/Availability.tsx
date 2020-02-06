@@ -1,11 +1,11 @@
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { format } from 'date-fns';
-import { Notification, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { AddPlus, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   container: {
@@ -19,8 +19,7 @@ const styles = StyleSheet.create({
   //   marginBottom: 20,
   // },
   consultDescText: {
-    fontFamily: 'IBMPlexSans',
-    fontSize: 14,
+    ...theme.fonts.IBMPlexSans(14),
     color: theme.colors.darkBlueColor(0.5),
     marginTop: 16,
     marginHorizontal: 20,
@@ -42,6 +41,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   //   physical: profileData.consultHours![0]!.consultMode,
   //   online: profileData.consultHours![0]!.consultMode,
   // });
+  console.log(profileData, 'profileData');
 
   const get12HrsFormat = (timeString: string /* 12:30 */) => {
     const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
@@ -110,6 +110,31 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
             type="fixed"
           />
         ))}
+
+        {/* <View
+          style={{
+            ...theme.viewStyles.whiteRoundedCornerCard,
+            marginTop: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 20,
+          }}
+        >
+          <Text style={styles.consultDescText}>Enter your preferred consult hours</Text>
+        </View> */}
+        <TouchableOpacity
+          style={{ flexDirection: 'row', marginTop: 18, marginLeft: 20, alignItems: 'center' }}
+        >
+          <AddPlus />
+          <Text
+            style={{
+              ...theme.viewStyles.yellowTextStyle,
+              fontSize: 14,
+              marginLeft: 8,
+            }}
+          >
+            ADD CONSULTATION HOURS
+          </Text>
+        </TouchableOpacity>
       </SquareCardWithTitle>
       <View style={{ margin: 20, flexDirection: 'row', marginBottom: -10 }}>
         <View style={{ marginTop: 4 }}>

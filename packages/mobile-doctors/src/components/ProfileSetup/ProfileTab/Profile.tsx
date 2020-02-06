@@ -145,14 +145,14 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
-                profileData!.specialty.name,
+                profileData!.specialty!.name,
                 profileData!.experience || ''
               )}
             </Text>
             <View style={styles.understatusline} />
           </View>
           {profileRow('Education', profileData!.qualification!)}
-          {profileRow('Speciality', profileData!.specialty.name!)}
+          {profileRow('Speciality', profileData!.specialty!.name!)}
           {profileRow('Services', profileData!.specialization || '')}
           {profileRow(
             'Awards',

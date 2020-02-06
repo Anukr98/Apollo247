@@ -2,17 +2,13 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import {
-  setLoggedIn,
-  CheckDelegate,
-  getLocalData,
-} from '@aph/mobile-doctors/src/helpers/localStorage';
+import { setLoggedIn, getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { Alert, AsyncStorage } from 'react-native';
+import { Alert } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { RNFirebase } from 'react-native-firebase';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 export interface OTPVerificationApiCallProps extends NavigationScreenProps {
   phoneNumber: string;
@@ -21,13 +17,14 @@ export interface OTPVerificationApiCallProps extends NavigationScreenProps {
 }
 
 export const OTPVerificationApiCall: React.FC<OTPVerificationApiCallProps> = (props) => {
-  const { setDoctorDetails, setIsDelegateLogin, isDelegateLogin } = useAuth();
+  const { setDoctorDetails } = useAuth();
   const { data, loading, error } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
 
   if (!loading) {
     console.log('OTPVerificationApiCall', { loading, data });
     if (error) {
       console.log(error, 'error GetDoctorDetails');
+      CommonBugFender('OTPVerificationApiCall', error);
       props.navigation.goBack();
       Alert.alert(
         'Error',
@@ -36,28 +33,14 @@ export const OTPVerificationApiCall: React.FC<OTPVerificationApiCallProps> = (pr
     } else {
       // set to context
       const userPhone: string = props.navigation.getParam('phoneNumber');
-      const delegateNumber = data!.getDoctorDetails!.delegateNumber;
-      console.log('OTPVerificationApiCall', { userPhone, delegateNumber });
-      // if ((userPhone && userPhone.replace('+91', '')) == delegateNumber) {
-      //   console.log('Logged in with delegate number', { userPhone, delegateNumber });
-      //   setIsDelegateLogin && setIsDelegateLogin(true);
-      //   console.log({ isDelegateLogin });
-      // }
-      if (userPhone == delegateNumber) {
-        console.log('Logged in with delegate number', { userPhone, delegateNumber });
-        setIsDelegateLogin && setIsDelegateLogin(true);
-        CheckDelegate(true);
-        console.log({ isDelegateLogin }, 'Delegatelogin suscess');
-      } else {
-        setDoctorDetails && setDoctorDetails(data!.getDoctorDetails);
-        setDoctorDetails;
-        getLocalData()
-          .then((data) => {
-            console.log('OTPVerificationApiCalldata', data);
-          })
-          .catch(() => {});
-        CheckDelegate(false);
-      }
+      console.log('OTPVerificationApiCall', { userPhone });
+      setDoctorDetails && setDoctorDetails(data!.getDoctorDetails);
+      setDoctorDetails;
+      getLocalData()
+        .then((data) => {
+          console.log('OTPVerificationApiCalldata', data);
+        })
+        .catch(() => {});
 
       setLoggedIn(true).finally(() => {
         props.navigation.dispatch(

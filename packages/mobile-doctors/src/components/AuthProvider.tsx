@@ -27,8 +27,6 @@ export interface AuthContextProps {
   verifyOtp: ((otp: string) => Promise<GetDoctorDetails | unknown>) | null;
   clearFirebaseUser: (() => Promise<unknown>) | null;
   doctorDetails: GetDoctorDetails_getDoctorDetails | null;
-  setIsDelegateLogin: ((status: boolean) => void) | null;
-  isDelegateLogin: boolean;
   setDoctorDetails: ((doctorDetails: GetDoctorDetails_getDoctorDetails | null) => void) | null;
   getDoctorDetailsApi: (() => void) | null;
   signOut: (() => void) | null;
@@ -41,8 +39,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   verifyOtp: null,
   clearFirebaseUser: null,
   doctorDetails: null,
-  isDelegateLogin: false,
-  setIsDelegateLogin: null,
   setDoctorDetails: null,
   getDoctorDetailsApi: null,
   signOut: null,
@@ -57,7 +53,6 @@ export const AuthProvider: React.FC = (props) => {
   const [doctorDetails, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>(
     null
   );
-  const [isDelegateLogin, setIsDelegateLogin] = useState<boolean>(false);
 
   const analytics = firebase.analytics();
   const auth = firebase.auth();
@@ -145,7 +140,6 @@ export const AuthProvider: React.FC = (props) => {
         .then((_) => {
           setFirebaseUser(null);
           setDoctorDetails(null);
-          setIsDelegateLogin(false);
           setAuthToken('');
           resolve();
         })
@@ -227,10 +221,12 @@ export const AuthProvider: React.FC = (props) => {
         query: GET_DOCTOR_DETAILS,
         fetchPolicy: 'no-cache',
       })
-      .then((data) => {
+      .then(({ data }) => {
         console.log('GetDoctorDetails', data);
         // AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-        // setAllPatients(data);
+        if (data) {
+          setDoctorDetails(data.getDoctorDetails);
+        }
       })
       .catch(async (error) => {
         // const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
@@ -252,8 +248,6 @@ export const AuthProvider: React.FC = (props) => {
             clearFirebaseUser,
             setDoctorDetails,
             doctorDetails,
-            setIsDelegateLogin,
-            isDelegateLogin,
             getDoctorDetailsApi,
             signOut,
           }}
