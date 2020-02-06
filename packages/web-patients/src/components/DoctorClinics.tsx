@@ -76,41 +76,6 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
       },
     },
-    infoRow: {
-      display: 'flex',
-      paddingTop: 10,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 0,
-      },
-    },
-    iconType: {
-      width: 25,
-      textAlign: 'center',
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
-    },
-    details: {
-      fontSize: 10,
-      fontWeight: 500,
-      color: '#02475b',
-      paddingLeft: 20,
-      lineHeight: 1.5,
-      [theme.breakpoints.down('xs')]: {
-        fontSize: 12,
-        paddingLeft: 0,
-        fontWeight: 600,
-      },
-      '& p': {
-        margin: 0,
-      },
-      '& span': {
-        paddingRight: 5,
-      },
-    },
-    count: {
-      marginLeft: 'auto',
-    },
     sectionGroup: {
       [theme.breakpoints.up('sm')]: {
         paddingBottom: 15,
