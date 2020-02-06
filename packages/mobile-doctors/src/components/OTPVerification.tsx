@@ -107,8 +107,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
 
-  const { sendOtp, doctorDetails } = useAuth();
+  const { sendOtp, doctorDetails, getDoctorDetailsError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [isOtpVerified, setisOtpVerified] = useState<boolean>(false);
+
   const phoneNumber = props.navigation.getParam('phoneNumber');
 
   const handleBack = async () => {
@@ -133,12 +135,55 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (doctorDetails && doctorDetails.id) {
-      props.navigation.replace(AppRoutes.OTPVerificationApiCall, {
-        phoneNumber,
-      });
+    // if (onOtpClick) {
+    //   if (currentPatient) {
+    //     db.ref('ApolloPatients/')
+    //       .child(dbChildKey)
+    //       .update({
+    //         patientApiCallSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
+    //       });
+    //     if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
+    //       if (currentPatient.relation == null) {
+    //         navigateTo(AppRoutes.MultiSignup);
+    //       } else {
+    //         AsyncStorage.setItem('userLoggedIn', 'true');
+    //         navigateTo(AppRoutes.ConsultRoom);
+    //       }
+    //     } else {
+    //       if (currentPatient.firstName == '') {
+    //         navigateTo(AppRoutes.SignUp);
+    //       } else {
+    //         AsyncStorage.setItem('userLoggedIn', 'true');
+    //         navigateTo(AppRoutes.ConsultRoom);
+    //       }
+    //     }
+    //   }
+    // }
+
+    console.log(getDoctorDetailsError, doctorDetails, 'getDoctorDetailsError');
+
+    if (isOtpVerified) {
+      setTimeout(() => {
+        if (doctorDetails && doctorDetails.id) {
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.ProfileSetup })],
+            })
+          );
+        } else {
+          if (getDoctorDetailsError === true) {
+            Alert.alert(
+              'Error',
+              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+            );
+            setshowSpinner(false);
+          }
+        }
+      }, 2000);
     }
-  }, [doctorDetails]);
+  }, [doctorDetails, isOtpVerified, props.navigation, getDoctorDetailsError]);
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -280,12 +325,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               sendOtp &&
                 sendOtp(data.authToken).then((data) => {
                   // setshowSpinner(true);
+                  setisOtpVerified(true);
+                  //set isloggedin to true
+                  AsyncStorage.setItem('isLoggedIn', 'true');
                 });
             } else {
               console.log('else error');
               try {
                 setshowErrorBottomLine(true);
-                // setshowSpinner(false);
+                setshowSpinner(false);
                 _storeTimerData(invalidOtpCount + 1);
 
                 if (invalidOtpCount + 1 === 3) {
