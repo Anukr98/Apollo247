@@ -38,7 +38,10 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 
@@ -113,6 +116,7 @@ type updatePateint = {
   id: string;
   relation: Relation | null;
 };
+let backPressCount = 0;
 
 export interface MultiSignupProps extends NavigationScreenProps {}
 
@@ -127,22 +131,26 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [showText, setShowText] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [backPressCount, setbackPressCount] = useState<number>(0);
   const [referredBy, setReferredBy] = useState<string>();
   const [referral, setReferral] = useState<string>('');
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      setbackPressCount(backPressCount + 1);
-      if (backPressCount === 1) {
-        BackHandler.exitApp();
+      try {
+        if (backPressCount === 1) {
+          BackHandler.exitApp();
+        } else {
+          backPressCount++;
+        }
+        return true;
+      } catch (e) {
+        CommonBugFender('Multi_Sign_up_backpressed', e);
       }
-      return true;
     });
     return function cleanup() {
       backHandler.remove();
     };
-  }, [backPressCount]);
+  }, []);
 
   useEffect(() => {
     if (allCurrentPatients && allCurrentPatients.length) {
