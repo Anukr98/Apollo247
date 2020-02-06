@@ -15,11 +15,14 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
+import ApolloClient from 'apollo-client';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { useAuth } from 'hooks/authHooks';
+import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -502,7 +505,28 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   }, []);
-
+  const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
+    return new Promise((res, rej) => {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENTS,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: patientId,
+              fileIds: fileIds,
+            },
+          },
+        })
+        .then(({ data }) => {
+          res({ urls: data.downloadDocuments.downloadPaths });
+        })
+        .catch((e: any) => {
+          const error = JSON.parse(JSON.stringify(e));
+          rej({ error: e });
+        });
+    });
+  };
   const getHistory = (timetoken: number | undefined) => {
     pubnub.history(
       {
@@ -514,10 +538,22 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       },
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
-        console.log(newmessage);
         res.messages.forEach((element: any, index: any) => {
-          newmessage.push(element.entry);
+          let item = element.entry;
+          if (item.prismId) {
+            getPrismUrls(apolloClient, patientId, item.prismId)
+              .then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              })
+              .catch((e: any) => {
+                // CommonBugFender('ChatRoom_getPrismUrls', e);
+              });
+            newmessage[index] = item;
+          } else {
+            newmessage.push(element.entry);
+          }
         });
+        console.log(newmessage);
         insertText = newmessage;
         setMessages(newmessage);
         const end: number | undefined = res.endTimeToken ? res.endTimeToken : 1;
