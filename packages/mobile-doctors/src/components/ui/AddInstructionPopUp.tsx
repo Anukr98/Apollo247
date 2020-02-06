@@ -75,7 +75,9 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
         <Button
           title={'ADD ADVICE'}
           onPress={() => {
-            props.onDone && props.onDone(value);
+            if (value) {
+              props.onDone && props.onDone(value);
+            }
             props.onClose();
           }}
           style={{ width: (width - 110) / 2 }}

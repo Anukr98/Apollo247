@@ -113,6 +113,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -618,6 +619,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { setCaseSheetEdit, caseSheetEdit } = useContext(CaseSheetContext);
 
   let Delegate = '';
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
@@ -734,15 +736,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setConsultationType(consultType as typeof consultationType);
         setLoading(false);
         try {
-          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+          setSysmptonsList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
+          );
+          setDiagonsisList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
+          );
+          setDiagnosticPrescriptionDataList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+          );
+          setMedicineList(
+            (_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+              []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+          );
         } catch (error) {
           console.log({ error });
         }
@@ -1004,20 +1013,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                               <AddSymptomPopUp
                                 data={showdata}
                                 onDone={(data) => {
-                                  if (
-                                    (symptonsData || []).findIndex(
-                                      (i) => i && i.symptom === data.symptom
-                                    ) < 0
-                                  ) {
-                                    setSymptonsData([
-                                      ...(symptonsData || []).filter(
-                                        (i) => i && i.symptom !== showdata.symptom
-                                      ),
-                                      data,
-                                    ]);
-                                  } else {
-                                    Alert.alert('', 'Already Exists');
-                                  }
+                                  setSymptonsData([
+                                    ...(symptonsData || []).filter(
+                                      (i) => i && i.symptom !== showdata.symptom
+                                    ),
+                                    data,
+                                  ]);
                                 }}
                                 onClose={() => props.overlayDisplay(null)}
                               />
@@ -1618,7 +1619,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   />
                 )
               }
-              style={{ marginBottom: 19, marginTop: 12 }}
+              style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
             />
           )}
         </View>
@@ -1875,7 +1876,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     />
                   );
                 }}
-                style={{ marginBottom: 19, marginLeft: 16, marginTop: 0 }}
+                style={{ marginBottom: 0, marginLeft: 0, marginTop: 0 }}
               />
             )}
           </View>
@@ -2270,8 +2271,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const selectedAdviceAction = (advice: dataPair, action: 'a' | 'd') => {
     if (action === 'a') {
-      if (addedAdvices.findIndex((item) => item.key === advice.key) < 0) {
+      if (
+        addedAdvices.findIndex((item) => item.value.toLowerCase() === advice.value.toLowerCase()) <
+        0
+      ) {
         setAddedAdvices([...addedAdvices, advice]);
+      } else {
+        showAphAlert && showAphAlert({ title: 'Alert!', description: 'Advice already exists.' });
       }
     } else if (action === 'd') {
       if (addedAdvices.findIndex((item) => item.key === advice.key) >= 0) {
@@ -2317,23 +2323,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  props.overlayDisplay(
-                    <AddInstructionPopUp
-                      onClose={() => {
-                        props.overlayDisplay(null);
-                      }}
-                      onDone={(val) => {
-                        selectedAdviceAction({ key: val, value: val }, 'a');
-                      }}
-                    />
-                  );
+                  selectedAdviceAction(item, 'a');
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-                  <PlusOrange />
-                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916'), marginLeft: 4 }}>
-                    ADD INSTRUCTIONS
+                <View style={styles.dataCardsStyle}>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
+                      flex: 1,
+                    }}
+                  >
+                    {item.value}
                   </Text>
+                  <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
                 </View>
               </TouchableOpacity>
             ))}
@@ -2352,7 +2354,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     />
                   );
                 }}
-                style={{ marginTop: 10 }}
+                style={{ marginTop: 5, marginBottom: 0, marginLeft: 0 }}
               />
             )}
           </View>

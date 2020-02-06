@@ -17,6 +17,8 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+
 const { width, height } = Dimensions.get('window');
 
 export interface AddSymptomPopUpProps {
@@ -28,6 +30,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
   const [value, setValue] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | undefined
   >(props.data);
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   const renderHeader = () => {
     return (
@@ -54,7 +57,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
             marginRight: 20,
           }}
         >
-          {'Favourite Advice'}
+          {props.data ? 'UPDATE COMPLAINT' : 'ADD COMPLAINT'}
         </Text>
       </View>
     );
@@ -81,22 +84,38 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
           style={{ width: (width - 110) / 2, marginRight: 16 }}
         />
         <Button
-          title={'ADD ADVICE'}
+          title={props.data ? 'UPDATE SYMPTOM' : 'ADD SYMPTOM'}
           onPress={() => {
             if (value) {
               if (value.symptom) {
                 if (value.severity) {
                   props.onDone && props.onDone(value);
                 } else {
-                  Alert.alert('', 'Enter Severity');
+                  showAphAlert &&
+                    showAphAlert({
+                      title: 'Alert!',
+                      description: 'Enter Severity',
+                    });
                   return;
                 }
               } else {
-                Alert.alert('', 'Enter Symptom');
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description: 'Enter Symptom',
+                  });
                 return;
               }
             } else {
-              Alert.alert('', 'Enter Data');
+              showAphAlert &&
+                showAphAlert({
+                  title: 'Alert!',
+                  description: 'Complaint data is empty',
+                  onPressOk: () => {
+                    props.onClose();
+                    hideAphAlert && hideAphAlert();
+                  },
+                });
               return;
             }
             props.onClose();
