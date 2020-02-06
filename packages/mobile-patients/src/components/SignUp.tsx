@@ -41,7 +41,10 @@ import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalT
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height } = Dimensions.get('window');
@@ -109,6 +112,8 @@ const GenderOptions: genderOptions[] = [
   // },
 ];
 
+let backPressCount = 0;
+
 export interface SignUpProps extends NavigationScreenProps {}
 export const SignUp: React.FC<SignUpProps> = (props) => {
   const [gender, setGender] = useState<string>('');
@@ -120,7 +125,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
-  const [backPressCount, setbackPressCount] = useState<number>(0);
+
   // const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
@@ -170,16 +175,21 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      setbackPressCount(backPressCount + 1);
-      if (backPressCount === 1) {
-        BackHandler.exitApp();
+      try {
+        if (backPressCount === 1) {
+          BackHandler.exitApp();
+        } else {
+          backPressCount++;
+        }
+        return true;
+      } catch (e) {
+        CommonBugFender('Sign_up_backpressed', e);
       }
-      return true;
     });
     return function cleanup() {
       backHandler.remove();
     };
-  }, [backPressCount]);
+  }, []);
 
   // const renderReferral = () => {
   //   return (
