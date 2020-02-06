@@ -1198,6 +1198,9 @@ export class AuditHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  doctorType: string;
+
   @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
   appointment: Appointment;
 
