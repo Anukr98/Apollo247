@@ -54,4 +54,6 @@ target 'ApolloPatient' do
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
 
 
+  pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
+
 end

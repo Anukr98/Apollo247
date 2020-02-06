@@ -25319,20 +25319,6 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "appointmentId",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "ID",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          },
-          {
             "name": "amountPaid",
             "description": null,
             "type": {

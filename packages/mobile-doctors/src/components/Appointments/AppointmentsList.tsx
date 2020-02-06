@@ -75,8 +75,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     showBottom: boolean,
     showNext: boolean
   ) => {
-    console.log(status, 'statusstatus');
-
     return (
       <View style={styles.leftTimeLineContainer}>
         <View

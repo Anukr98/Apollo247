@@ -547,7 +547,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   const AppId = props.navigation.getParam('AppId');
   const stastus = props.navigation.getParam('AppointmentStatus');
-  //const isDelegateLogin = props.navigation.getParam('DelegateNumberLoginSuccess');
   const [value, setValue] = useState<string>('');
   const [othervalue, setOthervalue] = useState<string>('');
   const [familyValues, setFamilyValues] = useState<
@@ -601,7 +600,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [pastList, setPastList] = useState<
     (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
   >([]);
-  const { isDelegateLogin, setIsDelegateLogin } = useAuth();
 
   const [consultationType, setConsultationType] = useState<'ONLINE' | 'PHYSICAL' | ''>('');
   const [consultationPayType, setConsultationPayType] = useState<'PAID' | 'FREE' | ''>('');
@@ -1367,7 +1365,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           setTests([...tests, { ...showdata, isSelected: true }]);
                         }}
                       >
-                        {isDelegateLogin ? null : <Green />}
+                        <Green />
                       </TouchableOpacity>
                     }
                   />
@@ -1913,7 +1911,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       diseaseName={showdata.instruction}
                       icon={
                         <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
-                          {isDelegateLogin ? null : <DiagonisisRemove />}
+                          {<DiagonisisRemove />}
                         </TouchableOpacity>
                       }
                     />
@@ -2396,7 +2394,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderPatientHistoryLifestyle()}
           {renderPatientHealthWallet()}
 
-          {isDelegateLogin ? null : renderJuniorDoctorNotes()}
+          {renderJuniorDoctorNotes()}
           {renderDiagnosisView()}
           {renderMedicinePrescription()}
           {renderDiagonisticPrescription()}

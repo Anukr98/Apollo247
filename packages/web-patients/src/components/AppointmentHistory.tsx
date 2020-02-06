@@ -187,7 +187,7 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                 );
                 const appointmentTime = format(new Date(appointment.appointmentDateTime), 'h:mm a');
                 return (
-                  <Grid item sm={3} key={_uniqueId('avagr_')}>
+                  <Grid item sm={6} xs={6} md={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>
                       <div className={classes.appointType}>
                         {appointment.appointmentType === 'ONLINE'
