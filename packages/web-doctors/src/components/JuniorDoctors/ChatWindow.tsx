@@ -553,7 +553,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             newmessage.push(element.entry);
           }
         });
-        console.log(newmessage);
         insertText = newmessage;
         setMessages(newmessage);
         const end: number | undefined = res.endTimeToken ? res.endTimeToken : 1;
