@@ -1207,11 +1207,8 @@ export class AuditHistory extends BaseEntity {
   @Column()
   auditorId: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'json' })
   comment: string;
-
-  @Column({ nullable: true })
-  doctorType: string;
 
   @Column({ nullable: true })
   rating: number;
