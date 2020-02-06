@@ -125,7 +125,8 @@ const makeAppointmentPayment: Resolver<
     sendPatientAcknowledgements(processingAppointment, consultsDb, doctorsDb, patientsDb);
 
     //update appointment status
-    apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
+    //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
+    apptsRepo.updateAppointmentStatus(processingAppointment.id, STATUS.PENDING, false);
   }
 
   return { appointment: paymentInfo };
