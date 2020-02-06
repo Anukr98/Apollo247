@@ -12,8 +12,6 @@ export const useAuth = () => {
     sendOtp,
     verifyOtp,
     clearFirebaseUser,
-    setIsDelegateLogin,
-    isDelegateLogin,
     getDoctorDetailsApi,
     signOut,
   } = useContext(AuthContext);
@@ -23,8 +21,6 @@ export const useAuth = () => {
     firebaseUser,
     setDoctorDetails,
     doctorDetails,
-    setIsDelegateLogin,
-    isDelegateLogin,
     sendOtp,
     verifyOtp,
     clearFirebaseUser,

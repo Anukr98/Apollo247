@@ -107,7 +107,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
 
-  const { sendOtp } = useAuth();
+  const { sendOtp, doctorDetails } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const phoneNumber = props.navigation.getParam('phoneNumber');
 
@@ -131,6 +131,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (doctorDetails && doctorDetails.id) {
+      props.navigation.replace(AppRoutes.OTPVerificationApiCall, {
+        phoneNumber,
+      });
+    }
+  }, [doctorDetails]);
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -263,9 +271,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             console.log(data.status === true, data.status, 'status');
 
             if (data.status === true) {
-              props.navigation.replace(AppRoutes.OTPVerificationApiCall, {
-                phoneNumber,
-              });
+              // props.navigation.replace(AppRoutes.OTPVerificationApiCall, {
+              //   phoneNumber,
+              // });
               _removeFromStore();
               console.log('error', data.authToken);
 
@@ -275,17 +283,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 });
             } else {
               console.log('else error');
-
               try {
                 setshowErrorBottomLine(true);
-                setshowSpinner(false);
-                // console.log('error', error);
+                // setshowSpinner(false);
                 _storeTimerData(invalidOtpCount + 1);
 
                 if (invalidOtpCount + 1 === 3) {
                   setShowErrorMsg(true);
                   setIsValidOTP(false);
-                  // startInterval(timer);
                   setIntervalId(intervalId);
                 } else {
                   setShowErrorMsg(true);
@@ -293,7 +298,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 }
                 setInvalidOtpCount(invalidOtpCount + 1);
               } catch (error) {
-                setshowSpinner(false);
+                // setshowSpinner(false);
                 // console.log(error);
               }
             }

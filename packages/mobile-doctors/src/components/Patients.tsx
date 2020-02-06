@@ -32,6 +32,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -270,6 +271,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
         .catch((e) => {
           setshowSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
+          CommonBugFender('PatientLog', error);
           console.log('Error occured while fetching patient log', error);
         });
     }
