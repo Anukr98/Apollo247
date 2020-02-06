@@ -8,6 +8,8 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
+import { trim } from 'lodash';
+import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -19,6 +21,7 @@ export const updatePatientTypeDefs = gql`
     uhid: String
     emailAddress: String
     dateOfBirth: Date
+    referralCode: String
     relation: Relation
     photoUrl: String
   }
@@ -70,6 +73,15 @@ const updatePatient: Resolver<
   UpdatePatientResult
 > = async (parent, { patientInput }, { profilesDb }) => {
   const { id, ...updateAttrs } = patientInput;
+
+  //check for referal code validation
+  if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
+    const referralCode = updateAttrs.referralCode.toUpperCase();
+    updateAttrs.referralCode = referralCode;
+    if (!isValidReferralCode(referralCode))
+      throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
+  }
+
   const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
   if (updatePatient) {
