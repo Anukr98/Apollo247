@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   KeyboardAvoidingView,
@@ -8,6 +8,7 @@ import {
   Dimensions,
   Text,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
@@ -22,6 +23,19 @@ export interface AddInstructionPopUpProps {
 }
 export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) => {
   const [value, setValue] = useState<string>(props.data || '');
+
+  const handleBack = async () => {
+    props.onClose();
+    return false;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
   const renderHeader = () => {
     return (
       <View

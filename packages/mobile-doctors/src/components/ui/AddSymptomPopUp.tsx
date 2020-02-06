@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   KeyboardAvoidingView,
@@ -10,6 +10,7 @@ import {
   TextInput,
   TextInputBase,
   Alert,
+  BackHandler,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
@@ -31,6 +32,18 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | undefined
   >(props.data);
   const { showAphAlert, hideAphAlert } = useUIElements();
+
+  const handleBack = async () => {
+    props.onClose();
+    return false;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   const renderHeader = () => {
     return (

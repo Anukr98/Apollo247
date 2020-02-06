@@ -41,6 +41,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
@@ -160,6 +161,18 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const [asNeededValue, setAsNeededValue] = useState<boolean>(false);
 
   const [instructions, setInstructions] = useState<string>('');
+
+  const handleBack = async () => {
+    props.onClose();
+    return false;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   useEffect(() => {
     if (data) {
@@ -323,11 +336,9 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               ].filter((i) => i !== ''),
             };
             onAddnew &&
-              onAddnew(
-                dataSend as
-                  | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
-                  | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
-              );
+              onAddnew(dataSend as
+                | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+                | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription);
             onClose();
           }}
           style={{ width: (width - 110) / 2 }}
