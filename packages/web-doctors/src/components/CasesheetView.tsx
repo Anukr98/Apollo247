@@ -376,6 +376,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
+
   return (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
@@ -519,7 +520,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               <div className={classes.medicationList}>
                 <ol>
                   {diagnosticPrescription.map(
-                    (prescription) => prescription.itemname && <li>{prescription.itemname}</li>
+                    (prescription) =>
+                      (prescription.itemname || prescription.itemName) && (
+                        <li>{prescription.itemname || prescription.itemName}</li>
+                      )
                   )}
                 </ol>
               </div>
