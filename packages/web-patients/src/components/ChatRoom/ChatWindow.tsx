@@ -671,7 +671,31 @@ let stoppedConsulTimer: number;
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles({});
   const { doctorDetails } = props;
-
+  const autoMessageStrings: AutoMessageStrings = {
+    videoCallMsg: '^^callme`video^^',
+    audioCallMsg: '^^callme`audio^^',
+    stopcallMsg: '^^callme`stop^^',
+    acceptedcallMsg: '^^callme`accept^^',
+    startConsult: '^^#startconsult',
+    stopConsult: '^^#stopconsult',
+    rescheduleconsult: '^^#rescheduleconsult',
+    consultPatientStartedMsg: '^^#PatientConsultStarted',
+    firstMessage: '^^#firstMessage',
+    secondMessage: '^^#secondMessage',
+    typingMsg: '^^#typing',
+    covertVideoMsg: '^^convert`video^^',
+    covertAudioMsg: '^^convert`audio^^',
+    followupconsult: '^^#followupconsult',
+    documentUpload: '^^#DocumentUpload',
+    startConsultjr: '^^#startconsultJr',
+    stopConsultjr: '^^#stopconsultJr',
+    cancelConsultInitiated: '^^#cancelConsultInitiated',
+    callAbandonment: '^^#callAbandonment',
+    appointmentComplete: '^^#appointmentComplete',
+    transferconsult: '^^#transferconsult',
+    languageQue: '^^#languageQue',
+    jdThankyou: '^^#jdThankyou',
+  };
   const profileImage =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.photoUrl
@@ -729,33 +753,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const mascotRef = useRef(null);
   const apolloClient = useApolloClient();
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
-  const [callCookie, setCallCookie] = useState(false);
+  const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
 
-  const autoMessageStrings: AutoMessageStrings = {
-    videoCallMsg: '^^callme`video^^',
-    audioCallMsg: '^^callme`audio^^',
-    stopcallMsg: '^^callme`stop^^',
-    acceptedcallMsg: '^^callme`accept^^',
-    startConsult: '^^#startconsult',
-    stopConsult: '^^#stopconsult',
-    rescheduleconsult: '^^#rescheduleconsult',
-    consultPatientStartedMsg: '^^#PatientConsultStarted',
-    firstMessage: '^^#firstMessage',
-    secondMessage: '^^#secondMessage',
-    typingMsg: '^^#typing',
-    covertVideoMsg: '^^convert`video^^',
-    covertAudioMsg: '^^convert`audio^^',
-    followupconsult: '^^#followupconsult',
-    documentUpload: '^^#DocumentUpload',
-    startConsultjr: '^^#startconsultJr',
-    stopConsultjr: '^^#stopconsultJr',
-    cancelConsultInitiated: '^^#cancelConsultInitiated',
-    callAbandonment: '^^#callAbandonment',
-    appointmentComplete: '^^#appointmentComplete',
-    transferconsult: '^^#transferconsult',
-    languageQue: '^^#languageQue',
-    jdThankyou: '^^#jdThankyou',
-  };
 
   const doctorId = props.doctorId;
   const patientId = currentUserId;
@@ -795,7 +794,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         window.alert('An error occurred while loading :(');
       });
   };
+  const setCookiesAcceptcall = () => {
+    const cookieStr = `action=${callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'}`;
+    document.cookie = cookieStr + ';path=/;';
+  };
 
+  const removeCookie = () => {
+    const cookieStr = ``;
+    document.cookie = cookieStr + `;path/;`;
+  }
+
+  const getCookieValue = (id: string) => {
+    const name = id + '=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return '';
+  };
   //Audio and video ring toon
   const [ring, setRing] = useState(false);
   useEffect(() => {
@@ -853,7 +875,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => {}
+      (status, response) => { }
     );
   };
 
@@ -963,10 +985,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       }
     );
     updateAppointmentSessionCall();
-    setShowVideo(true);
     startIntervalTimer(0);
-    setPlaying(!playing);
+    setCookiesAcceptcall();
     audio.pause();
+    setShowVideo(true);
+    setPlaying(!playing);
   };
 
   const stopAudioVideoCall = () => {
@@ -975,7 +998,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
       isTyping: true,
     };
     pubnub.publish(
@@ -989,9 +1012,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         setMessageText('');
       }
     );
+    removeCookie();
     stopIntervalTimer();
-    setShowVideo(false);
     autoSend();
+    setShowVideo(false);
     setIsVideoCall(false);
     setIsCalled(false);
   };
@@ -1019,7 +1043,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           channel: channel,
           storeInHistory: false,
         },
-        (status: any, response: any) => {}
+        (status: any, response: any) => { }
       );
     }, 10);
   };
@@ -1058,6 +1082,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     });
   };
   const [videoCall, setVideoCall] = useState(false);
+  const [audiocallmsg, setAudiocallmsg] = useState(false);
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -1065,14 +1090,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     });
     getHistory(0);
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
-        setCallCookie(message.message.message);
         setRing(
-          message.message.message == autoMessageStrings.videoCallMsg ||
-            message.message.message == autoMessageStrings.audioCallMsg
+          message.message.message === autoMessageStrings.videoCallMsg ||
+          message.message.message === autoMessageStrings.audioCallMsg
         );
+        if (message.message.message === autoMessageStrings.videoCallMsg ||
+          message.message.message === autoMessageStrings.audioCallMsg) {
+          setCallAudio(message.message.message);
+        }
+        setAudiocallmsg(message.message.message.includes('callme`audio'));
         setVideoCall(message.message.message.includes('audio'));
+
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         resetMessagesAction();
@@ -1122,7 +1152,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           setShowVideo(false);
         }
       },
-      presence: (presenceEvent) => {},
+      presence: (presenceEvent) => { },
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
@@ -1158,7 +1188,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const startTimerForFirstTextMessageToPatient = () => {
-    thirtySecondTimer = setTimeout(function() {
+    thirtySecondTimer = setTimeout(function () {
       if (props.jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.firstMessage;
@@ -1191,7 +1221,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               storeInHistory: true,
               sendByPost: true,
             },
-            (status, response) => {}
+            (status, response) => { }
           );
         } else {
           thirtySecondTimer && clearTimeout(thirtySecondTimer);
@@ -1250,7 +1280,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const startTimerForSecondTextMessageToPatient = () => {
-    minuteTimer = setTimeout(function() {
+    minuteTimer = setTimeout(function () {
       if (props.jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.secondMessage;
@@ -1282,7 +1312,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               storeInHistory: true,
               sendByPost: true,
             },
-            (status, response) => {}
+            (status, response) => { }
           );
         } else {
           minuteTimer && clearTimeout(minuteTimer);
@@ -1381,20 +1411,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     <div className={`${classes.doctorChatBubble} ${classes.blueBubble} ${classes.petient} `}>
       {(rowData.message === autoMessageStrings.followupconsult &&
         rowData.transferInfo.folloupDateTime.length) > 0 ? (
-        <div>
-          <div>I've a free followup for you --</div>
-          <div>{rowData.transferInfo.folloupDateTime}</div>
-        </div>
-      ) : (
-        <div>
-          <div className={`${classes.dashedBorderBottom} ${classes.scheduledText} `}>
-            I've rescheduled your appointment --
+          <div>
+            <div>I've a free followup for you --</div>
+            <div>{rowData.transferInfo.folloupDateTime}</div>
           </div>
-          <div className={`${classes.dashedBorderBottom} ${classes.scheduledTextTwo} `}>
-            {moment(rowData.transferInfo.transferDateTime).format('Do MMMM, dddd \nhh:mm a')}
+        ) : (
+          <div>
+            <div className={`${classes.dashedBorderBottom} ${classes.scheduledText} `}>
+              I've rescheduled your appointment --
           </div>
-        </div>
-      )}
+            <div className={`${classes.dashedBorderBottom} ${classes.scheduledTextTwo} `}>
+              {moment(rowData.transferInfo.transferDateTime).format('Do MMMM, dddd \nhh:mm a')}
+            </div>
+          </div>
+        )}
       <div className={classes.bubbleActions}>
         <AphButton
           className={classes.viewButton}
@@ -1504,53 +1534,53 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 </div>
               </div>
             ) : (
-              <div
-                className={
-                  rowData.message === autoMessageStrings.documentUpload
-                    ? classes.chatImgBubble
-                    : classes.chatBubble
-                }
-              >
-                {leftComponent == 1 && !rowData.duration && (
-                  <div className={classes.patientAvatar}>
-                    <Avatar
-                      className={classes.avatar}
-                      src={
-                        doctorDetails && doctorDetails.getDoctorDetailsById
-                          ? doctorDetails.getDoctorDetailsById.photoUrl
-                          : require('images/no_photo_icon_round.svg')
-                      }
-                      alt=""
-                    />
-                  </div>
-                )}
-                {rowData.message === autoMessageStrings.documentUpload ? (
                   <div
-                    onClick={() => {
-                      setModalOpen(true);
-                      setImgPrevUrl(rowData.url);
-                    }}
-                    className={classes.imageUpload}
+                    className={
+                      rowData.message === autoMessageStrings.documentUpload
+                        ? classes.chatImgBubble
+                        : classes.chatBubble
+                    }
                   >
-                    <img src={rowData.url} alt={rowData.url} />
-                    {rowData.messageDate && (
-                      <div className={classes.timeStampImg}>
-                        {chatTimeConvertion(rowData.messageDate)}
+                    {leftComponent == 1 && !rowData.duration && (
+                      <div className={classes.patientAvatar}>
+                        <Avatar
+                          className={classes.avatar}
+                          src={
+                            doctorDetails && doctorDetails.getDoctorDetailsById
+                              ? doctorDetails.getDoctorDetailsById.photoUrl
+                              : require('images/no_photo_icon_round.svg')
+                          }
+                          alt=""
+                        />
                       </div>
                     )}
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <span>{rowData.message}</span>
-                      <div className={`${classes.chatTime} ${classes.defaultChatTime} `}>
-                        {chatTimeConvertion(rowData.messageDate)}
+                    {rowData.message === autoMessageStrings.documentUpload ? (
+                      <div
+                        onClick={() => {
+                          setModalOpen(true);
+                          setImgPrevUrl(rowData.url);
+                        }}
+                        className={classes.imageUpload}
+                      >
+                        <img src={rowData.url} alt={rowData.url} />
+                        {rowData.messageDate && (
+                          <div className={classes.timeStampImg}>
+                            {chatTimeConvertion(rowData.messageDate)}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </>
+                    ) : (
+                        <>
+                          <div>
+                            <span>{rowData.message}</span>
+                            <div className={`${classes.chatTime} ${classes.defaultChatTime} `}>
+                              {chatTimeConvertion(rowData.messageDate)}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                  </div>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -1593,83 +1623,83 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 )}
               </div>
             ) : (
-              <div
-                className={
-                  rowData.message === autoMessageStrings.documentUpload ? classes.chatImgBubble : ''
-                }
-              >
-                <div className={classes.doctorAvatar}>
-                  <Avatar
-                    className={classes.avatar}
-                    src={
-                      doctorDetails && doctorDetails.getDoctorDetailsById
-                        ? doctorDetails.getDoctorDetailsById.photoUrl
-                        : require('images/no_photo_icon_round.svg')
-                    }
-                    alt=""
-                  />
-                </div>
-                {rowData.message === autoMessageStrings.documentUpload ? (
                   <div
-                    onClick={() => {
-                      setModalOpen(true);
-                      setImgPrevUrl(rowData.url);
-                    }}
-                    className={classes.imageUpload}
+                    className={
+                      rowData.message === autoMessageStrings.documentUpload ? classes.chatImgBubble : ''
+                    }
                   >
-                    <img src={rowData.url} alt={rowData.url} />
-                    {rowData.messageDate && (
-                      <div className={classes.timeStampImg}>
-                        {chatTimeConvertion(rowData.messageDate)}
+                    <div className={classes.doctorAvatar}>
+                      <Avatar
+                        className={classes.avatar}
+                        src={
+                          doctorDetails && doctorDetails.getDoctorDetailsById
+                            ? doctorDetails.getDoctorDetailsById.photoUrl
+                            : require('images/no_photo_icon_round.svg')
+                        }
+                        alt=""
+                      />
+                    </div>
+                    {rowData.message === autoMessageStrings.documentUpload ? (
+                      <div
+                        onClick={() => {
+                          setModalOpen(true);
+                          setImgPrevUrl(rowData.url);
+                        }}
+                        className={classes.imageUpload}
+                      >
+                        <img src={rowData.url} alt={rowData.url} />
+                        {rowData.messageDate && (
+                          <div className={classes.timeStampImg}>
+                            {chatTimeConvertion(rowData.messageDate)}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div
-                      className={rowData.automatedText ? classes.petient : classes.chatBubbledoc}
-                    >
-                      {/* show Prescription card */}
-                      {rowData.message === autoMessageStrings.stopConsult ||
-                        (rowData.message === autoMessageStrings.followupconsult &&
-                          showPrescriptionCard(rowData))}
+                    ) : (
+                        <>
+                          <div
+                            className={rowData.automatedText ? classes.petient : classes.chatBubbledoc}
+                          >
+                            {/* show Prescription card */}
+                            {rowData.message === autoMessageStrings.stopConsult ||
+                              (rowData.message === autoMessageStrings.followupconsult &&
+                                showPrescriptionCard(rowData))}
 
-                      {/* show reschedule or followup card */}
+                            {/* show reschedule or followup card */}
 
-                      {/* {(rowData.message === autoMessageStrings.rescheduleconsult ||
+                            {/* {(rowData.message === autoMessageStrings.rescheduleconsult ||
                             rowData.message === autoMessageStrings.followupconsult) &&
                             getFollowupOrRescheduleCard(rowData)} */}
 
-                      {/* show available slots for reschedule */}
-                      {rowData.message === autoMessageStrings.rescheduleconsult
-                        ? docNotAvailable(rowData)
-                        : null}
+                            {/* show available slots for reschedule */}
+                            {rowData.message === autoMessageStrings.rescheduleconsult
+                              ? docNotAvailable(rowData)
+                              : null}
 
-                      {/* show available slots for reschedule */}
-                      {rowData.message === autoMessageStrings.rescheduleconsult
-                        ? getNextAvailableRescheduleSlot(rowData)
-                        : null}
-                      {/* show other messages when it is not reschedule and followUp   */}
-                      {rowData.message !== autoMessageStrings.rescheduleconsult &&
-                      rowData.message !== autoMessageStrings.followupconsult ? (
-                        <div>
-                          <span>{rowData.automatedText || rowData.message}</span>
-                          <div
-                            className={
-                              rowData.automatedText
-                                ? classes.chatTime
-                                : `${classes.chatTime} ${classes.defaultChatTime} `
-                            }
-                          >
-                            {chatTimeConvertion(rowData.messageDate)}
+                            {/* show available slots for reschedule */}
+                            {rowData.message === autoMessageStrings.rescheduleconsult
+                              ? getNextAvailableRescheduleSlot(rowData)
+                              : null}
+                            {/* show other messages when it is not reschedule and followUp   */}
+                            {rowData.message !== autoMessageStrings.rescheduleconsult &&
+                              rowData.message !== autoMessageStrings.followupconsult ? (
+                                <div>
+                                  <span>{rowData.automatedText || rowData.message}</span>
+                                  <div
+                                    className={
+                                      rowData.automatedText
+                                        ? classes.chatTime
+                                        : `${classes.chatTime} ${classes.defaultChatTime} `
+                                    }
+                                  >
+                                    {chatTimeConvertion(rowData.messageDate)}
+                                  </div>
+                                </div>
+                              ) : null}
                           </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  </>
+                        </>
+                      )}
+                  </div>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -1678,8 +1708,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-        })
+        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+      })
       : '';
   return (
     <div className={classes.consultRoom}>
@@ -1689,7 +1719,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       <div
         className={`${classes.chatSection} ${
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
-        } `}
+          } `}
       >
         {showVideo && sessionId !== '' && token !== '' && (
           <ChatVideo
@@ -1706,7 +1736,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             doctorDetails={doctorDetails}
             convertCall={() => convertCall()}
             videoCall={videoCall}
-            // setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+            audiocallmsg={audiocallmsg}
+          // setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
           />
         )}
         <div>
