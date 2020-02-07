@@ -272,13 +272,6 @@ const getCurrentPatients: Resolver<
     console.log(updatePatients);
     homeLogger('CREATE_OR_RETURN_PATIENTS_END');
 
-    /*
-  checkPatients.map(async (patient) => {
-    if ((patient.uhid == '' || patient.uhid == null) && patient.firstName.trim() != '') {
-      await patientRepo.createNewUhid(patient.id);
-    }
-  });*/
-
     homeLogger('ASYNC_UPDATE_APP_VERSION_START');
     patients = await patientRepo.findByMobileNumber(mobileNumber);
 
