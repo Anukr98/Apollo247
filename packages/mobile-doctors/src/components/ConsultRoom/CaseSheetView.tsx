@@ -895,7 +895,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     //console.log({ Appintmentdatetimeconsultpage });
     return (
       <View style={{ backgroundColor: '#f0f4f5' }}>
-        {showButtons == false && false ? (
+        {showButtons == false ? (
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
@@ -2532,7 +2532,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               </View>
             </View>
             {/* {loading ? <Loader flex1 /> : null} */}
-            {renderButtonsView()}
+            {/* {renderButtonsView()} */}
             {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
             stastus == 'IN_PROGRESS'
               ? renderButtonsView()
