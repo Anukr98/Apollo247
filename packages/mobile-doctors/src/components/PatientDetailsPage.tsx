@@ -17,10 +17,20 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { Image } from 'react-native-elements';
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -115,6 +125,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const todayYear = moment(new Date()).format('YYYY');
 
   useEffect(() => {
+    console.log(PatientInfo, 'PatientInfoData');
     client
       .query<GetCaseSheet>({
         query: GET_CASESHEET,
@@ -367,17 +378,37 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   //   );
   // };
 
+  const renderPatientImage = () => {
+    return (
+      <View style={{ marginBottom: 20 }}>
+        <View style={{ top: 10, marginLeft: 20, position: 'absolute', zIndex: 2 }}>
+          <TouchableOpacity onPress={() => props.navigation.pop()}>
+            <BackArrow />
+          </TouchableOpacity>
+        </View>
+        <Image
+          source={{
+            uri: (patientDetails && patientDetails.photoUrl) || '',
+          }}
+          style={{ height: width, width: width }}
+          resizeMode={'contain'}
+          placeholderStyle={{
+            height: width,
+            width: width,
+            alignItems: 'center',
+            backgroundColor: 'transparent',
+          }}
+          PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[theme.viewStyles.container]}>
         <ScrollView bounces={false}>
-          <PatientPlaceHolderImage />
-
-          <View style={{ top: -150, marginLeft: 20 }}>
-            <TouchableOpacity onPress={() => props.navigation.pop()}>
-              <BackArrow />
-            </TouchableOpacity>
-          </View>
+          {renderPatientImage()}
           <View style={[styles.shadowview, { marginTop: -20 }]}>
             <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 20 }}>
               <View style={{ flex: 1 }}>

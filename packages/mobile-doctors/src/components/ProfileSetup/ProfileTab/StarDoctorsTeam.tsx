@@ -24,6 +24,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -122,6 +123,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       })
       .catch((e) => {
         setSelectedDoctor('Select Doctor');
+        CommonBugFender('Add_Doctor_to_Program_StarDoctorTeam', e);
         setIsLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
@@ -150,6 +152,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       })
       .catch((e) => {
         setIsLoading(false);
+        CommonBugFender('Remove_Doctor_to_Program_StarDoctorTeam', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while removing Doctor', errorMessage, error);
@@ -225,6 +228,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
           .filter(Boolean) //.filter((data) => !data)
           .join(',') || '');
     } catch (e) {
+      CommonBugFender('Get_Formatted_Location', e);
       console.log('e', e);
     }
     console.log('location', location);

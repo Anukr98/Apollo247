@@ -32,6 +32,7 @@ import {
 import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
@@ -111,6 +112,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         // User has authorised
       } catch (error) {
         // User has rejected permissions
+        CommonBugFender('FireBaseFCM_ProfileSetup', error);
         console.log('not enabled error', error);
       }
     }
@@ -127,6 +129,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       getDoctorDetailsApi &&
         getDoctorDetailsApi()
           .catch((err) => {
+            CommonBugFender('GetDoctor_Details_Api_ProfileSetup', err);
             props.navigation.replace(AppRoutes.Login);
           })
           .finally(() => {
@@ -169,6 +172,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 );
               })
               .catch((e: string) => {
+                CommonBugFender('Save_Doctor_Device_Token', e);
                 console.log('Error occured while calling device token', e);
               });
           }
@@ -213,6 +217,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         })
         .catch((error) => {
           console.log(error);
+          CommonBugFender('Get_Doctor_Details_reload', e);
           setReloading(false);
         });
     // client

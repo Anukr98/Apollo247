@@ -2999,7 +2999,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             endAppointmentApiCall(STATUS.NO_SHOW);
           });
         }
-        // startInterval(timer);
+        startInterval(timer);
       }
     );
   };
