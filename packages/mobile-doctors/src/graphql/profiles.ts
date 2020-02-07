@@ -458,6 +458,7 @@ export const GET_CASESHEET = gql`
         blobName
         doctorId
         sentToPatient
+        status
         appointment {
           id
           appointmentDateTime

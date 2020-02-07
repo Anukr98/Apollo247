@@ -170,6 +170,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   blobName: string | null;
   doctorId: string | null;
   sentToPatient: boolean | null;
+  status: string | null;
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
