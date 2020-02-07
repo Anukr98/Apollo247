@@ -3,7 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import { Mascot, Check, UnCheck, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Mascot, WhiteTickIcon, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -125,10 +125,15 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
-
-  // const [referral, setReferral] = useState<string>('');
+  const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
+  const [isValidReferral, setValidReferral] = useState<boolean>(false);
+
+  useEffect(() => {
+    const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
+    setValidReferral(isValidReferralCode);
+  }, [referral]);
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -191,40 +196,42 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     };
   }, []);
 
-  // const renderReferral = () => {
-  //   return (
-  //     <View
-  //       style={{
-  //         backgroundColor: theme.colors.SKY_BLUE,
-  //         marginHorizontal: -20,
-  //         paddingVertical: 20,
-  //         marginTop: 20,
-  //       }}
-  //     >
-  //       <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
-  //         <Gift style={{ marginRight: 20 }} />
-  //         <TextInputComponent
-  //           label={
-  //             referredBy
-  //               ? `${referredBy} Has Sent You A Referral Code!`
-  //               : 'Do You Have A Referral Code? (Optional)'
-  //           }
-  //           labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
-  //           placeholder={'Enter referral code'}
-  //           placeholderTextColor={'rgba(255,255,255,0.6)'}
-  //           inputStyle={{
-  //             borderColor: theme.colors.WHITE,
-  //             color: theme.colors.WHITE,
-  //           }}
-  //           conatinerstyles={{ width: '78%' }}
-  //           value={referral}
-  //           onChangeText={(text) => setReferral(text)}
-  //           icon={referredBy ? <Check /> : null}
-  //         />
-  //       </View>
-  //     </View>
-  //   );
-  // };
+  const renderReferral = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.SKY_BLUE,
+          marginHorizontal: -20,
+          paddingVertical: 18,
+          marginTop: 20,
+        }}
+      >
+        <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
+          <Gift style={{ marginRight: 20, marginTop: 12 }} />
+          <TextInputComponent
+            maxLength={8}
+            label={
+              'Do You Have A Referral Code? (Optional)'
+              // referredBy
+              //   ? `${referredBy} Has Sent You A Referral Code!`
+              //   : 'Do You Have A Referral Code? (Optional)'
+            }
+            labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff'), marginBottom: 12 }}
+            placeholder={'Enter referral code'}
+            placeholderTextColor={'rgba(255,255,255,0.6)'}
+            inputStyle={{
+              borderColor: theme.colors.WHITE,
+              color: theme.colors.WHITE,
+            }}
+            conatinerstyles={{ width: '78%' }}
+            value={referral}
+            onChangeText={(text) => setReferral(text)}
+            icon={isValidReferral ? <WhiteTickIcon /> : null}
+          />
+        </View>
+      </View>
+    );
+  };
 
   const renderCard = () => {
     return (
@@ -333,7 +340,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
-          {/* {renderReferral()} */}
+          {renderReferral()}
         </Card>
       </View>
     );
@@ -384,12 +391,15 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       }
                     } else if (!gender) {
                       validationMessage = 'Please select gender';
+                    } else if (referral !== '') {
+                      if (!isValidReferral) {
+                        validationMessage = 'Enter valid referral code';
+                      }
                     }
                     if (validationMessage) {
                       Alert.alert('Error', validationMessage);
                     } else {
                       setVerifyingPhoneNumber(true);
-
                       const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                       console.log('signup currentPatient', currentPatient);
 
@@ -408,6 +418,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         uhid: '',
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
+                        referralCode: referral,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({
