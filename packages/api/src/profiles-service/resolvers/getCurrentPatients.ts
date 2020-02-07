@@ -403,7 +403,6 @@ const getLoginPatients: Resolver<
 
   console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
