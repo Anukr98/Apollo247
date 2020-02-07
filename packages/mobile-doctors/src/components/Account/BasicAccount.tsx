@@ -1,33 +1,27 @@
 import {
-  PatientPlaceHolderImage,
-  Block,
-  CalendarIcon,
-  RightIcon,
-  Notification,
-  Profile,
   AvailabilityIcon,
   FeeIcon,
-  SmartPrescription,
+  PatientPlaceHolderImage,
+  Profile,
+  RightIcon,
   Settings,
+  SmartPrescription,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  GetDoctorDetails,
-  GetDoctorDetails_getDoctorDetails,
-} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import React, { useEffect, useState, useRef } from 'react';
+
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Dimensions,
-  StyleSheet,
-  View,
-  Text,
-  SafeAreaView,
-  TouchableOpacity,
   Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -36,6 +30,8 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 
@@ -66,25 +62,21 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isReloading, setReloading] = useState<boolean>(false);
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
-  const { setDoctorDetails, doctorDetails } = useAuth();
+  const { doctorDetails, getDoctorDetailsApi } = useAuth();
 
   const client = useApolloClient();
 
   useEffect(() => {
-    setLoading(true);
-    client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-      .then((_data) => {
-        const result = _data.data.getDoctorDetails;
-        console.log('doctorDetails', _data!);
-        setDoctorDetails && setDoctorDetails(result);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setLoading(false);
-        console.log('Error occured while fetching Doctor', e);
-      });
-  }, []);
+    if (!doctorDetails) {
+      getDoctorDetailsApi &&
+        getDoctorDetailsApi()
+          .then((res) => setLoading(false))
+          .catch((error) => {
+            setLoading(false);
+            CommonBugFender('Get_Doctor_DetailsApi', error);
+          });
+    }
+  }, [doctorDetails]);
 
   const renderProfileData = (getDoctorDetails: any) => {
     console.log('getDoctorDetails', getDoctorDetails!.firstName);

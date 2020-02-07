@@ -3,7 +3,15 @@ import { SplashLogo } from '@aph/mobile-doctors/src/components/SplashLogo';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Linking, Platform, StyleSheet, View, Alert } from 'react-native';
+import {
+  ActivityIndicator,
+  Linking,
+  Platform,
+  StyleSheet,
+  View,
+  Alert,
+  AsyncStorage,
+} from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
@@ -42,11 +50,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
     }
   };
-  useEffect(() => {
-    if (!doctorDetails) {
-      getDoctorDetailsApi && getDoctorDetailsApi();
-    }
-  }, [doctorDetails]);
+  // useEffect(() => {
+  //   if (!doctorDetails) {
+  //     getDoctorDetailsApi && getDoctorDetailsApi();
+  //   }
+  // }, [doctorDetails]);
 
   const getRegistrationToken = async () => {
     // const fcmToken = await firebase.messaging().getToken();
@@ -110,29 +118,41 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('SplashScreen');
-    setTimeout(() => {
-      console.log(firebaseUser, doctorDetails);
-      getLocalData()
-        .then((localData) => {
-          if (localData.isLoggedIn) {
-            if (localData.isProfileFlowDone) {
-              props.navigation.replace(AppRoutes.TabBar);
-            } else {
-              props.navigation.replace(AppRoutes.ProfileSetup);
-            }
+
+    async function fetchData() {
+      const isOnboardingDone = await AsyncStorage.getItem('isOnboardingDone');
+      const isProfileFlowDone = await AsyncStorage.getItem('isProfileFlowDone');
+      // await AsyncStorage.getItem('doctorDetails');
+      const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+      setTimeout(() => {
+        console.log(firebaseUser, doctorDetails);
+
+        // getLocalData()
+        //   .then((localData) => {
+        //     console.log(localData, 'localData');
+        console.log('isLoggedIn', isLoggedIn, isOnboardingDone, isProfileFlowDone);
+
+        if (isLoggedIn === 'true') {
+          getDoctorDetailsApi && getDoctorDetailsApi();
+          if (isProfileFlowDone === 'true') {
+            props.navigation.replace(AppRoutes.TabBar);
           } else {
-            if (localData.isOnboardingDone) {
-              props.navigation.replace(AppRoutes.Login);
-            } else {
-              props.navigation.replace(AppRoutes.LandingPage);
-            }
+            props.navigation.replace(AppRoutes.ProfileSetup);
           }
-          SplashScreenView.hide();
-        })
-        .catch((e) => {
-          console.log('getLocalData error', e);
-        });
-    }, 1000);
+        } else if (isOnboardingDone === 'true') {
+          props.navigation.replace(AppRoutes.Login);
+        } else {
+          props.navigation.replace(AppRoutes.LandingPage);
+        }
+        // }
+        SplashScreenView.hide();
+        // })
+        // .catch((e) => {
+        //   console.log('getLocalData error', e);
+        // });
+      }, 2000);
+    }
+    fetchData();
   }, [props.navigation, firebaseUser, doctorDetails]);
 
   return (

@@ -35,6 +35,7 @@ import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsP
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -226,6 +227,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           navigateWithData(res);
         })
         .catch((err) => {
+          CommonBugFender('Add_Blocked_Calender_Item_BlockHomePage', err);
           setshowSpinner(false);
           console.log(err, 'err ADD_BLOCKED_CALENDAR_ITEM');
           showErrorMessage(err);
@@ -294,6 +296,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         })
         .catch((err) => {
           setshowSpinner(false);
+          CommonBugFender('Add_Blocked_Multiple_Calender_Item_BlockHomePage', err);
           console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
           // setshowSpinner(false);
           showErrorMessage(err);

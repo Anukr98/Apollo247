@@ -405,12 +405,13 @@ const getLoginPatients: Resolver<
 
   console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+
   const findOrCreatePatient = (
-    findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
+    findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
   ): Promise<Patient> => {
     return Patient.findOne({
-      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber },
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
     }).then((existingPatient) => {
       return existingPatient || Patient.create(createOptions).save();
     });
@@ -421,7 +422,7 @@ const getLoginPatients: Resolver<
     //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
     patientPromises = uhids.response!.signUpUserData.map((data) => {
       return findOrCreatePatient(
-        { uhid: data.UHID, mobileNumber },
+        { uhid: data.UHID, mobileNumber, isActive: true },
         {
           firstName: data.userName,
           lastName: '',
@@ -439,7 +440,7 @@ const getLoginPatients: Resolver<
     if (checkPatients == null || checkPatients.length == 0) {
       patientPromises = [
         findOrCreatePatient(
-          { uhid: '', mobileNumber },
+          { uhid: '', mobileNumber, isActive: true },
           {
             firstName: '',
             lastName: '',

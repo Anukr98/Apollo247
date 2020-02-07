@@ -21,6 +21,7 @@ import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -148,6 +149,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         );
       })
       .catch((e: any) => {
+        CommonBugFender('Image_Picker_UploadPrescription', e);
         // aphConsole.log({ e });
         setshowSpinner(false);
       });
@@ -174,9 +176,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         );
       })
       .catch((e: any) => {
-        //aphConsole.log({ e });
+        CommonBugFender('Image_Picker_Open_UploadPrescriptionPopup', e);
         console.log('fail', e);
-
         setshowSpinner(false);
       });
   };

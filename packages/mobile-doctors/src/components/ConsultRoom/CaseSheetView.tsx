@@ -44,6 +44,7 @@ import {
   ToogleOff,
   ToogleOn,
   UnSelected,
+  InpersonWhiteIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
@@ -76,6 +77,7 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
   GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
   GetCaseSheet_getCaseSheet_patientDetails,
+  GetCaseSheet_getCaseSheet,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
@@ -83,6 +85,10 @@ import {
   MEDICINE_UNIT,
   REQUEST_ROLES,
   STATUS,
+  APPOINTMENT_TYPE,
+  ModifyCaseSheetInput,
+  SymptomInput,
+  CASESHEET_STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   UpdateCaseSheet,
@@ -117,6 +123,10 @@ import {
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { Image } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import {
+  modifyCaseSheet,
+  modifyCaseSheetVariables,
+} from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -337,29 +347,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.03,
     marginBottom: 12,
   },
-  familyInputView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderStyle: 'solid',
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-  },
-
-  AllergiesInputView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderStyle: 'solid',
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-  },
 
   medicineText: {
     color: 'rgba(2, 71, 91, 0.6)',
@@ -381,48 +368,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginLeft: 7,
   },
-  normalSliderText: {
-    textAlign: 'center',
-    color: '#00b38e',
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-  },
-  sliderText: {
-    textAlign: 'center',
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(12),
-    opacity: 0.6,
-  },
-  calenderView: {
-    //position: 'absolute',
-    //zIndex: 2,
 
-    width: '90%',
-    marginLeft: 16,
-    marginRight: 16,
-    borderRadius: 20,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    //elevation: 15,
-    overflow: 'visible',
-    ...Platform.select({
-      ios: {
-        // zIndex: 1,
-        // top: -32,
-        position: 'absolute',
-      },
-      android: {
-        zIndex: 200,
-        elevation: Platform.OS === 'android' ? 250 : 0,
-        // position: 'absolute',
-      },
-    }),
-  },
   dataCardsStyle: {
     minHeight: 44,
     alignItems: 'center',
@@ -473,8 +419,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     patientDetails,
     setPatientDetails,
   ] = useState<GetCaseSheet_getCaseSheet_patientDetails | null>();
+  const [caseSheetData, setCaseSheetData] = useState<GetCaseSheet_getCaseSheet>();
   const [displayId, setDisplayId] = useState<string>('');
-  const [value, setValue] = useState<string>('');
+  const [doctorNotes, setDoctorNotes] = useState<string>('');
   const [othervalue, setOthervalue] = useState<string>('');
   const [familyValues, setFamilyValues] = useState<
     (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
@@ -498,7 +445,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [followup, setFollowUp] = useState(false);
   const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
   const [switchValue, setSwitchValue] = useState<boolean | null>(true);
-  const [sliderValue, setSliderValue] = useState(2);
+
   const [diagnosisView, setDiagnosisView] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
   const [selectDate, setSelectDate] = useState<string>('mm/dd/yyyy');
@@ -528,37 +475,32 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
   >([]);
 
-  const [consultationType, setConsultationType] = useState<'ONLINE' | 'PHYSICAL' | ''>('');
+  const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
   const [consultationPayType, setConsultationPayType] = useState<'PAID' | 'FREE' | ''>('');
   const [followupDays, setFollowupDays] = useState<number | string>();
   const [folloUpNotes, setFolloUpNotes] = useState<string>('');
 
   const [addedAdvices, setAddedAdvices] = useState<dataPair[]>([]);
-  const [favAdvices, setFavAdvices] = useState<dataPair[]>([]);
   const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
   const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
-  const [favTests, setfavTests] = useState<
-    (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
-  >([]);
 
   const { setCaseSheetEdit, caseSheetEdit } = useContext(CaseSheetContext);
 
   let Delegate = '';
   const { showAphAlert, hideAphAlert, setLoading, loading } = useUIElements();
 
-  // const [loading, setLoading && setLoading] = useState<boolean>(false);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
   const {
     favList,
-    favListError,
-    favlistLoading,
+    // favListError,
+    // favlistLoading,
     favMed,
-    favMedLoading,
-    favMedError,
+    // favMedLoading,
+    // favMedError,
     favTest,
-    favTestLoading,
-    favTestError,
+    // favTestLoading,
+    // favTestError,
   } = CaseSheetAPI();
 
   useEffect(() => {
@@ -591,23 +533,36 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .then((_data) => {
         const caseSheet = g(_data, 'data', 'getCaseSheet');
-
+        setCaseSheetData(caseSheet || undefined);
         setPastList(g(caseSheet, 'pastAppointments') || null);
-
         setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
         setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
         setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
         setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
-        //photoUrl
-        //gender
-        //name
-        //age
-        //uhid
-        console.log(g(caseSheet, 'patientDetails'));
-
         setPatientDetails(g(caseSheet, 'patientDetails') || null);
         setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
-
+        setTests(
+          (g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || [])
+            .map((i) => {
+              if (i) {
+                return { itemname: i.itemname || '', isSelected: true };
+              } else {
+                return { itemname: '', isSelected: false };
+              }
+            })
+            .filter((i) => i.isSelected)
+        );
+        setAddedAdvices(
+          (g(caseSheet, 'caseSheetDetails', 'otherInstructions') || [])
+            .map((i) => {
+              if (i) {
+                return { key: i.instruction || '', value: i.instruction || '' };
+              } else {
+                return { key: '', value: '' };
+              }
+            })
+            .filter((i) => i.value !== '')
+        );
         setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
         setJuniorDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || null);
         setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
@@ -618,26 +573,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setMedicinePrescriptionData(
           g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || null
         );
+        setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+          .map((i) => (i ? i.externalId || i.id : ''))
+          .filter((i) => i !== null || i !== '') as string[]);
         setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
+        setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
+        setFollowUpConsultationType(
+          g(caseSheet, 'caseSheetDetails', 'followUpConsultType') || undefined
+        );
+        setDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || '');
 
-        // if (g(caseSheet,'caseSheetDetails','followUpAfterInDays')){
-        //   setSliderValue(2);
-        // } else {
-        //   setSliderValue(parseInt(g(caseSheet,'caseSheetDetails','followUpAfterInDays!)')||null);
-        // }
-
-        // setValue(g(caseSheet,'caseSheetDetails','notes')||null);
-        // if (g(caseSheet,'caseSheetDetails','followUpDate! == null)' ||null){
-        //   setSelectDate('dd/mm/yyyy');
-        // } else {
-        //   const val = moment(parseInt(g(caseSheet,'caseSheetDetails','followUpDate!)).forma't||null)(
-        //     'DD/MM/YYYY'
-        //   );
-        //   setSelectDate(val);
-        // }
-
-        const consultType = g(caseSheet, 'caseSheetDetails', 'consultType') || null;
-        setConsultationType(consultType as typeof consultationType);
         setDisplayId(
           g(_data.data.getCaseSheet, 'caseSheetDetails', 'appointment', 'displayId') || ''
         );
@@ -680,53 +625,102 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const saveDetails = () => {
     setLoading && setLoading(true);
     setShowButtons(true);
-    console.log('symptonsData', JSON.stringify(JSON.stringify(getSysmptonsList())));
-    console.log('junior notes', value);
-    console.log('diagonisis', JSON.stringify(JSON.stringify(getDiagonsisList())));
-    console.log('dia', JSON.stringify(JSON.stringify(getDiagnosticPrescriptionDataList())));
-    console.log('med', JSON.stringify(JSON.stringify(getMedicineList())));
-    console.log('get', getcasesheetId);
-    console.log('other', JSON.stringify(JSON.stringify(otherInstructionsData)));
-    console.log('switchValue', switchValue);
-
-    let followUpAfterInDays = '';
-    if (sliderValue == 2) {
-      followUpAfterInDays = '2';
-    } else if (sliderValue == 5) {
-      followUpAfterInDays = '5';
-    } else if (sliderValue == 8) {
-      followUpAfterInDays = '7';
-    } else {
-      followUpAfterInDays = '12';
-    }
-    console.log('followUpAfterInDays', followUpAfterInDays);
-    let followUpDateValue = '';
-    if (selectDate == 'mm/dd/yyyy') {
-      followUpDateValue = '';
-    } else {
-      followUpDateValue = moment(new Date(selectDate)).format('YYYY-MM-DD HH:mm:ss');
-    }
-    console.log('selectDate', selectDate.replace(/\//g, '-'));
-    console.log('followUpDateValue2', selectDate.replace(/\//g, '-'));
-    console.log(
-      'followUpDate',
-      moment(new Date(selectDate.replace(/\//g, '-'))).format('YYYY-MM-DD HH:mm:ss')
-    );
-    console.log('followUpDateValue', followUpDateValue);
-
     const input = {
-      symptoms: JSON.stringify(getSysmptonsList()),
-      notes: value,
-      diagnosis: JSON.stringify(getDiagonsisList()), //'[{"name":"Dr. CTDO 12.5/20MG TABLET","__typename":"Diagnosis"}]',
-      diagnosticPrescription: JSON.stringify(tests), //'[{"name":"Mayuri","__typename":"DiagnosticPrescription"}]',
+      symptoms:
+        symptonsData &&
+        symptonsData
+          .map((i) => {
+            if (i) {
+              return {
+                symptom: i.symptom,
+                since: i.since,
+                howOften: i.howOften,
+                severity: i.severity,
+                details: i.details,
+              };
+            } else {
+              return '';
+            }
+          })
+          .filter((i) => i !== ''),
+      notes: doctorNotes,
+      diagnosis:
+        diagnosisData &&
+        diagnosisData
+          .map((i) => {
+            if (i) {
+              return { name: i.name };
+            } else {
+              return '';
+            }
+          })
+          .filter((i) => i !== ''),
+      diagnosticPrescription:
+        tests && tests.length > 0
+          ? tests
+              .filter((i) => i.isSelected)
+              .map((i) => {
+                return { itemname: i.itemname };
+              })
+          : null,
+      status: g(caseSheetData, 'caseSheetDetails', 'status'),
       followUp: switchValue,
-      followUpDate: followUpDateValue,
-      followUpAfterInDays: followUpAfterInDays, //sliderValue.toString().concat('days'),
-      otherInstructions: JSON.stringify(otherInstructionsData), //'[{"instruction":"Drink Plenty of Water"},{"instruction":"Use sunscreen every day"}]',
-      medicinePrescription: JSON.stringify(getMedicineList()), //'[{"medicineName":"CTDO 6.25/40MG TABLET","medicineDosage":"2tablets","medicineToBeTaken":["BEFORE_FOOD"],"medicineInstructions":"Ccc","medicineTimings":["MORNING"],"medicineConsumptionDurationInDays":"Gg"}]',
-      id: getcasesheetId,
-      lifeStyle: lifeStyleData,
-      familyHistory: familyValues,
+      followUpDate: moment(
+        g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
+      )
+        .add(Number(followupDays), 'd')
+        .format('YYYY-MM-DD'),
+      followUpAfterInDays: Number(followupDays),
+      followUpConsultType: followUpConsultationType,
+      otherInstructions:
+        addedAdvices && addedAdvices.length > 0
+          ? addedAdvices.map((i) => {
+              return { instruction: i.value };
+            })
+          : null,
+      medicinePrescription:
+        medicinePrescriptionData &&
+        medicinePrescriptionData
+          .filter(
+            (med) =>
+              selectedMedicinesId.findIndex((i) => i === (med && (med.externalId || med.id))) >= 0
+          )
+          .map((i) => {
+            if (i) {
+              return {
+                id: i.externalId || i.id,
+                medicineConsumptionDuration: i.medicineConsumptionDuration,
+                medicineConsumptionDurationInDays: i.medicineConsumptionDurationInDays,
+                medicineConsumptionDurationUnit: i.medicineConsumptionDurationUnit,
+                medicineDosage: i.medicineDosage,
+                medicineFormTypes: i.medicineFormTypes,
+                medicineFrequency: i.medicineFrequency,
+                medicineInstructions: i.medicineInstructions,
+                medicineName: i.medicineName,
+                medicineTimings: i.medicineTimings,
+                medicineToBeTaken: i.medicineToBeTaken,
+                medicineUnit: i.medicineUnit,
+              };
+            } else {
+              return '';
+            }
+          })
+          .filter((i) => i !== ''),
+      id: g(caseSheetData, 'caseSheetDetails', 'id') || '',
+      lifeStyle:
+        lifeStyleData &&
+        lifeStyleData
+          .map((i) => (i ? i.description : ''))
+          .filter((i) => i !== '')
+          .join('\n')
+          .trim(),
+      familyHistory:
+        familyValues &&
+        familyValues
+          .map((i) => (i ? (i.relation ? i.relation + ': ' + i.description : i.description) : ''))
+          .filter((i) => i !== '')
+          .join('\n')
+          .trim(),
       dietAllergies: medicalHistory ? medicalHistory.dietAllergies : '',
       drugAllergies: medicalHistory ? medicalHistory.drugAllergies : '',
       height: medicalHistory ? medicalHistory.height : '',
@@ -736,21 +730,21 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       temperature: medicalHistory ? medicalHistory.temperature : '',
       weight: medicalHistory ? medicalHistory.weight : '',
       bp: medicalHistory ? medicalHistory.bp : '',
-    };
+    } as ModifyCaseSheetInput;
     console.log('input', input);
 
     client
-      .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+      .mutate<modifyCaseSheet, modifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
         variables: {
-          UpdateCaseSheetInput: input,
+          ModifyCaseSheetInput: input,
         },
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
         setLoading && setLoading(false);
         console.log('_data', _data);
-        const result = _data.data!.updateCaseSheet;
+        const result = _data.data!.modifyCaseSheet;
         console.log('UpdateCaseSheetData', result);
         Alert.alert('UpdateCaseSheet', 'SuccessFully Updated');
       })
@@ -763,6 +757,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         Alert.alert('Error', errorMessage);
       });
   };
+
   const endConsult = () => {
     setLoading && setLoading(true);
     saveDetails();
@@ -1237,23 +1232,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   icon={
                     <TouchableOpacity
                       onPress={() => {
-                        // setTests(JSON.parse(JSON.stringify(tests)).slice(index, 1));
-                        // setDiagnosticPrescription([
-                        //   ...diagnosticPrescriptionData,
-                        //   {
-                        //     itemname: name,
-                        //   },
-                        // ] as any);
-                        // addDiagnosticPrescriptionDataList({ itemname: name });
-                        const testsData = JSON.parse(JSON.stringify(tests));
-                        testsData[index] = {
-                          ...testsData[index],
-                          isSelected: testsData[index].isSelected ? false : true,
-                        };
-                        setTests(testsData);
+                        setTests(tests.filter((i) => i.itemname !== item.itemname));
                       }}
                     >
-                      <Text>ff</Text>
+                      <CheckboxSelected
+                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                      />
                     </TouchableOpacity>
                   }
                 />
@@ -1623,7 +1607,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 </View>
                 <TextInput
                   placeholder={'Add instructions here..'}
-                  style={styles.inputView}
+                  style={[styles.inputView, { marginBottom: 18 }]}
                   multiline={true}
                   textAlignVertical={'top'}
                   placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1631,13 +1615,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   onChangeText={(value) => setFolloUpNotes(value)}
                   autoCorrect={true}
                 />
-                <View style={{ marginBottom: 20, zIndex: -1 }}>
+                {/* <View style={{ marginBottom: 20, zIndex: -1 }}>
                   <Text
                     style={{
                       color: 'rgba(2, 71, 91, 0.6)',
                       ...theme.fonts.IBMPlexSansMedium(14),
                       marginBottom: 12,
-                      marginTop: 18,
                     }}
                   >
                     Recommended Consult Type
@@ -1676,7 +1659,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       />
                     </View>
                   </View>
-                </View>
+                </View> */}
                 <View style={{ borderColor: '#00b38e', marginBottom: 12, zIndex: -1 }}>
                   <Text
                     style={{
@@ -1698,11 +1681,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           borderRadius: 5,
                         }}
                         onChange={() => {
-                          setConsultationType('ONLINE');
+                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
+                            setFollowUpConsultationType(undefined);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
+                          } else {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
+                          }
                         }}
                         title="Online"
-                        isChecked={consultationType == 'ONLINE'}
-                        icon={consultationType == 'ONLINE' ? <PhysicalIcon /> : <GreenOnline />}
+                        isChecked={
+                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
+                        }
+                        icon={
+                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
+                            <PhysicalIcon />
+                          ) : (
+                            <GreenOnline />
+                          )
+                        }
                       />
                     </View>
                     <View>
@@ -1715,11 +1716,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           borderRadius: 5,
                         }}
                         onChange={() => {
-                          setConsultationType('PHYSICAL');
+                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
+                            setFollowUpConsultationType(undefined);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
+                          } else {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
+                          }
                         }}
                         title="In-person"
-                        isChecked={consultationType == 'PHYSICAL'}
-                        icon={consultationType == 'PHYSICAL' ? <InpersonIcon /> : <InpersonIcon />}
+                        isChecked={
+                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
+                        }
+                        icon={
+                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
+                            <InpersonWhiteIcon />
+                          ) : (
+                            <InpersonIcon />
+                          )
+                        }
                       />
                     </View>
                   </View>
@@ -2326,7 +2345,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <View>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
             <Text style={styles.nameText}>
-              {`${(patientDetails.firstName || '').trim()} ${(patientDetails.lastName || '').trim()}`}
+              {`${(patientDetails.firstName || '').trim()} ${(
+                patientDetails.lastName || ''
+              ).trim()}`}
             </Text>
             <View style={styles.line}></View>
             <Text style={styles.agetext}>
@@ -2440,8 +2461,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   style={styles.inputView}
                   multiline={true}
-                  value={value}
-                  onChangeText={(value) => setValue(value)}
+                  value={doctorNotes}
+                  onChangeText={(value) => setDoctorNotes(value)}
                   autoCorrect={true}
                 />
               </View>

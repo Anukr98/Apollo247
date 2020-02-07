@@ -210,7 +210,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [url, setUrl] = useState('');
 
   useEffect(() => {
-    callAbandonmentCall();
+    // callAbandonmentCall();
     console.log('PatientConsultTime'), PatientConsultTime;
     // setTimeout(() => {
     //   flatListRef.current && flatListRef.current!.scrollToEnd();
@@ -354,13 +354,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const consultTime =
     (doctorDetails &&
-      doctorDetails!.consultHours!.filter(
-        (item) =>
-          item!.weekDay ===
-          moment(Appintmentdatetime)
-            .format('dddd')
-            .toUpperCase()
-      )[0]!.consultDuration) ||
+      (
+        doctorDetails!.consultHours!.filter(
+          (item) =>
+            item!.weekDay ===
+            moment(Appintmentdatetime)
+              .format('dddd')
+              .toUpperCase()
+        )[0] || {}
+      ).consultDuration) ||
     15;
   const isAfter = moment(Appintmentdatetime).isAfter(moment().add(-consultTime, 'minutes'));
 
@@ -2997,7 +2999,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             endAppointmentApiCall(STATUS.NO_SHOW);
           });
         }
-        // startInterval(timer);
+        startInterval(timer);
       }
     );
   };

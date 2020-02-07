@@ -41,6 +41,7 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 import { RemoveDelegateNumber } from '@aph/mobile-doctors/src/graphql/types/RemoveDelegateNumber';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {
@@ -258,6 +259,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setIsLoading(false);
+          CommonBugFender('Removed_Delegate_Number_MyaccountProfile', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
@@ -288,6 +290,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setIsLoading(false);
+          CommonBugFender('Updated_Delegate_Number_MyaccountProfile', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
@@ -323,6 +326,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         .filter(Boolean)
         .join(', ');
     } catch (e) {
+      CommonBugFender('Get_Formatted_Location_Myaccountprofile', e);
       console.log(e);
     }
     return location;

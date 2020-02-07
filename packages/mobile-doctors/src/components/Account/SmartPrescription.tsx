@@ -97,6 +97,7 @@ import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -259,6 +260,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
       })
       .catch((e) => {
+        CommonBugFender('Get_Doctor_Favourite_Medicine_List_SmartPrescription', e);
         setLoading(false);
         console.log('error Medicine List', e);
       });
@@ -287,6 +289,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
       })
       .catch((e) => {
+        CommonBugFender('Get_Doctor_Favourite_Test_List_SmartPrescription', e);
         setLoading(false);
         console.log('Error occured while fetching Tests List', e);
       });
@@ -315,6 +318,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
       })
       .catch((e) => {
+        CommonBugFender('Get_Doctor_Favourite_Advice_List_SmartPrescription', e);
         setLoading(false);
         console.log('Error occured while fetching Advice List', e);
       });
@@ -373,6 +377,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setEditTestId('');
       })
       .catch((error) => {
+        CommonBugFender('Update_Doctor_Favourite_Test_SmartPrescription', e);
         console.log(error);
         setLoading(false);
         setEditTestId('');
@@ -551,6 +556,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setLoading(false);
+          CommonBugFender('Add_Doctor_Favourite_Advice_SmartPrescription', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
@@ -582,6 +588,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setLoading(false);
+          CommonBugFender('Update_Doctor_Favourite_Advice_SmartPrescription', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
@@ -617,6 +624,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       })
       .catch((e: any) => {
         setLoading(false);
+        CommonBugFender('Save_Doctor_Favourite_Medicine_SmartPrescription', e);
         console.log(e);
         Alert.alert(strings.common.error, strings.smartPrescr.add_med_error);
         setsearchmedicineList([]);
@@ -645,6 +653,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       })
       .catch((e: any) => {
         setLoading(false);
+        CommonBugFender('Update_Doctor_Favourite_Medicine_SmartPrescription', e);
         console.log(e);
         Alert.alert(strings.common.error, strings.smartPrescr.update_med_error);
       });
@@ -730,6 +739,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setLoading(false);
+          CommonBugFender('Add_Doctor_Favourite_Test_SmartPrescription', e);
           console.log('error', JSON.stringify(e.message));
           const errorMsg = JSON.stringify(e.message);
           if (errorMsg === 'Network error: Network request failed') {

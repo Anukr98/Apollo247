@@ -139,7 +139,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   useEffect(() => {
     console.log(doctorDetails, 'doctorDetailshi');
 
-    setDoctorName((doctorDetails && doctorDetails!.firstName) || '');
+    setDoctorName((doctorDetails && doctorDetails.firstName) || '');
     setDoctorId((doctorDetails && doctorDetails!.id) || '');
     // getLocalData()
     //   .then((data) => {

@@ -47,6 +47,7 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
 import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -217,6 +218,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           }
         })
         .catch((e) => {
+          CommonBugFender('Initiate_Reschdule_Appointment_ReschdulePopup', e);
           console.log('Error occured while searching for Initiate reschdule apppointment', e);
         })
         .finally(() => {
@@ -265,6 +267,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
       })
       .catch((e: string) => {
         props.loading && props.loading(false);
+        CommonBugFender('Get_Available_Slots_ReschdulePopup', e);
         console.log('Error occured', e);
       });
   };
@@ -294,6 +297,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
       })
       .catch((e: any) => {
         props.loading && props.loading(false);
+        CommonBugFender('Check_Avaialablity_ReschdulePopup', e);
         console.log('error', e);
       });
   };
