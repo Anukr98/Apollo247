@@ -347,29 +347,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.03,
     marginBottom: 12,
   },
-  familyInputView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderStyle: 'solid',
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-  },
-
-  AllergiesInputView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderStyle: 'solid',
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-  },
 
   medicineText: {
     color: 'rgba(2, 71, 91, 0.6)',
@@ -391,48 +368,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginLeft: 7,
   },
-  normalSliderText: {
-    textAlign: 'center',
-    color: '#00b38e',
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-  },
-  sliderText: {
-    textAlign: 'center',
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(12),
-    opacity: 0.6,
-  },
-  calenderView: {
-    //position: 'absolute',
-    //zIndex: 2,
 
-    width: '90%',
-    marginLeft: 16,
-    marginRight: 16,
-    borderRadius: 20,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    //elevation: 15,
-    overflow: 'visible',
-    ...Platform.select({
-      ios: {
-        // zIndex: 1,
-        // top: -32,
-        position: 'absolute',
-      },
-      android: {
-        zIndex: 200,
-        elevation: Platform.OS === 'android' ? 250 : 0,
-        // position: 'absolute',
-      },
-    }),
-  },
   dataCardsStyle: {
     minHeight: 44,
     alignItems: 'center',
