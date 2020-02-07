@@ -671,7 +671,31 @@ let stoppedConsulTimer: number;
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles({});
   const { doctorDetails } = props;
-
+  const autoMessageStrings: AutoMessageStrings = {
+    videoCallMsg: '^^callme`video^^',
+    audioCallMsg: '^^callme`audio^^',
+    stopcallMsg: '^^callme`stop^^',
+    acceptedcallMsg: '^^callme`accept^^',
+    startConsult: '^^#startconsult',
+    stopConsult: '^^#stopconsult',
+    rescheduleconsult: '^^#rescheduleconsult',
+    consultPatientStartedMsg: '^^#PatientConsultStarted',
+    firstMessage: '^^#firstMessage',
+    secondMessage: '^^#secondMessage',
+    typingMsg: '^^#typing',
+    covertVideoMsg: '^^convert`video^^',
+    covertAudioMsg: '^^convert`audio^^',
+    followupconsult: '^^#followupconsult',
+    documentUpload: '^^#DocumentUpload',
+    startConsultjr: '^^#startconsultJr',
+    stopConsultjr: '^^#stopconsultJr',
+    cancelConsultInitiated: '^^#cancelConsultInitiated',
+    callAbandonment: '^^#callAbandonment',
+    appointmentComplete: '^^#appointmentComplete',
+    transferconsult: '^^#transferconsult',
+    languageQue: '^^#languageQue',
+    jdThankyou: '^^#jdThankyou',
+  };
   const profileImage =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.photoUrl
@@ -729,33 +753,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const mascotRef = useRef(null);
   const apolloClient = useApolloClient();
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
-  const [callCookie, setCallCookie] = useState(false);
-
-  const autoMessageStrings: AutoMessageStrings = {
-    videoCallMsg: '^^callme`video^^',
-    audioCallMsg: '^^callme`audio^^',
-    stopcallMsg: '^^callme`stop^^',
-    acceptedcallMsg: '^^callme`accept^^',
-    startConsult: '^^#startconsult',
-    stopConsult: '^^#stopconsult',
-    rescheduleconsult: '^^#rescheduleconsult',
-    consultPatientStartedMsg: '^^#PatientConsultStarted',
-    firstMessage: '^^#firstMessage',
-    secondMessage: '^^#secondMessage',
-    typingMsg: '^^#typing',
-    covertVideoMsg: '^^convert`video^^',
-    covertAudioMsg: '^^convert`audio^^',
-    followupconsult: '^^#followupconsult',
-    documentUpload: '^^#DocumentUpload',
-    startConsultjr: '^^#startconsultJr',
-    stopConsultjr: '^^#stopconsultJr',
-    cancelConsultInitiated: '^^#cancelConsultInitiated',
-    callAbandonment: '^^#callAbandonment',
-    appointmentComplete: '^^#appointmentComplete',
-    transferconsult: '^^#transferconsult',
-    languageQue: '^^#languageQue',
-    jdThankyou: '^^#jdThankyou',
-  };
+  const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
 
   const doctorId = props.doctorId;
   const patientId = currentUserId;
@@ -794,6 +792,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       .catch(() => {
         window.alert('An error occurred while loading :(');
       });
+  };
+  const setCookiesAcceptcall = () => {
+    const cookieStr = `action=${
+      callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
+    }`;
+    document.cookie = cookieStr + ';path=/;';
   };
 
   //Audio and video ring toon
@@ -963,13 +967,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       }
     );
     updateAppointmentSessionCall();
-    setShowVideo(true);
     startIntervalTimer(0);
-    setPlaying(!playing);
+    setCookiesAcceptcall();
     audio.pause();
+    setShowVideo(true);
+    setPlaying(!playing);
   };
 
   const stopAudioVideoCall = () => {
+    const cookieStr = `action=`;
+    document.cookie = cookieStr + ';path=/;';
     const stoptext = {
       id: patientId,
       message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
@@ -990,8 +997,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       }
     );
     stopIntervalTimer();
-    setShowVideo(false);
     autoSend();
+    setShowVideo(false);
     setIsVideoCall(false);
     setIsCalled(false);
   };
@@ -1058,6 +1065,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     });
   };
   const [videoCall, setVideoCall] = useState(false);
+  const [audiocallmsg, setAudiocallmsg] = useState(false);
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -1067,12 +1075,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        setCallCookie(message.message.message);
         setRing(
-          message.message.message == autoMessageStrings.videoCallMsg ||
-            message.message.message == autoMessageStrings.audioCallMsg
+          message.message.message === autoMessageStrings.videoCallMsg ||
+            message.message.message === autoMessageStrings.audioCallMsg
         );
+        if (
+          message.message.message === autoMessageStrings.videoCallMsg ||
+          message.message.message === autoMessageStrings.audioCallMsg
+        ) {
+          setCallAudio(message.message.message);
+        }
+        setAudiocallmsg(message.message.message.includes('callme`audio'));
         setVideoCall(message.message.message.includes('audio'));
+
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         resetMessagesAction();
@@ -1706,6 +1721,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             doctorDetails={doctorDetails}
             convertCall={() => convertCall()}
             videoCall={videoCall}
+            audiocallmsg={audiocallmsg}
             // setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
           />
         )}
