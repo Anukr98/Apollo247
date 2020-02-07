@@ -601,6 +601,9 @@ export class Patient extends BaseEntity {
   uhid: string;
 
   @Column({ nullable: true })
+  referralCode: string;
+
+  @Column({ nullable: true })
   relation: Relation;
 
   @Column({ nullable: true, default: true })

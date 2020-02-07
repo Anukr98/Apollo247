@@ -51,3 +51,7 @@ export const trimObjects = (jsonObject: object) => {
   if (Object.keys.length === 0) return jsonObject;
   return JSON.parse(JSON.stringify(jsonObject).replace(/"\s+|\s+"/g, '"'));
 };
+
+export const isValidReferralCode = (referralCode: string) => {
+  return /^[a-z]{4}\d{4}$/i.test(referralCode);
+};

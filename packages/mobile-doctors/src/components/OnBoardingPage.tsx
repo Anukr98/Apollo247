@@ -169,7 +169,10 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
 
   const onSlideChange = (index: number) => {
     if (index === slides.length) {
-      props.navigation.replace(AppRoutes.Login);
+      AsyncStorage.setItem('isOnboardingDone', 'true').then(() => {
+        props.navigation.replace(AppRoutes.Login);
+      });
+      // props.navigation.replace(AppRoutes.Login);
     } else {
       index === slides.length - 1 ? setState(false) : setState(true);
       appIntroSliderRef.current!.goToSlide(index);
@@ -222,8 +225,7 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
             <Text
               style={styles.skipTextStyle}
               onPress={() => {
-                AsyncStorage.setItem('onboarding', 'true').then(() => {
-                  console.log('view');
+                AsyncStorage.setItem('isOnboardingDone', 'true').then(() => {
                   props.navigation.replace(AppRoutes.Login);
                 });
               }}

@@ -218,7 +218,7 @@ app.get('/consulttransaction', (req, res) => {
     new Date().toString() +
     '\n---------------------------\n' +
     'appt id:' +
-    req.session.appointmentId +
+    req.query.ORDERID +
     '\n' +
     requestJSON +
     '\n-------------------\n';
