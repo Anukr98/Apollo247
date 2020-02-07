@@ -247,7 +247,7 @@ const getCurrentPatients: Resolver<
     }
 
     //if prism is not working - process with 24x7 database
-    isPrismWorking = 0;
+    //isPrismWorking = 0;
     const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
     if (isPrismWorking == 0) {
       if (checkPatients == null || checkPatients.length == 0) {
@@ -266,7 +266,6 @@ const getCurrentPatients: Resolver<
         ];
       }
     }
-
     const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
     });
@@ -298,7 +297,6 @@ const getCurrentPatients: Resolver<
         ''
       );
       const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
-      console.log('updatePatientProfiles', updatedProfiles);
       log(
         'profileServiceLogger',
         'DEBUG_LOG',
@@ -405,7 +403,6 @@ const getLoginPatients: Resolver<
 
   console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
@@ -464,7 +461,6 @@ const getLoginPatients: Resolver<
     }
   });*/
   const patients = await patientRepo.findByMobileNumber(mobileNumber);
-
   if (args.appVersion && args.deviceType) {
     const versionUpdateRecords = patients.map((patient) => {
       return args.deviceType === DEVICE_TYPE.ANDROID
@@ -480,7 +476,6 @@ const getLoginPatients: Resolver<
       ''
     );
     const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
-    console.log('updatePatientProfiles', updatedProfiles);
     log(
       'profileServiceLogger',
       'DEBUG_LOG',
