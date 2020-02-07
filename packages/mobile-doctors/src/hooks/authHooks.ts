@@ -13,7 +13,9 @@ export const useAuth = () => {
     verifyOtp,
     clearFirebaseUser,
     getDoctorDetailsApi,
-    signOut,
+    getDoctorDetailsError,
+    setDoctorDetailsError,
+    // signOut,
   } = useContext(AuthContext);
   return {
     analytics,
@@ -25,6 +27,8 @@ export const useAuth = () => {
     verifyOtp,
     clearFirebaseUser,
     getDoctorDetailsApi,
-    signOut,
+    getDoctorDetailsError,
+    setDoctorDetailsError,
+    // signOut,
   };
 };

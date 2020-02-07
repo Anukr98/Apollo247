@@ -213,7 +213,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
   const [medicineInstruction, setmedicineInstruction] = useState<string>('');
 
-  const [tempTestArray, settempTestArray] = useState<any>([]);
+  const [tempTestArray, settempTestArray] = useState<string[]>([]);
   const tempTestArr: any = [];
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
@@ -705,7 +705,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     console.log('temparr', '.....vlaue', tempTestArray, '//////', tempTestArr);
   };
 
-  const AddFavouriteTest = (searchTestVal, tempTestArray) => {
+  const AddFavouriteTest = (searchTestVal: any, tempTestArray: string[]) => {
     // console.log('Selected test:' + selTest);
     // const AddingTest = tempTestArray.itemname.join(',');
     const AddingTest = tempTestArray!.map((ele: any) => ele.itemname).join(',');
@@ -717,7 +717,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
           mutation: ADD_DOCTOR_FAVOURITE_TEST,
           variables: {
-            itemname: AddingTest,
+            itemname: AddingTest ? AddingTest : searchTestVal,
           },
         })
         .then((_data) => {
@@ -749,6 +749,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         searchTestVal={searchTestVal}
         onClose={() => {
           setIsTest(false);
+          setsearchTestVal('');
         }}
         onPressDone={(searchTestVal, tempTestArray) => {
           if (EditTestId != '') {
@@ -756,6 +757,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           } else {
             AddFavouriteTest(searchTestVal, tempTestArray);
           }
+          setsearchTestVal('');
           setIsTest(!isTest);
         }}
       />

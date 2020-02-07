@@ -345,7 +345,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
               optionText: '  Block Calendar',
               icon: <Block />,
               onPress: () => {
-                setDropdownVisible(false);
+                // setDropdownVisible(false);
+                setDropdownVisible(!isDropdownVisible);
                 props.navigation.push(AppRoutes.BlockHomePage);
               },
             },

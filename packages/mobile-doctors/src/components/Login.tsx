@@ -30,6 +30,7 @@ import HyperLink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const { height, width } = Dimensions.get('window');
 
@@ -114,6 +115,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
+  const { setDoctorDetailsError, setDoctorDetails } = useAuth();
   const client = useApolloClient();
 
   useEffect(() => {
@@ -208,6 +210,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const onClickOkay = () => {
+    setDoctorDetailsError(false);
+    setDoctorDetails && setDoctorDetails(null);
     Keyboard.dismiss();
     getNetStatus().then(async (status) => {
       if (status) {
