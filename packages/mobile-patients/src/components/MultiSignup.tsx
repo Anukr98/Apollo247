@@ -2,7 +2,12 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { DropdownGreen, Mascot, Check, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DropdownGreen,
+  Mascot,
+  WhiteTickIcon,
+  Gift,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -26,7 +31,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Relation, UpdatePatientInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updatePatientVariables,
   updatePatient,
@@ -112,10 +117,6 @@ type currentProfiles = {
   relation?: string;
 };
 
-type updatePateint = {
-  id: string;
-  relation: Relation | null;
-};
 let backPressCount = 0;
 
 export interface MultiSignupProps extends NavigationScreenProps {}
@@ -133,6 +134,12 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [referredBy, setReferredBy] = useState<string>();
   const [referral, setReferral] = useState<string>('');
+  const [isValidReferral, setValidReferral] = useState<boolean>(false);
+
+  useEffect(() => {
+    const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
+    setValidReferral(isValidReferralCode);
+  }, [referral]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -405,9 +412,10 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     setVerifyingPhoneNumber(true);
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
-                      const patientsDetails: updatePateint = {
+                      const patientsDetails: UpdatePatientInput = {
                         id: profile.id || '',
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
+                        referralCode: (profile.relation == Relation.ME && referral) || null,
                       };
                       console.log('patientsDetails', patientsDetails);
                       CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
@@ -481,17 +489,19 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           marginHorizontal: -20,
           paddingVertical: 20,
           marginTop: 20,
+          marginBottom: 10,
         }}
       >
-        <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
-          <Gift style={{ marginRight: 20 }} />
+        <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
+          <Gift style={{ marginRight: 20, marginTop: 12 }} />
           <TextInputComponent
             label={
-              referredBy
-                ? `${referredBy} Has Sent You A Referral Code!`
-                : 'Do You Have A Referral Code? (Optional)'
+              'Do You Have A Referral Code? (Optional)'
+              // referredBy
+              //   ? `${referredBy} Has Sent You A Referral Code!`
+              //   : 'Do You Have A Referral Code? (Optional)'
             }
-            labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
+            labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff'), marginBottom: 12 }}
             placeholder={'Enter referral code'}
             placeholderTextColor={'rgba(255,255,255,0.6)'}
             inputStyle={{
@@ -501,7 +511,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             conatinerstyles={{ width: '78%' }}
             value={referral}
             onChangeText={(text) => setReferral(text)}
-            icon={referredBy ? <Check /> : null}
+            icon={isValidReferral ? <WhiteTickIcon /> : null}
           />
         </View>
       </View>
@@ -545,7 +555,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 profiles.map((allCurrentPatients, i: number) => (
                   <View key={i}>{renderUserForm(allCurrentPatients, i)}</View>
                 ))}
-              {/* {renderReferral()} */}
+              {renderReferral()}
               <View style={{ height: 80 }} />
             </Card>
           </KeyboardAwareScrollView>
