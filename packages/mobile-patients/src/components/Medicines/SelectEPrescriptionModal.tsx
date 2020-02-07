@@ -334,7 +334,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     if (
       !loading &&
       formattedEPrescriptions.length == 0 &&
-      ((props.displayPrismRecords && combination && combination.length === 0) ||
+      ((props.displayPrismRecords && combination && combination?.length === 0) ||
         !props.displayPrismRecords)
     ) {
       return (

@@ -31,6 +31,7 @@ export interface AuthContextProps {
   getDoctorDetailsApi: (() => Promise<boolean>) | null;
   // signOut: (() => void) | null;
   getDoctorDetailsError: boolean;
+  setDoctorDetailsError: (() => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -44,6 +45,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   getDoctorDetailsApi: null,
   getDoctorDetailsError: false,
   // signOut: null,
+  setDoctorDetailsError: null,
 });
 
 export const AuthProvider: React.FC = (props) => {
