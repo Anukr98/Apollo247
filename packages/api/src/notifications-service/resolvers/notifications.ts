@@ -416,10 +416,6 @@ export async function sendNotification(
       patientDetails.firstName
     );
     notificationBody = notificationBody.replace(
-      '{1}',
-      doctorDetails.firstName + ' ' + doctorDetails.lastName
-    );
-    notificationBody = notificationBody.replace(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
@@ -599,6 +595,26 @@ export async function sendNotification(
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
+        doctorType: 'SENIOR',
+      },
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.INITIATE_JUNIOR_APPT_SESSION) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'chat_room',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+        doctorType: 'JUNIOR',
       },
     };
   }

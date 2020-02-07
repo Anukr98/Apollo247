@@ -1,41 +1,31 @@
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
-  PatientPlaceHolderImage,
-  Block,
-  CalendarIcon,
-  RightIcon,
-  Notification,
-  Profile,
   AvailabilityIcon,
   FeeIcon,
-  SmartPrescription,
+  PatientPlaceHolderImage,
+  Profile,
+  RightIcon,
   Settings,
+  SmartPrescription,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  GetDoctorDetails,
-  GetDoctorDetails_getDoctorDetails,
-} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import React, { useEffect, useState, useRef } from 'react';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Dimensions,
-  StyleSheet,
-  View,
-  Text,
-  SafeAreaView,
-  TouchableOpacity,
-  ScrollViewBase,
   Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { height } = Dimensions.get('window');
 
@@ -66,27 +56,18 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isReloading, setReloading] = useState<boolean>(false);
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
-  const { setDoctorDetails, isDelegateLogin, doctorDetails } = useAuth();
+  const { doctorDetails, getDoctorDetailsApi } = useAuth();
 
   const client = useApolloClient();
 
   useEffect(() => {
-    setLoading(true);
-    client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-      .then((_data) => {
-        const result = _data.data.getDoctorDetails;
-        // console.log('doctorDetails', _data!);
-        setDoctorDetails && setDoctorDetails(result);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setLoading(false);
-        console.log('Error occured while fetching Doctor', e);
-      });
-  }, []);
-
-  console.log('doctorDetailsAccount', doctorDetails!);
+    if (!doctorDetails) {
+      getDoctorDetailsApi &&
+        getDoctorDetailsApi()
+          .then((res) => setLoading(false))
+          .catch((error) => setLoading(false));
+    }
+  }, [doctorDetails]);
 
   const renderProfileData = (getDoctorDetails: any) => {
     console.log('getDoctorDetails', getDoctorDetails!.firstName);
@@ -129,13 +110,20 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const renderMyStatsView = () => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <SmartPrescription />
-          <Text style={styles.headingText}>My Stats</Text>
-          <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
-            <RightIcon />
+        <TouchableOpacity
+          onPress={() => {
+            console.log('MyStats ');
+            props.navigation.navigate(AppRoutes.MyStats);
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <SmartPrescription />
+            <Text style={styles.headingText}>My Stats</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -200,16 +188,30 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
-  const renderSmartPrescriptionView = () => {
+  const renderSmartPrescriptionView = (data: GetDoctorDetails_getDoctorDetails) => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+        {/* <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
           <SmartPrescription />
           <Text style={styles.headingText}>Smart Prescription</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />
           </View>
-        </View>
+        </View> */}
+        <TouchableOpacity
+          onPress={() => {
+            console.log('smart prescr', data);
+            props.navigation.navigate(AppRoutes.SmartPrescription, { ProfileData: data });
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <SmartPrescription />
+            <Text style={styles.headingText}>Smart Prescription</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -276,7 +278,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                     {renderMyProfileView(doctorDetails)}
                     {renderAvailabilityView(doctorDetails)}
                     {renderFeesView(doctorDetails)}
-                    {renderSmartPrescriptionView()}
+                    {renderSmartPrescriptionView(doctorDetails)}
                     {renderSettingsView()}
                   </View>
                 </>

@@ -39,7 +39,7 @@ export enum ApiConstants {
 
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
-  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) {1} from Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
+  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
 
   //initiate senior doctor session
   SENIOR_APPT_SESSION_TITLE = 'Doctor has joined the consult room',
@@ -200,4 +200,14 @@ export enum ApiConstants {
   JUNIOR_DOC_TXT = 'Junior doctor: ',
   SENIOR_DOC_TXT = 'Senior doctor: ',
   PATIENT_TXT = 'Patient: ',
+
+  SAMPLE_DATE = '2020-01-20T',
+  SAMPLE_DATE_MORNING_START = '2020-01-20T08:00:00',
+  SAMPLE_DATE_MORNING_END = '2020-01-20T12:00:00',
+  SAMPLE_DATE_AFTERNOON_START = '2020-01-20T12:00:01',
+  SAMPLE_DATE_AFTERNOON_END = '2020-01-20T15:00:00',
+  SAMPLE_DATE_EVENING_START = '2020-01-20T15:00:01',
+  SAMPLE_DATE_EVENING_END = '2020-01-20T18:00:00',
+  SAMPLE_DATE_NIGHT_START = '2020-01-20T18:00:01',
+  SAMPLE_DATE_NIGHT_END = '2020-01-20T22:00:00',
 }

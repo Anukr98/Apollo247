@@ -8,44 +8,30 @@ import { ApploLogo, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icon
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import { SAVE_DOCTOR_DEVICE_TOKEN } from '@aph/mobile-doctors/src/graphql/profiles';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { DoctorType, DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
-  GET_DOCTOR_DETAILS,
-  SAVE_DOCTOR_DEVICE_TOKEN,
-} from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  GetDoctorDetails,
-  GetDoctorDetails_getDoctorDetails,
-} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import {
-  setDoctorDetails,
-  setProfileFlowDone,
-  getLocalData,
-} from '@aph/mobile-doctors/src/helpers/localStorage';
+  saveDoctorDeviceToken,
+  saveDoctorDeviceTokenVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
+import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  Alert,
+  AsyncStorage,
   Dimensions,
   Platform,
   SafeAreaView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
-  AsyncStorage,
 } from 'react-native';
+import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { DoctorType, DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import firebase, { RNFirebase } from 'react-native-firebase';
-import {
-  saveDoctorDeviceToken,
-  saveDoctorDeviceTokenVariables,
-} from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
@@ -69,100 +55,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
     margin: 1.5,
-  },
-  buttonView: {
-    borderRadius: 10,
-    width: 200,
-    backgroundColor: '#fc9916',
-    shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 2,
-    height: 40,
-    justifyContent: 'center',
-    alignSelf: 'center',
-    ...Platform.select({
-      ios: {
-        marginTop: -25,
-        marginLeft: 40,
-        marginRight: 30,
-        marginBottom: 16,
-      },
-      android: {
-        marginTop: -25,
-        marginBottom: 16,
-      },
-    }),
-  },
-  buttonViewLess: {
-    justifyContent: 'center',
-    borderRadius: 10,
-    width: 200,
-    height: 40,
-    backgroundColor: '#fc9916',
-    shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 2,
-    alignSelf: 'center',
-    ...Platform.select({
-      ios: {
-        marginTop: -25,
-        marginLeft: 40,
-        marginRight: 30,
-        marginBottom: 16,
-      },
-      android: {
-        marginTop: -25,
-        marginBottom: 16,
-      },
-    }),
-  },
-  inputTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.INPUT_TEXT,
-    paddingRight: 6,
-    lineHeight: 28,
-    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
-  },
-  inputView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_FAILURE,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '90%',
-    paddingBottom: 0,
-    marginLeft: 20,
-  },
-  bottomDescription: {
-    color: '#890000',
-    ...theme.fonts.IBMPlexSansMedium(12),
-    bottom: 5,
-  },
-  bottomValidDescription: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_SUCCESS_TEXT,
-    opacity: 0.6,
-    paddingVertical: 10,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    marginBottom: 5,
-  },
-  inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    width: '80%',
-    color: theme.colors.INPUT_TEXT,
-    paddingBottom: 4,
-  },
-  inputValidView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '90%',
-    paddingBottom: 0,
-    marginLeft: 20,
   },
 });
 
@@ -196,9 +88,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
-  const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext, doctorDetails } = useAuth();
+  const {
+    setDoctorDetails: setDoctorDetailsToContext,
+    doctorDetails,
+    getDoctorDetailsApi,
+  } = useAuth();
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
-  console.log('isDelegateLogin', isDelegateLogin);
 
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();
@@ -224,6 +119,21 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   useEffect(() => {
     fireBaseFCM();
   });
+
+  useEffect(() => {
+    setLoading(false);
+    if (!doctorDetails) {
+      setLoading(true);
+      getDoctorDetailsApi &&
+        getDoctorDetailsApi()
+          .catch((err) => {
+            props.navigation.replace(AppRoutes.Login);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+    }
+  }, [doctorDetails]);
 
   const callDeviceTokenAPI = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
@@ -266,50 +176,59 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       });
   };
   useEffect(() => {
-    setLoading(true);
-    client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-      .then((_data) => {
-        const result = _data.data.getDoctorDetails;
-        console.log('getDoctorProfile', _data!);
-
-        try {
-          setDoctorDetails(result);
-          setDoctorDetailsToContext && setDoctorDetailsToContext(result);
-        } catch (e) {
-          console.log('Unable to set DoctorDetails');
-        }
-
-        setGetDoctorProfile(result);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setLoading(false);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching Doctor profile', error);
-      });
+    // setLoading(true);
+    // client
+    //   .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+    //   .then((_data) => {
+    //     const result = _data.data.getDoctorDetails;
+    //     console.log('getDoctorProfile', _data!);
+    //     try {
+    //       setDoctorDetails(result);
+    //       setDoctorDetailsToContext && setDoctorDetailsToContext(result);
+    //     } catch (e) {
+    //       console.log('Unable to set DoctorDetails');
+    //     }
+    //     setGetDoctorProfile(result);
+    //     setLoading(false);
+    //   })
+    //   .catch((e) => {
+    //     setLoading(false);
+    //     const error = JSON.parse(JSON.stringify(e));
+    //     console.log('Error occured while fetching Doctor profile', error);
+    //   });
   }, []);
 
-  const [
-    getDoctorProfile,
-    setGetDoctorProfile,
-  ] = useState<GetDoctorDetails_getDoctorDetails | null>(null);
+  // const [
+  //   getDoctorProfile,
+  //   setGetDoctorProfile,
+  // ] = useState<GetDoctorDetails_getDoctorDetails | null>(null);
 
   const onReload = () => {
     setReloading(true);
-    client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-      .then((_data) => {
-        const result = _data.data.getDoctorDetails;
-        setGetDoctorProfile(result);
-        console.log('GET_DOCTOR_DETAILS', result);
-        setReloading(false);
-      })
-      .catch((e) => {
-        console.log('Error occured while adding Doctor', e);
-        setReloading(false);
-        Alert.alert('Error', 'Error occured while reloading data');
-      });
+    getDoctorDetailsApi &&
+      getDoctorDetailsApi()
+        .then((res) => {
+          console.log(res);
+          setReloading(false);
+        })
+        .catch((error) => {
+          console.log(error);
+          setReloading(false);
+        });
+    // client
+    //   .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+    //   .then((_data) => {
+    //     const result = _data.data.getDoctorDetails;
+    //     setGetDoctorProfile(result);
+    //     console.log('GET_DOCTOR_DETAILS', result);
+    //     setReloading(false);
+    //   })
+    //   .catch((e) => {
+    //     console.log('Error occured while adding Doctor', e);
+    //     CommonBugFender('GET_DOCTOR_DETAILS', e);
+    //     setReloading(false);
+    //     Alert.alert('Error', 'Error occured while reloading data');
+    //   });
   };
 
   const renderHeader = (
@@ -323,7 +242,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       rightIcons={[
         {
           icon: <RoundIcon />,
-          onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment), //setmodelvisible(true),
+          onPress: () => setmodelvisible(true), // props.navigation.push(AppRoutes.NeedHelpAppointment),
         },
       ]}
     />
@@ -333,7 +252,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     <ProfileTabHeader
       title={headerContent[tabIndex].heading(data!.lastName)}
       description={headerContent[tabIndex].description}
-      tabs={(data!.doctorType == DoctorType.PAYROLL || isDelegateLogin
+      tabs={(data!.doctorType == DoctorType.PAYROLL
         ? [headerContent[0], headerContent[1]]
         : headerContent
       ).map((content) => content.tab)}
@@ -355,7 +274,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
   const renderFooterButtons = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => {
     const onPressProceed = () => {
-      const tabsCount = data!.doctorType == DoctorType.PAYROLL || isDelegateLogin ? 2 : 3;
+      const tabsCount = data!.doctorType == DoctorType.PAYROLL ? 2 : 3;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);
@@ -425,7 +344,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const renderNeedHelpModal = () => {
     return modelvisible ? (
       <View>
-        <NeedHelpCard
+        <NeedHelpCard onPress={() => setmodelvisible(false)} />
+        {/* <NeedHelpCard
           onPress={() => setmodelvisible(false)}
           heading="need help?"
           description="You can request a call back for us to resolve your issue ASAP"
@@ -436,7 +356,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -479,7 +399,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 : true
             }
           />
-        </NeedHelpCard>
+        </NeedHelpCard> */}
       </View>
     ) : null;
   };
@@ -500,11 +420,11 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
               <ActivityIndicator size="large" color="green" />
             </View>
           ) : (
-            !!getDoctorProfile && (
+            !!doctorDetails && (
               <>
-                {renderProgressBar(activeTabIndex, getDoctorProfile)}
-                {renderComponent(activeTabIndex, getDoctorProfile)}
-                {renderFooterButtons(activeTabIndex, getDoctorProfile)}
+                {renderProgressBar(activeTabIndex, doctorDetails)}
+                {renderComponent(activeTabIndex, doctorDetails)}
+                {renderFooterButtons(activeTabIndex, doctorDetails)}
               </>
             )
           )}

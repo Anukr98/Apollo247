@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       position: 'relative',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         padding: '15px 20px 15px 20px',
         position: 'fixed',
         width: '100%',
@@ -28,22 +28,22 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       borderRadius: 5,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         padding: 0,
       },
     },
     searchInput: {
-      '& input': { 
-        [theme.breakpoints.down('xs')]:{
+      '& input': {
+        [theme.breakpoints.down('xs')]: {
           backgroundColor: '#f7f8f5',
           padding: '15px 33px 15px 12px',
           borderBottom: '2px solid transparent',
-          '&:focus':{
+          '&:focus': {
             backgroundColor: '#fff',
             borderBottom: '2px solid #00b38e',
             paddingLeft: 0,
           },
-        }, 
+        },
       },
       '& >div': {
         '&:after': {
@@ -60,8 +60,8 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       backgroundColor: 'transparent !important',
       minWidth: 'auto',
-      [theme.breakpoints.down('xs')]:{
-          marginLeft: -30,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: -30,
       },
     },
     autoSearchPopover: {

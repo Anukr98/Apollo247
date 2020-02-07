@@ -6,6 +6,15 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  AWAITING_RESCHEDULE = "AWAITING_RESCHEDULE",
+  AWAITING_TRANSFER = "AWAITING_TRANSFER",
+  NEW = "NEW",
+  RESCHEDULE = "RESCHEDULE",
+  TRANSFER = "TRANSFER",
+  TRANSFERRED = "TRANSFERRED",
+}
+
 export enum APPOINTMENT_TYPE {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -128,12 +137,18 @@ export enum REQUEST_ROLES {
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
+  DAUGHTER = "DAUGHTER",
   FATHER = "FATHER",
+  GRANDDAUGHTER = "GRANDDAUGHTER",
+  GRANDFATHER = "GRANDFATHER",
+  GRANDMOTHER = "GRANDMOTHER",
+  GRANDSON = "GRANDSON",
   HUSBAND = "HUSBAND",
   ME = "ME",
   MOTHER = "MOTHER",
   OTHER = "OTHER",
   SISTER = "SISTER",
+  SON = "SON",
   WIFE = "WIFE",
 }
 
@@ -155,11 +170,6 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
-}
-
-export enum TEST_COLLECTION_TYPE {
-  CENTER = "CENTER",
-  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
@@ -196,6 +206,18 @@ export enum patientLogType {
   REGULAR = "REGULAR",
 }
 
+export interface BlockMultipleItems {
+  doctorId: string;
+  reason?: string | null;
+  itemDetails?: (CalendarItem | null)[] | null;
+}
+
+export interface CalendarItem {
+  start: any;
+  end: any;
+  consultMode?: ConsultMode | null;
+}
+
 export interface CreateAppointmentSessionInput {
   appointmentId: string;
   requestRole: REQUEST_ROLES;
@@ -206,13 +228,7 @@ export interface DiagnosisInput {
 }
 
 export interface DiagnosticPrescriptionInput {
-  collectionMethod?: TEST_COLLECTION_TYPE | null;
-  id?: string | null;
-  imageUrl?: string | null;
-  isCustom?: boolean | null;
-  itemId?: string | null;
   itemname?: string | null;
-  price?: string | null;
 }
 
 export interface DoctorAvailabilityInput {

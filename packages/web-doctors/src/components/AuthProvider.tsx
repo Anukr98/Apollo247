@@ -514,6 +514,14 @@ export const AuthProvider: React.FC = (props) => {
             setSignInError(false);
             setIsSigningIn(false);
           }
+        } else if (
+          res.data &&
+          res.data.findLoggedinUserDetails &&
+          res.data.findLoggedinUserDetails.loggedInUserType &&
+          (res.data.findLoggedinUserDetails.loggedInUserType === LoggedInUserType.JDADMIN ||
+            res.data.findLoggedinUserDetails.loggedInUserType === LoggedInUserType.SECRETARY)
+        ) {
+          setIsSigningIn(false);
         }
       } else {
         setIsSigningIn(false);

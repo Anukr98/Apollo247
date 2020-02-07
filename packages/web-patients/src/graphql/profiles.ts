@@ -30,6 +30,7 @@ export const GET_CURRENT_PATIENTS = gql`
         uhid
         dateOfBirth
         emailAddress
+        photoUrl
       }
     }
   }

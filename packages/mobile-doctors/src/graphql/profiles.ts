@@ -99,27 +99,42 @@ export const GET_DOCTOR_DETAILS = gql`
 export const GET_DOCTOR_APPOINTMENTS = gql`
   query GetDoctorAppointments($startDate: Date, $endDate: Date) {
     getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
-      newPatientsList
       appointmentsHistory {
-        appointmentType
-        doctorId
-        status
-        hospitalId
         id
         patientId
         appointmentDateTime
+        status
+        doctorId
         bookingDate
+        appointmentType
+        appointmentState
+        displayId
+        isFollowUp
+        followUpParentId
+        caseSheet {
+          symptoms {
+            symptom
+          }
+          status
+          doctorType
+        }
         patientInfo {
+          id
           firstName
           lastName
-          id
-          uhid
-          emailAddress
-          gender
-          dateOfBirth
           relation
+          photoUrl
+          uhid
+          dateOfBirth
+          emailAddress
+          mobileNumber
+          gender
+          addressList {
+            city
+          }
         }
       }
+      newPatientsList
     }
   }
 `;
@@ -169,10 +184,51 @@ export const END_APPOINTMENT_SESSION = gql`
 export const MODIFY_CASESHEET = gql`
   mutation modifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
-      consultType
       appointment {
         id
+        appointmentDateTime
+        appointmentDocuments {
+          documentPath
+        }
+        appointmentState
+        appointmentType
+        displayId
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        rescheduleCount
+        isFollowUp
+        followUpParentId
+        isTransfer
+        transferParentId
       }
+      blobName
+      createdDate
+      createdDoctorId
+      createdDoctorProfile {
+        city
+        country
+        doctorType
+        delegateNumber
+        emailAddress
+        experience
+        firstName
+        gender
+        id
+        lastName
+        mobileNumber
+        photoUrl
+        qualification
+        salutation
+        state
+        streetLine1
+        streetLine2
+        streetLine3
+        zip
+      }
+      consultType
       diagnosis {
         name
       }
@@ -180,28 +236,38 @@ export const MODIFY_CASESHEET = gql`
         itemname
       }
       doctorId
+      doctorType
       followUp
       followUpAfterInDays
       followUpDate
+      followUpConsultType
       id
       medicinePrescription {
         medicineConsumptionDurationInDays
         medicineName
         medicineDosage
         medicineTimings
+        medicineUnit
         medicineInstructions
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
       }
       notes
+      otherInstructions {
+        instruction
+      }
       patientId
       symptoms {
         symptom
         since
         howOften
         severity
+        details
       }
-      otherInstructions {
-        instruction
-      }
+      status
+      sentToPatient
     }
   }
 `;
@@ -355,9 +421,23 @@ export const GET_CASESHEET = gql`
         lifeStyle {
           description
         }
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
         familyHistory {
           description
           relation
+        }
+        patientAddress {
+          city
         }
         dateOfBirth
         emailAddress
@@ -375,14 +455,67 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
+        blobName
+        doctorId
+        sentToPatient
+        appointment {
+          id
+          appointmentDateTime
+          appointmentDocuments {
+            documentPath
+            prismFileId
+          }
+          status
+          appointmentState
+          displayId
+          rescheduleCount
+          rescheduleCountByDoctor
+        }
+        createdDoctorProfile {
+          doctorType
+          emailAddress
+          firstName
+          lastName
+          salutation
+          registrationNumber
+          signature
+          photoUrl
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+        }
         medicinePrescription {
           id
+          externalId
           medicineName
           medicineDosage
           medicineToBeTaken
           medicineInstructions
           medicineTimings
+          medicineUnit
           medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
         }
         otherInstructions {
           instruction
@@ -392,6 +525,7 @@ export const GET_CASESHEET = gql`
           since
           howOften
           severity
+          details
         }
         diagnosis {
           name
@@ -402,6 +536,7 @@ export const GET_CASESHEET = gql`
         followUp
         followUpDate
         followUpAfterInDays
+        followUpConsultType
         consultType
         notes
       }
@@ -414,27 +549,9 @@ export const GET_CASESHEET = gql`
         patientId
         parentId
         status
-        doctorInfo {
-          firstName
-          lastName
-          salutation
-        }
         caseSheet {
-          appointment {
-            id
-          }
-          blobName
-          createdDate
-          doctorType
-          createdDoctorProfile {
-            firstName
-            lastName
-            salutation
-          }
           consultType
-          appointment {
-            id
-          }
+          doctorType
           diagnosis {
             name
           }
@@ -446,21 +563,35 @@ export const GET_CASESHEET = gql`
             since
             howOften
             severity
+            details
           }
           followUpDate
           followUpAfterInDays
           followUp
           medicinePrescription {
             medicineName
-            medicineName
             medicineTimings
             medicineInstructions
             medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
           }
           otherInstructions {
             instruction
           }
         }
+      }
+      juniorDoctorNotes
+      juniorDoctorCaseSheet {
+        createdDate
+        createdDoctorProfile {
+          firstName
+          lastName
+          salutation
+        }
+        updatedDate
       }
     }
   }
@@ -798,6 +929,79 @@ export const RESEND_OTP = gql`
       status
       message
       loginId
+    }
+  }
+`;
+
+export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
+  query GetDoctorFavouriteMedicineList {
+    getDoctorFavouriteMedicineList {
+      medicineList {
+        externalId
+        id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
+      }
+    }
+  }
+`;
+
+export const ADD_BLOCKED_CALENDAR_ITEM = gql`
+  mutation AddBlockedCalendarItem($doctorId: String!, $start: DateTime!, $end: DateTime!) {
+    addBlockedCalendarItem(doctorId: $doctorId, start: $start, end: $end) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
+
+export const REMOVE_BLOCKED_CALENDAR_ITEM = gql`
+  mutation RemoveBlockedCalendarItem($id: Int!) {
+    removeBlockedCalendarItem(id: $id) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
+
+export const BLOCK_MULTIPLE_CALENDAR_ITEMS = gql`
+  mutation BlockMultipleCalendarItems($blockCalendarInputs: BlockMultipleItems!) {
+    blockMultipleCalendarItems(blockCalendarInputs: $blockCalendarInputs) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
+
+export const GET_BLOCKED_CALENDAR = gql`
+  query GetBlockedCalendar($doctorId: String!) {
+    getBlockedCalendar(doctorId: $doctorId) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
     }
   }
 `;

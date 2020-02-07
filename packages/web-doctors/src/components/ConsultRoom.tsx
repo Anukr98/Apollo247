@@ -82,6 +82,7 @@ const useStyles = makeStyles((theme: Theme) => {
     patientBubble: {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
+      maxWidth: '100%',
     },
     chatImgBubble: {
       padding: 0,

@@ -60,6 +60,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  findByPaymentOrderId(paymentOrderId: string) {
+    return this.findOne({
+      where: { paymentOrderId },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
   getAppointmentsByDate(appointmentDateTime: Date) {
     return this.find({
       where: { appointmentDateTime, status: STATUS.PENDING },
@@ -85,6 +95,16 @@ export class AppointmentRepository extends Repository<Appointment> {
   findByIdAndStatus(id: string, status: STATUS) {
     return this.findOne({
       where: { id, status },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
+  findByOrderIdAndStatus(paymentOrderId: string, status: STATUS) {
+    return this.findOne({
+      where: { paymentOrderId, status },
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
@@ -782,6 +802,16 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean) {
     this.update(id, { status, isSeniorConsultStarted }).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+    });
+  }
+
+  updateAppointmentStatusUsingOrderId(
+    paymentOrderId: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean
+  ) {
+    this.update(paymentOrderId, { status, isSeniorConsultStarted }).catch((createErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
   }

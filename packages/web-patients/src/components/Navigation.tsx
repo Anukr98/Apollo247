@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >span': {
         position: 'relative',
       },
-      '&:focus':{
+      '&:focus': {
         outline: 'none',
       },
     },
