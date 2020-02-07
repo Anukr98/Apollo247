@@ -28,8 +28,10 @@ export interface AuthContextProps {
   clearFirebaseUser: (() => Promise<unknown>) | null;
   doctorDetails: GetDoctorDetails_getDoctorDetails | null;
   setDoctorDetails: ((doctorDetails: GetDoctorDetails_getDoctorDetails | null) => void) | null;
-  getDoctorDetailsApi: (() => void) | null;
-  signOut: (() => void) | null;
+  getDoctorDetailsApi: (() => Promise<boolean>) | null;
+  // signOut: (() => void) | null;
+  getDoctorDetailsError: boolean;
+  setDoctorDetailsError: (() => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -41,7 +43,9 @@ export const AuthContext = React.createContext<AuthContextProps>({
   doctorDetails: null,
   setDoctorDetails: null,
   getDoctorDetailsApi: null,
-  signOut: null,
+  getDoctorDetailsError: false,
+  // signOut: null,
+  setDoctorDetailsError: null,
 });
 
 export const AuthProvider: React.FC = (props) => {
@@ -53,6 +57,7 @@ export const AuthProvider: React.FC = (props) => {
   const [doctorDetails, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>(
     null
   );
+  const [getDoctorDetailsError, setDoctorDetailsError] = useState<boolean>(false);
 
   const analytics = firebase.analytics();
   const auth = firebase.auth();
@@ -149,16 +154,16 @@ export const AuthProvider: React.FC = (props) => {
     });
   };
 
-  const signOut = useCallback(() => {
-    try {
-      auth.signOut();
-      setAuthToken('');
-      setDoctorDetails(null);
-      console.log('authprovider signOut');
-    } catch (error) {
-      console.log('signOut error', error);
-    }
-  }, [auth]);
+  // const signOut = useCallback(() => {
+  //   try {
+  //     auth.signOut();
+  //     setAuthToken('');
+  //     setDoctorDetails(null);
+  //     console.log('authprovider signOut');
+  //   } catch (error) {
+  //     console.log('signOut error', error);
+  //   }
+  // }, [auth]);
 
   // listen to firebase auth
   useEffect(() => {
@@ -216,24 +221,27 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const getDoctorDetailsApi = async () => {
-    await apolloClient
-      .query<GetDoctorDetails>({
-        query: GET_DOCTOR_DETAILS,
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        console.log('GetDoctorDetails', data);
-        // AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-        if (data) {
-          setDoctorDetails(data.getDoctorDetails);
-        }
-      })
-      .catch(async (error) => {
-        // const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-        // const item = JSON.parse(retrievedItem);
-        // setAllPatients(item);
-        console.log('GetDoctorDetails error', error);
-      });
+    return new Promise((resolve, reject) => {
+      apolloClient
+        .query<GetDoctorDetails>({
+          query: GET_DOCTOR_DETAILS,
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          console.log('GetDoctorDetails', data);
+          if (data) {
+            setDoctorDetails(data.getDoctorDetails);
+            setDoctorDetailsError(false);
+            resolve(true);
+          }
+        })
+        .catch(async (error) => {
+          console.log('GetDoctorDetails error', error);
+          setDoctorDetailsError(true);
+          clearFirebaseUser();
+          reject(false);
+        });
+    });
   };
 
   return (
@@ -249,7 +257,9 @@ export const AuthProvider: React.FC = (props) => {
             setDoctorDetails,
             doctorDetails,
             getDoctorDetailsApi,
-            signOut,
+            // signOut,
+            getDoctorDetailsError,
+            setDoctorDetailsError,
           }}
         >
           {props.children}
