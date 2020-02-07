@@ -64,6 +64,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
+
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
     console.log('-------error-------', error);
@@ -163,6 +164,7 @@ export const AuthProvider: React.FC = (props) => {
   const getFirebaseToken = () => {
     let authStateRegistered = false;
     console.log('authprovider');
+    let authCalled = false;
 
     auth.onAuthStateChanged(async (user) => {
       console.log('authprovider', authStateRegistered, user);
@@ -189,7 +191,13 @@ export const AuthProvider: React.FC = (props) => {
         setAuthToken(jwt);
         getNetStatus()
           .then((item) => {
-            item && getPatientApiCall();
+            // setTimeout(() => {
+            if (!authCalled) {
+              authCalled = true;
+              console.log('authCalled', authCalled);
+              item && getPatientApiCall();
+            }
+            // }, 500);
           })
           .catch((e) => {
             CommonBugFender('AuthProvider_getNetStatus', e);
@@ -200,8 +208,6 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const getPatientApiCall = async () => {
-    console.log('getPatientApiCall');
-
     const versionInput = {
       appVersion:
         Platform.OS === 'ios'
@@ -209,6 +215,8 @@ export const AuthProvider: React.FC = (props) => {
           : AppConfig.Configuration.Android_Version,
       deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
     };
+    console.log('getPatientApiCall', versionInput);
+
     await apolloClient
       .query<GetCurrentPatients, GetCurrentPatientsVariables>({
         query: GET_CURRENT_PATIENTS,
