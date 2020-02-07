@@ -26,7 +26,7 @@ import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: '20px 5px',
+      padding: '20px 5px 10px 5px',
     },
     consultationSection: {
       paddingLeft: 15,
@@ -181,28 +181,6 @@ interface ConsultationsCardProps {
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
-
-  // let bookedAppointments: appointmentDetails[] = [];
-
-  // if (
-  //   props.appointments.getPatinetAppointments.patinetAppointments &&
-  //   props.appointments.getPatinetAppointments.patinetAppointments.length > 0
-  // ) {
-  //   bookedAppointments =
-  //     props.appointments.getPatinetAppointments.patinetAppointments;
-  // }
-  // filter appointments that are greater than current time.
-  // const filterAppointments = bookedAppointments.filter(appointmentDetails => {
-  //   const currentTime = new Date().getTime();
-  //   const appointmentTime = new Date(
-  //     appointmentDetails.appointmentDateTime
-  //   ).getTime();
-
-  //   if (appointmentTime > currentTime) {
-  //     return appointmentDetails;
-  //   }
-  // });
-
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
       return format(new Date(appointmentTime), 'h:mm a');
@@ -259,142 +237,140 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 365px)'}>
-        <div className={classes.consultationSection}>
-          <Grid container spacing={2}>
-            {props.appointments.map((appointmentDetails, index) => {
-              const appointmentId = appointmentDetails.id;
-              const firstName =
-                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
-                  ? appointmentDetails.doctorInfo.firstName
-                  : '';
-              const lastName =
-                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.lastName
-                  ? appointmentDetails.doctorInfo.lastName
-                  : '';
-              const doctorImage =
-                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.photoUrl
-                  ? appointmentDetails.doctorInfo.photoUrl
-                  : require('images/ic_placeholder.png');
-              const experience =
-                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.experience
-                  ? appointmentDetails.doctorInfo.experience
-                  : '';
-              const specialization =
-                appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.specialty &&
-                !_isNull(appointmentDetails.doctorInfo.specialty.name)
-                  ? appointmentDetails.doctorInfo.specialty.name
-                  : '';
-              const currentTime = new Date().getTime();
-              const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-              const difference = Math.round((appointmentTime - currentTime) / 60000);
-              shouldRefreshComponent(difference);
-              const doctorId =
-                appointmentDetails.doctorInfo && appointmentDetails.doctorId
-                  ? appointmentDetails.doctorId
-                  : '';
-              const isConsultStarted = appointmentDetails.isConsultStarted;
-              const { appointmentState, status } = appointmentDetails;
+      <div className={classes.consultationSection}>
+        <Grid container spacing={2}>
+          {props.appointments.map((appointmentDetails, index) => {
+            const appointmentId = appointmentDetails.id;
+            const firstName =
+              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
+                ? appointmentDetails.doctorInfo.firstName
+                : '';
+            const lastName =
+              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.lastName
+                ? appointmentDetails.doctorInfo.lastName
+                : '';
+            const doctorImage =
+              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.photoUrl
+                ? appointmentDetails.doctorInfo.photoUrl
+                : require('images/ic_placeholder.png');
+            const experience =
+              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.experience
+                ? appointmentDetails.doctorInfo.experience
+                : '';
+            const specialization =
+              appointmentDetails.doctorInfo &&
+              appointmentDetails.doctorInfo.specialty &&
+              !_isNull(appointmentDetails.doctorInfo.specialty.name)
+                ? appointmentDetails.doctorInfo.specialty.name
+                : '';
+            const currentTime = new Date().getTime();
+            const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+            const difference = Math.round((appointmentTime - currentTime) / 60000);
+            shouldRefreshComponent(difference);
+            const doctorId =
+              appointmentDetails.doctorInfo && appointmentDetails.doctorId
+                ? appointmentDetails.doctorId
+                : '';
+            const isConsultStarted = appointmentDetails.isConsultStarted;
+            const { appointmentState, status } = appointmentDetails;
 
-              return (
-                <Grid item sm={4} key={index}>
-                  <div className={classes.consultCard}>
-                    <div className={classes.consultCardWrap}>
-                      <div className={classes.startDoctor}>
-                        <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
-                        {appointmentDetails.doctorInfo &&
-                          appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO && (
-                            <span>
-                              <img src={require('images/ic_star.svg')} alt="" />
-                            </span>
-                          )}
-                      </div>
-                      <div className={classes.doctorInfo}>
-                        <div
-                          className={`${classes.availability} ${
-                            difference <= 15 && difference > 0 ? classes.availableNow : ''
-                          }`}
-                        >
-                          {difference <= 15 && difference > 0
-                            ? `Available in ${difference} mins`
-                            : otherDateMarkup(appointmentTime)}
-                        </div>
-                        <Link to={clientRoutes.doctorDetails(doctorId)}>
-                          <div className={classes.doctorName}>{`Dr. ${_startCase(
-                            _toLower(firstName)
-                          )} ${_startCase(_toLower(lastName))}`}</div>
-                        </Link>
-                        <div className={classes.doctorType}>
-                          {specialization}
-                          <span className={classes.doctorExp}>{experience} YRS</span>
-                        </div>
-                        <div className={classes.consultaitonType}>
+            return (
+              <Grid item sm={4} xs={12} key={index}>
+                <div className={classes.consultCard}>
+                  <div className={classes.consultCardWrap}>
+                    <div className={classes.startDoctor}>
+                      <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
+                      {appointmentDetails.doctorInfo &&
+                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO && (
                           <span>
-                            {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                              ? 'Online Consultation'
-                              : 'Clinic Visit'}
+                            <img src={require('images/ic_star.svg')} alt="" />
                           </span>
-                          <span>
-                            {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
-                              <img src={require('images/ic_onlineconsult.svg')} alt="" />
-                            ) : (
-                              <img src={require('images/ic_clinicvisit.svg')} alt="" />
-                            )}
-                          </span>
-                        </div>
-                        <div className={classes.appointBooked}>
-                          <ul>
-                            <li>Fever</li>
-                            <li>Cough &amp; Cold</li>
-                          </ul>
-                        </div>
-                      </div>
+                        )}
                     </div>
-                    <div className={classes.cardBottomActons}>
-                      <AphButton
-                        onClick={() => {
-                          if (
-                            appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
-                            isConsultStarted
-                          ) {
-                            window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
-                          } else {
-                            isConsultStarted
-                              ? (window.location.href = clientRoutes.chatRoom(
-                                  appointmentId,
-                                  doctorId
-                                ))
-                              : addConsultToQueue({
-                                  variables: {
-                                    appointmentId,
-                                  },
-                                })
-                                  .then((res) => {
-                                    window.location.href = clientRoutes.chatRoom(
-                                      appointmentId,
-                                      doctorId
-                                    );
-                                  })
-                                  .catch((e: ApolloError) => {
-                                    alert(e);
-                                  });
-                          }
-                        }}
+                    <div className={classes.doctorInfo}>
+                      <div
+                        className={`${classes.availability} ${
+                          difference <= 15 && difference > 0 ? classes.availableNow : ''
+                        }`}
                       >
-                        {appointmentDetails.isFollowUp === 'false'
-                          ? showAppointmentAction(appointmentState, status, isConsultStarted)
-                          : 'SCHEDULE FOLLOWUP'}
-                      </AphButton>
-                      <div className={classes.noteText}>You are entitled to 1 free follow-up!</div>
+                        {difference <= 15 && difference > 0
+                          ? `Available in ${difference} mins`
+                          : otherDateMarkup(appointmentTime)}
+                      </div>
+                      <Link to={clientRoutes.doctorDetails(doctorId)}>
+                        <div className={classes.doctorName}>{`Dr. ${_startCase(
+                          _toLower(firstName)
+                        )} ${_startCase(_toLower(lastName))}`}</div>
+                      </Link>
+                      <div className={classes.doctorType}>
+                        {specialization}
+                        <span className={classes.doctorExp}>{experience} YRS</span>
+                      </div>
+                      <div className={classes.consultaitonType}>
+                        <span>
+                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                            ? 'Online Consultation'
+                            : 'Clinic Visit'}
+                        </span>
+                        <span>
+                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
+                            <img src={require('images/ic_onlineconsult.svg')} alt="" />
+                          ) : (
+                            <img src={require('images/ic_clinicvisit.svg')} alt="" />
+                          )}
+                        </span>
+                      </div>
+                      <div className={classes.appointBooked}>
+                        <ul>
+                          <li>Fever</li>
+                          <li>Cough &amp; Cold</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </div>
-      </Scrollbars>
+                  <div className={classes.cardBottomActons}>
+                    <AphButton
+                      onClick={() => {
+                        if (
+                          appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                          isConsultStarted
+                        ) {
+                          window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
+                        } else {
+                          isConsultStarted
+                            ? (window.location.href = clientRoutes.chatRoom(
+                                appointmentId,
+                                doctorId
+                              ))
+                            : addConsultToQueue({
+                                variables: {
+                                  appointmentId,
+                                },
+                              })
+                                .then((res) => {
+                                  window.location.href = clientRoutes.chatRoom(
+                                    appointmentId,
+                                    doctorId
+                                  );
+                                })
+                                .catch((e: ApolloError) => {
+                                  alert(e);
+                                });
+                        }
+                      }}
+                    >
+                      {appointmentDetails.isFollowUp === 'false'
+                        ? showAppointmentAction(appointmentState, status, isConsultStarted)
+                        : 'SCHEDULE FOLLOWUP'}
+                    </AphButton>
+                    <div className={classes.noteText}>You are entitled to 1 free follow-up!</div>
+                  </div>
+                </div>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </div>
     </div>
   );
 };
