@@ -231,7 +231,6 @@ const getCurrentPatients: Resolver<
 
       //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
       patientPromises = uhids.response!.signUpUserData.map((data) => {
-        console.log(data, 'user data');
         return findOrCreatePatient(
           { uhid: data.UHID, mobileNumber },
           {
@@ -414,11 +413,9 @@ const getLoginPatients: Resolver<
       return existingPatient || Patient.create(createOptions).save();
     });
   };
-
   let patientPromises: Object[] = [];
   if (uhids != null && uhids.response != null) {
     isPrismWorking = 1;
-
     //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
     patientPromises = uhids.response!.signUpUserData.map((data) => {
       return findOrCreatePatient(
