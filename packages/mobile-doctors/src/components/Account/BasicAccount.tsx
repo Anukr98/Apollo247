@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 
@@ -65,7 +66,10 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       getDoctorDetailsApi &&
         getDoctorDetailsApi()
           .then((res) => setLoading(false))
-          .catch((error) => setLoading(false));
+          .catch((error) => {
+            setLoading(false);
+            CommonBugFender('Get_Doctor_DetailsApi', error);
+          });
     }
   }, [doctorDetails]);
 

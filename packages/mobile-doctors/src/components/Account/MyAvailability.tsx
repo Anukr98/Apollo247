@@ -23,6 +23,7 @@ import {
 import moment from 'moment';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {
@@ -118,6 +119,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('GET_BLOCKED_CALENDAR_Myavailability', e);
         console.log('Error occured while searching for Doctors', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
@@ -152,6 +154,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         index;
       })
       .catch((err) => {
+        CommonBugFender('REMOVE_BLOCKED_CALENDAR_ITEM_Myavailability', e);
         console.log(err, 'err REMOVE_BLOCKED_CALENDAR_ITEM');
         setshowSpinner(false);
       });

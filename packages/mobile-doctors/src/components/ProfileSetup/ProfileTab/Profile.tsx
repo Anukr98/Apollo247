@@ -7,6 +7,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {
@@ -108,6 +109,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
         .filter(Boolean)
         .join(', ');
     } catch (e) {
+      CommonBugFender('Get_Formatted_Location_Profile', e);
       console.log(e);
     }
     return location;

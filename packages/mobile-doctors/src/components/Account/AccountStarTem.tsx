@@ -24,6 +24,7 @@ import { Platform, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -121,6 +122,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
         }
       })
       .catch((e) => {
+        CommonBugFender('Add_Doctor_To_Program', e);
         setSelectedDoctor('Select Doctor');
         setIsLoading(false);
         const error = JSON.parse(JSON.stringify(e));
@@ -150,6 +152,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
       })
       .catch((e) => {
         setIsLoading(false);
+        CommonBugFender('Remove_Doctor_To_Program', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while removing Doctor', errorMessage, error);
@@ -225,6 +228,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
           .filter(Boolean) //.filter((data) => !data)
           .join(',') || '');
     } catch (e) {
+      CommonBugFender('Get_Formatted_Location', e);
       console.log('e', e);
     }
     console.log('location', location);
