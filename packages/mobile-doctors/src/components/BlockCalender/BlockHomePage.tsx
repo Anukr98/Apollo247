@@ -34,6 +34,7 @@ import {
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { width } = Dimensions.get('window');
 
@@ -164,13 +165,15 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     console.log(message, 'message', error.message);
 
     if (message == 'BLOCKED_CALENDAR_ITEM_OVERLAPS') {
-      renderErrorPopup(
-        'You are trying to duplicate the blocking of same slot, please recheck and try again!'
-      );
+      renderErrorPopup(strings.block_homepage.duplicate_blockig_alert);
     } else if (message === 'INVALID_DATES') {
-      renderErrorPopup(`Past time slots cannot be blocked`);
+      renderErrorPopup(strings.block_homepage.cant_block_past_slots);
     } else {
-      renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+      renderErrorPopup(
+        `${strings.alerts.something_went_wrong} ${
+          message ? `${strings.alerts.error_code} ${message}.` : ''
+        }`
+      );
     }
   };
 
@@ -328,7 +331,9 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                 selectedReason !== undefined ? null : styles.placeholderStyle,
               ]}
             >
-              {selectedReason !== undefined ? selectedReason.value : 'Select an Option'}
+              {selectedReason !== undefined
+                ? selectedReason.value
+                : strings.block_homepage.sele_option}
             </Text>
             <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
               <DropdownGreen />
@@ -417,7 +422,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
             marginTop: 32,
           }}
         >
-          Which of these would you like to block?
+          {strings.block_homepage.which_would_block}
         </Text>
         <RadioButtons
           data={blockOptions}
@@ -431,7 +436,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         >
           {selectedBlockOption === blockOptions[0].key ? (
             <View style={{ marginLeft: 32 }}>
-              <Text style={styles.labelText}>Reason (optional)</Text>
+              <Text style={styles.labelText}>{strings.block_homepage.reason_optional}</Text>
               {renderReasons()}
             </View>
           ) : selectedBlockOption === blockOptions[1].key ? (
@@ -442,8 +447,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                   paddingBottom: 12,
                 }}
               >
-                These are your active consult hours for the selected day. Select which ones you’d
-                like to block:
+                {strings.block_homepage.these_are_active_consult}
               </Text>
               {startDate && daysArray[0].key === selectedDay
                 ? getStartDayConsults(startDate).map(
@@ -487,8 +491,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                     <View style={{ flex: 1 }}>
                       <DatePicker
                         value={item.start}
-                        label={'From'}
-                        placeholder={'From'}
+                        label={strings.common.from}
+                        placeholder={strings.common.from}
                         containerStyle={{ marginTop: 10 }}
                         placeholderStyle={{ fontSize: 20 }}
                         placeholderViewStyle={{ borderBottomWidth: 2 }}
@@ -526,8 +530,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                     <View style={{ flex: 1 }}>
                       <DatePicker
                         value={item.end}
-                        label={'To'}
-                        placeholder={'To'}
+                        label={strings.common.to}
+                        placeholder={strings.common.to}
                         containerStyle={{ marginTop: 10 }}
                         placeholderStyle={{ fontSize: 20 }}
                         placeholderViewStyle={{ borderBottomWidth: 2 }}
@@ -555,7 +559,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                     marginTop: 20,
                   }}
                 >
-                  End time should be greater than start time
+                  {strings.block_homepage.end_time_should_greater}
                 </Text>
               )}
               <AddIconLabel
@@ -567,7 +571,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                     setcustomTime(timeArray);
                   }
                 }}
-                label={'ADD ANOTHER TIME SLOT'}
+                label={strings.block_homepage.add_another_slot}
                 style={{ marginTop: 32 }}
               />
             </View>
@@ -598,7 +602,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
             onPress: () => props.navigation.goBack(),
           },
         ]}
-        headerText="BLOCK CALENDAR"
+        headerText={strings.buttons.block_calendar}
         rightIcons={[
           {
             icon: <Remove />,
@@ -628,7 +632,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           <View>
             <DatePicker
               value={startDate}
-              label={'Which day would you like to block your calendar for?'}
+              label={strings.block_homepage.which_day_would_block}
               placeholder={'Select a date'}
               containerStyle={{ marginTop: 32 }}
               minimumDate={new Date()}
@@ -644,8 +648,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           <View>
             <DatePicker
               value={startDate}
-              label={'From'}
-              placeholder={'Select from date'}
+              label={strings.common.from}
+              placeholder={strings.block_homepage.sel_from_date}
               containerStyle={{ marginTop: 32 }}
               onChangeDate={(date) => {
                 setstartDate(date);
@@ -655,8 +659,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
             />
             <DatePicker
               value={endDate}
-              label={'To'}
-              placeholder={'Select to date'}
+              label={strings.common.to}
+              placeholder={strings.block_homepage.sel_to_date}
               containerStyle={{ marginTop: 24.5 }}
               minimumDate={startDate}
               onChangeDate={(date) => {
@@ -695,7 +699,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         </ScrollView>
         <StickyBottomComponent>
           <Button
-            title="BLOCK CALENDAR"
+            title={strings.buttons.block_calendar}
             style={{ flex: 1, marginHorizontal: 71 }}
             onPress={SaveBlockCalendar}
             disabled={

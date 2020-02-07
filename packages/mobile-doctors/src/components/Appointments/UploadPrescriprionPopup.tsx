@@ -20,6 +20,7 @@ import {
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -86,7 +87,7 @@ export interface UploadPrescriprionPopupProps {
   instructions?: string[];
   hideTAndCs?: boolean;
   onClickClose: () => void;
-  onResponse: (selectedType: any, response: (any)[]) => void;
+  onResponse: (selectedType: any, response: any[]) => void;
   isProfileImage?: boolean;
 }
 
@@ -207,7 +208,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             ...theme.fonts.IBMPlexSansMedium(14),
           }}
         >
-          Order medicines in 2 simple steps —
+          {strings.appointments.order_medicine_steps}
         </Text>
         <View
           style={{
@@ -217,7 +218,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           }}
         >
           <View style={styles.cardViewStyle}>
-            <Text style={styles.cardTextStyle}>{`UPLOAD\nYOUR PRESCRIPTION`}</Text>
+            <Text style={styles.cardTextStyle}>{strings.appointments.upload_prescr}</Text>
           </View>
           <View
             style={{
@@ -228,7 +229,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             <Path />
           </View>
           <View style={styles.cardViewStyle}>
-            <Text style={styles.cardTextStyle}>{'ORDER THROUGH OUR\nCUSTOMER CARE'}</Text>
+            <Text style={styles.cardTextStyle}>
+              {strings.appointments.order_through_customercare}
+            </Text>
           </View>
         </View>
       </View>
@@ -377,8 +380,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             // paddingHorizontal: 20,
           }}
         >
-          * Our pharmacist will dispense medicines only if the prescription is valid & it meets all
-          government regulations.
+          {strings.appointments.upload_prescr_descr}
         </Text>
       </View>
     );

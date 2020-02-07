@@ -35,6 +35,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { height } = Dimensions.get('window');
 
@@ -98,7 +99,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             marginTop: 12,
           }}
         >
-          Dr. {getDoctorDetails!.firstName} {getDoctorDetails!.lastName}
+          {strings.common.dr} {getDoctorDetails!.firstName} {getDoctorDetails!.lastName}
         </Text>
       </View>
     );
@@ -117,7 +118,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             marginBottom: 12,
           }}
         >
-          MCI Number : {getDoctorDetails!.registrationNumber}
+          {strings.account.mci_num} : {getDoctorDetails!.registrationNumber}
         </Text>
       </View>
     );
@@ -134,7 +135,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <SmartPrescription />
-            <Text style={styles.headingText}>My Stats</Text>
+            <Text style={styles.headingText}>{strings.account.my_stats}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -154,7 +155,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <Profile />
-            <Text style={styles.headingText}>My Profile</Text>
+            <Text style={styles.headingText}>{strings.account.my_profile}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -174,7 +175,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <AvailabilityIcon />
-            <Text style={styles.headingText}>Availability</Text>
+            <Text style={styles.headingText}>{strings.account.availability}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -195,7 +196,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <FeeIcon />
-            <Text style={styles.headingText}>Fees</Text>
+            <Text style={styles.headingText}>{strings.account.fees}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -222,7 +223,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <SmartPrescription />
-            <Text style={styles.headingText}>Smart Prescription</Text>
+            <Text style={styles.headingText}>{strings.account.smart_prescr}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -237,7 +238,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.MyAccount)}>
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <Settings />
-            <Text style={styles.headingText}>Settings</Text>
+            <Text style={styles.headingText}>{strings.account.settings}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
