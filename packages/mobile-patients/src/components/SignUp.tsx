@@ -37,7 +37,11 @@ import {
   updatePatientVariables,
   updatePatient,
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
-import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  Relation,
+  Gender,
+  UpdatePatientInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -403,7 +407,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                       console.log('signup currentPatient', currentPatient);
 
-                      const patientsDetails = {
+                      const patientsDetails: UpdatePatientInput = {
                         id: currentPatient ? currentPatient.id : '',
                         mobileNumber: currentPatient ? currentPatient.mobileNumber : '',
                         firstName: firstName.trim(),
