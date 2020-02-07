@@ -85,6 +85,7 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -160,6 +161,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [hideView, setHideView] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
@@ -208,6 +210,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [url, setUrl] = useState('');
 
   useEffect(() => {
+    callAbandonmentCall();
     console.log('PatientConsultTime'), PatientConsultTime;
     // setTimeout(() => {
     //   flatListRef.current && flatListRef.current!.scrollToEnd();
@@ -277,6 +280,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     joinTimerNoShow && clearInterval(joinTimerNoShow);
   };
 
+  const [missedCallCounter, setMissedCallCounter] = useState<number>(0);
+  const callAbandonmentCall = () => {
+    showAphAlert &&
+      showAphAlert({
+        title: `Hi,`,
+        description:
+          'We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.',
+        CTAs: [
+          {
+            text: 'Continue',
+            onPress: () => hideAphAlert!(),
+            type: 'white-button',
+          },
+          {
+            text: 'Reschedule',
+            onPress: () => {
+              endAppointmentApiCall(STATUS.CALL_ABANDON);
+              hideAphAlert!();
+            },
+          },
+        ],
+      });
+  };
+
   const endAppointmentApiCall = (status: STATUS) => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -284,7 +311,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         variables: {
           endAppointmentSessionInput: {
             appointmentId: AppId,
-            status: STATUS.NO_SHOW,
+            status: status,
             noShowBy: REQUEST_ROLES.PATIENT,
           },
         },
@@ -560,8 +587,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (!abondmentStarted && patientJoined) {
                 abondmentStarted = true;
                 startNoShow(60, () => {
-                  console.log('Call abababaab');
-                  endAppointmentApiCall(STATUS.CALL_ABANDON);
+                  callAbandonmentCall();
                 });
               }
             }
@@ -697,7 +723,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       rowData.message === covertVideoMsg ||
       rowData.message === covertAudioMsg ||
       rowData.message === callAbandonment ||
-      rowData.message === startConsultMsg
+      rowData.message === startConsultMsg ||
+      rowData.message === jdThankyou
     ) {
       return null;
     }
@@ -2559,6 +2586,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (isAudioCall) {
                 return;
               }
+              //need to work form here
               setIsAudioCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
@@ -2573,7 +2601,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   channel: channel,
                   storeInHistory: true,
                 },
-                (status, response) => {}
+                (status, response) => {
+                  if (response) {
+                    if (missedCallCounter < 3) {
+                      startNoShow(45, () => {
+                        // stopCall()
+                        setMissedCallCounter(missedCallCounter + 1);
+                      });
+                    } else {
+                      callAbandonmentCall();
+                    }
+                  }
+                }
               );
             }}
           >

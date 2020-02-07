@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   KeyboardAvoidingView,
@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { Remove, AddPlus, DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
@@ -38,6 +39,18 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
   const [searchData, setSearchData] = useState<(searchDiagnosis_searchDiagnosis | null)[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
+
+  const handleBack = async () => {
+    props.onClose();
+    return false;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   const renderHeader = () => {
     return (

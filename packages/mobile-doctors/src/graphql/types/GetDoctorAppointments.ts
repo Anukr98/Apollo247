@@ -50,6 +50,9 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   bookingDate: any | null;
   appointmentType: APPOINTMENT_TYPE;
   appointmentState: APPOINTMENT_STATE | null;
+  displayId: number | null;
+  isFollowUp: boolean | null;
+  followUpParentId: string | null;
   caseSheet: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null)[] | null;
   patientInfo: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo | null;
 }
