@@ -3144,6 +3144,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               width: '50%',
               marginRight: 20,
               marginTop: 40,
+              height: 80,
             }}
             options={[
               {
