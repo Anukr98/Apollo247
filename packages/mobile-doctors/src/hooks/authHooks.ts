@@ -14,6 +14,7 @@ export const useAuth = () => {
     clearFirebaseUser,
     getDoctorDetailsApi,
     getDoctorDetailsError,
+    setDoctorDetailsError,
     // signOut,
   } = useContext(AuthContext);
   return {
@@ -27,6 +28,7 @@ export const useAuth = () => {
     clearFirebaseUser,
     getDoctorDetailsApi,
     getDoctorDetailsError,
+    setDoctorDetailsError,
     // signOut,
   };
 };

@@ -121,7 +121,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   });
 
   useEffect(() => {
-    console.log(doctorDetails, 'doctorDetails');
     setLoading(false);
     if (!doctorDetails) {
       setLoading(true);

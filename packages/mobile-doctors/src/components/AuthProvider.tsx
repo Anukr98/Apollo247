@@ -229,12 +229,14 @@ export const AuthProvider: React.FC = (props) => {
           console.log('GetDoctorDetails', data);
           if (data) {
             setDoctorDetails(data.getDoctorDetails);
+            setDoctorDetailsError(false);
             resolve(true);
           }
         })
         .catch(async (error) => {
           console.log('GetDoctorDetails error', error);
           setDoctorDetailsError(true);
+          clearFirebaseUser();
           reject(false);
         });
     });
@@ -255,6 +257,7 @@ export const AuthProvider: React.FC = (props) => {
             getDoctorDetailsApi,
             // signOut,
             getDoctorDetailsError,
+            setDoctorDetailsError,
           }}
         >
           {props.children}

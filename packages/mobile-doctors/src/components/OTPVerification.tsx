@@ -6,6 +6,7 @@ import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-doctors/src/compo
 import { NoInterNetPopup } from '@aph/mobile-doctors/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { setDoctorDetails } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import string from '@aph/mobile-doctors/src/strings/strings.json';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
@@ -31,7 +32,6 @@ import Hyperlink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
-import { BottomPopUp } from './ui/BottomPopUp';
 
 const { height, width } = Dimensions.get('window');
 
@@ -107,7 +107,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
 
-  const { sendOtp, doctorDetails, getDoctorDetailsError } = useAuth();
+  const {
+    sendOtp,
+    doctorDetails,
+    getDoctorDetailsError,
+    clearFirebaseUser,
+    setDoctorDetails: setContextDoctorDetails,
+  } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [isOtpVerified, setisOtpVerified] = useState<boolean>(false);
 
@@ -135,43 +141,38 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    // if (onOtpClick) {
-    //   if (currentPatient) {
-    //     db.ref('ApolloPatients/')
-    //       .child(dbChildKey)
-    //       .update({
-    //         patientApiCallSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-    //       });
-    //     if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
-    //       if (currentPatient.relation == null) {
-    //         navigateTo(AppRoutes.MultiSignup);
-    //       } else {
-    //         AsyncStorage.setItem('userLoggedIn', 'true');
-    //         navigateTo(AppRoutes.ConsultRoom);
-    //       }
-    //     } else {
-    //       if (currentPatient.firstName == '') {
-    //         navigateTo(AppRoutes.SignUp);
-    //       } else {
-    //         AsyncStorage.setItem('userLoggedIn', 'true');
-    //         navigateTo(AppRoutes.ConsultRoom);
-    //       }
-    //     }
-    //   }
-    // }
-
     console.log(getDoctorDetailsError, doctorDetails, 'getDoctorDetailsError');
 
     if (isOtpVerified) {
       setTimeout(() => {
         if (doctorDetails && doctorDetails.id) {
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ProfileSetup })],
-            })
+          console.log(
+            doctorDetails,
+            'doctorDetails doctorType',
+            doctorDetails.doctorType,
+            doctorDetails.doctorType != 'JUNIOR'
           );
+          if (doctorDetails.doctorType !== 'JUNIOR') {
+            console.log('doctorType JUNIOR');
+
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ProfileSetup })],
+              })
+            );
+          } else {
+            AsyncStorage.setItem('isLoggedIn', 'false');
+            // AsyncStorage.setItem('isProfileFlowDone', 'false');
+            setDoctorDetails(null);
+            clearFirebaseUser && clearFirebaseUser();
+            Alert.alert(
+              'Error',
+              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+            );
+            setshowSpinner(false);
+          }
         } else {
           if (getDoctorDetailsError === true) {
             Alert.alert(
@@ -549,6 +550,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             onPress={() => {
               props.navigation.goBack();
               intervalId && clearInterval(intervalId);
+              setContextDoctorDetails && setContextDoctorDetails(null);
             }}
           >
             <BackArrow />
