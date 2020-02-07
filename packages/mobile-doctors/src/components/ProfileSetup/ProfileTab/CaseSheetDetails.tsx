@@ -210,10 +210,15 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         <View style={{ marginHorizontal: 16 }}>
           {renderLabelDesc('Diagnosed Medical Condition')}
           {caseSheet.length && (
-            <View style={{ marginTop: 10, marginBottom: 20 }}>
+            <View
+              style={{ marginTop: 10, marginBottom: 20, flexDirection: 'row', flexWrap: 'wrap' }}
+            >
               {caseSheet[0].diagnosticPrescription &&
                 caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
-                  <CapsuleView diseaseName={itemname} />
+                  <CapsuleView
+                    diseaseName={itemname}
+                    containerStyle={{ marginRight: 12, marginBottom: 12 }}
+                  />
                 ))}
             </View>
           )}

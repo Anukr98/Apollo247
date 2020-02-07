@@ -33,6 +33,8 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -47,24 +49,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     elevation: 10,
     backgroundColor: 'white',
-  },
-  common: {
-    fontFamily: 'IBMPlexSans',
-    fontSize: 14,
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    letterSpacing: 0,
-    color: 'rgba(2, 71, 91, 0.6)',
-    marginLeft: 16,
-  },
-  commonview: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  selectText: {
-    marginLeft: 16,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: '#00b38e',
   },
   showPopUp: {
     backgroundColor: 'rgba(0,0,0,0.2)',
@@ -131,7 +115,10 @@ export const Patients: React.FC<PatientsProps> = (props) => {
 
   const [SelectableValue, setSelectableValue] = useState(patientLogType.All);
   // const [patientLogSortData, setPatientLogSortData] = useState(patientLogSort.PATIENT_NAME_A_TO_Z);
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
+
   const client = useApolloClient();
+  const { doctorDetails } = useAuth();
 
   useEffect(() => {
     ShowAllTypeData(patientLogType.All, sortingList[0].key);
@@ -147,7 +134,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true), //props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
           {
             icon: <Notification />,
@@ -217,7 +204,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             marginLeft: 20,
             marginBottom: 2,
           }}
-        >{`hello dr. rao :)`}</Text>
+        >{`hello dr. ${(doctorDetails ? doctorDetails.firstName : '').toLowerCase()} :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),
@@ -444,6 +431,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
         </View>
       )}
       {showSpinner && <Spinner />}
+      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
     </View>
   );
 };
