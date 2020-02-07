@@ -1,5 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
 import { BottomNavigation, Theme, Dialog, DialogContent } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
@@ -23,6 +25,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     labelRoot: {
       width: '100%',
+      minWidth: 'auto',
+      padding: 0,
     },
     iconLabel: {
       fontSize: 10,
@@ -63,8 +67,10 @@ export const NavigationBottom: React.FC = (props) => {
   return (
     <BottomNavigation showLabels className={classes.root}>
       <BottomNavigationAction
-        label="Appointments"
+        component={Link}
+        label="Consult Room"
         icon={<img src={require('images/bottom-nav/ic_appointments.svg')} />}
+        to={clientRoutes.appointments()}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -73,6 +79,8 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Health Records"
+        component={Link}
+        to={clientRoutes.healthRecords()}
         icon={<img src={require('images/bottom-nav/ic_myhealth.svg')} />}
         classes={{
           root: classes.labelRoot,
@@ -82,6 +90,8 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Medicines"
+        component={Link}
+        to={clientRoutes.medicines()}
         icon={<img src={require('images/bottom-nav/ic_medicines.svg')} />}
         classes={{
           root: classes.labelRoot,

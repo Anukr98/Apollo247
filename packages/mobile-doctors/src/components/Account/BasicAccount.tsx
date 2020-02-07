@@ -1,3 +1,4 @@
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
   AvailabilityIcon,
   FeeIcon,
@@ -7,9 +8,12 @@ import {
   Settings,
   SmartPrescription,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -23,15 +27,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 
