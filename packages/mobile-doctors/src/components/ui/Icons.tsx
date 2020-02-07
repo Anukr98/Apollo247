@@ -729,6 +729,14 @@ export const InpersonIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const InpersonWhiteIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/round_clinic_consult_white.png')}
+  />
+);
+
 export const GreenOnline: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 12, width: 18 }}
