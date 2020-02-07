@@ -1212,6 +1212,9 @@ export class AuditHistory extends BaseEntity {
 
   @Column({ nullable: true })
   rating: number;
+
+  @Column({ nullable: true })
+  qaRating: number;
 }
 
 //auditor history table end
