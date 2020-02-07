@@ -108,6 +108,9 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         bookingDate
         appointmentType
         appointmentState
+        displayId
+        isFollowUp
+        followUpParentId
         caseSheet {
           symptoms {
             symptom
@@ -476,6 +479,7 @@ export const GET_CASESHEET = gql`
           salutation
           registrationNumber
           signature
+          photoUrl
           specialty {
             createdDate
             id

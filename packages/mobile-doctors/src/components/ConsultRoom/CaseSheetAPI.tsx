@@ -3,8 +3,11 @@ import { GetDoctorFavouriteAdviceList } from '@aph/mobile-doctors/src/graphql/ty
 import {
   GET_DOCTOR_FAVOURITE_ADVICE_LIST,
   GET_DOCTOR_FAVOURITE_MEDICINE_LIST,
+  GET_DOCTOR_FAVOURITE_TEST_LIST,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetDoctorFavouriteMedicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { GetDoctorFavouriteTestList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 
 // const { data, loading, error } = useQuery<
 //   getPatientPastConsultsAndPrescriptions,
@@ -24,21 +27,27 @@ export const CaseSheetAPI = () => {
     fetchPolicy: 'no-cache',
   });
 
-  const { data: favMed, loading: favMedLoading, error: favMidError } = useQuery<
+  const { data: favMed, loading: favMedLoading, error: favMedError } = useQuery<
     GetDoctorFavouriteMedicineList
   >(GET_DOCTOR_FAVOURITE_MEDICINE_LIST, {
     fetchPolicy: 'no-cache',
   });
 
+  const { data: favTest, loading: favTestLoading, error: favTestError } = useQuery<
+    GetDoctorFavouriteTestList
+  >(GET_DOCTOR_FAVOURITE_TEST_LIST, {
+    fetchPolicy: 'no-cache',
+  });
+
   return {
-    favList,
+    favList: g(favList, 'getDoctorFavouriteAdviceList', 'adviceList'),
     favlistLoading,
     favListError,
-    favMed:
-      favMed &&
-      favMed.getDoctorFavouriteMedicineList &&
-      favMed.getDoctorFavouriteMedicineList.medicineList,
+    favMed: g(favMed, 'getDoctorFavouriteMedicineList', 'medicineList'),
     favMedLoading,
-    favMidError,
+    favMedError,
+    favTest: g(favTest, 'getDoctorFavouriteTestList', 'testList'),
+    favTestLoading,
+    favTestError,
   };
 };

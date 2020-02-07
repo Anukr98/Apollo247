@@ -75,6 +75,7 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
   GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
   GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
+  GetCaseSheet_getCaseSheet_patientDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
@@ -88,7 +89,7 @@ import {
   UpdateCaseSheetVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateCaseSheet';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { medUsageType, nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { medUsageType, nameFormater, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
@@ -113,6 +114,9 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { Image } from 'react-native-elements';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -447,87 +451,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const renderPatientImage = () => {
-  return (
-    <View style={{ marginBottom: 20 }}>
-      <PatientPlaceHolderImage />
-    </View>
-  );
-};
-const profileRow = (
-  PatientInfoData: PatientInfoData,
-  AppId: string,
-  Appintmentdatetimeconsultpage: string
-) => {
-  // if (!firstName) return null;
-  const dateOfBirth = moment(PatientInfoData.dateOfBirth).format('YYYY');
-  const todayYear = moment(new Date()).format('YYYY');
-  return (
-    <View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        <Text style={styles.nameText}>{PatientInfoData.firstName}</Text>
-        <View style={styles.line}></View>
-        <Text style={styles.agetext}>
-          {todayYear - dateOfBirth}
-          {PatientInfoData.gender ? `, ${PatientInfoData.gender.charAt(0)} ` : ''}
-          {PatientInfoData.addressList && PatientInfoData.addressList.length > 0
-            ? `, ${PatientInfoData.addressList[0].city}`
-            : ''}
-        </Text>
-      </View>
-      {PatientInfoData.uhid != '' ? (
-        <Text style={styles.uhidText}>UHID : {PatientInfoData.uhid} </Text>
-      ) : null}
-
-      <View style={styles.understatusline} />
-      <View>
-        {registerDetails('Appt ID: ', AppId.slice(-5))}
-        {registerDetailsAppDate('Appt Date: ', Appintmentdatetimeconsultpage)}
-      </View>
-    </View>
-  );
-};
-
-const registerDetails = (ApptId: string, appIdDate: string) => {
-  if (!appIdDate) return null;
-  return (
-    <View style={{ flexDirection: 'row', marginLeft: 20, marginBottom: 8 }}>
-      <Text style={styles.appid}>{ApptId}</Text>
-      <Text style={styles.appdate}>{appIdDate}</Text>
-    </View>
-  );
-};
-const registerDetailsAppDate = (ApptId: string, appIdDate: string) => {
-  if (!appIdDate) return null;
-  return (
-    <View style={{ flexDirection: 'row', marginLeft: 20, alignItems: 'center' }}>
-      <Text style={styles.appid}>{ApptId}</Text>
-      <Text style={styles.appdate}>{moment(appIdDate).format('DD/MM/YYYY')}</Text>
-      <View
-        style={{
-          height: 12,
-          borderWidth: 1,
-          borderColor: 'rgba(2, 71, 91, 0.6)',
-          marginHorizontal: 5,
-        }}
-      ></View>
-      <Text style={styles.appdate}>{moment(appIdDate).format('HH:mm A')}</Text>
-    </View>
-  );
-};
-// moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY | HH:mm A');
-const renderBasicProfileDetails = (
-  PatientInfoData: PatientInfoData,
-  AppId: string,
-  Appintmentdatetimeconsultpage: string
-) => {
-  return (
-    <View style={{ backgroundColor: '#f7f7f7', paddingBottom: 11 }}>
-      {profileRow(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
-    </View>
-  );
-};
-
 interface dataPair {
   key: string;
   value: string;
@@ -546,17 +469,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   const AppId = props.navigation.getParam('AppId');
   const stastus = props.navigation.getParam('AppointmentStatus');
+  const [
+    patientDetails,
+    setPatientDetails,
+  ] = useState<GetCaseSheet_getCaseSheet_patientDetails | null>();
+  const [displayId, setDisplayId] = useState<string>('');
   const [value, setValue] = useState<string>('');
   const [othervalue, setOthervalue] = useState<string>('');
   const [familyValues, setFamilyValues] = useState<
     (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
   >([]);
 
-  const [allergiesData, setAllergiesData] = useState<string>('');
+  const [allergiesData, setAllergiesData] = useState<string | null>('');
   const [lifeStyleData, setLifeStyleData] = useState<
     (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
   >();
-  const [juniordoctornotes, setJuniorDoctorNotes] = useState<string>('');
+  const [juniordoctornotes, setJuniorDoctorNotes] = useState<string | null>('');
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
   const [vitalsShow, setVitalsShow] = useState(false);
@@ -569,7 +497,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [adviceInstructions, setAdviceInstructions] = useState(false);
   const [followup, setFollowUp] = useState(false);
   const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
-  const [switchValue, setSwitchValue] = useState(true);
+  const [switchValue, setSwitchValue] = useState<boolean | null>(true);
   const [sliderValue, setSliderValue] = useState(2);
   const [diagnosisView, setDiagnosisView] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
@@ -616,8 +544,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { setCaseSheetEdit, caseSheetEdit } = useContext(CaseSheetContext);
 
   let Delegate = '';
+  const { showAphAlert, hideAphAlert, setLoading, loading } = useUIElements();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  // const [loading, setLoading && setLoading] = useState<boolean>(false);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
   const {
@@ -626,20 +555,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     favlistLoading,
     favMed,
     favMedLoading,
-    favMidError,
+    favMedError,
+    favTest,
+    favTestLoading,
+    favTestError,
   } = CaseSheetAPI();
 
-  useEffect(() => {
-    if (favList) {
-      let data: dataPair[] = [];
-      favList.getDoctorFavouriteAdviceList &&
-        favList.getDoctorFavouriteAdviceList.adviceList &&
-        favList.getDoctorFavouriteAdviceList.adviceList.forEach((item) => {
-          if (item) data.push({ key: item.id, value: item.instruction });
-        });
-      data && setFavAdvices(data);
-    }
-  }, [favList]);
   useEffect(() => {
     // client2
     //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -658,31 +579,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     //   .catch((e: any) => {
     //     console.log('Error occured while create session', e);
     //   });
-    GetFavouriteTestList();
   }, []);
 
-  const GetFavouriteTestList = () => {
-    client
-      .query<GetDoctorFavouriteTestList>({
-        query: GET_DOCTOR_FAVOURITE_TEST_LIST,
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        if (data && data.getDoctorFavouriteTestList && data.getDoctorFavouriteTestList.testList) {
-          const TestList = data.getDoctorFavouriteTestList!.testList;
-          console.log('TestList :', TestList);
-          setfavTests(TestList);
-        }
-
-        setLoading(false);
-      })
-      .catch((e) => {
-        console.log('Error occured while fetching Tests List', e);
-      });
-  };
-
   useEffect(() => {
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .query<GetCaseSheet>({
         query: GET_CASESHEET,
@@ -690,63 +590,82 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         variables: { appointmentId: AppId },
       })
       .then((_data) => {
-        const result = _data.data.getCaseSheet;
-        console.log('GET_JUNIOR_DOCTOR_CASESHEET', result);
-        console.log('healthvallet', _data.data.getCaseSheet!.patientDetails!.healthVault!);
-        setSymptonsData(_data.data.getCaseSheet!.caseSheetDetails!.symptoms);
-        setMedicalHistory(_data.data.getCaseSheet!.patientDetails!.patientMedicalHistory);
-        setFamilyValues(_data.data.getCaseSheet!.patientDetails!.familyHistory);
-        setAllergiesData(_data.data.getCaseSheet!.patientDetails!.allergies!);
-        setLifeStyleData(_data.data.getCaseSheet!.patientDetails!.lifeStyle);
-        setJuniorDoctorNotes(_data.data.getCaseSheet!.caseSheetDetails!.notes!);
-        setDiagnosisData(_data.data.getCaseSheet!.caseSheetDetails!.diagnosis);
-        setOtherInstructionsData(
-          _data.data.getCaseSheet!.caseSheetDetails!.otherInstructions || []
-        );
+        const caseSheet = g(_data, 'data', 'getCaseSheet');
+
+        setPastList(g(caseSheet, 'pastAppointments') || null);
+
+        setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
+        setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
+        setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
+        setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
+        //photoUrl
+        //gender
+        //name
+        //age
+        //uhid
+        console.log(g(caseSheet, 'patientDetails'));
+
+        setPatientDetails(g(caseSheet, 'patientDetails') || null);
+        setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
+
+        setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
+        setJuniorDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || null);
+        setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
+        setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
         setDiagnosticPrescription(
-          _data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
+          g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null
         );
         setMedicinePrescriptionData(
-          _data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription
+          g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || null
         );
-        setSwitchValue(_data.data.getCaseSheet!.caseSheetDetails!.followUp!);
-        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays! == null) {
-          setSliderValue(2);
-        } else {
-          setSliderValue(parseInt(_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays!));
-        }
+        setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
 
-        setValue(_data.data.getCaseSheet!.caseSheetDetails!.notes!);
-        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpDate! == null) {
-          setSelectDate('dd/mm/yyyy');
-        } else {
-          const val = moment(
-            parseInt(_data.data.getCaseSheet!.caseSheetDetails!.followUpDate!)
-          ).format('DD/MM/YYYY');
-          setSelectDate(val);
-        }
+        // if (g(caseSheet,'caseSheetDetails','followUpAfterInDays')){
+        //   setSliderValue(2);
+        // } else {
+        //   setSliderValue(parseInt(g(caseSheet,'caseSheetDetails','followUpAfterInDays!)')||null);
+        // }
 
-        setHealthWalletArrayData(_data.data.getCaseSheet!.patientDetails!.healthVault);
-        setPastList(_data.data.getCaseSheet!.pastAppointments!);
-        const consultType = _data.data.getCaseSheet!.caseSheetDetails!.consultType! || '';
+        // setValue(g(caseSheet,'caseSheetDetails','notes')||null);
+        // if (g(caseSheet,'caseSheetDetails','followUpDate! == null)' ||null){
+        //   setSelectDate('dd/mm/yyyy');
+        // } else {
+        //   const val = moment(parseInt(g(caseSheet,'caseSheetDetails','followUpDate!)).forma't||null)(
+        //     'DD/MM/YYYY'
+        //   );
+        //   setSelectDate(val);
+        // }
+
+        const consultType = g(caseSheet, 'caseSheetDetails', 'consultType') || null;
         setConsultationType(consultType as typeof consultationType);
-        setLoading(false);
+        setDisplayId(
+          g(_data.data.getCaseSheet, 'caseSheetDetails', 'appointment', 'displayId') || ''
+        );
         try {
-          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
-            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+          setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
+            null) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+          setDiagonsisList(g(
+            caseSheet,
+            'caseSheetDetails',
+            'diagnosis' || null
+          ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+          setDiagnosticPrescriptionDataList(g(
+            caseSheet,
+            'caseSheetDetails',
+            'diagnosticPrescription' || null
+          ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+          setMedicineList(g(
+            caseSheet,
+            'caseSheetDetails',
+            'medicinePrescription' || null
+          ) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
         } catch (error) {
           console.log({ error });
         }
+        setLoading && setLoading(false);
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
       });
@@ -759,7 +678,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   }, []);
 
   const saveDetails = () => {
-    setLoading(true);
+    setLoading && setLoading(true);
     setShowButtons(true);
     console.log('symptonsData', JSON.stringify(JSON.stringify(getSysmptonsList())));
     console.log('junior notes', value);
@@ -829,14 +748,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log('_data', _data);
         const result = _data.data!.updateCaseSheet;
         console.log('UpdateCaseSheetData', result);
         Alert.alert('UpdateCaseSheet', 'SuccessFully Updated');
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log('Error occured while update casesheet', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
@@ -845,7 +764,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       });
   };
   const endConsult = () => {
-    setLoading(true);
+    setLoading && setLoading(true);
     saveDetails();
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -859,7 +778,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         setShowPopUp(true);
         console.log('_data', _data);
 
@@ -867,7 +786,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         // props.onStopConsult();
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         setShowPopUp(false);
         console.log('Error occured while End casesheet', e);
         const error = JSON.parse(JSON.stringify(e));
@@ -1002,20 +921,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                               <AddSymptomPopUp
                                 data={showdata}
                                 onDone={(data) => {
-                                  if (
-                                    (symptonsData || []).findIndex(
-                                      (i) => i && i.symptom === data.symptom
-                                    ) < 0
-                                  ) {
-                                    setSymptonsData([
-                                      ...(symptonsData || []).filter(
-                                        (i) => i && i.symptom !== showdata.symptom
-                                      ),
-                                      data,
-                                    ]);
-                                  } else {
-                                    Alert.alert('', 'Already Exists');
-                                  }
+                                  setSymptonsData([
+                                    ...(symptonsData || []).filter(
+                                      (i) => i && i.symptom !== showdata.symptom
+                                    ),
+                                    data,
+                                  ]);
                                 }}
                                 onClose={() => props.overlayDisplay(null)}
                               />
@@ -1240,11 +1151,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               'Lifestyle and Habits',
-              (lifeStyleData && lifeStyleData.map((i) => i && i.description).join(',')) || '',
+              (lifeStyleData && lifeStyleData.map((i) => i && i.description).join('\n')) || '',
               (text) => {
-                setLifeStyleData([
-                  { description: text } as GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
-                ]);
+                const _lifeStyleData = text.split('\n').map((i) => {
+                  if (i) {
+                    return {
+                      description: i,
+                    };
+                  }
+                });
+                setLifeStyleData(
+                  _lifeStyleData as GetCaseSheet_getCaseSheet_patientDetails_lifeStyle[]
+                );
               },
               true
             )}
@@ -1335,7 +1253,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         setTests(testsData);
                       }}
                     >
-                      {isDelegateLogin ? null : item.isSelected ? <Selected /> : <UnSelected />}
+                      <Text>ff</Text>
                     </TouchableOpacity>
                   }
                 />
@@ -1348,10 +1266,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {/* {diagnosticPrescriptionData == null ? (
           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
         ) : ( */}
-        <Text style={[styles.familyText, { marginBottom: 12 }]}>Favorite Tests</Text>
-        {favTests &&
-          favTests.length &&
-          favTests.map((showdata, i) => {
+        {favTest && favTest.length && (
+          <Text style={[styles.familyText, { marginBottom: 12 }]}>Favorite Tests</Text>
+        )}
+        {favTest &&
+          favTest.map((showdata, i) => {
             if (showdata)
               return (
                 <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
@@ -1616,7 +1535,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   />
                 )
               }
-              style={{ marginBottom: 19, marginTop: 12 }}
+              style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
             />
           )}
         </View>
@@ -1873,7 +1792,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     />
                   );
                 }}
-                style={{ marginBottom: 19, marginLeft: 16, marginTop: 0 }}
+                style={{ marginBottom: 0, marginLeft: 0, marginTop: 0 }}
               />
             )}
           </View>
@@ -2268,8 +2187,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const selectedAdviceAction = (advice: dataPair, action: 'a' | 'd') => {
     if (action === 'a') {
-      if (addedAdvices.findIndex((item) => item.key === advice.key) < 0) {
+      if (
+        addedAdvices.findIndex((item) => item.value.toLowerCase() === advice.value.toLowerCase()) <
+        0
+      ) {
         setAddedAdvices([...addedAdvices, advice]);
+      } else {
+        showAphAlert && showAphAlert({ title: 'Alert!', description: 'Advice already exists.' });
       }
     } else if (action === 'd') {
       if (addedAdvices.findIndex((item) => item.key === advice.key) >= 0) {
@@ -2310,31 +2234,31 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   </TouchableOpacity>
                 ))
               : renderInfoText('No Advice/Instructions selected')}
-            {favAdvices.length && renderHeaderText('Favorite Diagnostics')}
-            {favAdvices.map((item) => (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  props.overlayDisplay(
-                    <AddInstructionPopUp
-                      onClose={() => {
-                        props.overlayDisplay(null);
+            {favList && favList.length > 0 ? renderHeaderText('Favorite Diagnostics') : null}
+            {favList &&
+              favList.map(
+                (item) =>
+                  item && (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        selectedAdviceAction({ key: item.id, value: item.instruction }, 'a');
                       }}
-                      onDone={(val) => {
-                        selectedAdviceAction({ key: val, value: val }, 'a');
-                      }}
-                    />
-                  );
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-                  <PlusOrange />
-                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916'), marginLeft: 4 }}>
-                    ADD INSTRUCTIONS
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                    >
+                      <View style={styles.dataCardsStyle}>
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
+                            flex: 1,
+                          }}
+                        >
+                          {item.instruction}
+                        </Text>
+                        <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                      </View>
+                    </TouchableOpacity>
+                  )
+              )}
             {caseSheetEdit && (
               <AddIconLabel
                 label="ADD INSTRUCTIONS"
@@ -2350,7 +2274,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     />
                   );
                 }}
-                style={{ marginTop: 10 }}
+                style={{ marginTop: 5, marginBottom: 0, marginLeft: 0 }}
               />
             )}
           </View>
@@ -2380,13 +2304,116 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
+  const renderBasicProfileDetails = (
+    PatientInfoData: PatientInfoData,
+    displayId: string,
+    Appintmentdatetimeconsultpage: string
+  ) => {
+    return (
+      <View style={{ backgroundColor: '#f7f7f7', paddingBottom: 11 }}>
+        {profileRow(PatientInfoData, displayId, Appintmentdatetimeconsultpage)}
+      </View>
+    );
+  };
+
+  const profileRow = (
+    PatientInfoData: PatientInfoData,
+    displayId: string,
+    Appintmentdatetimeconsultpage: string
+  ) => {
+    if (patientDetails) {
+      return (
+        <View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={styles.nameText}>
+              {`${(patientDetails.firstName || '').trim()} ${(patientDetails.lastName || '').trim()}`}
+            </Text>
+            <View style={styles.line}></View>
+            <Text style={styles.agetext}>
+              {Math.round(
+                moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true)
+              ).toString() || '-'}
+              {patientDetails.gender ? `, ${patientDetails.gender.charAt(0)}` : ''}
+              {patientDetails.patientAddress &&
+              patientDetails.patientAddress[0] &&
+              patientDetails.patientAddress[0].city
+                ? `, ${patientDetails.patientAddress[0].city.split(',')[0]}`
+                : ''}
+            </Text>
+          </View>
+          {patientDetails && patientDetails.uhid != '' ? (
+            <Text style={styles.uhidText}>UHID : {patientDetails.uhid} </Text>
+          ) : null}
+
+          <View style={styles.understatusline} />
+          <View>
+            {registerDetails('Appt ID: ', displayId)}
+            {registerDetailsAppDate('Appt Date: ', Appintmentdatetimeconsultpage)}
+          </View>
+        </View>
+      );
+    }
+  };
+
+  const registerDetails = (ApptId: string, displayId: string) => {
+    if (!displayId) return null;
+    return (
+      <View style={{ flexDirection: 'row', marginLeft: 20, marginBottom: 8 }}>
+        <Text style={styles.appid}>{ApptId}</Text>
+        <Text style={styles.appdate}>{displayId}</Text>
+      </View>
+    );
+  };
+  const registerDetailsAppDate = (ApptId: string, appIdDate: string) => {
+    if (!appIdDate) return null;
+    return (
+      <View style={{ flexDirection: 'row', marginLeft: 20, alignItems: 'center' }}>
+        <Text style={styles.appid}>{ApptId}</Text>
+        <Text style={styles.appdate}>{moment(appIdDate).format('DD/MM/YYYY')}</Text>
+        <Text
+          style={{
+            ...styles.appid,
+            color: 'rgba(2, 71, 91, 0.6)',
+            marginHorizontal: 5,
+          }}
+        >
+          |
+        </Text>
+        <Text style={styles.appdate}>{moment(appIdDate).format('HH:mm A')}</Text>
+      </View>
+    );
+  };
+
+  const renderPatientImage = () => {
+    return (
+      <View style={{ marginBottom: 20 }}>
+        <Image
+          source={{
+            uri: (patientDetails && patientDetails.photoUrl) || '',
+          }}
+          style={{ height: width, width: width }}
+          resizeMode={'contain'}
+          placeholderStyle={{
+            height: width,
+            width: width,
+            alignItems: 'center',
+            backgroundColor: 'transparent',
+          }}
+          PlaceholderContent={
+            loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
+          }
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={styles.casesheetView}>
       <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
         <ScrollView bounces={false} style={{ zIndex: 1 }}>
           <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
           {renderPatientImage()}
-          {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
+          {renderBasicProfileDetails(PatientInfoData, displayId, Appintmentdatetimeconsultpage)}
           {renderSymptonsView()}
           {renderVitals()}
           {renderPatientHistoryLifestyle()}
@@ -2419,7 +2446,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 />
               </View>
             </View>
-            {loading ? <Loader flex1 /> : null}
+            {/* {loading ? <Loader flex1 /> : null} */}
             {/* {renderButtonsView()} */}
             {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
             stastus == 'IN_PROGRESS'
