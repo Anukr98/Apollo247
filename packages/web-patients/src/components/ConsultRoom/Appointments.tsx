@@ -3,8 +3,8 @@ import { Theme, Typography, MenuItem, Popover } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
-import { ThingsToDo } from 'components/ConsultRoom/ThingsToDo';
 import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
+import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
@@ -14,7 +14,6 @@ import {
 } from 'graphql/types/GetPatientAppointments';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
-import LinearProgress from '@material-ui/core/LinearProgress';
 // import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
@@ -41,9 +40,17 @@ const useStyles = makeStyles((theme: Theme) => {
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
       borderRadius: 0,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      boxShadow: '0 10px 20px 0 rgba(128, 128, 128, 0.3)',
       paddingLeft: 20,
       paddingRight: 20,
+      position: 'sticky',
+      top: 88,
+      zIndex: 99,
+      [theme.breakpoints.down('xs')]: {
+        top: 70,
+        paddingLeft: 0,
+        paddingRight: 0,
+      },
     },
     tabRoot: {
       fontSize: 16,
@@ -70,6 +77,12 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       paddingTop: 30,
+      marginBottom: 20,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: 'transparent',
+        borderRadius: 0,
+        marginBottom: 0,
+      },
     },
     consultationsHeader: {
       padding: '10px 40px 30px 40px',
@@ -206,6 +219,10 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 36,
       },
     },
+    pageLoader: {
+      position: 'absolute',
+      top: 0,
+    },
   };
 });
 
@@ -221,25 +238,22 @@ export const Appointments: React.FC = (props) => {
   const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
 
-  const { data, loading, error } = useQueryWithSkip<
-    GetPatientAppointments,
-    GetPatientAppointmentsVariables
-  >(GET_PATIENT_APPOINTMENTS, {
-    variables: {
-      patientAppointmentsInput: {
-        patientId:
-          (currentPatient && currentPatient.id) ||
-          (allCurrentPatients && allCurrentPatients[0].id) ||
-          '',
-        appointmentDate: currentDate,
+  const { data, error } = useQueryWithSkip<GetPatientAppointments, GetPatientAppointmentsVariables>(
+    GET_PATIENT_APPOINTMENTS,
+    {
+      variables: {
+        patientAppointmentsInput: {
+          patientId:
+            (currentPatient && currentPatient.id) ||
+            (allCurrentPatients && allCurrentPatients[0].id) ||
+            '',
+          appointmentDate: currentDate,
+        },
       },
-    },
-    fetchPolicy: 'no-cache',
-  });
+      fetchPolicy: 'no-cache',
+    }
+  );
 
-  if (loading) {
-    return <LinearProgress />;
-  }
   if (error) {
     return <div>Unable to load Consults...</div>;
   }
@@ -286,7 +300,7 @@ export const Appointments: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
 
-  return isSignedIn ? (
+  return (
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
@@ -428,8 +442,7 @@ export const Appointments: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <NavigationBottom />
     </div>
-  ) : (
-    <LinearProgress />
   );
 };
